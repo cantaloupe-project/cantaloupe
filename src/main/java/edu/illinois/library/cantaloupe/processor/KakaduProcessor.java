@@ -28,6 +28,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
@@ -336,7 +337,8 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
             logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
-            try (final InputStream processInputStream = process.getInputStream();
+            try (final InputStream processInputStream =
+                         new BufferedInputStream(process.getInputStream());
                  final InputStream processErrorStream = process.getErrorStream()) {
                 executorService.submit(
                         new StreamCopier(processErrorStream, errorBucket));

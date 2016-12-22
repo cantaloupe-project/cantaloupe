@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
@@ -291,7 +292,8 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
             logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
-            try (final InputStream processInputStream = process.getInputStream();
+            try (final InputStream processInputStream =
+                         new BufferedInputStream(process.getInputStream());
                  final InputStream processErrorStream = process.getErrorStream()) {
                 executorService.submit(
                         new StreamCopier(processErrorStream, errorBucket));
