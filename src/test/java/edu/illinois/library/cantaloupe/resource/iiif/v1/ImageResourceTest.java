@@ -103,19 +103,19 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testCacheHeadersWhenClientCachingEnabled() throws Exception {
+    public void testCacheHeadersWhenClientCachingIsEnabled() throws Exception {
         webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty("cache.client.enabled", "true");
-        config.setProperty("cache.client.max_age", "1234");
-        config.setProperty("cache.client.shared_max_age", "4567");
-        config.setProperty("cache.client.public", "true");
-        config.setProperty("cache.client.private", "false");
-        config.setProperty("cache.client.no_cache", "false");
-        config.setProperty("cache.client.no_store", "false");
-        config.setProperty("cache.client.must_revalidate", "false");
-        config.setProperty("cache.client.proxy_revalidate", "false");
-        config.setProperty("cache.client.no_transform", "true");
+        config.setProperty(AbstractResource.CLIENT_CACHE_ENABLED_CONFIG_KEY, "true");
+        config.setProperty(AbstractResource.CLIENT_CACHE_MAX_AGE_CONFIG_KEY, "1234");
+        config.setProperty(AbstractResource.CLIENT_CACHE_SHARED_MAX_AGE_CONFIG_KEY, "4567");
+        config.setProperty(AbstractResource.CLIENT_CACHE_PUBLIC_CONFIG_KEY, "true");
+        config.setProperty(AbstractResource.CLIENT_CACHE_PRIVATE_CONFIG_KEY, "false");
+        config.setProperty(AbstractResource.CLIENT_CACHE_NO_CACHE_CONFIG_KEY, "false");
+        config.setProperty(AbstractResource.CLIENT_CACHE_NO_STORE_CONFIG_KEY, "false");
+        config.setProperty(AbstractResource.CLIENT_CACHE_MUST_REVALIDATE_CONFIG_KEY, "false");
+        config.setProperty(AbstractResource.CLIENT_CACHE_PROXY_REVALIDATE_CONFIG_KEY, "false");
+        config.setProperty(AbstractResource.CLIENT_CACHE_NO_TRANSFORM_CONFIG_KEY, "true");
 
         Map<String, String> expectedDirectives = new HashMap<>();
         expectedDirectives.put("max-age", "1234");
@@ -139,20 +139,40 @@ public class ImageResourceTest extends ResourceTest {
         }
     }
 
+    /**
+     * Tests that there is no Cache-Control header returned when
+     * cache.client.enabled = true but a cache=false argument is present in the
+     * URL query.
+     *
+     * @throws Exception
+     */
     @Test
-    public void testCacheHeadersWhenClientCachingDisabled() throws Exception {
+    public void testCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInUrl()
+            throws Exception {
         webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty("cache.client.enabled", "false");
-        config.setProperty("cache.client.max_age", "1234");
-        config.setProperty("cache.client.shared_max_age", "4567");
-        config.setProperty("cache.client.public", "true");
-        config.setProperty("cache.client.private", "false");
-        config.setProperty("cache.client.no_cache", "false");
-        config.setProperty("cache.client.no_store", "false");
-        config.setProperty("cache.client.must_revalidate", "false");
-        config.setProperty("cache.client.proxy_revalidate", "false");
-        config.setProperty("cache.client.no_transform", "true");
+        config.setProperty(AbstractResource.CLIENT_CACHE_ENABLED_CONFIG_KEY, "true");
+        config.setProperty(AbstractResource.CLIENT_CACHE_MAX_AGE_CONFIG_KEY, "1234");
+        config.setProperty(AbstractResource.CLIENT_CACHE_SHARED_MAX_AGE_CONFIG_KEY, "4567");
+        config.setProperty(AbstractResource.CLIENT_CACHE_PUBLIC_CONFIG_KEY, "true");
+        config.setProperty(AbstractResource.CLIENT_CACHE_PRIVATE_CONFIG_KEY, "false");
+        config.setProperty(AbstractResource.CLIENT_CACHE_NO_CACHE_CONFIG_KEY, "false");
+        config.setProperty(AbstractResource.CLIENT_CACHE_NO_STORE_CONFIG_KEY, "false");
+        config.setProperty(AbstractResource.CLIENT_CACHE_MUST_REVALIDATE_CONFIG_KEY, "false");
+        config.setProperty(AbstractResource.CLIENT_CACHE_PROXY_REVALIDATE_CONFIG_KEY, "false");
+        config.setProperty(AbstractResource.CLIENT_CACHE_NO_TRANSFORM_CONFIG_KEY, "true");
+
+        ClientResource client = getClientForUriPath(
+                "/" + IMAGE + "/full/full/0/native.jpg?cache=false");
+        client.get();
+        assertEquals(0, client.getResponse().getCacheDirectives().size());
+    }
+
+    @Test
+    public void testCacheHeadersWhenClientCachingIsDisabled() throws Exception {
+        webServer.start();
+        Configuration config = ConfigurationFactory.getInstance();
+        config.setProperty(AbstractResource.CLIENT_CACHE_ENABLED_CONFIG_KEY, "false");
 
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/native.jpg");

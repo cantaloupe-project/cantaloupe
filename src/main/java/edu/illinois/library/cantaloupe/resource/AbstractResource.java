@@ -369,8 +369,16 @@ public abstract class AbstractResource extends ServerResource {
         return new Identifier(decodeSlashes(identifier.toString()));
     }
 
+    /**
+     * @return List of cache directives according to the configuration, or an
+     *         empty list if {@link #isBypassingCache()} returns
+     *         <code>false</code>.
+     */
     protected final List<CacheDirective> getCacheDirectives() {
-        List<CacheDirective> directives = new ArrayList<>();
+        final List<CacheDirective> directives = new ArrayList<>();
+        if (isBypassingCache()) {
+            return directives;
+        }
         try {
             final Configuration config = ConfigurationFactory.getInstance();
             final boolean enabled = config.getBoolean(

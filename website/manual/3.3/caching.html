@@ -127,7 +127,7 @@ cache.client.no_transform = true
 
 <h4 id="Derivative Cache Bypassing">Bypassing</h4>
 
-<p>The derivative cache can be bypassed on a per-request basis by supplying a <code>cache=false</code> query parameter in the URL. (This works in all endpoints.) When this parameter is present, the derivative cache will not be read from, nor written to, whether or not it is enabled.</p>
+<p>The derivative cache can be bypassed on a per-request basis by supplying a <code>cache=false</code> query parameter in the URL. When this parameter is present, the derivative cache will not be read from, nor written to, whether or not it is enabled. The <code>Cache-Control</code> header will also be omitted.</p>
 
 <h4 id="Notes">Notes</h4>
 
