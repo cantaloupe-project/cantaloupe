@@ -92,7 +92,7 @@ public class JaiUtilTest {
         ImageReader reader = new ImageReader(
                 TestUtil.getFixture(IMAGE), Format.JPG);
         RenderedImage image = reader.readRendered(ops, Orientation.ROTATE_0,
-                new ReductionFactor());
+                new ReductionFactor(), null);
         PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
         RenderedOp renderedOp = JaiUtil.getAsRenderedOp(planarImage);
         assertEquals(64, renderedOp.getWidth());
@@ -429,7 +429,7 @@ public class JaiUtilTest {
         ImageReader reader = new ImageReader(
                 TestUtil.getFixture(name), Format.JPG);
         RenderedImage image = reader.readRendered(ops, Orientation.ROTATE_0,
-                new ReductionFactor());
+                new ReductionFactor(), null);
         PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
         return JaiUtil.getAsRenderedOp(planarImage);
     }

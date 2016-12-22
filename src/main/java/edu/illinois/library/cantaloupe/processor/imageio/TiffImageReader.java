@@ -158,8 +158,13 @@ class TiffImageReader extends AbstractImageReader {
             }
         }
 
-        BufferedImage image = readSmallestUsableSubimage(crop, scale,
-                reductionFactor, hints);
+        BufferedImage image;
+        if (hints != null && hints.contains(ImageReader.Hint.IGNORE_CROP)) {
+            image = read();
+        } else {
+            image = readSmallestUsableSubimage(crop, scale, reductionFactor,
+                    hints);
+        }
         if (image == null) {
             throw new UnsupportedSourceFormatException(iioReader.getFormatName());
         }
@@ -175,17 +180,23 @@ class TiffImageReader extends AbstractImageReader {
      * tile layout and/or subimages, if possible.</p>
      *
      * @param ops
+     * @param orientation     Orientation of the source image data, e.g. as
+     *                        reported by embedded metadata.
      * @param reductionFactor {@link ReductionFactor#factor} property will be
      *                        modified to reflect the reduction factor of the
      *                        returned image.
+     * @param hints           Will be populated by information returned from
+     *                        the reader. May also contain hints for the
+     *                        reader. May be <code>null</code>.
      * @return RenderedImage best matching the given parameters.
      * @throws IOException
      * @throws ProcessorException
      */
-    @Override
+    @Override // TODO: I forgot why this is overridden; why isn't the parent tile-aware?
     public RenderedImage readRendered(final OperationList ops,
                                       final Orientation orientation,
-                                      final ReductionFactor reductionFactor)
+                                      final ReductionFactor reductionFactor,
+                                      Set<ImageReader.Hint> hints)
             throws IOException, ProcessorException {
         if (iioReader == null) {
             createReader();
@@ -203,8 +214,12 @@ class TiffImageReader extends AbstractImageReader {
             }
         }
 
-        RenderedImage image = readSmallestUsableSubimage(crop, scale,
-                reductionFactor);
+        RenderedImage image;
+        if (hints != null && hints.contains(ImageReader.Hint.IGNORE_CROP)) {
+            image = readRendered();
+        } else {
+            image = readSmallestUsableSubimage(crop, scale, reductionFactor);
+        }
         if (image == null) {
             throw new UnsupportedSourceFormatException(iioReader.getFormatName());
         }

@@ -129,32 +129,28 @@ class JaiProcessor extends AbstractImageIoProcessor
             final Orientation orientation = getEffectiveOrientation();
             final Dimension fullSize = imageInfo.getSize();
             final ReductionFactor rf = new ReductionFactor();
+            final Set<ImageReader.Hint> hints = new HashSet<>();
+
+            final Configuration config = ConfigurationFactory.getInstance();
+            final boolean normalize =
+                    config.getBoolean(NORMALIZE_CONFIG_KEY, false);
+            if (normalize) {
+                // When normalizing, the reader needs to read the entire image
+                // so that its histogram can be sampled accurately. This will
+                // preserve the luminance across tiles.
+                hints.add(ImageReader.Hint.IGNORE_CROP);
+            }
+
             final RenderedImage renderedImage = reader.readRendered(opList,
-                    orientation, rf);
+                    orientation, rf, hints);
             RenderedOp renderedOp = JaiUtil.getAsRenderedOp(
                     RenderedOp.wrapRenderedImage(renderedImage));
             renderedOp = JaiUtil.rescalePixels(renderedOp);
             renderedOp = JaiUtil.convertTo8Bits(renderedOp);
 
-            final Configuration config = ConfigurationFactory.getInstance();
-
             // Normalize the image, if specified in the configuration.
-            if (config.getBoolean(NORMALIZE_CONFIG_KEY, false)) {
-                // If we are performing a crop, normalize only the crop area.
-                boolean cropping = false;
-                for (Operation op : opList) {
-                    if (op instanceof Crop) {
-                        Crop crop = (Crop) op;
-                        if (crop.hasEffect(fullSize, opList)) {
-                            cropping = true;
-                            renderedOp = JaiUtil.stretchContrast(renderedOp, crop);
-                            break;
-                        }
-                    }
-                }
-                if (!cropping) {
-                    renderedOp = JaiUtil.stretchContrast(renderedOp);
-                }
+            if (normalize) {
+                renderedOp = JaiUtil.stretchContrast(renderedOp);
             }
 
             for (Operation op : opList) {

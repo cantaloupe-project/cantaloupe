@@ -51,7 +51,7 @@ abstract class AbstractImageReader {
     protected ImageInputStream inputStream;
 
     /** Assigned by createReader(). */
-    protected javax.imageio.ImageReader iioReader;
+    javax.imageio.ImageReader iioReader;
 
     /** Set in setSource(). */
     private Object source;
@@ -280,14 +280,13 @@ abstract class AbstractImageReader {
         BufferedImage image;
 
         Crop crop = null;
-        Scale scale = new Scale();
         for (Operation op : ops) {
             if (op instanceof Crop) {
                 crop = (Crop) op;
                 crop.applyOrientation(orientation, getSize());
             }
         }
-        if (crop != null) {
+        if (crop != null && !hints.contains(ImageReader.Hint.IGNORE_CROP)) {
             final Dimension fullSize = new Dimension(
                     iioReader.getWidth(0), iioReader.getHeight(0));
             image = tileAwareRead(0, crop.getRectangle(fullSize), hints);
@@ -315,7 +314,7 @@ abstract class AbstractImageReader {
      *         operations from the given reader.
      * @throws IOException
      */
-    protected BufferedImage readSmallestUsableSubimage(
+    BufferedImage readSmallestUsableSubimage(
             final Crop crop,
             final Scale scale,
             final ReductionFactor rf,
@@ -505,13 +504,16 @@ abstract class AbstractImageReader {
      * @param reductionFactor The {@link ReductionFactor#factor} property will
      *                        be modified to reflect the reduction factor of the
      *                        returned image.
+     * @param hints           Will be populated by information returned from
+     *                        the reader.
      * @return RenderedImage best matching the given parameters.
      * @throws IOException
      * @throws ProcessorException
      */
     RenderedImage readRendered(final OperationList ops,
                                final Orientation orientation,
-                               final ReductionFactor reductionFactor)
+                               final ReductionFactor reductionFactor,
+                               final Set<ImageReader.Hint> hints)
             throws IOException, ProcessorException {
         if (iioReader == null) {
             createReader();
@@ -525,7 +527,7 @@ abstract class AbstractImageReader {
                 break;
             }
         }
-        if (crop != null) {
+        if (crop != null && !hints.contains(ImageReader.Hint.IGNORE_CROP)) {
             image = iioReader.readAsRenderedImage(0,
                     iioReader.getDefaultReadParam());
         } else {
@@ -549,9 +551,9 @@ abstract class AbstractImageReader {
      *         operations from the given reader.
      * @throws IOException
      */
-    protected RenderedImage readSmallestUsableSubimage(final Crop crop,
-                                                       final Scale scale,
-                                                       final ReductionFactor rf)
+    RenderedImage readSmallestUsableSubimage(final Crop crop,
+                                             final Scale scale,
+                                             final ReductionFactor rf)
             throws IOException {
         final Dimension fullSize = new Dimension(
                 iioReader.getWidth(0), iioReader.getHeight(0));

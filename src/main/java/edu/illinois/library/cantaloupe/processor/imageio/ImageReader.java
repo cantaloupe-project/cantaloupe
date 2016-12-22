@@ -32,11 +32,17 @@ import java.util.Set;
 public class ImageReader {
 
     public enum Hint {
-        ALREADY_CROPPED
         /**
-         * Returned by a reader. The reader has read only the requested region
+         * Returned from a reader. The reader has read only the requested region
          * of the image and there will be no need to crop it any further.
          */
+        ALREADY_CROPPED,
+
+        /**
+         * Provided to a reader. The reader should read the entire image
+         * regardless of any cropping directives provided.
+         */
+        IGNORE_CROP
     }
 
     private Metadata cachedMetadata;
@@ -250,15 +256,18 @@ public class ImageReader {
      * @param reductionFactor The {@link ReductionFactor#factor} property will
      *                        be modified to reflect the reduction factor of
      *                        the returned image.
+     * @param hints           Will be populated by information returned from
+     *                        the reader.
      * @return RenderedImage best matching the given parameters.
      * @throws IOException
      * @throws ProcessorException
      */
     public RenderedImage readRendered(final OperationList opList,
                                       final Orientation orientation,
-                                      final ReductionFactor reductionFactor)
+                                      final ReductionFactor reductionFactor,
+                                      final Set<ImageReader.Hint> hints)
             throws IOException, ProcessorException {
-        return reader.readRendered(opList, orientation, reductionFactor);
+        return reader.readRendered(opList, orientation, reductionFactor, hints);
     }
 
 }

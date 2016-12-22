@@ -69,15 +69,28 @@ class Java2dProcessor extends AbstractJava2dProcessor
         final ImageReader reader = getReader();
         try {
             final Orientation orientation = getEffectiveOrientation();
-
             final ReductionFactor rf = new ReductionFactor();
             final Set<ImageReader.Hint> hints = new HashSet<>();
-            BufferedImage image = reader.read(ops, orientation, rf, hints);
 
             final Configuration config = ConfigurationFactory.getInstance();
-            postProcess(image, hints, ops, imageInfo, rf,
+            final boolean normalize =
+                    config.getBoolean(NORMALIZE_CONFIG_KEY, false);
+            if (normalize) {
+                // When normalizing, the reader needs to read the entire image
+                // so that its histogram can be sampled accurately. This will
+                // preserve the luminance across tiles.
+                hints.add(ImageReader.Hint.IGNORE_CROP);
+            }
+
+            BufferedImage image = reader.read(ops, orientation, rf, hints);
+            postProcess(
+                    image,
+                    hints,
+                    ops,
+                    imageInfo,
+                    rf,
                     orientation,
-                    config.getBoolean(NORMALIZE_CONFIG_KEY, false),
+                    normalize,
                     getUpscaleFilter(),
                     getDownscaleFilter(),
                     config.getFloat(SHARPEN_CONFIG_KEY, 0f),

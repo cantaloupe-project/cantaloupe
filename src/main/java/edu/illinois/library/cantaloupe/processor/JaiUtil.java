@@ -21,6 +21,7 @@ import javax.media.jai.ROIShape;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.TransposeDescriptor;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.renderable.ParameterBlock;
 
@@ -321,26 +322,15 @@ abstract class JaiUtil {
     }
 
     /**
-     * @see #stretchContrast(RenderedOp, Crop)
-     * @param inImage Image to stretch.
-     * @return Stretched image.
-     */
-    static RenderedOp stretchContrast(RenderedOp inImage) {
-        return stretchContrast(inImage,
-                new Crop(0, 0, inImage.getWidth(), inImage.getHeight()));
-    }
-
-    /**
      * <p>Linearly stretches the contrast of an image to occupy the full range
      * of intensities. Histogram gaps will result.</p>
      *
      * <p>Does not work with indexed images.</p>
      *
      * @param inImage Image to stretch.
-     * @param sampleArea Area of the image to sample.
      * @return Stretched image.
      */
-    static RenderedOp stretchContrast(RenderedOp inImage, Crop sampleArea) {
+    static RenderedOp stretchContrast(RenderedOp inImage) {
         final int numLevels =
                 (int) Math.pow(2, inImage.getColorModel().getComponentSize(0));
         final byte[] blut = new byte[numLevels];
@@ -350,10 +340,12 @@ abstract class JaiUtil {
 
         final Dimension fullSize = new Dimension(inImage.getWidth(),
                 inImage.getHeight());
+        final Rectangle sampleArea = new Rectangle(0, 0,
+                fullSize.width, fullSize.height);
 
         ParameterBlock pb = new ParameterBlock();
         pb.addSource(inImage);
-        pb.add(new ROIShape(sampleArea.getRectangle(fullSize)));
+        pb.add(new ROIShape(sampleArea));
         pb.add(1); // Horizontal sampling rate
         pb.add(1); // Vertical sampling rate
         RenderedOp op = JAI.create("extrema", pb);

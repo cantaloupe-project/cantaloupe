@@ -325,8 +325,14 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
             final ReductionFactor reductionFactor = new ReductionFactor();
+
+            final Configuration config = ConfigurationFactory.getInstance();
+            // If we are normalizing, we need to read the entire image region.
+            final boolean normalize =
+                    config.getBoolean(NORMALIZE_CONFIG_KEY, false);
+
             final ProcessBuilder pb = getProcessBuilder(
-                    opList, imageInfo.getSize(), reductionFactor);
+                    opList, imageInfo.getSize(), reductionFactor, normalize);
             logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
@@ -339,13 +345,13 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
                         new InputStreamStreamSource(processInputStream),
                         Format.TIF);
                 final BufferedImage image = reader.read();
-                final Configuration config = ConfigurationFactory.getInstance();
                 try {
                     Set<ImageReader.Hint> hints = new HashSet<>();
-                    hints.add(ImageReader.Hint.ALREADY_CROPPED);
+                    if (!normalize) {
+                        hints.add(ImageReader.Hint.ALREADY_CROPPED);
+                    }
                     postProcess(image, hints, opList, imageInfo,
-                            reductionFactor, Orientation.ROTATE_0,
-                            config.getBoolean(NORMALIZE_CONFIG_KEY, false),
+                            reductionFactor, Orientation.ROTATE_0, normalize,
                             getUpscaleFilter(), getDownscaleFilter(),
                             config.getFloat(SHARPEN_CONFIG_KEY, 0f),
                             outputStream);
@@ -386,14 +392,17 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
      * Gets a ProcessBuilder corresponding to the given parameters.
      *
      * @param opList
-     * @param imageSize The full size of the source image
-     * @param reduction {@link ReductionFactor#factor} property modified by
-     * reference
-     * @return Command string
+     * @param imageSize  The full size of the source image.
+     * @param reduction  The {@link ReductionFactor#factor} property will be
+     *                   modified.
+     * @param ignoreCrop Ignore any cropping directives provided in
+     *                   <code>opList</code>.
+     * @return kdu_expand command invocation string
      */
     private ProcessBuilder getProcessBuilder(final OperationList opList,
                                              final Dimension imageSize,
-                                             final ReductionFactor reduction) {
+                                             final ReductionFactor reduction,
+                                             final boolean ignoreCrop) {
         final List<String> command = new ArrayList<>();
         command.add(getPath("kdu_expand"));
         command.add("-quiet");
@@ -403,7 +412,7 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
         command.add(sourceFile.getAbsolutePath());
 
         for (Operation op : opList) {
-            if (op instanceof Crop) {
+            if (op instanceof Crop && !ignoreCrop) {
                 final Crop crop = (Crop) op;
                 if (!crop.isFull()) {
                     // Truncate coordinates to (num digits) + 1 decimal places
@@ -459,7 +468,7 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
                 // percent is <=50, or the height/width are <=50% of full size.
                 final Scale scale = (Scale) op;
                 final Dimension tileSize = getCroppedSize(opList, imageSize);
-                if (scale.getMode() != Scale.Mode.FULL) {
+                if (scale.getMode() != Scale.Mode.FULL && !ignoreCrop) {
                     if (scale.getPercent() != null) {
                         reduction.factor = ReductionFactor.forScale(
                                 scale.getPercent(), MAX_REDUCTION_FACTOR).factor;
