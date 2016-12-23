@@ -77,6 +77,7 @@ public abstract class RedactionService {
      * @throws ScriptException
      * @throws DelegateScriptDisabledException
      */
+    @SuppressWarnings("unchecked")
     private static List<Map<String,Long>> getRedactionDefsFromScript(
             final Identifier identifier,
             final Map<String,String> requestHeaders,

@@ -130,6 +130,7 @@ public class ImageResource extends IIIF2Resource {
                     getOrReadInfo(identifier, processor));
             final Dimension resultingSize = ops.getResultingSize(fullSize);
             boolean ok = false;
+            @SuppressWarnings("unchecked")
             List<ImageInfo.Size> sizes =
                     (List<ImageInfo.Size>) imageInfo.get("sizes");
             for (ImageInfo.Size size : sizes) {

@@ -117,6 +117,7 @@ class DelegateOverlayService {
 
         // The result is expected to be a map. Cast it to that and copy its
         // keys and values into a new map that we can tweak before returning.
+        @SuppressWarnings("unchecked")
         final Map<String,Object> resultMap = ((Map<String,Object>) result);
         final Map<String,Object> properties = new HashMap<>();
 

@@ -352,6 +352,7 @@ public class InformationResourceTest extends ResourceTest {
         client.get();
         String json = client.getResponse().getEntityAsText();
         ObjectMapper mapper = new ObjectMapper();
+        @SuppressWarnings("unchecked")
         Map<String,Object> info =
                 (Map<String,Object>) mapper.readValue(json, TreeMap.class);
         assertEquals("http://localhost:" + port +
@@ -369,6 +370,7 @@ public class InformationResourceTest extends ResourceTest {
         client.get();
         String json = client.getResponse().getEntityAsText();
         ObjectMapper mapper = new ObjectMapper();
+        @SuppressWarnings("unchecked")
         Map<String,Object> info =
                 (Map<String,Object>) mapper.readValue(json, TreeMap.class);
         assertEquals("http://example.org" +
@@ -387,6 +389,7 @@ public class InformationResourceTest extends ResourceTest {
         client.get();
         String json = client.getResponse().getEntityAsText();
         ObjectMapper mapper = new ObjectMapper();
+        @SuppressWarnings("unchecked")
         Map<String,Object> info =
                 (Map<String,Object>) mapper.readValue(json, TreeMap.class);
         assertEquals("http://example.org:8080/cats" +
@@ -408,6 +411,7 @@ public class InformationResourceTest extends ResourceTest {
         client.get();
         String json = client.getResponse().getEntityAsText();
         ObjectMapper mapper = new ObjectMapper();
+        @SuppressWarnings("unchecked")
         Map<String,Object> info =
                 (Map<String,Object>) mapper.readValue(json, TreeMap.class);
         assertEquals("https://example.net" +

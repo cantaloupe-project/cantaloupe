@@ -97,6 +97,7 @@ public class ImageInfoFactoryTest {
 
     @Test
     public void testNewImageInfoSizes() {
+        @SuppressWarnings("unchecked")
         List<ImageInfo.Size> sizes =
                 (List<ImageInfo.Size>) imageInfo.get("sizes");
         assertEquals(3, sizes.size());
@@ -115,6 +116,7 @@ public class ImageInfoFactoryTest {
 
     @Test
     public void testNewImageInfoTilesWithUntiledImage() {
+        @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =
                 (List<ImageInfo.Tile>) imageInfo.get("tiles");
         assertEquals(1, tiles.size());
@@ -131,6 +133,7 @@ public class ImageInfoFactoryTest {
     @Test
     public void testNewImageInfoTilesWithRotatedImage() throws Exception {
         setUpForRotatedImage();
+        @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =
                 (List<ImageInfo.Tile>) imageInfo.get("tiles");
         assertEquals(64, (long) tiles.get(0).width);
@@ -145,6 +148,7 @@ public class ImageInfoFactoryTest {
         imageInfo = ImageInfoFactory.newImageInfo(identifier, imageUri, processor,
                 processor.getImageInfo());
 
+        @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =
                 (List<ImageInfo.Tile>) imageInfo.get("tiles");
         assertEquals(1, tiles.size());

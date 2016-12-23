@@ -55,6 +55,7 @@ abstract class ImageInfoFactory {
                 ServiceFeature.PROFILE_LINK_HEADER));
     }
 
+    @SuppressWarnings("unchecked")
     static ImageInfo<String,Object> newImageInfo(
             final Identifier identifier,
             final String imageUri,
