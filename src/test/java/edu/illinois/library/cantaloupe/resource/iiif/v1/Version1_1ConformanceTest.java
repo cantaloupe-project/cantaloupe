@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.operation.Identifier;
+import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -74,9 +75,11 @@ public class Version1_1ConformanceTest extends BaseTest {
         Path fixturePath = Paths.get(cwd, "src", "test", "resources",
                 "images");
         config.setProperty("print_stack_trace_on_error_pages", false);
-        config.setProperty("http.port", PORT);
-        config.setProperty("processor.fallback", "Java2dProcessor");
-        config.setProperty("resolver.static", "FilesystemResolver");
+        config.setProperty(WebServer.HTTP_PORT_CONFIG_KEY, PORT);
+        config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
+                "Java2dProcessor");
+        config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
+                "FilesystemResolver");
         config.setProperty("FilesystemResolver.lookup_strategy",
                 "BasicLookupStrategy");
         config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",

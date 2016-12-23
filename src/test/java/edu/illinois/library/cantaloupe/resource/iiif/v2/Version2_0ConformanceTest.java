@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.operation.Identifier;
+import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
@@ -44,7 +45,7 @@ import static org.junit.Assert.*;
  */
 public class Version2_0ConformanceTest extends BaseTest {
 
-    private static final Identifier IMAGE =
+    static final Identifier IMAGE =
             new Identifier("jpg-rgb-64x56x8-baseline.jpg");
     private static final Integer PORT = TestUtil.getOpenPort();
 
@@ -52,14 +53,14 @@ public class Version2_0ConformanceTest extends BaseTest {
 
     private WebServer webServer;
 
-    private ClientResource getClientForUriPath(String path) {
+    ClientResource getClientForUriPath(String path) {
         Reference url = new Reference(getBaseUri() + path);
         ClientResource resource = new ClientResource(url);
         resource.setNext(client);
         return resource;
     }
 
-    private String getBaseUri() {
+    String getBaseUri() {
         return "http://localhost:" + PORT +
                 WebApplication.IIIF_2_PATH;
     }
@@ -74,9 +75,11 @@ public class Version2_0ConformanceTest extends BaseTest {
         Path fixturePath = Paths.get(cwd, "src", "test", "resources",
                 "images");
         config.setProperty("print_stack_trace_on_error_pages", false);
-        config.setProperty("http.port", PORT);
-        config.setProperty("processor.fallback", "Java2dProcessor");
-        config.setProperty("resolver.static", "FilesystemResolver");
+        config.setProperty(WebServer.HTTP_PORT_CONFIG_KEY, PORT);
+        config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
+                "Java2dProcessor");
+        config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
+                "FilesystemResolver");
         config.setProperty("FilesystemResolver.lookup_strategy",
                 "BasicLookupStrategy");
         config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",

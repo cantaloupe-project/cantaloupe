@@ -18,19 +18,20 @@ import org.eclipse.jetty.webapp.WebAppContext;
  */
 public class WebServer {
 
-    static final String HTTP_ENABLED_CONFIG_KEY = "http.enabled";
-    static final String HTTP_HOST_CONFIG_KEY = "http.host";
-    static final String HTTP_PORT_CONFIG_KEY = "http.port";
-    static final String HTTPS_ENABLED_CONFIG_KEY = "https.enabled";
-    static final String HTTPS_HOST_CONFIG_KEY = "https.host";
-    static final String HTTPS_KEY_PASSWORD_CONFIG_KEY = "https.key_password";
-    static final String HTTPS_KEY_STORE_PASSWORD_CONFIG_KEY =
+    public static final String HTTP_ENABLED_CONFIG_KEY = "http.enabled";
+    public static final String HTTP_HOST_CONFIG_KEY = "http.host";
+    public static final String HTTP_PORT_CONFIG_KEY = "http.port";
+    public static final String HTTPS_ENABLED_CONFIG_KEY = "https.enabled";
+    public static final String HTTPS_HOST_CONFIG_KEY = "https.host";
+    public static final String HTTPS_KEY_PASSWORD_CONFIG_KEY =
+            "https.key_password";
+    public static final String HTTPS_KEY_STORE_PASSWORD_CONFIG_KEY =
             "https.key_store_password";
-    static final String HTTPS_KEY_STORE_PATH_CONFIG_KEY =
+    public static final String HTTPS_KEY_STORE_PATH_CONFIG_KEY =
             "https.key_store_path";
-    static final String HTTPS_KEY_STORE_TYPE_CONFIG_KEY =
+    public static final String HTTPS_KEY_STORE_TYPE_CONFIG_KEY =
             "https.key_store_type";
-    static final String HTTPS_PORT_CONFIG_KEY = "https.port";
+    public static final String HTTPS_PORT_CONFIG_KEY = "https.port";
 
     private static final int IDLE_TIMEOUT = 30000;
 
