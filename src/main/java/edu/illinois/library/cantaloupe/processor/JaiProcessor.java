@@ -145,13 +145,13 @@ class JaiProcessor extends AbstractImageIoProcessor
                     orientation, rf, hints);
             RenderedOp renderedOp = JaiUtil.getAsRenderedOp(
                     RenderedOp.wrapRenderedImage(renderedImage));
-            renderedOp = JaiUtil.rescalePixels(renderedOp);
-            renderedOp = JaiUtil.convertTo8Bits(renderedOp);
 
             // Normalize the image, if specified in the configuration.
             if (normalize) {
                 renderedOp = JaiUtil.stretchContrast(renderedOp);
             }
+            renderedOp = JaiUtil.rescalePixels(renderedOp);
+            renderedOp = JaiUtil.convertTo8Bits(renderedOp);
 
             for (Operation op : opList) {
                 if (op.hasEffect(fullSize, opList)) {

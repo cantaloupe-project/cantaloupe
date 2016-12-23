@@ -100,7 +100,7 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
      * a processor will read an image, and then pass it to this method to
      * process it and write the result.
      *
-     * @param sourceImage Image to process.
+     * @param image Image to process.
      * @param readerHints Hints from the image reader. May be <code>null</code>.
      * @param opList Operations to apply to the image.
      * @param imageInfo Information about the source image.
@@ -114,7 +114,7 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
      * @throws IOException
      * @throws ProcessorException
      */
-    void postProcess(final BufferedImage sourceImage,
+    void postProcess(BufferedImage image,
                      Set<ImageReader.Hint> readerHints,
                      final OperationList opList,
                      final ImageInfo imageInfo,
@@ -133,12 +133,12 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
             readerHints = new HashSet<>();
         }
 
-        BufferedImage image = Java2dUtil.reduceTo8Bits(sourceImage);
-        final Dimension fullSize = imageInfo.getSize();
-
         if (normalize) {
             image = Java2dUtil.stretchContrast(image);
         }
+        image = Java2dUtil.reduceTo8Bits(image);
+
+        final Dimension fullSize = imageInfo.getSize();
 
         // Apply the crop operation, if present, and maintain a reference
         // to it for subsequent operations to refer to.
