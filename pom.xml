@@ -137,7 +137,7 @@
     <dependency>
       <groupId>it.geosolutions.imageio-ext</groupId>
       <artifactId>imageio-ext-tiff</artifactId>
-      <version>1.1.13</version>
+      <version>1.1.17</version>
     </dependency>
     <!--
     This will need to be excluded from WEB-INF/lib during the package
