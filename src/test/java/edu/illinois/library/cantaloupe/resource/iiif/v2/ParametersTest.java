@@ -1,19 +1,21 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.operation.Format;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class ParametersTest {
+public class ParametersTest extends BaseTest {
 
     private static final float FUDGE = 0.00000001f;
 
     private Parameters params;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
         params = new Parameters("identifier", "full", "full", "0", "default",
                 "jpg");
     }

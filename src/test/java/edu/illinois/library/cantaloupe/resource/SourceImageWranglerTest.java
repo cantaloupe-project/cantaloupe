@@ -16,6 +16,7 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import org.apache.commons.io.IOUtils;
@@ -36,7 +37,7 @@ import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
-public class SourceImageWranglerTest {
+public class SourceImageWranglerTest extends BaseTest {
 
     private Identifier identifier = new Identifier("jpg-rgb-64x56x8-baseline.jpg");
 
@@ -60,9 +61,9 @@ public class SourceImageWranglerTest {
 
     @Before
     public void setUp() throws Exception {
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        super.setUp();
+
         Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
         config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
                 "FilesystemResolver");
         config.setProperty("FilesystemResolver.lookup_strategy",

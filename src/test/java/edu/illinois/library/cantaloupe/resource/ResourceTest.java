@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -16,9 +17,7 @@ import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.resource.ClientResource;
 
-import java.io.IOException;
-
-public abstract class ResourceTest {
+public abstract class ResourceTest extends BaseTest {
 
     protected static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";
 
@@ -26,13 +25,19 @@ public abstract class ResourceTest {
     protected WebServer webServer;
     protected Client client;
 
-    public static void resetConfiguration() throws IOException {
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
-        ConfigurationFactory.clearInstance();
+    /**
+     * Sets up the web server but does not start it, for the sake of
+     * performance. (Not all tests need it.)
+     *
+     * @throws Exception
+     */
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
 
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
-                "true");
+        //config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
+        //        "true");
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
@@ -43,17 +48,6 @@ public abstract class ResourceTest {
                 "BasicLookupStrategy");
         config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",
                 TestUtil.getFixturePath() + "/images/");
-    }
-
-    /**
-     * Sets up the web server but does not start it, for the sake of
-     * performance. (Not all tests need it.)
-     *
-     * @throws Exception
-     */
-    @Before
-    public void setUp() throws Exception {
-        resetConfiguration();
 
         webServer = StandaloneEntry.getWebServer();
         webServer.setHttpEnabled(true);
@@ -65,6 +59,7 @@ public abstract class ResourceTest {
 
     @After
     public void tearDown() throws Exception {
+        super.tearDown();
         client.stop();
         webServer.stop();
     }

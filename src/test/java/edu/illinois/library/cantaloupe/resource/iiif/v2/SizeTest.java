@@ -1,18 +1,20 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class SizeTest {
+public class SizeTest extends BaseTest {
 
     private static final float FUDGE = 0.0000001f;
 
     private Size size;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
         this.size = new Size();
     }
 

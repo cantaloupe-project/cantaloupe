@@ -1,11 +1,12 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.operation.Color;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class QualityTest {
+public class QualityTest extends BaseTest {
 
     @Test
     public void testValues() {

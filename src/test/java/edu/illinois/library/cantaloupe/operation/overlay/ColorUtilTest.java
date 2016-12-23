@@ -1,12 +1,13 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
 
 import java.awt.Color;
 
 import static org.junit.Assert.*;
 
-public class ColorUtilTest {
+public class ColorUtilTest extends BaseTest {
 
     @Test
     public void testFromString() {

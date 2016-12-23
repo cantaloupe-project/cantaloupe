@@ -1,10 +1,11 @@
 package edu.illinois.library.cantaloupe.util;
 
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class StringUtilTest {
+public class StringUtilTest extends BaseTest {
 
     @Test
     public void testRemoveTrailingZeroes() {

@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import org.junit.AfterClass;
@@ -12,7 +13,7 @@ import java.net.URL;
 
 import static org.junit.Assert.*;
 
-public class ImageOverlayCacheTest {
+public class ImageOverlayCacheTest extends BaseTest {
 
     private static WebServer webServer;
 

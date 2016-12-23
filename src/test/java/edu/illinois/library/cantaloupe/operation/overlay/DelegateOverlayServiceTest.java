@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.operation.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,13 +20,14 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class DelegateOverlayServiceTest {
+public class DelegateOverlayServiceTest extends BaseTest {
 
     private DelegateOverlayService instance;
 
     @Before
     public void setUp() throws Exception {
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        super.setUp();
+
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY, true);
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,

@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.operation.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +18,7 @@ import java.sql.PreparedStatement;
 
 import static org.junit.Assert.*;
 
-public class JdbcResolverTest {
+public class JdbcResolverTest extends BaseTest {
 
     private static final Identifier IDENTIFIER =
             new Identifier("jpg-rgb-64x56x8-baseline.jpg");
@@ -26,10 +27,10 @@ public class JdbcResolverTest {
 
     @Before
     public void setUp() throws Exception {
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        super.setUp();
+
         Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
-        // use an in-memory H2 database
+        // Use an in-memory H2 database.
         config.setProperty(JdbcResolver.JDBC_URL_CONFIG_KEY, "jdbc:h2:mem:test");
         config.setProperty(JdbcResolver.USER_CONFIG_KEY, "sa");
         config.setProperty(JdbcResolver.PASSWORD_CONFIG_KEY, "");
@@ -63,6 +64,7 @@ public class JdbcResolverTest {
 
     @Test
     public void tearDown() throws Exception {
+        super.tearDown();
         try (Connection conn = JdbcResolver.getConnection()) {
             String sql = "DROP TABLE items;";
             PreparedStatement statement = conn.prepareStatement(sql);

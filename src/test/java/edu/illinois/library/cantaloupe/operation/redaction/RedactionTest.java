@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.operation.redaction;
 
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -11,7 +12,7 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class RedactionTest {
+public class RedactionTest extends BaseTest {
 
     private Redaction instance;
 

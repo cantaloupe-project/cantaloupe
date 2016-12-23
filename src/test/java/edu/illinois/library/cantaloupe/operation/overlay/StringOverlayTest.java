@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -11,12 +12,14 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class StringOverlayTest {
+public class StringOverlayTest extends BaseTest {
 
     private StringOverlay instance;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
+
         instance = new StringOverlay("cats", Position.BOTTOM_RIGHT, 5,
                 new Font("Helvetica", Font.PLAIN, 12),
                 Color.blue, Color.red, 5f);

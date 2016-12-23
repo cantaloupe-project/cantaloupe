@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.operation.Orientation;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -21,18 +22,20 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
-public class TiffMetadataTest {
+public class TiffMetadataTest extends BaseTest {
 
     private ImageReader reader;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
         final Iterator<ImageReader> it = ImageIO.getImageReadersByFormatName("TIFF");
         reader = it.next();
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
+        super.tearDown();
         reader.dispose();
     }
 

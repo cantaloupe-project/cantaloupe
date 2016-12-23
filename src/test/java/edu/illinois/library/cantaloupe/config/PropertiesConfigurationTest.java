@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.config;
 
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -11,7 +12,7 @@ import java.util.NoSuchElementException;
 
 import static org.junit.Assert.*;
 
-public class PropertiesConfigurationTest {
+public class PropertiesConfigurationTest extends BaseTest {
 
     private PropertiesConfiguration instance;
 

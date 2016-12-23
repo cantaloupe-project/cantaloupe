@@ -1,19 +1,22 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class RegionTest {
+public class RegionTest extends BaseTest {
 
     private static final float FUDGE = 0.0000001f;
 
     private Region region;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
+
         region = new Region();
         region.setPercent(true);
         region.setX(20f);
@@ -260,7 +263,7 @@ public class RegionTest {
 
     @Test
     public void testSetX() {
-        Float x = new Float(50.0);
+        Float x = 50f;
         this.region.setX(x);
         assertEquals(x, this.region.getX());
     }
@@ -304,7 +307,6 @@ public class RegionTest {
         region.setPercent(true);
         region.setFull(false);
         Crop crop = region.toCrop();
-        final float fudge = 0.000001f;
         assertTrue(region.equals(crop));
     }
 

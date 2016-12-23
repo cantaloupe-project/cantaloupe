@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 import org.w3c.dom.Node;
@@ -25,7 +26,7 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
-public class PngImageWriterTest {
+public class PngImageWriterTest extends BaseTest {
 
     @Test
     public void testWriteWithBufferedImage() throws Exception {

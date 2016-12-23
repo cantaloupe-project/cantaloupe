@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -26,7 +27,7 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
-public class GifImageWriterTest {
+public class GifImageWriterTest extends BaseTest {
 
     private BufferedImage bufferedImage;
     private Metadata metadata;
@@ -36,6 +37,8 @@ public class GifImageWriterTest {
 
     @Before
     public void setUp() throws Exception {
+        super.setUp();
+
         final Configuration config = ConfigurationFactory.getInstance();
         // Disable metadata preservation (will be re-enabled in certain tests)
         config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, false);
@@ -54,6 +57,7 @@ public class GifImageWriterTest {
 
     @After
     public void tearDown() throws Exception {
+        super.tearDown();
         outputStream.close();
         tempFile.delete();
     }

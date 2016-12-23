@@ -21,11 +21,6 @@ import static org.junit.Assert.*;
 
 public class JaiProcessorTest extends ProcessorTest {
 
-    static {
-        System.setProperty("com.sun.media.jai.disableMediaLib", "true");
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
-    }
-
     private JaiProcessor instance;
 
     @Before

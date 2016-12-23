@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.operation.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
@@ -17,7 +18,7 @@ import org.restlet.data.Reference;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-public class HttpResolverTest {
+public class HttpResolverTest extends BaseTest {
 
     private static final Identifier IDENTIFIER =
             new Identifier("jpg-rgb-64x56x8-baseline.jpg");
@@ -27,12 +28,12 @@ public class HttpResolverTest {
 
     @Before
     public void setUp() throws Exception {
+        super.setUp();
+
         server = new WebServer();
         server.start();
 
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
         config.setProperty(HttpResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "BasicLookupStrategy");
         config.setProperty(HttpResolver.URL_PREFIX_CONFIG_KEY,
@@ -44,6 +45,7 @@ public class HttpResolverTest {
 
     @After
     public void tearDown() throws Exception {
+        super.tearDown();
         server.stop();
     }
 

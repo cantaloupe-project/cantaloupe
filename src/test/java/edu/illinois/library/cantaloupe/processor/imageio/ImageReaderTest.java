@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.processor.ReductionFactor;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -19,18 +20,20 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-public class ImageReaderTest {
+public class ImageReaderTest extends BaseTest {
 
     private ImageReader reader;
 
     @Before
     public void setUp() throws Exception {
+        super.setUp();
         reader = new ImageReader(
                 TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"), Format.JPG);
     }
 
     @After
     public void tearDown() throws Exception {
+        super.tearDown();
         reader.dispose();
     }
 

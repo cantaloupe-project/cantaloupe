@@ -6,13 +6,14 @@ import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class ImageInfoFactoryTest {
+public class ImageInfoFactoryTest extends BaseTest {
 
     private String imageUri;
     private ImageInfo info;
@@ -20,7 +21,8 @@ public class ImageInfoFactoryTest {
 
     @Before
     public void setUp() throws Exception {
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        super.setUp();
+
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
                 "Java2dProcessor");

@@ -3,17 +3,18 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.Format;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class ProcessorFactoryTest {
+public class ProcessorFactoryTest extends BaseTest {
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
         Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
         config.setProperty("GraphicsMagickProcessor.path_to_binaries", "/usr/local/bin");
         config.setProperty("ImageMagickProcessor.path_to_binaries", "/usr/local/bin");
     }

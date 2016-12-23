@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
@@ -11,8 +9,8 @@ import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.overlay.ImageOverlay;
 import edu.illinois.library.cantaloupe.operation.overlay.Position;
 import edu.illinois.library.cantaloupe.operation.overlay.StringOverlay;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
@@ -28,14 +26,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class Java2dUtilTest {
-
-    @Before
-    public void setUp() {
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
-        Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
-    }
+public class Java2dUtilTest extends BaseTest {
 
     @Test
     public void testApplyRedactions() throws Exception {

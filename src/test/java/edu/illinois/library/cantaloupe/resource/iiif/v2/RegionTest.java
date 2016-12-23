@@ -1,19 +1,22 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class RegionTest {
+public class RegionTest extends BaseTest {
 
     private static final float FUDGE = 0.0000001f;
 
     private Region region;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
+
         region = new Region();
         region.setType(Region.Type.PERCENT);
         region.setX(20f);

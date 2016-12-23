@@ -1,10 +1,11 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class IdentifierTest {
+public class IdentifierTest extends BaseTest {
 
     @Test
     public void testCompareTo() {

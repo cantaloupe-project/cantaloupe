@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -9,14 +10,16 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class CropTest {
+public class CropTest extends BaseTest {
 
     private static final float DELTA = 0.0000001f;
 
     private Crop crop;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
+
         crop = new Crop();
         assertEquals(Crop.Unit.PIXELS, crop.getUnit());
         assertEquals(0f, crop.getX(), DELTA);

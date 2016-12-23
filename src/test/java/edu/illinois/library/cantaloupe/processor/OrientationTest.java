@@ -1,11 +1,12 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.operation.Orientation;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class OrientationTest {
+public class OrientationTest extends BaseTest {
 
     @Test
     public void testGetDegrees() {

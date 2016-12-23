@@ -1,21 +1,18 @@
 package edu.illinois.library.cantaloupe;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class WebServerTest {
+public class WebServerTest extends BaseTest {
 
     private WebServer instance;
 
     @Before
-    public void setUp() {
-        Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
-
+    public void setUp() throws Exception {
+        super.setUp();
         instance = new WebServer();
     }
 

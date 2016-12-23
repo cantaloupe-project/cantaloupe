@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.operation.Orientation;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,12 +18,13 @@ import static org.junit.Assert.*;
  * This class is divided into two sections: one for ImageInfo and one for
  * ImageInfo.Image.
  */
-public class ImageInfoTest {
+public class ImageInfoTest extends BaseTest {
 
     private ImageInfo instance;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
         instance = new ImageInfo(100, 80, Format.JPG);
         instance.getImages().get(0).setOrientation(Orientation.ROTATE_270);
     }

@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
@@ -15,7 +16,7 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class ImageOverlayTest {
+public class ImageOverlayTest extends BaseTest {
 
     private ImageOverlay instance;
 

@@ -4,18 +4,13 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class ResolverFactoryTest {
-
-    @Before
-    public void setUp() {
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
-    }
+public class ResolverFactoryTest extends BaseTest {
 
     @Test
     public void testGetAllResolvers() {

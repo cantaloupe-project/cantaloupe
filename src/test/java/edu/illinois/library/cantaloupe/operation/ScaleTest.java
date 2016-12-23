@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.operation;
 
 import com.mortennobel.imagescaling.ResampleFilters;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -9,12 +10,14 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class ScaleTest {
+public class ScaleTest extends BaseTest {
 
     private Scale scale;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
+
         this.scale = new Scale();
     }
 

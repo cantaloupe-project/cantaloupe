@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.script;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -9,14 +10,13 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class RubyScriptEngineTest {
+public class RubyScriptEngineTest extends BaseTest {
 
-    RubyScriptEngine instance;
+    private RubyScriptEngine instance;
 
     @Before
-    public void setUp() {
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
-        ConfigurationFactory.clearInstance();
+    public void setUp() throws Exception {
+        super.setUp();
         instance = new RubyScriptEngine();
     }
 

@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.operation.Orientation;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 
@@ -15,7 +16,7 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
-public class BmpMetadataTest {
+public class BmpMetadataTest extends BaseTest {
 
     private BmpMetadata getInstance(String fixtureName)
             throws IOException {

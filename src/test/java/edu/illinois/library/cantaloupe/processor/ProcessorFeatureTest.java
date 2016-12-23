@@ -1,11 +1,12 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class ProcessorFeatureTest {
+public class ProcessorFeatureTest extends BaseTest {
 
     @Test
     public void testValues() {

@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.operation.Identifier;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -41,7 +42,7 @@ import static org.junit.Assert.*;
  * @see <a href="http://iiif.io/api/image/2.0/#image-information">IIIF Image
  * API 2.0</a>
  */
-public class Version2_0ConformanceTest {
+public class Version2_0ConformanceTest extends BaseTest {
 
     private static final Identifier IMAGE =
             new Identifier("jpg-rgb-64x56x8-baseline.jpg");
@@ -50,28 +51,6 @@ public class Version2_0ConformanceTest {
     private static Client client = new Client(new Context(), Protocol.HTTP);
 
     private WebServer webServer;
-
-    private static void resetConfiguration() {
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
-        Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
-        try {
-            File directory = new File(".");
-            String cwd = directory.getCanonicalPath();
-            Path fixturePath = Paths.get(cwd, "src", "test", "resources",
-                    "images");
-            config.setProperty("print_stack_trace_on_error_pages", false);
-            config.setProperty("http.port", PORT);
-            config.setProperty("processor.fallback", "Java2dProcessor");
-            config.setProperty("resolver.static", "FilesystemResolver");
-            config.setProperty("FilesystemResolver.lookup_strategy",
-                    "BasicLookupStrategy");
-            config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",
-                    fixturePath + File.separator);
-        } catch (Exception e) {
-            fail("Failed to get the configuration");
-        }
-    }
 
     private ClientResource getClientForUriPath(String path) {
         Reference url = new Reference(getBaseUri() + path);
@@ -87,7 +66,22 @@ public class Version2_0ConformanceTest {
 
     @Before
     public void setUp() throws Exception {
-        resetConfiguration();
+        super.setUp();
+
+        Configuration config = ConfigurationFactory.getInstance();
+        File directory = new File(".");
+        String cwd = directory.getCanonicalPath();
+        Path fixturePath = Paths.get(cwd, "src", "test", "resources",
+                "images");
+        config.setProperty("print_stack_trace_on_error_pages", false);
+        config.setProperty("http.port", PORT);
+        config.setProperty("processor.fallback", "Java2dProcessor");
+        config.setProperty("resolver.static", "FilesystemResolver");
+        config.setProperty("FilesystemResolver.lookup_strategy",
+                "BasicLookupStrategy");
+        config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",
+                fixturePath + File.separator);
+
         webServer = StandaloneEntry.getWebServer();
         webServer.setHttpEnabled(true);
         webServer.setHttpPort(PORT);
@@ -96,6 +90,7 @@ public class Version2_0ConformanceTest {
 
     @After
     public void tearDown() throws Exception {
+        super.tearDown();
         webServer.stop();
     }
 

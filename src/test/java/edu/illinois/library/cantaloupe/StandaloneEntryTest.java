@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -39,7 +40,7 @@ import java.nio.file.Paths;
 
 import static org.junit.Assert.*;
 
-public class StandaloneEntryTest {
+public class StandaloneEntryTest extends BaseTest {
 
     private static final int HTTP_PORT = TestUtil.getOpenPort();
 
@@ -51,23 +52,6 @@ public class StandaloneEntryTest {
     // http://stackoverflow.com/questions/6141252/dealing-with-system-exit0-in-junit-tests
     @Rule
     public final ExpectedSystemExit exit = ExpectedSystemExit.none();
-
-    private static void resetConfiguration() throws IOException {
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT,
-                TestUtil.getFixture("config.properties").getAbsolutePath());
-        System.setProperty(StandaloneEntry.TEST_VM_OPTION, "true");
-
-        ConfigurationFactory.clearInstance();
-        final Configuration config = ConfigurationFactory.getInstance();
-
-        config.setProperty(WebServer.HTTP_ENABLED_CONFIG_KEY, true);
-        config.setProperty(WebServer.HTTP_PORT_CONFIG_KEY, HTTP_PORT);
-        config.setProperty(WebServer.HTTPS_ENABLED_CONFIG_KEY, false);
-        config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
-                "FilesystemResolver");
-        config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
-                "Java2dProcessor");
-    }
 
     private ClientResource getClientResource() {
         final Reference url = new Reference("http://localhost:" + HTTP_PORT + "/");
@@ -97,13 +81,30 @@ public class StandaloneEntryTest {
 
     @Before
     public void setUp() throws Exception {
-        resetConfiguration();
+        super.setUp();
+
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT,
+                TestUtil.getFixture("config.properties").getAbsolutePath());
+        System.setProperty(StandaloneEntry.TEST_VM_OPTION, "true");
+
+        ConfigurationFactory.clearInstance();
+        final Configuration config = ConfigurationFactory.getInstance();
+
+        config.setProperty(WebServer.HTTP_ENABLED_CONFIG_KEY, true);
+        config.setProperty(WebServer.HTTP_PORT_CONFIG_KEY, HTTP_PORT);
+        config.setProperty(WebServer.HTTPS_ENABLED_CONFIG_KEY, false);
+        config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
+                "FilesystemResolver");
+        config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
+                "Java2dProcessor");
+
         httpClient = new Client(new Context(), Protocol.HTTP);
         httpClient.start();
     }
 
     @After
     public void tearDown() throws Exception {
+        super.tearDown();
         httpClient.stop();
         deleteCacheDir();
         System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
@@ -246,7 +247,6 @@ public class StandaloneEntryTest {
         final File infoDir = new File(cacheDir.getAbsolutePath() + "/info");
 
         // set up the cache
-        resetConfiguration();
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
                 "FilesystemCache");
@@ -301,7 +301,6 @@ public class StandaloneEntryTest {
         final File infoDir = new File(cacheDir.getAbsolutePath() + "/info");
 
         // set up the cache
-        resetConfiguration();
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
                 "FilesystemCache");

@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.cache;
 
 import com.amazonaws.services.s3.iterable.S3Objects;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.Format;
@@ -23,7 +24,7 @@ import java.io.OutputStream;
 
 import static org.junit.Assert.*;
 
-public class AmazonS3CacheTest {
+public class AmazonS3CacheTest extends BaseTest {
 
     private final int S3_UPLOAD_WAIT = 3000;
 
@@ -52,8 +53,7 @@ public class AmazonS3CacheTest {
 
     @Before
     public void setUp() throws Exception {
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
-        ConfigurationFactory.clearInstance();
+        super.setUp();
 
         final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(Cache.TTL_CONFIG_KEY, 2);

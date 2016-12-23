@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.operation.Format;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -10,12 +11,13 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-public class ImageWriterTest {
+public class ImageWriterTest extends BaseTest {
 
-    ImageWriter instance;
+    private ImageWriter instance;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
         instance = new ImageWriter(null);
     }
 

@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.script;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,13 +12,13 @@ import java.io.FileNotFoundException;
 
 import static org.junit.Assert.*;
 
-public class ScriptEngineFactoryTest {
+public class ScriptEngineFactoryTest extends BaseTest {
 
     @Before
     public void setUp() throws Exception {
+        super.setUp();
         ScriptEngineFactory.clearInstance();
-        ConfigurationFactory.clearInstance();
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
                 "true");

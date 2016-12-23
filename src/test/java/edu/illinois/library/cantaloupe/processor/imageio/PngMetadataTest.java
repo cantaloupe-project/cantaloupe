@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.operation.Orientation;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -19,7 +20,7 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
-public class PngMetadataTest {
+public class PngMetadataTest extends BaseTest {
 
     private PngMetadata getInstance(String fixtureName)
             throws IOException {

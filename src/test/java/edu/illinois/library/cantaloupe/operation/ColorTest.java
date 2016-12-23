@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
 
 import java.awt.Dimension;
@@ -7,7 +8,7 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class ColorTest {
+public class ColorTest extends BaseTest {
 
     @Test
     public void testValues() {

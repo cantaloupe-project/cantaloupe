@@ -1,10 +1,11 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class ReductionFactorTest {
+public class ReductionFactorTest extends BaseTest {
 
     @Test
     public void testForScale() {

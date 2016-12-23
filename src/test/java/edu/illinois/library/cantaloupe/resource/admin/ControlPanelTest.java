@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
@@ -21,7 +22,7 @@ import org.openqa.selenium.support.ui.Select;
 
 import static org.junit.Assert.*;
 
-public class ControlPanelTest {
+public class ControlPanelTest extends BaseTest {
 
     private static final int SLEEP_AFTER_SUBMIT = 600;
     private static final String username = "admin";
@@ -43,13 +44,13 @@ public class ControlPanelTest {
 
     @Before
     public void setUp() throws Exception {
+        super.setUp();
+
         org.apache.commons.configuration.Configuration testConfig =
                 TestUtil.getTestConfig();
         System.setProperty("webdriver.gecko.driver",
                 testConfig.getString(ConfigurationConstants.GECKO_WEBDRIVER.getKey()));
 
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
-        ConfigurationFactory.clearInstance();
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(WebApplication.ADMIN_SECRET_CONFIG_KEY, secret);
         config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
@@ -67,6 +68,7 @@ public class ControlPanelTest {
 
     @After
     public void tearDown() throws Exception {
+        super.tearDown();
         webServer.stop();
         webDriver.close();
     }

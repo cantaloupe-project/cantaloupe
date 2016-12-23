@@ -1,17 +1,17 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.operation.Format;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class ParametersTest {
-
-    private Parameters params;
+public class ParametersTest extends BaseTest {
 
     @Test
     public void testFromUri() {
-        params = Parameters.fromUri("bla/20,20,50,50/pct:90/15/native.jpg");
+        Parameters params =
+                Parameters.fromUri("bla/20,20,50,50/pct:90/15/native.jpg");
         assertEquals("bla", params.getIdentifier().toString());
         assertEquals("20,20,50,50", params.getRegion().toString());
         assertEquals(90f, params.getSize().getPercent(), 0.0000001f);

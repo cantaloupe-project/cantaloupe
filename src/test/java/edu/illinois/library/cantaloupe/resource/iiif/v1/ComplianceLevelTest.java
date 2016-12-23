@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -9,7 +10,7 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-public class ComplianceLevelTest {
+public class ComplianceLevelTest extends BaseTest {
 
     @Test
     public void testGetLevel() {

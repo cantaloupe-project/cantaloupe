@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.Crop;
@@ -27,17 +28,17 @@ import java.time.Instant;
 
 import static org.junit.Assert.*;
 
-public class JdbcCacheTest {
+public class JdbcCacheTest extends BaseTest {
 
     private static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";
 
-    JdbcCache instance;
+    private JdbcCache instance;
 
     @Before
     public void setUp() throws Exception {
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        super.setUp();
+
         Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
         // use an in-memory H2 database
         config.setProperty(JdbcCache.JDBC_URL_CONFIG_KEY, "jdbc:h2:mem:test");
         config.setProperty(JdbcCache.USER_CONFIG_KEY, "sa");

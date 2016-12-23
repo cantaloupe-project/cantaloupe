@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.operation.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.IOUtils;
@@ -27,7 +28,7 @@ import static org.junit.Assert.*;
 /**
  * Tests AzureStorageResolver against Azure Storage. Requires an AWS account).
  */
-public class AzureStorageResolverTest {
+public class AzureStorageResolverTest extends BaseTest {
 
     private static final String OBJECT_KEY = "jpeg.jpg";
 
@@ -92,8 +93,7 @@ public class AzureStorageResolverTest {
 
     @Before
     public void setUp() throws Exception {
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
-        ConfigurationFactory.clearInstance();
+        super.setUp();
 
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AzureStorageResolver.CONTAINER_NAME_CONFIG_KEY,

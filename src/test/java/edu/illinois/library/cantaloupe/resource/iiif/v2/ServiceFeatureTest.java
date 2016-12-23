@@ -1,10 +1,11 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class ServiceFeatureTest {
+public class ServiceFeatureTest extends BaseTest {
 
     @Test
     public void testValues() {

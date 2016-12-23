@@ -306,7 +306,6 @@ public class InformationResourceTest extends ResourceTest {
     public void testResolverProcessorCompatibility() throws Exception {
         webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
-        resetConfiguration();
         config.setProperty("resolver.static", "HttpResolver");
         config.setProperty("HttpResolver.lookup_strategy", "BasicLookupStrategy");
         config.setProperty("HttpResolver.BasicLookupStrategy.url_prefix",

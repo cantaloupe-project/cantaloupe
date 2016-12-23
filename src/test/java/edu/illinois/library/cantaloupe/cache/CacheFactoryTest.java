@@ -1,12 +1,13 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class CacheFactoryTest {
+public class CacheFactoryTest extends BaseTest {
 
     @Test
     public void testGetAllDerivativeCaches() {

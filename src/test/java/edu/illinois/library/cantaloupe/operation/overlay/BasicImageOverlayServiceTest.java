@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -10,16 +11,15 @@ import java.io.File;
 
 import static org.junit.Assert.*;
 
-public class BasicImageOverlayServiceTest {
+public class BasicImageOverlayServiceTest extends BaseTest {
 
     private BasicImageOverlayService instance;
 
     @Before
     public void setUp() throws Exception {
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        super.setUp();
+
         Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
-        // valid config options
         config.setProperty(OverlayService.ENABLED_CONFIG_KEY, true);
         config.setProperty(OverlayService.STRATEGY_CONFIG_KEY, "BasicStrategy");
         config.setProperty(BasicOverlayService.TYPE_CONFIG_KEY, "image");

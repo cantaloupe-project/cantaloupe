@@ -2,8 +2,7 @@ package edu.illinois.library.cantaloupe.operation;
 
 import static org.junit.Assert.*;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
@@ -15,7 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class OperationListTest {
+public class OperationListTest extends BaseTest {
 
     private OperationList ops;
 
@@ -33,13 +32,10 @@ public class OperationListTest {
     }
 
     @Before
-    public void setUp() {
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
-        Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
+    public void setUp() throws Exception {
+        super.setUp();
 
         ops = newOperationList();
-
         assertNotNull(ops.getOptions());
     }
 

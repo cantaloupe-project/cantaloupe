@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Format;
@@ -11,8 +10,8 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
@@ -29,15 +28,9 @@ import java.io.IOException;
 
 import static org.junit.Assert.*;
 
-public class JaiUtilTest {
+public class JaiUtilTest extends BaseTest {
 
     private static final String IMAGE = "images/jpg-rgb-64x56x8-baseline.jpg";
-
-    @Before
-    public void setUp() {
-        ConfigurationFactory.clearInstance();
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
-    }
 
     @Test
     public void testCropImage() throws Exception {

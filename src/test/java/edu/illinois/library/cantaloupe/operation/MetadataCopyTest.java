@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -8,12 +9,14 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class MetadataCopyTest {
+public class MetadataCopyTest extends BaseTest {
 
     private MetadataCopy instance;
 
     @Before
     public void setUp() throws Exception {
+        super.setUp();
+
         instance = new MetadataCopy();
     }
 

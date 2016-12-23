@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +20,7 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-public class ImageInfoFactoryTest {
+public class ImageInfoFactoryTest extends BaseTest {
 
     private Identifier identifier;
     private String imageUri;
@@ -28,9 +29,9 @@ public class ImageInfoFactoryTest {
 
     @Before
     public void setUp() throws Exception {
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        super.setUp();
+
         Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
         config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
                 "Java2dProcessor");
         config.setProperty(AbstractResource.MAX_PIXELS_CONFIG_KEY, 100);

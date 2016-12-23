@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.processor.ReductionFactor;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -16,18 +17,20 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-public class TiffImageReaderTest {
+public class TiffImageReaderTest extends BaseTest {
 
     private TiffImageReader reader;
 
     @Before
     public void setUp() throws Exception {
+        super.setUp();
         reader = new TiffImageReader(
                 TestUtil.getImage("tif-rgb-multires-64x56x16-tiled-uncompressed.tif"));
     }
 
     @After
     public void tearDown() throws Exception {
+        super.tearDown();
         reader.dispose();
     }
 

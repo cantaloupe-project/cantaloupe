@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -8,12 +9,13 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class TransposeTest {
+public class TransposeTest extends BaseTest {
 
     private Transpose transpose;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
         this.transpose = Transpose.HORIZONTAL;
     }
 

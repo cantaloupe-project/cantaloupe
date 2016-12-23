@@ -1,10 +1,11 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class PositionTest {
+public class PositionTest extends BaseTest {
 
     @Test
     public void testFromString() {

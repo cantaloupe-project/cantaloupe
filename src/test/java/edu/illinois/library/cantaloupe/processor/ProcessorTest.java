@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Format;
@@ -11,10 +9,10 @@ import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -31,19 +29,11 @@ import static org.junit.Assert.*;
 /**
  * Contains base tests common to all Processors.
  */
-public abstract class ProcessorTest {
+public abstract class ProcessorTest extends BaseTest {
 
     protected static final String IMAGE = "images/jpg-rgb-64x56x8-baseline.jpg";
 
-    @Before
-    public void setUp() throws Exception {
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
-        Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
-    }
-
-    protected Format getAnySupportedSourceFormat(Processor processor)
-            throws Exception {
+    Format getAnySupportedSourceFormat(Processor processor) throws Exception {
         for (Format format : Format.values()) {
             try {
                 processor.setSourceFormat(format);

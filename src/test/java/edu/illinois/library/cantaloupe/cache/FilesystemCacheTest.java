@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.Color;
@@ -27,16 +28,18 @@ import static edu.illinois.library.cantaloupe.cache.FilesystemCache.getRootInfoP
 import static edu.illinois.library.cantaloupe.cache.FilesystemCache.getRootSourceImagePathname;
 import static org.junit.Assert.*;
 
-public class FilesystemCacheTest {
+public class FilesystemCacheTest extends BaseTest {
 
-    File fixturePath;
-    File sourceImagePath;
-    File derivativeImagePath;
-    File infoPath;
-    FilesystemCache instance;
+    private File fixturePath;
+    private File sourceImagePath;
+    private File derivativeImagePath;
+    private File infoPath;
+    private FilesystemCache instance;
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws Exception {
+        super.setUp();
+
         fixturePath = new File(TestUtil.getTempFolder().getAbsolutePath() + "/cache");
         sourceImagePath = new File(fixturePath.getAbsolutePath() + "/source");
         derivativeImagePath = new File(fixturePath.getAbsolutePath() + "/image");
@@ -52,9 +55,7 @@ public class FilesystemCacheTest {
             throw new IOException("Failed to create folder: " + infoPath);
         }
 
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
         config.setProperty(FilesystemCache.DIRECTORY_DEPTH_CONFIG_KEY, 3);
         config.setProperty(FilesystemCache.DIRECTORY_NAME_LENGTH_CONFIG_KEY, 2);
         config.setProperty(FilesystemCache.PATHNAME_CONFIG_KEY,
@@ -74,7 +75,7 @@ public class FilesystemCacheTest {
     @Test
     public void testFilenameFor() {
         Identifier identifier = new Identifier("cats");
-        assertEquals("8ebf601f8b808c32b8d2fb570c2e0fbdbb388add",
+        assertEquals("0832c1202da8d382318e329a7c133ea0",
                 FilesystemCache.filenameFor(identifier));
     }
 

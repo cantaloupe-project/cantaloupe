@@ -4,6 +4,7 @@ import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.ListBlobItem;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.Format;
@@ -26,7 +27,7 @@ import java.net.URISyntaxException;
 
 import static org.junit.Assert.*;
 
-public class AzureStorageCacheTest {
+public class AzureStorageCacheTest extends BaseTest {
 
     private Identifier identifier = new Identifier("jpg-rgb-64x56x8-baseline.jpg");
     private ImageInfo imageInfo = new ImageInfo(64, 56, Format.JPG);
@@ -53,8 +54,7 @@ public class AzureStorageCacheTest {
 
     @Before
     public void setUp() throws Exception {
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
-        ConfigurationFactory.clearInstance();
+        super.setUp();
 
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(Cache.TTL_CONFIG_KEY, 1);

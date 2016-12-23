@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.EXIFParentTIFFTagSet;
@@ -26,7 +27,7 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
-public class TiffImageWriterTest {
+public class TiffImageWriterTest extends BaseTest {
 
     @Test
     public void testWriteWithBufferedImage() throws Exception {
