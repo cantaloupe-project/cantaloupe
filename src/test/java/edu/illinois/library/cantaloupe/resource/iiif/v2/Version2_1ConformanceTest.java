@@ -27,7 +27,7 @@ public class Version2_1ConformanceTest extends Version2_0ConformanceTest {
      */
     @Test
     public void testSquareRegion() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/full/0/default.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
@@ -44,7 +44,7 @@ public class Version2_1ConformanceTest extends Version2_0ConformanceTest {
      */
     @Test
     public void testMaxSize() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/max/0/color.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/max/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 

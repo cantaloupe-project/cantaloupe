@@ -1,25 +1,16 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.illinois.library.cantaloupe.StandaloneEntry;
 import edu.illinois.library.cantaloupe.WebApplication;
-import edu.illinois.library.cantaloupe.WebServer;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.operation.Identifier;
-import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
-import edu.illinois.library.cantaloupe.test.BaseTest;
-import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.After;
-import org.junit.Before;
+import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.junit.Test;
-import org.restlet.Client;
-import org.restlet.Context;
 import org.restlet.data.MediaType;
-import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
@@ -43,58 +34,13 @@ import static org.junit.Assert.*;
  * @see <a href="http://iiif.io/api/image/2.0/#image-information">IIIF Image
  * API 2.0</a>
  */
-public class Version2_0ConformanceTest extends BaseTest {
+public class Version2_0ConformanceTest extends ResourceTest {
 
     static final Identifier IMAGE =
             new Identifier("jpg-rgb-64x56x8-baseline.jpg");
-    private static final Integer PORT = TestUtil.getOpenPort();
 
-    private static Client client = new Client(new Context(), Protocol.HTTP);
-
-    private WebServer webServer;
-
-    ClientResource getClientForUriPath(String path) {
-        Reference url = new Reference(getBaseUri() + path);
-        ClientResource resource = new ClientResource(url);
-        resource.setNext(client);
-        return resource;
-    }
-
-    String getBaseUri() {
-        return "http://localhost:" + PORT +
-                WebApplication.IIIF_2_PATH;
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-
-        Configuration config = ConfigurationFactory.getInstance();
-        File directory = new File(".");
-        String cwd = directory.getCanonicalPath();
-        Path fixturePath = Paths.get(cwd, "src", "test", "resources",
-                "images");
-        config.setProperty("print_stack_trace_on_error_pages", false);
-        config.setProperty(WebServer.HTTP_PORT_CONFIG_KEY, PORT);
-        config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
-                "Java2dProcessor");
-        config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
-                "FilesystemResolver");
-        config.setProperty("FilesystemResolver.lookup_strategy",
-                "BasicLookupStrategy");
-        config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",
-                fixturePath + File.separator);
-
-        webServer = StandaloneEntry.getWebServer();
-        webServer.setHttpEnabled(true);
-        webServer.setHttpPort(PORT);
-        webServer.start();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
-        webServer.stop();
+    private String getBaseUri() {
+        return "http://localhost:" + PORT + WebApplication.IIIF_2_PATH;
     }
 
     /**
@@ -106,7 +52,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testBaseUriReturnsImageInfoViaHttp303() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE);
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE);
         client.setFollowingRedirects(false);
         client.get();
         assertEquals(Status.REDIRECTION_SEE_OTHER, client.getStatus());
@@ -135,11 +81,11 @@ public class Version2_0ConformanceTest extends BaseTest {
 
         // image endpoint
         String identifier = Reference.encode("images/" + IMAGE);
-        ClientResource client = getClientForUriPath("/" + identifier + "/full/full/0/default.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + identifier + "/full/full/0/default.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
         // information endpoint
-        client = getClientForUriPath("/" + identifier + "/info.json");
+        client = getClientForUriPath("/iiif/2/" + identifier + "/info.json");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
     }
@@ -151,7 +97,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testFullRegion() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/full/0/default.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
@@ -168,7 +114,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testAbsolutePixelRegion() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/20,20,100,100/full/0/color.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/20,20,100,100/full/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
@@ -186,7 +132,7 @@ public class Version2_0ConformanceTest extends BaseTest {
     @Test
     public void testPercentageRegion() throws IOException {
         // with ints
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/pct:20,20,50,50/full/0/color.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/pct:20,20,50,50/full/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
@@ -196,7 +142,7 @@ public class Version2_0ConformanceTest extends BaseTest {
         assertEquals(28, image.getHeight());
 
         // with floats
-        client = getClientForUriPath("/" + IMAGE + "/pct:20.2,20.6,50.2,50.6/full/0/color.jpg");
+        client = getClientForUriPath("/iiif/2/" + IMAGE + "/pct:20.2,20.6,50.2,50.6/full/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
@@ -216,7 +162,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testAbsolutePixelRegionLargerThanSource() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/0,0,99999,99999/full/0/color.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/0,0,99999,99999/full/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
@@ -236,7 +182,7 @@ public class Version2_0ConformanceTest extends BaseTest {
     @Test
     public void testPixelRegionOutOfBounds() throws IOException {
         // zero width/height
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/0,0,0,0/full/0/default.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/0,0,0,0/full/0/default.jpg");
         try {
             client.get();
             fail("Expected exception");
@@ -250,7 +196,7 @@ public class Version2_0ConformanceTest extends BaseTest {
         // (before any processing), which is unnecessarily expensive.
         /*
         // x/y out of bounds
-        client = getClientForUriPath("/" + IMAGE + "/99999,99999,50,50/full/0/default.jpg");
+        client = getClientForUriPath("/iiif/2/" + IMAGE + "/99999,99999,50,50/full/0/default.jpg");
         try {
             client.get();
             fail("Expected exception");
@@ -268,7 +214,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testBogusRegion() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/ca%20ioU/full/0/default.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/ca%20ioU/full/0/default.jpg");
         try {
             client.get();
             fail("Expected exception");
@@ -284,7 +230,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testFullSize() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/color.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/full/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
@@ -303,7 +249,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testSizeScaledToFitWidth() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/50,/0/color.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/50,/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
@@ -322,7 +268,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testSizeScaledToFitHeight() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/,50/0/color.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/,50/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
@@ -341,7 +287,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testSizeScaledToPercent() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/pct:50/0/color.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/pct:50/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
@@ -360,7 +306,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testAbsoluteWidthAndHeight() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/50,50/0/color.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/50,50/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
@@ -382,7 +328,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testSizeScaledToFitInside() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/20,20/0/default.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/20,20/0/default.jpg");
         client.get();
         Representation rep = client.getResponseEntity();
         BufferedImage image = ImageIO.read(rep.getStream());
@@ -398,7 +344,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testResultingWidthOrHeightIsZero() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/pct:0/15/color.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/pct:0/15/color.jpg");
         try {
             client.get();
             fail("Expected exception");
@@ -406,7 +352,7 @@ public class Version2_0ConformanceTest extends BaseTest {
             assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
         }
 
-        client = getClientForUriPath("/wide.jpg/full/3,0/15/color.jpg");
+        client = getClientForUriPath("/iiif/2/wide.jpg/full/3,0/15/color.jpg");
         try {
             client.get();
             fail("Expected exception");
@@ -423,7 +369,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testInvalidSize() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/cats/0/default.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/cats/0/default.jpg");
         try {
             client.get();
             fail("Expected exception");
@@ -433,7 +379,7 @@ public class Version2_0ConformanceTest extends BaseTest {
             client.release();
         }
 
-        client = getClientForUriPath("/" + IMAGE + "/full/cats,50/0/default.jpg");
+        client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/cats,50/0/default.jpg");
         try {
             client.get();
             fail("Expected exception");
@@ -443,7 +389,7 @@ public class Version2_0ConformanceTest extends BaseTest {
             client.release();
         }
 
-        client = getClientForUriPath("/" + IMAGE + "/full/50,cats/0/default.jpg");
+        client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/50,cats/0/default.jpg");
         try {
             client.get();
             fail("Expected exception");
@@ -453,7 +399,7 @@ public class Version2_0ConformanceTest extends BaseTest {
             client.release();
         }
 
-        client = getClientForUriPath("/" + IMAGE + "/full/cats,/0/default.jpg");
+        client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/cats,/0/default.jpg");
         try {
             client.get();
             fail("Expected exception");
@@ -463,7 +409,7 @@ public class Version2_0ConformanceTest extends BaseTest {
             client.release();
         }
 
-        client = getClientForUriPath("/" + IMAGE + "/full/,cats/0/default.jpg");
+        client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/,cats/0/default.jpg");
         try {
             client.get();
             fail("Expected exception");
@@ -473,7 +419,7 @@ public class Version2_0ConformanceTest extends BaseTest {
             client.release();
         }
 
-        client = getClientForUriPath("/" + IMAGE + "/full/!cats,50/0/default.jpg");
+        client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/!cats,50/0/default.jpg");
         try {
             client.get();
             fail("Expected exception");
@@ -491,7 +437,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testRotation() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/15.5/color.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/full/15.5/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
     }
@@ -503,7 +449,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testMirroredRotation() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/!15/color.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/full/!15/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
     }
@@ -516,7 +462,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testInvalidRotation() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/-15/default.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/full/-15/default.jpg");
         try {
             client.get();
             fail("Expected exception");
@@ -524,7 +470,7 @@ public class Version2_0ConformanceTest extends BaseTest {
             assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
         }
 
-        client = getClientForUriPath("/" + IMAGE + "/full/full/385/default.jpg");
+        client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/full/385/default.jpg");
         try {
             client.get();
             fail("Expected exception");
@@ -540,7 +486,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testColorQuality() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/color.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/full/0/color.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
     }
@@ -553,7 +499,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testGrayQuality() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/gray.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/full/0/gray.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
     }
@@ -566,7 +512,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testBitonalQuality() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/bitonal.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/full/0/bitonal.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
     }
@@ -579,7 +525,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testDefaultQuality() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/full/0/default.jpg");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
     }
@@ -592,7 +538,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testUnsupportedQuality() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/bogus.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/full/0/bogus.jpg");
         try {
             client.get();
             fail("Expected exception");
@@ -618,7 +564,7 @@ public class Version2_0ConformanceTest extends BaseTest {
     }
 
     private void testFormat(Format format) throws Exception {
-        ClientResource client = getClientForUriPath("/" + IMAGE +
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE +
                 "/full/full/0/default." + format.getPreferredExtension());
 
         // does the current processor support this output format?
@@ -647,7 +593,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testUnsupportedFormat() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.bogus");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/full/0/default.bogus");
         try {
             client.get();
             fail("Expected exception");
@@ -665,7 +611,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testCanonicalUriLinkHeader() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/full/full/0/default.jpg");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/full/0/default.jpg");
         client.get();
         assertEquals("<" + getBaseUri() + "/" + IMAGE +
                         "/full/full/0/default.jpg>;rel=\"canonical\"",
@@ -679,7 +625,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testInformationRequest() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/info.json");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
     }
@@ -692,7 +638,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testInformationRequestContentType() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/info.json");
         client.get();
         assertEquals("application/json; charset=UTF-8",
                 client.getResponse().getHeaders().getFirst("Content-Type").getValue());
@@ -707,13 +653,13 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testInformationRequestContentTypeJsonLd() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/info.json");
         client.accept(new MediaType("application/ld+json"));
         client.get();
         assertEquals("application/ld+json; charset=UTF-8",
                 client.getResponse().getHeaders().getFirst("Content-Type").getValue());
 
-        client = getClientForUriPath("/" + IMAGE + "/info.json");
+        client = getClientForUriPath("/iiif/2/" + IMAGE + "/info.json");
         client.accept(new MediaType("application/json"));
         client.get();
         assertEquals("application/json; charset=UTF-8",
@@ -730,7 +676,7 @@ public class Version2_0ConformanceTest extends BaseTest {
     public void testInformationRequestCorsHeader() throws IOException {
         /* TODO: possibly a restlet bug:
          http://restlet-discuss.1400322.n2.nabble.com/How-can-I-set-Origin-and-Access-Control-Request-Method-when-doing-a-request-td7579398.html
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/info.json");
         client.getRequest().getHeaders().set("Origin", "*");
         client.get();
         assertEquals("*", client.getResponse().getAccessControlAllowOrigin());
@@ -757,7 +703,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testInformationRequestEmptyJsonProperties() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/info.json");
         assertFalse(client.get().getText().contains("null"));
     }
 
@@ -769,7 +715,7 @@ public class Version2_0ConformanceTest extends BaseTest {
      */
     @Test
     public void testComplianceLevel() throws IOException {
-        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
+        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/info.json");
         String json = client.get().getText();
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
