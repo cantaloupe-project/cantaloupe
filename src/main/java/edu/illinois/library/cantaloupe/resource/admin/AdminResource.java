@@ -95,7 +95,7 @@ public class AdminResource extends AbstractResource {
     @Override
     protected void doInit() throws ResourceException {
         if (!ConfigurationFactory.getInstance().
-                getBoolean(CONTROL_PANEL_ENABLED_CONFIG_KEY, true)) {
+                getBoolean(CONTROL_PANEL_ENABLED_CONFIG_KEY, false)) {
             throw new EndpointDisabledException();
         }
         super.doInit();

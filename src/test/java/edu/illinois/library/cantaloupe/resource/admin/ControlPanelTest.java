@@ -52,6 +52,7 @@ public class ControlPanelTest extends BaseTest {
                 testConfig.getString(ConfigurationConstants.GECKO_WEBDRIVER.getKey()));
 
         Configuration config = ConfigurationFactory.getInstance();
+        config.setProperty(AdminResource.CONTROL_PANEL_ENABLED_CONFIG_KEY, true);
         config.setProperty(WebApplication.ADMIN_SECRET_CONFIG_KEY, secret);
         config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
                 "FilesystemResolver");
