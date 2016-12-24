@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.operation.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -62,7 +63,7 @@ public class JdbcResolverTest extends BaseTest {
         }
     }
 
-    @Test
+    @After
     public void tearDown() throws Exception {
         super.tearDown();
         try (Connection conn = JdbcResolver.getConnection()) {
