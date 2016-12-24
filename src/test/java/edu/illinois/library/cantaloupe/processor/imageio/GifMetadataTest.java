@@ -23,14 +23,16 @@ public class GifMetadataTest extends BaseTest {
 
     private GifMetadata newInstance(String fixtureName)
             throws IOException {
+        final File srcFile = TestUtil.getImage(fixtureName);
         final Iterator<ImageReader> it = ImageIO.getImageReadersByFormatName("GIF");
         final ImageReader reader = it.next();
-        final File srcFile = TestUtil.getImage(fixtureName);
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile)) {
             reader.setInput(is);
             final IIOMetadata metadata = reader.getImageMetadata(0);
             return new GifMetadata(metadata,
                     metadata.getNativeMetadataFormatName());
+        } finally {
+            reader.dispose();
         }
     }
 

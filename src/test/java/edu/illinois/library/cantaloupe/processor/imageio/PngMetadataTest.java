@@ -22,16 +22,17 @@ import static org.junit.Assert.*;
 
 public class PngMetadataTest extends BaseTest {
 
-    private PngMetadata getInstance(String fixtureName)
-            throws IOException {
+    private PngMetadata getInstance(String fixtureName) throws IOException {
+        final File srcFile = TestUtil.getImage(fixtureName);
         final Iterator<ImageReader> it = ImageIO.getImageReadersByFormatName("PNG");
         final ImageReader reader = it.next();
-        final File srcFile = TestUtil.getImage(fixtureName);
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile)) {
             reader.setInput(is);
             final IIOMetadata metadata = reader.getImageMetadata(0);
             return new PngMetadata(metadata,
                     metadata.getNativeMetadataFormatName());
+        } finally {
+            reader.dispose();
         }
     }
 
