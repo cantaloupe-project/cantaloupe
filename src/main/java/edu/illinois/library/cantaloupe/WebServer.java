@@ -45,7 +45,8 @@ public class WebServer {
     private String httpsKeyStorePath;
     private String httpsKeyStoreType;
     private int httpsPort;
-    private Server server;
+    private boolean isInitialized = false;
+    private Server server = new Server();
 
     static {
         // Tell Restlet to use SLF4J instead of java.util.logging. This needs
@@ -163,56 +164,52 @@ public class WebServer {
      * @throws Exception
      */
     public void start() throws Exception {
-        stop();
-        server = new Server();
+        if (!isInitialized) {
+            final WebAppContext context = new WebAppContext();
+            context.setContextPath("/");
+            context.setServer(server);
+            server.setHandler(context);
 
-        final WebAppContext context = new WebAppContext();
-        context.setContextPath("/");
-        context.setServer(server);
-        server.setHandler(context);
+            // Give the WebAppContext a different WAR to use depending on whether
+            // we are running standalone or from a WAR file.
+            final String warPath = StandaloneEntry.getWarFile().getAbsolutePath();
+            if (warPath.endsWith(".war")) {
+                context.setWar(warPath);
+            } else {
+                context.setWar("src/main/webapp");
+            }
 
-        // Give the WebAppContext a different WAR to use depending on whether
-        // we are running standalone or from a WAR file.
-        final String warPath = StandaloneEntry.getWarFile().getAbsolutePath();
-        if (warPath.endsWith(".war")) {
-            context.setWar(warPath);
-        } else {
-            context.setWar("src/main/webapp");
+            // Initialize the HTTP server
+            if (isHttpEnabled()) {
+                ServerConnector connector = new ServerConnector(server);
+                connector.setHost(getHttpHost());
+                connector.setPort(getHttpPort());
+                connector.setIdleTimeout(IDLE_TIMEOUT);
+                server.addConnector(connector);
+            }
+            // Initialize the HTTPS server
+            if (isHttpsEnabled()) {
+                HttpConfiguration httpsConfig = new HttpConfiguration();
+                httpsConfig.addCustomizer(new SecureRequestCustomizer());
+                SslContextFactory sslContextFactory = new SslContextFactory();
+
+                sslContextFactory.setKeyStorePath(getHttpsKeyStorePath());
+                sslContextFactory.setKeyStorePassword(getHttpsKeyStorePassword());
+                sslContextFactory.setKeyManagerPassword(getHttpsKeyPassword());
+                ServerConnector sslConnector = new ServerConnector(server,
+                        new SslConnectionFactory(sslContextFactory, "HTTP/1.1"),
+                        new HttpConnectionFactory(httpsConfig));
+                sslConnector.setHost(getHttpsHost());
+                sslConnector.setPort(getHttpsPort());
+                server.addConnector(sslConnector);
+            }
         }
-
-        // Initialize the HTTP server
-        if (isHttpEnabled()) {
-            ServerConnector connector = new ServerConnector(server);
-            connector.setHost(getHttpHost());
-            connector.setPort(getHttpPort());
-            connector.setIdleTimeout(IDLE_TIMEOUT);
-            server.addConnector(connector);
-        }
-        // Initialize the HTTPS server
-        if (isHttpsEnabled()) {
-            HttpConfiguration httpsConfig = new HttpConfiguration();
-            httpsConfig.addCustomizer(new SecureRequestCustomizer());
-            SslContextFactory sslContextFactory = new SslContextFactory();
-
-            sslContextFactory.setKeyStorePath(getHttpsKeyStorePath());
-            sslContextFactory.setKeyStorePassword(getHttpsKeyStorePassword());
-            sslContextFactory.setKeyManagerPassword(getHttpsKeyPassword());
-            ServerConnector sslConnector = new ServerConnector(server,
-                    new SslConnectionFactory(sslContextFactory, "HTTP/1.1"),
-                    new HttpConnectionFactory(httpsConfig));
-            sslConnector.setHost(getHttpsHost());
-            sslConnector.setPort(getHttpsPort());
-            server.addConnector(sslConnector);
-        }
-
+        isInitialized = true;
         server.start();
     }
 
     public void stop() throws Exception {
-        if (server != null) {
-            server.stop();
-            server = null;
-        }
+        server.stop();
     }
 
 }
