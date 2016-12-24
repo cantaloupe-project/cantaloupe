@@ -355,50 +355,61 @@ public class ImageResourceTest extends ResourceTest {
 
     private void doPurgeFromCacheWhenSourceIsMissing(boolean purgeMissing)
             throws Exception {
-        webServer.start();
-        File cacheFolder = TestUtil.getTempFolder();
-        cacheFolder = new File(cacheFolder.getAbsolutePath() + "/cache");
-        if (cacheFolder.exists()) {
-            FileUtils.cleanDirectory(cacheFolder);
+        // Create a directory that will contain a source image. Don't want to
+        // use the image fixtures dir because we'll need to delete one.
+        File sourceDir = TestUtil.getTempFolder();
+        sourceDir = new File(sourceDir.getAbsolutePath() + "/source");
+        if (sourceDir.exists()) {
+            FileUtils.cleanDirectory(sourceDir);
         } else {
-            cacheFolder.mkdir();
+            sourceDir.mkdir();
+        }
+
+        // Populate the source directory with an image.
+        File imageFixture = TestUtil.getImage(IMAGE);
+        File sourceImage = new File(sourceDir.getAbsolutePath() + "/" +
+                imageFixture.getName());
+        FileUtils.copyFile(imageFixture, sourceImage);
+
+        // Create the cache directory.
+        File cacheDir = TestUtil.getTempFolder();
+        cacheDir = new File(cacheDir.getAbsolutePath() + "/cache");
+        if (cacheDir.exists()) {
+            FileUtils.cleanDirectory(cacheDir);
+        } else {
+            cacheDir.mkdir();
         }
 
         final Configuration config = ConfigurationFactory.getInstance();
+        config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",
+                sourceDir.getAbsolutePath() + "/");
         config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
-                cacheFolder.getAbsolutePath());
-        config.setProperty(Cache.TTL_CONFIG_KEY, 10);
+                cacheDir.getAbsolutePath());
+        config.setProperty(Cache.TTL_CONFIG_KEY, 60);
         config.setProperty(Cache.RESOLVE_FIRST_CONFIG_KEY, true);
         config.setProperty(Cache.PURGE_MISSING_CONFIG_KEY, purgeMissing);
 
-        File tempImage = File.createTempFile("temp", ".jpg");
-        tempImage.delete();
-        File image = TestUtil.getImage(IMAGE);
         try {
             OperationList ops = TestUtil.newOperationList();
             ops.setIdentifier(new Identifier(IMAGE));
             ops.setOutputFormat(Format.JPG);
 
-            assertEquals(0, FileUtils.listFiles(cacheFolder, null, true).size());
+            assertEquals(0, FileUtils.listFiles(cacheDir, null, true).size());
 
             // request an image to cache it
             getClientForUriPath("/" + IMAGE + "/full/full/0/native.jpg").get();
             getClientForUriPath("/" + IMAGE + "/info.json").get();
 
             // assert that it has been cached
-            assertEquals(2, FileUtils.listFiles(cacheFolder, null, true).size());
+            assertEquals(2, FileUtils.listFiles(cacheDir, null, true).size());
             DerivativeCache cache = CacheFactory.getDerivativeCache();
             assertNotNull(cache.getImageInputStream(ops));
             assertNotNull(cache.getImageInfo(ops.getIdentifier()));
 
-            // move the source image out of the way
-            if (tempImage.exists()) {
-                tempImage.delete();
-            }
-            FileUtils.moveFile(image, tempImage);
-            assertFalse(image.exists());
+            // Delete the source image.
+            sourceImage.delete();
 
             // request the same image which is now cached but underlying is 404
             try {
@@ -416,10 +427,8 @@ public class ImageResourceTest extends ResourceTest {
                 assertNotNull(cache.getImageInfo(ops.getIdentifier()));
             }
         } finally {
-            FileUtils.deleteDirectory(cacheFolder);
-            if (tempImage.exists() && !image.exists()) {
-                FileUtils.moveFile(tempImage, image);
-            }
+            FileUtils.deleteDirectory(sourceDir);
+            FileUtils.deleteDirectory(cacheDir);
         }
     }
 
