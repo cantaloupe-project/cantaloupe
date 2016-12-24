@@ -19,13 +19,6 @@ import static org.junit.Assert.*;
  */
 public class LandingResourceTest extends ResourceTest {
 
-    @Before
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        webServer.start();
-    }
-
     @Test
     public void testEndpointDisabled() {
         Configuration config = ConfigurationFactory.getInstance();

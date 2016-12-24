@@ -37,8 +37,6 @@ public class APIResourceTest extends ResourceTest {
         config.setProperty(APIResource.ENABLED_CONFIG_KEY, true);
         config.setProperty(WebApplication.API_USERNAME_CONFIG_KEY, USERNAME);
         config.setProperty(WebApplication.API_SECRET_CONFIG_KEY, SECRET);
-
-        webServer.start();
     }
 
     /* doPurge() */

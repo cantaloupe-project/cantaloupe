@@ -13,7 +13,6 @@ public class LandingResourceTest extends ResourceTest {
 
     @Test
     public void testRootUri() throws Exception {
-        webServer.start();
         ClientResource client = getClientForUriPath("");
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());

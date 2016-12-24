@@ -37,8 +37,6 @@ public class AdminResourceTest extends ResourceTest {
 
         final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(WebApplication.ADMIN_SECRET_CONFIG_KEY, SECRET);
-
-        webServer.start();
     }
 
     @Test

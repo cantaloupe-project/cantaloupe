@@ -10,6 +10,8 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.operation.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -40,7 +42,6 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testCacheHeadersWhenClientCachingIsEnabled() throws Exception {
-        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.CLIENT_CACHE_ENABLED_CONFIG_KEY, "true");
         config.setProperty(AbstractResource.CLIENT_CACHE_MAX_AGE_CONFIG_KEY, "1234");
@@ -87,7 +88,6 @@ public class InformationResourceTest extends ResourceTest {
     @Test
     public void testCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInUrl()
             throws Exception {
-        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.CLIENT_CACHE_ENABLED_CONFIG_KEY, "true");
         config.setProperty(AbstractResource.CLIENT_CACHE_MAX_AGE_CONFIG_KEY, "1234");
@@ -108,7 +108,6 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testCacheHeadersWhenClientCachingIsDisabled() throws Exception {
-        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.CLIENT_CACHE_ENABLED_CONFIG_KEY, "false");
 
@@ -120,7 +119,6 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testCacheWhenDerviativeCachingIsEnabled() throws Exception {
-        webServer.start();
         File cacheFolder = TestUtil.getTempFolder();
         cacheFolder = new File(cacheFolder.getAbsolutePath() + "/cache");
         File infoCacheFolder = new File(cacheFolder.getAbsolutePath() + "/info");
@@ -154,7 +152,6 @@ public class InformationResourceTest extends ResourceTest {
     @Test
     public void testCacheWhenDerviativeCachingIsEnabledButNegativeCacheQueryArgumentIsSupplied()
             throws Exception {
-        webServer.start();
         File cacheFolder = TestUtil.getTempFolder();
         cacheFolder = new File(cacheFolder.getAbsolutePath() + "/cache");
         File infoCacheFolder = new File(cacheFolder.getAbsolutePath() + "/info");
@@ -187,7 +184,6 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testEndpointDisabled() throws Exception {
-        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.jpg");
@@ -297,7 +293,6 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testNotFound() throws Exception {
-        webServer.start();
         ClientResource client = getClientForUriPath("/invalid/info.json");
         try {
             client.get();
@@ -315,14 +310,15 @@ public class InformationResourceTest extends ResourceTest {
      */
     @Test
     public void testResolverProcessorCompatibility() throws Exception {
-        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty("resolver.static", "HttpResolver");
+        config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
+                "HttpResolver");
         config.setProperty("HttpResolver.lookup_strategy", "BasicLookupStrategy");
         config.setProperty("HttpResolver.BasicLookupStrategy.url_prefix",
                 webServer.getHttpHost() + ":" + webServer.getHttpPort() + "/");
         config.setProperty("processor.jp2", "KakaduProcessor");
-        config.setProperty("processor.fallback", "KakaduProcessor");
+        config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
+                "KakaduProcessor");
 
         ClientResource client = getClientForUriPath("/jp2/info.json");
         try {
@@ -335,7 +331,6 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testSlashSubstitution() throws Exception {
-        webServer.start();
         ConfigurationFactory.getInstance().setProperty("slash_substitute", "CATS");
 
         ClientResource client = getClientForUriPath("/subfolderCATSjpg/info.json");
@@ -345,7 +340,6 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testUnavailableSourceFormat() throws Exception {
-        webServer.start();
         ClientResource client = getClientForUriPath("/text.txt/info.json");
         try {
             client.get();
@@ -357,7 +351,6 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testUrisInJson() throws Exception {
-        webServer.start();
         ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
         client.get();
         String json = client.getResponse().getEntityAsText();
@@ -365,13 +358,12 @@ public class InformationResourceTest extends ResourceTest {
         @SuppressWarnings("unchecked")
         Map<String,Object> info =
                 (Map<String,Object>) mapper.readValue(json, TreeMap.class);
-        assertEquals("http://localhost:" + port +
+        assertEquals("http://localhost:" + PORT +
                 WebApplication.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
     }
 
     @Test
     public void testUrisInJsonWithBaseUriOverride() throws Exception {
-        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY,
                 "http://example.org/");
@@ -389,7 +381,6 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testUrisInJsonWithProxyHeaders() throws Exception {
-        webServer.start();
         ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
         client.getRequest().getHeaders().add("X-Forwarded-Proto", "HTTP");
         client.getRequest().getHeaders().add("X-Forwarded-Host", "example.org");
@@ -408,7 +399,6 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testBaseUriOverridesProxyHeaders() throws Exception {
-        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.BASE_URI_CONFIG_KEY,
                 "https://example.net/");

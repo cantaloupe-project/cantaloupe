@@ -10,6 +10,8 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.operation.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -40,7 +42,6 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testAuthorizationDelegateWithBooleanReturnValue() throws Exception {
-        webServer.start();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.jpg");
         client.get();
@@ -57,7 +58,6 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testAuthorizationDelegateWithHashReturnValue() throws Exception {
-        webServer.start();
         ClientResource client = getClientForUriPath("/redirect.jpg/full/full/0/default.jpg");
         client.setFollowingRedirects(false);
         client.get();
@@ -67,46 +67,53 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testBasicAuthentication() throws Exception {
-        webServer.start();
         final String username = "user";
         final String secret = "secret";
-        StandaloneEntry.getWebServer().stop();
+
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(WebApplication.BASIC_AUTH_ENABLED_CONFIG_KEY, "true");
-        config.setProperty(WebApplication.BASIC_AUTH_USERNAME_CONFIG_KEY, username);
-        config.setProperty(WebApplication.BASIC_AUTH_SECRET_CONFIG_KEY, secret);
-        StandaloneEntry.getWebServer().start();
-
-        // no credentials
-        ClientResource client = getClientForUriPath(
-                "/" + IMAGE + "/full/full/0/default.jpg");
         try {
-            client.get();
-            fail("Expected exception");
-        } catch (ResourceException e) {
-            assertEquals(Status.CLIENT_ERROR_UNAUTHORIZED, client.getStatus());
-        }
+            // To enable auth, the web server needs to be restarted.
+            // It will need to be restarted again to disable it.
+            config.setProperty(WebApplication.BASIC_AUTH_ENABLED_CONFIG_KEY, true);
+            config.setProperty(WebApplication.BASIC_AUTH_USERNAME_CONFIG_KEY, username);
+            config.setProperty(WebApplication.BASIC_AUTH_SECRET_CONFIG_KEY, secret);
+            webServer.stop();
+            webServer.start();
 
-        // invalid credentials
-        client.setChallengeResponse(
-                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, "invalid", "invalid"));
-        try {
-            client.get();
-            fail("Expected exception");
-        } catch (ResourceException e) {
-            assertEquals(Status.CLIENT_ERROR_UNAUTHORIZED, client.getStatus());
-        }
+            // no credentials
+            ClientResource client = getClientForUriPath(
+                    "/" + IMAGE + "/full/full/0/default.jpg");
+            try {
+                client.get();
+                fail("Expected exception");
+            } catch (ResourceException e) {
+                assertEquals(Status.CLIENT_ERROR_UNAUTHORIZED, client.getStatus());
+            }
 
-        // valid credentials
-        client.setChallengeResponse(
-                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, username, secret));
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
+            // invalid credentials
+            client.setChallengeResponse(
+                    new ChallengeResponse(ChallengeScheme.HTTP_BASIC, "invalid", "invalid"));
+            try {
+                client.get();
+                fail("Expected exception");
+            } catch (ResourceException e) {
+                assertEquals(Status.CLIENT_ERROR_UNAUTHORIZED, client.getStatus());
+            }
+
+            // valid credentials
+            client.setChallengeResponse(
+                    new ChallengeResponse(ChallengeScheme.HTTP_BASIC, username, secret));
+            client.get();
+            assertEquals(Status.SUCCESS_OK, client.getStatus());
+        } finally {
+            config.setProperty(WebApplication.BASIC_AUTH_ENABLED_CONFIG_KEY, false);
+            webServer.stop();
+            webServer.start();
+        }
     }
 
     @Test
     public void testCacheHeadersWhenClientCachingIsEnabled() throws Exception {
-        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.CLIENT_CACHE_ENABLED_CONFIG_KEY, "true");
         config.setProperty(AbstractResource.CLIENT_CACHE_MAX_AGE_CONFIG_KEY, "1234");
@@ -151,7 +158,6 @@ public class ImageResourceTest extends ResourceTest {
     @Test
     public void testCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInUrl()
             throws Exception {
-        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.CLIENT_CACHE_ENABLED_CONFIG_KEY, "true");
         config.setProperty(AbstractResource.CLIENT_CACHE_MAX_AGE_CONFIG_KEY, "1234");
@@ -172,7 +178,6 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testCacheHeadersWhenClientCachingIsDisabled() throws Exception {
-        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty("cache.client.enabled", "false");
 
@@ -184,7 +189,6 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testCacheWhenDerviativeCachingIsEnabled() throws Exception {
-        webServer.start();
         File cacheFolder = TestUtil.getTempFolder();
         cacheFolder = new File(cacheFolder.getAbsolutePath() + "/cache");
         File imageCacheFolder = new File(cacheFolder.getAbsolutePath() + "/image");
@@ -218,7 +222,6 @@ public class ImageResourceTest extends ResourceTest {
     @Test
     public void testCacheWhenDerviativeCachingIsEnabledButNegativeCacheQueryArgumentIsSupplied()
             throws Exception {
-        webServer.start();
         File cacheFolder = TestUtil.getTempFolder();
         cacheFolder = new File(cacheFolder.getAbsolutePath() + "/cache");
         File imageCacheFolder = new File(cacheFolder.getAbsolutePath() + "/image");
@@ -251,7 +254,6 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testContentDispositionHeader() throws Exception {
-        webServer.start();
         // no header
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.jpg");
@@ -278,7 +280,6 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testEndpointDisabled() throws Exception {
-        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.jpg");
@@ -307,7 +308,6 @@ public class ImageResourceTest extends ResourceTest {
      */
     @Test
     public void testLinkHeader() throws Exception {
-        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.jpg");
@@ -331,7 +331,6 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testMaxPixels() throws Exception {
-        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.png");
@@ -351,7 +350,6 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testMaxPixelsIgnoredWhenStreamingSource() throws Exception {
-        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.jpg");
@@ -362,7 +360,6 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testNotFound() throws Exception {
-        webServer.start();
         ClientResource client = getClientForUriPath("/invalid");
         try {
             client.get();
@@ -465,9 +462,7 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testGetRepresentationDisposition() throws Exception {
-        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
 
         final Identifier identifier = new Identifier("cats?/\\dogs");
         final Format outputFormat = Format.JPG;
@@ -507,14 +502,15 @@ public class ImageResourceTest extends ResourceTest {
      */
     @Test
     public void testResolverProcessorCompatibility() throws Exception {
-        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty("resolver.static", "HttpResolver");
+        config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
+                "HttpResolver");
         config.setProperty("HttpResolver.lookup_strategy", "BasicLookupStrategy");
         config.setProperty("HttpResolver.BasicLookupStrategy.url_prefix",
                 webServer.getHttpHost() + ":" + webServer.getHttpPort() + "/");
         config.setProperty("processor.jp2", "KakaduProcessor");
-        config.setProperty("processor.fallback", "KakaduProcessor");
+        config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
+                "KakaduProcessor");
 
         ClientResource client = getClientForUriPath("/jp2/full/full/0/default.jpg");
         try {
@@ -527,7 +523,6 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testRestrictToSizes() throws Exception {
-        webServer.start();
         Configuration config = ConfigurationFactory.getInstance();
 
         // not restricted
@@ -551,7 +546,6 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testSlashSubstitution() throws Exception {
-        webServer.start();
         ConfigurationFactory.getInstance().setProperty("slash_substitute", "CATS");
 
         ClientResource client = getClientForUriPath("/subfolderCATSjpg/full/full/0/default.jpg");
@@ -561,7 +555,6 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testUnavailableSourceFormat() throws Exception {
-        webServer.start();
         ClientResource client = getClientForUriPath("/text.txt/full/full/0/default.jpg");
         try {
             client.get();
@@ -573,7 +566,6 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testInvalidOutputFormat() throws Exception {
-        webServer.start();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.bogus");
         try {
@@ -586,7 +578,6 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testUnavailableOutputFormat() throws Exception {
-        webServer.start();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.webp");
         try {
