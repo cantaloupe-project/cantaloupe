@@ -11,13 +11,15 @@ import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.Select;
 
 import static org.junit.Assert.*;
@@ -28,8 +30,8 @@ public class ControlPanelTest extends BaseTest {
     private static final String username = "admin";
     private static final String secret = "secret";
 
-    private WebDriver webDriver;
-    private WebServer webServer;
+    private static WebDriver webDriver;
+    private static WebServer webServer;
 
     private WebElement css(String selector) {
         return webDriver.findElement(By.cssSelector(selector));
@@ -42,15 +44,36 @@ public class ControlPanelTest extends BaseTest {
                 WebApplication.ADMIN_PATH);
     }
 
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        BaseTest.beforeClass();
+
+        Configuration config = ConfigurationFactory.getInstance();
+        config.setProperty(AdminResource.CONTROL_PANEL_ENABLED_CONFIG_KEY, true);
+        config.setProperty(WebApplication.ADMIN_SECRET_CONFIG_KEY, secret);
+
+        webServer = StandaloneEntry.getWebServer();
+        webServer.setHttpEnabled(true);
+        webServer.setHttpPort(TestUtil.getOpenPort());
+        webServer.start();
+
+        System.setProperty("webdriver.gecko.driver",
+                TestUtil.getTestConfig().getString(ConfigurationConstants.GECKO_WEBDRIVER.getKey()));
+        DesiredCapabilities capabilities = DesiredCapabilities.firefox();
+        capabilities.setCapability("marionette", true);
+        webDriver = new FirefoxDriver(capabilities);
+    }
+
+    @AfterClass
+    public static void afterClass() throws Exception {
+        BaseTest.afterClass();
+        webServer.stop();
+        webDriver.close();
+    }
+
     @Before
     public void setUp() throws Exception {
         super.setUp();
-
-        org.apache.commons.configuration.Configuration testConfig =
-                TestUtil.getTestConfig();
-        System.setProperty("webdriver.gecko.driver",
-                testConfig.getString(ConfigurationConstants.GECKO_WEBDRIVER.getKey()));
-
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AdminResource.CONTROL_PANEL_ENABLED_CONFIG_KEY, true);
         config.setProperty(WebApplication.ADMIN_SECRET_CONFIG_KEY, secret);
@@ -59,37 +82,12 @@ public class ControlPanelTest extends BaseTest {
         config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
                 "Java2dProcessor");
 
-        webServer = StandaloneEntry.getWebServer();
-        webServer.setHttpEnabled(true);
-        webServer.setHttpPort(TestUtil.getOpenPort());
-        webServer.start();
-
-        webDriver = new FirefoxDriver();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
-        webServer.stop();
-        webDriver.close();
+        webDriver.get(getAdminUri());
     }
 
     @Test
-    public void testUi() throws Exception {
-        webDriver.get(getAdminUri());
-        testServerSection();
-        testEndpointsSection();
-        testResolverSection();
-        testProcessorsSection();
-        testCachesSection();
-        testOverlaysSection();
-        testMetadataSection();
-        testDelegateScriptSection();
-        testLoggingSection();
-    }
-
-    private void testServerSection() throws Exception {
-        css("#cl-server-button").click();
+    public void testServerSection() throws Exception {
+        css("#cl-http-button").click();
 
         // Fill in the form
         css("[name=\"http.enabled\"]").click();
@@ -109,7 +107,7 @@ public class ControlPanelTest extends BaseTest {
         css("[name=\"print_stack_trace_on_error_pages\"]").click();
 
         // Submit the form
-        css("#cl-server input[type=\"submit\"]").click();
+        css("#cl-http input[type=\"submit\"]").click();
 
         Thread.sleep(SLEEP_AFTER_SUBMIT);
 
@@ -132,7 +130,8 @@ public class ControlPanelTest extends BaseTest {
         assertTrue(config.getBoolean("print_stack_trace_on_error_pages"));
     }
 
-    private void testEndpointsSection() throws Exception {
+    @Test
+    public void testEndpointsSection() throws Exception {
         css("#cl-endpoints-button").click();
 
         // Fill in the form
@@ -166,7 +165,8 @@ public class ControlPanelTest extends BaseTest {
         assertEquals("dogs", config.getString("endpoint.api.secret"));
     }
 
-    private void testResolverSection() throws Exception {
+    @Test
+    public void testResolverSection() throws Exception {
         css("#cl-resolver-button").click();
 
         // Fill in the form
@@ -263,7 +263,8 @@ public class ControlPanelTest extends BaseTest {
         assertEquals("5", config.getString("JdbcResolver.connection_timeout"));
     }
 
-    private void testProcessorsSection() throws Exception {
+    @Test
+    public void testProcessorsSection() throws Exception {
         css("#cl-processors-button").click();
 
         // Fill in the form
@@ -395,7 +396,8 @@ public class ControlPanelTest extends BaseTest {
         assertEquals("0.2", config.getString("PdfBoxProcessor.sharpen"));
     }
 
-    private void testCachesSection() throws Exception {
+    @Test
+    public void testCachesSection() throws Exception {
         css("#cl-caches-button").click();
 
         // Fill in the form
@@ -494,7 +496,8 @@ public class ControlPanelTest extends BaseTest {
         assertEquals("box", config.getString("JdbcCache.info_table"));
     }
 
-    private void testOverlaysSection() throws Exception {
+    @Test
+    public void testOverlaysSection() throws Exception {
         css("#cl-overlays-button").click();
 
         // Fill in the form
@@ -511,7 +514,7 @@ public class ControlPanelTest extends BaseTest {
         css("[name=\"overlays.BasicStrategy.image\"]").sendKeys("/image.png");
         css("[name=\"overlays.BasicStrategy.string\"]").sendKeys("cats");
         new Select(css("[name=\"overlays.BasicStrategy.string.font\"]")).
-                selectByValue("Helvetica");
+                selectByVisibleText("Helvetica");
         css("[name=\"overlays.BasicStrategy.string.font_size\"]").sendKeys("13");
         css("[name=\"overlays.BasicStrategy.string.color\"]").sendKeys("#d0d0d0");
         css("[name=\"overlays.BasicStrategy.string.stroke.color\"]").sendKeys("#e0e0e0");
@@ -554,7 +557,8 @@ public class ControlPanelTest extends BaseTest {
         assertTrue(config.getBoolean("redaction.enabled"));
     }
 
-    private void testMetadataSection() throws Exception {
+    @Test
+    public void testMetadataSection() throws Exception {
         css("#cl-metadata-button").click();
 
         // Fill in the form
@@ -570,7 +574,8 @@ public class ControlPanelTest extends BaseTest {
         assertTrue(config.getBoolean("metadata.preserve"));
     }
 
-    private void testDelegateScriptSection() throws Exception {
+    @Test
+    public void testDelegateScriptSection() throws Exception {
         css("#cl-delegate-script-button").click();
 
         // Fill in the form
@@ -592,7 +597,8 @@ public class ControlPanelTest extends BaseTest {
         assertEquals("12345", config.getString("delegate_script.cache.max_size"));
     }
 
-    private void testLoggingSection() throws Exception {
+    @Test
+    public void testLoggingSection() throws Exception {
         css("#cl-logging-button").click();
 
         // Fill in the form
