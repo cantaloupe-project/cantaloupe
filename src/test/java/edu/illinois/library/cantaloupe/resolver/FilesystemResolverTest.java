@@ -135,26 +135,12 @@ public class FilesystemResolverTest extends BaseTest {
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(FilesystemResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
-
-        // valid, present script
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
                 "true");
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         assertEquals("/bla/" + IDENTIFIER,
                 instance.getPathname(File.separator));
-
-        // missing script
-        try {
-            config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
-                    "true");
-            config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
-                    TestUtil.getFixture("bogus.rb").getAbsolutePath());
-            instance.getPathname(File.separator);
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        }
     }
 
     @Test
