@@ -2601,7 +2601,7 @@
                                     </td>
                                     <td>
                                         <input type="number" class="form-control"
-                                               name="overlays.BasicStrategy.string.font_size"
+                                               name="overlays.BasicStrategy.string.font.size"
                                                min="0"
                                                data-requires-restart="false">
                                     </td>

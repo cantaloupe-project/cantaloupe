@@ -14,7 +14,7 @@ class BasicStringOverlayService extends BasicOverlayService {
     static final String FONT_CONFIG_KEY =
             "overlays.BasicStrategy.string.font";
     static final String FONT_SIZE_CONFIG_KEY =
-            "overlays.BasicStrategy.string.font_size";
+            "overlays.BasicStrategy.string.font.size";
     static final String STRING_CONFIG_KEY =
             "overlays.BasicStrategy.string";
     static final String STROKE_COLOR_CONFIG_KEY =

@@ -515,7 +515,7 @@ public class ControlPanelTest extends BaseTest {
         css("[name=\"overlays.BasicStrategy.string\"]").sendKeys("cats");
         new Select(css("[name=\"overlays.BasicStrategy.string.font\"]")).
                 selectByVisibleText("Helvetica");
-        css("[name=\"overlays.BasicStrategy.string.font_size\"]").sendKeys("13");
+        css("[name=\"overlays.BasicStrategy.string.font.size\"]").sendKeys("13");
         css("[name=\"overlays.BasicStrategy.string.color\"]").sendKeys("#d0d0d0");
         css("[name=\"overlays.BasicStrategy.string.stroke.color\"]").sendKeys("#e0e0e0");
         css("[name=\"overlays.BasicStrategy.string.stroke.width\"]").sendKeys("5");
@@ -547,7 +547,7 @@ public class ControlPanelTest extends BaseTest {
         assertEquals("Helvetica",
                 config.getString("overlays.BasicStrategy.string.font"));
         assertEquals("13",
-                config.getString("overlays.BasicStrategy.string.font_size"));
+                config.getString("overlays.BasicStrategy.string.font.size"));
         assertEquals("#d0d0d0",
                 config.getString("overlays.BasicStrategy.string.color"));
         assertEquals("#e0e0e0",

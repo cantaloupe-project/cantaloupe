@@ -557,7 +557,7 @@ overlays.BasicStrategy.string = Copyright \u00A9️ My Great Organization\nAll r
 overlays.BasicStrategy.string.font = Helvetica
 
 # Font size in points.
-overlays.BasicStrategy.string.font_size = 18
+overlays.BasicStrategy.string.font.size = 18
 
 # Color name, rgb(r,g,b), and #rrggbb syntax are supported.
 overlays.BasicStrategy.string.color = white
