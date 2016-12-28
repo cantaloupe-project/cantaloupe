@@ -1,10 +1,7 @@
 ###########################################################################
 # Sample Cantaloupe configuration file
 #
-# Copy this file to `cantaloupe.properties` and edit as desired. Then,
-# run with the `-Dcantaloupe.config=cantaloupe.properties` argument:
-#
-# java -Dcantaloupe.config=cantaloupe.properties -jar Cantaloupe-x.x.jar
+# Copy this file to `cantaloupe.properties` and edit as desired.
 #
 # Most changes will take effect without restarting. Those that won't are
 # marked with "!!".
@@ -53,7 +50,6 @@ slash_substitute =
 # Maximum number of pixels to return in a response, to prevent overloading
 # the server. Requests for more pixels than this will receive an error
 # response. Set to 0 for no maximum.
-# Note: this is ignored when requesting an unmodified source image.
 max_pixels = 400000000
 
 # Sometimes helpful.
@@ -76,7 +72,8 @@ delegate_script.pathname = delegates.rb
 # return values in memory. See the user manual for more information.
 delegate_script.cache.enabled = false
 
-# !! Maximum size of the cache. This is a pretty much a wild guess.
+# !! Maximum size of the invocation cache. This is pretty much a wild
+# guess.
 delegate_script.cache.max_size = 1000000
 
 ###########################################################################
@@ -127,7 +124,7 @@ resolver.delegate = false
 
 # Tells FilesystemResolver how to look up files. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
-# uses the delegate script for dynamic lookups--see the user manual for
+# uses the delegate script for dynamic lookups; see the user manual for
 # details.
 FilesystemResolver.lookup_strategy = BasicLookupStrategy
 
@@ -145,7 +142,7 @@ FilesystemResolver.BasicLookupStrategy.path_suffix =
 
 # Tells HttpResolver how to look up resources. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
-# uses the delegate script for dynamic lookups--see the user manual for
+# uses the delegate script for dynamic lookups; see the user manual for
 # details.
 HttpResolver.lookup_strategy = BasicLookupStrategy
 
@@ -165,8 +162,8 @@ HttpResolver.auth.basic.secret =
 # JdbcResolver
 #----------------------------------------
 
-# Note: JdbcResolver requires some delegate script methods to be implemented
-# in addition to the configuration here. See the user manual.
+# Note: JdbcResolver requires some delegate methods to be implemented in
+# addition to the configuration here; see the user manual.
 
 # !!
 JdbcResolver.url = jdbc:postgresql://localhost:5432/my_database
@@ -196,7 +193,7 @@ AmazonS3Resolver.bucket.region =
 
 # Tells AmazonS3Resolver how to look up objects. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
-# uses the delegate script for dynamic lookups--see the user manual for
+# uses the delegate script for dynamic lookups; see the user manual for
 # details.
 AmazonS3Resolver.lookup_strategy = BasicLookupStrategy
 
@@ -215,7 +212,7 @@ AzureStorageResolver.container_name =
 
 # Tells AzureStorageResolver how to look up objects. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
-# uses the delegate script for dynamic lookups--see the user manual for
+# uses the delegate script for dynamic lookups; see the user manual for
 # details.
 AzureStorageResolver.lookup_strategy = BasicLookupStrategy
 
@@ -432,7 +429,7 @@ cache.source =
 cache.derivative =
 
 # Time before a cached image becomes stale and needs to be reloaded. Set to
-# blank or 0 for "never."
+# blank or 0 for infinite.
 cache.server.ttl_seconds = 2592000
 
 # If true, when a resolver reports that the requested source image has gone
@@ -466,7 +463,7 @@ FilesystemCache.pathname = /var/cache/cantaloupe
 FilesystemCache.dir.depth = 3
 
 # Number of characters in hierarchy directory names. Should be set to
-# 16^n < {max number of directory entries your filesystem can deal with}.
+# 16^n < (max number of directory entries your filesystem can deal with).
 # Purge the cache after changing this.
 FilesystemCache.dir.name_length = 2
 
@@ -532,12 +529,12 @@ overlays.enabled = false
 
 # Specifies how overlays are configured. `BasicStrategy` will use the
 # `overlays.BasicStrategy.*` keys in this section. `ScriptStrategy` will
-# use the `overlay` delegate script method. See the user manual for more
+# use the `overlay` delegate method. See the user manual for more
 # information.
 overlays.strategy = BasicStrategy
 
-# `string` or `image`.
-overlays.BasicStrategy.type = string
+# `image` or `string`.
+overlays.BasicStrategy.type = image
 
 # Absolute path or URL of the overlay image. Must be a PNG file.
 overlays.BasicStrategy.image = /path/to/overlay.png
