@@ -64,8 +64,6 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     static final String CONNECTION_TIMEOUT_CONFIG_KEY =
             "JdbcResolver.connection_timeout";
     static final String JDBC_URL_CONFIG_KEY = "JdbcResolver.url";
-    static final String MAX_POOL_SIZE_CONFIG_KEY =
-            "JdbcResolver.max_pool_size";
     static final String PASSWORD_CONFIG_KEY = "JdbcResolver.password";
     static final String USER_CONFIG_KEY = "JdbcResolver.user";
 
@@ -91,7 +89,8 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
                     getString(JDBC_URL_CONFIG_KEY, "");
             final int connectionTimeout = 1000 *
                     config.getInt(CONNECTION_TIMEOUT_CONFIG_KEY, 10);
-            final int maxPoolSize = config.getInt(MAX_POOL_SIZE_CONFIG_KEY, 10);
+            final int maxPoolSize =
+                    Runtime.getRuntime().availableProcessors() * 2 + 1;
             final String user = config.getString(USER_CONFIG_KEY, "");
             final String password = config.getString(PASSWORD_CONFIG_KEY, "");
 

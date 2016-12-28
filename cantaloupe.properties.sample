@@ -175,10 +175,6 @@ JdbcResolver.user = postgres
 # !!
 JdbcResolver.password = postgres
 
-# !! Maximum number of connections allowed in the connection pool. A good
-# starting point is (number of CPU cores * 2) + 1.
-JdbcResolver.max_pool_size = 9
-
 # !! Connection timeout in seconds.
 JdbcResolver.connection_timeout = 10
 

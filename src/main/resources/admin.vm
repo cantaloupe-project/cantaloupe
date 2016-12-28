@@ -943,22 +943,6 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Max Pool Size
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Maximum number of connections allowed
-                                                   in the connection pool. A good starting point is (number
-                                                   of CPU cores * 2) + 1.">?</a>
-                                            </td>
-                                            <td>
-                                                <input class="form-control" type="number"
-                                                       name="JdbcResolver.max_pool_size"
-                                                       min="1" max="200"
-                                                       data-requires-restart="true">
-                                            </td>
-                                        </tr>
-                                        <tr>
                                             <td>Connection Timeout (seconds)</td>
                                             <td>
                                                 <input class="form-control" type="number"

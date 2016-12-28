@@ -211,7 +211,6 @@ public class ControlPanelTest extends BaseTest {
         css("[name=\"JdbcResolver.url\"]").sendKeys("cats://dogs");
         css("[name=\"JdbcResolver.user\"]").sendKeys("user");
         css("[name=\"JdbcResolver.password\"]").sendKeys("password");
-        css("[name=\"JdbcResolver.max_pool_size\"]").sendKeys("4");
         css("[name=\"JdbcResolver.connection_timeout\"]").sendKeys("5");
 
         // Submit the form
@@ -259,7 +258,6 @@ public class ControlPanelTest extends BaseTest {
         assertEquals("cats://dogs", config.getString("JdbcResolver.url"));
         assertEquals("user", config.getString("JdbcResolver.user"));
         assertEquals("password", config.getString("JdbcResolver.password"));
-        assertEquals("4", config.getString("JdbcResolver.max_pool_size"));
         assertEquals("5", config.getString("JdbcResolver.connection_timeout"));
     }
 
