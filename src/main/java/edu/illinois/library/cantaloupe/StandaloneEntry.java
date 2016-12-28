@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.net.URL;
 import java.security.ProtectionDomain;
@@ -17,12 +18,27 @@ import java.security.ProtectionDomain;
 public class StandaloneEntry {
 
     /**
+     * <p>When provided (no value required), a list of available fonts will be
+     * printed to stdout.</p>
+     *
+     * <p>The main reason this is a VM option and not a command-line argument
+     * is that, due to the way the application is packaged, this class needs to
+     * have as few dependencies as possible. All of the other would-be
+     * arguments are VM options too, so let's preserve uniformity.</p>
+     */
+    static String LIST_FONTS_VM_OPTION = "cantaloupe.list_fonts";
+
+    /**
      * When set to "true", calls to {@link System#exit} will be disabled,
-     * essential for testing output-to-console-followed-by-exit.
+     * necessary for testing output-to-console-followed-by-exit.
      */
     static String TEST_VM_OPTION = "cantaloupe.test";
 
     private static WebServer webServer;
+
+    static {
+        System.setProperty("java.awt.headless", "true");
+    }
 
     /**
      * Calls {@link System#exit(int)} unless {@link #isTesting()} returns
@@ -61,6 +77,15 @@ public class StandaloneEntry {
      * @throws Exception If there is a problem starting the web server.
      */
     public static void main(String[] args) throws Exception {
+        if (System.getProperty(LIST_FONTS_VM_OPTION) != null) {
+            GraphicsEnvironment ge =
+                    GraphicsEnvironment.getLocalGraphicsEnvironment();
+            for (String family : ge.getAvailableFontFamilyNames()) {
+                System.out.println(family);
+            }
+            exitUnlessTesting(0);
+        }
+
         final Configuration config = ConfigurationFactory.getInstance();
         if (config == null) {
             printUsage();
@@ -115,9 +140,21 @@ public class StandaloneEntry {
      * @return Program usage.
      */
     static String usage() {
-        return "Usage: java " +
-                "-D" + ConfigurationFactory.CONFIG_VM_ARGUMENT +
-                "=cantaloupe.properties -jar " + getWarFile().getName();
+        return "Usage: java <VM options> -jar " + getWarFile().getName() + "\n" +
+                "\n" +
+                "Options:\n" +
+                "-D" + ConfigurationFactory.CONFIG_VM_ARGUMENT + "=<config>" +
+                "           Configuration file (REQUIRED)\n" +
+                "-D" + EntryServlet.PURGE_CACHE_VM_ARGUMENT +
+                "               Purge the cache (optional)\n" +
+                "-D" + EntryServlet.PURGE_CACHE_VM_ARGUMENT + "=<identifier>" +
+                "  Purge items related to an identifier from the cache (optional)\n" +
+                "-D" + EntryServlet.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT +
+                "       Purge expired items from the cache (optional)\n" +
+                "-D" + EntryServlet.CLEAN_CACHE_VM_ARGUMENT +
+                "               Clean the cache (optional)\n" +
+                "-D" + StandaloneEntry.LIST_FONTS_VM_OPTION +
+                "                List fonts (optional)";
     }
 
 }

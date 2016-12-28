@@ -111,9 +111,20 @@ public class StandaloneEntryTest extends BaseTest {
         System.clearProperty(EntryServlet.CLEAN_CACHE_VM_ARGUMENT);
         System.clearProperty(EntryServlet.PURGE_CACHE_VM_ARGUMENT);
         System.clearProperty(EntryServlet.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT);
+        System.clearProperty(StandaloneEntry.LIST_FONTS_VM_OPTION);
     }
 
-    // missing config VM option
+    // list fonts
+
+    @Test
+    public void testMainWithListFontsOption() throws Exception {
+        redirectOutput();
+        System.setProperty(StandaloneEntry.LIST_FONTS_VM_OPTION, "");
+        StandaloneEntry.main(new String[] {});
+        assertTrue(systemOutput.toString().contains("Times"));
+    }
+
+    // missing config
 
     @Test
     public void testMainWithMissingConfigOptionPrintsUsage() throws Exception {
