@@ -42,12 +42,16 @@ import static org.junit.Assert.*;
 
 public class StandaloneEntryTest extends BaseTest {
 
+    private static final PrintStream CONSOLE_OUTPUT = System.out;
+    private static final PrintStream CONSOLE_ERROR = System.err;
     private static final int HTTP_PORT = TestUtil.getOpenPort();
 
     private Client httpClient;
 
-    private final ByteArrayOutputStream systemOutput = new ByteArrayOutputStream();
-    private final ByteArrayOutputStream systemError = new ByteArrayOutputStream();
+    private final ByteArrayOutputStream redirectedOutput =
+            new ByteArrayOutputStream();
+    private final ByteArrayOutputStream redirectedError =
+            new ByteArrayOutputStream();
 
     // http://stackoverflow.com/questions/6141252/dealing-with-system-exit0-in-junit-tests
     @Rule
@@ -75,8 +79,13 @@ public class StandaloneEntryTest extends BaseTest {
      * Redirects stdout/stderr output to byte arrays for analysis.
      */
     private void redirectOutput() {
-        System.setOut(new PrintStream(systemOutput));
-        System.setErr(new PrintStream(systemError));
+        System.setOut(new PrintStream(redirectedOutput));
+        System.setErr(new PrintStream(redirectedError));
+    }
+
+    private void resetOutput() {
+        System.setOut(CONSOLE_OUTPUT);
+        System.setOut(CONSOLE_ERROR);
     }
 
     @Before
@@ -105,6 +114,7 @@ public class StandaloneEntryTest extends BaseTest {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+        StandaloneEntry.getWebServer().stop();
         httpClient.stop();
         deleteCacheDir();
         System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
@@ -112,6 +122,7 @@ public class StandaloneEntryTest extends BaseTest {
         System.clearProperty(EntryServlet.PURGE_CACHE_VM_ARGUMENT);
         System.clearProperty(EntryServlet.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT);
         System.clearProperty(StandaloneEntry.LIST_FONTS_VM_OPTION);
+        resetOutput();
     }
 
     // list fonts
@@ -121,7 +132,7 @@ public class StandaloneEntryTest extends BaseTest {
         redirectOutput();
         System.setProperty(StandaloneEntry.LIST_FONTS_VM_OPTION, "");
         StandaloneEntry.main(new String[] {});
-        assertTrue(systemOutput.toString().contains("Times"));
+        assertTrue(redirectedOutput.toString().contains("Times"));
     }
 
     // missing config
@@ -131,7 +142,7 @@ public class StandaloneEntryTest extends BaseTest {
         redirectOutput();
         System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
         StandaloneEntry.main(new String[] {});
-        assertEquals(StandaloneEntry.usage(), systemOutput.toString().trim());
+        assertEquals(StandaloneEntry.usage(), redirectedOutput.toString().trim());
     }
 
     @Test
@@ -168,7 +179,7 @@ public class StandaloneEntryTest extends BaseTest {
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, path);
         StandaloneEntry.main(new String[] {});
         assertEquals("Does not exist: " + path + "\n\n" + StandaloneEntry.usage(),
-                systemOutput.toString().trim());
+                redirectedOutput.toString().trim());
     }
 
     @Test
@@ -188,7 +199,7 @@ public class StandaloneEntryTest extends BaseTest {
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, path);
         StandaloneEntry.main(new String[] {});
         assertEquals("Not a file: " + path + "\n\n" + StandaloneEntry.usage(),
-                systemOutput.toString().trim());
+                redirectedOutput.toString().trim());
     }
 
     @Test
@@ -244,6 +255,8 @@ public class StandaloneEntryTest extends BaseTest {
             // This is expected, as the server has called System.exit() before
             // it could generate a response.
         }
+
+        Thread.sleep(5000);
     }
 
     /**
@@ -252,6 +265,7 @@ public class StandaloneEntryTest extends BaseTest {
     @Test
     public void testMainWithPurgeCacheArg() throws Exception {
         exit.expectSystemExitWithStatus(0);
+        redirectOutput();
 
         final File cacheDir = getCacheDir();
         final File imageDir = new File(cacheDir.getAbsolutePath() + "/image");
@@ -294,6 +308,9 @@ public class StandaloneEntryTest extends BaseTest {
             // This is expected, as the server has called System.exit() before
             // it could generate a response.
         }
+
+        Thread.sleep(5000);
+        assertTrue(redirectedOutput.toString().contains("Purging the derivative cache"));
 
         // assert that they've been purged
         assertEquals(0, TestUtil.countFiles(imageDir));
@@ -355,6 +372,8 @@ public class StandaloneEntryTest extends BaseTest {
             // it could generate a response.
         }
 
+        Thread.sleep(2000);
+
         // assert that they've been purged
         assertEquals(1, TestUtil.countFiles(imageDir));
         assertEquals(1, TestUtil.countFiles(infoDir));
@@ -398,6 +417,8 @@ public class StandaloneEntryTest extends BaseTest {
             // This is expected, as the server has called System.exit() before
             // it could generate a response.
         }
+
+        Thread.sleep(5000);
 
         assertEquals(1, TestUtil.countFiles(imageDir));
         assertEquals(1, TestUtil.countFiles(infoDir));
