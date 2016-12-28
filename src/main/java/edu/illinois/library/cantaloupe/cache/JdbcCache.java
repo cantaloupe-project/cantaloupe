@@ -138,7 +138,6 @@ class JdbcCache implements DerivativeCache {
     static final String JDBC_URL_CONFIG_KEY = "JdbcCache.url";
     static final String PASSWORD_CONFIG_KEY = "JdbcCache.password";
     static final String INFO_TABLE_CONFIG_KEY = "JdbcCache.info_table";
-    static final String MAX_POOL_SIZE_CONFIG_KEY = "JdbcCache.max_pool_size";
     static final String USER_CONFIG_KEY = "JdbcCache.user";
 
     private static HikariDataSource dataSource;
@@ -155,7 +154,8 @@ class JdbcCache implements DerivativeCache {
                     getString(JDBC_URL_CONFIG_KEY, "");
             final int connectionTimeout = 1000 *
                     config.getInt(CONNECTION_TIMEOUT_CONFIG_KEY, 10);
-            final int maxPoolSize = config.getInt(MAX_POOL_SIZE_CONFIG_KEY, 10);
+            final int maxPoolSize =
+                    Runtime.getRuntime().availableProcessors() * 2 + 1;
             final String user = config.getString(USER_CONFIG_KEY, "");
             final String password = config.getString(PASSWORD_CONFIG_KEY, "");
 

@@ -481,10 +481,6 @@ JdbcCache.user = postgres
 # !!
 JdbcCache.password =
 
-# !! Maximum number of JDBC connections allowed in the pool. A good
-# starting point is (CPU core count * 2) + 1.
-JdbcCache.max_pool_size = 9
-
 # !! Connection timeout in seconds.
 JdbcCache.connection_timeout = 10
 

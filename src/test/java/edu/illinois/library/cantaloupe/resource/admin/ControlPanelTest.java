@@ -440,7 +440,6 @@ public class ControlPanelTest extends BaseTest {
         css("[name=\"JdbcCache.url\"]").sendKeys("jdbc://dogs");
         css("[name=\"JdbcCache.user\"]").sendKeys("person");
         css("[name=\"JdbcCache.password\"]").sendKeys("cats");
-        css("[name=\"JdbcCache.max_pool_size\"]").sendKeys("92");
         css("[name=\"JdbcCache.connection_timeout\"]").sendKeys("9");
         css("[name=\"JdbcCache.derivative_image_table\"]").sendKeys("hula");
         css("[name=\"JdbcCache.info_table\"]").sendKeys("box");
@@ -488,7 +487,6 @@ public class ControlPanelTest extends BaseTest {
         assertEquals("jdbc://dogs", config.getString("JdbcCache.url"));
         assertEquals("person", config.getString("JdbcCache.user"));
         assertEquals("cats", config.getString("JdbcCache.password"));
-        assertEquals("92", config.getString("JdbcCache.max_pool_size"));
         assertEquals("9", config.getString("JdbcCache.connection_timeout"));
         assertEquals("hula", config.getString("JdbcCache.derivative_image_table"));
         assertEquals("box", config.getString("JdbcCache.info_table"));
