@@ -525,7 +525,7 @@ landing page, as well as in one of the tables below. A list of output formats su
     <td class="bg-danger"></td>
     <td class="bg-danger"></td>
     <td class="bg-success">RGB, RGBA, 8-bit</td>
-    <td class="bg-success">RGB, RGBA; 8-bit; uncompressed, PackBits, LZW, ZIP, JPEG; striped, tiled, and multi-resolution reading; BigTIFF</td>
+    <td class="bg-success">RGB, RGBA; 8-bit, 16-bit; uncompressed, PackBits, LZW, ZIP, JPEG (8-bit only); striped, tiled, and multi-resolution reading; BigTIFF</td>
     <td class="bg-danger"></td>
   </tr>
   <tr>
@@ -536,7 +536,7 @@ landing page, as well as in one of the tables below. A list of output formats su
     <td class="bg-danger"></td>
     <td class="bg-danger"></td>
     <td class="bg-success">RGB, RGBA, 8-bit</td>
-    <td class="bg-success">RGB, RGBA; 8-bit, 16-bit; uncompressed, PackBits, LZW (8-bit only), ZIP (8-bit only), JPEG (8-bit only); striped, tiled, and multi-resolution reading; BigTIFF</td>
+    <td class="bg-success">RGB, RGBA; 8-bit, 16-bit; uncompressed, PackBits, LZW, ZIP, JPEG (8-bit only); striped, tiled, and multi-resolution reading; BigTIFF</td>
     <td class="bg-danger"></td>
   </tr>
   <tr>
@@ -580,11 +580,11 @@ landing page, as well as in one of the tables below. A list of output formats su
 
 <h3 id="Java2dProcessor">Java2dProcessor</h3>
 
-<p>Java2dProcessor uses the Java ImageIO framework and Java 2D API to read and process images in a native-Java way. This is a good processor to get started with as it has no external dependencies.</p>
+<p>Java2dProcessor uses the Java ImageIO and Java 2D frameworks to read and process images in a native-Java way. It is a good all-around processor with no external dependencies.</p>
 
 <p>Java2dProcessor has been written to exploit the ImageIO image readers as efficiently as possible. Special attention has been paid to its handling of tiled images, such as tile-encoded TIFFs, for which it reads only the necessary tiles for a given request. It is also capable of reading the sub-images contained within multi-resolution (pyramidal) TIFF images.</p>
 
-<p>Because Java2dProcessor does all its work in Java, it places a burden on the JVM heap. Although it tries to be efficient at reading images, it does have to create derivative images at every processing step (scaling, rotating, etc.), which have to be temporarily buffered in RAM. (See the section on <a href="deployment.html#HardwareMemory">memory considerations</a>.)</p>
+<p>Because this processor does all its work in Java, it places a burden on the JVM heap. Although it tries to be efficient at reading images, it does have to create new derivative images at every processing step (scaling, rotating, etc.), which can cause transient spikes in memory usage. (See the section on <a href="deployment.html#HardwareMemory">memory considerations</a>.)</p>
 
 <hr>
 
@@ -592,9 +592,9 @@ landing page, as well as in one of the tables below. A list of output formats su
 
 <p>Java Advanced Imaging (JAI) is a sophisticated image processing library developed by Sun Microsystems from the late 1990s to the mid-2000s. It offers several advantages over Java 2D: a pull-based rendering pipeline that can reduce memory usage, and efficient region-of-interest decoding with some formats.</p>
 
-<p>As JaiProcessor and Java2dProcessor use the same ImageIO readers and writers, they can read and write the same formats.</p>
+<p>As JaiProcessor uses the same ImageIO readers and writers as Java2dProcessor, it can read and write the same formats.</p>
 
-<p>Years ago, Sun published <a href="http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-java-client-419417.html">platform-native accelerator JARs</a> called <a href="http://www.oracle.com/technetwork/java/install-1-1-2-135866.html">mediaLib</a> for Windows, Linux, and Solaris, which improved JAI's performance. It is unknown whether these still work on modern platforms.</p>
+<p>Years ago, Sun published <a href="http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-java-client-419417.html">platform-native accelerator JARs</a> called <a href="http://www.oracle.com/technetwork/java/install-1-1-2-135866.html">mediaLib</a> for Windows, Linux, and Solaris, which improved JAI's performance. It is unknown whether these still work on modern platforms, or what degree of benefit they provide.</p>
 
 <hr>
 
