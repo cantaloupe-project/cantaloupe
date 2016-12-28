@@ -12,7 +12,7 @@ public class ApplicationLogFilter extends Filter<ILoggingEvent> {
 
     public FilterReply decide(ILoggingEvent event) {
         // Filter out useless Restlet log messages.
-        if (event.getLoggerName().equals("org.restlet") &&
+        if (event.getLoggerName().startsWith("org.restlet") &&
                 event.getLevel().equals(Level.INFO) &&
                 event.getMessage().contains("ing the internal HTTP client")) {
             return FilterReply.DENY;
