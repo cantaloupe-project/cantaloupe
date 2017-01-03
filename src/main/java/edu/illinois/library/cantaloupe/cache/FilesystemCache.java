@@ -263,8 +263,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     private final Set<Identifier> sourceImagesBeingWritten =
             new ConcurrentSkipListSet<>();
 
-    private final AtomicBoolean cleaningInProgress = new AtomicBoolean(false);
-
     /** Toggled by purge() and purgeExpired(). */
     private final AtomicBoolean globalPurgeInProgress =
             new AtomicBoolean(false);
@@ -274,7 +272,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     private final Object lock2 = new Object();
     private final Object lock3 = new Object();
     private final Object lock4 = new Object();
-    private final Object lock5 = new Object();
     private final Object lock6 = new Object();
     private final Object lock7 = new Object();
 
@@ -402,18 +399,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      */
     @Override
     public void cleanUp() throws CacheException {
-        synchronized (lock5) {
-            while (cleaningInProgress.get()) {
-                try {
-                    lock5.wait();
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-        }
         try {
-            cleaningInProgress.set(true);
-
             final String[] pathnamesToClean = {
                     getRootSourceImagePathname(),
                     getRootDerivativeImagePathname(),
@@ -426,8 +412,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             }
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);
-        } finally {
-            cleaningInProgress.set(false);
         }
     }
 
