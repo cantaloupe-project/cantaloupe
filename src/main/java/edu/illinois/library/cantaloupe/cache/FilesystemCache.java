@@ -268,12 +268,11 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             new AtomicBoolean(false);
 
     /** Lock objects for synchronization */
-    private final Object lock1 = new Object();
-    private final Object lock2 = new Object();
-    private final Object lock3 = new Object();
-    private final Object lock4 = new Object();
-    private final Object lock6 = new Object();
-    private final Object lock7 = new Object();
+    private final Object imagePurgeLock = new Object();
+    private final Object infoAccessLock = new Object();
+    private final Object infoPurgeLock = new Object();
+    private final Object infoWriteLock = new Object();
+    private final Object sourceImageWriteLock = new Object();
 
     /**
      * Returns a reversible, filename-safe version of the input string.
@@ -483,10 +482,10 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
     @Override
     public File getImageFile(Identifier identifier) throws CacheException {
-        synchronized (lock7) {
+        synchronized (sourceImageWriteLock) {
             while (sourceImagesBeingWritten.contains(identifier)) {
                 try {
-                    lock7.wait();
+                    sourceImageWriteLock.wait();
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -513,10 +512,10 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
     @Override
     public ImageInfo getImageInfo(Identifier identifier) throws CacheException {
-        synchronized (lock2) {
+        synchronized (infoWriteLock) {
             while (infosBeingWritten.contains(identifier)) {
                 try {
-                    lock2.wait();
+                    infoWriteLock.wait();
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -737,10 +736,10 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     "Aborting.");
             return;
         }
-        synchronized (lock4) {
+        synchronized (imagePurgeLock) {
             while (!imagesBeingPurged.isEmpty()) {
                 try {
-                    lock4.wait();
+                    imagePurgeLock.wait();
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -786,10 +785,10 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     "progress. Aborting.");
             return;
         }
-        synchronized (lock1) {
+        synchronized (imagePurgeLock) {
             while (imagesBeingPurged.contains(opList)) {
                 try {
-                    lock1.wait();
+                    imagePurgeLock.wait();
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -829,10 +828,10 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     "Aborting.");
             return;
         }
-        synchronized (lock4) {
+        synchronized (imagePurgeLock) {
             while (!imagesBeingPurged.isEmpty()) {
                 try {
-                    lock4.wait();
+                    imagePurgeLock.wait();
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -896,10 +895,10 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     "progress. Aborting.");
             return;
         }
-        synchronized (lock6) {
+        synchronized (infoPurgeLock) {
             while (infosBeingPurged.contains(identifier)) {
                 try {
-                    lock6.wait();
+                    infoPurgeLock.wait();
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -944,11 +943,11 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     @Override
     public void putImageInfo(Identifier identifier, ImageInfo imageInfo)
             throws CacheException {
-        synchronized (lock3) {
+        synchronized (infoAccessLock) {
             while (infosBeingWritten.contains(identifier) ||
                     infosBeingRead.contains(identifier)) {
                 try {
-                    lock3.wait();
+                    infoAccessLock.wait();
                 } catch (InterruptedException e) {
                     break;
                 }
