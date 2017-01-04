@@ -36,9 +36,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -246,16 +250,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     private final Set<Identifier> infosBeingPurged =
             new ConcurrentSkipListSet<>();
 
-    /** Set of identifiers for which info files are currently being read in
-     * any thread. */
-    private final Set<Identifier> infosBeingRead =
-            new ConcurrentSkipListSet<>();
-
-    /** Set of identifiers for which info files are currently being written
-     * from any thread. */
-    private final Set<Identifier> infosBeingWritten =
-            new ConcurrentSkipListSet<>();
-
     private long minCleanableAge = 1000 * 60 * 10;
 
     /** Set of identifiers for which image files are currently being written
@@ -267,12 +261,17 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     private final AtomicBoolean globalPurgeInProgress =
             new AtomicBoolean(false);
 
-    /** Lock objects for synchronization */
+    /** Several different lock objects for context-dependent synchronization.
+     * Reduces contention for the instance. */
     private final Object imagePurgeLock = new Object();
-    private final Object infoAccessLock = new Object();
     private final Object infoPurgeLock = new Object();
-    private final Object infoWriteLock = new Object();
     private final Object sourceImageWriteLock = new Object();
+
+    /** Rather than using a global lock, per-identifier locks allow for
+     * simultaneous writes to different infos. Map entries are added on demand
+     * and never removed. */
+    private final Map<Identifier,ReadWriteLock> infoLocks =
+            new ConcurrentHashMap<>();
 
     /**
      * Returns a reversible, filename-safe version of the input string.
@@ -512,18 +511,11 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
     @Override
     public ImageInfo getImageInfo(Identifier identifier) throws CacheException {
-        synchronized (infoWriteLock) {
-            while (infosBeingWritten.contains(identifier)) {
-                try {
-                    infoWriteLock.wait();
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-        }
+        infoLocks.putIfAbsent(identifier, new ReentrantReadWriteLock());
+        final ReadWriteLock lock = infoLocks.get(identifier);
+        lock.readLock().lock();
 
         try {
-            infosBeingRead.add(identifier);
             final File cacheFile = getInfoFile(identifier);
             if (cacheFile != null && cacheFile.exists()) {
                 if (!isExpired(cacheFile)) {
@@ -533,6 +525,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 } else {
                     logger.info("getImageInfo(Identifier): deleting stale " +
                             "cache file: {}", cacheFile.getAbsolutePath());
+                    // TODO: contention here (probably rare though)
                     if (!cacheFile.delete()) {
                         logger.warn("getImageInfo(Identifier): unable to " +
                                 "delete {}", cacheFile.getAbsolutePath());
@@ -544,7 +537,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);
         } finally {
-            infosBeingRead.remove(identifier);
+            lock.readLock().unlock();
         }
         return null;
     }
@@ -943,48 +936,35 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     @Override
     public void putImageInfo(Identifier identifier, ImageInfo imageInfo)
             throws CacheException {
-        synchronized (infoAccessLock) {
-            while (infosBeingWritten.contains(identifier) ||
-                    infosBeingRead.contains(identifier)) {
-                try {
-                    infoAccessLock.wait();
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-        }
+        infoLocks.putIfAbsent(identifier, new ReentrantReadWriteLock());
+        final ReadWriteLock lock = infoLocks.get(identifier);
+        lock.writeLock().lock();
+
+        logger.info("putImageInfo(): caching: {}", identifier);
+
+        final File destFile = getInfoFile(identifier);
+        final File tempFile = getInfoTempFile(identifier);
+
         try {
-            infosBeingWritten.add(identifier);
-
-            final File destFile = getInfoFile(identifier);
-            final File tempFile = getInfoTempFile(identifier);
-
             if (destFile.exists()) {
                 FileUtils.forceDelete(destFile);
             }
-
-            logger.info("putImageInfo(): caching: {}", identifier);
             if (!tempFile.getParentFile().exists() &&
                     !tempFile.getParentFile().mkdirs()) {
                 throw new IOException("Unable to create directory: " +
                         tempFile.getParentFile());
             }
 
-            try {
-                FileUtils.writeStringToFile(tempFile, imageInfo.toJson());
+            FileUtils.writeStringToFile(tempFile, imageInfo.toJson());
 
-                logger.debug("putImageInfo(): moving {} to {}",
-                        tempFile, destFile.getName());
-                FileUtils.moveFile(tempFile, destFile);
-            } catch (IOException e) {
-                tempFile.delete();
-                throw new IOException("Unable to create " +
-                        tempFile.getAbsolutePath(), e);
-            }
+            logger.debug("putImageInfo(): moving {} to {}",
+                    tempFile, destFile.getName());
+            FileUtils.moveFile(tempFile, destFile);
         } catch (IOException e) {
+            tempFile.delete();
             throw new CacheException(e.getMessage(), e);
         } finally {
-            infosBeingWritten.remove(identifier);
+            lock.writeLock().unlock();
         }
     }
 
