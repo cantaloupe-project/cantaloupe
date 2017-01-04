@@ -713,9 +713,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     /**
-     * <p>Crawls the image directory, deleting all files (but not folders)
-     * within it (including temp files), and then does the same in the info
-     * directory.</p>
+     * <p>Crawls the cache directory, deleting all files (but not folders)
+     * within it (including temp files).</p>
      *
      * <p>Will do nothing and return immediately if a global purge is in
      * progress in another thread.</p>
@@ -757,6 +756,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             }
         } finally {
             globalPurgeInProgress.set(false);
+            synchronized (imagePurgeLock) {
+                imagePurgeLock.notifyAll();
+            }
         }
     }
 
@@ -802,6 +804,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             }
         } finally {
             imagesBeingPurged.remove(opList);
+            synchronized (imagePurgeLock) {
+                imagePurgeLock.notifyAll();
+            }
         }
     }
 
@@ -870,6 +875,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     "expired infos(s)", imageCount, infoCount);
         } finally {
             globalPurgeInProgress.set(false);
+            synchronized (imagePurgeLock) {
+                imagePurgeLock.notifyAll();
+            }
         }
     }
 
