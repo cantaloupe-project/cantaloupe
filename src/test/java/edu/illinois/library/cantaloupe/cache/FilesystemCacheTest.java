@@ -29,11 +29,11 @@ import static org.junit.Assert.*;
 
 public class FilesystemCacheTest {
 
-    File fixturePath;
-    File sourceImagePath;
-    File derivativeImagePath;
-    File infoPath;
-    FilesystemCache instance;
+    private File fixturePath;
+    private File sourceImagePath;
+    private File derivativeImagePath;
+    private File infoPath;
+    private FilesystemCache instance;
 
     @Before
     public void setUp() throws IOException {
@@ -42,13 +42,13 @@ public class FilesystemCacheTest {
         derivativeImagePath = new File(fixturePath.getAbsolutePath() + "/image");
         infoPath = new File(fixturePath.getAbsolutePath() + "/info");
 
-        if (!sourceImagePath.mkdirs()) {
+        if (!sourceImagePath.isDirectory() && !sourceImagePath.mkdirs()) {
             throw new IOException("Failed to create folder: " + sourceImagePath);
         }
-        if (!derivativeImagePath.mkdirs()) {
+        if (!derivativeImagePath.isDirectory() && !derivativeImagePath.mkdirs()) {
             throw new IOException("Failed to create folder: " + derivativeImagePath);
         }
-        if (!infoPath.mkdirs()) {
+        if (!infoPath.isDirectory() && !infoPath.mkdirs()) {
             throw new IOException("Failed to create folder: " + infoPath);
         }
 
