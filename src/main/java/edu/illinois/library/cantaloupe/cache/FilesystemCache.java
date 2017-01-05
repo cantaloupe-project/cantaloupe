@@ -609,16 +609,16 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             final File cacheFile = getInfoFile(identifier);
             if (cacheFile != null && cacheFile.exists()) {
                 if (!isExpired(cacheFile)) {
-                    logger.info("getImageInfo(Identifier): hit: {}",
+                    logger.info("getImageInfo(): hit: {}",
                             cacheFile.getAbsolutePath());
                     return ImageInfo.fromJson(cacheFile);
                 } else {
-                    logger.info("getImageInfo(Identifier): deleting stale " +
-                            "cache file: {}", cacheFile.getAbsolutePath());
+                    logger.info("getImageInfo(): deleting stale file: {}",
+                            cacheFile.getAbsolutePath());
                     // TODO: contention here (probably rare though)
                     if (!cacheFile.delete()) {
-                        logger.warn("getImageInfo(Identifier): unable to " +
-                                "delete {}", cacheFile.getAbsolutePath());
+                        logger.warn("getImageInfo(): unable to delete {}",
+                                cacheFile.getAbsolutePath());
                     }
                 }
             }
