@@ -485,6 +485,8 @@ public abstract class AbstractResource extends ServerResource {
                     cache.putImageInfo(identifier, info);
                 }
             }
+        } else {
+            logger.debug("getOrReadInfo(): bypassing the cache, as requested");
         }
         if (info == null) {
             info = readInfo(identifier, proc);
