@@ -131,7 +131,9 @@ class RubyScriptEngine extends AbstractScriptEngine implements ScriptEngine {
         scriptEngine = new ScriptEngineManager().getEngineByName("jruby");
         scriptEngine.eval(code);
         scriptIsLoading.set(false);
-        lock.notifyAll();
+        synchronized (lock) {
+            lock.notifyAll();
+        }
     }
 
     private Object retrieveFromCacheOrInvoke(String methodName, Object... args)
