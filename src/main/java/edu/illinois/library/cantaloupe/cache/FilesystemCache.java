@@ -231,9 +231,16 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     } catch (IOException e) {
                         logger.warn("close(): {}", e.getMessage());
                     }
-                    logger.debug("close(): moving {} to {}",
-                            tempFile, destinationFile.getName());
-                    FileUtils.moveFile(tempFile, destinationFile);
+
+                    if (tempFile.length() > 0) {
+                        logger.debug("close(): moving {} to {}",
+                                tempFile, destinationFile.getName());
+                        FileUtils.moveFile(tempFile, destinationFile);
+                    } else {
+                        logger.debug("close(): deleting zero-byte file: {}",
+                                tempFile);
+                        FileUtils.forceDelete(tempFile);
+                    }
                 } catch (IOException e) {
                     logger.warn("close(): {}", e.getMessage(), e);
                 } finally {
