@@ -282,9 +282,28 @@ public class Scale implements Operation {
                 str += this.getHeight();
             }
         }
+        /* TODO: fix this
+        This is commented out because the filter is usually added relatively
+        late in the execution by a processor's process() method. This causes
+        problems with the derivative caches, which have already created a
+        cached image filename/identifier based on the op list BEFORE the op
+        list is aware of any filter. It writes to the file with the
+        pre-filter-added name, but if the connection closes, it won't be able
+        to find it later using the post-filter-added name.
+
+        Possible solutions:
+        1) Add the filter earlier in the execution (perhaps immediately once
+           it is known what processor is going to be used)
+        2) Make filter selection global across processors and add it in
+           AbstractResource.addNonEndpointOperations() (this is how all the
+           other non-endpoint operations work)
+        3) Leave this as-is and don't encode the filter in the string
+           representation
+
         if (getFilter() != null) {
             str += "," + getFilter().toString().toLowerCase();
         }
+        */
         return str;
     }
 
