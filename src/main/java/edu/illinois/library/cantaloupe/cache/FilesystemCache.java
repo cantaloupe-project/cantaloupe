@@ -472,8 +472,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     private static boolean isExpired(File file) {
         final long ttlMsec = 1000 * ConfigurationFactory.getInstance().
                 getLong(TTL_CONFIG_KEY, 0);
-        return ttlMsec > 0 && file.isFile() &&
-                System.currentTimeMillis() - getLastAccessTime(file) > ttlMsec;
+        final long age = System.currentTimeMillis() - getLastAccessTime(file);
+        return ttlMsec > 0 && file.isFile() && age > ttlMsec;
     }
 
     /**
