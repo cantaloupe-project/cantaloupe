@@ -17,6 +17,7 @@ title: What's New
 <ul>
   <li>Fixed inability to upscale in JaiProcessor, omitted in error from 3.2.2.</li>
   <li>Rounding is used instead of flooring to compute scale sizes.</li>
+  <li>Fixed a bug in FilesystemCache that could cause an HTTP 500 error when accessing the same uncached <span class="filename">info.json</span> resource concurrently.</li>
 </ul>
 
 <h2>3.2.2</h2>

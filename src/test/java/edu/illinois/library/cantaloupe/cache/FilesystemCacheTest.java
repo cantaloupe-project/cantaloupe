@@ -21,6 +21,8 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static edu.illinois.library.cantaloupe.cache.FilesystemCache.getHashedStringBasedSubdirectory;
 import static edu.illinois.library.cantaloupe.cache.FilesystemCache.getRootDerivativeImagePathname;
@@ -45,13 +47,13 @@ public class FilesystemCacheTest extends BaseTest {
         derivativeImagePath = new File(fixturePath.getAbsolutePath() + "/image");
         infoPath = new File(fixturePath.getAbsolutePath() + "/info");
 
-        if (!sourceImagePath.mkdirs()) {
+        if (!sourceImagePath.isDirectory() && !sourceImagePath.mkdirs()) {
             throw new IOException("Failed to create folder: " + sourceImagePath);
         }
-        if (!derivativeImagePath.mkdirs()) {
+        if (!derivativeImagePath.isDirectory() && !derivativeImagePath.mkdirs()) {
             throw new IOException("Failed to create folder: " + derivativeImagePath);
         }
-        if (!infoPath.mkdirs()) {
+        if (!infoPath.isDirectory() && !infoPath.mkdirs()) {
             throw new IOException("Failed to create folder: " + infoPath);
         }
 
@@ -669,23 +671,74 @@ public class FilesystemCacheTest extends BaseTest {
         assertEquals(info, instance.getImageInfo(identifier));
     }
 
+    /**
+     * This isn't foolproof, but it's better than nothing.
+     */
     @Test
-    public void testPutImageInfoFailureThrowsException() throws CacheException {
-        final Identifier identifier = new Identifier("cats");
-        final File cacheFile = instance.getInfoFile(identifier);
-        cacheFile.getParentFile().mkdirs();
-        cacheFile.getParentFile().setWritable(false);
-        try {
-            try {
-                ImageInfo info = new ImageInfo(52, 52);
-                instance.putImageInfo(identifier, info);
-                fail("Expected exception");
-            } catch (CacheException e) {
-                assertTrue(e.getMessage().startsWith("Unable to create"));
-            }
-        } finally {
-            cacheFile.getParentFile().setWritable(true);
+    public void concurrentlyTestPutImageInfo() throws CacheException {
+        final Identifier identifier = new Identifier("monkeys");
+        final ImageInfo info = new ImageInfo(52, 42);
+
+        final AtomicBoolean anyFailures = new AtomicBoolean(false);
+        final AtomicInteger readCount = new AtomicInteger(0);
+        final AtomicInteger writeCount = new AtomicInteger(0);
+        final short numWriterThreads = 500;
+
+        // Fire off a bunch of threads to write the same info
+        // hopefully-concurrently, and a bunch more to read it
+        // hopefully-concurrently.
+        for (int i = 0; i < numWriterThreads; i++) {
+            new Thread(() -> { // writer thread
+                try {
+                    instance.putImageInfo(identifier, info);
+                } catch (Exception e) {
+                    anyFailures.set(true);
+                    e.printStackTrace();
+                } finally {
+                    writeCount.incrementAndGet();
+                }
+            }).start();
+
+            new Thread(() -> { // reader thread
+                while (true) {
+                    // Spin until we have something to read.
+                    if (writeCount.get() > 0) {
+                        try {
+                            ImageInfo otherInfo =
+                                    instance.getImageInfo(identifier);
+                            if (!info.equals(otherInfo)) {
+                                throw new CacheException("Fail!");
+                            }
+                        } catch (Exception e) {
+                            anyFailures.set(true);
+                            e.printStackTrace();
+                        } finally {
+                            readCount.incrementAndGet();
+                        }
+                        break;
+                    } else {
+                        sleep(1);
+                    }
+                }
+            }).start();
         }
+
+        while (readCount.get() < numWriterThreads ||
+                writeCount.get() < numWriterThreads) {
+            sleep(1);
+        }
+
+        if (anyFailures.get()) {
+            fail();
+        } else {
+            assertEquals(info, instance.getImageInfo(identifier));
+        }
+    }
+
+    private void sleep(int msec) {
+        try {
+            Thread.sleep(msec);
+        } catch (InterruptedException e) {}
     }
 
 }

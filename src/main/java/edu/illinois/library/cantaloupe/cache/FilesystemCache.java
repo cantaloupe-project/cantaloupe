@@ -37,9 +37,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -301,16 +305,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     private final Set<Identifier> infosBeingPurged =
             new ConcurrentSkipListSet<>();
 
-    /** Set of identifiers for which info files are currently being read in
-     * any thread. */
-    private final Set<Identifier> infosBeingRead =
-            new ConcurrentSkipListSet<>();
-
-    /** Set of identifiers for which info files are currently being written
-     * from any thread. */
-    private final Set<Identifier> infosBeingWritten =
-            new ConcurrentSkipListSet<>();
-
     private long minCleanableAge = 1000 * 60 * 10;
 
     /** Set of identifiers for which image files are currently being written
@@ -318,20 +312,21 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     private final Set<Identifier> sourceImagesBeingWritten =
             new ConcurrentSkipListSet<>();
 
-    private final AtomicBoolean cleaningInProgress = new AtomicBoolean(false);
-
     /** Toggled by purge() and purgeExpired(). */
     private final AtomicBoolean globalPurgeInProgress =
             new AtomicBoolean(false);
 
-    /** Lock objects for synchronization */
-    private final Object lock1 = new Object();
-    private final Object lock2 = new Object();
-    private final Object lock3 = new Object();
-    private final Object lock4 = new Object();
-    private final Object lock5 = new Object();
-    private final Object lock6 = new Object();
-    private final Object lock7 = new Object();
+    /** Several different lock objects for context-dependent synchronization.
+     * Reduces contention for the instance. */
+    private final Object imagePurgeLock = new Object();
+    private final Object infoPurgeLock = new Object();
+    private final Object sourceImageWriteLock = new Object();
+
+    /** Rather than using a global lock, per-identifier locks allow for
+     * simultaneous writes to different infos. Map entries are added on demand
+     * and never removed. */
+    private final Map<Identifier,ReadWriteLock> infoLocks =
+            new ConcurrentHashMap<>();
 
     /**
      * Counterpart of {@link #filenameSafe(String)} exclusively for identifiers.
@@ -481,18 +476,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      */
     @Override
     public void cleanUp() throws CacheException {
-        synchronized (lock5) {
-            while (cleaningInProgress.get()) {
-                try {
-                    lock5.wait();
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-        }
         try {
-            cleaningInProgress.set(true);
-
             final String[] pathnamesToClean = {
                     getRootSourceImagePathname(),
                     getRootDerivativeImagePathname(),
@@ -505,8 +489,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             }
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);
-        } finally {
-            cleaningInProgress.set(false);
         }
     }
 
@@ -582,10 +564,10 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
     @Override
     public File getImageFile(Identifier identifier) throws CacheException {
-        synchronized (lock7) {
+        synchronized (sourceImageWriteLock) {
             while (sourceImagesBeingWritten.contains(identifier)) {
                 try {
-                    lock7.wait();
+                    sourceImageWriteLock.wait();
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -612,18 +594,11 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
     @Override
     public ImageInfo getImageInfo(Identifier identifier) throws CacheException {
-        synchronized (lock2) {
-            while (infosBeingWritten.contains(identifier)) {
-                try {
-                    lock2.wait();
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-        }
+        infoLocks.putIfAbsent(identifier, new ReentrantReadWriteLock());
+        final ReadWriteLock lock = infoLocks.get(identifier);
+        lock.readLock().lock();
 
         try {
-            infosBeingRead.add(identifier);
             final File cacheFile = getInfoFile(identifier);
             if (cacheFile != null && cacheFile.exists()) {
                 if (!isExpired(cacheFile)) {
@@ -633,6 +608,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 } else {
                     logger.info("getImageInfo(Identifier): deleting stale " +
                             "cache file: {}", cacheFile.getAbsolutePath());
+                    // TODO: contention here (probably rare though)
                     if (!cacheFile.delete()) {
                         logger.warn("getImageInfo(Identifier): unable to " +
                                 "delete {}", cacheFile.getAbsolutePath());
@@ -644,7 +620,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);
         } finally {
-            infosBeingRead.remove(identifier);
+            lock.readLock().unlock();
         }
         return null;
     }
@@ -827,9 +803,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     /**
-     * <p>Crawls the image directory, deleting all files (but not folders)
-     * within it (including temp files), and then does the same in the info
-     * directory.</p>
+     * <p>Crawls the cache directory, deleting all files (but not folders)
+     * within it (including temp files).</p>
      *
      * <p>Will do nothing and return immediately if a global purge is in
      * progress in another thread.</p>
@@ -843,10 +818,10 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     "Aborting.");
             return;
         }
-        synchronized (lock4) {
+        synchronized (imagePurgeLock) {
             while (!imagesBeingPurged.isEmpty()) {
                 try {
-                    lock4.wait();
+                    imagePurgeLock.wait();
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -871,6 +846,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             }
         } finally {
             globalPurgeInProgress.set(false);
+            synchronized (imagePurgeLock) {
+                imagePurgeLock.notifyAll();
+            }
         }
     }
 
@@ -892,10 +870,10 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     "progress. Aborting.");
             return;
         }
-        synchronized (lock1) {
+        synchronized (imagePurgeLock) {
             while (imagesBeingPurged.contains(opList)) {
                 try {
-                    lock1.wait();
+                    imagePurgeLock.wait();
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -916,6 +894,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             }
         } finally {
             imagesBeingPurged.remove(opList);
+            synchronized (imagePurgeLock) {
+                imagePurgeLock.notifyAll();
+            }
         }
     }
 
@@ -935,10 +916,10 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     "Aborting.");
             return;
         }
-        synchronized (lock4) {
+        synchronized (imagePurgeLock) {
             while (!imagesBeingPurged.isEmpty()) {
                 try {
-                    lock4.wait();
+                    imagePurgeLock.wait();
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -984,6 +965,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     "expired infos(s)", imageCount, infoCount);
         } finally {
             globalPurgeInProgress.set(false);
+            synchronized (imagePurgeLock) {
+                imagePurgeLock.notifyAll();
+            }
         }
     }
 
@@ -1002,10 +986,10 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     "progress. Aborting.");
             return;
         }
-        synchronized (lock6) {
+        synchronized (infoPurgeLock) {
             while (infosBeingPurged.contains(identifier)) {
                 try {
-                    lock6.wait();
+                    infoPurgeLock.wait();
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -1055,48 +1039,35 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     @Override
     public void putImageInfo(Identifier identifier, ImageInfo imageInfo)
             throws CacheException {
-        synchronized (lock3) {
-            while (infosBeingWritten.contains(identifier) ||
-                    infosBeingRead.contains(identifier)) {
-                try {
-                    lock3.wait();
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-        }
+        infoLocks.putIfAbsent(identifier, new ReentrantReadWriteLock());
+        final ReadWriteLock lock = infoLocks.get(identifier);
+        lock.writeLock().lock();
+
+        logger.info("putImageInfo(): caching: {}", identifier);
+
+        final File destFile = getInfoFile(identifier);
+        final File tempFile = getInfoTempFile(identifier);
+
         try {
-            infosBeingWritten.add(identifier);
-
-            final File destFile = getInfoFile(identifier);
-            final File tempFile = getInfoTempFile(identifier);
-
             if (destFile.exists()) {
                 FileUtils.forceDelete(destFile);
             }
-
-            logger.info("putImageInfo(): caching: {}", identifier);
             if (!tempFile.getParentFile().exists() &&
                     !tempFile.getParentFile().mkdirs()) {
                 throw new IOException("Unable to create directory: " +
                         tempFile.getParentFile());
             }
 
-            try {
-                FileUtils.writeStringToFile(tempFile, imageInfo.toJson());
+            FileUtils.writeStringToFile(tempFile, imageInfo.toJson());
 
-                logger.debug("putImageInfo(): moving {} to {}",
-                        tempFile, destFile.getName());
-                FileUtils.moveFile(tempFile, destFile);
-            } catch (IOException e) {
-                tempFile.delete();
-                throw new IOException("Unable to create " +
-                        tempFile.getAbsolutePath(), e);
-            }
+            logger.debug("putImageInfo(): moving {} to {}",
+                    tempFile, destFile.getName());
+            FileUtils.moveFile(tempFile, destFile);
         } catch (IOException e) {
+            tempFile.delete();
             throw new CacheException(e.getMessage(), e);
         } finally {
-            infosBeingWritten.remove(identifier);
+            lock.writeLock().unlock();
         }
     }
 
