@@ -478,7 +478,7 @@ public abstract class AbstractResource extends ServerResource {
                 final Stopwatch watch = new Stopwatch();
                 info = cache.getImageInfo(identifier);
                 if (info != null) {
-                    logger.debug("Retrieved dimensions of {} from cache in {} msec",
+                    logger.debug("getOrReadInfo(): retrieved dimensions of {} from cache in {} msec",
                             identifier, watch.timeElapsed());
                 } else {
                     info = readInfo(identifier, proc);
@@ -517,7 +517,7 @@ public abstract class AbstractResource extends ServerResource {
                                final Processor proc) throws ProcessorException {
         final Stopwatch watch = new Stopwatch();
         final ImageInfo info = proc.getImageInfo();
-        logger.debug("Read info of {} in {} msec", identifier,
+        logger.debug("readInfo(): read from {} in {} msec", identifier,
                 watch.timeElapsed());
         return info;
     }
