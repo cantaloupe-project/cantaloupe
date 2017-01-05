@@ -1,10 +1,16 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.operation.Operation;
+import org.apache.commons.codec.binary.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,6 +21,9 @@ import java.util.Map;
  * {@link OverlayService}.</p>
  */
 public class StringOverlay extends Overlay implements Operation {
+
+    private static final Logger logger = LoggerFactory.
+            getLogger(StringOverlay.class);
 
     private Color color;
     private Font font;
@@ -100,12 +109,21 @@ public class StringOverlay extends Overlay implements Operation {
 
     /**
      * @return String representation of the instance, in the format
-     * "{alphanumeric string}_{position}_{inset}_{color}".
+     * "{string MD5 checksum}_{position}_{inset}_{family}_{size}_{color}_{stroke color}_{stroke width}".
      */
     @Override
     public String toString() {
+        String string;
+        try {
+            final MessageDigest digest = MessageDigest.getInstance("MD5");
+            digest.update(getString().getBytes(Charset.forName("UTF8")));
+            string = Hex.encodeHexString(digest.digest());
+        } catch (NoSuchAlgorithmException e) {
+            logger.error("toString(): {}", e.getMessage());
+            string = getString().replaceAll("[^A-Za-z0-9]", "");
+        }
         return String.format("%s_%s_%d_%s_%d_%s_%s_%.1f",
-                getString().replaceAll("[^A-Za-z0-9]", ""),
+                string,
                 getPosition(),
                 getInset(),
                 getFont().getFamily(),

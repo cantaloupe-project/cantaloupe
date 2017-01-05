@@ -45,7 +45,7 @@ public class StringOverlayTest extends BaseTest {
     @Test
     public void testToString() throws IOException {
         instance.setString("DOGSdogs123!@#$%\n%^&*()");
-        assertEquals("DOGSdogs123_SE_5_Helvetica_12_#0000FF_#FF0000_5.0",
+        assertEquals("801774c691b35cbd89e3bd8cb6803681_SE_5_Helvetica_12_#0000FF_#FF0000_5.0",
                 instance.toString());
     }
 
