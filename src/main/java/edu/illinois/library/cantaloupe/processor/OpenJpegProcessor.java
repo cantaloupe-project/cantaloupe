@@ -327,8 +327,10 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
                 process.destroy();
             }
         } catch (EOFException e) {
-            // This happens frequently in Tomcat, but appears to be harmless.
-            logger.warn("EOFException: {}", e.getMessage());
+            // This will generally not have a message.
+            String msg = "process(): EOFException";
+            logger.error(msg, e);
+            throw new ProcessorException(msg, e);
         } catch (IOException | InterruptedException e) {
             String msg = e.getMessage();
             final String errorStr = errorBucket.toString();
