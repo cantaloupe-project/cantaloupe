@@ -82,17 +82,17 @@ public class ImageRepresentation extends OutputRepresentation {
                     } else {
                         // Create a TeeOutputStream to write to the response
                         // output stream and the cache pseudo-simultaneously.
-                        // Restlet will close outputStream, but cacheOutputStream
-                        // is our responsibility. (teeStream doesn't matter,
-                        // although the finalizer may close it, so it's important
-                        // that these two output streams' close() method can deal
-                        // with being called twice.)
+                        // Restlet will close outputStream, but
+                        // cacheOutputStream is our responsibility. (teeStream
+                        // doesn't matter, although the finalizer may close it,
+                        // so it's important that these two output streams'
+                        // close() methods can deal with being called twice.)
                         try (OutputStream cacheOutputStream =
                                      cache.getImageOutputStream(opList)) {
                             OutputStream teeStream = new TeeOutputStream(
                                     outputStream, cacheOutputStream);
                             doWrite(teeStream);
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                             // This typically happens when the connection has
                             // been closed prematurely, as in the case of e.g.
                             // the client hitting the stop button. The cached
