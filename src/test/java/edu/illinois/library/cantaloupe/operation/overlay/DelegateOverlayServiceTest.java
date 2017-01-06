@@ -67,11 +67,12 @@ public class DelegateOverlayServiceTest extends BaseTest {
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
-        final StringOverlay overlay =
-                (StringOverlay) instance.getOverlay(
-                        opList, fullSize, requestUrl, requestHeaders, clientIp,
-                        cookies);
+        final StringOverlay overlay = (StringOverlay) instance.getOverlay(
+                opList, fullSize, requestUrl, requestHeaders, clientIp,
+                cookies);
         assertEquals("dogs\ndogs", overlay.getString());
+        assertEquals("Helvetica", overlay.getFont().getFamily());
+        assertEquals(20, overlay.getFont().getSize());
         assertEquals((long) 5, overlay.getInset());
         assertEquals(Position.BOTTOM_LEFT, overlay.getPosition());
         assertEquals(Color.red, overlay.getColor());
