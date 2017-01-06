@@ -78,7 +78,7 @@ class MemoryConfiguration implements Configuration {
 
     public float getFloat(String key, float defaultValue) {
         try {
-            return getInt(key);
+            return getFloat(key);
         } catch (NoSuchElementException | NumberFormatException e) {
             return defaultValue;
         }
