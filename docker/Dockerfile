@@ -5,7 +5,7 @@ FROM openjdk:8-jdk-alpine
 
 # Build and run: 
 # $ sudo docker build -t cantaloupe .
-# $ sudo docker run -d --rm -p 8183:8182 -v /Users/kjauslin/dev/projects/nbvv-testing/images:/var/lib/cantaloupe/images --name cantaloupe cantaloupe
+# $ sudo docker run -d --rm -p 8183:8182 -v ./images:/var/lib/cantaloupe/images --name cantaloupe cantaloupe
 
 ENV CANTALOUPE_VERSION 3.2.2
 EXPOSE 8182
@@ -39,7 +39,7 @@ RUN mkdir -p /var/log/cantaloupe \
  && chown cantaloupe /etc/cantaloupe.properties
 
 #
-# JAI (not functional yet)
+# JAI native medialib (non functional)
 #
 # ENV JAI_PKG jai-1_1_3-lib-linux-amd64
 # RUN curl -OL http://download.java.net/media/jai/builds/release/1_1_3/$JAI_PKG.tar.gz \
