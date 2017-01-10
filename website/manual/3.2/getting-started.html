@@ -19,8 +19,10 @@ title: Getting Started
     <ul>
       <li><a href="#Standalone">Standalone</a></li>
       <li><a href="#Servlet%20Container">Servlet Container</a></li>
+      <li><a href="#Docker">Docker</a></li>
     </ul>
   </li>
+  <li><a href="#Testing">Testing</a></li>
   <li><a href="#Control Panel">Accessing the Control Panel</a></li>
 </ul>
 
@@ -72,6 +74,14 @@ title: Getting Started
 <pre>set JAVA_OPTS=%JAVA_OPTS% -Dcantaloupe.config="C:\path\to\cantaloupe.properties"</pre>
 
 <p>Then, restart your container.</p>
+
+<h3 id="Docker">Docker</h3>
+
+<p>Cantaloupe can be run in Docker. The download archive doesn't include any Docker support files, but see the <a href="https://github.com/kaij/cantaloupe/tree/docker-deploy/docker">kaji/cantaloupe</a> fork for an example Dockerfile that might be able to help you get started.</p>
+
+<hr>
+
+<h2 id="Testing">Testing</h2>
 
 <p>Assuming you have an image named <span class="filename">image.tif</span>, and a container listening on port 8080, try accessing:</p>
 
