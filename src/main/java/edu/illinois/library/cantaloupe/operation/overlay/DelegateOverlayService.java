@@ -9,6 +9,7 @@ import javax.script.ScriptException;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.font.TextAttribute;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -55,9 +56,13 @@ class DelegateOverlayService {
                 }
             } else {
                 final String string = (String) defs.get("string");
-                final Font font = new Font((String) defs.get("font"),
-                        Font.PLAIN,
-                        ((Long) defs.get("font_size")).intValue());
+
+                final Map<TextAttribute, Object> attributes = new HashMap<>();
+                attributes.put(TextAttribute.FAMILY, defs.get("font"));
+                attributes.put(TextAttribute.SIZE, defs.get("font_size"));
+                attributes.put(TextAttribute.WEIGHT, defs.get("font_weight"));
+                final Font font = Font.getFont(attributes);
+
                 final Color color =
                         ColorUtil.fromString((String) defs.get("color"));
                 final Color strokeColor =

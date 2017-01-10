@@ -182,14 +182,14 @@ module Cantaloupe
   # @param request_headers [Hash<String,String>]
   # @param client_ip [String]
   # @param cookies [Hash<String,String>]
-  # @return [Hash<String,String>,Boolean] For image overlays, a 3-element
-  #         hash with `image`, `position`, and `inset` keys. For string
-  #         overlays, an 8-element hash with `position`, `inset`, `string`,
-  #         `font`, `font_size`, `color`, `stroke_color`, and `stroke_width`
+  # @return [Hash<String,String>,Boolean] For image overlays, a hash with
+  #         `image`, `position`, and `inset` keys. For string overlays, a
+  #         hash with `position`, `inset`, `string`, `font`, `font_size`,
+  #         `font_weight`, ``color`, `stroke_color`, and `stroke_width`
   #         keys. Return false for no overlay.
   #
   def self.overlay(identifier, operations, resulting_size, output_format,
-                     request_uri, request_headers, client_ip, cookies)
+                   request_uri, request_headers, client_ip, cookies)
     false
   end
 

@@ -6,6 +6,9 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.font.TextAttribute;
+import java.util.HashMap;
+import java.util.Map;
 
 class BasicStringOverlayService extends BasicOverlayService {
 
@@ -15,6 +18,8 @@ class BasicStringOverlayService extends BasicOverlayService {
             "overlays.BasicStrategy.string.font";
     static final String FONT_SIZE_CONFIG_KEY =
             "overlays.BasicStrategy.string.font.size";
+    static final String FONT_WEIGHT_CONFIG_KEY =
+            "overlays.BasicStrategy.string.font.weight";
     static final String STRING_CONFIG_KEY =
             "overlays.BasicStrategy.string";
     static final String STROKE_COLOR_CONFIG_KEY =
@@ -40,16 +45,27 @@ class BasicStringOverlayService extends BasicOverlayService {
 
     private void readConfig() throws ConfigurationException {
         final Configuration config = ConfigurationFactory.getInstance();
+
         // Fill color
         color = ColorUtil.fromString(config.getString(COLOR_CONFIG_KEY));
+
         // Font
-        font = new Font(config.getString(FONT_CONFIG_KEY), Font.PLAIN,
+        final Map<TextAttribute, Object> attributes = new HashMap<>();
+        attributes.put(TextAttribute.FAMILY,
+                config.getString(FONT_CONFIG_KEY, "Helvetica"));
+        attributes.put(TextAttribute.SIZE,
                 config.getInt(FONT_SIZE_CONFIG_KEY, 18));
+        attributes.put(TextAttribute.WEIGHT,
+                config.getFloat(FONT_WEIGHT_CONFIG_KEY, 1f));
+        font = Font.getFont(attributes);
+
         // String
         string = config.getString(STRING_CONFIG_KEY, "");
+
         // Stroke color
         strokeColor = ColorUtil.fromString(
                 config.getString(STROKE_COLOR_CONFIG_KEY, "black"));
+
         // Stroke width
         strokeWidth = config.getFloat(STROKE_WIDTH_CONFIG_KEY, 2f);
     }

@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.font.TextAttribute;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -89,8 +90,8 @@ public class StringOverlay extends Overlay implements Operation {
      * @param fullSize Full size of the source image on which the operation
      *                 is being applied.
      * @return Map with <var>string</var>, <var>font</var>,
-     *         <var>font_size</var>, <var>color</var>, <var>position</var>,
-     *         and <var>inset</var> keys.
+     *         <var>font_size</var>, <var>font_weight</var>, <var>color</var>,
+     *         <var>position</var>, and <var>inset</var> keys.
      */
     @Override
     public Map<String, Object> toMap(Dimension fullSize) {
@@ -101,6 +102,7 @@ public class StringOverlay extends Overlay implements Operation {
         map.put("inset", getInset());
         map.put("font", getFont().getFamily());
         map.put("font_size", getFont().getSize());
+        map.put("font_weight", getFont().getAttributes().get(TextAttribute.WEIGHT));
         map.put("color", ColorUtil.getHex(getColor()));
         map.put("stroke_color", ColorUtil.getHex(getStrokeColor()));
         map.put("stroke_width", getStrokeWidth());
@@ -122,12 +124,13 @@ public class StringOverlay extends Overlay implements Operation {
             logger.error("toString(): {}", e.getMessage());
             string = getString().replaceAll("[^A-Za-z0-9]", "");
         }
-        return String.format("%s_%s_%d_%s_%d_%s_%s_%.1f",
+        return String.format("%s_%s_%d_%s_%d_%.1f_%s_%s_%.1f",
                 string,
                 getPosition(),
                 getInset(),
                 getFont().getFamily(),
                 getFont().getSize(),
+                getFont().getAttributes().get(TextAttribute.WEIGHT),
                 ColorUtil.getHex(getColor()),
                 ColorUtil.getHex(getStrokeColor()),
                 getStrokeWidth());

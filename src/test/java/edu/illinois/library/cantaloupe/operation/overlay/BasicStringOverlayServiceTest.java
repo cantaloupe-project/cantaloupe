@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.font.TextAttribute;
 
 import static org.junit.Assert.*;
 
@@ -29,6 +30,7 @@ public class BasicStringOverlayServiceTest extends BaseTest {
         config.setProperty(BasicStringOverlayService.COLOR_CONFIG_KEY, "red");
         config.setProperty(BasicStringOverlayService.FONT_CONFIG_KEY, "Helvetica");
         config.setProperty(BasicStringOverlayService.FONT_SIZE_CONFIG_KEY, 14);
+        config.setProperty(BasicStringOverlayService.FONT_WEIGHT_CONFIG_KEY, 2f);
         config.setProperty(BasicStringOverlayService.STROKE_COLOR_CONFIG_KEY, "blue");
         config.setProperty(BasicStringOverlayService.STROKE_WIDTH_CONFIG_KEY, 3);
 
@@ -44,6 +46,7 @@ public class BasicStringOverlayServiceTest extends BaseTest {
         assertEquals(Color.red, overlay.getColor());
         assertEquals("Helvetica", overlay.getFont().getFamily());
         assertEquals(14, overlay.getFont().getSize());
+        assertEquals(2f, overlay.getFont().getAttributes().get(TextAttribute.WEIGHT));
         assertEquals(Color.blue, overlay.getStrokeColor());
         assertEquals(3, overlay.getStrokeWidth(), 0.00001f);
     }

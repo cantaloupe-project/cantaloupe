@@ -2575,6 +2575,21 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td>Font Weight
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Font weight. Note that many fonts
+                                           don't support fractional weights.">?</a>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control"
+                                               name="overlays.BasicStrategy.string.font.weight"
+                                               min="0"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td>Fill Color
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"

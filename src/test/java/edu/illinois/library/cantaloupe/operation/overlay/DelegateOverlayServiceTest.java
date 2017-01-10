@@ -13,6 +13,7 @@ import org.junit.Test;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.font.TextAttribute;
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
@@ -73,6 +74,7 @@ public class DelegateOverlayServiceTest extends BaseTest {
         assertEquals("dogs\ndogs", overlay.getString());
         assertEquals("Helvetica", overlay.getFont().getFamily());
         assertEquals(20, overlay.getFont().getSize());
+        assertEquals(1.5f, overlay.getFont().getAttributes().get(TextAttribute.WEIGHT));
         assertEquals((long) 5, overlay.getInset());
         assertEquals(Position.BOTTOM_LEFT, overlay.getPosition());
         assertEquals(Color.red, overlay.getColor());
