@@ -7,7 +7,8 @@
 (https://medusa-project.github.io/cantaloupe/)**
 
 This is a very-quick-start guide. The user manual at the website above is
-the primary source of documentation.
+the primary source of documentation, containing additional information about
+Servlet container and Docker setup.
 
 ## Requirements
 
