@@ -76,7 +76,7 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
     }
 
     @Override
-    public ImageInfo getImageInfo() throws ProcessorException {
+    public ImageInfo readImageInfo() throws ProcessorException {
         try {
             if (fullImage == null) {
                 // This is a very inefficient method of getting the size.

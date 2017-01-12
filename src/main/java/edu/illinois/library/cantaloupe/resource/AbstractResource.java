@@ -518,7 +518,7 @@ public abstract class AbstractResource extends ServerResource {
     private ImageInfo readInfo(final Identifier identifier,
                                final Processor proc) throws ProcessorException {
         final Stopwatch watch = new Stopwatch();
-        final ImageInfo info = proc.getImageInfo();
+        final ImageInfo info = proc.readImageInfo();
         logger.debug("readInfo(): read from {} in {} msec", identifier,
                 watch.timeElapsed());
         return info;

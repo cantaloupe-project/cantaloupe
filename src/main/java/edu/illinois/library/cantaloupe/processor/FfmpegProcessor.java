@@ -89,7 +89,7 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
      * @throws ProcessorException
      */
     @Override
-    public ImageInfo getImageInfo() throws ProcessorException {
+    public ImageInfo readImageInfo() throws ProcessorException {
         final List<String> command = new ArrayList<>();
         // ffprobe -v quiet -print_format xml -show_streams <file>
         command.add(getPath("ffprobe"));

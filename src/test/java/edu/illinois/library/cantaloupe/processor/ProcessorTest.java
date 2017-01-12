@@ -55,7 +55,7 @@ public abstract class ProcessorTest extends BaseTest {
      * @throws Exception
      */
     @Test
-    public void testGetImageInfo() throws Exception {
+    public void testReadImageInfo() throws Exception {
         ImageInfo expectedInfo = new ImageInfo(64, 56, 64, 56, Format.JPG);
 
         Processor proc = newInstance();
@@ -65,7 +65,7 @@ public abstract class ProcessorTest extends BaseTest {
                     TestUtil.getFixture(IMAGE));
             sproc.setStreamSource(streamSource);
             sproc.setSourceFormat(Format.JPG);
-            assertEquals(expectedInfo, sproc.getImageInfo());
+            assertEquals(expectedInfo, sproc.readImageInfo());
         }
         if (proc instanceof FileProcessor) {
             FileProcessor fproc = (FileProcessor) proc;
@@ -73,7 +73,7 @@ public abstract class ProcessorTest extends BaseTest {
                 fproc.setSourceFile(TestUtil.getFixture(IMAGE));
                 fproc.setSourceFormat(Format.JPG);
                 assertEquals(expectedInfo.toString(),
-                        fproc.getImageInfo().toString());
+                        fproc.readImageInfo().toString());
             } catch (UnsupportedSourceFormatException e) {
                 // no problem
             }
@@ -133,7 +133,7 @@ public abstract class ProcessorTest extends BaseTest {
                         ((FileProcessor) proc).setSourceFile(file);
                     }
                     try {
-                        proc.process(ops, proc.getImageInfo(),
+                        proc.process(ops, proc.readImageInfo(),
                                 new NullOutputStream());
                         fail("Expected exception");
                     } catch (ProcessorException e) {
@@ -364,7 +364,7 @@ public abstract class ProcessorTest extends BaseTest {
         }
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            proc.process(opList, proc.getImageInfo(), outputStream);
+            proc.process(opList, proc.readImageInfo(), outputStream);
             // TODO: verify that this is a valid image
             assertTrue(outputStream.toByteArray().length > 100);
         } catch (Exception e) {

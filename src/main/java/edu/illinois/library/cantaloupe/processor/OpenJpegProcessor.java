@@ -195,10 +195,10 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
      * @throws ProcessorException
      */
     @Override
-    public ImageInfo getImageInfo() throws ProcessorException {
+    public ImageInfo readImageInfo() throws ProcessorException {
         try {
             if (imageInfo == null) {
-                readImageInfo();
+                doReadImageInfo();
             }
             final ImageInfo.Image image = new ImageInfo.Image();
 
@@ -234,7 +234,7 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
         }
     }
 
-    private void readImageInfo() throws IOException {
+    private void doReadImageInfo() throws IOException {
         final List<String> command = new ArrayList<>();
         command.add(getPath("opj_dump"));
         command.add("-i");

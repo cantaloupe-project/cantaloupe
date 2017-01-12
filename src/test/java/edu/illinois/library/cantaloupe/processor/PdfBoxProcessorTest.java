@@ -89,11 +89,11 @@ public class PdfBoxProcessorTest extends ProcessorTest {
 
     @Test
     @Override
-    public void testGetImageInfo() throws Exception {
+    public void testReadImageInfo() throws Exception {
         ImageInfo expectedInfo = new ImageInfo(100, 88, 100, 88, Format.PDF);
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
         instance.setSourceFormat(Format.PDF);
-        assertEquals(expectedInfo, instance.getImageInfo());
+        assertEquals(expectedInfo, instance.readImageInfo());
     }
 
     @Test
@@ -118,7 +118,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     @Test
     public void testProcessWithPageOption() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
-        final ImageInfo imageInfo = instance.getImageInfo();
+        final ImageInfo imageInfo = instance.readImageInfo();
 
         // page option missing
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -138,7 +138,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     @Test
     public void testProcessWithIllegalPageOptionReturnsFirstPage() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
-        final ImageInfo imageInfo = instance.getImageInfo();
+        final ImageInfo imageInfo = instance.readImageInfo();
 
         // page 1
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

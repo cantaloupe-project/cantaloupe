@@ -29,12 +29,6 @@ public interface Processor {
     Set<Format> getAvailableOutputFormats();
 
     /**
-     * @return Information about the source image.
-     * @throws ProcessorException
-     */
-    ImageInfo getImageInfo() throws ProcessorException;
-
-    /**
      * @return The source format of the image to be processed.
      */
     Format getSourceFormat();
@@ -82,6 +76,14 @@ public interface Processor {
      */
     void process(OperationList ops, ImageInfo sourceInfo,
                  OutputStream outputStream) throws ProcessorException;
+
+    /**
+     * Reads and returns information about the source image.
+     *
+     * @return Information about the source image.
+     * @throws ProcessorException
+     */
+    ImageInfo readImageInfo() throws ProcessorException;
 
     /**
      * @param format Format of the source image. Will never be

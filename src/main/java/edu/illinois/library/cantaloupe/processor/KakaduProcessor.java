@@ -211,7 +211,7 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
      * @throws ProcessorException
      */
     @Override
-    public ImageInfo getImageInfo() throws ProcessorException {
+    public ImageInfo readImageInfo() throws ProcessorException {
         try {
             if (infoDocument == null) {
                 readImageInfoDocument();

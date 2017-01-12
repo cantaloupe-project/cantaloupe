@@ -52,7 +52,7 @@ public class JaiProcessorTest extends ProcessorTest {
      */
     @Test
     @Override
-    public void testGetImageInfo() throws Exception {
+    public void testReadImageInfo() throws Exception {
         ImageInfo expectedInfo = new ImageInfo(64, 56, Format.TIF);
         expectedInfo.getImages().get(0).tileWidth = 16;
         expectedInfo.getImages().get(0).tileHeight = 16;
@@ -65,26 +65,26 @@ public class JaiProcessorTest extends ProcessorTest {
         StreamSource streamSource = new TestStreamSource(fixture);
         sproc.setStreamSource(streamSource);
         sproc.setSourceFormat(Format.TIF);
-        assertEquals(expectedInfo, sproc.getImageInfo());
+        assertEquals(expectedInfo, sproc.readImageInfo());
 
         // test as a FileProcessor
         FileProcessor fproc = (FileProcessor) newInstance();
         fproc.setSourceFile(fixture);
         fproc.setSourceFormat(Format.TIF);
-        assertEquals(expectedInfo, fproc.getImageInfo());
+        assertEquals(expectedInfo, fproc.readImageInfo());
 
         try {
             fproc.setSourceFile(TestUtil.getImage("mpg"));
             fproc.setSourceFormat(Format.MPG);
             expectedInfo = new ImageInfo(640, 360, Format.MPG);
-            assertEquals(expectedInfo, fproc.getImageInfo());
+            assertEquals(expectedInfo, fproc.readImageInfo());
         } catch (UnsupportedSourceFormatException e) {
             // pass
         }
     }
 
     @Test
-    public void testGetImageInfoWithOrientation() throws Exception {
+    public void testReadImageInfoWithOrientation() throws Exception {
         ConfigurationFactory.getInstance().
                 setProperty(RESPECT_ORIENTATION_CONFIG_KEY, true);
 
@@ -94,7 +94,7 @@ public class JaiProcessorTest extends ProcessorTest {
         fproc.setSourceFile(fixture);
         fproc.setSourceFormat(Format.JPG);
 
-        final ImageInfo info = fproc.getImageInfo();
+        final ImageInfo info = fproc.readImageInfo();
         assertEquals(Orientation.ROTATE_90, info.getOrientation());
     }
 

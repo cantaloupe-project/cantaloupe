@@ -33,7 +33,7 @@ public class ImageInfoFactoryTest extends BaseTest {
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
 
         info = ImageInfoFactory.newImageInfo(imageUri, processor,
-                processor.getImageInfo());
+                processor.readImageInfo());
     }
 
     private void setUpForRotatedImage() throws Exception {
@@ -45,7 +45,7 @@ public class ImageInfoFactoryTest extends BaseTest {
                 TestUtil.getImage("jpg-rotated.jpg"));
 
         info = ImageInfoFactory.newImageInfo(imageUri, processor,
-                processor.getImageInfo());
+                processor.readImageInfo());
     }
 
     @Test
@@ -106,7 +106,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"));
         info = ImageInfoFactory.newImageInfo(imageUri, processor,
-                processor.getImageInfo());
+                processor.readImageInfo());
 
         assertEquals(64, (long) info.tileWidth);
     }
@@ -128,7 +128,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"));
         info = ImageInfoFactory.newImageInfo(imageUri, processor,
-                processor.getImageInfo());
+                processor.readImageInfo());
 
         assertEquals(64, (long) info.tileWidth);
         assertEquals(56, (long) info.tileHeight);

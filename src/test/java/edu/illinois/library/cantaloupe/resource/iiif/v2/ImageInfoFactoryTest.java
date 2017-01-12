@@ -42,7 +42,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
         imageInfo = ImageInfoFactory.newImageInfo(identifier, imageUri, processor,
-                processor.getImageInfo());
+                processor.readImageInfo());
     }
 
     private void setUpForRotatedImage() throws Exception {
@@ -55,7 +55,7 @@ public class ImageInfoFactoryTest extends BaseTest {
                 TestUtil.getImage("jpg-rotated.jpg"));
 
         imageInfo = ImageInfoFactory.newImageInfo(identifier, imageUri, processor,
-                processor.getImageInfo());
+                processor.readImageInfo());
     }
 
     @Test
@@ -147,7 +147,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"));
         imageInfo = ImageInfoFactory.newImageInfo(identifier, imageUri, processor,
-                processor.getImageInfo());
+                processor.readImageInfo());
 
         @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =
@@ -197,7 +197,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         ConfigurationFactory.getInstance().
                 setProperty(AbstractResource.MAX_PIXELS_CONFIG_KEY, 0);
         imageInfo = ImageInfoFactory.newImageInfo(identifier, imageUri,
-                processor, processor.getImageInfo());
+                processor, processor.readImageInfo());
         profile = (List) imageInfo.get("profile");
         assertFalse(((Map) profile.get(1)).containsKey("maxArea"));
     }
@@ -225,7 +225,7 @@ public class ImageInfoFactoryTest extends BaseTest {
                 ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         imageInfo = ImageInfoFactory.newImageInfo(identifier, imageUri,
-                processor, processor.getImageInfo());
+                processor, processor.readImageInfo());
 
         assertEquals("Copyright My Great Organization. All rights reserved.",
                 imageInfo.get("attribution"));

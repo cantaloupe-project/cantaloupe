@@ -241,7 +241,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor implements StreamProc
     }
 
     @Override
-    public ImageInfo getImageInfo() throws ProcessorException {
+    public ImageInfo readImageInfo() throws ProcessorException {
         try (InputStream inputStream = streamSource.newInputStream()) {
             final List<String> args = new ArrayList<>();
             if (isUsingVersion7()) {
@@ -258,7 +258,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor implements StreamProc
             final ProcessStarter cmd = new ProcessStarter();
             cmd.setInputProvider(new Pipe(inputStream, null));
             cmd.setOutputConsumer(consumer);
-            logger.info("getImageInfo(): invoking {}",
+            logger.info("readImageInfo(): invoking {}",
                     StringUtils.join(args, " ").replace("\n", ","));
             cmd.run(args);
 

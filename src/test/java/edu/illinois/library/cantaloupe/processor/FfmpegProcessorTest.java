@@ -116,12 +116,12 @@ public class FfmpegProcessorTest extends ProcessorTest {
 
     @Override
     @Test
-    public void testGetImageInfo() throws Exception {
+    public void testReadImageInfo() throws Exception {
         instance.setSourceFile(TestUtil.getImage("mpg"));
         instance.setSourceFormat(Format.MPG);
         ImageInfo expectedInfo = new ImageInfo(640, 360, 640, 360, Format.MPG);
         assertEquals(expectedInfo.toString(),
-                instance.getImageInfo().toString());
+                instance.readImageInfo().toString());
     }
 
     @Test
@@ -146,7 +146,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
 
     @Test
     public void testProcessWithFrameOption() throws Exception {
-        final ImageInfo imageInfo = instance.getImageInfo();
+        final ImageInfo imageInfo = instance.readImageInfo();
 
         // time option missing
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

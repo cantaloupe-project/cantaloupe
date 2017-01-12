@@ -55,7 +55,7 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
         return formats;
     }
 
-    public ImageInfo getImageInfo() throws ProcessorException {
+    public ImageInfo readImageInfo() throws ProcessorException {
         try {
             final ImageInfo info = new ImageInfo();
             info.setSourceFormat(getSourceFormat());
