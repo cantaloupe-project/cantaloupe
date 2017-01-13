@@ -777,8 +777,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         return new File(pathname);
     }
 
-    File getInfoTempFile(final Identifier identifier) throws CacheException {
-        return new File(getInfoFile(identifier).getAbsolutePath() +
+    File infoTempFile(final Identifier identifier) throws CacheException {
+        return new File(infoFile(identifier).getAbsolutePath() +
                 TEMP_EXTENSION);
     }
 
@@ -1053,8 +1053,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
         logger.info("put(): caching: {}", identifier);
 
-        final File tempFile = getInfoTempFile(identifier);
         final File destFile = infoFile(identifier);
+        final File tempFile = infoTempFile(identifier);
 
         try {
             if (destFile.exists()) {

@@ -153,7 +153,7 @@ public class FilesystemCacheTest extends BaseTest {
         FileUtils.writeStringToFile(sourceImageTempFile, "not empty");
         File derivativeImageTempFile = instance.getDerivativeImageTempFile(ops);
         FileUtils.writeStringToFile(derivativeImageTempFile, "not empty");
-        File infoTempFile = instance.getInfoTempFile(ops.getIdentifier());
+        File infoTempFile = instance.infoTempFile(ops.getIdentifier());
         FileUtils.writeStringToFile(infoTempFile, "not empty");
 
         // create some empty files
@@ -208,7 +208,7 @@ public class FilesystemCacheTest extends BaseTest {
         FileUtils.writeStringToFile(sourceImageTempFile, "not empty");
         File derivativeImageTempFile = instance.getDerivativeImageTempFile(ops);
         FileUtils.writeStringToFile(derivativeImageTempFile, "not empty");
-        File infoTempFile = instance.getInfoTempFile(ops.getIdentifier());
+        File infoTempFile = instance.infoTempFile(ops.getIdentifier());
         FileUtils.writeStringToFile(infoTempFile, "not empty");
 
         // create some empty files
