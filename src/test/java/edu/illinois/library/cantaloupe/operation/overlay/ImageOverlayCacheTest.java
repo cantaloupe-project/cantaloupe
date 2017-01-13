@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -16,6 +17,7 @@ import static org.junit.Assert.*;
 public class ImageOverlayCacheTest extends BaseTest {
 
     private static WebServer webServer;
+    private ImageOverlayCache instance;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -28,12 +30,17 @@ public class ImageOverlayCacheTest extends BaseTest {
         webServer.stop();
     }
 
+    @Before
+    public void setUp() {
+        instance = new ImageOverlayCache();
+    }
+
     // putAndGet(File)
 
     @Test
     public void testPutAndGetWithPresentFile() throws IOException {
         File file = TestUtil.getImage("jpg");
-        byte[] bytes = ImageOverlayCache.putAndGet(file);
+        byte[] bytes = instance.putAndGet(file);
         assertEquals(5439, bytes.length);
     }
 
@@ -41,7 +48,7 @@ public class ImageOverlayCacheTest extends BaseTest {
     public void testPutAndGetWithMissingFile() throws IOException {
         try {
             File file = TestUtil.getImage("blablabla");
-            ImageOverlayCache.putAndGet(file);
+            instance.putAndGet(file);
             fail("Expected exception");
         } catch (IOException e) {
             // pass
@@ -53,7 +60,7 @@ public class ImageOverlayCacheTest extends BaseTest {
     @Test
     public void testPutAndGetWithPresentString() throws IOException {
         File file = TestUtil.getImage("jpg");
-        byte[] bytes = ImageOverlayCache.putAndGet(file.getAbsolutePath());
+        byte[] bytes = instance.putAndGet(file.getAbsolutePath());
         assertEquals(5439, bytes.length);
     }
 
@@ -61,7 +68,7 @@ public class ImageOverlayCacheTest extends BaseTest {
     public void testPutAndGetWithMissingString() throws IOException {
         try {
             File file = TestUtil.getImage("blablabla");
-            ImageOverlayCache.putAndGet(file.getAbsolutePath());
+            instance.putAndGet(file.getAbsolutePath());
             fail("Expected exception");
         } catch (IOException e) {
             // pass
@@ -73,7 +80,7 @@ public class ImageOverlayCacheTest extends BaseTest {
     @Test
     public void testPutAndGetWithPresentURL() throws IOException {
         URL url = new URL(webServer.getUri() + "/jpg");
-        byte[] bytes = ImageOverlayCache.putAndGet(url.toString());
+        byte[] bytes = instance.putAndGet(url.toString());
         assertEquals(5439, bytes.length);
     }
 
@@ -81,7 +88,7 @@ public class ImageOverlayCacheTest extends BaseTest {
     public void testPutAndGetWithMissingURL() {
         try {
             URL url = new URL(webServer.getUri() + "/blablabla");
-            ImageOverlayCache.putAndGet(url.toString());
+            instance.putAndGet(url.toString());
             fail("Expected exception");
         } catch (IOException e) {
             // pass

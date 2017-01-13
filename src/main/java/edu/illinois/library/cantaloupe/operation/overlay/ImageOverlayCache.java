@@ -18,15 +18,14 @@ import java.util.concurrent.ConcurrentSkipListSet;
 /**
  * Thread-safe, in-memory image overlay cache.
  */
-abstract class ImageOverlayCache {
+class ImageOverlayCache {
 
     private static final Logger logger = LoggerFactory.
             getLogger(ImageOverlayCache.class);
 
-    private static final Set<String> downloadingOverlays =
+    private final Set<String> downloadingOverlays =
             new ConcurrentSkipListSet<>();
-    private static final Map<String,byte[]> overlays =
-            new ConcurrentHashMap<>();
+    private final Map<String,byte[]> overlays = new ConcurrentHashMap<>();
 
     private static final Object lock = new Object();
 
@@ -35,7 +34,7 @@ abstract class ImageOverlayCache {
      * @return Overlay image.
      * @throws IOException If the image cannot be accessed.
      */
-    static byte[] putAndGet(File file) throws IOException {
+    byte[] putAndGet(File file) throws IOException {
         return putAndGet(file.getAbsolutePath());
     }
 
@@ -44,7 +43,7 @@ abstract class ImageOverlayCache {
      * @return Overlay image.
      * @throws IOException If the image cannot be accessed.
      */
-    static byte[] putAndGet(URL url) throws IOException {
+    byte[] putAndGet(URL url) throws IOException {
         return putAndGet(url.toString());
     }
 
@@ -53,7 +52,7 @@ abstract class ImageOverlayCache {
      * @return Overlay image.
      * @throws IOException If the image cannot be accessed.
      */
-    static byte[] putAndGet(String pathnameOrURL) throws IOException {
+    byte[] putAndGet(String pathnameOrURL) throws IOException {
         // If the overlay is currently being downloaded in another thread,
         // wait for it to download.
         synchronized (lock) {

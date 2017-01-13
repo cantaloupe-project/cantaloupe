@@ -18,6 +18,8 @@ import java.util.Map;
  */
 public class ImageOverlay extends Overlay implements Operation {
 
+    private static ImageOverlayCache overlayCache = new ImageOverlayCache();
+
     private File file;
     private URL url;
 
@@ -82,9 +84,9 @@ public class ImageOverlay extends Overlay implements Operation {
     public InputStream openStream() throws IOException {
         byte[] bytes;
         if (getFile() != null) {
-            bytes = ImageOverlayCache.putAndGet(getFile());
+            bytes = overlayCache.putAndGet(getFile());
         } else {
-            bytes = ImageOverlayCache.putAndGet(getURL());
+            bytes = overlayCache.putAndGet(getURL());
         }
         return new ByteArrayInputStream(bytes);
     }
