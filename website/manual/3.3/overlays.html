@@ -31,17 +31,17 @@ title: Overlays
   </li>
 </ul>
 
-<p>The overlay feature (called "watermarking" prior to version 3.3) overlays an image or text string on top of a derivative (output) image. This can be useful for watermarking, branding, attributions, copyright notices, and so on.</p>
+<p>The overlay feature (called "watermarking" prior to version 3.3) overlays an image or text string on top of a derivative (output) image. This can be useful for description, branding, attribution, copyright notices, and so on.</p>
 
-<p>As of version 3.3, overlay images can be located on the local filesystem or a web server. Regardless, they are cached in memory after being loaded the first time, so there is no performance penalty for web-server-hosted overlay images.</p>
+<p>As of version 3.3, overlay images can be located on the local filesystem or a web server. Regardless, they are cached in memory after being loaded the first time, so there is no performance penalty for using web-hosted overlay images.</p>
 
 <h2 id="Modes of Operation">Modes of Operation</h2>
 
-<p>The overlay system offers two "strategies," or modes of operation: a basic strategy, where overlay properties are hard-coded in the configuration file and applied to all requests; and a <a href="#ScriptStrategy">script strategy</a>, where the decision whether to apply an overlay, and what kind, depends on the return value of a delegate method. The <code>overlays.strategy</code> configuration key is used to set the strategy.</p>
+<p>The overlay system offers two "strategies," or modes of operation: a basic strategy, where overlay properties are hard-coded in the configuration file and applied to all requests; and a <a href="#ScriptStrategy">script strategy</a>, where the decision of whether to apply an overlay, and what kind, depends on the return value of a delegate method. The <code>overlays.strategy</code> configuration key is used to set the strategy.</p>
 
 <h3 id="BasicStrategy">BasicStrategy</h3>
 
-<p>With BasicStrategy, the <code>overlays.BasicStrategy.*</code> keys in the configuration file are used to set an overlay type (image or string), position, inset, and others. This strategy is easy to configure and is all that is needed when you intend for the same overlay to be applied to all images.</p>
+<p>With BasicStrategy, the <code>overlays.BasicStrategy.*</code> keys in the configuration file are used to set an overlay type (image or string), position, inset, and others. This strategy is easy to configure and is all that is needed when it is intended for the same overlay to be applied to all images.</p>
 
 <h3 id="ScriptStrategy">ScriptStrategy</h3>
 
@@ -89,6 +89,7 @@ module Cantaloupe
       'color' => 'red',
       'font' => 'Helvetica',
       'font_size' => 20,
+      'font_weight' => 1.0,
       'stroke_color' => 'black',
       'stroke_width' => 1
     }
@@ -100,13 +101,13 @@ end
 
 <p>An overlay must be a 24-bit PNG image, either RGB or RGBA.</p>
 
-<p>When using multiple different image overlays, their filenames must all be different, regardless of where they reside.</p>
+<p>When using multiple image overlays, their filenames must all be different, regardless of where they reside.</p>
 
 <p><a href="images/overlay-sample.png">Sample overlay (PNG)</a></p>
 
 <h2 id="Positioning">Positioning</h2>
 
-<p>Position and inset are configurable. Below, all availble positions are pictured with insets of zero:</p>
+<p>Position and inset are configurable. Supported positions are:</p>
 
 <table class="table text-center">
   <tr>
@@ -144,6 +145,8 @@ end
   </tr>
 </table>
 
+<p>String overlay text is auto-aligned to the left, center, or right, depending on whether the position is to the left, center, or right, respectively.</p>
+
 <h2 id="Processor Support">Processor Support</h2>
 
 <p>Not all processors support overlays; see the <a href="processors.html#Supported%20Features">table of processor-supported features</a>.</p>
@@ -156,9 +159,9 @@ end
 
 <h3 id="Zooming Image Viewers">Zooming Image Viewers</h3>
 
-<p>Zooming image viewers display a mosaic of cropped image tiles. When overlays are enabled, each tile will have one, which is bound to look strange. The image server has no control over this.</p>
+<p>Zooming image viewers display a mosaic of cropped image tiles. When overlays are enabled, each tile will have one, which is bound to look strange.</p>
 
-<p>One way of working around this might be to set the <code>overlays.BasicStrategy.output_width_threshold</code> and <code>overlays.BasicStrategy.output_height_threshold</code> configuration options to values that are slightly larger than the tile size used by the image viewer. This will disable overlays for images the size of image viewer tiles, but enable for it for anything larger. Unfortunately, the tile size used by the viewer may differ depending on the source image, as the recommended tile sizes in <a href="endpoints.html">information responses</a> will vary on a per-image basis.</p>
+<p>One way of working around this might be to set the <code>overlays.BasicStrategy.output_width_threshold</code> and <code>overlays.BasicStrategy.output_height_threshold</code> configuration options to values that are slightly larger than the tile size used by the image viewer. This will disable overlays for images the size of image viewer tiles, and enable them for anything larger. Unfortunately, the tile size used by the viewer may differ depending on the source image, as the recommended tile sizes in <a href="endpoints.html">information responses</a> will vary on a per-image basis.</p>
 
 <h3 id="Caching">Caching</h3>
 
