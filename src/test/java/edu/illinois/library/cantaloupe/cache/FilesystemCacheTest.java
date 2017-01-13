@@ -661,13 +661,13 @@ public class FilesystemCacheTest extends BaseTest {
         assertEquals(0, FileUtils.listFiles(infoPath, null, true).size());
     }
 
-    /* putImageInfo(Identifier, ImageInfo) */
+    /* put(Identifier, ImageInfo) */
 
     @Test
-    public void testPutImageInfo() throws CacheException {
+    public void testPutWithImageInfo() throws CacheException {
         Identifier identifier = new Identifier("cats");
         ImageInfo info = new ImageInfo(52, 42);
-        instance.putImageInfo(identifier, info);
+        instance.put(identifier, info);
         assertEquals(info, instance.getImageInfo(identifier));
     }
 
@@ -675,7 +675,7 @@ public class FilesystemCacheTest extends BaseTest {
      * This isn't foolproof, but it's better than nothing.
      */
     @Test
-    public void concurrentlyTestPutImageInfo() throws CacheException {
+    public void concurrentlyTestPutWithImageInfo() throws CacheException {
         final Identifier identifier = new Identifier("monkeys");
         final ImageInfo info = new ImageInfo(52, 42);
 
@@ -690,7 +690,7 @@ public class FilesystemCacheTest extends BaseTest {
         for (int i = 0; i < numWriterThreads; i++) {
             new Thread(() -> { // writer thread
                 try {
-                    instance.putImageInfo(identifier, info);
+                    instance.put(identifier, info);
                 } catch (Exception e) {
                     anyFailures.set(true);
                     e.printStackTrace();

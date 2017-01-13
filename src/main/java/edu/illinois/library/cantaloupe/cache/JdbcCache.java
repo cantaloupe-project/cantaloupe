@@ -544,7 +544,7 @@ class JdbcCache implements DerivativeCache {
     }
 
     @Override
-    public void putImageInfo(Identifier identifier, ImageInfo imageInfo)
+    public void put(Identifier identifier, ImageInfo imageInfo)
             throws CacheException {
         logger.info("Caching image info: {}", identifier);
         try (Connection conn = getConnection()) {

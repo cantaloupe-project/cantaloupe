@@ -281,7 +281,7 @@ public class StandaloneEntryTest extends BaseTest {
 
         // cache a dimension
         DerivativeCache cache = CacheFactory.getDerivativeCache();
-        cache.putImageInfo(new Identifier("cats"), new ImageInfo(500, 500));
+        cache.put(new Identifier("cats"), new ImageInfo(500, 500));
 
         // cache an image
         OperationList ops = TestUtil.newOperationList();
@@ -338,8 +338,8 @@ public class StandaloneEntryTest extends BaseTest {
 
         // cache a couple of dimensions
         DerivativeCache cache = CacheFactory.getDerivativeCache();
-        cache.putImageInfo(new Identifier("cats"), new ImageInfo(500, 500));
-        cache.putImageInfo(new Identifier("dogs"), new ImageInfo(500, 500));
+        cache.put(new Identifier("cats"), new ImageInfo(500, 500));
+        cache.put(new Identifier("dogs"), new ImageInfo(500, 500));
 
         // cache a couple of images
         OperationList ops = TestUtil.newOperationList();

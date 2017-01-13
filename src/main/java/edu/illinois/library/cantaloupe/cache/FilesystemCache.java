@@ -1045,13 +1045,13 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     @Override
-    public void putImageInfo(Identifier identifier, ImageInfo imageInfo)
+    public void put(Identifier identifier, ImageInfo imageInfo)
             throws CacheException {
         infoLocks.putIfAbsent(identifier, new ReentrantReadWriteLock());
         final ReadWriteLock lock = infoLocks.get(identifier);
         lock.writeLock().lock();
 
-        logger.info("putImageInfo(): caching: {}", identifier);
+        logger.info("put(): caching: {}", identifier);
 
         final File destFile = getInfoFile(identifier);
         final File tempFile = getInfoTempFile(identifier);
@@ -1068,7 +1068,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
             FileUtils.writeStringToFile(tempFile, imageInfo.toJson());
 
-            logger.debug("putImageInfo(): moving {} to {}",
+            logger.debug("put(): moving {} to {}",
                     tempFile, destFile.getName());
             FileUtils.moveFile(tempFile, destFile);
         } catch (IOException e) {

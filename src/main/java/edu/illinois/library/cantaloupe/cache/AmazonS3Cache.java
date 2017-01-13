@@ -351,7 +351,7 @@ class AmazonS3Cache implements DerivativeCache {
     }
 
     @Override
-    public void putImageInfo(Identifier identifier, ImageInfo imageInfo)
+    public void put(Identifier identifier, ImageInfo imageInfo)
             throws CacheException {
         final String objectKey = getObjectKey(identifier);
         if (!uploadingKeys.contains(objectKey)) {
@@ -373,7 +373,7 @@ class AmazonS3Cache implements DerivativeCache {
                 final PutObjectRequest request = new PutObjectRequest(
                         bucketName, objectKey, s3Stream, metadata);
                 s3.putObject(request);
-                logger.info("putImageInfo(): wrote {} to bucket {} in {} msec",
+                logger.info("put(): wrote {} to bucket {} in {} msec",
                         objectKey, bucketName, watch.timeElapsed());
             } catch (AmazonS3Exception | JsonProcessingException e) {
                 throw new CacheException(e.getMessage(), e);
@@ -381,7 +381,7 @@ class AmazonS3Cache implements DerivativeCache {
                 uploadingKeys.remove(objectKey);
             }
         } else {
-            logger.debug("putImageInfo(): {} is being written in another " +
+            logger.debug("put(): {} is being written in another " +
                     "thread; aborting.");
         }
     }

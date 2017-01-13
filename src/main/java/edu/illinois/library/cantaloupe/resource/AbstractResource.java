@@ -482,7 +482,7 @@ public abstract class AbstractResource extends ServerResource {
                             identifier, watch.timeElapsed());
                 } else {
                     info = readInfo(identifier, proc);
-                    cache.putImageInfo(identifier, info);
+                    cache.put(identifier, info);
                 }
             }
         } else {

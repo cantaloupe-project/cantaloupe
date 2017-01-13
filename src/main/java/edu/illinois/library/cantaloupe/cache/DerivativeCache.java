@@ -74,12 +74,11 @@ public interface DerivativeCache extends Cache {
      * <p>If writing is interrupted, implementations should perform cleanup,
      * if necessary.</p>
      *
-     * @param identifier Identifier of the image corresponding to the given
-     *                   size.
-     * @param imageInfo ImageInfo containing image information.
+     * @param identifier Image identifier.
+     * @param imageInfo ImageInfo containing information about the image with
+     *                  the given identifier.
      * @throws CacheException
      */
-    void putImageInfo(Identifier identifier, ImageInfo imageInfo)
-            throws CacheException;
+    void put(Identifier identifier, ImageInfo imageInfo) throws CacheException;
 
 }

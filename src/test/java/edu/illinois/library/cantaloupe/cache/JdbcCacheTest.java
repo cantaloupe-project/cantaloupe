@@ -138,9 +138,9 @@ public class JdbcCacheTest extends BaseTest {
         os.close();
 
         // persist some infos corresponding to the above images
-        instance.putImageInfo(new Identifier("cats"), new ImageInfo(50, 40));
-        instance.putImageInfo(new Identifier("dogs"), new ImageInfo(500, 300));
-        instance.putImageInfo(new Identifier("bunnies"), new ImageInfo(350, 240));
+        instance.put(new Identifier("cats"), new ImageInfo(50, 40));
+        instance.put(new Identifier("dogs"), new ImageInfo(500, 300));
+        instance.put(new Identifier("bunnies"), new ImageInfo(350, 240));
 
         // assert that the data has been seeded
         String sql = String.format("SELECT COUNT(%s) AS count FROM %s;",
@@ -194,7 +194,7 @@ public class JdbcCacheTest extends BaseTest {
 
         IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)),
                 instance.getImageOutputStream(ops));
-        instance.putImageInfo(new Identifier("bees"), new ImageInfo(50, 40));
+        instance.put(new Identifier("bees"), new ImageInfo(50, 40));
 
         // existing, non-expired image
         try {
@@ -419,7 +419,7 @@ public class JdbcCacheTest extends BaseTest {
         IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
         os.close();
         // ...info
-        instance.putImageInfo(new Identifier("bees"), new ImageInfo(50, 40));
+        instance.put(new Identifier("bees"), new ImageInfo(50, 40));
 
         instance.purgeExpired();
 
@@ -473,23 +473,23 @@ public class JdbcCacheTest extends BaseTest {
         }
     }
 
-    /* putImageInfo(Identifier, ImageInfo) */
+    /* put(Identifier, ImageInfo) */
 
     @Test
-    public void testPutImageInfo() throws CacheException {
+    public void testPutWithImageInfo() throws CacheException {
         Identifier identifier = new Identifier("birds");
         ImageInfo info = new ImageInfo(52, 52);
-        instance.putImageInfo(identifier, info);
+        instance.put(identifier, info);
         assertEquals(info, instance.getImageInfo(identifier));
     }
 
     @Test
-    public void testPutImageInfoSetsLastAccessedTime() throws Exception {
+    public void testPutWithImageInfoSetsLastAccessedTime() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
 
         Identifier identifier = new Identifier("birds");
         ImageInfo info = new ImageInfo(52, 52);
-        instance.putImageInfo(identifier, info);
+        instance.put(identifier, info);
 
         try (Connection connection = JdbcCache.getConnection()) {
             // get the initial last-accessed time
