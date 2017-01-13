@@ -43,15 +43,6 @@ public interface Cache {
     void purge() throws CacheException;
 
     /**
-     * Deletes expired images and dimensions from the cache.
-     *
-     * @throws CacheException Upon fatal error. Implementations should do the
-     *         best they can to complete the operation and swallow and log
-     *         non-fatal errors.
-     */
-    void purgeExpired() throws CacheException;
-
-    /**
      * Deletes all cached content (source image, derivative image(s), and
      * info) corresponding to the image with the given identifier.
      *
@@ -60,6 +51,15 @@ public interface Cache {
      *         best they can to complete the operation and swallow and log
      *         non-fatal errors.
      */
-    void purgeImage(Identifier identifier) throws CacheException;
+    void purge(Identifier identifier) throws CacheException;
+
+    /**
+     * Deletes expired images and dimensions from the cache.
+     *
+     * @throws CacheException Upon fatal error. Implementations should do the
+     *         best they can to complete the operation and swallow and log
+     *         non-fatal errors.
+     */
+    void purgeExpired() throws CacheException;
 
 }

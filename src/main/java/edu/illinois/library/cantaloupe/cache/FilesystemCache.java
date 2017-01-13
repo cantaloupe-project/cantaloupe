@@ -308,7 +308,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             new ConcurrentSkipListSet<>();
 
     /** Set of identifiers for which info files are currently being purged by
-     * purgeImage(Identifier) from any thread. */
+     * purge(Identifier) from any thread. */
     private final Set<Identifier> infosBeingPurged =
             new ConcurrentSkipListSet<>();
 
@@ -987,9 +987,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @throws CacheException
      */
     @Override
-    public void purgeImage(Identifier identifier) throws CacheException {
+    public void purge(Identifier identifier) throws CacheException {
         if (globalPurgeInProgress.get()) {
-            logger.info("purgeImage() called with a global purge in " +
+            logger.info("purge(Identifier) called with a global purge in " +
                     "progress. Aborting.");
             return;
         }
@@ -1004,24 +1004,25 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         }
         try {
             infosBeingPurged.add(identifier);
-            logger.info("purgeImage(): purging {}...", identifier);
+            logger.info("purge(Identifier): purging {}...", identifier);
 
             // Delete the source image
             final File sourceFile = getSourceImageFile(identifier);
             try {
-                logger.info("purgeImage(): deleting {}", sourceFile);
+                logger.info("purge(Identifier): deleting {}", sourceFile);
                 FileUtils.forceDelete(sourceFile);
             } catch (FileNotFoundException e) {
                 // This is not really a problem, and probably more likely to
                 // happen than not.
-                logger.info("purgeImage(): no source image for {}", sourceFile);
+                logger.info("purge(Identifier): no source image for {}",
+                        sourceFile);
             } catch (IOException e) {
                 logger.warn(e.getMessage());
             }
             // Delete derivative images
             for (File imageFile : getDerivativeImageFiles(identifier)) {
                 try {
-                    logger.info("purgeImage(): deleting {}", imageFile);
+                    logger.info("purge(Identifier): deleting {}", imageFile);
                     FileUtils.forceDelete(imageFile);
                 } catch (IOException e) {
                     logger.warn(e.getMessage());
@@ -1030,11 +1031,11 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             // Delete the info
             final File infoFile = getInfoFile(identifier);
             try {
-                logger.info("purgeImage(): deleting {}", infoFile);
+                logger.info("purge(Identifier): deleting {}", infoFile);
                 FileUtils.forceDelete(infoFile);
             } catch (FileNotFoundException e) {
                 // This is not a problem, and as likely to happen as not.
-                logger.info("purgeImage(): no info for {}", infoFile);
+                logger.info("purge(Identifier): no info for {}", infoFile);
             } catch (IOException e) {
                 logger.warn(e.getMessage());
             }

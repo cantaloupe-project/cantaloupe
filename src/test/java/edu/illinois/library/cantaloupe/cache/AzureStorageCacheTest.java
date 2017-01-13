@@ -284,10 +284,10 @@ public class AzureStorageCacheTest extends BaseTest {
         assertObjectCount(2);
     }
 
-    /* purgeImage(Identifier) */
+    /* purge(Identifier) */
 
     @Test
-    public void testPurgeImage() throws Exception {
+    public void testPurgeWithIdentifier() throws Exception {
         // add an image
         InputStream inputStream = new FileInputStream(
                 TestUtil.getImage(identifier.toString()));
@@ -307,7 +307,7 @@ public class AzureStorageCacheTest extends BaseTest {
         assertObjectCount(3);
 
         // purge an info
-        instance.purgeImage(identifier);
+        instance.purge(identifier);
 
         assertObjectCount(2);
     }

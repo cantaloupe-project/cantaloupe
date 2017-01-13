@@ -51,7 +51,7 @@ public class APIResource extends AbstractResource {
             final Identifier identifier =
                     new Identifier(decodeSlashes(Reference.decode(idStr)));
 
-            cache.purgeImage(identifier);
+            cache.purge(identifier);
         }
         return new EmptyRepresentation();
     }

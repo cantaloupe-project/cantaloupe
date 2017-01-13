@@ -334,7 +334,7 @@ class AzureStorageCache implements DerivativeCache {
     }
 
     @Override
-    public void purgeImage(Identifier identifier) throws CacheException {
+    public void purge(Identifier identifier) throws CacheException {
         final String containerName = getContainerName();
 
         final CloudBlobClient client = getClientInstance();

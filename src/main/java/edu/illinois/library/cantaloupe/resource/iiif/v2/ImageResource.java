@@ -102,7 +102,7 @@ public class ImageResource extends IIIF2Resource {
                 // if the image was not found, purge it from the cache
                 final Cache cache = CacheFactory.getDerivativeCache();
                 if (cache != null) {
-                    cache.purgeImage(ops.getIdentifier());
+                    cache.purge(ops.getIdentifier());
                 }
             }
             throw e;

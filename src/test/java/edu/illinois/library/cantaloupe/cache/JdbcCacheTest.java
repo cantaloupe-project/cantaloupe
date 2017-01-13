@@ -444,14 +444,14 @@ public class JdbcCacheTest extends BaseTest {
         }
     }
 
-    /* purgeImage(Identifier) */
+    /* purge(Identifier) */
 
     @Test
-    public void testPurgeImage() throws Exception {
+    public void testPurgeWithIdentifier() throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
 
         Identifier id1 = new Identifier("cats");
-        instance.purgeImage(id1);
+        instance.purge(id1);
 
         try (Connection connection = JdbcCache.getConnection()) {
             // assert that the derivative images were purged

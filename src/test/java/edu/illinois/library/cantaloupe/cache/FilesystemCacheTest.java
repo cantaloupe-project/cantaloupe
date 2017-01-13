@@ -612,10 +612,10 @@ public class FilesystemCacheTest extends BaseTest {
         assertEquals(0, FileUtils.listFiles(infoPath, null, true).size());
     }
 
-    /* purgeImage(Identifier) */
+    /* purge(Identifier) */
 
     @Test
-    public void testPurgeImage() throws Exception {
+    public void testPurgeWithIdentifier() throws Exception {
         OperationList ops = TestUtil.newOperationList();
 
         Identifier id1 = new Identifier("dogs");
@@ -651,11 +651,11 @@ public class FilesystemCacheTest extends BaseTest {
         assertEquals(2, FileUtils.listFiles(sourceImagePath, null, true).size());
         assertEquals(2, FileUtils.listFiles(derivativeImagePath, null, true).size());
         assertEquals(2, FileUtils.listFiles(infoPath, null, true).size());
-        instance.purgeImage(id1);
+        instance.purge(id1);
         assertEquals(1, FileUtils.listFiles(sourceImagePath, null, true).size());
         assertEquals(1, FileUtils.listFiles(derivativeImagePath, null, true).size());
         assertEquals(1, FileUtils.listFiles(infoPath, null, true).size());
-        instance.purgeImage(id2);
+        instance.purge(id2);
         assertEquals(0, FileUtils.listFiles(sourceImagePath, null, true).size());
         assertEquals(0, FileUtils.listFiles(derivativeImagePath, null, true).size());
         assertEquals(0, FileUtils.listFiles(infoPath, null, true).size());

@@ -498,7 +498,7 @@ class JdbcCache implements DerivativeCache {
     }
 
     @Override
-    public void purgeImage(Identifier identifier) throws CacheException {
+    public void purge(Identifier identifier) throws CacheException {
         try (Connection connection = getConnection()) {
             connection.setAutoCommit(false);
             final int numDeletedImages = purgeDerivativeImages(identifier,

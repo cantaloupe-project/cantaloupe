@@ -88,7 +88,7 @@ public class EntryServlet extends ServerServlet {
                     if (cache != null) {
                         System.out.println("Purging " + identifier +
                                 " from the source cache...");
-                        cache.purgeImage(identifier);
+                        cache.purge(identifier);
                     } else {
                         System.out.println("Source cache is disabled.");
                     }
@@ -96,7 +96,7 @@ public class EntryServlet extends ServerServlet {
                     if (cache != null) {
                         System.out.println("Purging " + identifier +
                                 " from the derivative cache...");
-                        cache.purgeImage(identifier);
+                        cache.purge(identifier);
                     } else {
                         System.out.println("Derivative cache is disabled.");
                     }
