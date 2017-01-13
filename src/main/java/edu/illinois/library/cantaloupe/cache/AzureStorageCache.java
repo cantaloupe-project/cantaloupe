@@ -171,7 +171,7 @@ class AzureStorageCache implements DerivativeCache {
     }
 
     @Override
-    public InputStream getImageInputStream(OperationList opList)
+    public InputStream newDerivativeImageInputStream(OperationList opList)
             throws CacheException {
         final String containerName = getContainerName();
 
@@ -181,7 +181,7 @@ class AzureStorageCache implements DerivativeCache {
                     client.getContainerReference(containerName);
             final String objectKey = getObjectKey(opList);
 
-            logger.info("getImageInputStream(): bucket: {}; key: {}",
+            logger.info("newDerivativeImageInputStream(): bucket: {}; key: {}",
                     containerName, objectKey);
             final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
             if (blob.exists()) {

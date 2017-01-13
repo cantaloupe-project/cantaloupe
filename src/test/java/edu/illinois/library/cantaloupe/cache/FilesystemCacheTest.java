@@ -409,32 +409,34 @@ public class FilesystemCacheTest extends BaseTest {
         assertNull(instance.getImageInfo(identifier));
     }
 
-    /* getImageInputStream(OperationList) */
+    /* newDerivativeImageInputStream(OperationList) */
 
     @Test
-    public void testGetImageInputStreamWithOpListWithZeroTtl() throws Exception {
+    public void testNewDerivativeImageInputStreamWithOpListWithZeroTtl()
+            throws Exception {
         OperationList ops = TestUtil.newOperationList();
-        assertNull(instance.getImageInputStream(ops));
+        assertNull(instance.newDerivativeImageInputStream(ops));
 
         File imageFile = instance.getDerivativeImageFile(ops);
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
-        assertNotNull(instance.getImageInputStream(ops));
+        assertNotNull(instance.newDerivativeImageInputStream(ops));
     }
 
     @Test
-    public void testGetImageInputStreamWithOpListWithNonzeroTtl() throws Exception {
+    public void testNewDerivativeImageInputStreamWithOpListWithNonzeroTtl()
+            throws Exception {
         ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 1);
 
         OperationList ops = TestUtil.newOperationList();
         File cacheFile = instance.getDerivativeImageFile(ops);
         cacheFile.getParentFile().mkdirs();
         cacheFile.createNewFile();
-        assertNotNull(instance.getImageInputStream(ops));
+        assertNotNull(instance.newDerivativeImageInputStream(ops));
 
         Thread.sleep(1100);
 
-        assertNull(instance.getImageInputStream(ops));
+        assertNull(instance.newDerivativeImageInputStream(ops));
         assertFalse(cacheFile.exists());
     }
 

@@ -81,7 +81,7 @@ public class ImageResource extends IIIF2Resource {
                 getBoolean(Cache.RESOLVE_FIRST_CONFIG_KEY, true)) {
             DerivativeCache cache = CacheFactory.getDerivativeCache();
             if (cache != null) {
-                InputStream inputStream = cache.getImageInputStream(ops);
+                InputStream inputStream = cache.newDerivativeImageInputStream(ops);
                 if (inputStream != null) {
                     this.addLinkHeader(params);
                     return new CachedImageRepresentation(

@@ -105,10 +105,10 @@ public class AzureStorageCacheTest extends BaseTest {
         assertNull(instance.getImageInfo(identifier));
     }
 
-    /* getImageInputStream(OperationList) */
+    /* newDerivativeImageInputStream(OperationList) */
 
     @Test
-    public void testGetImageInputStream() throws Exception {
+    public void testNewDerivativeImageInputStream() throws Exception {
         File fixture = TestUtil.getImage(identifier.toString());
 
         // add an image
@@ -119,7 +119,7 @@ public class AzureStorageCacheTest extends BaseTest {
         outputStream.close();
 
         // download the image
-        InputStream s3InputStream = instance.getImageInputStream(opList);
+        InputStream s3InputStream = instance.newDerivativeImageInputStream(opList);
         ByteArrayOutputStream s3ByteStream = new ByteArrayOutputStream();
         IOUtils.copy(s3InputStream, s3ByteStream);
         s3InputStream.close();
@@ -130,8 +130,9 @@ public class AzureStorageCacheTest extends BaseTest {
     }
 
     @Test
-    public void testGetImageInputStreamWithNonexistentImage() throws Exception {
-        assertNull(instance.getImageInputStream(opList));
+    public void testNewDerivativeImageInputStreamWithNonexistentImage()
+            throws Exception {
+        assertNull(instance.newDerivativeImageInputStream(opList));
     }
 
     /* getImageOutputStream(OperationList) */

@@ -243,18 +243,18 @@ public class JdbcCacheTest extends BaseTest {
         }
     }
 
-    /* getImageInputStream(OperationList) */
+    /* newDerivativeImageInputStream(OperationList) */
 
     @Test
-    public void testGetImageInputStreamWithOpListWithZeroTtl()
+    public void testNewDerivativeImageInputStreamWithOpListWithZeroTtl()
             throws Exception {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
-        assertNotNull(instance.getImageInputStream(ops));
+        assertNotNull(instance.newDerivativeImageInputStream(ops));
     }
 
     @Test
-    public void testGetImageInputStreamWithOpListWithNonzeroTtl()
+    public void testNewDerivativeImageInputStreamWithOpListWithNonzeroTtl()
             throws Exception {
         ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 1);
 
@@ -270,21 +270,21 @@ public class JdbcCacheTest extends BaseTest {
         bc.close();
 
         // existing, non-expired image
-        assertNotNull(instance.getImageInputStream(ops));
+        assertNotNull(instance.newDerivativeImageInputStream(ops));
 
         // existing, expired image
         ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
-        assertNull(instance.getImageInputStream(ops));
+        assertNull(instance.newDerivativeImageInputStream(ops));
 
         // nonexistent image
         ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("bogus"));
-        assertNull(instance.getImageInputStream(ops));
+        assertNull(instance.newDerivativeImageInputStream(ops));
     }
 
     @Test
-    public void testGetImageInputStreamWithOpListUpdatesLastAccessedTime()
+    public void testNewDerivativeImageInputStreamWithOpListUpdatesLastAccessedTime()
             throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
 
@@ -307,7 +307,7 @@ public class JdbcCacheTest extends BaseTest {
             Thread.sleep(10);
 
             // update the last-accessed time
-            instance.getImageInputStream(opList);
+            instance.newDerivativeImageInputStream(opList);
 
             // get the new last-accessed time
             resultSet = statement.executeQuery();

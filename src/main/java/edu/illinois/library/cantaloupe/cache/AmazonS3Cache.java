@@ -219,12 +219,12 @@ class AmazonS3Cache implements DerivativeCache {
     }
 
     @Override
-    public InputStream getImageInputStream(OperationList opList)
+    public InputStream newDerivativeImageInputStream(OperationList opList)
             throws CacheException {
         final AmazonS3 s3 = getClientInstance();
         final String bucketName = getBucketName();
         final String objectKey = getObjectKey(opList);
-        logger.info("getImageInputStream(): bucket: {}; key: {}",
+        logger.info("newDerivativeImageInputStream(): bucket: {}; key: {}",
                 bucketName, objectKey);
         try {
             final S3Object object = s3.getObject(

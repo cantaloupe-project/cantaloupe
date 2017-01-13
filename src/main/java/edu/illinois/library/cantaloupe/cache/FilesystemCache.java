@@ -633,24 +633,24 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     @Override
-    public InputStream getImageInputStream(OperationList ops)
+    public InputStream newDerivativeImageInputStream(OperationList ops)
             throws CacheException {
         InputStream inputStream = null;
         final File cacheFile = getDerivativeImageFile(ops);
         if (cacheFile != null && cacheFile.exists()) {
             if (!isExpired(cacheFile)) {
                 try {
-                    logger.info("getImageInputStream(): hit: {} ({})",
+                    logger.info("newDerivativeImageInputStream(): hit: {} ({})",
                             ops, cacheFile.getAbsolutePath());
                     inputStream = new FileInputStream(cacheFile);
                 } catch (FileNotFoundException e) {
                     logger.error(e.getMessage(), e);
                 }
             } else {
-                logger.info("getImageInputStream(): deleting stale file: {}",
+                logger.info("newDerivativeImageInputStream(): deleting stale file: {}",
                         cacheFile.getAbsolutePath());
                 if (!cacheFile.delete()) {
-                    logger.warn("getImageInputStream(): unable to delete {}",
+                    logger.warn("newDerivativeImageInputStream(): unable to delete {}",
                             cacheFile.getAbsolutePath());
                 }
             }

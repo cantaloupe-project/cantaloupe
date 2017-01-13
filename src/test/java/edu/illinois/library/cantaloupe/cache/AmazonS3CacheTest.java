@@ -104,10 +104,10 @@ public class AmazonS3CacheTest extends BaseTest {
         assertNull(instance.getImageInfo(identifier));
     }
 
-    /* getImageInputStream(OperationList) */
+    /* newDerivativeImageInputStream(OperationList) */
 
     @Test
-    public void testGetImageInputStream() throws Exception {
+    public void testNewDerivativeImageInputStream() throws Exception {
         File fixture = TestUtil.getImage(identifier.toString());
 
         // add an image
@@ -121,7 +121,7 @@ public class AmazonS3CacheTest extends BaseTest {
         Thread.sleep(S3_UPLOAD_WAIT);
 
         // download the image
-        InputStream s3InputStream = instance.getImageInputStream(opList);
+        InputStream s3InputStream = instance.newDerivativeImageInputStream(opList);
         ByteArrayOutputStream s3ByteStream = new ByteArrayOutputStream();
         IOUtils.copy(s3InputStream, s3ByteStream);
         s3InputStream.close();
@@ -132,8 +132,9 @@ public class AmazonS3CacheTest extends BaseTest {
     }
 
     @Test
-    public void testGetImageInputStreamWithNonexistentImage() throws Exception {
-        assertNull(instance.getImageInputStream(opList));
+    public void testnewDerivativeImageInputStreamWithNonexistentImage()
+            throws Exception {
+        assertNull(instance.newDerivativeImageInputStream(opList));
     }
 
     /* getImageOutputStream(OperationList) */

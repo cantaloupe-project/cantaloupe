@@ -312,7 +312,7 @@ class JdbcCache implements DerivativeCache {
     }
 
     @Override
-    public InputStream getImageInputStream(OperationList opList)
+    public InputStream newDerivativeImageInputStream(OperationList opList)
             throws CacheException {
         InputStream inputStream = null;
 

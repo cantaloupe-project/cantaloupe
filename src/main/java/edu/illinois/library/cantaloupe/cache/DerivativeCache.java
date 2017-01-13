@@ -43,7 +43,8 @@ public interface DerivativeCache extends Cache {
      *         list does not exist in the cache.
      * @throws CacheException
      */
-    InputStream getImageInputStream(OperationList opList) throws CacheException;
+    InputStream newDerivativeImageInputStream(OperationList opList)
+            throws CacheException;
 
     /**
      * @param opList Operation list for which to retrieve an output stream for

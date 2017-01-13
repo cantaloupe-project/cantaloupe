@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.StandaloneEntry;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
@@ -403,7 +402,7 @@ public class ImageResourceTest extends ResourceTest {
             // assert that it has been cached
             assertEquals(2, FileUtils.listFiles(cacheDir, null, true).size());
             DerivativeCache cache = CacheFactory.getDerivativeCache();
-            assertNotNull(cache.getImageInputStream(ops));
+            assertNotNull(cache.newDerivativeImageInputStream(ops));
             assertNotNull(cache.getImageInfo(ops.getIdentifier()));
 
             // Delete the source image.
@@ -418,10 +417,10 @@ public class ImageResourceTest extends ResourceTest {
             }
 
             if (purgeMissing) {
-                assertNull(cache.getImageInputStream(ops));
+                assertNull(cache.newDerivativeImageInputStream(ops));
                 assertNull(cache.getImageInfo(ops.getIdentifier()));
             } else {
-                assertNotNull(cache.getImageInputStream(ops));
+                assertNotNull(cache.newDerivativeImageInputStream(ops));
                 assertNotNull(cache.getImageInfo(ops.getIdentifier()));
             }
         } finally {

@@ -74,7 +74,7 @@ public class ImageRepresentation extends OutputRepresentation {
             final DerivativeCache cache = CacheFactory.getDerivativeCache();
             if (cache != null) {
                 // Try to get the image from the cache.
-                try (InputStream inputStream = cache.getImageInputStream(opList)) {
+                try (InputStream inputStream = cache.newDerivativeImageInputStream(opList)) {
                     if (inputStream != null) {
                         // The image is available in the cache; write it to the
                         // response output stream.
