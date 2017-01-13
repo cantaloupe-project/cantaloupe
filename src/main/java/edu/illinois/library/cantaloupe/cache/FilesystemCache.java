@@ -581,7 +581,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             }
         }
         File file = null;
-        final File cacheFile = getSourceImageFile(identifier);
+        final File cacheFile = sourceImageFile(identifier);
         if (cacheFile != null && cacheFile.exists()) {
             if (!isExpired(cacheFile)) {
                 logger.info("getImageFile(): hit: {} ({})",
@@ -698,7 +698,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     return new NullOutputStream();
                 }
             }
-            final File destFile = getSourceImageFile(identifier);
+            final File destFile = sourceImageFile(identifier);
             return new ConcurrentFileOutputStream(
                     tempFile, destFile, sourceImagesBeingWritten, identifier);
         } catch (IOException e) {
@@ -788,7 +788,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @param identifier Identifier identifying the file.
      * @return File corresponding to the given identifier.
      */
-    File getSourceImageFile(Identifier identifier) throws CacheException {
+    File sourceImageFile(Identifier identifier) throws CacheException {
         final String cacheRoot = StringUtils.stripEnd(
                 getRootSourceImagePathname(), File.separator);
         final String subfolderPath = StringUtils.stripEnd(
@@ -1007,7 +1007,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             logger.info("purge(Identifier): purging {}...", identifier);
 
             // Delete the source image
-            final File sourceFile = getSourceImageFile(identifier);
+            final File sourceFile = sourceImageFile(identifier);
             try {
                 logger.info("purge(Identifier): deleting {}", sourceFile);
                 FileUtils.forceDelete(sourceFile);

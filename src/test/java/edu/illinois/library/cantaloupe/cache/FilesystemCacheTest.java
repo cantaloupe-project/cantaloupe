@@ -137,7 +137,7 @@ public class FilesystemCacheTest extends BaseTest {
         OperationList ops = TestUtil.newOperationList();
 
         // create a new source image file
-        File sourceImageFile = instance.getSourceImageFile(ops.getIdentifier());
+        File sourceImageFile = instance.sourceImageFile(ops.getIdentifier());
         sourceImageFile.getParentFile().mkdirs();
         FileUtils.writeStringToFile(sourceImageFile, "not empty");
         // create a new derivative image file
@@ -192,7 +192,7 @@ public class FilesystemCacheTest extends BaseTest {
         OperationList ops = TestUtil.newOperationList();
 
         // create a new source image file
-        File sourceImageFile = instance.getSourceImageFile(ops.getIdentifier());
+        File sourceImageFile = instance.sourceImageFile(ops.getIdentifier());
         sourceImageFile.getParentFile().mkdirs();
         FileUtils.writeStringToFile(sourceImageFile, "not empty");
         // create a new derivative image file
@@ -354,7 +354,7 @@ public class FilesystemCacheTest extends BaseTest {
         Identifier identifier = new Identifier("cats");
         assertNull(instance.getImageFile(identifier));
 
-        File imageFile = instance.getSourceImageFile(identifier);
+        File imageFile = instance.sourceImageFile(identifier);
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
         assertNotNull(instance.getImageFile(identifier));
@@ -366,7 +366,7 @@ public class FilesystemCacheTest extends BaseTest {
         ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 1);
 
         Identifier identifier = new Identifier("cats");
-        File cacheFile = instance.getSourceImageFile(identifier);
+        File cacheFile = instance.sourceImageFile(identifier);
         cacheFile.getParentFile().mkdirs();
         cacheFile.createNewFile();
         assertNotNull(instance.getImageFile(identifier));
@@ -498,7 +498,7 @@ public class FilesystemCacheTest extends BaseTest {
         // TODO: write this
     }
 
-    /* getSourceImageFile(Identifier) */
+    /* sourceImageFile(Identifier) */
 
     @Test
     public void testGetSourceImageFileWithIdentifier() throws Exception {
@@ -512,7 +512,7 @@ public class FilesystemCacheTest extends BaseTest {
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator,
                 FilesystemCache.filenameFor(identifier));
-        assertEquals(new File(expected), instance.getSourceImageFile(identifier));
+        assertEquals(new File(expected), instance.sourceImageFile(identifier));
     }
 
     /* getSourceImageTempFile(Identifier) */
@@ -529,7 +529,7 @@ public class FilesystemCacheTest extends BaseTest {
         OperationList ops = TestUtil.newOperationList();
 
         // create a new source image file
-        File sourceImageFile = instance.getSourceImageFile(ops.getIdentifier());
+        File sourceImageFile = instance.sourceImageFile(ops.getIdentifier());
         sourceImageFile.getParentFile().mkdirs();
         sourceImageFile.createNewFile();
         // create a new derivative image file
@@ -587,7 +587,7 @@ public class FilesystemCacheTest extends BaseTest {
 
         // add a source image
         OperationList ops = TestUtil.newOperationList();
-        File imageFile = instance.getSourceImageFile(ops.getIdentifier());
+        File imageFile = instance.sourceImageFile(ops.getIdentifier());
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
         // add a derivative image
@@ -625,7 +625,7 @@ public class FilesystemCacheTest extends BaseTest {
         ops.setIdentifier(id1);
 
         // create a new source image
-        File sourceImageFile = instance.getSourceImageFile(ops.getIdentifier());
+        File sourceImageFile = instance.sourceImageFile(ops.getIdentifier());
         sourceImageFile.getParentFile().mkdirs();
         sourceImageFile.createNewFile();
         // create a new derivative image
@@ -641,7 +641,7 @@ public class FilesystemCacheTest extends BaseTest {
         ops.setIdentifier(id2);
         ops.add(new Rotate(15));
 
-        sourceImageFile = instance.getSourceImageFile(ops.getIdentifier());
+        sourceImageFile = instance.sourceImageFile(ops.getIdentifier());
         sourceImageFile.getParentFile().mkdirs();
         sourceImageFile.createNewFile();
         derivativeImageFile = instance.getDerivativeImageFile(ops);
