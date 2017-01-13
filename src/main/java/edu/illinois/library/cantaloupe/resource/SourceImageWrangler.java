@@ -192,7 +192,7 @@ public class SourceImageWrangler {
         try (InputStream inputStream = ((StreamResolver) resolver).
                 newStreamSource().newInputStream();
              OutputStream outputStream =
-                     sourceCache.getImageOutputStream(identifier)) {
+                     sourceCache.newSourceImageOutputStream(identifier)) {
             logger.info("Downloading {} to the source cache", identifier);
             IOUtils.copy(inputStream, outputStream);
         }

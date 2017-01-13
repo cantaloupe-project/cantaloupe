@@ -24,7 +24,7 @@ public interface SourceCache extends Cache {
      *
      * <p><strong>Clients must not use the returned File for
      * writing.</strong> They should use
-     * {@link #getImageOutputStream(Identifier)} instead.</p>
+     * {@link #newSourceImageOutputStream(Identifier)} instead.</p>
      *
      * @param identifier Identifier of an image to read from the cache.
      * @return File corresponding to the given identifier, or null if a
@@ -40,7 +40,7 @@ public interface SourceCache extends Cache {
      *         identifier can be written.
      * @throws CacheException
      */
-    OutputStream getImageOutputStream(Identifier identifier)
+    OutputStream newSourceImageOutputStream(Identifier identifier)
             throws CacheException;
 
 }

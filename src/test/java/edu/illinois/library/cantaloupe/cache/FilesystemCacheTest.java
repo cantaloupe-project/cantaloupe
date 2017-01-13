@@ -440,20 +440,20 @@ public class FilesystemCacheTest extends BaseTest {
         assertFalse(cacheFile.exists());
     }
 
-    /* getImageOutputStream(Identifier) */
+    /* newSourceImageOutputStream(Identifier) */
 
     @Test
-    public void testGetImageOutputStreamWithIdentifier() throws Exception {
-        assertNotNull(instance.getImageOutputStream(new Identifier("cats")));
+    public void testNewSourceImageOutputStreamWithIdentifier() throws Exception {
+        assertNotNull(instance.newSourceImageOutputStream(new Identifier("cats")));
     }
 
     @Test
-    public void testGetImageOutputStreamWithIdentifierCreatesFolder()
+    public void testNewSourceImageOutputStreamWithIdentifierCreatesFolder()
             throws Exception {
         FileUtils.deleteDirectory(sourceImagePath);
 
         Identifier identifier = new Identifier("cats");
-        instance.getImageOutputStream(identifier);
+        instance.newSourceImageOutputStream(identifier);
         assertTrue(sourceImagePath.exists());
     }
 

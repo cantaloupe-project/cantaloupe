@@ -659,13 +659,13 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     @Override
-    public OutputStream getImageOutputStream(Identifier identifier)
+    public OutputStream newSourceImageOutputStream(Identifier identifier)
             throws CacheException {
         // If the image is being written in another thread, it may (or may not)
         // be present in the sourceImagesBeingWritten set. If so, return a null
         // output stream to avoid interfering.
         if (sourceImagesBeingWritten.contains(identifier)) {
-            logger.info("getImageOutputStream(Identifier): miss, but cache " +
+            logger.info("newSourceImageOutputStream(Identifier): miss, but cache " +
                     "file for {} is being written in another thread, so not " +
                     "caching", identifier);
             return new NullOutputStream();
@@ -680,17 +680,17 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         // return a null output stream to avoid interfering.
         final File tempFile = sourceImageTempFile(identifier);
         if (tempFile.exists()) {
-            logger.info("getImageOutputStream(Identifier): miss, but a temp " +
+            logger.info("newSourceImageOutputStream(Identifier): miss, but a temp " +
                     "file for {} already exists, so not caching", identifier);
             return new NullOutputStream();
         }
 
-        logger.info("getImageOutputStream(Identifier): miss; caching {}",
+        logger.info("newSourceImageOutputStream(Identifier): miss; caching {}",
                 identifier);
         try {
             if (!tempFile.getParentFile().isDirectory()) {
                 if (!tempFile.getParentFile().mkdirs()) {
-                    logger.info("getImageOutputStream(Identifier): can't create {}",
+                    logger.info("newSourceImageOutputStream(Identifier): can't create {}",
                             tempFile.getParentFile());
                     // We could threw a CacheException here, but it is probably
                     // not necessary as we are likely to get here often during
