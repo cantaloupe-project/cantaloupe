@@ -56,12 +56,14 @@ abstract class ImageOverlayCache {
     static byte[] putAndGet(String pathnameOrURL) throws IOException {
         // If the overlay is currently being downloaded in another thread,
         // wait for it to download.
-        while (downloadingOverlays.contains(pathnameOrURL)) {
-            try {
-                logger.debug("putAndGet(): waiting on {}", pathnameOrURL);
-                lock.wait();
-            } catch (InterruptedException e) {
-                break;
+        synchronized (lock) {
+            while (downloadingOverlays.contains(pathnameOrURL)) {
+                try {
+                    logger.debug("putAndGet(): waiting on {}", pathnameOrURL);
+                    lock.wait();
+                } catch (InterruptedException e) {
+                    break;
+                }
             }
         }
 
@@ -92,6 +94,9 @@ abstract class ImageOverlayCache {
             IOUtils.closeQuietly(is);
             IOUtils.closeQuietly(os);
             downloadingOverlays.remove(pathnameOrURL);
+            synchronized (lock) {
+                lock.notifyAll();
+            }
         }
         return overlays.get(pathnameOrURL);
     }
