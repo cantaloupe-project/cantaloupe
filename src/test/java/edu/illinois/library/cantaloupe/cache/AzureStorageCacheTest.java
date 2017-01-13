@@ -113,7 +113,7 @@ public class AzureStorageCacheTest extends BaseTest {
 
         // add an image
         InputStream fileInputStream = new FileInputStream(fixture);
-        OutputStream outputStream = instance.getImageOutputStream(opList);
+        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
         IOUtils.copy(fileInputStream, outputStream);
         fileInputStream.close();
         outputStream.close();
@@ -135,16 +135,16 @@ public class AzureStorageCacheTest extends BaseTest {
         assertNull(instance.newDerivativeImageInputStream(opList));
     }
 
-    /* getImageOutputStream(OperationList) */
+    /* newDerivativeImageOutputStream(OperationList) */
 
     @Test
-    public void testGetImageOutputStream() throws Exception {
+    public void testNewDerivativeImageOutputStream() throws Exception {
         assertObjectCount(0);
 
         // add an image
         InputStream inputStream = new FileInputStream(
                 TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.getImageOutputStream(opList);
+        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
         IOUtils.copy(inputStream, outputStream);
         inputStream.close();
         outputStream.close();
@@ -196,7 +196,7 @@ public class AzureStorageCacheTest extends BaseTest {
         // add an image
         InputStream inputStream = new FileInputStream(
                 TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.getImageOutputStream(opList);
+        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
         IOUtils.copy(inputStream, outputStream);
         inputStream.close();
         outputStream.close();
@@ -219,7 +219,7 @@ public class AzureStorageCacheTest extends BaseTest {
         // add an image
         InputStream inputStream = new FileInputStream(
                 TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.getImageOutputStream(opList);
+        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
         IOUtils.copy(inputStream, outputStream);
         inputStream.close();
         outputStream.close();
@@ -229,7 +229,7 @@ public class AzureStorageCacheTest extends BaseTest {
         OperationList otherOpList = new OperationList(
                 new Identifier(fixture.getName()), Format.GIF);
         inputStream = new FileInputStream(fixture);
-        outputStream = instance.getImageOutputStream(otherOpList);
+        outputStream = instance.newDerivativeImageOutputStream(otherOpList);
         IOUtils.copy(inputStream, outputStream);
         inputStream.close();
         outputStream.close();
@@ -252,7 +252,7 @@ public class AzureStorageCacheTest extends BaseTest {
         // add an image
         InputStream inputStream = new FileInputStream(
                 TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.getImageOutputStream(opList);
+        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
         IOUtils.copy(inputStream, outputStream);
         inputStream.close();
         outputStream.close();
@@ -267,7 +267,7 @@ public class AzureStorageCacheTest extends BaseTest {
         OperationList otherOpList = new OperationList(
                 new Identifier(fixture.getName()), Format.GIF);
         inputStream = new FileInputStream(fixture);
-        outputStream = instance.getImageOutputStream(otherOpList);
+        outputStream = instance.newDerivativeImageOutputStream(otherOpList);
         IOUtils.copy(inputStream, outputStream);
         inputStream.close();
         outputStream.close();
@@ -292,7 +292,7 @@ public class AzureStorageCacheTest extends BaseTest {
         // add an image
         InputStream inputStream = new FileInputStream(
                 TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.getImageOutputStream(opList);
+        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
         IOUtils.copy(inputStream, outputStream);
         inputStream.close();
         outputStream.close();

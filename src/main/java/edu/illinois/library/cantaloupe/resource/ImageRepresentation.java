@@ -88,7 +88,7 @@ public class ImageRepresentation extends OutputRepresentation {
                         // so it's important that these two output streams'
                         // close() methods can deal with being called twice.)
                         try (OutputStream cacheOutputStream =
-                                     cache.getImageOutputStream(opList)) {
+                                     cache.newDerivativeImageOutputStream(opList)) {
                             OutputStream teeStream = new TeeOutputStream(
                                     outputStream, cacheOutputStream);
                             doWrite(teeStream);

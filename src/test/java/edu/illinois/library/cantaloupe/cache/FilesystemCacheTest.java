@@ -457,20 +457,21 @@ public class FilesystemCacheTest extends BaseTest {
         assertTrue(sourceImagePath.exists());
     }
 
-    /* getImageOutputStream(OperationList) */
+    /* newDerivativeImageOutputStream(OperationList) */
 
     @Test
-    public void testGetImageOutputStreamWithOpList() throws Exception {
+    public void testNewDerivativeImageOutputStreamWithOpList() throws Exception {
         OperationList ops = TestUtil.newOperationList();
-        assertNotNull(instance.getImageOutputStream(ops));
+        assertNotNull(instance.newDerivativeImageOutputStream(ops));
     }
 
     @Test
-    public void testGetImageOutputStreamWithOpListCreatesFolder() throws Exception {
+    public void testNewDerivativeImageOutputStreamWithOpListCreatesFolder()
+            throws Exception {
         FileUtils.deleteDirectory(derivativeImagePath);
 
         OperationList ops = TestUtil.newOperationList();
-        instance.getImageOutputStream(ops);
+        instance.newDerivativeImageOutputStream(ops);
         assertTrue(derivativeImagePath.exists());
     }
 

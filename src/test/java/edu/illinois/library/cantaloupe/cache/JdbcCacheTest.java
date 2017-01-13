@@ -93,7 +93,7 @@ public class JdbcCacheTest extends BaseTest {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
 
-        OutputStream os = instance.getImageOutputStream(ops);
+        OutputStream os = instance.newDerivativeImageOutputStream(ops);
         IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
         os.close();
 
@@ -113,7 +113,7 @@ public class JdbcCacheTest extends BaseTest {
         ops.add(rotate);
         ops.setOutputFormat(format);
 
-        os = instance.getImageOutputStream(ops);
+        os = instance.newDerivativeImageOutputStream(ops);
         IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
         os.close();
 
@@ -133,7 +133,7 @@ public class JdbcCacheTest extends BaseTest {
         ops.add(rotate);
         ops.setOutputFormat(format);
 
-        os = instance.getImageOutputStream(ops);
+        os = instance.newDerivativeImageOutputStream(ops);
         IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
         os.close();
 
@@ -193,7 +193,7 @@ public class JdbcCacheTest extends BaseTest {
         ops.setIdentifier(new Identifier("bees"));
 
         IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)),
-                instance.getImageOutputStream(ops));
+                instance.newDerivativeImageOutputStream(ops));
         instance.put(new Identifier("bees"), new ImageInfo(50, 40));
 
         // existing, non-expired image
@@ -265,7 +265,7 @@ public class JdbcCacheTest extends BaseTest {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("bees"));
 
-        OutputStream bc = instance.getImageOutputStream(ops);
+        OutputStream bc = instance.newDerivativeImageOutputStream(ops);
         IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), bc);
         bc.close();
 
@@ -319,13 +319,14 @@ public class JdbcCacheTest extends BaseTest {
         }
     }
 
-    /* getImageOutputStream(OperationList) */
+    /* newDerivativeImageOutputStream(OperationList) */
 
     @Test
-    public void testGetImageOutputStreamWithOperationList() throws Exception {
+    public void testNewDerivativeImageOutputStreamWithOperationList()
+            throws Exception {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
-        assertNotNull(instance.getImageOutputStream(ops));
+        assertNotNull(instance.newDerivativeImageOutputStream(ops));
     }
 
     /* oldestValidDate() */
@@ -415,7 +416,7 @@ public class JdbcCacheTest extends BaseTest {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
         // ...derivative image
-        OutputStream os = instance.getImageOutputStream(ops);
+        OutputStream os = instance.newDerivativeImageOutputStream(ops);
         IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
         os.close();
         // ...info

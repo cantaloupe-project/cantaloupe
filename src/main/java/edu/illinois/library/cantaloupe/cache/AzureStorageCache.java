@@ -194,7 +194,7 @@ class AzureStorageCache implements DerivativeCache {
     }
 
     @Override
-    public OutputStream getImageOutputStream(OperationList opList)
+    public OutputStream newDerivativeImageOutputStream(OperationList opList)
             throws CacheException {
         final String objectKey = getObjectKey(opList);
         if (!uploadingKeys.contains(objectKey)) {

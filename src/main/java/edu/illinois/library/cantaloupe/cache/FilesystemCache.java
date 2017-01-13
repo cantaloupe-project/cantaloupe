@@ -175,9 +175,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     /**
-     * Returned by {@link FilesystemCache#getImageOutputStream} when an image
-     * can be cached. Points to a temp file that will be moved into place when
-     * closed.
+     * Returned by {@link FilesystemCache#newDerivativeImageOutputStream} when
+     * an image can be cached. Points to a temp file that will be moved into
+     * place when closed.
      */
     private static class ConcurrentFileOutputStream extends FileOutputStream {
 
@@ -716,7 +716,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @throws CacheException If anything goes wrong.
      */
     @Override
-    public OutputStream getImageOutputStream(OperationList ops)
+    public OutputStream newDerivativeImageOutputStream(OperationList ops)
             throws CacheException {
         final File tempFile = getDerivativeImageTempFile(ops);
         // If the image is being written simultaneously in another thread or
@@ -727,7 +727,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         // so that multiple application instances can share the same cache
         // storage. If not for that, it could be skipped.
         if (tempFile.exists()) {
-            logger.info("getImageOutputStream(OperationList): miss, but a " +
+            logger.info("newDerivativeImageOutputStream(OperationList): miss, but a " +
                     "temp file for {} already exists, so not caching", ops);
             return new NullOutputStream();
         }
@@ -736,12 +736,12 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         // be present in the derivativeImagesBeingWritten set. If so,
         // return a null output stream to avoid interfering.
         if (derivativeImagesBeingWritten.contains(ops)) {
-            logger.info("getImageOutputStream(OperationList): miss, " +
+            logger.info("newDerivativeImageOutputStream(OperationList): miss, " +
                     "but cache file for {} is being written in " +
                     "another thread, so not caching", ops);
             return new NullOutputStream();
         } else {
-            logger.info("getImageOutputStream(OperationList): miss; " +
+            logger.info("newDerivativeImageOutputStream(OperationList): miss; " +
                     "caching {}", ops);
 
             // No need to check the return value. If anything went wrong,

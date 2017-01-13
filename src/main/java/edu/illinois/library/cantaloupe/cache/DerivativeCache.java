@@ -53,7 +53,7 @@ public interface DerivativeCache extends Cache {
      *         operation list can be written.
      * @throws CacheException
      */
-    OutputStream getImageOutputStream(OperationList opList)
+    OutputStream newDerivativeImageOutputStream(OperationList opList)
             throws CacheException;
 
     /**

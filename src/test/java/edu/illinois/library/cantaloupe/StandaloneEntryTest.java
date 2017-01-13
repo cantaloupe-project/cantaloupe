@@ -287,7 +287,7 @@ public class StandaloneEntryTest extends BaseTest {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("dogs"));
         ops.add(new Rotate(15));
-        try (OutputStream wbc = cache.getImageOutputStream(ops);
+        try (OutputStream wbc = cache.newDerivativeImageOutputStream(ops);
              InputStream rbc = new FileInputStream(
                      TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"))) {
             IOUtils.copy(rbc, wbc);
@@ -345,13 +345,13 @@ public class StandaloneEntryTest extends BaseTest {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
         ops.add(new Rotate(15));
-        try (OutputStream wbc = cache.getImageOutputStream(ops);
+        try (OutputStream wbc = cache.newDerivativeImageOutputStream(ops);
              InputStream rbc = new FileInputStream(TestUtil.getImage("jpg"))) {
             IOUtils.copy(rbc, wbc);
         }
 
         ops.setIdentifier(new Identifier("dogs"));
-        try (OutputStream wbc = cache.getImageOutputStream(ops);
+        try (OutputStream wbc = cache.newDerivativeImageOutputStream(ops);
              InputStream rbc = new FileInputStream(TestUtil.getImage("jpg"))) {
             IOUtils.copy(rbc, wbc);
         }

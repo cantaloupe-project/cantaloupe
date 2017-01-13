@@ -344,7 +344,7 @@ class JdbcCache implements DerivativeCache {
     }
 
     @Override
-    public OutputStream getImageOutputStream(OperationList ops)
+    public OutputStream newDerivativeImageOutputStream(OperationList ops)
             throws CacheException {
         // TODO: return a no-op stream when a write corresponding to an
         // identical op list is in progress in another thread
