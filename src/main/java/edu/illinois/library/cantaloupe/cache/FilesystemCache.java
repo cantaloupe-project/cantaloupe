@@ -606,7 +606,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         lock.readLock().lock();
 
         try {
-            final File cacheFile = getInfoFile(identifier);
+            final File cacheFile = infoFile(identifier);
             if (cacheFile != null && cacheFile.exists()) {
                 if (!isExpired(cacheFile)) {
                     logger.info("getImageInfo(): hit: {}",
@@ -765,7 +765,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @param identifier
      * @return File corresponding to the given parameters.
      */
-    File getInfoFile(final Identifier identifier) throws CacheException {
+    File infoFile(final Identifier identifier) throws CacheException {
         final String cacheRoot =
                 StringUtils.stripEnd(getRootInfoPathname(), File.separator);
         final String subfolderPath = StringUtils.stripEnd(
@@ -1029,7 +1029,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 }
             }
             // Delete the info
-            final File infoFile = getInfoFile(identifier);
+            final File infoFile = infoFile(identifier);
             try {
                 logger.info("purge(Identifier): deleting {}", infoFile);
                 FileUtils.forceDelete(infoFile);
@@ -1053,8 +1053,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
         logger.info("put(): caching: {}", identifier);
 
-        final File destFile = getInfoFile(identifier);
         final File tempFile = getInfoTempFile(identifier);
+        final File destFile = infoFile(identifier);
 
         try {
             if (destFile.exists()) {

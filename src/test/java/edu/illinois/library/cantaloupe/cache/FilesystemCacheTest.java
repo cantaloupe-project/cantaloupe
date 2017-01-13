@@ -145,7 +145,7 @@ public class FilesystemCacheTest extends BaseTest {
         derivativeImageFile.getParentFile().mkdirs();
         FileUtils.writeStringToFile(derivativeImageFile, "not empty");
         // create a new info file
-        File infoFile = instance.getInfoFile(ops.getIdentifier());
+        File infoFile = instance.infoFile(ops.getIdentifier());
         infoFile.getParentFile().mkdirs();
         FileUtils.writeStringToFile(infoFile, "not empty");
         // create some temp files
@@ -200,7 +200,7 @@ public class FilesystemCacheTest extends BaseTest {
         derivativeImageFile.getParentFile().mkdirs();
         FileUtils.writeStringToFile(derivativeImageFile, "not empty");
         // create a new info file
-        File infoFile = instance.getInfoFile(ops.getIdentifier());
+        File infoFile = instance.infoFile(ops.getIdentifier());
         infoFile.getParentFile().mkdirs();
         FileUtils.writeStringToFile(infoFile, "not empty");
         // create some temp files
@@ -382,7 +382,7 @@ public class FilesystemCacheTest extends BaseTest {
     @Test
     public void testGetImageInfoWithZeroTtl() throws Exception {
         Identifier identifier = new Identifier("test");
-        File file = instance.getInfoFile(identifier);
+        File file = instance.infoFile(identifier);
         file.getParentFile().mkdirs();
         file.createNewFile();
 
@@ -397,7 +397,7 @@ public class FilesystemCacheTest extends BaseTest {
         ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 1);
 
         Identifier identifier = new Identifier("test");
-        File file = instance.getInfoFile(identifier);
+        File file = instance.infoFile(identifier);
         file.getParentFile().mkdirs();
         file.createNewFile();
 
@@ -475,7 +475,7 @@ public class FilesystemCacheTest extends BaseTest {
         assertTrue(derivativeImagePath.exists());
     }
 
-    /* getInfoFile(Identifier) */
+    /* infoFile(Identifier) */
 
     @Test
     public void testGetInfoFile() throws CacheException {
@@ -490,7 +490,7 @@ public class FilesystemCacheTest extends BaseTest {
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator,
                 FilesystemCache.filenameFor(identifier));
-        assertEquals(new File(expected), instance.getInfoFile(identifier));
+        assertEquals(new File(expected), instance.infoFile(identifier));
     }
 
     @Test
@@ -537,7 +537,7 @@ public class FilesystemCacheTest extends BaseTest {
         derivativeImageFile.getParentFile().mkdirs();
         derivativeImageFile.createNewFile();
         // create a new info file
-        File infoFile = instance.getInfoFile(ops.getIdentifier());
+        File infoFile = instance.infoFile(ops.getIdentifier());
         infoFile.getParentFile().mkdirs();
         infoFile.createNewFile();
 
@@ -596,7 +596,7 @@ public class FilesystemCacheTest extends BaseTest {
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
         // add an info
-        File infoFile = instance.getInfoFile(ops.getIdentifier());
+        File infoFile = instance.infoFile(ops.getIdentifier());
         infoFile.getParentFile().mkdirs();
         infoFile.createNewFile();
 
@@ -633,7 +633,7 @@ public class FilesystemCacheTest extends BaseTest {
         derivativeImageFile.getParentFile().mkdirs();
         derivativeImageFile.createNewFile();
         // create a new info
-        File infoFile = instance.getInfoFile(ops.getIdentifier());
+        File infoFile = instance.infoFile(ops.getIdentifier());
         infoFile.getParentFile().mkdirs();
         infoFile.createNewFile();
 
@@ -647,7 +647,7 @@ public class FilesystemCacheTest extends BaseTest {
         derivativeImageFile = instance.getDerivativeImageFile(ops);
         derivativeImageFile.getParentFile().mkdirs();
         derivativeImageFile.createNewFile();
-        infoFile = instance.getInfoFile(ops.getIdentifier());
+        infoFile = instance.infoFile(ops.getIdentifier());
         infoFile.getParentFile().mkdirs();
         infoFile.createNewFile();
 
