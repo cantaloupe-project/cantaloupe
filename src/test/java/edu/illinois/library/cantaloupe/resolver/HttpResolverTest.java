@@ -50,19 +50,19 @@ public class HttpResolverTest extends BaseTest {
     }
 
     @Test
-    public void testGetStreamSourceWithPresentReadableImage() throws IOException {
+    public void testNewStreamSourceWithPresentReadableImage() throws IOException {
         try {
-            assertNotNull(instance.getStreamSource());
+            assertNotNull(instance.newStreamSource());
         } catch (IOException e) {
             fail();
         }
     }
 
     @Test
-    public void testGetStreamSourceWithMissingImage() throws IOException {
+    public void testNewStreamSourceWithMissingImage() throws IOException {
         try {
             instance.setIdentifier(new Identifier("bogus"));
-            instance.getStreamSource();
+            instance.newStreamSource();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
@@ -72,12 +72,12 @@ public class HttpResolverTest extends BaseTest {
     }
 
     @Test
-    public void testGetStreamSourceWithPresentUnreadableImage() throws IOException {
+    public void testNewStreamSourceWithPresentUnreadableImage() throws IOException {
         /* TODO: possible restlet bug: https://github.com/restlet/restlet-framework-java/issues/1179
         File image = TestUtil.getFixture("gif");
         try {
             image.setReadable(false);
-            instance.getStreamSource(new Identifier("gif"));
+            instance.newStreamSource(new Identifier("gif"));
             fail("Expected exception");
         } catch (AccessDeniedException e) {
             // pass

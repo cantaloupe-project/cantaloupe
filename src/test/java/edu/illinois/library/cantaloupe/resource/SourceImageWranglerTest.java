@@ -116,7 +116,7 @@ public class SourceImageWranglerTest extends BaseTest {
 
         new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
-        StreamSource ss1 = ((StreamResolver) resolver).getStreamSource();
+        StreamSource ss1 = ((StreamResolver) resolver).newStreamSource();
         StreamSource ss2 = ((StreamProcessor) processor).getStreamSource();
 
         assertEqualSources(ss1, ss2);
@@ -207,7 +207,7 @@ public class SourceImageWranglerTest extends BaseTest {
 
             new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
-            StreamSource ss1 = ((StreamResolver) resolver).getStreamSource();
+            StreamSource ss1 = ((StreamResolver) resolver).newStreamSource();
             StreamSource ss2 = ((StreamProcessor) processor).getStreamSource();
 
             assertEqualSources(ss1, ss2);

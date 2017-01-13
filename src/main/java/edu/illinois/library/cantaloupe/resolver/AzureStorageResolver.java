@@ -110,7 +110,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public StreamSource getStreamSource() throws IOException {
+    public StreamSource newStreamSource() throws IOException {
         return new AzureStorageStreamSource(getObject());
     }
 

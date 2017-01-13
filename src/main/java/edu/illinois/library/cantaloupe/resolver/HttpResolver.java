@@ -117,7 +117,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public StreamSource getStreamSource() throws IOException {
+    public StreamSource newStreamSource() throws IOException {
         Reference url = getUrl();
         logger.info("Resolved {} to {}", identifier, url);
         ClientResource resource = newClientResource(url);
@@ -148,7 +148,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
             if (sourceFormat == Format.UNKNOWN) {
                 sourceFormat = getSourceFormatFromContentTypeHeader();
             }
-            getStreamSource().newInputStream(); // throws IOException if not found etc.
+            newStreamSource().newInputStream(); // throws IOException if not found etc.
         }
         return sourceFormat;
     }

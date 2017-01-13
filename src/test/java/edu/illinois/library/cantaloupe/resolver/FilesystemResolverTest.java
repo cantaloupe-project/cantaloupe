@@ -43,17 +43,17 @@ public class FilesystemResolverTest extends BaseTest {
     }
 
     @Test
-    public void testGetStreamSource() {
+    public void testNewStreamSource() {
         // present, readable image
         try {
-            assertNotNull(instance.getStreamSource());
+            assertNotNull(instance.newStreamSource());
         } catch (IOException e) {
             fail();
         }
         // missing image
         try {
             instance.setIdentifier(new Identifier("bogus"));
-            instance.getStreamSource();
+            instance.newStreamSource();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass

@@ -82,7 +82,7 @@ class FilesystemResolver extends AbstractResolver
     }
 
     @Override
-    public StreamSource getStreamSource() throws IOException {
+    public StreamSource newStreamSource() throws IOException {
         return new FilesystemStreamSource(getFile());
     }
 

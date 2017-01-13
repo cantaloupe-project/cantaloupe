@@ -86,18 +86,18 @@ public class JdbcResolverTest extends BaseTest {
     }
 
     @Test
-    public void testGetStreamSource() throws IOException {
+    public void testNewStreamSource() throws IOException {
         // present, readable image
         try {
             instance.setIdentifier(new Identifier("jpg.jpg"));
-            assertNotNull(instance.getStreamSource());
+            assertNotNull(instance.newStreamSource());
         } catch (IOException e) {
             fail();
         }
         // missing image
         try {
             instance.setIdentifier(new Identifier("bogus"));
-            instance.getStreamSource();
+            instance.newStreamSource();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass

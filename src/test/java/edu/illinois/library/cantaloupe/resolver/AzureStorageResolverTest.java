@@ -110,17 +110,17 @@ public class AzureStorageResolverTest extends BaseTest {
     }
 
     @Test
-    public void testGetStreamSourceWithBasicLookupStrategy() {
+    public void testNewStreamSourceWithBasicLookupStrategy() {
         // present, readable image
         try {
-            assertNotNull(instance.getStreamSource());
+            assertNotNull(instance.newStreamSource());
         } catch (IOException e) {
             fail();
         }
         // missing image
         try {
             instance.setIdentifier(new Identifier("bogus"));
-            instance.getStreamSource();
+            instance.newStreamSource();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
@@ -130,7 +130,7 @@ public class AzureStorageResolverTest extends BaseTest {
     }
 
     @Test
-    public void testGetStreamSourceWithScriptLookupStrategy() throws Exception {
+    public void testNewStreamSourceWithScriptLookupStrategy() throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
@@ -140,7 +140,7 @@ public class AzureStorageResolverTest extends BaseTest {
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         // present image
         try {
-            StreamSource source = instance.getStreamSource();
+            StreamSource source = instance.newStreamSource();
             assertNotNull(source.newInputStream());
         } catch (IOException e) {
             fail();
@@ -148,7 +148,7 @@ public class AzureStorageResolverTest extends BaseTest {
         // missing image
         try {
             instance.setIdentifier(new Identifier("bogus"));
-            instance.getStreamSource();
+            instance.newStreamSource();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass

@@ -125,7 +125,7 @@ public class SourceImageWrangler {
                         "between {} and {}",
                         resolverName, processorName);
                 ((StreamProcessor) processor).setStreamSource(
-                        ((StreamResolver) resolver).getStreamSource());
+                        ((StreamResolver) resolver).newStreamSource());
             }
         } else { // resolver is a StreamResolver
             // StreamResolvers and FileProcessors can't work together.
@@ -158,7 +158,7 @@ public class SourceImageWrangler {
                                 "connection between {} and {}",
                                 resolverName, processorName);
                         ((StreamProcessor) processor).setStreamSource(
-                                ((StreamResolver) resolver).getStreamSource());
+                                ((StreamResolver) resolver).newStreamSource());
                         break;
                 }
             }
@@ -190,7 +190,7 @@ public class SourceImageWrangler {
             throws IOException, CacheException {
         // Download to the SourceCache and then read from it.
         try (InputStream inputStream = ((StreamResolver) resolver).
-                getStreamSource().newInputStream();
+                newStreamSource().newInputStream();
              OutputStream outputStream =
                      sourceCache.getImageOutputStream(identifier)) {
             logger.info("Downloading {} to the source cache", identifier);

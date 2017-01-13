@@ -113,7 +113,7 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public StreamSource getStreamSource() throws IOException {
+    public StreamSource newStreamSource() throws IOException {
         try (Connection connection = getConnection()) {
             final String sql = getLookupSql();
             if (!sql.contains("?")) {

@@ -123,7 +123,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public StreamSource getStreamSource()
+    public StreamSource newStreamSource()
             throws IOException {
         return new AmazonS3StreamSource(getObject());
     }

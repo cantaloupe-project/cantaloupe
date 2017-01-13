@@ -19,6 +19,6 @@ public interface StreamResolver extends Resolver {
      *                               identifier is not readable.
      * @throws IOException If there is some other issue accessing the image.
      */
-    StreamSource getStreamSource() throws IOException;
+    StreamSource newStreamSource() throws IOException;
 
 }
