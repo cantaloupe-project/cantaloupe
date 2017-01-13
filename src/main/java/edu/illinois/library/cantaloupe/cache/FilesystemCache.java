@@ -678,7 +678,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         // If the image is being written simultaneously in another process,
         // there may (or may not) be a temp file on the filesystem. If so,
         // return a null output stream to avoid interfering.
-        final File tempFile = getSourceImageTempFile(identifier);
+        final File tempFile = sourceImageTempFile(identifier);
         if (tempFile.exists()) {
             logger.info("getImageOutputStream(Identifier): miss, but a temp " +
                     "file for {} already exists, so not caching", identifier);
@@ -804,8 +804,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @return Temp file corresponding to a source image with the given
      * identifier. Clients should delete it when they are done with it.
      */
-    File getSourceImageTempFile(Identifier identifier) throws CacheException {
-        return new File(getSourceImageFile(identifier).getAbsolutePath() +
+    File sourceImageTempFile(Identifier identifier) throws CacheException {
+        return new File(sourceImageFile(identifier).getAbsolutePath() +
                 TEMP_EXTENSION);
     }
 

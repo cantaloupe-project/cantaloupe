@@ -149,7 +149,7 @@ public class FilesystemCacheTest extends BaseTest {
         infoFile.getParentFile().mkdirs();
         FileUtils.writeStringToFile(infoFile, "not empty");
         // create some temp files
-        File sourceImageTempFile = instance.getSourceImageTempFile(ops.getIdentifier());
+        File sourceImageTempFile = instance.sourceImageTempFile(ops.getIdentifier());
         FileUtils.writeStringToFile(sourceImageTempFile, "not empty");
         File derivativeImageTempFile = instance.getDerivativeImageTempFile(ops);
         FileUtils.writeStringToFile(derivativeImageTempFile, "not empty");
@@ -204,7 +204,7 @@ public class FilesystemCacheTest extends BaseTest {
         infoFile.getParentFile().mkdirs();
         FileUtils.writeStringToFile(infoFile, "not empty");
         // create some temp files
-        File sourceImageTempFile = instance.getSourceImageTempFile(ops.getIdentifier());
+        File sourceImageTempFile = instance.sourceImageTempFile(ops.getIdentifier());
         FileUtils.writeStringToFile(sourceImageTempFile, "not empty");
         File derivativeImageTempFile = instance.getDerivativeImageTempFile(ops);
         FileUtils.writeStringToFile(derivativeImageTempFile, "not empty");
@@ -515,7 +515,7 @@ public class FilesystemCacheTest extends BaseTest {
         assertEquals(new File(expected), instance.sourceImageFile(identifier));
     }
 
-    /* getSourceImageTempFile(Identifier) */
+    /* sourceImageTempFile(Identifier) */
 
     @Test
     public void testGetSourceImageTempFile() throws Exception {
