@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.logging;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
-import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -38,12 +37,11 @@ public abstract class LoggerUtil {
                 }
             }
             // Finally, reload the Logback configuration.
-            try {
-                InputStream stream = Application.class.getClassLoader().
-                        getResourceAsStream("logback.xml");
+            try (InputStream stream = Application.class.getClassLoader().
+                    getResourceAsStream("logback.xml")) {
                 jc.doConfigure(stream);
-            } catch (JoranException je) {
-                je.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             StatusPrinter.printIfErrorsOccured(loggerContext);
         }
