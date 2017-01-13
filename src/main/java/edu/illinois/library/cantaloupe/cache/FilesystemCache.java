@@ -570,7 +570,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     @Override
-    public File getImageFile(Identifier identifier) throws CacheException {
+    public File getSourceImageFile(Identifier identifier) throws CacheException {
         synchronized (sourceImageWriteLock) {
             while (sourceImagesBeingWritten.contains(identifier)) {
                 try {
@@ -584,14 +584,14 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         final File cacheFile = sourceImageFile(identifier);
         if (cacheFile != null && cacheFile.exists()) {
             if (!isExpired(cacheFile)) {
-                logger.info("getImageFile(): hit: {} ({})",
+                logger.info("getSourceImageFile(): hit: {} ({})",
                         identifier, cacheFile.getAbsolutePath());
                 file = cacheFile;
             } else {
-                logger.info("getImageFile(): deleting stale file: {}",
+                logger.info("getSourceImageFile(): deleting stale file: {}",
                         cacheFile.getAbsolutePath());
                 if (!cacheFile.delete()) {
-                    logger.warn("getImageFile(): unable to delete {}",
+                    logger.warn("getSourceImageFile(): unable to delete {}",
                             cacheFile.getAbsolutePath());
                 }
             }

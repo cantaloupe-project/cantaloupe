@@ -32,7 +32,7 @@ public interface SourceCache extends Cache {
      *         exist in the cache.
      * @throws CacheException
      */
-    File getImageFile(Identifier identifier) throws CacheException;
+    File getSourceImageFile(Identifier identifier) throws CacheException;
 
     /**
      * @param identifier Identifier of an image to write to the cache.

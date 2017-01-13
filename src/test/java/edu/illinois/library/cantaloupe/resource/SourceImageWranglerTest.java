@@ -173,7 +173,7 @@ public class SourceImageWranglerTest extends BaseTest {
             new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
             assertEquals(
-                    CacheFactory.getSourceCache().getImageFile(identifier),
+                    CacheFactory.getSourceCache().getSourceImageFile(identifier),
                     ((FileProcessor) processor).getSourceFile());
         } finally {
             server.stop();
@@ -246,7 +246,7 @@ public class SourceImageWranglerTest extends BaseTest {
             new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
             assertEqualSources(
-                    CacheFactory.getSourceCache().getImageFile(identifier),
+                    CacheFactory.getSourceCache().getSourceImageFile(identifier),
                     ((StreamProcessor) processor).getStreamSource());
         } finally {
             server.stop();

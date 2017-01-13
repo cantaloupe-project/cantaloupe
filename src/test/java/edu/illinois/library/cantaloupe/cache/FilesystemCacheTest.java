@@ -346,22 +346,22 @@ public class FilesystemCacheTest extends BaseTest {
         // TODO: write this
     }
 
-    /* getImageFile(Identifier) */
+    /* getSourceImageFile(Identifier) */
 
     @Test
-    public void testGetImageFileWithIdentifierWithZeroTtl()
+    public void testGetSourceImageFileWithIdentifierWithZeroTtl()
             throws Exception {
         Identifier identifier = new Identifier("cats");
-        assertNull(instance.getImageFile(identifier));
+        assertNull(instance.getSourceImageFile(identifier));
 
         File imageFile = instance.sourceImageFile(identifier);
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
-        assertNotNull(instance.getImageFile(identifier));
+        assertNotNull(instance.getSourceImageFile(identifier));
     }
 
     @Test
-    public void testGetImageFileWithIdentifierWithNonzeroTtl()
+    public void testGetSourceImageFileWithIdentifierWithNonzeroTtl()
             throws Exception {
         ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 1);
 
@@ -369,11 +369,11 @@ public class FilesystemCacheTest extends BaseTest {
         File cacheFile = instance.sourceImageFile(identifier);
         cacheFile.getParentFile().mkdirs();
         cacheFile.createNewFile();
-        assertNotNull(instance.getImageFile(identifier));
+        assertNotNull(instance.getSourceImageFile(identifier));
 
         Thread.sleep(1100);
 
-        assertNull(instance.getImageFile(identifier));
+        assertNull(instance.getSourceImageFile(identifier));
         assertFalse(cacheFile.exists());
     }
 

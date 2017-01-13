@@ -79,7 +79,7 @@ public class SourceImageWrangler {
      *             is set to <code>CacheStrategy</code>, the source image will
      *             be downloaded to the source cache, and the processor will
      *             read the file returned by
-     *             {@link SourceCache#getImageFile(Identifier)}. This will
+     *             {@link SourceCache#getSourceImageFile(Identifier)}. This will
      *             block, and other threads trying to access the same source
      *             image will wait for it to download.</li>
      *         </ul>
@@ -90,7 +90,7 @@ public class SourceImageWrangler {
      *             <li>If {@link CacheFactory#SOURCE_CACHE_CONFIG_KEY} is set,
      *             the source image will be downloaded to the source cache,
      *             and the processor will read the file returned by
-     *             {@link SourceCache#getImageFile(Identifier)}. This will
+     *             {@link SourceCache#getSourceImageFile(Identifier)}. This will
      *             block, and other threads trying to access the same source
      *             image will wait for it to download.</li>
      *             <li>Otherwise, an {@link IncompatibleResolverException}
@@ -169,10 +169,10 @@ public class SourceImageWrangler {
             throws IOException, CacheException {
         // This will block while a file is being written in another thread,
         // which will prevent the image from being downloaded multiple times.
-        File sourceFile = sourceCache.getImageFile(identifier);
+        File sourceFile = sourceCache.getSourceImageFile(identifier);
         if (sourceFile == null) {
             downloadToSourceCache(sourceCache);
-            sourceFile = sourceCache.getImageFile(identifier);
+            sourceFile = sourceCache.getSourceImageFile(identifier);
         }
         logger.info("SourceCache -> FileProcessor connection between {} and {}",
                 sourceCache.getClass().getSimpleName(),
