@@ -68,10 +68,12 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
 
     static final String DOWNSCALE_FILTER_CONFIG_KEY =
             "OpenJpegProcessor.downscale_filter";
-    static final String NORMALIZE_CONFIG_KEY = "OpenJpegProcessor.normalize";
+    static final String NORMALIZE_CONFIG_KEY =
+            "OpenJpegProcessor.normalize";
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "OpenJpegProcessor.path_to_binaries";
-    static final String SHARPEN_CONFIG_KEY = "OpenJpegProcessor.sharpen";
+    static final String SHARPEN_CONFIG_KEY =
+            "OpenJpegProcessor.sharpen";
     static final String UPSCALE_FILTER_CONFIG_KEY =
             "OpenJpegProcessor.upscale_filter";
 
@@ -337,8 +339,8 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
 
     @Override
     public void setSourceFile(File sourceFile) {
+        super.setSourceFile(sourceFile);
         reset();
-        this.sourceFile = sourceFile;
     }
 
     /**

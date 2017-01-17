@@ -83,10 +83,12 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
 
     static final String DOWNSCALE_FILTER_CONFIG_KEY =
             "KakaduProcessor.downscale_filter";
-    static final String NORMALIZE_CONFIG_KEY = "KakaduProcessor.normalize";
+    static final String NORMALIZE_CONFIG_KEY =
+            "KakaduProcessor.normalize";
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "KakaduProcessor.path_to_binaries";
-    static final String SHARPEN_CONFIG_KEY = "KakaduProcessor.sharpen";
+    static final String SHARPEN_CONFIG_KEY =
+            "KakaduProcessor.sharpen";
     static final String UPSCALE_FILTER_CONFIG_KEY =
             "KakaduProcessor.upscale_filter";
 
@@ -382,8 +384,8 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
 
     @Override
     public void setSourceFile(File sourceFile) {
+        super.setSourceFile(sourceFile);
         reset();
-        this.sourceFile = sourceFile;
     }
 
     /**
