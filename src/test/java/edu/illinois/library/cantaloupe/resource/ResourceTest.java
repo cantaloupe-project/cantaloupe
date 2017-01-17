@@ -10,9 +10,7 @@ import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.restlet.Client;
 import org.restlet.Context;
 import org.restlet.data.Protocol;
@@ -28,29 +26,14 @@ public abstract class ResourceTest extends BaseTest {
 
     protected Client client;
 
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        BaseTest.beforeClass();
-
-        webServer = StandaloneEntry.getWebServer();
-        webServer.setHttpEnabled(true);
-        webServer.setHttpPort(PORT);
-        webServer.start();
-    }
-
-    @AfterClass
-    public static void afterClass() throws Exception {
-        BaseTest.afterClass();
-        webServer.stop();
-    }
-
     @Before
     public void setUp() throws Exception {
         super.setUp();
 
         final Configuration config = ConfigurationFactory.getInstance();
+        config.setProperty("admin.enabled", true);
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
-                "true");
+                true);
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
@@ -64,12 +47,18 @@ public abstract class ResourceTest extends BaseTest {
 
         client = new Client(new Context(), Protocol.HTTP);
         client.start();
+
+        webServer = StandaloneEntry.getWebServer();
+        webServer.setHttpEnabled(true);
+        webServer.setHttpPort(PORT);
+        webServer.start();
     }
 
     @After
     public void tearDown() throws Exception {
         super.tearDown();
         client.stop();
+        webServer.stop();
     }
 
     protected ClientResource getClientForUriPath(String path) {
