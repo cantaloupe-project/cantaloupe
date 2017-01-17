@@ -118,6 +118,14 @@ public class WebServer {
         return httpsEnabled;
     }
 
+    public boolean isStarted() {
+        return server.isStarted();
+    }
+
+    public boolean isStopped() {
+        return server.isStopped();
+    }
+
     public void setHttpEnabled(boolean enabled) {
         this.httpEnabled = enabled;
     }

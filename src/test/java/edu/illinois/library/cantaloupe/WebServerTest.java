@@ -106,4 +106,18 @@ public class WebServerTest extends BaseTest {
         assertTrue(instance.isHttpsEnabled());
     }
 
+    @Test
+    public void testIsStarted() throws Exception {
+        assertFalse(instance.isStarted());
+        assertTrue(instance.isStopped());
+        instance.start();
+        assertTrue(instance.isStarted());
+        assertFalse(instance.isStopped());
+    }
+
+    @Test
+    public void testIsStopped() throws Exception {
+        testIsStarted();
+    }
+
 }
