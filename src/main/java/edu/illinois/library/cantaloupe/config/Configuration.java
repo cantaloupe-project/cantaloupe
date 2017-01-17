@@ -12,6 +12,8 @@ public interface Configuration {
      */
     void clear();
 
+    void clearProperty(String key);
+
     boolean getBoolean(String key);
 
     boolean getBoolean(String key, boolean defaultValue);

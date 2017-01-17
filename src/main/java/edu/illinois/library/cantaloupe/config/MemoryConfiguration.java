@@ -15,10 +15,17 @@ class MemoryConfiguration implements Configuration {
 
     private ConcurrentMap<String,Object> configuration = new ConcurrentHashMap<>();
 
+    @Override
     public void clear() {
         configuration.keySet().clear();
     }
 
+    @Override
+    public void clearProperty(String key) {
+        configuration.remove(key);
+    }
+
+    @Override
     public boolean getBoolean(String key) {
         Object value = configuration.get(key);
         boolean bool;
@@ -37,6 +44,7 @@ class MemoryConfiguration implements Configuration {
         }
     }
 
+    @Override
     public boolean getBoolean(String key, boolean defaultValue) {
         try {
             return getBoolean(key);
@@ -45,6 +53,7 @@ class MemoryConfiguration implements Configuration {
         }
     }
 
+    @Override
     public double getDouble(String key) {
         Object value = configuration.get(key);
         if (value != null) {
@@ -53,6 +62,7 @@ class MemoryConfiguration implements Configuration {
         throw new NoSuchElementException(key);
     }
 
+    @Override
     public double getDouble(String key, double defaultValue) {
         try {
             return getDouble(key);
@@ -64,10 +74,12 @@ class MemoryConfiguration implements Configuration {
     /**
      * @return <code>null</code>.
      */
+    @Override
     public File getFile() {
         return null;
     }
 
+    @Override
     public float getFloat(String key) {
         Object value = configuration.get(key);
         if (value != null) {
@@ -76,6 +88,7 @@ class MemoryConfiguration implements Configuration {
         throw new NoSuchElementException(key);
     }
 
+    @Override
     public float getFloat(String key, float defaultValue) {
         try {
             return getFloat(key);
@@ -84,6 +97,7 @@ class MemoryConfiguration implements Configuration {
         }
     }
 
+    @Override
     public int getInt(String key) {
         Object value = configuration.get(key);
         if (value != null) {
@@ -92,6 +106,7 @@ class MemoryConfiguration implements Configuration {
         throw new NoSuchElementException(key);
     }
 
+    @Override
     public int getInt(String key, int defaultValue) {
         try {
             return getInt(key);
@@ -100,10 +115,12 @@ class MemoryConfiguration implements Configuration {
         }
     }
 
+    @Override
     public Iterator<String> getKeys() {
         return configuration.keySet().iterator();
     }
 
+    @Override
     public long getLong(String key) {
         Object value = configuration.get(key);
         if (value != null) {
@@ -112,6 +129,7 @@ class MemoryConfiguration implements Configuration {
         throw new NoSuchElementException(key);
     }
 
+    @Override
     public long getLong(String key, long defaultValue) {
         try {
             return getLong(key);
@@ -120,10 +138,12 @@ class MemoryConfiguration implements Configuration {
         }
     }
 
+    @Override
     public Object getProperty(String key) {
         return configuration.get(key);
     }
 
+    @Override
     public String getString(String key) {
         Object value = configuration.get(key);
         if (value != null) {
@@ -132,6 +152,7 @@ class MemoryConfiguration implements Configuration {
         return null;
     }
 
+    @Override
     public String getString(String key, String defaultValue) {
         String string = getString(key);
         if (string != null) {
@@ -143,13 +164,16 @@ class MemoryConfiguration implements Configuration {
     /**
      * No-op.
      */
+    @Override
     public synchronized void reload() {}
 
     /**
      * No-op.
      */
+    @Override
     public void save() {}
 
+    @Override
     public void setProperty(String key, Object value) {
         configuration.put(key, value);
     }
@@ -157,11 +181,13 @@ class MemoryConfiguration implements Configuration {
     /**
      * No-op.
      */
+    @Override
     public void startWatching() {}
 
     /**
      * No-op.
      */
+    @Override
     public void stopWatching() {}
 
 }

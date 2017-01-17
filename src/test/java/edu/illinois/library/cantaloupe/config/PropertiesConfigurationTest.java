@@ -31,6 +31,17 @@ public class PropertiesConfigurationTest extends BaseTest {
         assertNull(instance.getString("cats"));
     }
 
+    /* clearProperty() */
+
+    @Test
+    public void testClearProperty() {
+        instance.setProperty("cats", "yes");
+        instance.setProperty("dogs", "yes");
+        instance.clearProperty("cats");
+        assertNull(instance.getString("cats"));
+        assertNotNull(instance.getString("dogs"));
+    }
+
     /* getBoolean(String) */
 
     @Test
