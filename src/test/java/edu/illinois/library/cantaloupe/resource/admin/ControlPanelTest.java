@@ -1,13 +1,13 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
-import edu.illinois.library.cantaloupe.StandaloneEntry;
 import edu.illinois.library.cantaloupe.WebApplication;
-import edu.illinois.library.cantaloupe.WebServer;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import edu.illinois.library.cantaloupe.resource.ResourceTest;
+import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -24,14 +24,13 @@ import org.openqa.selenium.support.ui.Select;
 
 import static org.junit.Assert.*;
 
-public class ControlPanelTest extends BaseTest {
+public class ControlPanelTest extends ResourceTest {
 
     private static final int SLEEP_AFTER_SUBMIT = 600;
-    private static final String username = "admin";
-    private static final String secret = "secret";
+    private static final String USERNAME = "admin";
+    private static final String SECRET = "secret";
 
     private static WebDriver webDriver;
-    private static WebServer webServer;
 
     private WebElement css(String selector) {
         return webDriver.findElement(By.cssSelector(selector));
@@ -39,7 +38,7 @@ public class ControlPanelTest extends BaseTest {
 
     private String getAdminUri() {
         return String.format("http://%s:%s@localhost:%d%s",
-                username, secret,
+                USERNAME, SECRET,
                 webServer.getHttpPort(),
                 WebApplication.ADMIN_PATH);
     }
@@ -47,15 +46,6 @@ public class ControlPanelTest extends BaseTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
         BaseTest.beforeClass();
-
-        Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(AdminResource.CONTROL_PANEL_ENABLED_CONFIG_KEY, true);
-        config.setProperty(WebApplication.ADMIN_SECRET_CONFIG_KEY, secret);
-
-        webServer = StandaloneEntry.getWebServer();
-        webServer.setHttpEnabled(true);
-        webServer.setHttpPort(TestUtil.getOpenPort());
-        webServer.start();
 
         System.setProperty("webdriver.gecko.driver",
                 TestUtil.getTestConfig().getString(ConfigurationConstants.GECKO_WEBDRIVER.getKey()));
@@ -67,7 +57,6 @@ public class ControlPanelTest extends BaseTest {
     @AfterClass
     public static void afterClass() throws Exception {
         BaseTest.afterClass();
-        webServer.stop();
         webDriver.close();
     }
 
@@ -75,12 +64,14 @@ public class ControlPanelTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(AdminResource.CONTROL_PANEL_ENABLED_CONFIG_KEY, true);
-        config.setProperty(WebApplication.ADMIN_SECRET_CONFIG_KEY, secret);
+        config.setProperty(WebApplication.ADMIN_SECRET_CONFIG_KEY, SECRET);
         config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
                 "FilesystemResolver");
         config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
                 "Java2dProcessor");
+
+        config.clearProperty("FilesystemResolver.BasicLookupStrategy.path_prefix");
+        config.clearProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY);
 
         webDriver.get(getAdminUri());
     }
