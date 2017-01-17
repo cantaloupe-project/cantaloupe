@@ -99,7 +99,6 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
 
     /** will cache the output of kdu_jp2info */
     private Document infoDocument;
-    private File sourceFile;
 
     static {
         // Due to a quirk of kdu_expand, this processor requires access to
@@ -306,11 +305,6 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
                 infoDocument = db.parse(new InputSource(new StringReader(kduOutput)));
             }
         }
-    }
-
-    @Override
-    public File getSourceFile() {
-        return this.sourceFile;
     }
 
     @Override

@@ -84,7 +84,6 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
 
     // will cache opj_dump output
     private String imageInfo;
-    private File sourceFile;
 
     static {
         // Due to a quirk of opj_decompress, this processor requires access to
@@ -261,11 +260,6 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
                 imageInfo = opjOutput;
             }
         }
-    }
-
-    @Override
-    public File getSourceFile() {
-        return this.sourceFile;
     }
 
     @Override
