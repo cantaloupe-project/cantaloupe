@@ -4,18 +4,18 @@ import edu.illinois.library.cantaloupe.operation.Orientation;
 
 import javax.imageio.metadata.IIOMetadata;
 
-class BmpMetadata extends AbstractMetadata implements Metadata {
+class NullMetadata extends AbstractMetadata implements Metadata {
 
     /**
      * @param metadata
      * @param formatName
      */
-    BmpMetadata(IIOMetadata metadata, String formatName) {
+    NullMetadata(IIOMetadata metadata, String formatName) {
         super(metadata, formatName);
     }
 
     /**
-     * @return Null, as BMP does not support EXIF.
+     * @return Null.
      */
     @Override
     public Object getExif() {
@@ -23,7 +23,7 @@ class BmpMetadata extends AbstractMetadata implements Metadata {
     }
 
     /**
-     * @return Null, as BMP does not support IPTC.
+     * @return Null.
      */
     @Override
     public Object getIptc() {
@@ -39,7 +39,7 @@ class BmpMetadata extends AbstractMetadata implements Metadata {
     }
 
     /**
-     * @return Null, as BMP does not support XMP.
+     * @return Null.
      */
     @Override
     public byte[] getXmp() {
@@ -47,7 +47,7 @@ class BmpMetadata extends AbstractMetadata implements Metadata {
     }
 
     /**
-     * @return Null, as BMP does not support XMP.
+     * @return Null.
      */
     @Override
     public String getXmpRdf() {
