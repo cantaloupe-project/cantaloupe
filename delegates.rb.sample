@@ -167,6 +167,10 @@ module Cantaloupe
   # endpoint if `overlays.enabled` is set to `true` and `overlays.strategy`
   # is set to `ScriptStrategy` in the configuration file.
   #
+  # When using string overlays, be mindful of length. If the string will be
+  # be too big to fit in the image, it won't be drawn. Consider breaking
+  # long strings with LFs (\n).
+  #
   # @param identifier [String] Image identifier
   # @param operations [Array<Hash<String,Object>>] Array of operations in
   #                   order of execution. Only operations that are not no-ops
@@ -185,8 +189,8 @@ module Cantaloupe
   # @return [Hash<String,String>,Boolean] For image overlays, a hash with
   #         `image`, `position`, and `inset` keys. For string overlays, a
   #         hash with `position`, `inset`, `string`, `font`, `font_size`,
-  #         `font_weight`, ``color`, `stroke_color`, and `stroke_width`
-  #         keys. Return false for no overlay.
+  #         `font_min_size`, `font_weight`, ``color`, `stroke_color`, and
+  #         `stroke_width` keys. Return false for no overlay.
   #
   def self.overlay(identifier, operations, resulting_size, output_format,
                    request_uri, request_headers, client_ip, cookies)

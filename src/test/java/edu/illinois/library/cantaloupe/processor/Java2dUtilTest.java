@@ -164,7 +164,7 @@ public class Java2dUtilTest extends BaseTest {
         // create a Overlay
         final StringOverlay overlay = new StringOverlay(
                 "XXXXXX", Position.TOP_LEFT, 0,
-                new Font("Helvetica", Font.PLAIN, 4),
+                new Font("Helvetica", Font.PLAIN, 4), 11,
                 Color.black, Color.white, 2f);
 
         // apply it

@@ -28,17 +28,19 @@ public class StringOverlay extends Overlay implements Operation {
 
     private Color color;
     private Font font;
+    private int minSize;
     private String string;
     private Color strokeColor;
     private float strokeWidth;
 
     public StringOverlay(String string, Position position, int inset,
-                         Font font, Color color, Color strokeColor,
+                         Font font, int minSize, Color color, Color strokeColor,
                          float strokeWidth) {
         super(position, inset);
         this.setString(string);
         this.setFont(font);
         this.setColor(color);
+        this.setMinSize(minSize);
         this.setStrokeColor(strokeColor);
         this.setStrokeWidth(strokeWidth);
     }
@@ -49,6 +51,10 @@ public class StringOverlay extends Overlay implements Operation {
 
     public Font getFont() {
         return font;
+    }
+
+    public int getMinSize() {
+        return minSize;
     }
 
     public String getString() {
@@ -77,6 +83,10 @@ public class StringOverlay extends Overlay implements Operation {
 
     public void setFont(Font font) {
         this.font = font;
+    }
+
+    public void setMinSize(int minSize) {
+        this.minSize = minSize;
     }
 
     public void setString(String string) {
@@ -132,6 +142,8 @@ public class StringOverlay extends Overlay implements Operation {
             logger.error("toString(): {}", e.getMessage());
             string = getString().replaceAll("[^A-Za-z0-9]", "");
         }
+        // minSize does not need to be included, as it is more of a potential
+        // property than a property.
         return String.format("%s_%s_%d_%s_%d_%.1f_%s_%s_%.1f",
                 string,
                 getPosition(),

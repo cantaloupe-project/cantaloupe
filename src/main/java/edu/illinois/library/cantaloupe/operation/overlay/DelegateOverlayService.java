@@ -63,14 +63,16 @@ class DelegateOverlayService {
                 attributes.put(TextAttribute.WEIGHT, defs.get("font_weight"));
                 final Font font = Font.getFont(attributes);
 
+                final int minSize =
+                        ((Long) defs.get("font_min_size")).intValue();
                 final Color color =
                         ColorUtil.fromString((String) defs.get("color"));
                 final Color strokeColor =
                         ColorUtil.fromString((String) defs.get("stroke_color"));
                 final float strokeWidth =
                         Float.parseFloat(defs.get("stroke_width").toString());
-                return new StringOverlay(string, position, inset, font, color,
-                        strokeColor, strokeWidth);
+                return new StringOverlay(string, position, inset, font, minSize,
+                        color, strokeColor, strokeWidth);
             }
         }
         return null;

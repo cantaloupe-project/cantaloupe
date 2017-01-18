@@ -29,7 +29,8 @@ public class StringOverlayTest extends BaseTest {
         final Font font = Font.getFont(attributes);
 
         instance = new StringOverlay("cats", Position.BOTTOM_RIGHT, 5,
-                font, Color.blue, Color.red, 5f);
+                font, 11, Color.blue, Color.red, 5f);
+    }
 
     @Test
     public void testHasEffect() {

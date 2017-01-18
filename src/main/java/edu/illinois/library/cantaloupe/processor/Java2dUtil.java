@@ -135,15 +135,7 @@ public abstract class Java2dUtil {
                         overlay.getPosition(),
                         overlay.getInset());
             } else if (overlay instanceof StringOverlay) {
-                final StringOverlay sw = (StringOverlay) overlay;
-                markedImage = overlayString(baseImage,
-                        sw.getString(),
-                        sw.getFont(),
-                        sw.getColor(),
-                        sw.getStrokeColor(),
-                        sw.getStrokeWidth(),
-                        overlay.getPosition(),
-                        overlay.getInset());
+                markedImage = overlayString(baseImage, (StringOverlay) overlay);
             }
         }
         return markedImage;
@@ -324,61 +316,78 @@ public abstract class Java2dUtil {
     }
 
     /**
-     * <p>Overlays a string on top of an image, for e.g. a text overlay.</p>
-     *
-     * <p>The overlay string will only be drawn if it will fit entirely within
-     * <var>baseImage</var>.</p>
+     * <p>Overlays a string onto an image.</p>
      *
      * @param baseImage Image to overlay the string onto.
-     * @param overlayString String to overlay onto the image.
-     * @param fillColor Color of the text.
-     * @param strokeColor Color of the text outline.
-     * @param strokeWidth Width in pixels of the stroke.
-     * @param position Position of the overlaid string.
-     * @param inset Inset of the overlaid string in pixels.
-     * @return
+     * @param overlay   String to overlay onto the image.
+     * @return Image with a string overlaid on top of it.
      */
     private static BufferedImage overlayString(final BufferedImage baseImage,
-                                               final String overlayString,
-                                               final Font font,
-                                               final java.awt.Color fillColor,
-                                               final java.awt.Color strokeColor,
-                                               final float strokeWidth,
-                                               final Position position,
-                                               final int inset) {
-        if (overlayString != null && overlayString.length() > 0) {
+                                               final StringOverlay overlay) {
+        if (overlay.hasEffect()) {
             final Stopwatch watch = new Stopwatch();
 
             final Graphics2D g2d = baseImage.createGraphics();
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
-            g2d.drawImage(baseImage, 0, 0, null);
-            g2d.setFont(font);
+            g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                    RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
 
-            // Graphics2D.drawString() does not understand newlines, so each
-            // line has to be drawn separately.
-            final String[] lines = StringUtils.split(overlayString, "\n");
-            final FontMetrics fm = g2d.getFontMetrics();
-            // The total height is the sum of the height of all lines.
-            final int lineHeight = fm.getHeight();
-            final int totalHeight = lineHeight * lines.length;
-            int maxWidth = 0;
-            final int[] lineWidths = new int[lines.length];
-            for (int i = 0; i < lines.length; i++) {
-                final int lineWidth = fm.stringWidth(lines[i]);
-                lineWidths[i] = lineWidth;
-                if (lineWidth > maxWidth) {
-                    maxWidth = lineWidth;
+            // Graphics2D.drawString() does not understand newlines. Each line
+            // has to be drawn separately.
+            Font font = overlay.getFont();
+            float fontSize = font.getSize();
+            final int inset = overlay.getInset();
+            final String[] lines = StringUtils.split(overlay.getString(), "\n");
+            int lineHeight;
+            int totalHeight;
+            int[] lineWidths;
+            int maxLineWidth;
+            boolean fits = false;
+
+            // Starting at the initial font size, keep looping through smaller
+            // sizes down to the minimum in order to find the largest that will
+            // fit entirely within the image.
+            while (true) {
+                maxLineWidth = 0;
+                g2d.setFont(font);
+                final FontMetrics fm = g2d.getFontMetrics();
+                lineHeight = fm.getHeight();
+                totalHeight = lineHeight * lines.length;
+                // Find the max line width.
+                lineWidths = new int[lines.length];
+                for (int i = 0; i < lines.length; i++) {
+                    lineWidths[i] = fm.stringWidth(lines[i]);
+                    if (lineWidths[i] > maxLineWidth) {
+                        maxLineWidth = lineWidths[i];
+                    }
+                }
+
+                // Will the overlay fit inside the image?
+                if (maxLineWidth + (inset * 2) <= baseImage.getWidth() &&
+                        totalHeight + (inset * 2) <= baseImage.getHeight()) {
+                    fits = true;
+                    break;
+                } else {
+                    if (fontSize - 1 >= overlay.getMinSize()) {
+                        fontSize -= 1;
+                        font = font.deriveFont(fontSize);
+                    } else {
+                        break;
+                    }
                 }
             }
 
-            // Only draw the text if it will fit completely within the image in
-            // both dimensions.
-            if (maxWidth + inset <= baseImage.getWidth() &&
-                    totalHeight + inset <= baseImage.getHeight()) {
+            if (fits) {
+                logger.debug("overlayString(): using {}-point font ({} min; {} max)",
+                        fontSize, overlay.getMinSize(),
+                        overlay.getFont().getSize());
+
+                g2d.drawImage(baseImage, 0, 0, null);
+
                 for (int i = 0; i < lines.length; i++) {
                     int x, y;
-                    switch (position) {
+                    switch (overlay.getPosition()) {
                         case TOP_LEFT:
                             x = inset;
                             y = inset + lineHeight * i;
@@ -425,25 +434,28 @@ public abstract class Java2dUtil {
                     y += lineHeight * 0.8; // TODO: this is arbitrary fudge
 
                     // Draw the text outline.
-                    if (strokeWidth > 0.001f) {
+                    if (overlay.getStrokeWidth() > 0.001f) {
                         final FontRenderContext frc = g2d.getFontRenderContext();
                         final GlyphVector gv = font.createGlyphVector(frc, lines[i]);
                         final Shape shape = gv.getOutline(x, y);
-                        g2d.setStroke(new BasicStroke(strokeWidth));
-                        g2d.setPaint(strokeColor);
+                        g2d.setStroke(new BasicStroke(overlay.getStrokeWidth()));
+                        g2d.setPaint(overlay.getStrokeColor());
                         g2d.draw(shape);
                     }
 
                     // Draw the text.
-                    g2d.setPaint(fillColor);
+                    g2d.setPaint(overlay.getColor());
                     g2d.drawString(lines[i], x, y);
                 }
                 logger.debug("overlayString() executed in {} msec",
                         watch.timeElapsed());
             } else {
-                logger.debug("overlayString(): {}x{} text won't fit in {}x{} image",
-                        maxWidth + inset, totalHeight + inset,
-                        baseImage.getWidth(), baseImage.getHeight());
+                logger.debug("overlayString(): {}-point ({}x{}) text won't fit in {}x{} image",
+                        fontSize,
+                        maxLineWidth + inset,
+                        totalHeight + inset,
+                        baseImage.getWidth(),
+                        baseImage.getHeight());
             }
             g2d.dispose();
         }

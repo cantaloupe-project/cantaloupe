@@ -503,6 +503,7 @@ public class ControlPanelTest extends ResourceTest {
         new Select(css("[name=\"overlays.BasicStrategy.string.font\"]")).
                 selectByVisibleText("Helvetica");
         css("[name=\"overlays.BasicStrategy.string.font.size\"]").sendKeys("13");
+        css("[name=\"overlays.BasicStrategy.string.font.min_size\"]").sendKeys("11");
         css("[name=\"overlays.BasicStrategy.string.font.weight\"]").sendKeys("1.2");
         css("[name=\"overlays.BasicStrategy.string.color\"]").sendKeys("#d0d0d0");
         css("[name=\"overlays.BasicStrategy.string.stroke.color\"]").sendKeys("#e0e0e0");
@@ -536,6 +537,8 @@ public class ControlPanelTest extends ResourceTest {
                 config.getString("overlays.BasicStrategy.string.font"));
         assertEquals("13",
                 config.getString("overlays.BasicStrategy.string.font.size"));
+        assertEquals("11",
+                config.getString("overlays.BasicStrategy.string.font.min_size"));
         assertEquals("1.2",
                 config.getString("overlays.BasicStrategy.string.font.weight"));
         assertEquals("#d0d0d0",

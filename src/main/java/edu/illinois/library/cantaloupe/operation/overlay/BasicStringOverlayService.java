@@ -16,6 +16,8 @@ class BasicStringOverlayService extends BasicOverlayService {
             "overlays.BasicStrategy.string.color";
     static final String FONT_CONFIG_KEY =
             "overlays.BasicStrategy.string.font";
+    static final String FONT_MIN_SIZE_CONFIG_KEY =
+            "overlays.BasicStrategy.string.font.min_size";
     static final String FONT_SIZE_CONFIG_KEY =
             "overlays.BasicStrategy.string.font.size";
     static final String FONT_WEIGHT_CONFIG_KEY =
@@ -29,6 +31,7 @@ class BasicStringOverlayService extends BasicOverlayService {
 
     private Color color;
     private Font font;
+    private int minSize;
     private String string;
     private Color strokeColor;
     private float strokeWidth;
@@ -40,7 +43,7 @@ class BasicStringOverlayService extends BasicOverlayService {
 
     StringOverlay getOverlay() {
         return new StringOverlay(string, getPosition(), getInset(), font,
-                color, strokeColor, strokeWidth);
+                minSize, color, strokeColor, strokeWidth);
     }
 
     private void readConfig() throws ConfigurationException {
@@ -58,6 +61,9 @@ class BasicStringOverlayService extends BasicOverlayService {
         attributes.put(TextAttribute.WEIGHT,
                 config.getFloat(FONT_WEIGHT_CONFIG_KEY, 1f));
         font = Font.getFont(attributes);
+
+        // Min size
+        minSize = config.getInt(FONT_MIN_SIZE_CONFIG_KEY, 14);
 
         // String
         string = config.getString(STRING_CONFIG_KEY, "");
