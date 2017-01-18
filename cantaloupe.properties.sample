@@ -228,6 +228,7 @@ AzureStorageResolver.lookup_strategy = BasicLookupStrategy
 # These extension-specific definitions are optional.
 processor.avi = FfmpegProcessor
 processor.bmp =
+processor.dcm =
 processor.gif =
 processor.jp2 = KakaduProcessor
 processor.jpg =
