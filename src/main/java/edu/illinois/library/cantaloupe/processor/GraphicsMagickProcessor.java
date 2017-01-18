@@ -136,6 +136,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                     // "gm version" but are definitely available
                     // (http://www.graphicsmagick.org/formats.html)
                     formats.add(Format.BMP);
+                    formats.add(Format.DCM);
                     formats.add(Format.GIF);
                     // GIF output is buggy in GM 1.3.21 (returned images have
                     // improper dimensions).

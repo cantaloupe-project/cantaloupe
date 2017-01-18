@@ -65,6 +65,11 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
                     if (s.contains(" rw")) {
                         outputFormats.add(Format.BMP);
                     }
+                } else if (s.startsWith("DCM")) {
+                    sourceFormats.add(Format.DCM);
+                    if (s.contains(" rw")) {
+                        outputFormats.add(Format.DCM);
+                    }
                 } else if (s.startsWith("GIF")) {
                     sourceFormats.add(Format.GIF);
                     if (s.contains(" rw")) {

@@ -327,6 +327,11 @@ class ImageMagickProcessor extends AbstractMagickProcessor implements StreamProc
                             if (s.contains(" rw")) {
                                 outputFormats.add(Format.BMP);
                             }
+                        } else if (s.startsWith("DCM")) {
+                            formats.add(Format.DCM);
+                            if (s.contains(" rw")) {
+                                outputFormats.add(Format.DCM);
+                            }
                         } else if (s.startsWith("GIF")) {
                             formats.add(Format.GIF);
                             if (s.contains(" rw")) {

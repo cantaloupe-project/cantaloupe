@@ -82,6 +82,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
             // add formats that are definitely available
             // (http://www.graphicsmagick.org/formats.html)
             formats.add(Format.BMP);
+            formats.add(Format.DCM);
             formats.add(Format.GIF);
 
             supportedFormats = new HashMap<>();
