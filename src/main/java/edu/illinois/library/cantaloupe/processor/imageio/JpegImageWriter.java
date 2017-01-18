@@ -155,7 +155,7 @@ class JpegImageWriter extends AbstractImageWriter {
             // JPEGImageWriter will interpret a >3-band image as CMYK.
             // So, select only the first 3 bands.
             if (OpImage.getExpandedNumBands(image.getSampleModel(),
-                    image.getColorModel()) == 4) {
+                    image.getColorModel()) > 3) {
                 ParameterBlock pb = new ParameterBlock();
                 pb.addSource(image);
                 final int[] bands = {0, 1, 2};
