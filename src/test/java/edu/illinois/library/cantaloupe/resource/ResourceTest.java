@@ -13,6 +13,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.restlet.Client;
 import org.restlet.Context;
+import org.restlet.data.ChallengeResponse;
+import org.restlet.data.ChallengeScheme;
 import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.resource.ClientResource;
@@ -65,6 +67,15 @@ public abstract class ResourceTest extends BaseTest {
         Reference url = new Reference("http://localhost:" + PORT + path);
         ClientResource resource = new ClientResource(url);
         resource.setNext(client);
+        return resource;
+    }
+
+    protected ClientResource getClientForUriPath(String path,
+                                                 String username,
+                                                 String secret) {
+        ClientResource resource = getClientForUriPath(path);
+        resource.setChallengeResponse(new ChallengeResponse(
+                ChallengeScheme.HTTP_BASIC, username, secret));
         return resource;
     }
 

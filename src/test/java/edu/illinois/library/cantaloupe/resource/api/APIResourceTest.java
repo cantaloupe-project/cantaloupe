@@ -45,10 +45,8 @@ public class APIResourceTest extends ResourceTest {
     public void testDoPurgeWithEndpointDisabled() {
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(APIResource.ENABLED_CONFIG_KEY, false);
-
-        ClientResource client = getClientForUriPath(WebApplication.CACHE_PATH + "/" + IDENTIFIER);
-        client.setChallengeResponse(
-                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, USERNAME, SECRET));
+        ClientResource client = getClientForUriPath(
+                WebApplication.CACHE_PATH + "/" + IDENTIFIER, USERNAME, SECRET);
         try {
             client.delete();
             fail("Expected exception");
@@ -70,9 +68,8 @@ public class APIResourceTest extends ResourceTest {
 
     @Test
     public void testDoPurgeWithInvalidCredentials() throws Exception {
-        ClientResource client = getClientForUriPath(WebApplication.CACHE_PATH + "/" + IDENTIFIER);
-        client.setChallengeResponse(
-                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, "invalid", "invalid"));
+        ClientResource client = getClientForUriPath(
+                WebApplication.CACHE_PATH + "/" + IDENTIFIER, "invalid", "invalid");
         try {
             client.delete();
             fail("Expected exception");
@@ -83,9 +80,8 @@ public class APIResourceTest extends ResourceTest {
 
     @Test
     public void testDoPurgeWithValidCredentials() throws Exception {
-        ClientResource client = getClientForUriPath(WebApplication.CACHE_PATH + "/" + IDENTIFIER);
-        client.setChallengeResponse(
-                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, USERNAME, SECRET));
+        ClientResource client = getClientForUriPath(
+                WebApplication.CACHE_PATH + "/" + IDENTIFIER, USERNAME, SECRET);
         client.delete();
         assertEquals(Status.SUCCESS_NO_CONTENT, client.getStatus());
 
@@ -98,9 +94,8 @@ public class APIResourceTest extends ResourceTest {
     public void testGetConfiguration() throws Exception {
         System.setProperty("cats", "yes");
 
-        ClientResource client = getClientForUriPath(WebApplication.CONFIGURATION_PATH);
-        client.setChallengeResponse(
-                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, USERNAME, SECRET));
+        ClientResource client = getClientForUriPath(
+                WebApplication.CONFIGURATION_PATH, USERNAME, SECRET);
         client.get();
 
         assertTrue(client.getResponseEntity().getText().startsWith("{"));
@@ -114,9 +109,8 @@ public class APIResourceTest extends ResourceTest {
         entityMap.put("test", "cats");
         String entity = new ObjectMapper().writer().writeValueAsString(entityMap);
 
-        ClientResource client = getClientForUriPath(WebApplication.CONFIGURATION_PATH);
-        client.setChallengeResponse(
-                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, USERNAME, SECRET));
+        ClientResource client = getClientForUriPath(
+                WebApplication.CONFIGURATION_PATH, USERNAME, SECRET);
         client.put(entity, MediaType.APPLICATION_JSON);
 
         assertEquals("cats", ConfigurationFactory.getInstance().getString("test"));

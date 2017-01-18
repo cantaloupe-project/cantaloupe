@@ -55,9 +55,8 @@ public class AdminResourceTest extends ResourceTest {
         Map<String, String> expectedDirectives = new HashMap<>();
         expectedDirectives.put("no-cache", null);
 
-        ClientResource client = getClientForUriPath(WebApplication.ADMIN_PATH);
-        client.setChallengeResponse(
-                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, USERNAME, SECRET));
+        ClientResource client = getClientForUriPath(WebApplication.ADMIN_PATH,
+                USERNAME, SECRET);
         client.get();
         List<CacheDirective> actualDirectives = client.getResponse().getCacheDirectives();
         for (CacheDirective d : actualDirectives) {
@@ -106,9 +105,8 @@ public class AdminResourceTest extends ResourceTest {
     public void testDoGetAsJson() {
         ConfigurationFactory.getInstance().setProperty("test", "cats");
 
-        ClientResource client = getClientForUriPath(WebApplication.ADMIN_PATH);
-        client.setChallengeResponse(
-                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, USERNAME, SECRET));
+        ClientResource client = getClientForUriPath(WebApplication.ADMIN_PATH,
+                USERNAME, SECRET);
 
         client.get(MediaType.APPLICATION_JSON);
         assertTrue(client.getResponse().getEntityAsText().
@@ -121,9 +119,8 @@ public class AdminResourceTest extends ResourceTest {
         entityMap.put("test", "cats");
         String entity = new ObjectMapper().writer().writeValueAsString(entityMap);
 
-        ClientResource client = getClientForUriPath(WebApplication.ADMIN_PATH);
-        client.setChallengeResponse(
-                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, USERNAME, SECRET));
+        ClientResource client = getClientForUriPath(WebApplication.ADMIN_PATH,
+                USERNAME, SECRET);
         client.post(entity, MediaType.APPLICATION_JSON);
 
         assertEquals("cats", ConfigurationFactory.getInstance().getString("test"));
@@ -140,9 +137,8 @@ public class AdminResourceTest extends ResourceTest {
         // enabled
         config.setProperty(AdminResource.CONTROL_PANEL_ENABLED_CONFIG_KEY, true);
 
-        ClientResource client = getClientForUriPath(WebApplication.ADMIN_PATH);
-        client.setChallengeResponse(
-                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, USERNAME, SECRET));
+        ClientResource client = getClientForUriPath(WebApplication.ADMIN_PATH,
+                USERNAME, SECRET);
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
