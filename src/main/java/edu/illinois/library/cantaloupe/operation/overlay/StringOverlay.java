@@ -63,6 +63,14 @@ public class StringOverlay extends Overlay implements Operation {
         return strokeWidth;
     }
 
+    /**
+     * @return True if the string length is > 0; false if not.
+     */
+    @Override
+    public boolean hasEffect() {
+        return (getString() != null && getString().length() > 0);
+    }
+
     public void setColor(Color color) {
         this.color = color;
     }

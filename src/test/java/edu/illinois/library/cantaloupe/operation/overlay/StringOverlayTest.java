@@ -30,6 +30,12 @@ public class StringOverlayTest extends BaseTest {
 
         instance = new StringOverlay("cats", Position.BOTTOM_RIGHT, 5,
                 font, Color.blue, Color.red, 5f);
+
+    @Test
+    public void testHasEffect() {
+        assertTrue(instance.hasEffect());
+        instance.setString("");
+        assertFalse(instance.hasEffect());
     }
 
     @Test
