@@ -9,8 +9,12 @@ public class Identifier implements Comparable<Identifier> {
 
     /**
      * @param value Identifier value
+     * @throws IllegalArgumentException If the given value is null.
      */
     public Identifier(String value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Value cannot be null.");
+        }
         this.value = value;
     }
 

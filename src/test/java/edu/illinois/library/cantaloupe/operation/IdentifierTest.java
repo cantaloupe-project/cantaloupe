@@ -8,6 +8,19 @@ import static org.junit.Assert.*;
 public class IdentifierTest extends BaseTest {
 
     @Test
+    public void testConstructor() {
+        Identifier id = new Identifier("cats");
+        assertEquals("cats", id.toString());
+
+        try {
+            new Identifier(null);
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+    }
+
+    @Test
     public void testCompareTo() {
         Identifier id1 = new Identifier("cats");
         Identifier id2 = new Identifier("dogs");
