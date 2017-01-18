@@ -59,8 +59,8 @@ public class ImageReader {
      * based on information reported by ImageIO.
      */
     public static Set<Format> supportedFormats() {
-        return new HashSet<>(Arrays.asList(Format.BMP, Format.GIF, Format.JPG,
-                Format.PNG, Format.TIF));
+        return new HashSet<>(Arrays.asList(Format.BMP, Format.DCM, Format.GIF,
+                Format.JPG, Format.PNG, Format.TIF));
     }
 
     /**
@@ -75,6 +75,9 @@ public class ImageReader {
         switch (format) {
             case BMP:
                 reader = new BmpImageReader(sourceFile);
+                break;
+            case DCM:
+                reader = new DicomImageReader(sourceFile);
                 break;
             case GIF:
                 reader = new GifImageReader(sourceFile);
@@ -103,6 +106,9 @@ public class ImageReader {
         switch (format) {
             case BMP:
                 reader = new BmpImageReader(streamSource);
+                break;
+            case DCM:
+                reader = new DicomImageReader(streamSource);
                 break;
             case GIF:
                 reader = new GifImageReader(streamSource);
