@@ -34,6 +34,27 @@ public enum Orientation {
 
     private int degrees;
 
+    /**
+     * @param value EXIF Orientation tag value.
+     * @return Orientation corresponding to the given tag value.
+     * @throws IllegalArgumentException If the value is not supported.
+     */
+    public static Orientation forEXIFOrientation(int value) {
+        switch (value) {
+            case 1:
+                return ROTATE_0;
+            case 3:
+                return ROTATE_180;
+            case 6:
+                return ROTATE_90;
+            case 8:
+                return ROTATE_270;
+            default:
+                throw new IllegalArgumentException("EXIF value " + value +
+                        " is not supported.");
+        }
+    }
+
     Orientation(int degrees) {
         this.degrees = degrees;
     }
