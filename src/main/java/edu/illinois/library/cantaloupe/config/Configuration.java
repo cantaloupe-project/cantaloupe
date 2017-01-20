@@ -7,6 +7,15 @@ import java.util.Iterator;
 public interface Configuration {
 
     /**
+     * Alias of {@link ConfigurationFactory#getInstance()}.
+     *
+     * @return The global application configuration instance.
+     */
+    static Configuration getInstance() {
+        return ConfigurationFactory.getInstance();
+    }
+
+    /**
      * Clears the key-value pairs from the instance (but not its persistent
      * store).
      */
