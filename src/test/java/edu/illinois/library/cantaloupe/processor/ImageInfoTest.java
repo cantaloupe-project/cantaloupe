@@ -32,6 +32,92 @@ public class ImageInfoTest extends BaseTest {
     /************************ ImageInfo tests ****************************/
 
     @Test
+    public void testConstructor1() {
+        instance = new ImageInfo();
+        assertEquals(0, instance.getImages().size());
+    }
+
+    @Test
+    public void testConstructor2() {
+        Dimension size = new Dimension(500, 200);
+        instance = new ImageInfo(size);
+        assertEquals(1, instance.getImages().size());
+        assertEquals(size, instance.getImages().get(0).getSize());
+    }
+
+    @Test
+    public void testConstructor3() {
+        Dimension size = new Dimension(500, 200);
+        Format format = Format.JPG;
+        instance = new ImageInfo(size, format);
+        assertEquals(1, instance.getImages().size());
+        assertEquals(size, instance.getImages().get(0).getSize());
+        assertEquals(format, instance.getSourceFormat());
+    }
+
+    @Test
+    public void testConstructor4() {
+        int width = 500;
+        int height = 200;
+        instance = new ImageInfo(width, height);
+        assertEquals(1, instance.getImages().size());
+        assertEquals(width, instance.getImages().get(0).getSize().width);
+        assertEquals(height, instance.getImages().get(0).getSize().height);
+    }
+
+    @Test
+    public void testConstructor5() {
+        int width = 500;
+        int height = 200;
+        Format format = Format.JPG;
+        instance = new ImageInfo(width, height, format);
+        assertEquals(1, instance.getImages().size());
+        assertEquals(width, instance.getImages().get(0).getSize().width);
+        assertEquals(height, instance.getImages().get(0).getSize().height);
+        assertEquals(format, instance.getSourceFormat());
+    }
+
+    @Test
+    public void testConstructor6() {
+        Dimension size = new Dimension(500, 200);
+        Dimension tileSize = new Dimension(300, 100);
+        instance = new ImageInfo(size, tileSize);
+        assertEquals(1, instance.getImages().size());
+        assertEquals(size, instance.getImages().get(0).getSize());
+        assertEquals(tileSize, instance.getImages().get(0).getTileSize());
+    }
+
+    @Test
+    public void testConstructor7() {
+        int width = 500;
+        int height = 200;
+        int tileWidth = 200;
+        int tileHeight = 100;
+        instance = new ImageInfo(width, height, tileWidth, tileHeight);
+        assertEquals(1, instance.getImages().size());
+        assertEquals(width, instance.getImages().get(0).getSize().width);
+        assertEquals(height, instance.getImages().get(0).getSize().height);
+        assertEquals(tileWidth, instance.getImages().get(0).getTileSize().width);
+        assertEquals(tileHeight, instance.getImages().get(0).getTileSize().height);
+    }
+
+    @Test
+    public void testConstructor8() {
+        int width = 500;
+        int height = 200;
+        int tileWidth = 200;
+        int tileHeight = 100;
+        Format format = Format.GIF;
+        instance = new ImageInfo(width, height, tileWidth, tileHeight, format);
+        assertEquals(1, instance.getImages().size());
+        assertEquals(width, instance.getImages().get(0).getSize().width);
+        assertEquals(height, instance.getImages().get(0).getSize().height);
+        assertEquals(tileWidth, instance.getImages().get(0).getTileSize().width);
+        assertEquals(tileHeight, instance.getImages().get(0).getTileSize().height);
+        assertEquals(format, instance.getSourceFormat());
+    }
+
+    @Test
     public void testFromJsonWithFile() throws Exception {
         // TODO: write this
     }
@@ -138,6 +224,56 @@ public class ImageInfoTest extends BaseTest {
     }
 
     /********************* ImageInfo.Image tests *************************/
+
+    @Test
+    public void testImageConstructor1() {
+        ImageInfo.Image image = new ImageInfo.Image();
+        assertEquals(Orientation.ROTATE_0, image.getOrientation());
+        assertEquals(new Dimension(0, 0), image.getSize());
+        assertEquals(new Dimension(0, 0), image.getTileSize());
+    }
+
+    @Test
+    public void testImageConstructor2() {
+        Dimension size = new Dimension(300, 200);
+        ImageInfo.Image image = new ImageInfo.Image(size);
+        assertEquals(Orientation.ROTATE_0, image.getOrientation());
+        assertEquals(size, image.getSize());
+        assertEquals(size, image.getTileSize());
+    }
+
+    @Test
+    public void testImageConstructor3() {
+        Dimension size = new Dimension(300, 200);
+        Orientation orientation = Orientation.ROTATE_90;
+        ImageInfo.Image image = new ImageInfo.Image(size, orientation);
+        assertEquals(orientation, image.getOrientation());
+        assertEquals(size, image.getSize());
+        assertEquals(size, image.getTileSize());
+    }
+
+    @Test
+    public void testImageConstructor4() {
+        int width = 300;
+        int height = 200;
+        ImageInfo.Image image = new ImageInfo.Image(width, height);
+        assertEquals(Orientation.ROTATE_0, image.getOrientation());
+        assertEquals(width, image.getSize().width);
+        assertEquals(height, image.getSize().height);
+        assertEquals(new Dimension(width, height), image.getTileSize());
+    }
+
+    @Test
+    public void testImageConstructor5() {
+        int width = 300;
+        int height = 200;
+        Orientation orientation = Orientation.ROTATE_90;
+        ImageInfo.Image image = new ImageInfo.Image(width, height, orientation);
+        assertEquals(orientation, image.getOrientation());
+        assertEquals(width, image.getSize().width);
+        assertEquals(height, image.getSize().height);
+        assertEquals(new Dimension(width, height), image.getTileSize());
+    }
 
     @Test
     public void testImageGetOrientationSize() {

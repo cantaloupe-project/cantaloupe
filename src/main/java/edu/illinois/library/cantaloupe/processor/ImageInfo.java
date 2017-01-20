@@ -18,8 +18,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Contains JSON-serializable information about an image, such as dimensions,
- * orientation, its subimages, and tile sizes.
+ * <p>Contains JSON-serializable information about an image, such as dimensions,
+ * orientation, its subimages, and tile sizes.</p>
+ *
+ * <p>All sizes are raw pixel data sizes, disregarding orientation.</p>
  *
  * @see <a href="https://github.com/FasterXML/jackson-databind">jackson-databind
  * docs</a>
@@ -37,6 +39,29 @@ public final class ImageInfo {
         public String orientation;
         public Integer tileWidth;
         public Integer tileHeight;
+
+        /**
+         * No-op constructor.
+         */
+        public Image() {
+        }
+
+        public Image(Dimension size) {
+            this.setSize(size);
+        }
+
+        public Image(Dimension size, Orientation orientation) {
+            this(size);
+            setOrientation(orientation);
+        }
+
+        public Image(int width, int height) {
+            this(new Dimension(width, height));
+        }
+
+        public Image(int width, int height, Orientation orientation) {
+            this(new Dimension(width, height), orientation);
+        }
 
         @Override
         public boolean equals(Object obj) {
@@ -157,10 +182,7 @@ public final class ImageInfo {
      * @param size Main image size
      */
     public ImageInfo(Dimension size) {
-        Image image = new Image();
-        image.width = size.width;
-        image.height = size.height;
-        images.add(image);
+        images.add(new Image(size));
     }
 
     /**
@@ -168,10 +190,7 @@ public final class ImageInfo {
      * @param sourceFormat
      */
     public ImageInfo(Dimension size, Format sourceFormat) {
-        Image image = new Image();
-        image.width = size.width;
-        image.height = size.height;
-        images.add(image);
+        images.add(new Image(size));
         setSourceFormat(sourceFormat);
     }
 
@@ -180,10 +199,7 @@ public final class ImageInfo {
      * @param height Main image height
      */
     public ImageInfo(int width, int height) {
-        Image image = new Image();
-        image.width = width;
-        image.height = height;
-        images.add(image);
+        images.add(new Image(width, height));
     }
 
     /**
@@ -192,10 +208,7 @@ public final class ImageInfo {
      * @param sourceFormat
      */
     public ImageInfo(int width, int height, Format sourceFormat) {
-        Image image = new Image();
-        image.width = width;
-        image.height = height;
-        images.add(image);
+        images.add(new Image(width, height));
         setSourceFormat(sourceFormat);
     }
 
@@ -204,9 +217,7 @@ public final class ImageInfo {
      * @param tileSize Main image tile size
      */
     public ImageInfo(Dimension size, Dimension tileSize) {
-        Image image = new Image();
-        image.width = size.width;
-        image.height = size.height;
+        Image image = new Image(size);
         image.tileWidth = tileSize.width;
         image.tileHeight = tileSize.height;
         images.add(image);
@@ -219,9 +230,7 @@ public final class ImageInfo {
      * @param tileHeight Main image tile height
      */
     public ImageInfo(int width, int height, int tileWidth, int tileHeight) {
-        Image image = new Image();
-        image.width = width;
-        image.height = height;
+        Image image = new Image(width, height);
         image.tileWidth = tileWidth;
         image.tileHeight = tileHeight;
         images.add(image);
@@ -236,9 +245,7 @@ public final class ImageInfo {
      */
     public ImageInfo(int width, int height, int tileWidth, int tileHeight,
                      Format sourceFormat) {
-        Image image = new Image();
-        image.width = width;
-        image.height = height;
+        Image image = new Image(width, height);
         image.tileWidth = tileWidth;
         image.tileHeight = tileHeight;
         images.add(image);
