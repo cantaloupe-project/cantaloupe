@@ -632,7 +632,7 @@ landing page, as well as in one of the tables below. A list of output formats su
 <p>KakaduProcessor uses the <span class="filename">kdu_expand</span> and <span class="filename">kdu_jp2info</span> binaries from the
 <a href="http://www.kakadusoftware.com">Kakadu</a> SDK to efficiently decode JPEG2000 source images. This processor is capable of performing well even with large JP2s. Kakadu is extensively optimized and will make use of all available CPU cores.</p>
 
-<p>Although it does support some other operations, <span class="filename">kdu_expand</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. All other operations (differential scaling, rotation, etc.) are performed using Java 2D.</p>
+<p><span class="filename">kdu_expand</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. All other operations (differential scaling, rotation, etc.) are performed using Java 2D.</p>
 
 <p>To use this processor, Kakadu must be installed. (See the note below.) The Kakadu binaries will automatically be detected if they are on the path; otherwise, set the <code>KakaduProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory. The <code>LD_LIBRARY_PATH</code> environment variable will also need to be set to locate the Kakadu shared library.</p>
 
@@ -657,7 +657,7 @@ landing page, as well as in one of the tables below. A list of output formats su
 
 <p>FfmpegProcessor has been tested with FFmpeg version 2.8. Other versions may or may not work.</p>
 
-<p>Prior to Cantaloupe 3.3, ffmpeg itself handled all post-processing steps. Now, ffmpeg is used only to decode still frames, and all subsequent steps are handled by Java 2D.</p>
+<p>Prior to Cantaloupe 3.3, ffmpeg itself handled all post-processing steps. Now, it is used only to decode still frames, and all subsequent steps are handled by Java 2D.</p>
 
 <h4>Optional Parameters</h4>
 

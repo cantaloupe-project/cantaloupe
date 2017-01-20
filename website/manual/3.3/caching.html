@@ -41,7 +41,7 @@ title: Caches
   </li>
 </ul>
 
-<p>Cantaloupe offers a sophisticated and highly customizable caching subsystem that is capable of meeting a variety of needs while remaining easy to use. Three tiers of cache are available:</p>
+<p>Cantaloupe offers a sophisticated and customizable caching subsystem that is capable of meeting a variety of needs while remaining easy to use. Three tiers of cache are available:</p>
 
 <ol>
   <li><a href="#Client-Side Caching">Client-side caches</a>, which it has no control over but can provide hints to;</li>
@@ -127,7 +127,7 @@ cache.client.no_transform = true
 
 <h4 id="Derivative Cache Bypassing">Bypassing</h4>
 
-<p>The derivative cache can be bypassed on a per-request basis by supplying a <code>cache=false</code> query parameter in the URL. When this parameter is present, the derivative cache will not be read from, nor written to, whether or not it is enabled. The <code>Cache-Control</code> header will also be omitted.</p>
+<p>The derivative cache can be bypassed on a per-request basis by supplying a <code>cache=false</code> query parameter in the URL. When this parameter is present, the derivative cache will not be read from, nor written to, whether or not it is enabled. The <code>Cache-Control</code> header will also be omitted from responses.</p>
 
 <h4 id="Notes">Notes</h4>
 
@@ -173,7 +173,7 @@ cache.client.no_transform = true
 
 <p>Caches are careful not to leave miscellaneous detritus (like temp files) lying around. In case anything slips through, the above commands will take care of it. To <strong>only</strong> clean the cache while leaving all content alone, expired or not, launch with the <code>-Dcantaloupe.cache.clean</code> option.</p>
 
-<p>When Cantaloupe is started with any of these arguments, it will run in a special mode in which the web server will not be started, and exit when done. Thus, any of these tasks can be run in a separate process, on the live cache store, while the main server instance remains running.</p>
+<p>When Cantaloupe is launched with any of these arguments, it will run in a special mode in which the web server will not be started, and exit when done. Thus, any of these tasks can be run in a separate process, on the live cache store, while the main server instance remains running.</p>
 
 <h4 id="Automatic Maintenance">Automatic</h4>
 
@@ -188,7 +188,7 @@ cache.client.no_transform = true
 <ol>
   <li>Performing maintenance more often;</li>
   <li>Reducing the time-to-live (using the <code>cache.server.ttl_seconds</code> configuration key);</li>
-  <li>Increasing the threshold by allocating more storage.</li>
+  <li>Increasing the threshold by allocating more storage to the cache.</li>
 </ol>
 
 <hr>
@@ -202,29 +202,36 @@ cache.client.no_transform = true
 <ul>
   <li><code>FilesystemCache.pathname</code>/
     <ul>
-      <li><span class="filename">source/</span> <a href="#FilesystemCache-1">(1)</a>
+      <li><span class="filename">source/</span>
+        <sup><a href="#FilesystemCache-1">(1)</a></sup>
         <ul>
-          <li>Intermediate subdirectories <a href="#FilesystemCache-2">(2)</a>
+          <li>Intermediate subdirectories
+            <sup><a href="#FilesystemCache-2">(2)</a></sup>
             <ul>
-              <li><span class="filename">{hashed identifier}</span> <a href="#FilesystemCache-3">(3)</a></li>
+              <li><span class="filename">{hashed identifier}</span>
+                <sup><a href="#FilesystemCache-3">(3)</a></sup></li>
             </ul>
           </li>
         </ul>
       </li>
       <li><span class="filename">image/</span>
         <ul>
-          <li>Intermediate subdirectories <a href="#FilesystemCache-2">(2)</a>
+          <li>Intermediate subdirectories
+            <sup><a href="#FilesystemCache-2">(2)</a></sup>
             <ul>
-              <li><span class="filename">{hashed identifier}{operation list string representation}.{output format extension}</span> <a href="#FilesystemCache-3">(3)</a></li>
+              <li><span class="filename">{hashed identifier}{operation list string representation}.{output format extension}</span>
+                <sup><a href="#FilesystemCache-3">(3)</a></sup></li>
             </ul>
           </li>
         </ul>
       </li>
       <li><span class="filename">info/</span>
         <ul>
-          <li>Intermediate subdirectories <a href="#FilesystemCache-2">(2)</a>
+          <li>Intermediate subdirectories
+            <sup><a href="#FilesystemCache-2">(2)</a></sup>
             <ul>
-              <li><span class="filename">{hashed identifier}.json</span> <a href="#FilesystemCache-3">(3)</a></li>
+              <li><span class="filename">{hashed identifier}.json</span>
+                <sup><a href="#FilesystemCache-3">(3)</a></sup></li>
             </ul>
           </li>
         </ul>

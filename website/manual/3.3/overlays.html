@@ -13,15 +13,15 @@ title: Overlays
 <h1>Overlays</h1>
 
 <ul>
+  <li><a href="#Image%20Overlays">Image Overlays</a></li>
+  <li><a href="#String%20Overlays">String Overlays</a></li>
   <li><a href="#Modes%20of%20Operation">Modes of Operation</a>
     <ul>
         <li><a href="#BasicStrategy">BasicStrategy</a></li>
         <li><a href="#ScriptStrategy">ScriptStrategy</a></li>
     </ul>
   </li>
-  <li><a href="#Requirements">Requirements</a></li>
   <li><a href="#Positioning">Positioning</a></li>
-  <li><a href="#Processor%20Support">Processor Support</a></li>
   <li><a href="#Implications">Implications</a>
     <ul>
       <li><a href="#Performance">Performance</a></li>
@@ -33,7 +33,31 @@ title: Overlays
 
 <p>The overlay feature (called "watermarking" prior to version 3.3) overlays an image or text string on top of a derivative (output) image. This can be useful for description, branding, attribution, copyright notices, and so on.</p>
 
-<p>As of version 3.3, overlay images can be located on the local filesystem or a web server. Regardless, they are cached in memory after being loaded the first time, so there is no performance penalty for using web-hosted overlay images.</p>
+<p>Not all processors support overlays; see the <a href="processors.html#Supported%20Features">table of supported features</a>.</p>
+
+<hr>
+
+<h2 id="Image Overlays">Image Overlays</h2>
+
+<p>An image overlay must be a 24-bit PNG image, either RGB or RGBA.</p>
+
+<p>Overlay images can be located on the local filesystem, and also, as of version 3.3, on a web server. Regardless, they are cached in memory after being loaded the first time, so there is no performance penalty for using web-hosted overlay images.</p>
+
+<div class="alert alert-info">Note: when using multiple image overlays, their filenames must all be different, regardless of where they reside.</div>
+
+<p><a href="images/overlay-sample.png">Sample overlay image (PNG)</a></p>
+
+<hr>
+
+<h2 id="String Overlays">String Overlays</h2>
+
+<p>String overlays are dynamically rendered onto an image using Java 2D. The font, font size, font weight, color, stroke color, etc., are configurable.</p>
+
+<p>Line breaks within the string (<code>\n</code>) are respected, enabling multi-line overlays. Each line is auto-aligned to the edge of the image according to the <a href="#Positioning">overlay position</a>.</p>
+
+<p>Strings are guaranteed to never overflow outside of the image. When a string doesn't fit entirely inside at its specified font size, the image server will try to use the largest font size that fits, down to the minimum. If none fit, the string won't be drawn.</p>
+
+<hr>
 
 <h2 id="Modes of Operation">Modes of Operation</h2>
 
@@ -75,7 +99,7 @@ module Cantaloupe
     if request_headers.
         select{ |k,v| k.downcase == 'user-agent' and v.include?('iOS') }.any?
       return {
-        'pathname' => '/path/to/ios-overlay.png',
+        'image' => '/path/to/ios-overlay.png',
         'position' => 'bottom right',
         'inset' => 5
       }
@@ -86,10 +110,11 @@ module Cantaloupe
       'string' => "This is totally dynamic\nAnd it has multiple lines",
       'position' => 'bottom left',
       'inset' => 5,
-      'color' => 'red',
       'font' => 'Helvetica',
       'font_size' => 20,
+      'font_min_size' => 18,
       'font_weight' => 1.0,
+      'color' => 'white',
       'stroke_color' => 'black',
       'stroke_width' => 1
     }
@@ -97,13 +122,7 @@ module Cantaloupe
 end
 {% endhighlight %}
 
-<h2 id="Requirements">Requirements</h2>
-
-<p>An overlay must be a 24-bit PNG image, either RGB or RGBA.</p>
-
-<p>When using multiple image overlays, their filenames must all be different, regardless of where they reside.</p>
-
-<p><a href="images/overlay-sample.png">Sample overlay (PNG)</a></p>
+<hr>
 
 <h2 id="Positioning">Positioning</h2>
 
@@ -145,11 +164,7 @@ end
   </tr>
 </table>
 
-<p>String overlay text is auto-aligned to the left, center, or right, depending on whether the position is to the left, center, or right, respectively.</p>
-
-<h2 id="Processor Support">Processor Support</h2>
-
-<p>Not all processors support overlays; see the <a href="processors.html#Supported%20Features">table of processor-supported features</a>.</p>
+<hr>
 
 <h2 id="Implications">Implications</h2>
 

@@ -21,7 +21,7 @@ title: Delegate Script
 
 <p>The delegate script mechanism enables the use of custom Ruby methods as "hooks" to provide dynamic information back to the image server. A truly customized image server can be created with minimal code.</p>
 
-<p>Delegate methods are implemented in Ruby, and invoked by a JRuby interpreter bundled into the image server. There is no need to install an external Ruby environment and no need to know Java; just type some code into a file, and go.</p>
+<p>Delegate methods are invoked by a JRuby interpreter bundled into the image server. There is no need to install an external Ruby environment and no need to know Java or any of the image server's internal API; just type some code into a file, and go.</p>
 
 <p>Prior to version 3.2, the JRuby interpreter was compatible with Ruby 2.2. Since version 3.2, it has been compatible with version 2.3.</p>
 
@@ -37,19 +37,21 @@ title: Delegate Script
 
 <h2 id="Rules">Rules</h2>
 
-<p>While the arguments and return types of each method will vary, all delegate methods must be contained within a <code>Cantaloupe</code> module. Inside a method, anything goes, and you can use any (non-platform-native) gems that you have installed with <code>gem install</code>. Because delegate methods will be called frequently, though, they should be written with efficiency in mind.</p>
+<p>While the arguments and return types of each method will vary, all delegate methods must be contained within a <code>Cantaloupe</code> module. Inside a method, anything goes, and you can use any (non-platform-native) gems that you have installed with <code>gem install</code>.</p>
 
-<p>Starting in version 3.3, the delegate script is reloaded whenever the script file changes. (Previously, it was reloaded on each request.) Be aware, though, that code that has already been loaded into the JRuby runtime cannot be unloaded. For example, when a method is changed, it will overwrite the old version; but constants cannot be redefined.</p>
+<p>Starting in version 3.3, the delegate script is reloaded whenever the script file changes. (Previously, it was reloaded on each request.) Be aware, though, that code that has already been loaded into the JRuby runtime cannot be unloaded. For example, when a method is changed, the new version will overwrite the old version; but constants cannot be redefined.</p>
+
+<p>Because delegate methods will be called frequently, they should be written with efficiency in mind.</p>
 
 <div class="alert alert-danger">Note: generally, neither method arguments nor return values are sanitized or validated. <strong>Be very careful to write defensive, injection-aware code.</strong></div>
 
 <h2 id="Caching">Caching</h2>
 
-<p>Since version 3.3, the <code>delegate_script.cache.enabled</code> option is available to cache delegate method invocations. The cache is an in-memory least-recently-used (LRU) cache with infinite time-to-live and a maximum size specified by <code>delegate_script.cache.max_size</code>. When this limit is approached, the oldest invocations will be purged automatically.</p>
+<p>Since version 3.3, the <code>delegate_script.cache.enabled</code> option is available to cache the results of delegate method invocations. The cache is an in-memory least-recently-used (LRU) cache with infinite time-to-live and a maximum size specified by <code>delegate_script.cache.max_size</code>. When this limit is approached, the oldest invocations will be purged automatically.</p>
 
-<p>As of this writing, no research has gone into determining an optimal maximum cache size. The number will depend on how much memory is available to the JVM as well as which delegate methods are being invoked most often.</p>
+<p>As of this writing, no research has gone into determining an optimal maximum cache size. The number will depend on how much memory is available to the JVM as well as which delegate methods are being invoked most often. But, even a small size should provide more benefit than no cache at all.</p>
 
-<p>Because the cache is memory-based, it will be cleared when the application is stopped.</p>
+<p>Because the cache is in memory and not persisted, it will be cleared when the application is stopped.</p>
 
 <p>Note that cached invocations are <strong>not</strong> purged when the script file is edited and auto-reloaded.</p>
 

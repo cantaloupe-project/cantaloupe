@@ -17,6 +17,7 @@ title: Source Formats
   <li><a href="#Bit%20Depth%20Considerations">Bit Depth Considerations</a></li>
   <li><a href="#Source%20Formats">Source Formats</a>
     <ul>
+      <li><a href="#DICOM">DICOM</a></li>
       <li><a href="#JPEG">JPEG</a></li>
       <li><a href="#JPEG2000">JPEG2000</a></li>
       <li><a href="#PNG">PNG</a></li>
@@ -40,13 +41,23 @@ title: Source Formats
 
 <p>Cantaloupe tries to do the best it can with whatever source formats it is asked to serve. However, some image formats are inherently better suited for large sizes and some <a href="processors.html#Supported%20Source%20Formats">processor/format combinations</a> will perform better than others.</p>
 
+<hr>
+
 <h2 id="Bit Depth Considerations">Bit Depth Considerations</h2>
 
 <p>Most processors support non-8-bits-per-channel source images, but all output (derivative) images have 8 bits per channel. The pixel luminance values of non-8-bit images will be scaled linerarly to fit within 8 bits.</p>
 
 <p><a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a> offers an <code>ImageMagickProcessor.auto_levels</code> configuration option which modifies this behavior, normalizing the pixel values to utilize a full 8 bits of dynamic range. This is primarily useful when working with 16-bit source images (for example) that do not use a full 16 bits of dynamic range and would appear overly dark when scaled down to 8 bits.</p>
 
+<hr>
+
 <h2 id="Source Formats">Source Formats</h2>
+
+<h3 id="DICOM">DICOM</h3>
+
+<p><a href="http://dicom.nema.org/standard.html">DICOM</a> defines a group of medical imaging standards. Support for the DICOM file format debuted in version 3.3.</p>
+
+<p>This format has a lot of variations in terms of its internal data structures and compression. <a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a> and <a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> are likely to offer the best support for the widest range of images. <a href="processors.html#Java2dProcessor">Java2dProcessor</a> and <a href="processors.html#JaiProcessor">JaiProcessor</a> also support some, but not all, variations, using the <a href="http://www.dcm4che.org">dcm4che</a> ImageIO plugin.</p>
 
 <h3 id="JPEG">JPEG</h3>
 
