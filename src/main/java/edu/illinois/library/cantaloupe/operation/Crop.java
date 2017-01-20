@@ -77,10 +77,14 @@ public class Crop implements Operation {
      * to be treated as rotated. (As in e.g. the case of an EXIF Orientation
      * tag describing the rotation of un-rotated image data.)
      *
-     * @param orientation Rotation to apply.
+     * @param orientation Orientation of the image. If <code>null</code>, the
+     *                    invocation will be a no-op.
      * @param fullSize Dimensions of the un-rotated image.
      */
     public void applyOrientation(Orientation orientation, Dimension fullSize) {
+        if (orientation == null) {
+            return;
+        }
         if (!hasEffect() || getWidth() < 1 || getHeight() < 1) {
             return;
         }
