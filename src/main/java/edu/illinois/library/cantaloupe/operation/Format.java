@@ -14,6 +14,9 @@ import java.util.Map;
  */
 public enum Format {
 
+    // For each one of these, there should be a corresponding file with a name
+    // of the lowercased enum value present in the test resources directory.
+
     AVI("AVI",
             Arrays.asList("video/avi", "video/msvideo", "video/x-msvideo"),
             Arrays.asList("avi"),
