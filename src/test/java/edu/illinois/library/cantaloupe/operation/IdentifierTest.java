@@ -1,16 +1,23 @@
 package edu.illinois.library.cantaloupe.operation;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 public class IdentifierTest extends BaseTest {
 
+    private Identifier instance;
+
+    @Before
+    public void setUp() {
+        instance = new Identifier("cats");
+    }
+
     @Test
     public void testConstructor() {
-        Identifier id = new Identifier("cats");
-        assertEquals("cats", id.toString());
+        assertEquals("cats", instance.toString());
 
         try {
             new Identifier(null);
@@ -40,9 +47,8 @@ public class IdentifierTest extends BaseTest {
 
     @Test
     public void testEqualsWithString() {
-        Identifier id = new Identifier("cats");
-        assertTrue(id.equals("cats"));
-        assertFalse(id.equals("dogs"));
+        assertTrue(instance.equals("cats"));
+        assertFalse(instance.equals("dogs"));
     }
 
     @Test
@@ -53,8 +59,13 @@ public class IdentifierTest extends BaseTest {
     }
 
     @Test
+    public void testToFilename() {
+        assertEquals("0832c1202da8d382318e329a7c133ea0", instance.toFilename());
+    }
+
+    @Test
     public void testToString() {
-        assertEquals("cats", new Identifier("cats").toString());
+        assertEquals("cats", instance.toString());
     }
 
 }
