@@ -292,7 +292,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor implements StreamProc
      * @return Map of available output formats for all known source formats,
      * based on information reported by <code>identify -list format</code>.
      */
-    private static HashMap<Format, Set<Format>> getFormats() {
+    private static synchronized HashMap<Format, Set<Format>> getFormats() {
         if (supportedFormats == null) {
             final Set<Format> formats = new HashSet<>();
             final Set<Format> outputFormats = new HashSet<>();
