@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.image.OperationList;
 import edu.illinois.library.cantaloupe.image.Rotate;
 import edu.illinois.library.cantaloupe.image.Scale;
 import edu.illinois.library.cantaloupe.image.Transpose;
-import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import org.apache.commons.lang3.StringUtils;
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
@@ -182,7 +181,7 @@ class ImageMagickProcessor extends Im4JavaProcessor implements StreamProcessor {
      * @return Map of available output formats for all known source formats,
      * based on information reported by <code>identify -list format</code>.
      */
-    private static HashMap<Format, Set<Format>> getFormats() {
+    private static synchronized HashMap<Format, Set<Format>> getFormats() {
         if (supportedFormats == null) {
             final Set<Format> formats = new HashSet<>();
             final Set<Format> outputFormats = new HashSet<>();

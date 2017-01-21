@@ -78,7 +78,7 @@ class GraphicsMagickProcessor extends Im4JavaProcessor
      * @return Map of available output formats for all known source formats,
      * based on information reported by <code>gm version</code>.
      */
-    private static HashMap<Format, Set<Format>> getFormats() {
+    private static synchronized HashMap<Format, Set<Format>> getFormats() {
         if (supportedFormats == null) {
             final Set<Format> formats = new HashSet<>();
             final Set<Format> outputFormats = new HashSet<>();
