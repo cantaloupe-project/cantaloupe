@@ -139,10 +139,13 @@ class FilesystemResolver extends AbstractResolver
     }
 
     /**
-     * @return
-     * @throws FileNotFoundException If the delegate script does not exist.
+     * @return Pathname of the file corresponding to the identifier passed to
+     *         {@link #setIdentifier(Identifier)}.
+     * @throws FileNotFoundException If the delegate method indicated that there
+     *                               is no file corresponding to the given
+     *                               identifier.
      * @throws IOException
-     * @throws ScriptException If the method invocation fails.
+     * @throws ScriptException If the method invocation failed.
      * @throws DelegateScriptDisabledException If the delegate script is
      *                                         disabled.
      */
@@ -187,8 +190,8 @@ class FilesystemResolver extends AbstractResolver
     /**
      * Detects the source format of a file by reading its header.
      *
-     * @return Inferred source format, or {@link Format#UNKNOWN} if
-     * unknown.
+     * @return Detected source format, or {@link Format#UNKNOWN} if
+     *         unknown.
      * @throws IOException
      */
     private Format detectSourceFormat() throws IOException {
@@ -203,8 +206,8 @@ class FilesystemResolver extends AbstractResolver
     }
 
     /**
-     * Filters out "fileseparator.." and "..fileseparator" to prevent arbitrary
-     * directory traversal.
+     * Filters out <code>fileseparator..</code> and
+     * <code>..fileseparator</code> to prevent arbitrary directory traversal.
      *
      * @param fileSeparator Return value of {@link File#separator}
      * @return Sanitized identifier.
