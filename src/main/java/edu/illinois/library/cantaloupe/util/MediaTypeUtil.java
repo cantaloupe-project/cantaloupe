@@ -1,28 +1,35 @@
 package edu.illinois.library.cantaloupe.util;
 
-import eu.medsea.mimeutil.MimeUtil;
+import org.apache.tika.detect.Detector;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.AutoDetectParser;
 import org.restlet.data.MediaType;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class MediaTypeUtil {
 
-    static {
-        MimeUtil.registerMimeDetector(
-                "eu.medsea.mimeutil.detector.MagicMimeMimeDetector");
-    }
-
-    public List<MediaType> detectMediaTypes(File file) {
+    public List<MediaType> detectMediaTypes(File file) throws IOException {
         return detectMediaTypes(file.getAbsolutePath());
     }
 
-    @SuppressWarnings("unchecked")
-    public List<MediaType> detectMediaTypes(String pathname) {
-        return (List<MediaType>) MimeUtil.getMimeTypes(pathname).stream().
-                map(t -> new MediaType(t.toString())).
-                collect(Collectors.toList());
+    public List<MediaType> detectMediaTypes(String pathname) throws IOException {
+        final List<MediaType> types = new ArrayList<>();
+        try (InputStream is = new BufferedInputStream(new FileInputStream(pathname))) {
+            AutoDetectParser parser = new AutoDetectParser();
+            Detector detector = parser.getDetector();
+            Metadata md = new Metadata();
+            md.add(Metadata.RESOURCE_NAME_KEY, pathname);
+            org.apache.tika.mime.MediaType mediaType = detector.detect(is, md);
+            types.add(new MediaType(mediaType.toString()));
+        }
+        return types;
     }
 
 }
