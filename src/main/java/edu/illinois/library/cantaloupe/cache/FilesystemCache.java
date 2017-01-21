@@ -67,8 +67,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
         CacheCleaner(long minCleanableAge) {
             this.minCleanableAge = minCleanableAge;
-            matcher = FileSystems.getDefault()
-                    .getPathMatcher("glob:*" + TEMP_EXTENSION);
+            matcher = FileSystems.getDefault().
+                    getPathMatcher("glob:*" + TEMP_EXTENSION);
         }
 
         private void delete(File file) {
@@ -85,8 +85,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         }
 
         private void test(Path path) {
-            // Since we have not overridden preVisitDirectory(), this will
-            // always be a file.
+            // Since the instance visits only files, this will always be a file.
             final File file = path.toFile();
 
             // Try to avoid matching temp files that may still be open for
@@ -482,8 +481,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * should delete it when they are done with it.
      */
     File getDerivativeImageTempFile(OperationList ops) throws CacheException {
-        return new File(getDerivativeImageFile(ops).getAbsolutePath() +
-                TEMP_EXTENSION);
+        return new File(getDerivativeImageFile(ops).getAbsolutePath() + "_" +
+                Thread.currentThread().getName() + TEMP_EXTENSION);
     }
 
     @Override
@@ -592,19 +591,10 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         // stream returned by this method is closed.
         sourceImagesBeingWritten.add(identifier);
 
-        // If the image is being written simultaneously in another process,
-        // there may (or may not) be a temp file on the filesystem. If so,
-        // return a null output stream to avoid interfering.
-        final File tempFile = getSourceImageTempFile(identifier);
-        if (tempFile.exists()) {
-            logger.info("getImageOutputStream(Identifier): miss, but a temp " +
-                    "file for {} already exists, so not caching", identifier);
-            return new NullOutputStream();
-        }
-
         logger.info("getImageOutputStream(Identifier): miss; caching {}",
                 identifier);
         try {
+            final File tempFile = getSourceImageTempFile(identifier);
             if (!tempFile.getParentFile().isDirectory()) {
                 if (!tempFile.getParentFile().mkdirs()) {
                     logger.info("getImageOutputStream(Identifier): can't create {}",
@@ -640,18 +630,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         // returned by this method is closed.
         derivativeImagesBeingWritten.add(ops);
 
-        // If the image is being written simultaneously in another process,
-        // there may (or may not) be a temp file on the filesystem. If so,
-        // return a null output stream to avoid interfering.
-        final File tempFile = getDerivativeImageTempFile(ops);
-        if (tempFile.exists()) {
-            logger.info("getImageOutputStream(OperationList): miss, but a " +
-                    "temp file for {} already exists, so not caching", ops);
-            return new NullOutputStream();
-        }
-
         logger.info("getImageOutputStream(OperationList): miss; caching {}", ops);
         try {
+            final File tempFile = getDerivativeImageTempFile(ops);
             if (!tempFile.getParentFile().isDirectory()) {
                 if (!tempFile.getParentFile().mkdirs()) {
                     logger.info("getImageOutputStream(OperationList): can't create {}",
@@ -687,8 +668,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     File getInfoTempFile(final Identifier identifier) throws CacheException {
-        return new File(getInfoFile(identifier).getAbsolutePath() +
-                TEMP_EXTENSION);
+        return new File(getInfoFile(identifier).getAbsolutePath() + "_" +
+                Thread.currentThread().getName() + TEMP_EXTENSION);
     }
 
     /**
@@ -715,8 +696,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * identifier. Clients should delete it when they are done with it.
      */
     File getSourceImageTempFile(Identifier identifier) throws CacheException {
-        return new File(getSourceImageFile(identifier).getAbsolutePath() +
-                TEMP_EXTENSION);
+        return new File(getSourceImageFile(identifier).getAbsolutePath() + "_" +
+                Thread.currentThread().getName() + TEMP_EXTENSION);
     }
 
     /**
