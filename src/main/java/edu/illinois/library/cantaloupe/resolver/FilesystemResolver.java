@@ -7,8 +7,9 @@ import edu.illinois.library.cantaloupe.operation.Identifier;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import eu.medsea.mimeutil.MimeUtil;
+import edu.illinois.library.cantaloupe.util.MediaTypeUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
-import java.util.Collection;
+import java.util.List;
 
 /**
  * <p>Provides access to source content located on a locally attached
@@ -75,11 +76,6 @@ class FilesystemResolver extends AbstractResolver
             "FilesystemResolver.BasicLookupStrategy.path_prefix";
     static final String PATH_SUFFIX_CONFIG_KEY =
             "FilesystemResolver.BasicLookupStrategy.path_suffix";
-
-    static {
-        MimeUtil.registerMimeDetector(
-                "eu.medsea.mimeutil.detector.MagicMimeMimeDetector");
-    }
 
     @Override
     public StreamSource newStreamSource() throws IOException {
@@ -197,7 +193,8 @@ class FilesystemResolver extends AbstractResolver
     private Format detectSourceFormat() throws IOException {
         Format format = Format.UNKNOWN;
         final String pathname = getPathname(File.separator);
-        Collection<?> detectedTypes = MimeUtil.getMimeTypes(pathname);
+        List<MediaType> detectedTypes =
+                new MediaTypeUtil().detectMediaTypes(pathname);
         if (detectedTypes.size() > 0) {
             String detectedType = detectedTypes.toArray()[0].toString();
             format = Format.inferFormat(detectedType);
