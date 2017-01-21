@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * <p>Normalized list of {@link Operation image transform operations}
@@ -162,6 +163,10 @@ public class OperationList implements Comparable<OperationList>,
 
     public void setOutputFormat(Format outputFormat) {
         this.outputFormat = outputFormat;
+    }
+
+    public Stream<Operation> stream() {
+        return operations.stream();
     }
 
     /**
