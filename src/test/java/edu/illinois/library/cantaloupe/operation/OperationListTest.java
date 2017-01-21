@@ -332,6 +332,27 @@ public class OperationListTest extends BaseTest {
         assertEquals(3, count);
     }
 
+    @Test
+    public void testToFilename() {
+        ops = new OperationList();
+        ops.setIdentifier(new Identifier("identifier.jpg"));
+        Crop crop = new Crop();
+        crop.setX(5f);
+        crop.setY(6f);
+        crop.setWidth(20f);
+        crop.setHeight(22f);
+        ops.add(crop);
+        Scale scale = new Scale(0.4f);
+        ops.add(scale);
+        ops.add(new Rotate(15));
+        ops.add(Color.BITONAL);
+        ops.setOutputFormat(Format.JPG);
+        ops.getOptions().put("animal", "cat");
+
+        assertEquals("50c63748527e634134449ae20b199cc0_d170a86a2473afda8cc0fa1a30740274.jpg",
+                ops.toFilename());
+    }
+
     /* toMap() */
 
     @Test

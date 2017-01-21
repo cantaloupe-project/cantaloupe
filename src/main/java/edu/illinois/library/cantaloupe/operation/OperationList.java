@@ -1,14 +1,21 @@
 package edu.illinois.library.cantaloupe.operation;
 
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
+import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -23,6 +30,9 @@ import java.util.stream.Stream;
  */
 public class OperationList implements Comparable<OperationList>,
         Iterable<Operation> {
+
+    private static final Logger logger = LoggerFactory.
+            getLogger(OperationList.class);
 
     private Identifier identifier;
     private List<Operation> operations = new ArrayList<>();
@@ -170,8 +180,38 @@ public class OperationList implements Comparable<OperationList>,
     }
 
     /**
-     * <p>Serializes the instance to a map with the following format
-     * (expressed in JSON, with {@link Map}s expresses as objects and
+     * <p>Returns a filename-safe string guaranteed to uniquely represent the
+     * instance. The filename is in the format:</p>
+     *
+     * <pre>{hashed identifier}_{hashed operation list}.{output format extension}</pre>
+     *
+     * @return Filename-safe string guaranteed to uniquely represent the
+     *         instance.
+     */
+    public String toFilename() {
+        final String identifierFilename = getIdentifier().toFilename();
+
+        final List<String> opStrings = stream().
+                filter(Operation::hasEffect).
+                map(Operation::toString).
+                collect(Collectors.toList());
+        String opsString = StringUtils.join(opStrings, "_");
+
+        try {
+            final MessageDigest digest = MessageDigest.getInstance("MD5");
+            digest.update(opsString.getBytes(Charset.forName("UTF8")));
+            opsString = Hex.encodeHexString(digest.digest());
+        } catch (NoSuchAlgorithmException e) {
+            logger.error("toFilename(): {}", e.getMessage());
+        }
+
+        return identifierFilename + "_" + opsString + "." +
+                getOutputFormat().getPreferredExtension();
+    }
+
+    /**
+     * <p>Returns a map representing the instance with the following format
+     * (expressed in JSON, with {@link Map}s expressed as objects and
      * {@link List}s expressed as arrays):</p>
      *
      * <pre>{
@@ -187,7 +227,7 @@ public class OperationList implements Comparable<OperationList>,
      *
      * @param fullSize Full size of the source image on which the instance is
      *                 being applied.
-     * @return Map serialization of the instance.
+     * @return Map representation of the instance.
      */
     public Map<String,Object> toMap(Dimension fullSize) {
         final Map<String,Object> map = new HashMap<>();
