@@ -336,30 +336,11 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             new ConcurrentHashMap<>();
 
     /**
-     * Counterpart of {@link #filenameSafe(String)} exclusively for identifiers.
-     * {@link #filenameSafe(String)}
-     *
-     * @param identifier Identifier to get a filename-safe string for.
-     * @return Filename-safe string version of the identifier.
-     */
-    static String filenameFor(final Identifier identifier) {
-        try {
-            final MessageDigest digest =
-                    MessageDigest.getInstance(HASH_ALGORITHM);
-            digest.update(identifier.toString().getBytes(Charset.forName("UTF8")));
-            return Hex.encodeHexString(digest.digest());
-        } catch (NoSuchAlgorithmException e) {
-            logger.error("filenameFor(): {}", e.getMessage(), e);
-        }
-        return identifier.toString(); // This should never hit.
-    }
-
-    /**
      * <p>Returns a filename-safe string with a maximum length of
      * {@link #FILENAME_MAX_LENGTH} - (identifier checksum length).</p>
      *
      * <p>N.B. For creating filename-safe strings from identifiers, use
-     * {@link #filenameFor(Identifier)} instead.</p>
+     * {@link Identifier#toFilename} instead.</p>
      *
      * @param inputString String to make filename-safe.
      * @return Filename-safe string
@@ -512,7 +493,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         final String subfolderPath = StringUtils.stripEnd(
                 getHashedStringBasedSubdirectory(ops.getIdentifier().toString()),
                 File.separator);
-        final String identifierFilename = filenameFor(ops.getIdentifier());
+        final String identifierFilename = ops.getIdentifier().toFilename();
         parts.add(cacheRoot + subfolderPath + File.separator +
                 identifierFilename);
         for (Operation op : ops) {
@@ -542,7 +523,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             }
 
             public boolean accept(File dir, String name) {
-                return name.startsWith(filenameFor(identifier));
+                return name.startsWith(identifier.toFilename());
             }
         }
 
@@ -771,7 +752,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         final String subfolderPath = StringUtils.stripEnd(
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator);
-        final String identifierFilename = filenameFor(identifier);
+        final String identifierFilename = identifier.toFilename();
         final String pathname = cacheRoot + subfolderPath + File.separator +
                 identifierFilename + INFO_EXTENSION;
         return new File(pathname);
@@ -795,7 +776,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator);
         final String baseName = cacheRoot + subfolderPath + File.separator +
-                filenameFor(identifier);
+                identifier.toFilename();
         return new File(baseName);
     }
 

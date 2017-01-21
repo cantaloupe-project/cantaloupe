@@ -75,15 +75,6 @@ public class FilesystemCacheTest extends BaseTest {
     /* filenameFor(Identifier) */
 
     @Test
-    public void testFilenameFor() {
-        Identifier identifier = new Identifier("cats");
-        assertEquals("0832c1202da8d382318e329a7c133ea0",
-                FilesystemCache.filenameFor(identifier));
-    }
-
-    /* filenameFor(Identifier) */
-
-    @Test
     public void testFilenameSafe() {
         String test = "abcABC123!@#$%^&*()_+";
         assertEquals("abcABC123%21%40%23%24%25%5E%26%2A%28%29_%2B",
@@ -276,7 +267,7 @@ public class FilesystemCacheTest extends BaseTest {
                 File.separator,
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator,
-                FilesystemCache.filenameFor(identifier),
+                identifier.toFilename(),
                 FilesystemCache.filenameSafe(crop.toString()),
                 FilesystemCache.filenameSafe(scale.toString()),
                 FilesystemCache.filenameSafe(rotate.toString()),
@@ -309,7 +300,7 @@ public class FilesystemCacheTest extends BaseTest {
                 File.separator,
                 getHashedStringBasedSubdirectory(ops.getIdentifier().toString()),
                 File.separator,
-                FilesystemCache.filenameFor(identifier),
+                identifier.toFilename(),
                 format);
         assertEquals(new File(expected), instance.getDerivativeImageFile(ops));
     }
@@ -489,7 +480,7 @@ public class FilesystemCacheTest extends BaseTest {
                 File.separator,
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator,
-                FilesystemCache.filenameFor(identifier));
+                identifier.toFilename());
         assertEquals(new File(expected), instance.infoFile(identifier));
     }
 
@@ -511,7 +502,7 @@ public class FilesystemCacheTest extends BaseTest {
                 File.separator,
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator,
-                FilesystemCache.filenameFor(identifier));
+                identifier.toFilename());
         assertEquals(new File(expected), instance.sourceImageFile(identifier));
     }
 
