@@ -25,9 +25,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static edu.illinois.library.cantaloupe.cache.FilesystemCache.getHashedStringBasedSubdirectory;
-import static edu.illinois.library.cantaloupe.cache.FilesystemCache.getRootDerivativeImagePathname;
-import static edu.illinois.library.cantaloupe.cache.FilesystemCache.getRootInfoPathname;
-import static edu.illinois.library.cantaloupe.cache.FilesystemCache.getRootSourceImagePathname;
+import static edu.illinois.library.cantaloupe.cache.FilesystemCache.rootDerivativeImagePathname;
+import static edu.illinois.library.cantaloupe.cache.FilesystemCache.rootInfoPathname;
+import static edu.illinois.library.cantaloupe.cache.FilesystemCache.rootSourceImagePathname;
 import static org.junit.Assert.*;
 
 public class FilesystemCacheTest extends BaseTest {
@@ -72,7 +72,7 @@ public class FilesystemCacheTest extends BaseTest {
         FileUtils.deleteDirectory(fixturePath);
     }
 
-    /* filenameFor(Identifier) */
+    /* filenameSafe(String) */
 
     @Test
     public void testFilenameSafe() {
@@ -132,7 +132,7 @@ public class FilesystemCacheTest extends BaseTest {
         sourceImageFile.getParentFile().mkdirs();
         FileUtils.writeStringToFile(sourceImageFile, "not empty");
         // create a new derivative image file
-        File derivativeImageFile = instance.getDerivativeImageFile(ops);
+        File derivativeImageFile = instance.derivativeImageFile(ops);
         derivativeImageFile.getParentFile().mkdirs();
         FileUtils.writeStringToFile(derivativeImageFile, "not empty");
         // create a new info file
@@ -142,25 +142,25 @@ public class FilesystemCacheTest extends BaseTest {
         // create some temp files
         File sourceImageTempFile = instance.sourceImageTempFile(ops.getIdentifier());
         FileUtils.writeStringToFile(sourceImageTempFile, "not empty");
-        File derivativeImageTempFile = instance.getDerivativeImageTempFile(ops);
+        File derivativeImageTempFile = instance.derivativeImageTempFile(ops);
         FileUtils.writeStringToFile(derivativeImageTempFile, "not empty");
         File infoTempFile = instance.infoTempFile(ops.getIdentifier());
         FileUtils.writeStringToFile(infoTempFile, "not empty");
 
         // create some empty files
-        String root = getRootSourceImagePathname();
+        String root = rootSourceImagePathname();
         File path = new File(root + "/bogus");
         path.mkdirs();
         new File(path + "/empty").createNewFile();
         new File(path + "/empty2").createNewFile();
 
-        root = getRootDerivativeImagePathname();
+        root = rootDerivativeImagePathname();
         path = new File(root + "/bogus");
         path.mkdirs();
         new File(path + "/empty").createNewFile();
         new File(path + "/empty2").createNewFile();
 
-        root = getRootInfoPathname();
+        root = rootInfoPathname();
         path = new File(root + "/bogus");
         path.mkdirs();
         new File(path + "/empty").createNewFile();
@@ -187,7 +187,7 @@ public class FilesystemCacheTest extends BaseTest {
         sourceImageFile.getParentFile().mkdirs();
         FileUtils.writeStringToFile(sourceImageFile, "not empty");
         // create a new derivative image file
-        File derivativeImageFile = instance.getDerivativeImageFile(ops);
+        File derivativeImageFile = instance.derivativeImageFile(ops);
         derivativeImageFile.getParentFile().mkdirs();
         FileUtils.writeStringToFile(derivativeImageFile, "not empty");
         // create a new info file
@@ -197,25 +197,25 @@ public class FilesystemCacheTest extends BaseTest {
         // create some temp files
         File sourceImageTempFile = instance.sourceImageTempFile(ops.getIdentifier());
         FileUtils.writeStringToFile(sourceImageTempFile, "not empty");
-        File derivativeImageTempFile = instance.getDerivativeImageTempFile(ops);
+        File derivativeImageTempFile = instance.derivativeImageTempFile(ops);
         FileUtils.writeStringToFile(derivativeImageTempFile, "not empty");
         File infoTempFile = instance.infoTempFile(ops.getIdentifier());
         FileUtils.writeStringToFile(infoTempFile, "not empty");
 
         // create some empty files
-        String root = getRootSourceImagePathname();
+        String root = rootSourceImagePathname();
         File path = new File(root + "/bogus");
         path.mkdirs();
         new File(path + "/empty").createNewFile();
         new File(path + "/empty2").createNewFile();
 
-        root = getRootDerivativeImagePathname();
+        root = rootDerivativeImagePathname();
         path = new File(root + "/bogus");
         path.mkdirs();
         new File(path + "/empty").createNewFile();
         new File(path + "/empty2").createNewFile();
 
-        root = getRootInfoPathname();
+        root = rootInfoPathname();
         path = new File(root + "/bogus");
         path.mkdirs();
         new File(path + "/empty").createNewFile();
@@ -236,10 +236,10 @@ public class FilesystemCacheTest extends BaseTest {
         assertEquals(3, count);
     }
 
-    /* getDerivativeImageFile(OperationList) */
+    /* derivativeImageFile(OperationList) */
 
     @Test
-    public void testGetDerivativeImageFileWithOperationList() throws Exception {
+    public void testDerivativeImageFileWithOperationList() throws Exception {
         String pathname = ConfigurationFactory.getInstance().
                 getString(FilesystemCache.PATHNAME_CONFIG_KEY);
 
@@ -268,11 +268,11 @@ public class FilesystemCacheTest extends BaseTest {
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator,
                 ops.toFilename());
-        assertEquals(new File(expected), instance.getDerivativeImageFile(ops));
+        assertEquals(new File(expected), instance.derivativeImageFile(ops));
     }
 
     @Test
-    public void testGetDerivativeImageFileWithNoOpOperations() throws Exception {
+    public void testDerivativeImageFileWithNoOpOperations() throws Exception {
         String pathname = ConfigurationFactory.getInstance().
                 getString(FilesystemCache.PATHNAME_CONFIG_KEY);
 
@@ -296,70 +296,39 @@ public class FilesystemCacheTest extends BaseTest {
                 getHashedStringBasedSubdirectory(ops.getIdentifier().toString()),
                 File.separator,
                 ops.toFilename());
-        assertEquals(new File(expected), instance.getDerivativeImageFile(ops));
+        assertEquals(new File(expected), instance.derivativeImageFile(ops));
     }
 
-    /* getDerivativeImageFiles(Identifier) */
+    /* derivativeImageFiles(Identifier) */
 
     @Test
-    public void testGetDerivativeImageFiles() throws Exception {
+    public void testDerivativeImageFiles() throws Exception {
         Identifier identifier = new Identifier("dogs");
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(identifier);
 
-        File imageFile = instance.getDerivativeImageFile(ops);
+        File imageFile = instance.derivativeImageFile(ops);
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
 
         ops.add(new Rotate(15));
-        imageFile = instance.getDerivativeImageFile(ops);
+        imageFile = instance.derivativeImageFile(ops);
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
 
         ops.add(Color.GRAY);
-        imageFile = instance.getDerivativeImageFile(ops);
+        imageFile = instance.derivativeImageFile(ops);
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
 
-        assertEquals(3, instance.getDerivativeImageFiles(identifier).size());
+        assertEquals(3, instance.derivativeImageFiles(identifier).size());
     }
 
-    /* getDerivativeImageTempFile(OperationList) */
+    /* derivativeImageTempFile(OperationList) */
 
     @Test
-    public void testGetDerivativeImageTempFile() throws Exception {
+    public void testDerivativeImageTempFile() throws Exception {
         // TODO: write this
-    }
-
-    /* getSourceImageFile(Identifier) */
-
-    @Test
-    public void testGetSourceImageFileWithIdentifierWithZeroTtl()
-            throws Exception {
-        Identifier identifier = new Identifier("cats");
-        assertNull(instance.getSourceImageFile(identifier));
-
-        File imageFile = instance.sourceImageFile(identifier);
-        imageFile.getParentFile().mkdirs();
-        imageFile.createNewFile();
-        assertNotNull(instance.getSourceImageFile(identifier));
-    }
-
-    @Test
-    public void testGetSourceImageFileWithIdentifierWithNonzeroTtl()
-            throws Exception {
-        ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 1);
-
-        Identifier identifier = new Identifier("cats");
-        File cacheFile = instance.sourceImageFile(identifier);
-        cacheFile.getParentFile().mkdirs();
-        cacheFile.createNewFile();
-        assertNotNull(instance.getSourceImageFile(identifier));
-
-        Thread.sleep(1100);
-
-        assertNull(instance.getSourceImageFile(identifier));
-        assertFalse(cacheFile.exists());
     }
 
     /* getImageInfo(Identifier) */
@@ -394,6 +363,60 @@ public class FilesystemCacheTest extends BaseTest {
         assertNull(instance.getImageInfo(identifier));
     }
 
+    /* getSourceImageFile(Identifier) */
+
+    @Test
+    public void testGetSourceImageFileWithIdentifierWithZeroTtl()
+            throws Exception {
+        Identifier identifier = new Identifier("cats");
+        assertNull(instance.getSourceImageFile(identifier));
+
+        File imageFile = instance.sourceImageFile(identifier);
+        imageFile.getParentFile().mkdirs();
+        imageFile.createNewFile();
+        assertNotNull(instance.getSourceImageFile(identifier));
+    }
+
+    @Test
+    public void testGetSourceImageFileWithIdentifierWithNonzeroTtl()
+            throws Exception {
+        ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 1);
+
+        Identifier identifier = new Identifier("cats");
+        File cacheFile = instance.sourceImageFile(identifier);
+        cacheFile.getParentFile().mkdirs();
+        cacheFile.createNewFile();
+        assertNotNull(instance.getSourceImageFile(identifier));
+
+        Thread.sleep(1100);
+
+        assertNull(instance.getSourceImageFile(identifier));
+        assertFalse(cacheFile.exists());
+    }
+
+    /* infoFile(Identifier) */
+
+    @Test
+    public void testInfoFile() throws CacheException {
+        final String pathname = ConfigurationFactory.getInstance().
+                getString(FilesystemCache.PATHNAME_CONFIG_KEY);
+
+        final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
+
+        final String expected = String.format("%s%sinfo%s%s%s.json",
+                pathname,
+                File.separator,
+                getHashedStringBasedSubdirectory(identifier.toString()),
+                File.separator,
+                identifier.toFilename());
+        assertEquals(new File(expected), instance.infoFile(identifier));
+    }
+
+    @Test
+    public void testInfoTempFile() throws Exception {
+        // TODO: write this
+    }
+
     /* newDerivativeImageInputStream(OperationList) */
 
     @Test
@@ -402,7 +425,7 @@ public class FilesystemCacheTest extends BaseTest {
         OperationList ops = TestUtil.newOperationList();
         assertNull(instance.newDerivativeImageInputStream(ops));
 
-        File imageFile = instance.getDerivativeImageFile(ops);
+        File imageFile = instance.derivativeImageFile(ops);
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
         assertNotNull(instance.newDerivativeImageInputStream(ops));
@@ -414,7 +437,7 @@ public class FilesystemCacheTest extends BaseTest {
         ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 1);
 
         OperationList ops = TestUtil.newOperationList();
-        File cacheFile = instance.getDerivativeImageFile(ops);
+        File cacheFile = instance.derivativeImageFile(ops);
         cacheFile.getParentFile().mkdirs();
         cacheFile.createNewFile();
         assertNotNull(instance.newDerivativeImageInputStream(ops));
@@ -423,23 +446,6 @@ public class FilesystemCacheTest extends BaseTest {
 
         assertNull(instance.newDerivativeImageInputStream(ops));
         assertFalse(cacheFile.exists());
-    }
-
-    /* newSourceImageOutputStream(Identifier) */
-
-    @Test
-    public void testNewSourceImageOutputStreamWithIdentifier() throws Exception {
-        assertNotNull(instance.newSourceImageOutputStream(new Identifier("cats")));
-    }
-
-    @Test
-    public void testNewSourceImageOutputStreamWithIdentifierCreatesFolder()
-            throws Exception {
-        FileUtils.deleteDirectory(sourceImagePath);
-
-        Identifier identifier = new Identifier("cats");
-        instance.newSourceImageOutputStream(identifier);
-        assertTrue(sourceImagePath.exists());
     }
 
     /* newDerivativeImageOutputStream(OperationList) */
@@ -460,27 +466,21 @@ public class FilesystemCacheTest extends BaseTest {
         assertTrue(derivativeImagePath.exists());
     }
 
-    /* infoFile(Identifier) */
+    /* newSourceImageOutputStream(Identifier) */
 
     @Test
-    public void testGetInfoFile() throws CacheException {
-        final String pathname = ConfigurationFactory.getInstance().
-                getString(FilesystemCache.PATHNAME_CONFIG_KEY);
-
-        final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
-
-        final String expected = String.format("%s%sinfo%s%s%s.json",
-                pathname,
-                File.separator,
-                getHashedStringBasedSubdirectory(identifier.toString()),
-                File.separator,
-                identifier.toFilename());
-        assertEquals(new File(expected), instance.infoFile(identifier));
+    public void testNewSourceImageOutputStreamWithIdentifier() throws Exception {
+        assertNotNull(instance.newSourceImageOutputStream(new Identifier("cats")));
     }
 
     @Test
-    public void testGetInfoTempFile() throws Exception {
-        // TODO: write this
+    public void testNewSourceImageOutputStreamWithIdentifierCreatesFolder()
+            throws Exception {
+        FileUtils.deleteDirectory(sourceImagePath);
+
+        Identifier identifier = new Identifier("cats");
+        instance.newSourceImageOutputStream(identifier);
+        assertTrue(sourceImagePath.exists());
     }
 
     /* sourceImageFile(Identifier) */
@@ -518,7 +518,7 @@ public class FilesystemCacheTest extends BaseTest {
         sourceImageFile.getParentFile().mkdirs();
         sourceImageFile.createNewFile();
         // create a new derivative image file
-        File derivativeImageFile = instance.getDerivativeImageFile(ops);
+        File derivativeImageFile = instance.derivativeImageFile(ops);
         derivativeImageFile.getParentFile().mkdirs();
         derivativeImageFile.createNewFile();
         // create a new info file
@@ -531,7 +531,7 @@ public class FilesystemCacheTest extends BaseTest {
         ops.add(new Rotate(15));
 
         // create a new derivative image file based on the changed op list
-        derivativeImageFile = instance.getDerivativeImageFile(ops);
+        derivativeImageFile = instance.derivativeImageFile(ops);
         derivativeImageFile.getParentFile().mkdirs();
         derivativeImageFile.createNewFile();
 
@@ -552,7 +552,7 @@ public class FilesystemCacheTest extends BaseTest {
     public void testPurgeWithOperationList() throws Exception {
         OperationList ops = TestUtil.newOperationList();
 
-        final File imageFile = instance.getDerivativeImageFile(ops);
+        final File imageFile = instance.derivativeImageFile(ops);
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
 
@@ -577,7 +577,7 @@ public class FilesystemCacheTest extends BaseTest {
         imageFile.createNewFile();
         // add a derivative image
         ops = TestUtil.newOperationList();
-        imageFile = instance.getDerivativeImageFile(ops);
+        imageFile = instance.derivativeImageFile(ops);
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
         // add an info
@@ -590,7 +590,7 @@ public class FilesystemCacheTest extends BaseTest {
 
         // add a changed derivative
         ops.setIdentifier(new Identifier("dogs"));
-        imageFile = instance.getDerivativeImageFile(ops);
+        imageFile = instance.derivativeImageFile(ops);
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
 
@@ -614,7 +614,7 @@ public class FilesystemCacheTest extends BaseTest {
         sourceImageFile.getParentFile().mkdirs();
         sourceImageFile.createNewFile();
         // create a new derivative image
-        File derivativeImageFile = instance.getDerivativeImageFile(ops);
+        File derivativeImageFile = instance.derivativeImageFile(ops);
         derivativeImageFile.getParentFile().mkdirs();
         derivativeImageFile.createNewFile();
         // create a new info
@@ -629,7 +629,7 @@ public class FilesystemCacheTest extends BaseTest {
         sourceImageFile = instance.sourceImageFile(ops.getIdentifier());
         sourceImageFile.getParentFile().mkdirs();
         sourceImageFile.createNewFile();
-        derivativeImageFile = instance.getDerivativeImageFile(ops);
+        derivativeImageFile = instance.derivativeImageFile(ops);
         derivativeImageFile.getParentFile().mkdirs();
         derivativeImageFile.createNewFile();
         infoFile = instance.infoFile(ops.getIdentifier());
@@ -652,7 +652,7 @@ public class FilesystemCacheTest extends BaseTest {
     /* put(Identifier, ImageInfo) */
 
     @Test
-    public void testPutWithImageInfo() throws CacheException {
+    public void testPut() throws CacheException {
         Identifier identifier = new Identifier("cats");
         ImageInfo info = new ImageInfo(52, 42);
         instance.put(identifier, info);
@@ -663,7 +663,7 @@ public class FilesystemCacheTest extends BaseTest {
      * This isn't foolproof, but is hopefully better than nothing.
      */
     @Test
-    public void concurrentlyTestPutWithImageInfo() throws CacheException {
+    public void concurrentlyTestPut() throws CacheException {
         final Identifier identifier = new Identifier("monkeys");
         final ImageInfo info = new ImageInfo(52, 42);
 
@@ -721,6 +721,18 @@ public class FilesystemCacheTest extends BaseTest {
         } else {
             assertEquals(info, instance.getImageInfo(identifier));
         }
+    }
+
+    /* sourceImageFile(Identifier) */
+
+    @Test
+    public void testSourceImageFile() throws CacheException {
+        // TODO: write this
+    }
+
+    @Test
+    public void testSourceImageTempFile() throws Exception {
+        // TODO: write this
     }
 
     private void sleep(int msec) {

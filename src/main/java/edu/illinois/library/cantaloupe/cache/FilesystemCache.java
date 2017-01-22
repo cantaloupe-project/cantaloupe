@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -402,46 +401,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     /**
-     * @return Pathname of the root cache folder.
-     * @throws CacheException if {@link #PATHNAME_CONFIG_KEY} is undefined.
-     */
-    static String getRootPathname() throws CacheException {
-        final String pathname = ConfigurationFactory.getInstance().
-                getString(PATHNAME_CONFIG_KEY);
-        if (pathname == null) {
-            throw new CacheException(PATHNAME_CONFIG_KEY + " is undefined.");
-        }
-        return pathname;
-    }
-
-    /**
-     * @return Pathname of the derivative image cache folder, or null if
-     * {@link #PATHNAME_CONFIG_KEY} is not set.
-     * @throws CacheException
-     */
-    static String getRootDerivativeImagePathname() throws CacheException {
-        return getRootPathname() + File.separator + DERIVATIVE_IMAGE_FOLDER;
-    }
-
-    /**
-     * @return Pathname of the image info cache folder, or null if
-     * {@link #PATHNAME_CONFIG_KEY} is not set.
-     * @throws CacheException
-     */
-    static String getRootInfoPathname() throws CacheException {
-        return getRootPathname() + File.separator + INFO_FOLDER;
-    }
-
-    /**
-     * @return Pathname of the source image cache folder, or null if
-     * {@link #PATHNAME_CONFIG_KEY} is not set.
-     * @throws CacheException
-     */
-    static String getRootSourceImagePathname() throws CacheException {
-        return getRootPathname() + File.separator + SOURCE_IMAGE_FOLDER;
-    }
-
-    /**
      * @param file File to check.
      * @return Whether the given file is expired based on
      *         {@link #TTL_CONFIG_KEY} and its last-accessed time. If
@@ -456,6 +415,46 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     /**
+     * @return Pathname of the root cache folder.
+     * @throws CacheException if {@link #PATHNAME_CONFIG_KEY} is undefined.
+     */
+    private static String rootPathname() throws CacheException {
+        final String pathname = ConfigurationFactory.getInstance().
+                getString(PATHNAME_CONFIG_KEY);
+        if (pathname == null) {
+            throw new CacheException(PATHNAME_CONFIG_KEY + " is undefined.");
+        }
+        return pathname;
+    }
+
+    /**
+     * @return Pathname of the derivative image cache folder, or null if
+     * {@link #PATHNAME_CONFIG_KEY} is not set.
+     * @throws CacheException
+     */
+    static String rootDerivativeImagePathname() throws CacheException {
+        return rootPathname() + File.separator + DERIVATIVE_IMAGE_FOLDER;
+    }
+
+    /**
+     * @return Pathname of the image info cache folder, or null if
+     * {@link #PATHNAME_CONFIG_KEY} is not set.
+     * @throws CacheException
+     */
+    static String rootInfoPathname() throws CacheException {
+        return rootPathname() + File.separator + INFO_FOLDER;
+    }
+
+    /**
+     * @return Pathname of the source image cache folder, or null if
+     * {@link #PATHNAME_CONFIG_KEY} is not set.
+     * @throws CacheException
+     */
+    static String rootSourceImagePathname() throws CacheException {
+        return rootPathname() + File.separator + SOURCE_IMAGE_FOLDER;
+    }
+
+    /**
      * Cleans up temp and zero-byte files.
      *
      * @throws CacheException
@@ -464,9 +463,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     public void cleanUp() throws CacheException {
         try {
             final String[] pathnamesToClean = {
-                    getRootSourceImagePathname(),
-                    getRootDerivativeImagePathname(),
-                    getRootInfoPathname() };
+                    rootSourceImagePathname(),
+                    rootDerivativeImagePathname(),
+                    rootInfoPathname() };
             for (String pathname : pathnamesToClean) {
                 logger.info("cleanUp(): cleaning directory: {}", pathname);
                 CacheCleaner cleaner = new CacheCleaner(minCleanableAge);
@@ -482,11 +481,11 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * Returns a File corresponding to the given operation list.
      *
      * @param ops Operation list identifying the file.
-     * @return File corresponding to the given operation list.
+     * @return    File corresponding to the given operation list.
      */
-    File getDerivativeImageFile(OperationList ops) throws CacheException {
+    File derivativeImageFile(OperationList ops) throws CacheException {
         final String cacheRoot = StringUtils.stripEnd(
-                getRootDerivativeImagePathname(), File.separator);
+                rootDerivativeImagePathname(), File.separator);
         final String subfolderPath = StringUtils.stripEnd(
                 getHashedStringBasedSubdirectory(ops.getIdentifier().toString()),
                 File.separator);
@@ -496,11 +495,11 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
     /**
      * @param identifier
-     * @return All derivative image files deriving from the image with the
-     *         given identifier.
+     * @return All image files deriving from the image with the given
+     *         identifier.
      * @throws CacheException
      */
-    Collection<File> getDerivativeImageFiles(Identifier identifier)
+    Collection<File> derivativeImageFiles(Identifier identifier)
             throws CacheException {
         class IdentifierFilter implements FilenameFilter {
             private Identifier identifier;
@@ -514,7 +513,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             }
         }
 
-        final File cacheFolder = new File(getRootDerivativeImagePathname() +
+        final File cacheFolder = new File(rootDerivativeImagePathname() +
                 getHashedStringBasedSubdirectory(identifier.toString()));
         final File[] files =
                 cacheFolder.listFiles(new IdentifierFilter(identifier));
@@ -532,39 +531,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @return Temp file corresponding to the given operation list. Clients
      * should delete it when they are done with it.
      */
-    File getDerivativeImageTempFile(OperationList ops) throws CacheException {
-        return new File(getDerivativeImageFile(ops).getAbsolutePath() + "_" +
+    File derivativeImageTempFile(OperationList ops) throws CacheException {
+        return new File(derivativeImageFile(ops).getAbsolutePath() + "_" +
                 Thread.currentThread().getName() + TEMP_EXTENSION);
-    }
-
-    @Override
-    public File getSourceImageFile(Identifier identifier) throws CacheException {
-        synchronized (sourceImageWriteLock) {
-            while (sourceImagesBeingWritten.contains(identifier)) {
-                try {
-                    sourceImageWriteLock.wait();
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-        }
-        File file = null;
-        final File cacheFile = sourceImageFile(identifier);
-        if (cacheFile != null && cacheFile.exists()) {
-            if (!isExpired(cacheFile)) {
-                logger.info("getSourceImageFile(): hit: {} ({})",
-                        identifier, cacheFile.getAbsolutePath());
-                file = cacheFile;
-            } else {
-                logger.info("getSourceImageFile(): deleting stale file: {}",
-                        cacheFile.getAbsolutePath());
-                if (!cacheFile.delete()) {
-                    logger.warn("getSourceImageFile(): unable to delete {}",
-                            cacheFile.getAbsolutePath());
-                }
-            }
-        }
-        return file;
     }
 
     @Override
@@ -601,10 +570,65 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     @Override
+    public File getSourceImageFile(Identifier identifier) throws CacheException {
+        synchronized (sourceImageWriteLock) {
+            while (sourceImagesBeingWritten.contains(identifier)) {
+                try {
+                    sourceImageWriteLock.wait();
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        }
+        File file = null;
+        final File cacheFile = sourceImageFile(identifier);
+        if (cacheFile != null && cacheFile.exists()) {
+            if (!isExpired(cacheFile)) {
+                logger.info("getSourceImageFile(): hit: {} ({})",
+                        identifier, cacheFile.getAbsolutePath());
+                file = cacheFile;
+            } else {
+                logger.info("getSourceImageFile(): deleting stale file: {}",
+                        cacheFile.getAbsolutePath());
+                if (!cacheFile.delete()) {
+                    logger.warn("getSourceImageFile(): unable to delete {}",
+                            cacheFile.getAbsolutePath());
+                }
+            }
+        }
+        return file;
+    }
+
+    /**
+     * @param identifier
+     * @return Info file corresponding to the image with the given identifier.
+     */
+    File infoFile(final Identifier identifier) throws CacheException {
+        final String cacheRoot =
+                StringUtils.stripEnd(rootInfoPathname(), File.separator);
+        final String subfolderPath = StringUtils.stripEnd(
+                getHashedStringBasedSubdirectory(identifier.toString()),
+                File.separator);
+        final String pathname = cacheRoot + subfolderPath + File.separator +
+                identifier.toFilename() + INFO_EXTENSION;
+        return new File(pathname);
+    }
+
+    /**
+     * @param identifier
+     * @return Temporary info file corresponding to the image with the given
+     *         identifier.
+     */
+    File infoTempFile(final Identifier identifier) throws CacheException {
+        return new File(infoFile(identifier).getAbsolutePath() + "_" +
+                Thread.currentThread().getName() + TEMP_EXTENSION);
+    }
+
+    @Override
     public InputStream newDerivativeImageInputStream(OperationList ops)
             throws CacheException {
         InputStream inputStream = null;
-        final File cacheFile = getDerivativeImageFile(ops);
+        final File cacheFile = derivativeImageFile(ops);
         if (cacheFile != null && cacheFile.exists()) {
             if (!isExpired(cacheFile)) {
                 try {
@@ -624,6 +648,48 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             }
         }
         return inputStream;
+    }
+
+    /**
+     * @param ops Operation list representing the image to write to.
+     * @return An output stream to write to. The stream will generally write to
+     *         a temp file and then move it into place when closed. It may also
+     *         write to nothing if an output stream for the same operation list
+     *         has been returned to another thread but not yet closed.
+     * @throws CacheException If anything goes wrong.
+     */
+    @Override
+    public OutputStream newDerivativeImageOutputStream(OperationList ops)
+            throws CacheException {
+        // If the image is being written in another thread, it will
+        // be present in the derivativeImagesBeingWritten set. If so,
+        // return a null output stream to avoid interfering.
+        if (derivativeImagesBeingWritten.contains(ops)) {
+            logger.info("newDerivativeImageOutputStream(OperationList): miss, " +
+                    "but cache file for {} is being written in " +
+                    "another thread, so not caching", ops);
+            return new NullOutputStream();
+        } else {
+            logger.info("newDerivativeImageOutputStream(OperationList): miss; " +
+                    "caching {}", ops);
+
+            final File tempFile = derivativeImageTempFile(ops);
+
+            // No need to check the return value. If anything went wrong,
+            // the client will find out about it shortly. :D
+            tempFile.getParentFile().mkdirs();
+
+            // ops will be removed from this set when the returned output
+            // stream is closed.
+            derivativeImagesBeingWritten.add(ops);
+            try {
+                return new ConcurrentFileOutputStream(tempFile,
+                        derivativeImageFile(ops),
+                        derivativeImagesBeingWritten, ops);
+            } catch (IOException e) {
+                throw new CacheException(e.getMessage(), e);
+            }
+        }
     }
 
     @Override
@@ -666,95 +732,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     /**
-     * @param ops Operation list representing the image to write to.
-     * @return An output stream to write to. The stream will generally write to
-     *         a temp file and then move it into place when closed. It may also
-     *         write to nothing if an output stream for the same operation list
-     *         has been returned to another thread but not yet closed.
-     * @throws CacheException If anything goes wrong.
-     */
-    @Override
-    public OutputStream newDerivativeImageOutputStream(OperationList ops)
-            throws CacheException {
-        // If the image is being written in another thread, it will
-        // be present in the derivativeImagesBeingWritten set. If so,
-        // return a null output stream to avoid interfering.
-        if (derivativeImagesBeingWritten.contains(ops)) {
-            logger.info("newDerivativeImageOutputStream(OperationList): miss, " +
-                    "but cache file for {} is being written in " +
-                    "another thread, so not caching", ops);
-            return new NullOutputStream();
-        } else {
-            logger.info("newDerivativeImageOutputStream(OperationList): miss; " +
-                    "caching {}", ops);
-
-            final File tempFile = getDerivativeImageTempFile(ops);
-
-            // No need to check the return value. If anything went wrong,
-            // the client will find out about it shortly. :D
-            tempFile.getParentFile().mkdirs();
-
-            // ops will be removed from this set when the returned output
-            // stream is closed.
-            derivativeImagesBeingWritten.add(ops);
-            try {
-                return new ConcurrentFileOutputStream(tempFile,
-                        getDerivativeImageFile(ops),
-                        derivativeImagesBeingWritten, ops);
-            } catch (IOException e) {
-                throw new CacheException(e.getMessage(), e);
-            }
-        }
-    }
-
-    /**
-     * @param identifier
-     * @return File corresponding to the given parameters.
-     */
-    File infoFile(final Identifier identifier) throws CacheException {
-        final String cacheRoot =
-                StringUtils.stripEnd(getRootInfoPathname(), File.separator);
-        final String subfolderPath = StringUtils.stripEnd(
-                getHashedStringBasedSubdirectory(identifier.toString()),
-                File.separator);
-        final String pathname = cacheRoot + subfolderPath + File.separator +
-                identifier.toFilename() + INFO_EXTENSION;
-        return new File(pathname);
-    }
-
-    File infoTempFile(final Identifier identifier) throws CacheException {
-        return new File(infoFile(identifier).getAbsolutePath() + "_" +
-                Thread.currentThread().getName() + TEMP_EXTENSION);
-    }
-
-    /**
-     * Returns a File corresponding to the given identifier.
-     *
-     * @param identifier Identifier identifying the file.
-     * @return File corresponding to the given identifier.
-     */
-    File sourceImageFile(Identifier identifier) throws CacheException {
-        final String cacheRoot = StringUtils.stripEnd(
-                getRootSourceImagePathname(), File.separator);
-        final String subfolderPath = StringUtils.stripEnd(
-                getHashedStringBasedSubdirectory(identifier.toString()),
-                File.separator);
-        final String baseName = cacheRoot + subfolderPath + File.separator +
-                identifier.toFilename();
-        return new File(baseName);
-    }
-
-    /**
-     * @param identifier Identifier identifying the file.
-     * @return Temp file corresponding to a source image with the given
-     * identifier. Clients should delete it when they are done with it.
-     */
-    File sourceImageTempFile(Identifier identifier) throws CacheException {
-        return new File(sourceImageFile(identifier).getAbsolutePath() + "_" +
-                Thread.currentThread().getName() + TEMP_EXTENSION);
-    }
-
-    /**
      * <p>Crawls the cache directory, deleting all files (but not folders)
      * within it (including temp files).</p>
      *
@@ -783,9 +760,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             globalPurgeInProgress.set(true);
 
             final String[] pathnamesToPurge = {
-                    getRootSourceImagePathname(),
-                    getRootDerivativeImagePathname(),
-                    getRootInfoPathname() };
+                    rootSourceImagePathname(),
+                    rootDerivativeImagePathname(),
+                    rootInfoPathname() };
             for (String pathname : pathnamesToPurge) {
                 try {
                     logger.info("purge(): purging {}...", pathname);
@@ -835,7 +812,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             imagesBeingPurged.add(opList);
             logger.info("purge(OperationList): purging {}...", opList);
 
-            File file = getDerivativeImageFile(opList);
+            File file = derivativeImageFile(opList);
             if (file != null && file.exists()) {
                 try {
                     FileUtils.forceDelete(file);
@@ -881,8 +858,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
         try {
             globalPurgeInProgress.set(true);
-            final String imagePathname = getRootDerivativeImagePathname();
-            final String infoPathname = getRootInfoPathname();
+            final String imagePathname = rootDerivativeImagePathname();
+            final String infoPathname = rootInfoPathname();
 
             long imageCount = 0;
             final File imageDir = new File(imagePathname);
@@ -965,7 +942,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 logger.warn(e.getMessage());
             }
             // Delete derivative images
-            for (File imageFile : getDerivativeImageFiles(identifier)) {
+            for (File imageFile : derivativeImageFiles(identifier)) {
                 try {
                     logger.info("purge(Identifier): deleting {}", imageFile);
                     FileUtils.forceDelete(imageFile);
@@ -1033,6 +1010,33 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      */
     void setMinCleanableAge(long age) {
         minCleanableAge = age;
+    }
+
+    /**
+     * Returns a File corresponding to the given identifier.
+     *
+     * @param identifier Identifier identifying the file.
+     * @return File corresponding to the given identifier.
+     */
+    File sourceImageFile(Identifier identifier) throws CacheException {
+        final String cacheRoot = StringUtils.stripEnd(
+                rootSourceImagePathname(), File.separator);
+        final String subfolderPath = StringUtils.stripEnd(
+                getHashedStringBasedSubdirectory(identifier.toString()),
+                File.separator);
+        final String baseName = cacheRoot + subfolderPath + File.separator +
+                identifier.toFilename();
+        return new File(baseName);
+    }
+
+    /**
+     * @param identifier Identifier identifying the file.
+     * @return Temp file corresponding to a source image with the given
+     * identifier. Clients should delete it when they are done with it.
+     */
+    File sourceImageTempFile(Identifier identifier) throws CacheException {
+        return new File(sourceImageFile(identifier).getAbsolutePath() + "_" +
+                Thread.currentThread().getName() + TEMP_EXTENSION);
     }
 
 }
