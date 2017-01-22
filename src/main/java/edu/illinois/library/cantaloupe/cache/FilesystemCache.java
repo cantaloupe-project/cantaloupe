@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.cache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.Identifier;
-import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import org.apache.commons.codec.binary.Hex;
@@ -486,24 +485,13 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @return File corresponding to the given operation list.
      */
     File getDerivativeImageFile(OperationList ops) throws CacheException {
-        final List<String> parts = new ArrayList<>();
-        final String cacheRoot =
-                StringUtils.stripEnd(getRootDerivativeImagePathname(), File.separator);
+        final String cacheRoot = StringUtils.stripEnd(
+                getRootDerivativeImagePathname(), File.separator);
         final String subfolderPath = StringUtils.stripEnd(
                 getHashedStringBasedSubdirectory(ops.getIdentifier().toString()),
                 File.separator);
-        final String identifierFilename = ops.getIdentifier().toFilename();
-        parts.add(cacheRoot + subfolderPath + File.separator +
-                identifierFilename);
-        for (Operation op : ops) {
-            if (op.hasEffect()) {
-                parts.add(filenameSafe(op.toString()));
-            }
-        }
-        final String baseName = StringUtils.join(parts, "_");
-
-        return new File(baseName + "." +
-                ops.getOutputFormat().getPreferredExtension());
+        return new File(cacheRoot + subfolderPath + File.separator +
+                ops.toFilename());
     }
 
     /**
@@ -679,11 +667,10 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
     /**
      * @param ops Operation list representing the image to write to.
-     * @return An output stream to write to. The output stream will generally
-     *         write to a temp file and then move it into place when closed.
-     *         It may also write to nothing if an output stream for the same
-     *         operation list has been returned to another thread but not yet
-     *         closed.
+     * @return An output stream to write to. The stream will generally write to
+     *         a temp file and then move it into place when closed. It may also
+     *         write to nothing if an output stream for the same operation list
+     *         has been returned to another thread but not yet closed.
      * @throws CacheException If anything goes wrong.
      */
     @Override
@@ -730,9 +717,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         final String subfolderPath = StringUtils.stripEnd(
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator);
-        final String identifierFilename = identifier.toFilename();
         final String pathname = cacheRoot + subfolderPath + File.separator +
-                identifierFilename + INFO_EXTENSION;
+                identifier.toFilename() + INFO_EXTENSION;
         return new File(pathname);
     }
 

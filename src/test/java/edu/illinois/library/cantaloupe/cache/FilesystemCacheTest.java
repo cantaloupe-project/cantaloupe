@@ -262,17 +262,12 @@ public class FilesystemCacheTest extends BaseTest {
         ops.add(color);
         ops.setOutputFormat(format);
 
-        final String expected = String.format("%s%simage%s%s%s_%s_%s_%s_%s.%s",
+        final String expected = String.format("%s%simage%s%s%s",
                 pathname,
                 File.separator,
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator,
-                identifier.toFilename(),
-                FilesystemCache.filenameSafe(crop.toString()),
-                FilesystemCache.filenameSafe(scale.toString()),
-                FilesystemCache.filenameSafe(rotate.toString()),
-                FilesystemCache.filenameSafe(color.toString()),
-                format);
+                ops.toFilename());
         assertEquals(new File(expected), instance.getDerivativeImageFile(ops));
     }
 
@@ -295,13 +290,12 @@ public class FilesystemCacheTest extends BaseTest {
         ops.add(rotate);
         ops.setOutputFormat(format);
 
-        final String expected = String.format("%s%simage%s%s%s.%s",
+        final String expected = String.format("%s%simage%s%s%s",
                 pathname,
                 File.separator,
                 getHashedStringBasedSubdirectory(ops.getIdentifier().toString()),
                 File.separator,
-                identifier.toFilename(),
-                format);
+                ops.toFilename());
         assertEquals(new File(expected), instance.getDerivativeImageFile(ops));
     }
 
@@ -666,7 +660,7 @@ public class FilesystemCacheTest extends BaseTest {
     }
 
     /**
-     * This isn't foolproof, but it's better than nothing.
+     * This isn't foolproof, but is hopefully better than nothing.
      */
     @Test
     public void concurrentlyTestPutWithImageInfo() throws CacheException {
