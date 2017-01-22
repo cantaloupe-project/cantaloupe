@@ -42,8 +42,6 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * <p>Cache using a filesystem, storing source images, derivative images,
@@ -277,11 +275,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             "FilesystemCache.dir.name_length";
     static final String PATHNAME_CONFIG_KEY = "FilesystemCache.pathname";
 
-    static final short FILENAME_MAX_LENGTH = 255;
-    // https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations
-    private static final Pattern FILENAME_SAFE_PATTERN =
-            Pattern.compile("[^A-Za-z0-9_\\-]");
-
     // Algorithm used for hashing identifiers to create filenames & pathnames.
     // Will be passed to MessageDigest.getInstance(). MD5 is chosen for its
     // practical combination of efficiency and collision resistance.
@@ -331,35 +324,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * and never removed. */
     private final Map<Identifier,ReadWriteLock> infoLocks =
             new ConcurrentHashMap<>();
-
-    /**
-     * <p>Returns a filename-safe string with a maximum length of
-     * {@link #FILENAME_MAX_LENGTH} - (identifier checksum length).</p>
-     *
-     * <p>N.B. For creating filename-safe strings from identifiers, use
-     * {@link Identifier#toFilename} instead.</p>
-     *
-     * @param inputString String to make filename-safe.
-     * @return Filename-safe string
-     */
-    static String filenameSafe(String inputString) {
-        final StringBuffer sb = new StringBuffer();
-        final Matcher matcher = FILENAME_SAFE_PATTERN.matcher(inputString);
-
-        while (matcher.find()) {
-            final String replacement = "%" +
-                    Integer.toHexString(matcher.group().charAt(0)).toUpperCase();
-            matcher.appendReplacement(sb, replacement);
-        }
-        matcher.appendTail(sb);
-
-        // Needs to remain in sync with HASH_ALGORITHM
-        final short md5Length = 32;
-        final String encoded = sb.toString();
-        final int end = Math.min(encoded.length(),
-                FILENAME_MAX_LENGTH - md5Length);
-        return encoded.substring(0, end);
-    }
 
     /**
      * @param uniqueString String from which to derive the path.

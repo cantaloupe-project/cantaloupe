@@ -72,36 +72,6 @@ public class FilesystemCacheTest extends BaseTest {
         FileUtils.deleteDirectory(fixturePath);
     }
 
-    /* filenameSafe(String) */
-
-    @Test
-    public void testFilenameSafe() {
-        String test = "abcABC123!@#$%^&*()_+";
-        assertEquals("abcABC123%21%40%23%24%25%5E%26%2A%28%29_%2B",
-                FilesystemCache.filenameSafe(test));
-    }
-
-    @Test
-    public void testFilenameSafeWithLongArgument() {
-        // Create a string longer than FilesystemCache.FILENAME_MAX_LENGTH
-        String test = "abcABC123!@#$%^&*()_+abcABC123!@#$%^&*()_+" +
-                "abcABC123!@#$%^&*()_+abcABC123!@#$%^&*()_+" +
-                "abcABC123!@#$%^&*()_+abcABC123!@#$%^&*()_+" +
-                "abcABC123!@#$%^&*()_+abcABC123!@#$%^&*()_+" +
-                "abcABC123!@#$%^&*()_+abcABC123!@#$%^&*()_+" +
-                "abcABC123!@#$%^&*()_+abcABC123!@#$%^&*()_+" +
-                "abcABC123!@#$%^&*()_+abcABC123!@#$%^&*()_+";
-        assertTrue(test.length() > FilesystemCache.FILENAME_MAX_LENGTH);
-
-        String expected = "abcABC123%21%40%23%24%25%5E%26%2A%28%29_%2BabcABC123" +
-                "%21%40%23%24%25%5E%26%2A%28%29_%2BabcABC123%21%40%" +
-                "23%24%25%5E%26%2A%28%29_%2BabcABC123%21%40%23%24%2" +
-                "5%5E%26%2A%28%29_%2BabcABC123%21%40%23%24%25%5E%26" +
-                "%2A%28%29_%2BabcABC12";
-        assertEquals(223, expected.length());
-        assertEquals(expected, FilesystemCache.filenameSafe(test));
-    }
-
     /* getHashedStringBasedSubdirectory(String) */
 
     @Test
