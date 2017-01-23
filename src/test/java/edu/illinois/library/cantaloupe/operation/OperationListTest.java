@@ -113,6 +113,14 @@ public class OperationListTest extends BaseTest {
         assertFalse(ops1.equals(ops2));
     }
 
+    /* getFirst(Class<Operation>) */
+
+    @Test
+    public void testGetFirst() {
+        assertNull(ops.getFirst(MetadataCopy.class));
+        assertNotNull(ops.getFirst(Scale.class));
+    }
+
     /* getResultingSize(Dimension) */
 
     @Test

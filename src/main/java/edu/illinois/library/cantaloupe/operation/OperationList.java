@@ -92,6 +92,21 @@ public class OperationList implements Comparable<OperationList>,
         return super.equals(obj);
     }
 
+    /**
+     * @param opClass Class to get the first instance of.
+     * @return The first instance of <code>opClass</code> in the list, or
+     *         <code>null</code> if there is no operation of that class in the
+     *         list.
+     */
+    public Operation getFirst(Class<? extends Operation> opClass) {
+        for (Operation op : operations) {
+            if (op.getClass().equals(opClass)) {
+                return op;
+            }
+        }
+        return null;
+    }
+
     public Identifier getIdentifier() {
         return identifier;
     }
