@@ -336,7 +336,7 @@ public abstract class ProcessorTest extends BaseTest {
                             // The JAI bandcombine operation does not like to
                             // work with GIFs, apparently only when testing. (?)
                             if (this instanceof JaiProcessorTest &&
-                                    ops.contains(Color.class) &&
+                                    ops.getFirst(Color.class) != null &&
                                     fixture.getName().endsWith("gif")) {
                                 continue;
                             }

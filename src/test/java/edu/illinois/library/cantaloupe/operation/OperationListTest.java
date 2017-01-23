@@ -87,14 +87,6 @@ public class OperationListTest extends BaseTest {
         assertEquals(0, ops2.compareTo(this.ops));
     }
 
-    /* contains() */
-
-    @Test
-    public void testContains() {
-        assertTrue(ops.contains(Scale.class));
-        assertFalse(ops.contains(Color.class));
-    }
-
     /* equals(Object) */
 
     @Test

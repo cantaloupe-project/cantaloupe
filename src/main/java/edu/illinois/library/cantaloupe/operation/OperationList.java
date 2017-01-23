@@ -71,19 +71,6 @@ public class OperationList implements Comparable<OperationList>,
         return this.toString().compareTo(ops.toString());
     }
 
-    /**
-     * @param clazz
-     * @return Whether the instance contains an operation of the given class.
-     */
-    public boolean contains(Class clazz) {
-        for (Operation op : this) {
-            if (op.getClass().equals(clazz)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof OperationList) {
@@ -163,7 +150,7 @@ public class OperationList implements Comparable<OperationList>,
         }
         for (Operation op : this) {
             if (op.hasEffect()) {
-                // 1. Ignore overlays when the output formats is PDF.
+                // 1. Ignore overlays when the output format is PDF.
                 // 2. Ignore MetadataCopies. If the instance would otherwise
                 //    be a no-op, metadata will get passed through anyway, and
                 //    if it isn't, then this method will return false anyway.
