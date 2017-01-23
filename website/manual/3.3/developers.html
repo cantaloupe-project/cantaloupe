@@ -36,11 +36,13 @@ title: For Developers
 
 <p>From the project directory, build with <code>mvn package -Dmaven.test.skip=true</code>. This will create separate <span class="filename">.war</span> and <span class="filename">.zip</span> files in the <span class="filename">target</span> subdirectory.</p>
 
+<p>Note that different application versions may require different configuration file keys. If you are switching between versions, it's good to use a dedicated configuration file for each version. Keys are documented in <a href="upgrading.html">Upgrading</a> through the latest release. If you are using a newer build, such as a snapshot on the <code>develop</code> branch, newer keys will be documented in the <a href="https://github.com/medusa-project/cantaloupe/blob/develop/website/manual/3.3/upgrading.html">source code of that page</a>.</p>
+
 <hr>
 
 <h3 id="Building the Website">Building the Website</h3>
 
-<p>The website is built using <a href="http://jekyllrb.com">Jekyll</a>. Install that, then <code>cd</code> into the <span class="filename">website</span> directory and run <code>jekyll serve</code>. Open <a href="http://localhost:4000/cantaloupe/">http://localhost:4000/cantaloupe/</a> in a web browser.</p>
+<p>The website is built using <a href="http://jekyllrb.com">Jekyll</a>. Once that is installed, <code>cd</code> into the <span class="filename">website</span> directory and run <code>jekyll serve</code>. Then, open <a href="http://localhost:4000/cantaloupe/">http://localhost:4000/cantaloupe/</a> in a web browser.</p>
 
 <p>An effort is made to keep the documentation in sync with main-branch development. The <a href="upgrading.html">Upgrading</a> and <a href="changes.html">Changes</a> sections in the previewed website are usually up-to-date.</p>
 
@@ -54,7 +56,7 @@ title: For Developers
 
 <h2 id="Branching">Branching</h2>
 
-<p>Cantaloupe uses the <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow/">Gitflow</a> branching model. <code>develop</code> is the main branch that roughly tracks the current state of the next non-bugfix release. Significant features branch off into feature branches (<code>feature/xxxx</code>), from which they can be integrated into a particular release.</p>
+<p>Cantaloupe uses the <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow/">Gitflow</a> branching model. <code>develop</code> is the main branch that tracks the current state of the next non-bugfix release. Significant features branch off into feature branches (<code>feature/xxxx</code>), from which they can be integrated into a particular release.</p>
 
 <p>When a major or minor version is ready for release in <code>develop</code>, it branches off into a <code>release/n.n</code> branch. There, its version is formally set and it is then merged into <code>master</code>, where the release is tagged.</p>
 
@@ -67,12 +69,12 @@ title: For Developers
 <p>Contributions are welcome. The suggested process for contributing code changes is:</p>
 
 <ol>
-  <li>Submit a "heads-up" issue in the tracker, preferably before beginning any work</li>
-  <li><a href="https://github.com/medusa-project/cantaloupe/fork">Create a fork</a></li>
-  <li>Create a feature branch (<code>git checkout -b feature/my-new-feature</code>)</li>
-  <li>Commit your changes (<code>`git commit -am 'Add some feature'</code>)</li>
-  <li>Push to the branch (<code>git push origin feature/my-new-feature</code>)</li>
-  <li>Create a pull request</li>
+  <li>Submit a "heads-up" issue in the tracker, preferably before beginning any work.</li>
+  <li><a href="https://github.com/medusa-project/cantaloupe/fork">Create a fork.</a></li>
+  <li>Create a feature branch (<code>git checkout -b feature/my-new-feature</code>).</li>
+  <li>Commit your changes (<code>`git commit -am 'Add some feature'</code>).</li>
+  <li>Push to the branch (<code>git push origin feature/my-new-feature</code>).</li>
+  <li>Create a pull request.</li>
 </ol>
 
 <h3 id="Writing Custom Resolvers">Writing Custom Resolvers</h3>
@@ -93,7 +95,7 @@ title: For Developers
 
 <p>(This section is for the release manager only.)</p>
 
-<p>Currently, the release process is mostly manual, consisting of the following steps:</p>
+<p>The release process consists of the following steps:</p>
 
 <ol>
   <li>Finalize the code to be released, addressing any relevant milestone issues, TODOs, etc.</li>
