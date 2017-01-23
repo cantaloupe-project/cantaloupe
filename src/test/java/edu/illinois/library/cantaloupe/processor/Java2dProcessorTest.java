@@ -1,10 +1,8 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.operation.Orientation;
-import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
@@ -19,8 +17,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static edu.illinois.library.cantaloupe.processor.Processor.RESPECT_ORIENTATION_CONFIG_KEY;
-import static edu.illinois.library.cantaloupe.processor.Java2dProcessor.DOWNSCALE_FILTER_CONFIG_KEY;
-import static edu.illinois.library.cantaloupe.processor.Java2dProcessor.UPSCALE_FILTER_CONFIG_KEY;
 import static org.junit.Assert.*;
 
 public class Java2dProcessorTest extends ProcessorTest {
@@ -47,52 +43,6 @@ public class Java2dProcessorTest extends ProcessorTest {
         instance.setSourceFormat(Format.JPG);
         Set<Format> expectedFormats = formats.get(Format.JPG);
         assertEquals(expectedFormats, instance.getAvailableOutputFormats());
-    }
-
-    @Test
-    public void testGetDownscaleFilter() {
-        assertNull(instance.getDownscaleFilter());
-
-        final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "bell");
-        assertEquals(Scale.Filter.BELL, instance.getDownscaleFilter());
-        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "bicubic");
-        assertEquals(Scale.Filter.BICUBIC, instance.getDownscaleFilter());
-        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "bspline");
-        assertEquals(Scale.Filter.BSPLINE, instance.getDownscaleFilter());
-        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "box");
-        assertEquals(Scale.Filter.BOX, instance.getDownscaleFilter());
-        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "hermite");
-        assertEquals(Scale.Filter.HERMITE, instance.getDownscaleFilter());
-        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "lanczos3");
-        assertEquals(Scale.Filter.LANCZOS3, instance.getDownscaleFilter());
-        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "mitchell");
-        assertEquals(Scale.Filter.MITCHELL, instance.getDownscaleFilter());
-        config.setProperty(DOWNSCALE_FILTER_CONFIG_KEY, "triangle");
-        assertEquals(Scale.Filter.TRIANGLE, instance.getDownscaleFilter());
-    }
-
-    @Test
-    public void testGetUpscaleFilter() {
-        assertNull(instance.getUpscaleFilter());
-
-        final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "bell");
-        assertEquals(Scale.Filter.BELL, instance.getUpscaleFilter());
-        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "bicubic");
-        assertEquals(Scale.Filter.BICUBIC, instance.getUpscaleFilter());
-        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "bspline");
-        assertEquals(Scale.Filter.BSPLINE, instance.getUpscaleFilter());
-        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "box");
-        assertEquals(Scale.Filter.BOX, instance.getUpscaleFilter());
-        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "hermite");
-        assertEquals(Scale.Filter.HERMITE, instance.getUpscaleFilter());
-        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "lanczos3");
-        assertEquals(Scale.Filter.LANCZOS3, instance.getUpscaleFilter());
-        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "mitchell");
-        assertEquals(Scale.Filter.MITCHELL, instance.getUpscaleFilter());
-        config.setProperty(UPSCALE_FILTER_CONFIG_KEY, "triangle");
-        assertEquals(Scale.Filter.TRIANGLE, instance.getUpscaleFilter());
     }
 
     /**

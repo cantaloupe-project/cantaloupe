@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.Operation;
+import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.redaction.RedactionService;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
@@ -46,6 +47,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+
+import static edu.illinois.library.cantaloupe.processor.Processor.DOWNSCALE_FILTER_CONFIG_KEY;
+import static edu.illinois.library.cantaloupe.processor.Processor.UPSCALE_FILTER_CONFIG_KEY;
 
 public abstract class AbstractResource extends ServerResource {
 
@@ -210,7 +214,6 @@ public abstract class AbstractResource extends ServerResource {
                         "disabled; skipping.");
             }
         } catch (DelegateScriptDisabledException e) {
-            // no problem
             logger.debug("addNonEndpointOperations(): delegate script is " +
                     "disabled; skipping redactions.");
         } catch (Exception e) {
@@ -226,17 +229,37 @@ public abstract class AbstractResource extends ServerResource {
                         getRequest().getHeaders().getValuesMap(),
                         getCanonicalClientIpAddress(),
                         getRequest().getCookies().getValuesMap());
-                opList.add((Operation) overlay);
+                opList.add(overlay);
             } else {
                 logger.debug("addNonEndpointOperations(): overlays are " +
                         "disabled; skipping.");
             }
         } catch (DelegateScriptDisabledException e) {
-            // no problem
             logger.debug("addNonEndpointOperations(): delegate script is " +
                     "disabled; skipping overlay.");
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
+        }
+
+        // Scale filter
+        final Scale scale = (Scale) opList.getFirst(Scale.class);
+        if (scale != null) {
+            final Float scalePct = scale.getResultingScale(fullSize);
+            if (scalePct != null) {
+                final Configuration config = Configuration.getInstance();
+                final String filterKey = (scalePct > 1) ?
+                        UPSCALE_FILTER_CONFIG_KEY : DOWNSCALE_FILTER_CONFIG_KEY;
+                try {
+                    final String filterStr = config.getString(filterKey);
+                    final Scale.Filter filter =
+                            Scale.Filter.valueOf(filterStr.toUpperCase());
+                    logger.debug("addNonEndpointOperations(): using the {} scale filter",
+                            filter);
+                    scale.setFilter(filter);
+                } catch (Exception e) {
+                    logger.warn("Invalid value for {}", filterKey);
+                }
+            }
         }
 
         // Metadata copies

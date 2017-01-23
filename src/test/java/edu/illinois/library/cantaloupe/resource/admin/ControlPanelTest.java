@@ -262,6 +262,10 @@ public class ControlPanelTest extends ResourceTest {
                 selectByVisibleText("Java2dProcessor");
         new Select(css("[name=\"processor.fallback\"]")).
                 selectByVisibleText("JaiProcessor");
+        new Select(css("[name=\"processor.upscale_filter\"]")).
+                selectByVisibleText("Triangle");
+        new Select(css("[name=\"processor.downscale_filter\"]")).
+                selectByVisibleText("Mitchell");
         new Select(css("[name=\"StreamProcessor.retrieval_strategy\"]")).
                 selectByValue("StreamStrategy");
         // FfmpegProcessor
@@ -291,10 +295,6 @@ public class ControlPanelTest extends ResourceTest {
                 selectByVisibleText("PackBits");
         // Java2dProcessor
         css("#cl-processors li > a[href=\"#Java2dProcessor\"]").click();
-        new Select(css("[name=\"Java2dProcessor.downscale_filter\"]")).
-                selectByVisibleText("Mitchell");
-        new Select(css("[name=\"Java2dProcessor.upscale_filter\"]")).
-                selectByVisibleText("Triangle");
         css("[name=\"Java2dProcessor.normalize\"]").click();
         css("[name=\"Java2dProcessor.sharpen\"]").sendKeys("0.2");
         css("[name=\"Java2dProcessor.jpg.quality\"]").sendKeys("0.55");
@@ -303,28 +303,16 @@ public class ControlPanelTest extends ResourceTest {
         // KakaduProcessor
         css("#cl-processors li > a[href=\"#KakaduProcessor\"]").click();
         css("[name=\"KakaduProcessor.path_to_binaries\"]").sendKeys("/kpath");
-        new Select(css("[name=\"KakaduProcessor.downscale_filter\"]")).
-                selectByVisibleText("Mitchell");
-        new Select(css("[name=\"KakaduProcessor.upscale_filter\"]")).
-                selectByVisibleText("Triangle");
         css("[name=\"KakaduProcessor.normalize\"]").click();
         css("[name=\"KakaduProcessor.sharpen\"]").sendKeys("0.2");
         // OpenJpegProcessor
         css("#cl-processors li > a[href=\"#OpenJpegProcessor\"]").click();
         css("[name=\"OpenJpegProcessor.path_to_binaries\"]").sendKeys("/ojpath");
-        new Select(css("[name=\"OpenJpegProcessor.downscale_filter\"]")).
-                selectByVisibleText("Mitchell");
-        new Select(css("[name=\"OpenJpegProcessor.upscale_filter\"]")).
-                selectByVisibleText("Triangle");
         css("[name=\"OpenJpegProcessor.normalize\"]").click();
         css("[name=\"OpenJpegProcessor.sharpen\"]").sendKeys("0.2");
         // PdfBoxProcessor
         css("#cl-processors li > a[href=\"#PdfBoxProcessor\"]").click();
         css("[name=\"PdfBoxProcessor.dpi\"]").sendKeys("300");
-        new Select(css("[name=\"PdfBoxProcessor.downscale_filter\"]")).
-                selectByVisibleText("Mitchell");
-        new Select(css("[name=\"PdfBoxProcessor.upscale_filter\"]")).
-                selectByVisibleText("Triangle");
         css("[name=\"PdfBoxProcessor.sharpen\"]").sendKeys("0.2");
 
         // Submit the form
@@ -336,6 +324,10 @@ public class ControlPanelTest extends ResourceTest {
         final Configuration config = ConfigurationFactory.getInstance();
         assertEquals("Java2dProcessor", config.getString("processor.gif"));
         assertEquals("JaiProcessor", config.getString("processor.fallback"));
+        assertEquals("triangle",
+                config.getString("processor.upscale_filter"));
+        assertEquals("mitchell",
+                config.getString("processor.downscale_filter"));
         assertEquals("StreamStrategy",
                 config.getString("StreamProcessor.retrieval_strategy"));
         // FfmpegProcessor

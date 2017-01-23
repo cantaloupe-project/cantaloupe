@@ -107,8 +107,6 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
      * @param reductionFactor May be <code>null</code>.
      * @param normalize Whether to normalize the dynamic range of the resulting
      *                  image.
-     * @param upscaleFilter Upscale filter to use.
-     * @param downscaleFilter Downscale filter to use.
      * @param sharpenValue Sharpen amount from 0-1.
      * @param outputStream Output stream to write the resulting image to.
      * @throws IOException
@@ -121,8 +119,6 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
                      ReductionFactor reductionFactor,
                      final Orientation orientation,
                      final boolean normalize,
-                     final Scale.Filter upscaleFilter,
-                     final Scale.Filter downscaleFilter,
                      final float sharpenValue,
                      final OutputStream outputStream)
             throws IOException, ProcessorException {
@@ -170,15 +166,8 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
         for (Operation op : opList) {
             if (op.hasEffect(fullSize, opList)) {
                 if (op instanceof Scale) {
-                    final Scale scale = (Scale) op;
-                    final Float upOrDown =
-                            scale.getResultingScale(imageInfo.getSize());
-                    if (upOrDown != null) {
-                        final Scale.Filter filter =
-                                (upOrDown > 1) ? upscaleFilter : downscaleFilter;
-                        scale.setFilter(filter);
-                    }
-                    image = Java2dUtil.scaleImage(image, scale, reductionFactor);
+                    image = Java2dUtil.scaleImage(image, (Scale) op,
+                            reductionFactor);
                 } else if (op instanceof Transpose) {
                     image = Java2dUtil.transposeImage(image, (Transpose) op);
                 } else if (op instanceof Rotate) {

@@ -33,12 +33,8 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
     private static Logger logger = LoggerFactory.
             getLogger(PdfBoxProcessor.class);
 
-    static final String DOWNSCALE_FILTER_CONFIG_KEY =
-            "PdfBoxProcessor.downscale_filter";
     static final String DPI_CONFIG_KEY = "PdfBoxProcessor.dpi";
     static final String SHARPEN_CONFIG_KEY = "PdfBoxProcessor.sharpen";
-    static final String UPSCALE_FILTER_CONFIG_KEY =
-            "PdfBoxProcessor.upscale_filter";
 
     private BufferedImage fullImage;
     private File sourceFile;
@@ -51,28 +47,6 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
             outputFormats.addAll(ImageWriter.supportedFormats());
         }
         return outputFormats;
-    }
-
-    Scale.Filter getDownscaleFilter() {
-        final String upscaleFilterStr = ConfigurationFactory.getInstance().
-                getString(DOWNSCALE_FILTER_CONFIG_KEY);
-        try {
-            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
-        } catch (Exception e) {
-            logger.warn("Invalid value for {}", DOWNSCALE_FILTER_CONFIG_KEY);
-        }
-        return null;
-    }
-
-    Scale.Filter getUpscaleFilter() {
-        final String upscaleFilterStr = ConfigurationFactory.getInstance().
-                getString(UPSCALE_FILTER_CONFIG_KEY);
-        try {
-            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
-        } catch (Exception e) {
-            logger.warn("Invalid value for {}", UPSCALE_FILTER_CONFIG_KEY);
-        }
-        return null;
     }
 
     @Override
@@ -141,7 +115,6 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
             final Configuration config = ConfigurationFactory.getInstance();
             postProcess(image, null, opList, imageInfo,
                     reductionFactor, Orientation.ROTATE_0, false,
-                    getUpscaleFilter(), getDownscaleFilter(),
                     config.getFloat(SHARPEN_CONFIG_KEY, 0f),
                     outputStream);
         } catch (IOException e) {
@@ -162,7 +135,7 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
      */
     private BufferedImage readImage(int pageIndex,
                                     int reductionFactor) throws IOException {
-        float dpi = getDpi(reductionFactor);
+        float dpi = getDPI(reductionFactor);
         logger.debug("readImage(): using a DPI of {} ({}x reduction factor)",
                 Math.round(dpi), reductionFactor);
 
@@ -197,7 +170,7 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
         }
     }
 
-    private float getDpi(int reductionFactor) {
+    private float getDPI(int reductionFactor) {
         float dpi = ConfigurationFactory.getInstance().
                 getFloat(DPI_CONFIG_KEY, 150);
         // Decrease the DPI if the reduction factor is positive.

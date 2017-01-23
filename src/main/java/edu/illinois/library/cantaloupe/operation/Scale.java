@@ -19,7 +19,7 @@ public class Scale implements Operation {
     /**
      * Represents a resample algorithm.
      */
-    public enum Filter {
+    public enum Filter implements Operation {
 
         BELL("Bell", ResampleFilters.getBellFilter()),
         BICUBIC("Bicubic", ResampleFilters.getBiCubicFilter()),
@@ -49,6 +49,56 @@ public class Scale implements Operation {
             return resampleFilter;
         }
 
+        /**
+         * @param fullSize Full size of the source image on which the operation
+         *                 is being applied.
+         * @return The same dimension.
+         */
+        @Override
+        public Dimension getResultingSize(Dimension fullSize) {
+            return fullSize;
+        }
+
+        /**
+         * @return True.
+         */
+        @Override
+        public boolean hasEffect() {
+            return true;
+        }
+
+        /**
+         * @param fullSize Ignored.
+         * @param opList Ignored.
+         * @return True.
+         */
+        @Override
+        public boolean hasEffect(Dimension fullSize, OperationList opList) {
+            return hasEffect();
+        }
+
+        /**
+         * @param fullSize Full size of the source image on which the operation
+         *                 is being applied.
+         * @return Map with a <code>name</code> key and string value
+         *         corresponding to the filter name.
+         */
+        @Override
+        public Map<String, Object> toMap(Dimension fullSize) {
+            final Map<String,Object> map = new HashMap<>();
+            map.put("class", Filter.class.getSimpleName());
+            map.put("name", getName());
+            return map;
+        }
+
+        /**
+         * @return The filter name.
+         */
+        @Override
+        public String toString() {
+            return getName();
+        }
+
     }
 
     public enum Mode {
@@ -73,11 +123,11 @@ public class Scale implements Operation {
     }
 
     /**
-     * @param width May be <code>null</code> if <code>mode</code> is
-     *              {@link Mode#ASPECT_FIT_HEIGHT}.
+     * @param width  May be <code>null</code> if <code>mode</code> is
+     *               {@link Mode#ASPECT_FIT_HEIGHT}.
      * @param height May be <code>null</code> if <code>mode</code> is
      *               {@link Mode#ASPECT_FIT_WIDTH}.
-     * @param mode Scale mode.
+     * @param mode   Scale mode.
      */
     public Scale(Integer width, Integer height, Mode mode) {
         setWidth(width);
@@ -336,28 +386,9 @@ public class Scale implements Operation {
                 str += this.getHeight();
             }
         }
-        /* TODO: fix this
-        This is commented out because the filter is usually added relatively
-        late in the execution by a processor's process() method. This causes
-        problems with the derivative caches, which have already created a
-        cached image filename/identifier based on the op list BEFORE the op
-        list is aware of any filter. It writes to the file with the
-        pre-filter-added name, but if the connection closes, it won't be able
-        to find it later using the post-filter-added name.
-
-        Possible solutions:
-        1) Add the filter earlier in the execution (perhaps immediately once
-           it is known what processor is going to be used)
-        2) Make filter selection global across processors and add it in
-           AbstractResource.addNonEndpointOperations() (this is how all the
-           other non-endpoint operations work)
-        3) Leave this as-is and don't encode the filter in the string
-           representation
-
         if (getFilter() != null) {
             str += "," + getFilter().toString().toLowerCase();
         }
-        */
         return str;
     }
 

@@ -1139,6 +1139,44 @@
                                         </td>
                                     </tr>
                                     <tr>
+                                        <td>Downscale Filter
+                                            <a tabindex="0" class="btn btn-sm cl-help"
+                                               role="button" data-toggle="popover"
+                                               data-trigger="focus"
+                                               data-content="Selectable downscale filters are supported
+                                               only by FfmpegProcessor, Java2dProcessor, OpenJpegProcessor,
+                                               and PdfBoxProcessor.">?</a>
+                                        </td>
+                                        <td>
+                                            <select class="form-control"
+                                                    name="processor.downscale_filter"
+                                                    data-requires-restart="false">
+                                                #foreach ($filter in $scaleFilters)
+                                                    <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
+                                                #end
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Upscale Filter
+                                            <a tabindex="0" class="btn btn-sm cl-help"
+                                               role="button" data-toggle="popover"
+                                               data-trigger="focus"
+                                               data-content="Selectable upscale filters are supported
+                                               only by FfmpegProcessor, Java2dProcessor, OpenJpegProcessor,
+                                               and PdfBoxProcessor.">?</a>
+                                        </td>
+                                        <td>
+                                            <select class="form-control"
+                                                    name="processor.upscale_filter"
+                                                    data-requires-restart="false">
+                                                #foreach ($filter in $scaleFilters)
+                                                    <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
+                                                #end
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
                                         <td>StreamProcessor Retrieval Strategy
                                             <a tabindex="0" class="btn btn-sm cl-help"
                                                role="button" data-toggle="popover"
@@ -1472,30 +1510,6 @@
                                 <div role="tabpanel" class="tab-pane" id="Java2dProcessor">
                                     <table class="table table-striped">
                                         <tr>
-                                            <td>Downscale Filter</td>
-                                            <td>
-                                                <select class="form-control"
-                                                        name="Java2dProcessor.downscale_filter"
-                                                        data-requires-restart="false">
-                                                    #foreach ($filter in $scaleFilters)
-                                                        <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
-                                                    #end
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Upscale Filter</td>
-                                            <td>
-                                                <select class="form-control"
-                                                        name="Java2dProcessor.upscale_filter"
-                                                        data-requires-restart="false">
-                                                    #foreach ($filter in $scaleFilters)
-                                                        <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
-                                                    #end
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
                                             <td>
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
@@ -1586,30 +1600,6 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Downscale Filter</td>
-                                            <td>
-                                                <select class="form-control"
-                                                        name="KakaduProcessor.downscale_filter"
-                                                        data-requires-restart="false">
-                                                    #foreach ($filter in $scaleFilters)
-                                                        <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
-                                                    #end
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Upscale Filter</td>
-                                            <td>
-                                                <select class="form-control"
-                                                        name="KakaduProcessor.upscale_filter"
-                                                        data-requires-restart="false">
-                                                    #foreach ($filter in $scaleFilters)
-                                                        <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
-                                                    #end
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
                                             <td>
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
@@ -1662,30 +1652,6 @@
                                                 <input class="form-control" type="text"
                                                        name="OpenJpegProcessor.path_to_binaries"
                                                        data-requires-restart="false">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Downscale Filter</td>
-                                            <td>
-                                                <select class="form-control"
-                                                        name="OpenJpegProcessor.downscale_filter"
-                                                        data-requires-restart="false">
-                                                    #foreach ($filter in $scaleFilters)
-                                                        <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
-                                                    #end
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Upscale Filter</td>
-                                            <td>
-                                                <select class="form-control"
-                                                        name="OpenJpegProcessor.upscale_filter"
-                                                        data-requires-restart="false">
-                                                    #foreach ($filter in $scaleFilters)
-                                                        <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
-                                                    #end
-                                                </select>
                                             </td>
                                         </tr>
                                         <tr>
@@ -1744,30 +1710,6 @@
                                                 <input class="form-control" type="number"
                                                        name="PdfBoxProcessor.dpi"
                                                        data-requires-restart="false">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Downscale Filter</td>
-                                            <td>
-                                                <select class="form-control"
-                                                        name="PdfBoxProcessor.downscale_filter"
-                                                        data-requires-restart="false">
-                                                    #foreach ($filter in $scaleFilters)
-                                                        <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
-                                                    #end
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Upscale Filter</td>
-                                            <td>
-                                                <select class="form-control"
-                                                        name="PdfBoxProcessor.upscale_filter"
-                                                        data-requires-restart="false">
-                                                    #foreach ($filter in $scaleFilters)
-                                                        <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
-                                                    #end
-                                                </select>
                                             </td>
                                         </tr>
                                         <tr>

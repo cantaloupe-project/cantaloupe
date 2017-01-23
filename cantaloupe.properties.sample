@@ -244,6 +244,13 @@ processor.webp = ImageMagickProcessor
 # Fall back to this processor for any formats not assigned above.
 processor.fallback = Java2dProcessor
 
+# Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
+# `lanczos3`, `mitchell`, `triangle`.
+# These are used only by FfmpegProcessor, Java2dProcessor, OpenJpegProcessor,
+# and PdfBoxProcessor.
+processor.downscale_filter = bicubic
+processor.upscale_filter = bicubic
+
 # Available values are `StreamStrategy` and `CacheStrategy`. StreamStrategy
 # will try to stream source images from non-filesystem resolvers, when this
 # is possible; CacheStrategy will first download them into the source cache
@@ -257,10 +264,6 @@ StreamProcessor.retrieval_strategy = StreamStrategy
 # Optional absolute path of the directory containing the FFmpeg binaries.
 # Overrides the PATH.
 FfmpegProcessor.path_to_binaries =
-
-# See Java2dProcessor.upscale_filter for a list of available filters.
-FfmpegProcessor.upscale_filter = bicubic
-FfmpegProcessor.downscale_filter = bicubic
 
 # Intensity of an unsharp mask from 0 to 1.
 FfmpegProcessor.sharpen = 0
@@ -323,11 +326,6 @@ JaiProcessor.tif.compression = LZW
 # Java2dProcessor
 #----------------------------------------
 
-# Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
-# `lanczos3`, `mitchell`, `triangle`.
-Java2dProcessor.upscale_filter = bicubic
-Java2dProcessor.downscale_filter = bicubic
-
 # Expands contrast to utilize available dynamic range. This forces the entire
 # source image to be read into memory, so can be slow with large images.
 Java2dProcessor.normalize = false
@@ -354,10 +352,6 @@ KakaduProcessor.path_to_binaries =
 # image area to be read into memory.
 KakaduProcessor.normalize = false
 
-# See Java2dProcessor.upscale_filter for a list of available filters.
-KakaduProcessor.upscale_filter = bicubic
-KakaduProcessor.downscale_filter = bicubic
-
 # Intensity of an unsharp mask from 0 to 1.
 KakaduProcessor.sharpen = 0
 
@@ -373,10 +367,6 @@ OpenJpegProcessor.path_to_binaries =
 # image area to be read into memory.
 OpenJpegProcessor.normalize = false
 
-# See Java2dProcessor.upscale_filter for a list of available filters.
-OpenJpegProcessor.upscale_filter = bicubic
-OpenJpegProcessor.downscale_filter = bicubic
-
 # Intensity of an unsharp mask from 0 to 1.
 OpenJpegProcessor.sharpen = 0
 
@@ -388,10 +378,6 @@ OpenJpegProcessor.sharpen = 0
 # scales less than 0.5 or larger than 2 will automatically use a lower or
 # higher factor of this.
 PdfBoxProcessor.dpi = 150
-
-# See Java2dProcessor.upscale_filter for a list of available filters.
-PdfBoxProcessor.upscale_filter = bicubic
-PdfBoxProcessor.downscale_filter = bicubic
 
 # Intensity of an unsharp mask from 0 to 1.
 PdfBoxProcessor.sharpen = 0

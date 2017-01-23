@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Orientation;
-import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
@@ -44,13 +43,9 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
     private static Logger logger = LoggerFactory.
             getLogger(FfmpegProcessor.class);
 
-    static final String DOWNSCALE_FILTER_CONFIG_KEY =
-            "FfmpegProcessor.downscale_filter";
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "FfmpegProcessor.path_to_binaries";
     static final String SHARPEN_CONFIG_KEY = "FfmpegProcessor.sharpen";
-    static final String UPSCALE_FILTER_CONFIG_KEY =
-            "FfmpegProcessor.upscale_filter";
 
     private static final ExecutorService executorService =
             Executors.newCachedThreadPool();
@@ -167,9 +162,8 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
                 final BufferedImage image = reader.read();
                 final Configuration config = ConfigurationFactory.getInstance();
                 try {
-                    postProcess(image, null, opList, imageInfo,
-                            null, Orientation.ROTATE_0, false,
-                            getUpscaleFilter(), getDownscaleFilter(),
+                    postProcess(image, null, opList, imageInfo, null,
+                            Orientation.ROTATE_0, false,
                             config.getFloat(SHARPEN_CONFIG_KEY, 0f),
                             outputStream);
                     final int code = process.waitFor();
@@ -238,28 +232,6 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
         command.add("pipe:1");
 
         return new ProcessBuilder(command);
-    }
-
-    Scale.Filter getDownscaleFilter() {
-        final String upscaleFilterStr = ConfigurationFactory.getInstance().
-                getString(DOWNSCALE_FILTER_CONFIG_KEY);
-        try {
-            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
-        } catch (Exception e) {
-            logger.warn("Invalid value for {}", DOWNSCALE_FILTER_CONFIG_KEY);
-        }
-        return null;
-    }
-
-    Scale.Filter getUpscaleFilter() {
-        final String upscaleFilterStr = ConfigurationFactory.getInstance().
-                getString(UPSCALE_FILTER_CONFIG_KEY);
-        try {
-            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
-        } catch (Exception e) {
-            logger.warn("Invalid value for {}", UPSCALE_FILTER_CONFIG_KEY);
-        }
-        return null;
     }
 
 }

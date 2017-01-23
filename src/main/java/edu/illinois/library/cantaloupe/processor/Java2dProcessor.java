@@ -4,10 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Orientation;
-import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -25,37 +22,8 @@ import java.util.Set;
 class Java2dProcessor extends AbstractJava2dProcessor
         implements StreamProcessor, FileProcessor {
 
-    private static Logger logger = LoggerFactory.
-            getLogger(Java2dProcessor.class);
-
-    static final String DOWNSCALE_FILTER_CONFIG_KEY =
-            "Java2dProcessor.downscale_filter";
     static final String NORMALIZE_CONFIG_KEY = "Java2dProcessor.normalize";
     static final String SHARPEN_CONFIG_KEY = "Java2dProcessor.sharpen";
-    static final String UPSCALE_FILTER_CONFIG_KEY =
-            "Java2dProcessor.upscale_filter";
-
-    Scale.Filter getDownscaleFilter() {
-        final String upscaleFilterStr = ConfigurationFactory.getInstance().
-                getString(DOWNSCALE_FILTER_CONFIG_KEY);
-        try {
-            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
-        } catch (Exception e) {
-            logger.warn("Invalid value for {}", DOWNSCALE_FILTER_CONFIG_KEY);
-        }
-        return null;
-    }
-
-    Scale.Filter getUpscaleFilter() {
-        final String upscaleFilterStr = ConfigurationFactory.getInstance().
-                getString(UPSCALE_FILTER_CONFIG_KEY);
-        try {
-            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
-        } catch (Exception e) {
-            logger.warn("Invalid value for {}", UPSCALE_FILTER_CONFIG_KEY);
-        }
-        return null;
-    }
 
     @Override
     public void process(final OperationList ops,
@@ -83,17 +51,8 @@ class Java2dProcessor extends AbstractJava2dProcessor
             }
 
             BufferedImage image = reader.read(ops, orientation, rf, hints);
-            postProcess(
-                    image,
-                    hints,
-                    ops,
-                    imageInfo,
-                    rf,
-                    orientation,
-                    normalize,
-                    getUpscaleFilter(),
-                    getDownscaleFilter(),
-                    config.getFloat(SHARPEN_CONFIG_KEY, 0f),
+            postProcess(image, hints, ops, imageInfo, rf, orientation,
+                    normalize, config.getFloat(SHARPEN_CONFIG_KEY, 0f),
                     outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);

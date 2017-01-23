@@ -66,16 +66,12 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
     private static Logger logger = LoggerFactory.
             getLogger(OpenJpegProcessor.class);
 
-    static final String DOWNSCALE_FILTER_CONFIG_KEY =
-            "OpenJpegProcessor.downscale_filter";
     static final String NORMALIZE_CONFIG_KEY =
             "OpenJpegProcessor.normalize";
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "OpenJpegProcessor.path_to_binaries";
     static final String SHARPEN_CONFIG_KEY =
             "OpenJpegProcessor.sharpen";
-    static final String UPSCALE_FILTER_CONFIG_KEY =
-            "OpenJpegProcessor.upscale_filter";
 
     private static final short MAX_REDUCTION_FACTOR = 5;
 
@@ -165,28 +161,6 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
             }
         }
         return tileSize;
-    }
-
-    Scale.Filter getDownscaleFilter() {
-        final String upscaleFilterStr = ConfigurationFactory.getInstance().
-                getString(DOWNSCALE_FILTER_CONFIG_KEY);
-        try {
-            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
-        } catch (Exception e) {
-            logger.warn("Invalid value for {}", DOWNSCALE_FILTER_CONFIG_KEY);
-        }
-        return null;
-    }
-
-    Scale.Filter getUpscaleFilter() {
-        final String upscaleFilterStr = ConfigurationFactory.getInstance().
-                getString(UPSCALE_FILTER_CONFIG_KEY);
-        try {
-            return Scale.Filter.valueOf(upscaleFilterStr.toUpperCase());
-        } catch (Exception e) {
-            logger.warn("Invalid value for {}", UPSCALE_FILTER_CONFIG_KEY);
-        }
-        return null;
     }
 
     /**
@@ -305,7 +279,6 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
                     }
                     postProcess(image, hints, opList, imageInfo,
                             reductionFactor, Orientation.ROTATE_0, normalize,
-                            getUpscaleFilter(), getDownscaleFilter(),
                             config.getFloat(SHARPEN_CONFIG_KEY, 0f),
                             outputStream);
                     final int code = process.waitFor();
