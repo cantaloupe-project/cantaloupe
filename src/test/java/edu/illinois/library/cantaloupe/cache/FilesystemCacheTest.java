@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
@@ -11,7 +12,6 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -311,7 +311,7 @@ public class FilesystemCacheTest extends BaseTest {
         file.createNewFile();
 
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = new ImageInfo(50, 50);
+        Info info = new Info(50, 50);
         mapper.writeValue(file, info);
         assertEquals(info, instance.getImageInfo(identifier));
     }
@@ -326,7 +326,7 @@ public class FilesystemCacheTest extends BaseTest {
         file.createNewFile();
 
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = new ImageInfo(50, 50);
+        Info info = new Info(50, 50);
         mapper.writeValue(file, info);
 
         Thread.sleep(1100);
@@ -619,12 +619,12 @@ public class FilesystemCacheTest extends BaseTest {
         assertEquals(0, FileUtils.listFiles(infoPath, null, true).size());
     }
 
-    /* put(Identifier, ImageInfo) */
+    /* put(Identifier, Info) */
 
     @Test
     public void testPut() throws CacheException {
         Identifier identifier = new Identifier("cats");
-        ImageInfo info = new ImageInfo(52, 42);
+        Info info = new Info(52, 42);
         instance.put(identifier, info);
         assertEquals(info, instance.getImageInfo(identifier));
     }
@@ -635,7 +635,7 @@ public class FilesystemCacheTest extends BaseTest {
     @Test
     public void concurrentlyTestPut() throws CacheException {
         final Identifier identifier = new Identifier("monkeys");
-        final ImageInfo info = new ImageInfo(52, 42);
+        final Info info = new Info(52, 42);
 
         final AtomicBoolean anyFailures = new AtomicBoolean(false);
         final AtomicInteger readCount = new AtomicInteger(0);
@@ -662,7 +662,7 @@ public class FilesystemCacheTest extends BaseTest {
                     // Spin until we have something to read.
                     if (writeCount.get() > 0) {
                         try {
-                            ImageInfo otherInfo =
+                            Info otherInfo =
                                     instance.getImageInfo(identifier);
                             if (!info.equals(otherInfo)) {
                                 throw new CacheException("Fail!");

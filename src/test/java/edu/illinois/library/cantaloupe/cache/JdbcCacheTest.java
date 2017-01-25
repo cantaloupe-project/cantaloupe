@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
@@ -9,7 +10,6 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -138,9 +138,9 @@ public class JdbcCacheTest extends BaseTest {
         os.close();
 
         // persist some infos corresponding to the above images
-        instance.put(new Identifier("cats"), new ImageInfo(50, 40));
-        instance.put(new Identifier("dogs"), new ImageInfo(500, 300));
-        instance.put(new Identifier("bunnies"), new ImageInfo(350, 240));
+        instance.put(new Identifier("cats"), new Info(50, 40));
+        instance.put(new Identifier("dogs"), new Info(500, 300));
+        instance.put(new Identifier("bunnies"), new Info(350, 240));
 
         // assert that the data has been seeded
         String sql = String.format("SELECT COUNT(%s) AS count FROM %s;",
@@ -172,8 +172,8 @@ public class JdbcCacheTest extends BaseTest {
     public void testGetImageInfoWithZeroTtl() throws CacheException {
         // existing image
         try {
-            ImageInfo actual = instance.getImageInfo(new Identifier("cats"));
-            assertEquals(actual, new ImageInfo(50, 40));
+            Info actual = instance.getImageInfo(new Identifier("cats"));
+            assertEquals(actual, new Info(50, 40));
         } catch (CacheException e) {
             fail();
         }
@@ -194,12 +194,12 @@ public class JdbcCacheTest extends BaseTest {
 
         IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)),
                 instance.newDerivativeImageOutputStream(ops));
-        instance.put(new Identifier("bees"), new ImageInfo(50, 40));
+        instance.put(new Identifier("bees"), new Info(50, 40));
 
         // existing, non-expired image
         try {
-            ImageInfo actual = instance.getImageInfo(new Identifier("bees"));
-            assertEquals(actual, new ImageInfo(50, 40));
+            Info actual = instance.getImageInfo(new Identifier("bees"));
+            assertEquals(actual, new Info(50, 40));
         } catch (CacheException e) {
             fail();
         }
@@ -420,7 +420,7 @@ public class JdbcCacheTest extends BaseTest {
         IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
         os.close();
         // ...info
-        instance.put(new Identifier("bees"), new ImageInfo(50, 40));
+        instance.put(new Identifier("bees"), new Info(50, 40));
 
         instance.purgeExpired();
 
@@ -474,12 +474,12 @@ public class JdbcCacheTest extends BaseTest {
         }
     }
 
-    /* put(Identifier, ImageInfo) */
+    /* put(Identifier, Info) */
 
     @Test
     public void testPutWithImageInfo() throws CacheException {
         Identifier identifier = new Identifier("birds");
-        ImageInfo info = new ImageInfo(52, 52);
+        Info info = new Info(52, 52);
         instance.put(identifier, info);
         assertEquals(info, instance.getImageInfo(identifier));
     }
@@ -489,7 +489,7 @@ public class JdbcCacheTest extends BaseTest {
         final Configuration config = ConfigurationFactory.getInstance();
 
         Identifier identifier = new Identifier("birds");
-        ImageInfo info = new ImageInfo(52, 52);
+        Info info = new Info(52, 52);
         instance.put(identifier, info);
 
         try (Connection connection = JdbcCache.getConnection()) {

@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
@@ -69,7 +69,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
     public void testReadImageInfo() throws Exception {
         instance.setSourceFile(TestUtil.getImage("mpg"));
         instance.setSourceFormat(Format.MPG);
-        ImageInfo expectedInfo = new ImageInfo(640, 360, 640, 360, Format.MPG);
+        Info expectedInfo = new Info(640, 360, 640, 360, Format.MPG);
         assertEquals(expectedInfo.toString(),
                 instance.readImageInfo().toString());
     }
@@ -96,7 +96,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
 
     @Test
     public void testProcessWithFrameOption() throws Exception {
-        final ImageInfo imageInfo = instance.readImageInfo();
+        final Info imageInfo = instance.readImageInfo();
 
         // time option missing
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

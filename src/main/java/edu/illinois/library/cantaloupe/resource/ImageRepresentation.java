@@ -2,9 +2,9 @@ package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
@@ -31,7 +31,7 @@ public class ImageRepresentation extends OutputRepresentation {
             getLogger(ImageRepresentation.class);
 
     private boolean bypassCache = false;
-    private ImageInfo imageInfo;
+    private Info imageInfo;
     private OperationList opList;
     private Processor processor;
 
@@ -44,7 +44,7 @@ public class ImageRepresentation extends OutputRepresentation {
      *                    from, regardless of whether caching is enabled in the
      *                    application configuration.
      */
-    public ImageRepresentation(final ImageInfo imageInfo,
+    public ImageRepresentation(final Info imageInfo,
                                final Processor processor,
                                final OperationList opList,
                                final Disposition disposition,

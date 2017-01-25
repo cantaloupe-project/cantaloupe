@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
@@ -28,7 +28,7 @@ class Java2dProcessor extends AbstractJava2dProcessor
 
     @Override
     public void process(final OperationList ops,
-                        final ImageInfo imageInfo,
+                        final Info imageInfo,
                         final OutputStream outputStream)
             throws ProcessorException {
         if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {

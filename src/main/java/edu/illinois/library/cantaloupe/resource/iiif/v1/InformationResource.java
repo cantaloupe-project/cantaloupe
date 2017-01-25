@@ -96,7 +96,7 @@ public class InformationResource extends IIIF1Resource {
 
         new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
-        // Get an ImageInfo instance corresponding to the source image
+        // Get an Info instance corresponding to the source image
         ImageInfo imageInfo = ImageInfoFactory.newImageInfo(
                 getImageUri(identifier), processor,
                 getOrReadInfo(identifier, processor));

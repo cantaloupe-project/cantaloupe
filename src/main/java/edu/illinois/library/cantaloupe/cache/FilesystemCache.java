@@ -3,8 +3,8 @@ package edu.illinois.library.cantaloupe.cache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -501,7 +501,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     @Override
-    public ImageInfo getImageInfo(Identifier identifier) throws CacheException {
+    public Info getImageInfo(Identifier identifier) throws CacheException {
         infoLocks.putIfAbsent(identifier, new ReentrantReadWriteLock());
         final ReadWriteLock lock = infoLocks.get(identifier);
         lock.readLock().lock();
@@ -512,7 +512,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 if (!isExpired(cacheFile)) {
                     logger.info("getImageInfo(): hit: {}",
                             cacheFile.getAbsolutePath());
-                    return ImageInfo.fromJson(cacheFile);
+                    return Info.fromJson(cacheFile);
                 } else {
                     logger.info("getImageInfo(): deleting stale file: {}",
                             cacheFile.getAbsolutePath());
@@ -931,7 +931,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     @Override
-    public void put(Identifier identifier, ImageInfo imageInfo)
+    public void put(Identifier identifier, Info imageInfo)
             throws CacheException {
         infoLocks.putIfAbsent(identifier, new ReentrantReadWriteLock());
         final ReadWriteLock lock = infoLocks.get(identifier);

@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Operation;
@@ -116,7 +116,7 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
     void postProcess(BufferedImage image,
                      Set<ImageReader.Hint> readerHints,
                      final OperationList opList,
-                     final ImageInfo imageInfo,
+                     final Info imageInfo,
                      ReductionFactor reductionFactor,
                      final Orientation orientation,
                      final boolean normalize,

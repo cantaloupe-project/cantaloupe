@@ -4,7 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
@@ -101,7 +101,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
         ops.add(rotation);
         ops.setOutputFormat(Format.JPG);
 
-        ImageInfo imageInfo = new ImageInfo(64, 58);
+        Info imageInfo = new Info(64, 58);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final StreamProcessor instance = (StreamProcessor) newInstance();
         instance.setSourceFormat(Format.JPG);
@@ -150,7 +150,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
         ops.add(rotation);
         ops.setOutputFormat(Format.PNG);
 
-        ImageInfo imageInfo = new ImageInfo(64, 58);
+        Info imageInfo = new Info(64, 58);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final StreamProcessor instance = (StreamProcessor) newInstance();
         instance.setSourceFormat(Format.JPG);

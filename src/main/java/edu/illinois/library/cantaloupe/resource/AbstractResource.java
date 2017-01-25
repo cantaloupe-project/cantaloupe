@@ -6,12 +6,12 @@ import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.redaction.RedactionService;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -467,7 +467,7 @@ public abstract class AbstractResource extends ServerResource {
         final long maxAllowedSize = (ops.isNoOp(format)) ?
                 0 : ConfigurationFactory.getInstance().getLong(MAX_PIXELS_CONFIG_KEY, 0);
 
-        final ImageInfo imageInfo = getOrReadInfo(ops.getIdentifier(), proc);
+        final Info imageInfo = getOrReadInfo(ops.getIdentifier(), proc);
         final Dimension effectiveSize = ops.getResultingSize(imageInfo.getSize());
         if (maxAllowedSize > 0 &&
                 effectiveSize.width * effectiveSize.height > maxAllowedSize) {
@@ -485,15 +485,15 @@ public abstract class AbstractResource extends ServerResource {
      *
      * @param identifier
      * @param proc
-     * @return ImageInfo for the image with the given identifier, retrieved
+     * @return Info for the image with the given identifier, retrieved
      *         from the given processor.
      * @throws ProcessorException
      * @throws CacheException
      */
-    protected final ImageInfo getOrReadInfo(final Identifier identifier,
-                                            final Processor proc)
+    protected final Info getOrReadInfo(final Identifier identifier,
+                                       final Processor proc)
             throws ProcessorException, CacheException {
-        ImageInfo info = null;
+        Info info = null;
         if (!isBypassingCache()) {
             DerivativeCache cache = CacheFactory.getDerivativeCache();
             if (cache != null) {
@@ -537,10 +537,10 @@ public abstract class AbstractResource extends ServerResource {
      * @return
      * @throws ProcessorException
      */
-    private ImageInfo readInfo(final Identifier identifier,
-                               final Processor proc) throws ProcessorException {
+    private Info readInfo(final Identifier identifier,
+                          final Processor proc) throws ProcessorException {
         final Stopwatch watch = new Stopwatch();
-        final ImageInfo info = proc.readImageInfo();
+        final Info info = proc.readImageInfo();
         logger.debug("readInfo(): read from {} in {} msec", identifier,
                 watch.timeElapsed());
         return info;

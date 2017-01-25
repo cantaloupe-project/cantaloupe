@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
@@ -35,19 +35,19 @@ public class KakaduProcessorTest extends ProcessorTest {
     @Test
     @Override
     public void testReadImageInfo() throws Exception {
-        ImageInfo expectedInfo = new ImageInfo(100, 88, 100, 88, Format.JP2);
+        Info expectedInfo = new Info(100, 88, 100, 88, Format.JP2);
 
         instance.setSourceFile(TestUtil.getImage("jp2"));
         assertEquals(expectedInfo, instance.readImageInfo());
 
         // untiled image
         instance.setSourceFile(TestUtil.getImage("jp2-rgb-64x56x8-monotiled-lossy.jp2"));
-        expectedInfo = new ImageInfo(64, 56, 64, 56, Format.JP2);
+        expectedInfo = new Info(64, 56, 64, 56, Format.JP2);
         assertEquals(expectedInfo, instance.readImageInfo());
 
         // tiled image
         instance.setSourceFile(TestUtil.getImage("jp2-rgb-64x56x8-multitiled-lossy.jp2"));
-        expectedInfo = new ImageInfo(64, 56, Format.JP2);
+        expectedInfo = new Info(64, 56, Format.JP2);
         expectedInfo.getImages().get(0).tileWidth = 32;
         expectedInfo.getImages().get(0).tileHeight = 28;
         assertEquals(expectedInfo, instance.readImageInfo());

@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Info;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -22,11 +22,11 @@ public interface DerivativeCache extends Cache {
      * the cache but is expired, implementations should delete it.</p>
      *
      * @param identifier Image identifier for which to retrieve information.
-     * @return ImageInfo corresponding to the given identifier, or null if no
+     * @return Info corresponding to the given identifier, or null if no
      * non-expired info exists in the cache.
      * @throws CacheException
      */
-    ImageInfo getImageInfo(Identifier identifier) throws CacheException;
+    Info getImageInfo(Identifier identifier) throws CacheException;
 
     /**
      * <p>Returns an input stream corresponding to the given OperationList,
@@ -76,10 +76,10 @@ public interface DerivativeCache extends Cache {
      * if necessary.</p>
      *
      * @param identifier Image identifier.
-     * @param imageInfo ImageInfo containing information about the image with
+     * @param imageInfo Info containing information about the image with
      *                  the given identifier.
      * @throws CacheException
      */
-    void put(Identifier identifier, ImageInfo imageInfo) throws CacheException;
+    void put(Identifier identifier, Info imageInfo) throws CacheException;
 
 }

@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -295,7 +295,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     }
 
     @Override
-    public ImageInfo readImageInfo() throws ProcessorException {
+    public Info readImageInfo() throws ProcessorException {
         try (InputStream inputStream = streamSource.newInputStream()) {
             final List<String> args = new ArrayList<>();
             args.add("gm");
@@ -317,7 +317,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             final ArrayList<String> output = consumer.getOutput();
             final int width = Integer.parseInt(output.get(0));
             final int height = Integer.parseInt(output.get(1));
-            return new ImageInfo(width, height, width, height,
+            return new Info(width, height, width, height,
                     getSourceFormat());
         } catch (Exception e) {
             throw new ProcessorException(e.getMessage(), e);
@@ -326,7 +326,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
 
     @Override
     public void process(final OperationList ops,
-                        final ImageInfo imageInfo,
+                        final Info imageInfo,
                         final OutputStream outputStream)
             throws ProcessorException {
         if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {

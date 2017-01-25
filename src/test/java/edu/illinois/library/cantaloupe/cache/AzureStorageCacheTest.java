@@ -4,13 +4,13 @@ import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.ListBlobItem;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.IOUtils;
@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
 public class AzureStorageCacheTest extends BaseTest {
 
     private Identifier identifier = new Identifier("jpg-rgb-64x56x8-baseline.jpg");
-    private ImageInfo imageInfo = new ImageInfo(64, 56, Format.JPG);
+    private Info imageInfo = new Info(64, 56, Format.JPG);
     private AzureStorageCache instance;
     private OperationList opList = new OperationList(identifier, Format.JPG);
 
@@ -96,7 +96,7 @@ public class AzureStorageCacheTest extends BaseTest {
     @Test
     public void testGetImageInfo() throws Exception {
         instance.put(identifier, imageInfo);
-        ImageInfo actualInfo = instance.getImageInfo(identifier);
+        Info actualInfo = instance.getImageInfo(identifier);
         assertEquals(imageInfo.toString(), actualInfo.toString());
     }
 
@@ -201,7 +201,7 @@ public class AzureStorageCacheTest extends BaseTest {
         inputStream.close();
         outputStream.close();
 
-        // add an ImageInfo
+        // add an Info
         instance.put(identifier, imageInfo);
 
         assertObjectCount(2);
@@ -234,7 +234,7 @@ public class AzureStorageCacheTest extends BaseTest {
         inputStream.close();
         outputStream.close();
 
-        // add an ImageInfo
+        // add an Info
         instance.put(identifier, imageInfo);
 
         assertObjectCount(3);
@@ -257,7 +257,7 @@ public class AzureStorageCacheTest extends BaseTest {
         inputStream.close();
         outputStream.close();
 
-        // add an ImageInfo
+        // add an Info
         instance.put(identifier, imageInfo);
 
         Thread.sleep(2000);
@@ -272,9 +272,9 @@ public class AzureStorageCacheTest extends BaseTest {
         inputStream.close();
         outputStream.close();
 
-        // add another ImageInfo
+        // add another Info
         Identifier otherId = new Identifier("cats");
-        ImageInfo otherInfo = new ImageInfo(64, 56, Format.GIF);
+        Info otherInfo = new Info(64, 56, Format.GIF);
         instance.put(otherId, otherInfo);
 
         assertObjectCount(4);
@@ -297,12 +297,12 @@ public class AzureStorageCacheTest extends BaseTest {
         inputStream.close();
         outputStream.close();
 
-        // add an ImageInfo
+        // add an Info
         instance.put(identifier, imageInfo);
 
-        // add another ImageInfo
+        // add another Info
         Identifier otherId = new Identifier("cats");
-        ImageInfo otherInfo = new ImageInfo(64, 56, Format.GIF);
+        Info otherInfo = new Info(64, 56, Format.GIF);
         instance.put(otherId, otherInfo);
 
         assertObjectCount(3);
@@ -313,12 +313,12 @@ public class AzureStorageCacheTest extends BaseTest {
         assertObjectCount(2);
     }
 
-    /* put(ImageInfo) */
+    /* put(Info) */
 
     @Test
     public void testPutWithImageInfo() throws Exception {
         instance.put(identifier, imageInfo);
-        ImageInfo actualInfo = instance.getImageInfo(identifier);
+        Info actualInfo = instance.getImageInfo(identifier);
         assertEquals(imageInfo.toString(), actualInfo.toString());
     }
 

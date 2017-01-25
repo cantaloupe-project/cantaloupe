@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.Operation;
@@ -118,7 +118,7 @@ class JaiProcessor extends AbstractImageIoProcessor
 
     @Override
     public void process(final OperationList opList,
-                        final ImageInfo imageInfo,
+                        final Info imageInfo,
                         final OutputStream outputStream)
             throws ProcessorException {
         if (!getAvailableOutputFormats().contains(opList.getOutputFormat())) {

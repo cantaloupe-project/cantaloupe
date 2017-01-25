@@ -8,7 +8,7 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.IOUtils;
@@ -29,7 +29,7 @@ public class AmazonS3CacheTest extends BaseTest {
     private final int S3_UPLOAD_WAIT = 3000;
 
     private Identifier identifier = new Identifier("jpg-rgb-64x56x8-baseline.jpg");
-    private ImageInfo imageInfo = new ImageInfo(64, 56, Format.JPG);
+    private Info imageInfo = new Info(64, 56, Format.JPG);
     private AmazonS3Cache instance;
     private OperationList opList = new OperationList(identifier, Format.JPG);
 
@@ -95,7 +95,7 @@ public class AmazonS3CacheTest extends BaseTest {
     @Test
     public void testGetImageInfo() throws Exception {
         instance.put(identifier, imageInfo);
-        ImageInfo actualInfo = instance.getImageInfo(identifier);
+        Info actualInfo = instance.getImageInfo(identifier);
         assertEquals(imageInfo.toString(), actualInfo.toString());
     }
 
@@ -205,7 +205,7 @@ public class AmazonS3CacheTest extends BaseTest {
         inputStream.close();
         outputStream.close();
 
-        // add an ImageInfo
+        // add an Info
         instance.put(identifier, imageInfo);
 
         assertObjectCount(2);
@@ -240,7 +240,7 @@ public class AmazonS3CacheTest extends BaseTest {
 
         Thread.sleep(S3_UPLOAD_WAIT);
 
-        // add an ImageInfo
+        // add an Info
         instance.put(identifier, imageInfo);
 
         assertObjectCount(3);
@@ -265,7 +265,7 @@ public class AmazonS3CacheTest extends BaseTest {
         inputStream.close();
         outputStream.close();
 
-        // add an ImageInfo
+        // add an Info
         instance.put(identifier, imageInfo);
 
         Thread.sleep(2000);
@@ -280,9 +280,9 @@ public class AmazonS3CacheTest extends BaseTest {
         inputStream.close();
         outputStream.close();
 
-        // add another ImageInfo
+        // add another Info
         Identifier otherId = new Identifier("cats");
-        ImageInfo otherInfo = new ImageInfo(64, 56, Format.GIF);
+        Info otherInfo = new Info(64, 56, Format.GIF);
         instance.put(otherId, otherInfo);
 
         Thread.sleep(S3_UPLOAD_WAIT);
@@ -307,12 +307,12 @@ public class AmazonS3CacheTest extends BaseTest {
         inputStream.close();
         outputStream.close();
 
-        // add an ImageInfo
+        // add an Info
         instance.put(identifier, imageInfo);
 
-        // add another ImageInfo
+        // add another Info
         Identifier otherId = new Identifier("cats");
-        ImageInfo otherInfo = new ImageInfo(64, 56, Format.GIF);
+        Info otherInfo = new Info(64, 56, Format.GIF);
         instance.put(otherId, otherInfo);
 
         assertObjectCount(3);
@@ -323,12 +323,12 @@ public class AmazonS3CacheTest extends BaseTest {
         assertObjectCount(1);
     }
 
-    /* put(ImageInfo) */
+    /* put(Info) */
 
     @Test
     public void testPutWithImageInfo() throws Exception {
         instance.put(identifier, imageInfo);
-        ImageInfo actualInfo = instance.getImageInfo(identifier);
+        Info actualInfo = instance.getImageInfo(identifier);
         assertEquals(imageInfo.toString(), actualInfo.toString());
     }
 

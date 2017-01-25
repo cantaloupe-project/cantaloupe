@@ -27,7 +27,7 @@ import java.util.List;
  */
 @JsonPropertyOrder({ "mediaType", "images" })
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public final class ImageInfo {
+public final class Info {
 
     @JsonPropertyOrder({ "width", "height", "tileWidth", "tileHeight",
             "orientation" })
@@ -160,27 +160,27 @@ public final class ImageInfo {
     private List<Image> images = new ArrayList<>();
     private String mediaType;
 
-    public static ImageInfo fromJson(File jsonFile) throws IOException {
-        return new ObjectMapper().readValue(jsonFile, ImageInfo.class);
+    public static Info fromJson(File jsonFile) throws IOException {
+        return new ObjectMapper().readValue(jsonFile, Info.class);
     }
 
-    public static ImageInfo fromJson(InputStream jsonStream) throws IOException {
-        return new ObjectMapper().readValue(jsonStream, ImageInfo.class);
+    public static Info fromJson(InputStream jsonStream) throws IOException {
+        return new ObjectMapper().readValue(jsonStream, Info.class);
     }
 
-    public static ImageInfo fromJson(String json) throws IOException {
-        return new ObjectMapper().readValue(json, ImageInfo.class);
+    public static Info fromJson(String json) throws IOException {
+        return new ObjectMapper().readValue(json, Info.class);
     }
 
     /**
      * No-op constructor needed by Jackson.
      */
-    public ImageInfo() {}
+    public Info() {}
 
     /**
      * @param size Main image size
      */
-    public ImageInfo(Dimension size) {
+    public Info(Dimension size) {
         images.add(new Image(size));
     }
 
@@ -188,7 +188,7 @@ public final class ImageInfo {
      * @param size Main image size
      * @param sourceFormat
      */
-    public ImageInfo(Dimension size, Format sourceFormat) {
+    public Info(Dimension size, Format sourceFormat) {
         images.add(new Image(size));
         setSourceFormat(sourceFormat);
     }
@@ -197,7 +197,7 @@ public final class ImageInfo {
      * @param width Main image width
      * @param height Main image height
      */
-    public ImageInfo(int width, int height) {
+    public Info(int width, int height) {
         images.add(new Image(width, height));
     }
 
@@ -206,7 +206,7 @@ public final class ImageInfo {
      * @param height Main image height
      * @param sourceFormat
      */
-    public ImageInfo(int width, int height, Format sourceFormat) {
+    public Info(int width, int height, Format sourceFormat) {
         images.add(new Image(width, height));
         setSourceFormat(sourceFormat);
     }
@@ -215,7 +215,7 @@ public final class ImageInfo {
      * @param size Main image size
      * @param tileSize Main image tile size
      */
-    public ImageInfo(Dimension size, Dimension tileSize) {
+    public Info(Dimension size, Dimension tileSize) {
         Image image = new Image(size);
         image.tileWidth = tileSize.width;
         image.tileHeight = tileSize.height;
@@ -228,7 +228,7 @@ public final class ImageInfo {
      * @param tileWidth Main image tile width
      * @param tileHeight Main image tile height
      */
-    public ImageInfo(int width, int height, int tileWidth, int tileHeight) {
+    public Info(int width, int height, int tileWidth, int tileHeight) {
         Image image = new Image(width, height);
         image.tileWidth = tileWidth;
         image.tileHeight = tileHeight;
@@ -242,8 +242,8 @@ public final class ImageInfo {
      * @param tileHeight Main image tile height
      * @param sourceFormat
      */
-    public ImageInfo(int width, int height, int tileWidth, int tileHeight,
-                     Format sourceFormat) {
+    public Info(int width, int height, int tileWidth, int tileHeight,
+                Format sourceFormat) {
         Image image = new Image(width, height);
         image.tileWidth = tileWidth;
         image.tileHeight = tileHeight;
@@ -253,8 +253,8 @@ public final class ImageInfo {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof ImageInfo) {
-            ImageInfo other = (ImageInfo) obj;
+        if (obj instanceof Info) {
+            Info other = (Info) obj;
             return other.getImages().equals(getImages()) &&
                     other.getSourceFormat().equals(getSourceFormat());
         }

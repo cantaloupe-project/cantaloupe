@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
@@ -77,7 +77,7 @@ public interface Processor {
      * @throws UnsupportedOutputFormatException
      * @throws ProcessorException
      */
-    void process(OperationList ops, ImageInfo sourceInfo,
+    void process(OperationList ops, Info sourceInfo,
                  OutputStream outputStream) throws ProcessorException;
 
     /**
@@ -86,7 +86,7 @@ public interface Processor {
      * @return Information about the source image.
      * @throws ProcessorException
      */
-    ImageInfo readImageInfo() throws ProcessorException;
+    Info readImageInfo() throws ProcessorException;
 
     /**
      * @param format Format of the source image. Will never be

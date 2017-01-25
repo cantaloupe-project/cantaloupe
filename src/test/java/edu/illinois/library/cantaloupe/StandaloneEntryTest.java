@@ -6,9 +6,9 @@ import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -281,7 +281,7 @@ public class StandaloneEntryTest extends BaseTest {
 
         // cache a dimension
         DerivativeCache cache = CacheFactory.getDerivativeCache();
-        cache.put(new Identifier("cats"), new ImageInfo(500, 500));
+        cache.put(new Identifier("cats"), new Info(500, 500));
 
         // cache an image
         OperationList ops = TestUtil.newOperationList();
@@ -338,8 +338,8 @@ public class StandaloneEntryTest extends BaseTest {
 
         // cache a couple of dimensions
         DerivativeCache cache = CacheFactory.getDerivativeCache();
-        cache.put(new Identifier("cats"), new ImageInfo(500, 500));
-        cache.put(new Identifier("dogs"), new ImageInfo(500, 500));
+        cache.put(new Identifier("cats"), new Info(500, 500));
+        cache.put(new Identifier("dogs"), new Info(500, 500));
 
         // cache a couple of images
         OperationList ops = TestUtil.newOperationList();

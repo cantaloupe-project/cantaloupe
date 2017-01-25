@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -57,7 +57,7 @@ public abstract class ProcessorTest extends BaseTest {
      */
     @Test
     public void testReadImageInfo() throws Exception {
-        ImageInfo expectedInfo = new ImageInfo(64, 56, 64, 56, Format.JPG);
+        Info expectedInfo = new Info(64, 56, 64, 56, Format.JPG);
 
         Processor proc = newInstance();
         if (proc instanceof StreamProcessor) {

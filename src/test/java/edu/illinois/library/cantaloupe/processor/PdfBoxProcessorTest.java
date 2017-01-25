@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -42,7 +42,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     @Test
     @Override
     public void testReadImageInfo() throws Exception {
-        ImageInfo expectedInfo = new ImageInfo(100, 88, 100, 88, Format.PDF);
+        Info expectedInfo = new Info(100, 88, 100, 88, Format.PDF);
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
         instance.setSourceFormat(Format.PDF);
         assertEquals(expectedInfo, instance.readImageInfo());
@@ -70,7 +70,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     @Test
     public void testProcessWithPageOption() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
-        final ImageInfo imageInfo = instance.readImageInfo();
+        final Info imageInfo = instance.readImageInfo();
 
         // page option missing
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -90,7 +90,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     @Test
     public void testProcessWithIllegalPageOptionReturnsFirstPage() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
-        final ImageInfo imageInfo = instance.readImageInfo();
+        final Info imageInfo = instance.readImageInfo();
 
         // page 1
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Orientation;
@@ -51,7 +51,7 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
     }
 
     @Override
-    public ImageInfo readImageInfo() throws ProcessorException {
+    public Info readImageInfo() throws ProcessorException {
         try {
             if (fullImage == null) {
                 // This is a very inefficient method of getting the size.
@@ -60,7 +60,7 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
                 // multiple times.
                 fullImage = readImage();
             }
-            return new ImageInfo(fullImage.getWidth(), fullImage.getHeight(),
+            return new Info(fullImage.getWidth(), fullImage.getHeight(),
                     fullImage.getWidth(), fullImage.getHeight(),
                     getSourceFormat());
         } catch (IOException e) {
@@ -80,7 +80,7 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
 
     @Override
     public void process(OperationList opList,
-                        ImageInfo imageInfo,
+                        Info imageInfo,
                         OutputStream outputStream) throws ProcessorException {
         try {
             // If the op list contains a scale operation, see if we can use

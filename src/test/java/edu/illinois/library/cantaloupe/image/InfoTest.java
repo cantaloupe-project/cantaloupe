@@ -1,7 +1,7 @@
-package edu.illinois.library.cantaloupe.processor;
+package edu.illinois.library.cantaloupe.image;
 
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
@@ -16,32 +16,32 @@ import java.util.Arrays;
 import static org.junit.Assert.*;
 
 /**
- * This class is divided into two sections: one for ImageInfo and one for
- * ImageInfo.Image.
+ * This class is divided into two sections: one for Info and one for
+ * Info.Image.
  */
-public class ImageInfoTest extends BaseTest {
+public class InfoTest extends BaseTest {
 
-    private ImageInfo instance;
+    private Info instance;
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new ImageInfo(100, 80, Format.JPG);
+        instance = new Info(100, 80, Format.JPG);
         instance.getImages().get(0).setOrientation(Orientation.ROTATE_270);
     }
 
-    /************************ ImageInfo tests ****************************/
+    /************************ Info tests ****************************/
 
     @Test
     public void testConstructor1() {
-        instance = new ImageInfo();
+        instance = new Info();
         assertEquals(0, instance.getImages().size());
     }
 
     @Test
     public void testConstructor2() {
         Dimension size = new Dimension(500, 200);
-        instance = new ImageInfo(size);
+        instance = new Info(size);
         assertEquals(1, instance.getImages().size());
         assertEquals(size, instance.getImages().get(0).getSize());
     }
@@ -50,7 +50,7 @@ public class ImageInfoTest extends BaseTest {
     public void testConstructor3() {
         Dimension size = new Dimension(500, 200);
         Format format = Format.JPG;
-        instance = new ImageInfo(size, format);
+        instance = new Info(size, format);
         assertEquals(1, instance.getImages().size());
         assertEquals(size, instance.getImages().get(0).getSize());
         assertEquals(format, instance.getSourceFormat());
@@ -60,7 +60,7 @@ public class ImageInfoTest extends BaseTest {
     public void testConstructor4() {
         int width = 500;
         int height = 200;
-        instance = new ImageInfo(width, height);
+        instance = new Info(width, height);
         assertEquals(1, instance.getImages().size());
         assertEquals(width, instance.getImages().get(0).getSize().width);
         assertEquals(height, instance.getImages().get(0).getSize().height);
@@ -71,7 +71,7 @@ public class ImageInfoTest extends BaseTest {
         int width = 500;
         int height = 200;
         Format format = Format.JPG;
-        instance = new ImageInfo(width, height, format);
+        instance = new Info(width, height, format);
         assertEquals(1, instance.getImages().size());
         assertEquals(width, instance.getImages().get(0).getSize().width);
         assertEquals(height, instance.getImages().get(0).getSize().height);
@@ -82,7 +82,7 @@ public class ImageInfoTest extends BaseTest {
     public void testConstructor6() {
         Dimension size = new Dimension(500, 200);
         Dimension tileSize = new Dimension(300, 100);
-        instance = new ImageInfo(size, tileSize);
+        instance = new Info(size, tileSize);
         assertEquals(1, instance.getImages().size());
         assertEquals(size, instance.getImages().get(0).getSize());
         assertEquals(tileSize, instance.getImages().get(0).getTileSize());
@@ -94,7 +94,7 @@ public class ImageInfoTest extends BaseTest {
         int height = 200;
         int tileWidth = 200;
         int tileHeight = 100;
-        instance = new ImageInfo(width, height, tileWidth, tileHeight);
+        instance = new Info(width, height, tileWidth, tileHeight);
         assertEquals(1, instance.getImages().size());
         assertEquals(width, instance.getImages().get(0).getSize().width);
         assertEquals(height, instance.getImages().get(0).getSize().height);
@@ -109,7 +109,7 @@ public class ImageInfoTest extends BaseTest {
         int tileWidth = 200;
         int tileHeight = 100;
         Format format = Format.GIF;
-        instance = new ImageInfo(width, height, tileWidth, tileHeight, format);
+        instance = new Info(width, height, tileWidth, tileHeight, format);
         assertEquals(1, instance.getImages().size());
         assertEquals(width, instance.getImages().get(0).getSize().width);
         assertEquals(height, instance.getImages().get(0).getSize().height);
@@ -128,42 +128,42 @@ public class ImageInfoTest extends BaseTest {
         String json = instance.toJson();
         InputStream inputStream = new ByteArrayInputStream(json.getBytes());
 
-        ImageInfo info = ImageInfo.fromJson(inputStream);
+        Info info = Info.fromJson(inputStream);
         assertEquals(info.toString(), instance.toString());
     }
 
     @Test
     public void testFromJsonWithString() throws Exception {
         String json = instance.toJson();
-        ImageInfo info = ImageInfo.fromJson(json);
+        Info info = Info.fromJson(json);
         assertEquals(info.toString(), instance.toString());
     }
 
     @Test
     public void testEquals() {
         // equal
-        ImageInfo info1 = new ImageInfo(100, 80, 50, 40, Format.JPG);
-        ImageInfo info2 = new ImageInfo(100, 80, 50, 40, Format.JPG);
+        Info info1 = new Info(100, 80, 50, 40, Format.JPG);
+        Info info2 = new Info(100, 80, 50, 40, Format.JPG);
         assertTrue(info1.equals(info2));
         // not equal
-        info2 = new ImageInfo(99, 80, 50, 40, Format.JPG);
+        info2 = new Info(99, 80, 50, 40, Format.JPG);
         assertFalse(info1.equals(info2));
-        info2 = new ImageInfo(100, 79, 50, 40, Format.JPG);
+        info2 = new Info(100, 79, 50, 40, Format.JPG);
         assertFalse(info1.equals(info2));
-        info2 = new ImageInfo(100, 80, 49, 40, Format.JPG);
+        info2 = new Info(100, 80, 49, 40, Format.JPG);
         assertFalse(info1.equals(info2));
-        info2 = new ImageInfo(100, 80, 50, 39, Format.JPG);
+        info2 = new Info(100, 80, 50, 39, Format.JPG);
         assertFalse(info1.equals(info2));
-        info2 = new ImageInfo(100, 80, 50, 40, Format.TIF);
+        info2 = new Info(100, 80, 50, 40, Format.TIF);
         assertFalse(info1.equals(info2));
-        info2 = new ImageInfo(100, 80, Format.JPG);
+        info2 = new Info(100, 80, Format.JPG);
         assertFalse(info1.equals(info2));
     }
 
     @Test
     public void testGetImages() {
         assertEquals(1, instance.getImages().size());
-        assertEquals(0, new ImageInfo().getImages().size());
+        assertEquals(0, new Info().getImages().size());
     }
 
     @Test
@@ -173,7 +173,7 @@ public class ImageInfoTest extends BaseTest {
 
     @Test
     public void testGetOrientationSize() {
-        ImageInfo.Image image = instance.getImages().get(0);
+        Info.Image image = instance.getImages().get(0);
         image.setOrientation(Orientation.ROTATE_90);
         assertEquals(new Dimension(80, 100), instance.getOrientationSize());
     }
@@ -185,12 +185,12 @@ public class ImageInfoTest extends BaseTest {
 
     @Test
     public void testGetSizeWithIndex() {
-        ImageInfo.Image image = new ImageInfo.Image();
+        Info.Image image = new Info.Image();
         image.width = 50;
         image.height = 40;
         instance.getImages().add(image);
 
-        image = new ImageInfo.Image();
+        image = new Info.Image();
         image.width = 25;
         image.height = 20;
         instance.getImages().add(image);
@@ -224,11 +224,11 @@ public class ImageInfoTest extends BaseTest {
                 instance.toJson().getBytes()));
     }
 
-    /********************* ImageInfo.Image tests *************************/
+    /********************* Info.Image tests *************************/
 
     @Test
     public void testImageConstructor1() {
-        ImageInfo.Image image = new ImageInfo.Image();
+        Info.Image image = new Info.Image();
         assertEquals(Orientation.ROTATE_0, image.getOrientation());
         assertEquals(new Dimension(0, 0), image.getSize());
         assertEquals(new Dimension(0, 0), image.getTileSize());
@@ -237,7 +237,7 @@ public class ImageInfoTest extends BaseTest {
     @Test
     public void testImageConstructor2() {
         Dimension size = new Dimension(300, 200);
-        ImageInfo.Image image = new ImageInfo.Image(size);
+        Info.Image image = new Info.Image(size);
         assertEquals(Orientation.ROTATE_0, image.getOrientation());
         assertEquals(size, image.getSize());
         assertEquals(size, image.getTileSize());
@@ -247,7 +247,7 @@ public class ImageInfoTest extends BaseTest {
     public void testImageConstructor3() {
         Dimension size = new Dimension(300, 200);
         Orientation orientation = Orientation.ROTATE_90;
-        ImageInfo.Image image = new ImageInfo.Image(size, orientation);
+        Info.Image image = new Info.Image(size, orientation);
         assertEquals(orientation, image.getOrientation());
         assertEquals(size, image.getSize());
         assertEquals(size, image.getTileSize());
@@ -257,7 +257,7 @@ public class ImageInfoTest extends BaseTest {
     public void testImageConstructor4() {
         int width = 300;
         int height = 200;
-        ImageInfo.Image image = new ImageInfo.Image(width, height);
+        Info.Image image = new Info.Image(width, height);
         assertEquals(Orientation.ROTATE_0, image.getOrientation());
         assertEquals(width, image.getSize().width);
         assertEquals(height, image.getSize().height);
@@ -269,7 +269,7 @@ public class ImageInfoTest extends BaseTest {
         int width = 300;
         int height = 200;
         Orientation orientation = Orientation.ROTATE_90;
-        ImageInfo.Image image = new ImageInfo.Image(width, height, orientation);
+        Info.Image image = new Info.Image(width, height, orientation);
         assertEquals(orientation, image.getOrientation());
         assertEquals(width, image.getSize().width);
         assertEquals(height, image.getSize().height);
@@ -278,14 +278,14 @@ public class ImageInfoTest extends BaseTest {
 
     @Test
     public void testImageGetOrientationSize() {
-        ImageInfo.Image image = instance.getImages().get(0);
+        Info.Image image = instance.getImages().get(0);
         image.setOrientation(Orientation.ROTATE_90);
         assertEquals(new Dimension(80, 100), image.getOrientationSize());
     }
 
     @Test
     public void testImageGetOrientationTileSize() {
-        ImageInfo.Image image = instance.getImages().get(0);
+        Info.Image image = instance.getImages().get(0);
         image.setOrientation(Orientation.ROTATE_90);
         assertEquals(new Dimension(80, 100), image.getOrientationTileSize());
     }

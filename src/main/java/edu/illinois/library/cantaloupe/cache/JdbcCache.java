@@ -5,8 +5,8 @@ import com.zaxxer.hikari.HikariDataSource;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -282,7 +282,7 @@ class JdbcCache implements DerivativeCache {
     public void cleanUp() {}
 
     @Override
-    public ImageInfo getImageInfo(Identifier identifier) throws CacheException {
+    public Info getImageInfo(Identifier identifier) throws CacheException {
         try (Connection connection = getConnection()) {
             final String sql = String.format(
                     "SELECT %s FROM %s WHERE %s = ? AND %s >= ?",
@@ -300,7 +300,7 @@ class JdbcCache implements DerivativeCache {
                 accessImageInfo(identifier, connection);
                 logger.info("Hit for image info: {}", identifier);
                 String json = resultSet.getString(1);
-                return ImageInfo.fromJson(json);
+                return Info.fromJson(json);
             } else {
                 logger.info("Miss for image info: {}", identifier);
                 purgeImageInfo(identifier, connection);
@@ -544,7 +544,7 @@ class JdbcCache implements DerivativeCache {
     }
 
     @Override
-    public void put(Identifier identifier, ImageInfo imageInfo)
+    public void put(Identifier identifier, Info imageInfo)
             throws CacheException {
         logger.info("Caching image info: {}", identifier);
         try (Connection conn = getConnection()) {

@@ -1,13 +1,13 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
 
 /**
  * <p>Interface to be implemented by all caches. A cache stores and retrieves
  * unique images corresponding to {@link OperationList} objects, as well as
- * {@link ImageInfo} objects corresponding to {@link Identifier} objects.</p>
+ * {@link Info} objects corresponding to {@link Identifier} objects.</p>
  *
  * <p>Implementations must be thread-safe.</p>
  */

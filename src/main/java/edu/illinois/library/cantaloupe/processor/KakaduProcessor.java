@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Orientation;
@@ -187,7 +187,7 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
      * @throws ProcessorException
      */
     @Override
-    public ImageInfo readImageInfo() throws ProcessorException {
+    public Info readImageInfo() throws ProcessorException {
         try {
             if (infoDocument == null) {
                 readImageInfoDocument();
@@ -201,7 +201,7 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
             final int height = (int) Math.round((double) expr.evaluate(
                     infoDocument, XPathConstants.NUMBER));
 
-            final ImageInfo info = new ImageInfo(width, height,
+            final Info info = new Info(width, height,
                     getSourceFormat());
 
             // Run another XPath query to find tile sizes
@@ -286,7 +286,7 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
 
     @Override
     public void process(final OperationList opList,
-                        final ImageInfo imageInfo,
+                        final Info imageInfo,
                         final OutputStream outputStream)
             throws ProcessorException {
         if (!getAvailableOutputFormats().contains(opList.getOutputFormat())) {

@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
@@ -85,7 +85,7 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
      * @throws ProcessorException
      */
     @Override
-    public ImageInfo readImageInfo() throws ProcessorException {
+    public Info readImageInfo() throws ProcessorException {
         final List<String> command = new ArrayList<>();
         // ffprobe -v quiet -print_format xml -show_streams <file>
         command.add(getPath("ffprobe"));
@@ -114,7 +114,7 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
             expr = xpath.compile("//stream[@index=\"0\"]/@height");
             int height = (int) Math.round((double) expr.evaluate(doc, XPathConstants.NUMBER));
 
-            return new ImageInfo(width, height, width, height,
+            return new Info(width, height, width, height,
                     getSourceFormat());
         } catch (SAXException e) {
             throw new ProcessorException("Failed to parse XML. Command: " +
@@ -139,7 +139,7 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
 
     @Override
     public void process(final OperationList opList,
-                        final ImageInfo imageInfo,
+                        final Info imageInfo,
                         final OutputStream outputStream)
             throws ProcessorException {
         if (!getAvailableOutputFormats().contains(opList.getOutputFormat())) {

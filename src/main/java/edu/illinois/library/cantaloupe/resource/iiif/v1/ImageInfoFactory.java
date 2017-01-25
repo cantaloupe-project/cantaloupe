@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.resource.iiif.ImageInfoUtil;
@@ -18,7 +19,7 @@ abstract class ImageInfoFactory {
 
     static ImageInfo newImageInfo(final String imageUri,
                                   final Processor processor,
-                                  final edu.illinois.library.cantaloupe.image.ImageInfo cacheInfo)
+                                  final Info cacheInfo)
             throws ProcessorException {
         // We want to use the orientation-aware full size, which takes the
         // embedded orientation into account.
@@ -36,7 +37,7 @@ abstract class ImageInfoFactory {
         // calculate a tile size close to MIN_TILE_SIZE_CONFIG_KEY pixels.
         // Otherwise, use the smallest multiple of the tile size above
         // MIN_TILE_SIZE_CONFIG_KEY of image resolution 0.
-        final edu.illinois.library.cantaloupe.image.ImageInfo.Image firstImage =
+        final Info.Image firstImage =
                 cacheInfo.getImages().get(0);
         Dimension virtualTileSize = firstImage.getOrientationTileSize();
 
@@ -48,7 +49,7 @@ abstract class ImageInfoFactory {
             }
         }
 
-        // Create an ImageInfo instance, which will eventually be serialized
+        // Create an Info instance, which will eventually be serialized
         // to JSON and sent as the response body.
         final ImageInfo imageInfo = new ImageInfo();
         imageInfo.id = imageUri;

@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
@@ -56,16 +56,16 @@ abstract class AbstractImageIoProcessor extends AbstractProcessor {
         return formats;
     }
 
-    public ImageInfo readImageInfo() throws ProcessorException {
+    public Info readImageInfo() throws ProcessorException {
         try {
-            final ImageInfo info = new ImageInfo();
+            final Info info = new Info();
             info.setSourceFormat(getSourceFormat());
 
             final ImageReader reader = getReader();
             final Orientation orientation = getEffectiveOrientation();
             for (int i = 0, numResolutions = reader.getNumResolutions();
                  i < numResolutions; i++) {
-                ImageInfo.Image image = new ImageInfo.Image();
+                Info.Image image = new Info.Image();
                 image.setSize(reader.getSize(i));
                 image.setTileSize(reader.getTileSize(i));
                 image.setOrientation(orientation);

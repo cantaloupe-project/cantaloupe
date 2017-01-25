@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
@@ -60,7 +61,7 @@ abstract class ImageInfoFactory {
             final Identifier identifier,
             final String imageUri,
             final Processor processor,
-            final edu.illinois.library.cantaloupe.image.ImageInfo cacheInfo)
+            final Info cacheInfo)
             throws ProcessorException {
         // We want to use the orientation-aware full size, which takes the
         // embedded orientation into account.
@@ -107,7 +108,7 @@ abstract class ImageInfoFactory {
         final List<ImageInfo.Tile> tiles = new ArrayList<>();
         imageInfo.put("tiles", tiles);
 
-        final edu.illinois.library.cantaloupe.image.ImageInfo.Image firstImage =
+        final Info.Image firstImage =
                 cacheInfo.getImages().get(0);
 
         // Find the virtual tile size based on the virtual full image size.
@@ -118,7 +119,7 @@ abstract class ImageInfoFactory {
             uniqueTileSizes.add(
                     ImageInfoUtil.smallestTileSize(virtualSize, minTileSize));
         } else {
-            for (edu.illinois.library.cantaloupe.image.ImageInfo.Image image : cacheInfo.getImages()) {
+            for (Info.Image image : cacheInfo.getImages()) {
                 uniqueTileSizes.add(
                         ImageInfoUtil.smallestTileSize(virtualSize,
                                 image.getOrientationTileSize(), minTileSize));

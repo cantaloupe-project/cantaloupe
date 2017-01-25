@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
@@ -54,7 +54,7 @@ public class JaiProcessorTest extends ProcessorTest {
     @Test
     @Override
     public void testReadImageInfo() throws Exception {
-        ImageInfo expectedInfo = new ImageInfo(64, 56, Format.TIF);
+        Info expectedInfo = new Info(64, 56, Format.TIF);
         expectedInfo.getImages().get(0).tileWidth = 16;
         expectedInfo.getImages().get(0).tileHeight = 16;
 
@@ -77,7 +77,7 @@ public class JaiProcessorTest extends ProcessorTest {
         try {
             fproc.setSourceFile(TestUtil.getImage("mpg"));
             fproc.setSourceFormat(Format.MPG);
-            expectedInfo = new ImageInfo(640, 360, Format.MPG);
+            expectedInfo = new Info(640, 360, Format.MPG);
             assertEquals(expectedInfo, fproc.readImageInfo());
         } catch (UnsupportedSourceFormatException e) {
             // pass
@@ -95,7 +95,7 @@ public class JaiProcessorTest extends ProcessorTest {
         fproc.setSourceFile(fixture);
         fproc.setSourceFormat(Format.JPG);
 
-        final ImageInfo info = fproc.readImageInfo();
+        final Info info = fproc.readImageInfo();
         assertEquals(Orientation.ROTATE_90, info.getOrientation());
     }
 

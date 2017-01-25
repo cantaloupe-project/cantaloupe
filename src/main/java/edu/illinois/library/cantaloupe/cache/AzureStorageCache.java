@@ -11,8 +11,8 @@ import com.microsoft.azure.storage.blob.ListBlobItem;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.StringUtils;
@@ -147,7 +147,7 @@ class AzureStorageCache implements DerivativeCache {
     public void cleanUp() throws CacheException {}
 
     @Override
-    public ImageInfo getImageInfo(Identifier identifier) throws CacheException {
+    public Info getImageInfo(Identifier identifier) throws CacheException {
         final String containerName = getContainerName();
 
         final CloudBlobClient client = getClientInstance();
@@ -159,7 +159,7 @@ class AzureStorageCache implements DerivativeCache {
 
             final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
             if (blob.exists()) {
-                ImageInfo info = ImageInfo.fromJson(blob.openInputStream());
+                Info info = Info.fromJson(blob.openInputStream());
                 logger.info("getImageInfo(): read {} from container {} in {} msec",
                         objectKey, containerName, watch.timeElapsed());
                 return info;
@@ -219,7 +219,7 @@ class AzureStorageCache implements DerivativeCache {
 
     /**
      * @param identifier
-     * @return Object key of the serialized ImageInfo associated with the given
+     * @return Object key of the serialized Info associated with the given
      *         identifier.
      */
     String getObjectKey(Identifier identifier) {
@@ -351,7 +351,7 @@ class AzureStorageCache implements DerivativeCache {
     }
 
     @Override
-    public void put(Identifier identifier, ImageInfo imageInfo)
+    public void put(Identifier identifier, Info imageInfo)
             throws CacheException {
         final String objectKey = getObjectKey(identifier);
         if (!uploadingKeys.contains(objectKey)) {

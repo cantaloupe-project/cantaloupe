@@ -18,7 +18,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.image.ImageInfo;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.StringUtils;
@@ -196,7 +196,7 @@ class AmazonS3Cache implements DerivativeCache {
     }
 
     @Override
-    public ImageInfo getImageInfo(Identifier identifier) throws CacheException {
+    public Info getImageInfo(Identifier identifier) throws CacheException {
         final AmazonS3 s3 = getClientInstance();
         final String bucketName = getBucketName();
         final String objectKey = getObjectKey(identifier);
@@ -204,7 +204,7 @@ class AmazonS3Cache implements DerivativeCache {
             final Stopwatch watch = new Stopwatch();
             final S3Object object = s3.getObject(
                     new GetObjectRequest(bucketName, objectKey));
-            final ImageInfo info = ImageInfo.fromJson(object.getObjectContent());
+            final Info info = Info.fromJson(object.getObjectContent());
             logger.info("getImageInfo(): read {} from bucket {} in {} msec",
                     objectKey, bucketName, watch.timeElapsed());
             return info;
@@ -257,7 +257,7 @@ class AmazonS3Cache implements DerivativeCache {
 
     /**
      * @param identifier
-     * @return Object key of the serialized ImageInfo associated with the given
+     * @return Object key of the serialized Info associated with the given
      *         identifier.
      */
     String getObjectKey(Identifier identifier) {
@@ -351,7 +351,7 @@ class AmazonS3Cache implements DerivativeCache {
     }
 
     @Override
-    public void put(Identifier identifier, ImageInfo imageInfo)
+    public void put(Identifier identifier, Info imageInfo)
             throws CacheException {
         final String objectKey = getObjectKey(identifier);
         if (!uploadingKeys.contains(objectKey)) {
