@@ -83,6 +83,27 @@ public class MediaTypeTest {
         assertFalse(instance.equals("image/gif"));
     }
 
+    /* toFormat() */
+
+    @Test
+    public void testToFormat() {
+        assertEquals(Format.AVI, new MediaType("video/avi").toFormat());
+        assertEquals(Format.BMP, new MediaType("image/bmp").toFormat());
+        assertEquals(Format.DCM, new MediaType("application/dicom").toFormat());
+        assertEquals(Format.GIF, new MediaType("image/gif").toFormat());
+        assertEquals(Format.JP2, new MediaType("image/jp2").toFormat());
+        assertEquals(Format.JPG, new MediaType("image/jpeg").toFormat());
+        assertEquals(Format.MOV, new MediaType("video/quicktime").toFormat());
+        assertEquals(Format.MP4, new MediaType("video/mp4").toFormat());
+        assertEquals(Format.MPG, new MediaType("video/mpeg").toFormat());
+        assertEquals(Format.PDF, new MediaType("application/pdf").toFormat());
+        assertEquals(Format.PNG, new MediaType("image/png").toFormat());
+        assertEquals(Format.SID, new MediaType("image/x-mrsid").toFormat());
+        assertEquals(Format.TIF, new MediaType("image/tiff").toFormat());
+        assertEquals(Format.WEBM, new MediaType("video/webm").toFormat());
+        assertEquals(Format.WEBP, new MediaType("image/webp").toFormat());
+    }
+
     /* toString() */
 
     @Test

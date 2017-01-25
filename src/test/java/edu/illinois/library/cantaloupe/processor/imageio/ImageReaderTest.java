@@ -45,7 +45,7 @@ public class ImageReaderTest extends BaseTest {
             if (mediaType.equals("image/jp2")) {
                 continue;
             }
-            final Format format = Format.inferFormat(new MediaType(mediaType));
+            final Format format = new MediaType(mediaType).toFormat();
             if (format != null && !format.equals(Format.UNKNOWN)) {
                 formats.add(format);
             }

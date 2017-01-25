@@ -181,7 +181,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
             final String contentType = blob.getProperties().getContentType();
             // See if we can determine the format from the Content-Type header.
             if (contentType != null) {
-                sourceFormat = Format.inferFormat(new MediaType(contentType));
+                sourceFormat = new MediaType(contentType).toFormat();
             }
             if (sourceFormat == null || sourceFormat.equals(Format.UNKNOWN)) {
                 // Try to infer a format based on the identifier.

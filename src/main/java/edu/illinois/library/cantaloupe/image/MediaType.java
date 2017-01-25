@@ -65,6 +65,20 @@ public final class MediaType {
         return (obj.toString() != null && obj.toString().equals(toString()));
     }
 
+    /**
+     * @return Format corresponding with the instance.
+     */
+    public Format toFormat() {
+        for (Format enumValue : Format.values()) {
+            for (MediaType type : enumValue.getMediaTypes()) {
+                if (type.equals(this)) {
+                    return enumValue;
+                }
+            }
+        }
+        return Format.UNKNOWN;
+    }
+
     @Override
     public String toString() {
         return String.format("%s/%s", type, subtype);

@@ -190,7 +190,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
             contentType = resource.getResponse().getHeaders().
                     getFirstValue("Content-Type", true);
             if (contentType != null) {
-                format = Format.inferFormat(new MediaType(contentType));
+                format = new MediaType(contentType).toFormat();
             }
         } catch (ResourceException e) {
             // nothing we can do but log it

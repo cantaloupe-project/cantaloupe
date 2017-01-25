@@ -136,22 +136,6 @@ public enum Format {
         return Format.UNKNOWN;
     }
 
-    /**
-     * @param mediaType Media (MIME) type.
-     * @return The source format corresponding to the given media type, or
-     * <code>Format.UNKNOWN</code> if unknown.
-     */
-    public static Format inferFormat(MediaType mediaType) {
-        for (Format enumValue : Format.values()) {
-            for (MediaType type : enumValue.getMediaTypes()) {
-                if (type.equals(mediaType)) {
-                    return enumValue;
-                }
-            }
-        }
-        return Format.UNKNOWN;
-    }
-
     Format(final String name,
            final List<String> mediaTypes,
            final List<String> extensions,

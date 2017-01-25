@@ -206,7 +206,7 @@ public class ImageResource extends IIIF1Resource {
         Variant preferred = getPreferredVariant(variants);
         if (preferred != null) {
             String mediaTypeStr = preferred.getMediaType().toString();
-            return Format.inferFormat(new MediaType(mediaTypeStr));
+            return new MediaType(mediaTypeStr).toFormat();
         }
         return null;
     }
