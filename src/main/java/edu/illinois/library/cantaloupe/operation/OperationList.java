@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;

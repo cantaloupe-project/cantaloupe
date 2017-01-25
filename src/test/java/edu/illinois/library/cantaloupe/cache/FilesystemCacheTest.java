@@ -10,7 +10,7 @@ import edu.illinois.library.cantaloupe.operation.Format;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
-import edu.illinois.library.cantaloupe.operation.Identifier;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.FileUtils;

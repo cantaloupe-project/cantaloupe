@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
 import org.restlet.data.MediaType;

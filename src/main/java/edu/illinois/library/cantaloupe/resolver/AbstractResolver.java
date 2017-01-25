@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.operation.Format;
-import edu.illinois.library.cantaloupe.operation.Identifier;
+import edu.illinois.library.cantaloupe.image.Identifier;
 
 abstract class AbstractResolver {
 

@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.operation;
+package edu.illinois.library.cantaloupe.image;
 
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;

@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.operation.redaction;
 
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.operation.Identifier;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;

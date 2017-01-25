@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import edu.illinois.library.cantaloupe.operation.Identifier;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.ImageInfo;
 

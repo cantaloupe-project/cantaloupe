@@ -5,7 +5,7 @@ import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.SourceCache;
 import edu.illinois.library.cantaloupe.cache.SourceCacheDisabledException;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.operation.Identifier;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.IncompatibleResolverException;
 import edu.illinois.library.cantaloupe.processor.Processor;
