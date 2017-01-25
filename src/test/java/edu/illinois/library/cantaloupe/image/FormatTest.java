@@ -1,10 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
-import org.restlet.data.MediaType;
 
 import java.util.Map;
 
@@ -75,21 +72,36 @@ public class FormatTest extends BaseTest {
 
     @Test
     public void testInferFormatWithMediaTypeString() {
-        assertEquals(Format.AVI, Format.inferFormat("video/avi"));
-        assertEquals(Format.BMP, Format.inferFormat("image/bmp"));
-        assertEquals(Format.DCM, Format.inferFormat("application/dicom"));
-        assertEquals(Format.GIF, Format.inferFormat("image/gif"));
-        assertEquals(Format.JP2, Format.inferFormat("image/jp2"));
-        assertEquals(Format.JPG, Format.inferFormat("image/jpeg"));
-        assertEquals(Format.MOV, Format.inferFormat("video/quicktime"));
-        assertEquals(Format.MP4, Format.inferFormat("video/mp4"));
-        assertEquals(Format.MPG, Format.inferFormat("video/mpeg"));
-        assertEquals(Format.PDF, Format.inferFormat("application/pdf"));
-        assertEquals(Format.PNG, Format.inferFormat("image/png"));
-        assertEquals(Format.SID, Format.inferFormat("image/x-mrsid"));
-        assertEquals(Format.TIF, Format.inferFormat("image/tiff"));
-        assertEquals(Format.WEBM, Format.inferFormat("video/webm"));
-        assertEquals(Format.WEBP, Format.inferFormat("image/webp"));
+        assertEquals(Format.AVI,
+                Format.inferFormat(new MediaType("video/avi")));
+        assertEquals(Format.BMP,
+                Format.inferFormat(new MediaType("image/bmp")));
+        assertEquals(Format.DCM,
+                Format.inferFormat(new MediaType("application/dicom")));
+        assertEquals(Format.GIF,
+                Format.inferFormat(new MediaType("image/gif")));
+        assertEquals(Format.JP2,
+                Format.inferFormat(new MediaType("image/jp2")));
+        assertEquals(Format.JPG,
+                Format.inferFormat(new MediaType("image/jpeg")));
+        assertEquals(Format.MOV,
+                Format.inferFormat(new MediaType("video/quicktime")));
+        assertEquals(Format.MP4,
+                Format.inferFormat(new MediaType("video/mp4")));
+        assertEquals(Format.MPG,
+                Format.inferFormat(new MediaType("video/mpeg")));
+        assertEquals(Format.PDF,
+                Format.inferFormat(new MediaType("application/pdf")));
+        assertEquals(Format.PNG,
+                Format.inferFormat(new MediaType("image/png")));
+        assertEquals(Format.SID,
+                Format.inferFormat(new MediaType("image/x-mrsid")));
+        assertEquals(Format.TIF,
+                Format.inferFormat(new MediaType("image/tiff")));
+        assertEquals(Format.WEBM,
+                Format.inferFormat(new MediaType("video/webm")));
+        assertEquals(Format.WEBP,
+                Format.inferFormat(new MediaType("image/webp")));
     }
 
     @Test

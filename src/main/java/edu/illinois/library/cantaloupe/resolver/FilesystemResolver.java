@@ -194,8 +194,7 @@ class FilesystemResolver extends AbstractResolver
         final File file = new File(getPathname(File.separator));
         List<MediaType> detectedTypes = MediaType.detectMediaTypes(file);
         if (detectedTypes.size() > 0) {
-            String detectedType = detectedTypes.toArray()[0].toString();
-            format = Format.inferFormat(detectedType);
+            format = Format.inferFormat(detectedTypes.get(0));
         }
         return format;
     }

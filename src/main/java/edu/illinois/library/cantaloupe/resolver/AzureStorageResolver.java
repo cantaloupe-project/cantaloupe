@@ -9,6 +9,7 @@ import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
@@ -180,7 +181,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
             final String contentType = blob.getProperties().getContentType();
             // See if we can determine the format from the Content-Type header.
             if (contentType != null) {
-                sourceFormat = Format.inferFormat(contentType);
+                sourceFormat = Format.inferFormat(new MediaType(contentType));
             }
             if (sourceFormat == null || sourceFormat.equals(Format.UNKNOWN)) {
                 // Try to infer a format based on the identifier.

@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
@@ -142,7 +143,7 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
                 // JdbcResolver.function.media_type may contain a JavaScript
                 // function or null.
                 String functionResult = getMediaType();
-                String mediaType = null;
+                MediaType mediaType = null;
                 if (functionResult != null) {
                     // the function result may be a media type, or an SQL
                     // statement to look it up.
@@ -155,15 +156,15 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
                             statement.setString(1, getDatabaseIdentifier());
                             ResultSet resultSet = statement.executeQuery();
                             if (resultSet.next()) {
-                                mediaType = resultSet.getString(1);
+                                mediaType = new MediaType(resultSet.getString(1));
                             }
                         }
                     } else {
-                        mediaType = functionResult;
+                        mediaType = new MediaType(functionResult);
                     }
                 } else {
                     mediaType = Format.inferFormat(identifier).
-                            getPreferredMediaType().toString();
+                            getPreferredMediaType();
                 }
                 sourceFormat = Format.inferFormat(mediaType);
             } catch (ScriptException | SQLException |

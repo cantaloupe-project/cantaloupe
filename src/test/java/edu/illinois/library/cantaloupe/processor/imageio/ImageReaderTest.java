@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
+import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
@@ -44,7 +45,7 @@ public class ImageReaderTest extends BaseTest {
             if (mediaType.equals("image/jp2")) {
                 continue;
             }
-            final Format format = Format.inferFormat(mediaType);
+            final Format format = Format.inferFormat(new MediaType(mediaType));
             if (format != null && !format.equals(Format.UNKNOWN)) {
                 formats.add(format);
             }

@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
@@ -189,7 +190,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
             contentType = resource.getResponse().getHeaders().
                     getFirstValue("Content-Type", true);
             if (contentType != null) {
-                format = Format.inferFormat(contentType);
+                format = Format.inferFormat(new MediaType(contentType));
             }
         } catch (ResourceException e) {
             // nothing we can do but log it

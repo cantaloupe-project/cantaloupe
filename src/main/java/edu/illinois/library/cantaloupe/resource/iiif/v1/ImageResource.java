@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
@@ -205,7 +206,7 @@ public class ImageResource extends IIIF1Resource {
         Variant preferred = getPreferredVariant(variants);
         if (preferred != null) {
             String mediaTypeStr = preferred.getMediaType().toString();
-            return Format.inferFormat(mediaTypeStr);
+            return Format.inferFormat(new MediaType(mediaTypeStr));
         }
         return null;
     }

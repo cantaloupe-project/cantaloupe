@@ -141,10 +141,10 @@ public enum Format {
      * @return The source format corresponding to the given media type, or
      * <code>Format.UNKNOWN</code> if unknown.
      */
-    public static Format inferFormat(String mediaType) {
+    public static Format inferFormat(MediaType mediaType) {
         for (Format enumValue : Format.values()) {
             for (MediaType type : enumValue.getMediaTypes()) {
-                if (type.toString().equals(mediaType)) {
+                if (type.equals(mediaType)) {
                     return enumValue;
                 }
             }
