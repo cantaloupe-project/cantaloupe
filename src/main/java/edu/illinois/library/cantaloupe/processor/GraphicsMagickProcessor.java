@@ -329,9 +329,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                         final Info imageInfo,
                         final OutputStream outputStream)
             throws ProcessorException {
-        if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {
-            throw new UnsupportedOutputFormatException();
-        }
+        super.process(ops, imageInfo, outputStream);
 
         try (InputStream inputStream = streamSource.newInputStream()) {
             final List<String> args = getConvertArguments(ops, imageInfo.getSize());

@@ -244,9 +244,7 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
                         final Info imageInfo,
                         final OutputStream outputStream)
             throws ProcessorException {
-        if (!getAvailableOutputFormats().contains(opList.getOutputFormat())) {
-            throw new UnsupportedOutputFormatException();
-        }
+        super.process(opList, imageInfo, outputStream);
 
         // will receive stderr output from kdu_expand
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();

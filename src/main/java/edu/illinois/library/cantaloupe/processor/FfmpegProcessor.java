@@ -142,9 +142,7 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
                         final Info imageInfo,
                         final OutputStream outputStream)
             throws ProcessorException {
-        if (!getAvailableOutputFormats().contains(opList.getOutputFormat())) {
-            throw new UnsupportedOutputFormatException();
-        }
+        super.process(opList, imageInfo, outputStream);
 
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {

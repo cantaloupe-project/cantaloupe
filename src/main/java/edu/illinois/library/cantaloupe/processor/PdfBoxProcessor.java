@@ -82,6 +82,8 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
     public void process(OperationList opList,
                         Info imageInfo,
                         OutputStream outputStream) throws ProcessorException {
+        super.process(opList, imageInfo, outputStream);
+
         try {
             // If the op list contains a scale operation, see if we can use
             // a reduction factor in order to use a scale-appropriate

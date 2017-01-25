@@ -121,9 +121,7 @@ class JaiProcessor extends AbstractImageIoProcessor
                         final Info imageInfo,
                         final OutputStream outputStream)
             throws ProcessorException {
-        if (!getAvailableOutputFormats().contains(opList.getOutputFormat())) {
-            throw new UnsupportedOutputFormatException();
-        }
+        super.process(opList, imageInfo, outputStream);
 
         final ImageReader reader = getReader();
         try {
