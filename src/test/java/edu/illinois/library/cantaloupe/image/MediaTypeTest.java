@@ -1,21 +1,22 @@
-package edu.illinois.library.cantaloupe.util;
+package edu.illinois.library.cantaloupe.image;
 
-import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.restlet.data.MediaType;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MediaTypeUtilTest {
+import static org.junit.Assert.*;
+
+public class MediaTypeTest {
 
     private static final Map<Format, File> files = new HashMap<>();
-    private MediaTypeUtil instance;
+
+    private MediaType instance;
 
     @BeforeClass
     public static void beforeClass() throws IOException {
@@ -30,17 +31,20 @@ public class MediaTypeUtilTest {
 
     @Before
     public void setUp() {
-        instance = new MediaTypeUtil();
+        instance = new MediaType("image/jpeg");
     }
 
+    /* detectMediaTypes(File) */
+
     @Test
-    public void testDetectMediaTypeWithString() {
+    public void testDetectMediaTypes() {
         for (Format format : files.keySet()) {
             File file = files.get(format);
             MediaType preferredMediaType = format.getPreferredMediaType();
 
             try {
-                boolean result = instance.detectMediaTypes(file).contains(preferredMediaType);
+                boolean result = MediaType.detectMediaTypes(file).
+                        contains(preferredMediaType);
                 if (!result) {
                     System.out.println("format: " + format +
                             "\tfile: " + file.getName() +
@@ -51,6 +55,39 @@ public class MediaTypeUtilTest {
                 System.err.println(e.getMessage());
             }
         }
+    }
+
+    /* MediaType(String) */
+
+    @Test
+    public void testConstructorWithValidString() {
+        instance = new MediaType("image/jpeg");
+        assertEquals("image/jpeg", instance.toString());
+    }
+
+    @Test
+    public void testConstructorWithInvalidString() {
+        try {
+            new MediaType("cats");
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+    }
+
+    /* equals() */
+
+    @Test
+    public void testEquals() {
+        assertTrue(instance.equals("image/jpeg"));
+        assertFalse(instance.equals("image/gif"));
+    }
+
+    /* toString() */
+
+    @Test
+    public void testToString() {
+        assertEquals("image/jpeg", instance.toString());
     }
 
 }

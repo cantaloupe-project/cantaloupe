@@ -4,12 +4,11 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import edu.illinois.library.cantaloupe.util.MediaTypeUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.restlet.data.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -192,9 +191,8 @@ class FilesystemResolver extends AbstractResolver
      */
     private Format detectSourceFormat() throws IOException {
         Format format = Format.UNKNOWN;
-        final String pathname = getPathname(File.separator);
-        List<MediaType> detectedTypes =
-                new MediaTypeUtil().detectMediaTypes(pathname);
+        final File file = new File(getPathname(File.separator));
+        List<MediaType> detectedTypes = MediaType.detectMediaTypes(file);
         if (detectedTypes.size() > 0) {
             String detectedType = detectedTypes.toArray()[0].toString();
             format = Format.inferFormat(detectedType);

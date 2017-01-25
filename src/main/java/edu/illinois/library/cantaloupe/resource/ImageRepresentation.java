@@ -49,7 +49,8 @@ public class ImageRepresentation extends OutputRepresentation {
                                final OperationList opList,
                                final Disposition disposition,
                                final boolean bypassCache) {
-        super(opList.getOutputFormat().getPreferredMediaType());
+        super(new org.restlet.data.MediaType(
+                opList.getOutputFormat().getPreferredMediaType().toString()));
         this.imageInfo = imageInfo;
         this.processor = processor;
         this.opList = opList;

@@ -1,9 +1,9 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.io.IOUtils;
 import org.restlet.data.Disposition;
-import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ public class CachedImageRepresentation extends OutputRepresentation {
     public CachedImageRepresentation(MediaType mediaType,
                                      Disposition disposition,
                                      InputStream inputStream) {
-        super(mediaType);
+        super(new org.restlet.data.MediaType(mediaType.toString()));
         this.inputStream = inputStream;
         setDisposition(disposition);
     }

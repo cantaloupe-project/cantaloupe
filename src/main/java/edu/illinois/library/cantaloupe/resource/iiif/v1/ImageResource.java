@@ -199,7 +199,8 @@ public class ImageResource extends IIIF1Resource {
     private Format getPreferredOutputFormat(Set<Format> limitToFormats) {
         List<Variant> variants = new ArrayList<>();
         for (Format format : limitToFormats) {
-            variants.add(new Variant(format.getPreferredMediaType()));
+            variants.add(new Variant(new org.restlet.data.MediaType(
+                    format.getPreferredMediaType().toString())));
         }
         Variant preferred = getPreferredVariant(variants);
         if (preferred != null) {
