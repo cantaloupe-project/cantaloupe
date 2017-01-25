@@ -6,7 +6,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.processor.ImageInfo;
+import edu.illinois.library.cantaloupe.image.ImageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

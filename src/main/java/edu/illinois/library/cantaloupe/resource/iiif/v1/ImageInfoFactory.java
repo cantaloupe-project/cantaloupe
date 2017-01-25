@@ -18,7 +18,7 @@ abstract class ImageInfoFactory {
 
     static ImageInfo newImageInfo(final String imageUri,
                                   final Processor processor,
-                                  final edu.illinois.library.cantaloupe.processor.ImageInfo cacheInfo)
+                                  final edu.illinois.library.cantaloupe.image.ImageInfo cacheInfo)
             throws ProcessorException {
         // We want to use the orientation-aware full size, which takes the
         // embedded orientation into account.
@@ -36,7 +36,7 @@ abstract class ImageInfoFactory {
         // calculate a tile size close to MIN_TILE_SIZE_CONFIG_KEY pixels.
         // Otherwise, use the smallest multiple of the tile size above
         // MIN_TILE_SIZE_CONFIG_KEY of image resolution 0.
-        final edu.illinois.library.cantaloupe.processor.ImageInfo.Image firstImage =
+        final edu.illinois.library.cantaloupe.image.ImageInfo.Image firstImage =
                 cacheInfo.getImages().get(0);
         Dimension virtualTileSize = firstImage.getOrientationTileSize();
 
