@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.util;
 
-import edu.illinois.library.cantaloupe.operation.Format;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -11,8 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.junit.Assert.*;
 
 public class MediaTypeUtilTest {
 

@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.operation;
 
 import static org.junit.Assert.*;
 
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;

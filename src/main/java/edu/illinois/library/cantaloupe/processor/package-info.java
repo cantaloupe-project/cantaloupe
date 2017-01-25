@@ -13,7 +13,7 @@
  * processors that can't read (as efficiently or at all) from streams.</p>
  *
  * <p>Format availability (or "awareness") is governed by the
- * {@link edu.illinois.library.cantaloupe.operation.Format} enum. If this does not
+ * {@link edu.illinois.library.cantaloupe.image.Format} enum. If this does not
  * already contain the formats you wish to support, you will need to add
  * them.</p>
  *
