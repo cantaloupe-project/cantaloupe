@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.operation;
+package edu.illinois.library.cantaloupe.image;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
