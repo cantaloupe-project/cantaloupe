@@ -44,17 +44,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * not to preserve metadata means telling it not to preserve an ICC profile.
  * Therefore, metadata always passes through.</p>
  */
-class ImageMagickProcessor extends AbstractMagickProcessor implements StreamProcessor {
+class ImageMagickProcessor extends AbstractMagickProcessor
+        implements StreamProcessor {
 
     private static Logger logger = LoggerFactory.
             getLogger(ImageMagickProcessor.class);
 
     static final String BACKGROUND_COLOR_CONFIG_KEY =
             "ImageMagickProcessor.background_color";
-    static final String NORMALIZE_CONFIG_KEY = "ImageMagickProcessor.normalize";
+    static final String NORMALIZE_CONFIG_KEY =
+            "ImageMagickProcessor.normalize";
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "ImageMagickProcessor.path_to_binaries";
-    static final String SHARPEN_CONFIG_KEY = "ImageMagickProcessor.sharpen";
+    static final String SHARPEN_CONFIG_KEY =
+            "ImageMagickProcessor.sharpen";
 
     // ImageMagick 7 uses a `magick` command. Earlier versions use `convert`
     // and `identify`.
@@ -63,15 +66,6 @@ class ImageMagickProcessor extends AbstractMagickProcessor implements StreamProc
 
     // Lazy-initialized by getFormats()
     protected static HashMap<Format, Set<Format>> supportedFormats;
-
-    static {
-        // Tell ProcessStarter where to find the binaries.
-        final Configuration config = ConfigurationFactory.getInstance();
-        final String path = config.getString(PATH_TO_BINARIES_CONFIG_KEY);
-        if (path != null && path.length() > 0) {
-            ProcessStarter.setGlobalSearchPath(path);
-        }
-    }
 
     /**
      * <p>Checks for ImageMagick 7 by attempting to invoke the `magick`

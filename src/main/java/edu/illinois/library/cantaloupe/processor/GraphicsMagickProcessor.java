@@ -53,7 +53,8 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             "GraphicsMagickProcessor.background_color";
     static final String NORMALIZE_CONFIG_KEY =
             "GraphicsMagickProcessor.normalize";
-    static final String SHARPEN_CONFIG_KEY = "GraphicsMagickProcessor.sharpen";
+    static final String SHARPEN_CONFIG_KEY =
+            "GraphicsMagickProcessor.sharpen";
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "GraphicsMagickProcessor.path_to_binaries";
 
@@ -155,14 +156,6 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             }
         }
         return supportedFormats;
-    }
-
-    GraphicsMagickProcessor() {
-        final Configuration config = ConfigurationFactory.getInstance();
-        final String path = config.getString(PATH_TO_BINARIES_CONFIG_KEY);
-        if (path != null && path.length() > 0) {
-            ProcessStarter.setGlobalSearchPath(path);
-        }
     }
 
     @Override
