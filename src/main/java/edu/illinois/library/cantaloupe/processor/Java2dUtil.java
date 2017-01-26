@@ -680,15 +680,15 @@ public abstract class Java2dUtil {
             // Try to use the requested resample filter.
             ResampleFilter filter = null;
             if (scale.getFilter() != null) {
-                filter = scale.getFilter().getResampleFilter();
+                filter = scale.getFilter().toResampleFilter();
             }
             // No particular filter requested, so select a default.
             if (filter == null) {
                 if (targetSize.width < sourceSize.width ||
                         targetSize.height < sourceSize.height) {
-                    filter = DEFAULT_DOWNSCALE_FILTER.getResampleFilter();
+                    filter = DEFAULT_DOWNSCALE_FILTER.toResampleFilter();
                 } else {
-                    filter = DEFAULT_UPSCALE_FILTER.getResampleFilter();
+                    filter = DEFAULT_UPSCALE_FILTER.toResampleFilter();
                 }
             }
             resampleOp.setFilter(filter);

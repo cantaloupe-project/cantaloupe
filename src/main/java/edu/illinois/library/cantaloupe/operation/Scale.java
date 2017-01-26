@@ -43,13 +43,6 @@ public class Scale implements Operation {
         }
 
         /**
-         * @return Equivalent ResampleFilter instance.
-         */
-        public ResampleFilter getResampleFilter() {
-            return resampleFilter;
-        }
-
-        /**
          * @param fullSize Full size of the source image on which the operation
          *                 is being applied.
          * @return The same dimension.
@@ -89,6 +82,13 @@ public class Scale implements Operation {
             map.put("class", Filter.class.getSimpleName());
             map.put("name", getName());
             return map;
+        }
+
+        /**
+         * @return Equivalent ResampleFilter instance.
+         */
+        public ResampleFilter toResampleFilter() {
+            return resampleFilter;
         }
 
         /**

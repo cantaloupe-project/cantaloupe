@@ -12,6 +12,31 @@ import static org.junit.Assert.*;
 
 public class ScaleTest extends BaseTest {
 
+
+    public static class FilterTest extends BaseTest {
+
+        @Test
+        public void testToResampleFilter() {
+            assertSame(ResampleFilters.getBellFilter(),
+                    Scale.Filter.BELL.toResampleFilter());
+            assertSame(ResampleFilters.getBiCubicFilter(),
+                    Scale.Filter.BICUBIC.toResampleFilter());
+            assertSame(ResampleFilters.getBoxFilter(),
+                    Scale.Filter.BOX.toResampleFilter());
+            assertSame(ResampleFilters.getBSplineFilter(),
+                    Scale.Filter.BSPLINE.toResampleFilter());
+            assertSame(ResampleFilters.getHermiteFilter(),
+                    Scale.Filter.HERMITE.toResampleFilter());
+            assertSame(ResampleFilters.getLanczos3Filter(),
+                    Scale.Filter.LANCZOS3.toResampleFilter());
+            assertSame(ResampleFilters.getMitchellFilter(),
+                    Scale.Filter.MITCHELL.toResampleFilter());
+            assertSame(ResampleFilters.getTriangleFilter(),
+                    Scale.Filter.TRIANGLE.toResampleFilter());
+        }
+
+    }
+
     private Scale scale;
 
     @Before
@@ -42,26 +67,6 @@ public class ScaleTest extends BaseTest {
         assertEquals(Scale.Mode.ASPECT_FIT_HEIGHT, scale.getMode());
         assertEquals(300, (long) scale.getWidth());
         assertEquals(200, (long) scale.getHeight());
-    }
-
-    @Test
-    public void testFilterGetResampleFilter() {
-        assertSame(ResampleFilters.getBellFilter(),
-                Scale.Filter.BELL.getResampleFilter());
-        assertSame(ResampleFilters.getBiCubicFilter(),
-                Scale.Filter.BICUBIC.getResampleFilter());
-        assertSame(ResampleFilters.getBoxFilter(),
-                Scale.Filter.BOX.getResampleFilter());
-        assertSame(ResampleFilters.getBSplineFilter(),
-                Scale.Filter.BSPLINE.getResampleFilter());
-        assertSame(ResampleFilters.getHermiteFilter(),
-                Scale.Filter.HERMITE.getResampleFilter());
-        assertSame(ResampleFilters.getLanczos3Filter(),
-                Scale.Filter.LANCZOS3.getResampleFilter());
-        assertSame(ResampleFilters.getMitchellFilter(),
-                Scale.Filter.MITCHELL.getResampleFilter());
-        assertSame(ResampleFilters.getTriangleFilter(),
-                Scale.Filter.TRIANGLE.getResampleFilter());
     }
 
     @Test
