@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -65,7 +66,117 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     private static final Object lock = new Object();
 
     // Lazy-initialized by getFormats()
-    protected static HashMap<Format, Set<Format>> supportedFormats;
+    protected static Map<Format, Set<Format>> supportedFormats;
+
+    /**
+     * @return Map of available output formats for all known source formats,
+     * based on information reported by <code>identify -list format</code>.
+     */
+    private static synchronized Map<Format, Set<Format>> getFormats() {
+        if (supportedFormats == null) {
+            final Set<Format> formats = new HashSet<>();
+            final Set<Format> outputFormats = new HashSet<>();
+
+            // Retrieve the output of the `identify -list format` command,
+            // which contains a list of all supported formats.
+            final ProcessBuilder pb = new ProcessBuilder();
+            final List<String> command = new ArrayList<>();
+            if (isUsingVersion7()) {
+                command.add(getPath("magick"));
+                command.add("identify");
+            } else {
+                command.add(getPath("identify"));
+            }
+            command.add("-list");
+            command.add("format");
+            pb.command(command);
+            final String commandString = StringUtils.join(pb.command(), " ");
+
+            try {
+                logger.info("getFormats(): invoking {}", commandString);
+                final Process process = pb.start();
+
+                try (final InputStream processInputStream = process.getInputStream()) {
+                    BufferedReader stdInput = new BufferedReader(
+                            new InputStreamReader(processInputStream));
+                    String s;
+                    while ((s = stdInput.readLine()) != null) {
+                        s = s.trim();
+                        if (s.startsWith("BMP")) {
+                            formats.add(Format.BMP);
+                            if (s.contains(" rw")) {
+                                outputFormats.add(Format.BMP);
+                            }
+                        } else if (s.startsWith("DCM")) {
+                            formats.add(Format.DCM);
+                            if (s.contains(" rw")) {
+                                outputFormats.add(Format.DCM);
+                            }
+                        } else if (s.startsWith("GIF")) {
+                            formats.add(Format.GIF);
+                            if (s.contains(" rw")) {
+                                outputFormats.add(Format.GIF);
+                            }
+                        } else if (s.startsWith("JP2")) {
+                            formats.add(Format.JP2);
+                            if (s.contains(" rw")) {
+                                outputFormats.add(Format.JP2);
+                            }
+                        } else if (s.startsWith("JPEG")) {
+                            formats.add(Format.JPG);
+                            if (s.contains(" rw")) {
+                                outputFormats.add(Format.JPG);
+                            }
+                        } else if (s.startsWith("PNG")) {
+                            formats.add(Format.PNG);
+                            if (s.contains(" rw")) {
+                                outputFormats.add(Format.PNG);
+                            }
+                        } else if (s.startsWith("PDF") && s.contains(" rw")) {
+                            outputFormats.add(Format.PDF);
+                        } else if (s.startsWith("TIFF")) {
+                            formats.add(Format.TIF);
+                            if (s.contains(" rw")) {
+                                outputFormats.add(Format.TIF);
+                            }
+                        } else if (s.startsWith("WEBP")) {
+                            formats.add(Format.WEBP);
+                            if (s.contains(" rw")) {
+                                outputFormats.add(Format.WEBP);
+                            }
+                        }
+                    }
+                    process.waitFor();
+                } catch (InterruptedException e) {
+                    logger.error("getFormats(): {}", e.getMessage());
+                }
+            } catch (IOException e) {
+                logger.error("getFormats(): {}", e.getMessage());
+            }
+
+            supportedFormats = new HashMap<>();
+            for (Format format : formats) {
+                supportedFormats.put(format, outputFormats);
+            }
+        }
+        return supportedFormats;
+    }
+
+    /**
+     * @param binaryName Name of an executable
+     * @return
+     */
+    private static String getPath(String binaryName) {
+        String path = ConfigurationFactory.getInstance().
+                getString(PATH_TO_BINARIES_CONFIG_KEY);
+        if (path != null && path.length() > 0) {
+            path = StringUtils.stripEnd(path, File.separator) + File.separator +
+                    binaryName;
+        } else {
+            path = binaryName;
+        }
+        return path;
+    }
 
     /**
      * <p>Checks for ImageMagick 7 by attempting to invoke the `magick`
@@ -117,9 +228,11 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         final List<String> args = new ArrayList<>();
 
         if (isUsingVersion7()) {
-            args.add("magick");
+            args.add(getPath("magick"));
+            args.add("convert");
+        } else {
+            args.add(getPath("convert"));
         }
-        args.add("convert");
         args.add(format.getPreferredExtension() + ":-"); // read from stdin
 
         // Normalization needs to happen before cropping to maintain the
@@ -236,13 +349,34 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     }
 
     @Override
+    public void process(final OperationList ops,
+                        final Info imageInfo,
+                        final OutputStream outputStream)
+            throws ProcessorException {
+        super.process(ops, imageInfo, outputStream);
+
+        try (InputStream inputStream = streamSource.newInputStream()) {
+            final List<String> args = getConvertArguments(ops, imageInfo.getSize());
+            final ProcessStarter cmd = new ProcessStarter();
+            cmd.setInputProvider(new Pipe(inputStream, null));
+            cmd.setOutputConsumer(new Pipe(null, outputStream));
+            logger.info("process(): invoking {}", StringUtils.join(args, " "));
+            cmd.run(args);
+        } catch (Exception e) {
+            throw new ProcessorException(e.getMessage(), e);
+        }
+    }
+
+    @Override
     public Info readImageInfo() throws ProcessorException {
         try (InputStream inputStream = streamSource.newInputStream()) {
             final List<String> args = new ArrayList<>();
             if (isUsingVersion7()) {
-                args.add("magick");
+                args.add(getPath("magick"));
+                args.add("identify");
+            } else {
+                args.add(getPath("identify"));
             }
-            args.add("identify");
             args.add("-ping");
             args.add("-format");
             args.add("%w\n%h\n%r");
@@ -262,135 +396,6 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             final int height = Integer.parseInt(output.get(1));
             return new Info(width, height, width, height,
                     getSourceFormat());
-        } catch (Exception e) {
-            throw new ProcessorException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * @param binaryName Name of an executable
-     * @return
-     */
-    private static String getPath(String binaryName) {
-        String path = ConfigurationFactory.getInstance().
-                getString(PATH_TO_BINARIES_CONFIG_KEY);
-        if (path != null && path.length() > 0) {
-            path = StringUtils.stripEnd(path, File.separator) + File.separator +
-                    binaryName;
-        } else {
-            path = binaryName;
-        }
-        return path;
-    }
-
-    /**
-     * @return Map of available output formats for all known source formats,
-     * based on information reported by <code>identify -list format</code>.
-     */
-    private static synchronized HashMap<Format, Set<Format>> getFormats() {
-        if (supportedFormats == null) {
-            final Set<Format> formats = new HashSet<>();
-            final Set<Format> outputFormats = new HashSet<>();
-
-            // Retrieve the output of the `identify -list format` command,
-            // which contains a list of all supported formats.
-            final ProcessBuilder pb = new ProcessBuilder();
-            final List<String> command = new ArrayList<>();
-            if (isUsingVersion7()) {
-                command.add(getPath("magick"));
-                command.add("identify");
-            } else {
-                command.add(getPath("identify"));
-            }
-            command.add("-list");
-            command.add("format");
-            pb.command(command);
-            final String commandString = StringUtils.join(pb.command(), " ");
-
-            try {
-                logger.info("getFormats(): invoking {}", commandString);
-                final Process process = pb.start();
-
-                try (final InputStream processInputStream = process.getInputStream()) {
-                    BufferedReader stdInput = new BufferedReader(
-                            new InputStreamReader(processInputStream));
-                    String s;
-                    while ((s = stdInput.readLine()) != null) {
-                        s = s.trim();
-                        if (s.startsWith("BMP")) {
-                            formats.add(Format.BMP);
-                            if (s.contains(" rw")) {
-                                outputFormats.add(Format.BMP);
-                            }
-                        } else if (s.startsWith("DCM")) {
-                            formats.add(Format.DCM);
-                            if (s.contains(" rw")) {
-                                outputFormats.add(Format.DCM);
-                            }
-                        } else if (s.startsWith("GIF")) {
-                            formats.add(Format.GIF);
-                            if (s.contains(" rw")) {
-                                outputFormats.add(Format.GIF);
-                            }
-                        } else if (s.startsWith("JP2")) {
-                            formats.add(Format.JP2);
-                            if (s.contains(" rw")) {
-                                outputFormats.add(Format.JP2);
-                            }
-                        } else if (s.startsWith("JPEG")) {
-                            formats.add(Format.JPG);
-                            if (s.contains(" rw")) {
-                                outputFormats.add(Format.JPG);
-                            }
-                        } else if (s.startsWith("PNG")) {
-                            formats.add(Format.PNG);
-                            if (s.contains(" rw")) {
-                                outputFormats.add(Format.PNG);
-                            }
-                        } else if (s.startsWith("PDF") && s.contains(" rw")) {
-                            outputFormats.add(Format.PDF);
-                        } else if (s.startsWith("TIFF")) {
-                            formats.add(Format.TIF);
-                            if (s.contains(" rw")) {
-                                outputFormats.add(Format.TIF);
-                            }
-                        } else if (s.startsWith("WEBP")) {
-                            formats.add(Format.WEBP);
-                            if (s.contains(" rw")) {
-                                outputFormats.add(Format.WEBP);
-                            }
-                        }
-                    }
-                    process.waitFor();
-                } catch (InterruptedException e) {
-                    logger.error("getFormats(): {}", e.getMessage());
-                }
-            } catch (IOException e) {
-                logger.error("getFormats(): {}", e.getMessage());
-            }
-
-            supportedFormats = new HashMap<>();
-            for (Format format : formats) {
-                supportedFormats.put(format, outputFormats);
-            }
-        }
-        return supportedFormats;
-    }
-
-    @Override
-    public void process(final OperationList ops,
-                        final Info imageInfo,
-                        final OutputStream outputStream)
-            throws ProcessorException {
-        super.process(ops, imageInfo, outputStream);
-
-        try (InputStream inputStream = streamSource.newInputStream()) {
-            final List<String> args = getConvertArguments(ops, imageInfo.getSize());
-            final ProcessStarter cmd = new ProcessStarter();
-            cmd.setInputProvider(new Pipe(inputStream, null));
-            cmd.setOutputConsumer(new Pipe(null, outputStream));
-            logger.info("process(): invoking {}", StringUtils.join(args, " "));
-            cmd.run(args);
         } catch (Exception e) {
             throw new ProcessorException(e.getMessage(), e);
         }

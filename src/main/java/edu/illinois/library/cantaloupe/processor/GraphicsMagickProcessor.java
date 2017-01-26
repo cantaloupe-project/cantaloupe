@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -49,39 +50,23 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     private static Logger logger = LoggerFactory.
             getLogger(GraphicsMagickProcessor.class);
 
-    static final String BACKGROUND_COLOR_CONFIG_KEY =
+    private static final String BACKGROUND_COLOR_CONFIG_KEY =
             "GraphicsMagickProcessor.background_color";
-    static final String NORMALIZE_CONFIG_KEY =
+    private static final String NORMALIZE_CONFIG_KEY =
             "GraphicsMagickProcessor.normalize";
-    static final String SHARPEN_CONFIG_KEY =
+    private static final String SHARPEN_CONFIG_KEY =
             "GraphicsMagickProcessor.sharpen";
-    static final String PATH_TO_BINARIES_CONFIG_KEY =
+    private static final String PATH_TO_BINARIES_CONFIG_KEY =
             "GraphicsMagickProcessor.path_to_binaries";
 
     // Lazy-initialized by getFormats()
-    private static HashMap<Format, Set<Format>> supportedFormats;
-
-    /**
-     * @param binaryName Name of an executable
-     * @return
-     */
-    private static String getPath(String binaryName) {
-        String path = ConfigurationFactory.getInstance().
-                getString(PATH_TO_BINARIES_CONFIG_KEY);
-        if (path != null && path.length() > 0) {
-            path = StringUtils.stripEnd(path, File.separator) + File.separator +
-                    binaryName;
-        } else {
-            path = binaryName;
-        }
-        return path;
-    }
+    private static Map<Format, Set<Format>> supportedFormats;
 
     /**
      * @return Map of available output formats for all known source formats,
      * based on information reported by <code>gm version</code>.
      */
-    private static synchronized HashMap<Format, Set<Format>> getFormats() {
+    private static synchronized Map<Format, Set<Format>> getFormats() {
         if (supportedFormats == null) {
             final Set<Format> formats = new HashSet<>();
             final Set<Format> outputFormats = new HashSet<>();
@@ -158,6 +143,22 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
         return supportedFormats;
     }
 
+    /**
+     * @param binaryName Name of an executable.
+     * @return
+     */
+    private static String getPath(final String binaryName) {
+        String path = ConfigurationFactory.getInstance().
+                getString(PATH_TO_BINARIES_CONFIG_KEY);
+        if (path != null && path.length() > 0) {
+            path = StringUtils.stripEnd(path, File.separator) + File.separator +
+                    binaryName;
+        } else {
+            path = binaryName;
+        }
+        return path;
+    }
+
     @Override
     public Set<Format> getAvailableOutputFormats() {
         Set<Format> formats = getFormats().get(format);
@@ -170,7 +171,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     private List<String> getConvertArguments(final OperationList ops,
                                              final Dimension fullSize) {
         final List<String> args = new ArrayList<>();
-        args.add("gm");
+        args.add(getPath("gm"));
         args.add("convert");
         args.add(format.getPreferredExtension() + ":-"); // read from stdin
 
@@ -288,10 +289,29 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     }
 
     @Override
+    public void process(final OperationList ops,
+                        final Info imageInfo,
+                        final OutputStream outputStream)
+            throws ProcessorException {
+        super.process(ops, imageInfo, outputStream);
+
+        try (InputStream inputStream = streamSource.newInputStream()) {
+            final List<String> args = getConvertArguments(ops, imageInfo.getSize());
+            final ProcessStarter cmd = new ProcessStarter();
+            cmd.setInputProvider(new Pipe(inputStream, null));
+            cmd.setOutputConsumer(new Pipe(null, outputStream));
+            logger.info("process(): invoking {}", StringUtils.join(args, " "));
+            cmd.run(args);
+        } catch (Exception e) {
+            throw new ProcessorException(e.getMessage(), e);
+        }
+    }
+
+    @Override
     public Info readImageInfo() throws ProcessorException {
         try (InputStream inputStream = streamSource.newInputStream()) {
             final List<String> args = new ArrayList<>();
-            args.add("gm");
+            args.add(getPath("gm"));
             args.add("identify");
             args.add("-ping");
             args.add("-format");
@@ -312,25 +332,6 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             final int height = Integer.parseInt(output.get(1));
             return new Info(width, height, width, height,
                     getSourceFormat());
-        } catch (Exception e) {
-            throw new ProcessorException(e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public void process(final OperationList ops,
-                        final Info imageInfo,
-                        final OutputStream outputStream)
-            throws ProcessorException {
-        super.process(ops, imageInfo, outputStream);
-
-        try (InputStream inputStream = streamSource.newInputStream()) {
-            final List<String> args = getConvertArguments(ops, imageInfo.getSize());
-            final ProcessStarter cmd = new ProcessStarter();
-            cmd.setInputProvider(new Pipe(inputStream, null));
-            cmd.setOutputConsumer(new Pipe(null, outputStream));
-            logger.info("process(): invoking {}", StringUtils.join(args, " "));
-            cmd.run(args);
         } catch (Exception e) {
             throw new ProcessorException(e.getMessage(), e);
         }
