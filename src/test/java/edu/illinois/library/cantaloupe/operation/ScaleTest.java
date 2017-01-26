@@ -418,7 +418,7 @@ public class ScaleTest extends BaseTest {
 
         scale = new Scale(50, 40, Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setFilter(Scale.Filter.LANCZOS3);
-        assertEquals("!50,40", scale.toString());
+        assertEquals("!50,40,lanczos3", scale.toString());
     }
 
 }

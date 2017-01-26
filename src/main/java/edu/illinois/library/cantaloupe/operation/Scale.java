@@ -21,14 +21,14 @@ public class Scale implements Operation {
      */
     public enum Filter implements Operation {
 
-        BELL("Bell", ResampleFilters.getBellFilter()),
-        BICUBIC("Bicubic", ResampleFilters.getBiCubicFilter()),
-        BOX("Box", ResampleFilters.getBoxFilter()),
-        BSPLINE("B-Spline", ResampleFilters.getBSplineFilter()),
-        HERMITE("Hermite", ResampleFilters.getHermiteFilter()),
-        LANCZOS3("Lanczos3", ResampleFilters.getLanczos3Filter()),
-        MITCHELL("Mitchell", ResampleFilters.getMitchellFilter()),
-        TRIANGLE("Triangle", ResampleFilters.getTriangleFilter());
+        BELL("bell", ResampleFilters.getBellFilter()),
+        BICUBIC("bicubic", ResampleFilters.getBiCubicFilter()),
+        BOX("box", ResampleFilters.getBoxFilter()),
+        BSPLINE("bspline", ResampleFilters.getBSplineFilter()),
+        HERMITE("hermite", ResampleFilters.getHermiteFilter()),
+        LANCZOS3("lanczos3", ResampleFilters.getLanczos3Filter()),
+        MITCHELL("mitchell", ResampleFilters.getMitchellFilter()),
+        TRIANGLE("triangle", ResampleFilters.getTriangleFilter());
 
         private String name;
         private ResampleFilter resampleFilter;
@@ -387,7 +387,7 @@ public class Scale implements Operation {
             }
         }
         if (getFilter() != null) {
-            str += "," + getFilter().toString().toLowerCase();
+            str += "," + getFilter().toString();
         }
         return str;
     }
