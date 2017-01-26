@@ -51,6 +51,18 @@ public class OperationListTest extends BaseTest {
         assertTrue(ops.iterator().hasNext());
     }
 
+    @Test
+    public void testAddWhileFrozen() {
+        ops = new OperationList();
+        ops.freeze();
+        try {
+            ops.add(new Rotate());
+            fail("Expected exception");
+        } catch (ImmutableException e) {
+            // pass
+        }
+    }
+
     /* clear() */
 
     @Test
@@ -71,6 +83,17 @@ public class OperationListTest extends BaseTest {
             opCount++;
         }
         assertEquals(0, opCount);
+    }
+
+    @Test
+    public void testClearWhileFrozen() {
+        ops.freeze();
+        try {
+            ops.clear();
+            fail("Expected exception");
+        } catch (ImmutableException e) {
+            // pass
+        }
     }
 
     /* compareTo(OperationList) */
@@ -333,6 +356,47 @@ public class OperationListTest extends BaseTest {
         }
         assertEquals(3, count);
     }
+
+    @Test
+    public void testIteratorCannotRemoveWhileFrozen() {
+        ops.freeze();
+        Iterator it = ops.iterator();
+        it.next();
+        try {
+            it.remove();
+            fail("Expected exception");
+        } catch (ImmutableException e) {
+            // pass
+        }
+    }
+
+    /* setIdentifier() */
+
+    @Test
+    public void testSetIdentifierWhileFrozen() {
+        ops.freeze();
+        try {
+            ops.setIdentifier(new Identifier("alpaca"));
+            fail("Expected exception");
+        } catch (ImmutableException e) {
+            // pass
+        }
+    }
+
+    /* setOutputFormat() */
+
+    @Test
+    public void testSetOutputFormatWhileFrozen() {
+        ops.freeze();
+        try {
+            ops.setOutputFormat(Format.GIF);
+            fail("Expected exception");
+        } catch (ImmutableException e) {
+            // pass
+        }
+    }
+
+    /* toFilename() */
 
     @Test
     public void testToFilename() {

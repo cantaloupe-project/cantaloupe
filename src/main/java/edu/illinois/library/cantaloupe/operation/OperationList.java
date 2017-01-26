@@ -36,6 +36,7 @@ public class OperationList implements Comparable<OperationList>,
     private static final Logger logger = LoggerFactory.
             getLogger(OperationList.class);
 
+    private boolean frozen = false;
     private Identifier identifier;
     private List<Operation> operations = new ArrayList<>();
     private Map<String,Object> options = new HashMap<>();
@@ -57,14 +58,21 @@ public class OperationList implements Comparable<OperationList>,
 
     /**
      * @param op Operation to add. Null values will be discarded.
+     * @throws ImmutableException If the instance is frozen.
      */
     public void add(Operation op) {
+        if (frozen) {
+            throw new ImmutableException();
+        }
         if (op != null) {
             operations.add(op);
         }
     }
 
     public void clear() {
+        if (frozen) {
+            throw new ImmutableException();
+        }
         operations.clear();
     }
 
@@ -79,6 +87,13 @@ public class OperationList implements Comparable<OperationList>,
             return obj.toString().equals(this.toString());
         }
         return super.equals(obj);
+    }
+
+    /**
+     * "Freezes" the instance so that operations cannot be added or removed.
+     */
+    public void freeze() {
+        this.frozen = true;
     }
 
     /**
@@ -113,9 +128,10 @@ public class OperationList implements Comparable<OperationList>,
     }
 
     /**
-     * @param fullSize
+     * @param fullSize Full size of the source image to which the instance is
+     *                 being applied.
      * @return Resulting dimensions when all operations are applied in sequence
-     * to an image of the given full size.
+     *         to an image of the given full size.
      */
     public Dimension getResultingSize(Dimension fullSize) {
         Dimension size = new Dimension(fullSize.width, fullSize.height);
@@ -132,7 +148,7 @@ public class OperationList implements Comparable<OperationList>,
      * possible.
      *
      * @return Whether the operations are effectively calling for the
-     * unmodified source image.
+     *         unmodified source image.
      */
     public boolean isNoOp() {
         return isNoOp(Format.inferFormat(this.getIdentifier()));
@@ -144,7 +160,7 @@ public class OperationList implements Comparable<OperationList>,
      *
      * @param format
      * @return Whether the operations are effectively calling for the
-     * unmodified source image.
+     *         unmodified source image.
      */
     public boolean isNoOp(Format format) {
         if (!this.getOutputFormat().equals(format)) {
@@ -166,16 +182,54 @@ public class OperationList implements Comparable<OperationList>,
         return true;
     }
 
+    /**
+     * @return Iterator over the instance's operations. If the instance is
+     *         frozen, {@link Iterator#remove()} will throw an
+     *         {@link ImmutableException}.
+     */
     @Override
     public Iterator<Operation> iterator() {
+        if (frozen) {
+            // Override Iterator to make remove() a no-op.
+            return new Iterator<Operation>() {
+                @Override
+                public boolean hasNext() {
+                    return operations.iterator().hasNext();
+                }
+
+                @Override
+                public Operation next() {
+                    return operations.iterator().next();
+                }
+
+                @Override
+                public void remove() {
+                    throw new ImmutableException();
+                }
+            };
+        }
         return operations.iterator();
     }
 
+    /**
+     * @param identifier
+     * @throws ImmutableException If the instance is frozen.
+     */
     public void setIdentifier(Identifier identifier) {
+        if (frozen) {
+            throw new ImmutableException();
+        }
         this.identifier = identifier;
     }
 
+    /**
+     * @param outputFormat
+     * @throws ImmutableException If the instance is frozen.
+     */
     public void setOutputFormat(Format outputFormat) {
+        if (frozen) {
+            throw new ImmutableException();
+        }
         this.outputFormat = outputFormat;
     }
 
