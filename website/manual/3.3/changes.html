@@ -13,25 +13,45 @@ title: What's New
 <h2>What's New in <span class="version">3.3</span></h2>
 
 <ul>
-  <li>Watermarks have been renamed to overlays.</li>
-  <li>Added textual overlays.</li>
-  <li>Overlay images can be located on the filesystem or an HTTP(S) server.</li>
-  <li>Overlay images are cached in memory for improved performance.</li>
-  <li>Added RESTful API endpoints to purge individual images from the cache and retrieve and update the configuration.</li>
-  <li>The <code>-Dcantaloupe.cache.purge</code> VM option accepts an identifier argument to purge content related to individual identifiers.</li>
-  <li>Added the ability to redirect to another URL via the <code>authorized?()</code> delegate method.</li>
-  <li>FilesystemCache supports identifiers longer than the filesystem's filename length limit.</li>
-  <li>Added experimental support for DICOM images to GraphicsMagickProcessor, ImageMagickProcessor, Java2dProcessor, and JaiProcessor. (This is a very complex format and not all variants are working.)</li>
-  <li>Added an auto-normalize option to all image processors.</li>
-  <li>ImageMagickProcessor supports ImageMagick 7.</li>
-  <li>FfmpegProcessor uses a Java 2D processing pipeline, giving it more capabilities.</li>
-  <li>Java2dProcessor and JaiProcessor support 16-bit LZW- and ZIP-compressed TIFFs.</li>
-  <li>Auto-computed tile sizes of source images with an odd number of pixels in a dimension in information responses are rounded up, to prevent clients from requesting extremely narrow edge tiles.</li>
-  <li>Added an optional delegate method invocation cache.</li>
-  <li>A <code>cache=false</code> URL query option can be used in all endpoints to bypass the derivative cache and disable the <code>Cache-Control</code> header per-request.</li>
-  <li>Operations that would have no effect in their context&mdash;for example, a crop to 300&times;200, followed by a scale-to-fit to 300 pixels wide&mdash;are skipped.</li>
-  <li>The delegate script is reloaded on change rather than per-request.</li>
-  <li>Added support for PDFs containing JBIG2-encoded images to PdfBoxProcessor.</li>
-  <li>Upgraded the PDFBox library.</li>
-  <li>In standalone mode, the application is initialized at startup rather than upon the first request.</li>
+  <li>Endpoints
+    <ul>
+      <li>Auto-computed tile sizes of source images with an odd number of pixels in a dimension in information responses are rounded up, to prevent clients from requesting extremely narrow edge tiles.</li>
+      <li>Operations that would have no effect in their context&mdash;for example, a crop to 0,0/300&times;200, followed by a scale-to-fit to 300 pixels wide&mdash;are skipped.</li>
+      <li>Added a RESTful API endpoint to retrieve and update the configuration.</li>
+    </ul>
+  </li>
+  <li>Processors
+    <ul>
+      <li>Added an auto-normalize option to all image processors.</li>
+      <li>Added experimental support for DICOM images to GraphicsMagickProcessor, ImageMagickProcessor, Java2dProcessor, and JaiProcessor. (This is a very complex format and not all variants are working.)</li>
+      <li>FfmpegProcessor uses a Java 2D processing pipeline, giving it more capabilities.</li>
+      <li>Java2dProcessor and JaiProcessor support 16-bit LZW- and ZIP-compressed TIFFs.</li>
+      <li>ImageMagickProcessor and GraphicsMagickProcessor support selectable resample filters.</li>
+      <li>ImageMagickProcessor supports ImageMagick 7.</li>
+      <li>PdfBoxProcessor supports JBIG2-encoded embedded images.</li>
+    </ul>
+  </li>
+  <li>Caching
+    <ul>
+      <li>The <code>-Dcantaloupe.cache.purge</code> VM option accepts an identifier argument to purge content related to individual identifiers.</li>
+      <li>Added a RESTful API endpoint to purge individual images from the cache.</li>
+      <li>A <code>cache=false</code> URL query option can be used in all endpoints to bypass the derivative cache and disable the <code>Cache-Control</code> header per-request.</li>
+      <li>FilesystemCache supports identifiers longer than the filesystem's filename length limit.</li>
+    </ul>
+  </li>
+  <li>Overlays
+    <ul>
+      <li>Watermarks have been renamed to overlays.</li>
+      <li>Added textual overlays.</li>
+      <li>Overlay images can be located on the filesystem or an HTTP(S) server.</li>
+      <li>Overlay images are cached in memory for improved performance.</li>
+    </ul>
+  </li>
+  <li>Delegate Script
+    <ul>
+      <li>Added an optional delegate method invocation cache.</li>
+      <li>Added the ability to redirect to another URL via the <code>authorized?()</code> delegate method.</li>
+      <li>The delegate script is reloaded on change rather than per-request.</li>
+    </ul>
+  </li>
 </ul>
