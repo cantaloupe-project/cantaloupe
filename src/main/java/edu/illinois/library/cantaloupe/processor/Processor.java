@@ -3,9 +3,11 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 import java.awt.Dimension;
+import java.io.File;
 import java.io.OutputStream;
 import java.util.Set;
 
@@ -27,7 +29,7 @@ public interface Processor {
 
     /**
      * @return Output formats available for the set source format, or an
-     * empty set if none.
+     *         empty set if none.
      */
     Set<Format> getAvailableOutputFormats();
 
@@ -38,37 +40,59 @@ public interface Processor {
 
     /**
      * @return All features supported by the processor for the set source
-     * format.
+     *         format.
      */
     Set<ProcessorFeature> getSupportedFeatures();
 
     /**
      * @return All qualities supported by the processor for the set source
-     * format.
+     *         format.
      */
     Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
     getSupportedIiif1_1Qualities();
 
     /**
      * @return All qualities supported by the processor for the set source
-     * format.
+     *         format.
      */
     Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
     getSupportedIiif2_0Qualities();
 
     /**
-     * <p>Performs the supplied operations on an image, reading it from the
-     * supplied stream, and writing the result to the supplied stream.</p>
+     * <p>Performs the supplied operations on an image, writing the result to
+     * the supplied output stream.</p>
      *
-     * <p>Operations should be applied in the order they occur in the
-     * OperationList iterator. For the sake of efficiency, implementations
-     * should check whether each one is a no-op using
-     * {@link edu.illinois.library.cantaloupe.operation.Operation#hasEffect(Dimension, OperationList)}
-     * before performing it.</p>
+     * <p>Implementation notes:</p>
      *
-     * <p>Implementations should get the full size of the source image from
-     * the sourceSize parameter instead of their {#link #getSize} method,
-     * for efficiency's sake.</p>
+     * <ul>
+     *     <li>The source to read from will differ depending on whether
+     *     implementations implement {@link FileProcessor} or
+     *     {@link StreamProcessor}:
+     *     <ul>
+     *         <li>If {@link FileProcessor#setSourceFile(File)} has been
+     *         called, but not
+     *         {@link StreamProcessor#setStreamSource(StreamSource)},
+     *         implementations should read from a file.</li>
+     *         <li>If vice versa, implementations should read from a
+     *         stream.</li>
+     *         <li>If both have been called, implementations can read from
+     *         either. If one or the other would be more efficient, they
+     *         should lean toward that.</li>
+     *     </ul>
+     *     </li>
+     *     <li>Operations should be applied in the order they occur in the
+     *     OperationList's iterator. For the sake of efficiency, implementations
+     *     should check whether each one is a no-op using
+     *     {@link edu.illinois.library.cantaloupe.operation.Operation#hasEffect(Dimension, OperationList)}
+     *     before performing it.</li>
+     *     <li>The OperationList will be in a frozen (immutable) state.
+     *     Implementations are discouraged from performing their own operations
+     *     separate from the ones in the list, as this could interfere with the
+     *     caching architecture.</li>
+     *     <li>Implementations should get the full size of the source image from
+     *     the {@link Info} argument and not their {#link #readImageInfo}
+     *     method, for efficiency's sake.</li>
+     * </ul>
      *
      * @param ops OperationList of the image to process.
      * @param sourceInfo Information about the source image.
@@ -81,7 +105,7 @@ public interface Processor {
                  OutputStream outputStream) throws ProcessorException;
 
     /**
-     * Reads and returns information about the source image.
+     * <p>Reads and returns information about the source image.</p>
      *
      * @return Information about the source image.
      * @throws ProcessorException
@@ -90,10 +114,9 @@ public interface Processor {
 
     /**
      * @param format Format of the source image. Will never be
-     *                     {@link Format#UNKNOWN}.
+     *               {@link Format#UNKNOWN}.
      * @throws UnsupportedSourceFormatException
      */
-    void setSourceFormat(Format format)
-            throws UnsupportedSourceFormatException;
+    void setSourceFormat(Format format) throws UnsupportedSourceFormatException;
 
 }
