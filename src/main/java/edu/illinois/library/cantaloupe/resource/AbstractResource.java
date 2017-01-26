@@ -253,8 +253,7 @@ public abstract class AbstractResource extends ServerResource {
                         UPSCALE_FILTER_CONFIG_KEY : DOWNSCALE_FILTER_CONFIG_KEY;
                 try {
                     final String filterStr = config.getString(filterKey);
-                    final Scale.Filter filter =
-                            Scale.Filter.valueOf(filterStr.toUpperCase());
+                    final Scale.Filter filter = Scale.Filter.named(filterStr);
                     logger.debug("addNonEndpointOperations(): using the {} scale filter",
                             filter);
                     scale.setFilter(filter);
