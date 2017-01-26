@@ -188,9 +188,12 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * Most image-processing operations (crop, scale, etc.) are specified in
+     * <p>Most image-processing operations (crop, scale, etc.) are specified in
      * a client request to an endpoint. This method adds any operations that
-     * endpoints have nothing to do with.
+     * endpoints have nothing to do with.</p>
+     *
+     * <p>It will also call {@link OperationList#freeze()} on the operation
+     * list.</p>
      *
      * @param opList Operation list to add the operations to.
      * @param fullSize Full size of the source image.
@@ -266,6 +269,11 @@ public abstract class AbstractResource extends ServerResource {
                 getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());
         }
+
+        // At this point, the list contains all operations it should, so it
+        // can be safely frozen. This will prevent it from being modified by
+        // clients (e.g. processors) which could interfere with e.g. caching.
+        opList.freeze();
     }
 
     /**
