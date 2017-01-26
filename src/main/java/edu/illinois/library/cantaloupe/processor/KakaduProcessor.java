@@ -86,8 +86,6 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
             "KakaduProcessor.normalize";
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "KakaduProcessor.path_to_binaries";
-    static final String SHARPEN_CONFIG_KEY =
-            "KakaduProcessor.sharpen";
 
     private static final short MAX_REDUCTION_FACTOR = 5;
 
@@ -323,7 +321,6 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
                     }
                     postProcess(image, hints, opList, imageInfo,
                             reductionFactor, Orientation.ROTATE_0, normalize,
-                            config.getFloat(SHARPEN_CONFIG_KEY, 0f),
                             outputStream);
                     final int code = process.waitFor();
                     if (code != 0) {

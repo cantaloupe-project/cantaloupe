@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
+import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import org.apache.commons.lang3.StringUtils;
 import org.im4java.process.ArrayListOutputConsumer;
@@ -57,8 +58,6 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             "ImageMagickProcessor.normalize";
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "ImageMagickProcessor.path_to_binaries";
-    static final String SHARPEN_CONFIG_KEY =
-            "ImageMagickProcessor.sharpen";
 
     // ImageMagick 7 uses a `magick` command. Earlier versions use `convert`
     // and `identify`.
@@ -366,18 +365,16 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                         args.add("-monochrome");
                         break;
                 }
+            } else if (op instanceof Sharpen) {
+                if (op.hasEffect(fullSize, ops)) {
+                    args.add("-unsharp");
+                    args.add(Double.toString(((Sharpen) op).getAmount()));
+                }
             }
         }
 
         args.add("-depth");
         args.add("8");
-
-        // Apply the sharpen operation, if present.
-        final double sharpenValue = config.getDouble(SHARPEN_CONFIG_KEY, 0);
-        if (sharpenValue > 0) {
-            args.add("-unsharp");
-            args.add(Double.toString(sharpenValue));
-        }
 
         // Write to stdout.
         args.add(ops.getOutputFormat().getPreferredExtension() + ":-");

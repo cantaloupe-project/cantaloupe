@@ -108,7 +108,6 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
      * @param reductionFactor May be <code>null</code>.
      * @param normalize Whether to normalize the dynamic range of the resulting
      *                  image.
-     * @param sharpenValue Sharpen amount from 0-1.
      * @param outputStream Output stream to write the resulting image to.
      * @throws IOException
      * @throws ProcessorException
@@ -120,7 +119,6 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
                      ReductionFactor reductionFactor,
                      final Orientation orientation,
                      final boolean normalize,
-                     final float sharpenValue,
                      final OutputStream outputStream)
             throws IOException, ProcessorException {
         if (reductionFactor == null) {
@@ -163,7 +161,7 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
         image = Java2dUtil.applyRedactions(image, crop, reductionFactor,
                 redactions);
 
-        // Apply most remaining operations.
+        // Apply remaining operations.
         for (Operation op : opList) {
             if (op.hasEffect(fullSize, opList)) {
                 if (op instanceof Scale) {
@@ -177,23 +175,14 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
                     image = Java2dUtil.rotateImage(image, rotation);
                 } else if (op instanceof Color) {
                     image = Java2dUtil.transformColor(image, (Color) op);
-                }
-            }
-        }
-
-        // Apply the sharpen operation, if present.
-        final Sharpen sharpen = new Sharpen(sharpenValue);
-        if (sharpen.hasEffect(fullSize, opList)) {
-            image = Java2dUtil.sharpenImage(image, sharpen);
-        }
-
-        // Apply all remaining operations.
-        for (Operation op : opList) {
-            if (op instanceof Overlay && op.hasEffect(fullSize, opList)) {
-                try {
-                    image = Java2dUtil.applyOverlay(image, (Overlay) op);
-                } catch (ConfigurationException e) {
-                    logger.error(e.getMessage());
+                } else if (op instanceof Sharpen) {
+                    image = Java2dUtil.sharpenImage(image, (Sharpen) op);
+                } else if (op instanceof Overlay) {
+                    try {
+                        image = Java2dUtil.applyOverlay(image, (Overlay) op);
+                    } catch (ConfigurationException e) {
+                        logger.error(e.getMessage());
+                    }
                 }
             }
         }

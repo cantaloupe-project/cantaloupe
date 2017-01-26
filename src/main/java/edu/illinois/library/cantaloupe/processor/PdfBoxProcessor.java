@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Operation;
@@ -35,7 +34,6 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
             getLogger(PdfBoxProcessor.class);
 
     static final String DPI_CONFIG_KEY = "PdfBoxProcessor.dpi";
-    static final String SHARPEN_CONFIG_KEY = "PdfBoxProcessor.sharpen";
 
     private BufferedImage fullImage;
     private File sourceFile;
@@ -115,11 +113,8 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
             page = Math.max(page, 1);
 
             final BufferedImage image = readImage(page - 1, reductionFactor.factor);
-            final Configuration config = ConfigurationFactory.getInstance();
-            postProcess(image, null, opList, imageInfo,
-                    reductionFactor, Orientation.ROTATE_0, false,
-                    config.getFloat(SHARPEN_CONFIG_KEY, 0f),
-                    outputStream);
+            postProcess(image, null, opList, imageInfo, reductionFactor,
+                    Orientation.ROTATE_0, false, outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }

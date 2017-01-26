@@ -49,7 +49,6 @@ class JaiProcessor extends AbstractImageIoProcessor
     private static Logger logger = LoggerFactory.getLogger(JaiProcessor.class);
 
     static final String NORMALIZE_CONFIG_KEY = "JaiProcessor.normalize";
-    static final String SHARPEN_CONFIG_KEY = "JaiProcessor.sharpen";
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
@@ -205,15 +204,11 @@ class JaiProcessor extends AbstractImageIoProcessor
                     } else if (op instanceof Color) {
                         renderedOp = JaiUtil.
                                 transformColor(renderedOp, (Color) op);
+                    } else if (op instanceof Sharpen) {
+                        renderedOp = JaiUtil.
+                                sharpenImage(renderedOp, (Sharpen) op);
                     }
                 }
-            }
-
-            // Apply the sharpen operation, if present.
-            final float sharpenValue = config.getFloat(SHARPEN_CONFIG_KEY, 0);
-            final Sharpen sharpen = new Sharpen(sharpenValue);
-            if (sharpen.hasEffect(fullSize, opList)) {
-                renderedOp = JaiUtil.sharpenImage(renderedOp, sharpen);
             }
 
             // Apply remaining operations.

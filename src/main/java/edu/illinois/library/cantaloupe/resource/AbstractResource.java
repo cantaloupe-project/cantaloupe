@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.Scale;
+import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.redaction.RedactionService;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
@@ -263,15 +264,22 @@ public abstract class AbstractResource extends ServerResource {
             }
         }
 
+        final Configuration config = Configuration.getInstance();
+
+        // Sharpening
+        float sharpen = config.getFloat(Processor.SHARPEN_CONFIG_KEY, 0f);
+        if (sharpen > 0.001f) {
+            opList.add(new Sharpen(sharpen));
+        }
+
         // Metadata copies
-        if (ConfigurationFactory.getInstance().
-                getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
+        if (config.getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());
         }
 
-        // At this point, the list contains all operations it should, so it
-        // can be safely frozen. This will prevent it from being modified by
-        // clients (e.g. processors) which could interfere with e.g. caching.
+        // At this point, the list is complete, so it can be safely frozen.
+        // This will prevent it from being modified by clients (e.g. processors)
+        // which could interfere with e.g. caching.
         opList.freeze();
     }
 

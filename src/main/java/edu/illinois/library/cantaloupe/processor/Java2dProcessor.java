@@ -24,7 +24,6 @@ class Java2dProcessor extends AbstractJava2dProcessor
         implements StreamProcessor, FileProcessor {
 
     static final String NORMALIZE_CONFIG_KEY = "Java2dProcessor.normalize";
-    static final String SHARPEN_CONFIG_KEY = "Java2dProcessor.sharpen";
 
     @Override
     public void process(final OperationList ops,
@@ -51,8 +50,7 @@ class Java2dProcessor extends AbstractJava2dProcessor
 
             BufferedImage image = reader.read(ops, orientation, rf, hints);
             postProcess(image, hints, ops, imageInfo, rf, orientation,
-                    normalize, config.getFloat(SHARPEN_CONFIG_KEY, 0f),
-                    outputStream);
+                    normalize, outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         } finally {

@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -46,7 +45,6 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
 
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "FfmpegProcessor.path_to_binaries";
-    static final String SHARPEN_CONFIG_KEY = "FfmpegProcessor.sharpen";
 
     private static final ExecutorService executorService =
             Executors.newCachedThreadPool();
@@ -58,7 +56,7 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
      * @return
      */
     private static String getPath(String binaryName) {
-        String path = ConfigurationFactory.getInstance().
+        String path = Configuration.getInstance().
                 getString(PATH_TO_BINARIES_CONFIG_KEY);
         if (path != null && path.length() > 0) {
             path = StringUtils.stripEnd(path, File.separator) + File.separator +
@@ -159,12 +157,9 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
                         new InputStreamStreamSource(processInputStream),
                         Format.BMP);
                 final BufferedImage image = reader.read();
-                final Configuration config = ConfigurationFactory.getInstance();
                 try {
                     postProcess(image, null, opList, imageInfo, null,
-                            Orientation.ROTATE_0, false,
-                            config.getFloat(SHARPEN_CONFIG_KEY, 0f),
-                            outputStream);
+                            Orientation.ROTATE_0, false, outputStream);
                     final int code = process.waitFor();
                     if (code != 0) {
                         logger.error("ffmpeg returned with code {}", code);

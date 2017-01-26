@@ -71,8 +71,6 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
             "OpenJpegProcessor.normalize";
     static final String PATH_TO_BINARIES_CONFIG_KEY =
             "OpenJpegProcessor.path_to_binaries";
-    static final String SHARPEN_CONFIG_KEY =
-            "OpenJpegProcessor.sharpen";
 
     private static final short MAX_REDUCTION_FACTOR = 5;
 
@@ -278,7 +276,6 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
                     }
                     postProcess(image, hints, opList, imageInfo,
                             reductionFactor, Orientation.ROTATE_0, normalize,
-                            config.getFloat(SHARPEN_CONFIG_KEY, 0f),
                             outputStream);
                     final int code = process.waitFor();
                     if (code != 0) {

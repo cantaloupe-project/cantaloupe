@@ -25,6 +25,7 @@ public interface Processor {
     String DOWNSCALE_FILTER_CONFIG_KEY = "processor.downscale_filter";
     String PRESERVE_METADATA_CONFIG_KEY = "metadata.preserve";
     String RESPECT_ORIENTATION_CONFIG_KEY = "metadata.respect_orientation";
+    String SHARPEN_CONFIG_KEY = "processor.sharpen";
     String UPSCALE_FILTER_CONFIG_KEY = "processor.upscale_filter";
 
     /**
