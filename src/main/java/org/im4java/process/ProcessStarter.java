@@ -26,8 +26,6 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -43,7 +41,7 @@ import java.util.concurrent.FutureTask;
  This is the core class of the im4java-library where all the
  magic takes place. It does add some overhead compared to a
  direct call of ProcessBuilder, but you gain additional features
- like piping and asynchronous execution.
+ like piping.
  </p>
 
  @version $Revision: 1.38 $
@@ -61,23 +59,7 @@ public class ProcessStarter {
    output (sic!) of the process). Currently 64KB.
    */
 
-  public static final int BUFFER_SIZE=65536;
-
-  //////////////////////////////////////////////////////////////////////////////
-
-  /**
-   Static global search path for executables.
-   */
-
-  private static String iGlobalSearchPath = null;
-
-  //////////////////////////////////////////////////////////////////////////////
-
-  /**
-   Per instance search path for executables.
-   */
-
-  private String iSearchPath = null;
+  private static final int BUFFER_SIZE=65536;
 
   //////////////////////////////////////////////////////////////////////////////
 
@@ -119,15 +101,6 @@ public class ProcessStarter {
 
   private ErrorConsumer iErrorConsumer = null;
 
-
-  ////////////////////////////////////////////////////////////////////////////
-
-  /**
-   Execution-mode. If true, run asynchronously.
-   */
-
-  private boolean iAsyncMode = false;
-
   ////////////////////////////////////////////////////////////////////////////
 
   /**
@@ -152,23 +125,13 @@ public class ProcessStarter {
   //////////////////////////////////////////////////////////////////////////////
 
   /**
-   Static initializer
-   */
-
-  static {
-    iGlobalSearchPath=System.getenv("IM4JAVA_TOOLPATH");
-  }
-
-  //////////////////////////////////////////////////////////////////////////////
-
-  /**
    Constructor.
    */
 
   @SuppressWarnings("deprecation")
   public ProcessStarter() {
-    iProcessListener = new LinkedList<ProcessListener>();
-    iProcessEventListener = new LinkedList<ProcessEventListener>();
+    iProcessListener = new LinkedList<>();
+    iProcessEventListener = new LinkedList<>();
     iPID = iPIDCounter.getAndAdd(1);
   }
 
@@ -304,41 +267,11 @@ public class ProcessStarter {
 
    @param pArgs         arguments for ProcessBuilder
    */
-
-  public int run(List<String> pArgs)
-          throws IOException, InterruptedException, Exception {
-
-    // create and execute process (synchronous mode)
-    if (! iAsyncMode) {
-      Process pr = startProcess(pArgs);
-      int rc = waitForProcess(pr);
-      finished(rc);
-      return rc;
-    } else {
-      ProcessTask pt = getProcessTask(pArgs);
-      (new Thread(pt)).start();
-      return 0;
-    }
-  }
-
-  //////////////////////////////////////////////////////////////////////////////
-
-  /**
-   Return a ProcessTask for future execution.
-
-   @param pArgs         arguments for ProcessBuilder
-   */
-
-  protected ProcessTask getProcessTask(List<String> pArgs)  {
-    // prepare ProcessEvent and call processInitiated
-    final ProcessEvent pe = new ProcessEvent(iPID,this);
-    pe.setReturnCode(-1);
-    for (ProcessEventListener pel:iProcessEventListener) {
-      pel.processInitiated(pe);
-    }
-
-    // create ProcessTask for future execution
-    return new ProcessTask(this,pArgs,pe);
+  public int run(List<String> pArgs) throws Exception {
+    Process pr = startProcess(pArgs);
+    int rc = waitForProcess(pr);
+    finished(rc);
+    return rc;
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -391,19 +324,6 @@ public class ProcessStarter {
 
   private Process startProcess(List<String> pArgs)
           throws IOException, InterruptedException {
-
-    // if a global or per object search path is set, resolve the
-    // the executable
-
-    if (iSearchPath != null) {
-      String cmd = pArgs.get(0);
-      cmd = searchForCmd(cmd,iSearchPath);
-      pArgs.set(0,cmd);
-    } else if (iGlobalSearchPath != null) {
-      String cmd = pArgs.get(0);
-      cmd = searchForCmd(cmd,iGlobalSearchPath);
-      pArgs.set(0,cmd);
-    }
     ProcessBuilder builder = new ProcessBuilder(pArgs);
     return builder.start();
   }
@@ -429,7 +349,7 @@ public class ProcessStarter {
     // stderr-output (e.g. from ghostscript called by convert)
 
     if (iOutputConsumer != null) {
-      outTask = new FutureTask<Object>(new Callable<Object>() {
+      outTask = new FutureTask<>(new Callable<Object>() {
         public Object call() throws IOException {
           processOutput(pProcess.getInputStream(), iOutputConsumer);
           return null;
@@ -438,7 +358,7 @@ public class ProcessStarter {
       new Thread(outTask).start();
     }
     if (iErrorConsumer != null) {
-      errTask = new FutureTask<Object>(new Callable<Object>() {
+      errTask = new FutureTask<>(new Callable<Object>() {
         public Object call() throws IOException {
           processError(pProcess.getErrorStream(), iErrorConsumer);
           return null;
@@ -483,108 +403,6 @@ public class ProcessStarter {
   /////////////////////////////////////////////////////////////////////////////
 
   /**
-   Set the async-execution mode.
-
-   @param pAsyncMode the iAsyncMode to set
-   */
-  public void setAsyncMode(boolean pAsyncMode) {
-    iAsyncMode = pAsyncMode;
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-
-  /**
-   Query the async-execution mode.
-
-   @return the iAsyncMode
-   */
-  public boolean isAsyncMode() {
-    return iAsyncMode;
-  }
-
-  /////////////////////////////////////////////////////////////////////////////
-
-  /**
-   Set the global (static) search path. You can override this search path
-   on a per object basis.
-
-   @param pGlobalSearchPath the global search path
-   */
-
-  public static void setGlobalSearchPath(String pGlobalSearchPath) {
-    iGlobalSearchPath = pGlobalSearchPath;
-  }
-
-  /////////////////////////////////////////////////////////////////////////////
-
-  /**
-   Query the global (static) search path.
-   */
-
-  public static String getGlobalSearchPath() {
-    return iGlobalSearchPath;
-  }
-
-  /////////////////////////////////////////////////////////////////////////////
-
-  /**
-   Set the per object search path. This overrides the global search path
-   (if set).
-
-   @param pSearchPath the search path
-   */
-
-  public void setSearchPath(String pSearchPath) {
-    iSearchPath = pSearchPath;
-  }
-
-  /////////////////////////////////////////////////////////////////////////////
-
-  /**
-   Query the per object search path.
-   */
-
-  public String getSearchPath() {
-    return iSearchPath;
-  }
-
-  /////////////////////////////////////////////////////////////////////////////
-
-  /**
-   Set the process-id counter of the class.
-
-   @param pPID the process-id
-   */
-
-  public static void setPIDCounter(int pPID) {
-    iPIDCounter.set(pPID);
-  }
-
-  /////////////////////////////////////////////////////////////////////////////
-
-  /**
-   Set the process-id of this ProcessStarter.
-
-   @param pPID the process-id
-   */
-
-  public void setPID(int pPID) {
-    iPID = pPID;
-  }
-
-  /////////////////////////////////////////////////////////////////////////////
-
-  /**
-   Query the process-id.
-   */
-
-  public int getPID() {
-    return iPID;
-  }
-
-  /////////////////////////////////////////////////////////////////////////////
-
-  /**
    Post-processing after the process has terminated. Subclasses might
    override this method to do some specific post-processing.
 
@@ -615,50 +433,4 @@ public class ProcessStarter {
   protected void finished(Exception pException) throws Exception {
   }
 
-  /////////////////////////////////////////////////////////////////////////////
-
-  /**
-   Query the per object search path.
-
-   @param pCmd  the  command to search for
-   @param pPath the  search path
-   */
-
-  public String searchForCmd(String pCmd, String pPath)
-          throws IOException, FileNotFoundException {
-    // check is pCmd is absolute
-    if ((new File(pCmd)).isAbsolute()) {
-      return pCmd;
-    }
-
-    // special processing on windows-systems.
-    // File.pathSeparator is hopefully more robust than 
-    // System.getProperty("os.name") ?!
-    boolean isWindows=File.pathSeparator.equals(";");
-
-    String dirs[] = pPath.split(File.pathSeparator);
-    for (int i=0; i<dirs.length; ++i) {
-      if (isWindows) {
-        // try thre typical extensions
-        File cmd = new File(dirs[i],pCmd+".exe");
-        if (cmd.exists()) {
-          return cmd.getCanonicalPath();
-        }
-        cmd = new File(dirs[i],pCmd+".cmd");
-        if (cmd.exists()) {
-          return cmd.getCanonicalPath();
-        }
-        cmd = new File(dirs[i],pCmd+".bat");
-        if (cmd.exists()) {
-          return cmd.getCanonicalPath();
-        }
-      } else {
-        File cmd = new File(dirs[i],pCmd);
-        if (cmd.exists()) {
-          return cmd.getCanonicalPath();
-        }
-      }
-    }
-    throw new FileNotFoundException(pCmd);
-  }
 }
