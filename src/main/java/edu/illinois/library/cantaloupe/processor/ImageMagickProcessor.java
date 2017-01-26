@@ -214,6 +214,34 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         return isUsingVersion7.get();
     }
 
+    /**
+     * @param filter
+     * @return String suitable for passing to convert's <code>-filter</code>
+     *         argument, or <code>null</code> if an equivalent is unknown.
+     */
+    private String imFilter(Scale.Filter filter) {
+        // http://www.imagemagick.org/Usage/filter/
+        switch (filter) {
+            case BELL:
+                return "hamming";
+            case BICUBIC:
+                return "catrom";
+            case BOX:
+                return "box";
+            case BSPLINE:
+                return "spline";
+            case HERMITE:
+                return "hermite";
+            case LANCZOS3:
+                return "lanczos";
+            case MITCHELL:
+                return "mitchell";
+            case TRIANGLE:
+                return "triangle";
+        }
+        return null;
+    }
+
     @Override
     public Set<Format> getAvailableOutputFormats() {
         Set<Format> formats = getFormats().get(format);
@@ -277,6 +305,22 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             } else if (op instanceof Scale) {
                 Scale scale = (Scale) op;
                 if (scale.hasEffect(fullSize, ops)) {
+                    // Find a filter to use depending on the application
+                    // configuration.
+                    final String configFilter = scale.isUp(fullSize) ?
+                            config.getString(UPSCALE_FILTER_CONFIG_KEY) :
+                            config.getString(DOWNSCALE_FILTER_CONFIG_KEY);
+                    if (configFilter != null) {
+                        Scale.Filter filter = Scale.Filter.named(configFilter);
+                        if (filter != null) {
+                            final String imFilter = imFilter(filter);
+                            if (imFilter != null) {
+                                args.add("-filter");
+                                args.add(imFilter);
+                            }
+                        }
+                    }
+
                     args.add("-resize");
                     if (scale.getPercent() != null) {
                         final String arg = (scale.getPercent() * 100) + "%";

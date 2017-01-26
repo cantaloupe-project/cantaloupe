@@ -217,6 +217,22 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             } else if (op instanceof Scale) {
                 Scale scale = (Scale) op;
                 if (scale.hasEffect(fullSize, ops)) {
+                    // Find a filter to use depending on the application
+                    // configuration.
+                    final String configFilter = scale.isUp(fullSize) ?
+                            config.getString(UPSCALE_FILTER_CONFIG_KEY) :
+                            config.getString(DOWNSCALE_FILTER_CONFIG_KEY);
+                    if (configFilter != null) {
+                        Scale.Filter filter = Scale.Filter.named(configFilter);
+                        if (filter != null) {
+                            final String gmFilter = gmFilter(filter);
+                            if (gmFilter != null) {
+                                args.add("-filter");
+                                args.add(gmFilter);
+                            }
+                        }
+                    }
+
                     args.add("-resize");
                     if (scale.getPercent() != null) {
                         final String arg = (scale.getPercent() * 100) + "%";
@@ -286,6 +302,35 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
         args.add(ops.getOutputFormat().getPreferredExtension() + ":-");
 
         return args;
+    }
+
+    /**
+     * @param filter
+     * @return String suitable for passing to `gm convert`'s
+     *         <code>-filter</code> argument, or <code>null</code> if an
+     *         equivalent is unknown.
+     */
+    private String gmFilter(Scale.Filter filter) {
+        // http://www.graphicsmagick.org/GraphicsMagick.html#details-filter
+        switch (filter) {
+            case BELL:
+                return "hamming";
+            case BICUBIC:
+                return "catrom";
+            case BOX:
+                return "box";
+            case BSPLINE:
+                return "gaussian";
+            case HERMITE:
+                return "hermite";
+            case LANCZOS3:
+                return "lanczos";
+            case MITCHELL:
+                return "mitchell";
+            case TRIANGLE:
+                return "triangle";
+        }
+        return null;
     }
 
     @Override
