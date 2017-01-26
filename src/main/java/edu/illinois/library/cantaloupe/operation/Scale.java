@@ -33,6 +33,19 @@ public class Scale implements Operation {
         private String name;
         private ResampleFilter resampleFilter;
 
+        /**
+         * @param name Filter name.
+         * @return Filter corresponding to the given string.
+         */
+        public static Filter named(String name) {
+            for (Filter filter : values()) {
+                if (filter.getName().equals(name)) {
+                    return filter;
+                }
+            }
+            return null;
+        }
+
         Filter(String name, ResampleFilter resampleFilter) {
             this.name = name;
             this.resampleFilter = resampleFilter;
