@@ -30,7 +30,7 @@ import java.util.stream.Stream;
  * edu.illinois.library.cantaloupe.processor.Processor processors} and
  * {@link edu.illinois.library.cantaloupe.cache.Cache caches}.</p>
  */
-public class OperationList implements Comparable<OperationList>,
+public final class OperationList implements Comparable<OperationList>,
         Iterable<Operation> {
 
     private static final Logger logger = LoggerFactory.
