@@ -217,19 +217,12 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             } else if (op instanceof Scale) {
                 Scale scale = (Scale) op;
                 if (scale.hasEffect(fullSize, ops)) {
-                    // Find a filter to use depending on the application
-                    // configuration.
-                    final String configFilter = scale.isUp(fullSize) ?
-                            config.getString(UPSCALE_FILTER_CONFIG_KEY) :
-                            config.getString(DOWNSCALE_FILTER_CONFIG_KEY);
-                    if (configFilter != null) {
-                        Scale.Filter filter = Scale.Filter.named(configFilter);
-                        if (filter != null) {
-                            final String gmFilter = gmFilter(filter);
-                            if (gmFilter != null) {
-                                args.add("-filter");
-                                args.add(gmFilter);
-                            }
+                    final Scale.Filter scaleFilter = scale.getFilter();
+                    if (scaleFilter != null) {
+                        final String gmFilter = gmFilter(scaleFilter);
+                        if (gmFilter != null) {
+                            args.add("-filter");
+                            args.add(gmFilter);
                         }
                     }
 
