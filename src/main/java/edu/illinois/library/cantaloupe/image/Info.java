@@ -43,9 +43,11 @@ public final class Info {
          * No-op constructor.
          */
         public Image() {
+            setOrientation(Orientation.ROTATE_0);
         }
 
         public Image(Dimension size) {
+            this();
             this.setSize(size);
         }
 
