@@ -7,6 +7,9 @@ import java.util.regex.Pattern;
 
 abstract class ColorUtil {
 
+    private static final Pattern rgbPattern =
+            Pattern.compile("rgb *\\( *([0-9]+), *([0-9]+), *([0-9]+) *\\)");
+
     static Color fromString(final String string) {
         // Check for #rgb, #rrggbb, etc.
         try {
@@ -17,8 +20,7 @@ abstract class ColorUtil {
         }
 
         // Check for rgb(r, g, b)
-        Pattern c = Pattern.compile("rgb *\\( *([0-9]+), *([0-9]+), *([0-9]+) *\\)");
-        Matcher m = c.matcher(string.replace(" ", ""));
+        Matcher m = rgbPattern.matcher(string.replace(" ", ""));
         if (m.matches()) {
             return new Color(Integer.valueOf(m.group(1)),
                     Integer.valueOf(m.group(2)),
