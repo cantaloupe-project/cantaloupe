@@ -1,7 +1,8 @@
-package edu.illinois.library.cantaloupe.processor;
+package edu.illinois.library.cantaloupe.operation;
 
 /**
- * Represents a scale-reduction multiple with a corresponding scale of (1/2)^rf.
+ * Represents a scale-reduction multiple with a corresponding scale of
+ * <code>(1/2)^rf</code>.
  *
  * For example, a factor of 0 represents full scale; 1 represents 50% reduction;
  * 2 represents 75% reduction; etc.
