@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
@@ -147,7 +148,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
      * @return
      */
     private static String getPath(final String binaryName) {
-        String path = ConfigurationFactory.getInstance().
+        String path = Configuration.getInstance().
                 getString(PATH_TO_BINARIES_CONFIG_KEY);
         if (path != null && path.length() > 0) {
             path = StringUtils.stripEnd(path, File.separator) + File.separator +
@@ -350,10 +351,17 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             args.add("identify");
             args.add("-ping");
             args.add("-format");
-            args.add("%w\n%h\n%r");
+            if (Configuration.getInstance().
+                    getBoolean(RESPECT_ORIENTATION_CONFIG_KEY, false)) {
+                args.add("%w\n%h\n%[EXIF:Orientation]");
+            } else {
+                args.add("%w\n%h");
+            }
+
             args.add(format.getPreferredExtension() + ":-");
 
-            ArrayListOutputConsumer consumer = new ArrayListOutputConsumer();
+            final ArrayListOutputConsumer consumer =
+                    new ArrayListOutputConsumer();
 
             final ProcessStarter cmd = new ProcessStarter();
             cmd.setInputProvider(new Pipe(inputStream, null));
@@ -362,11 +370,25 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                     StringUtils.join(args, " ").replace("\n", ""));
             cmd.run(args);
 
-            final ArrayList<String> output = consumer.getOutput();
+            final List<String> output = consumer.getOutput();
             final int width = Integer.parseInt(output.get(0));
             final int height = Integer.parseInt(output.get(1));
-            return new Info(width, height, width, height,
+            // GM is not tile-aware, so set the tile size to the full
+            // dimensions.
+            final Info info = new Info(width, height, width, height,
                     getSourceFormat());
+            // Do we have an EXIF orientation to deal with?
+            if (output.size() > 2) {
+                try {
+                    final int exifOrientation = Integer.parseInt(output.get(2));
+                    final Orientation orientation =
+                            Orientation.forEXIFOrientation(exifOrientation);
+                    info.getImages().get(0).setOrientation(orientation);
+                } catch (IllegalArgumentException e) {
+                    // whatever
+                }
+            }
+            return info;
         } catch (Exception e) {
             throw new ProcessorException(e.getMessage(), e);
         }
