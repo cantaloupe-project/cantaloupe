@@ -314,7 +314,7 @@ public final class Info {
     @JsonIgnore
     public Format getSourceFormat() {
         if (mediaType != null) {
-            new MediaType(mediaType).toFormat();
+            return new MediaType(mediaType).toFormat();
         }
         return Format.UNKNOWN;
     }
