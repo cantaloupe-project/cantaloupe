@@ -1,13 +1,13 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
@@ -162,11 +162,11 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     }
 
     /**
-     * @param binaryName Name of an executable
+     * @param binaryName Name of an executable.
      * @return
      */
-    private static String getPath(String binaryName) {
-        String path = ConfigurationFactory.getInstance().
+    private static String getPath(final String binaryName) {
+        String path = Configuration.getInstance().
                 getString(PATH_TO_BINARIES_CONFIG_KEY);
         if (path != null && path.length() > 0) {
             path = StringUtils.stripEnd(path, File.separator) + File.separator +
@@ -251,7 +251,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     }
 
     private List<String> getConvertArguments(final OperationList ops,
-                                             final Dimension fullSize) {
+                                             final Info imageInfo) {
         final List<String> args = new ArrayList<>();
 
         if (isUsingVersion7()) {
@@ -264,14 +264,17 @@ class ImageMagickProcessor extends AbstractMagickProcessor
 
         // Normalization needs to happen before cropping to maintain the
         // intensity of cropped regions relative to the full image.
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         if (config.getBoolean(NORMALIZE_CONFIG_KEY, false)) {
             args.add("-normalize");
         }
 
+        final Dimension fullSize = imageInfo.getSize();
+
         for (Operation op : ops) {
             if (op instanceof Crop) {
                 Crop crop = (Crop) op;
+                crop.applyOrientation(imageInfo.getOrientation(), fullSize);
                 if (crop.hasEffect(fullSize, ops)) {
                     args.add("-crop");
                     if (crop.getShape().equals(Crop.Shape.SQUARE)) {
@@ -390,7 +393,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         super.process(ops, imageInfo, outputStream);
 
         try (InputStream inputStream = streamSource.newInputStream()) {
-            final List<String> args = getConvertArguments(ops, imageInfo.getSize());
+            final List<String> args = getConvertArguments(ops, imageInfo);
             final ProcessStarter cmd = new ProcessStarter();
             cmd.setInputProvider(new Pipe(inputStream, null));
             cmd.setOutputConsumer(new Pipe(null, outputStream));
@@ -413,10 +416,13 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             }
             args.add("-ping");
             args.add("-format");
-            args.add("%w\n%h\n%r");
+            // We need to read this even when not respecting orientation,
+            // because GM's crop operation is orientation-unaware.
+            args.add("%w\n%h\n%[EXIF:Orientation]");
             args.add(format.getPreferredExtension() + ":-");
 
-            ArrayListOutputConsumer consumer = new ArrayListOutputConsumer();
+            final ArrayListOutputConsumer consumer =
+                    new ArrayListOutputConsumer();
 
             final ProcessStarter cmd = new ProcessStarter();
             cmd.setInputProvider(new Pipe(inputStream, null));
@@ -425,11 +431,25 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                     StringUtils.join(args, " ").replace("\n", ","));
             cmd.run(args);
 
-            final ArrayList<String> output = consumer.getOutput();
+            final List<String> output = consumer.getOutput();
             final int width = Integer.parseInt(output.get(0));
             final int height = Integer.parseInt(output.get(1));
-            return new Info(width, height, width, height,
+            // GM is not tile-aware, so set the tile size to the full
+            // dimensions.
+            final Info info = new Info(width, height, width, height,
                     getSourceFormat());
+            // Do we have an EXIF orientation to deal with?
+            if (output.size() > 2) {
+                try {
+                    final int exifOrientation = Integer.parseInt(output.get(2));
+                    final Orientation orientation =
+                            Orientation.forEXIFOrientation(exifOrientation);
+                    info.getImages().get(0).setOrientation(orientation);
+                } catch (IllegalArgumentException e) {
+                    // whatever
+                }
+            }
+            return info;
         } catch (Exception e) {
             throw new ProcessorException(e.getMessage(), e);
         }
