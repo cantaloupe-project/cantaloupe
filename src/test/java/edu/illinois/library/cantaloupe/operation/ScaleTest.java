@@ -42,7 +42,6 @@ public class ScaleTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-
         this.scale = new Scale();
     }
 
@@ -67,6 +66,46 @@ public class ScaleTest extends BaseTest {
         assertEquals(Scale.Mode.ASPECT_FIT_HEIGHT, scale.getMode());
         assertEquals(300, (long) scale.getWidth());
         assertEquals(200, (long) scale.getHeight());
+    }
+
+    @Test
+    public void testGetReductionFactor() {
+        Dimension size = new Dimension(300, 300);
+
+        // FULL
+        assertEquals(0, scale.getReductionFactor(size, 999).factor);
+
+        // ASPECT_FIT_WIDTH
+        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        scale.setWidth(145);
+        scale.setHeight(145);
+        assertEquals(1, scale.getReductionFactor(size, 999).factor);
+
+        // ASPECT_FIT_HEIGHT
+        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        scale.setWidth(145);
+        scale.setHeight(145);
+        assertEquals(1, scale.getReductionFactor(size, 999).factor);
+
+        // ASPECT_FIT_INSIDE
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale.setWidth(145);
+        scale.setHeight(145);
+        assertEquals(1, scale.getReductionFactor(size, 999).factor);
+
+        // NON_ASPECT_FILL
+        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
+        scale.setWidth(145);
+        scale.setHeight(145);
+        assertEquals(0, scale.getReductionFactor(size, 999).factor);
+
+        // percent
+        scale = new Scale();
+        scale.setPercent(0.45f);
+        assertEquals(1, scale.getReductionFactor(size, 999).factor);
+        scale.setPercent(0.2f);
+        assertEquals(2, scale.getReductionFactor(size, 999).factor);
+        assertEquals(1, scale.getReductionFactor(size, 1).factor);
     }
 
     @Test

@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.operation;
 
 import com.mortennobel.imagescaling.ResampleFilter;
 import com.mortennobel.imagescaling.ResampleFilters;
+import edu.illinois.library.cantaloupe.processor.ReductionFactor;
 import edu.illinois.library.cantaloupe.util.StringUtil;
 
 import java.awt.Dimension;
@@ -160,6 +161,44 @@ public class Scale implements Operation {
      */
     public Float getPercent() {
         return percent;
+    }
+
+    /**
+     * @param reducedSize Size of an image that has been halved <code>n</code>
+     *                    times.
+     * @param maxFactor Maximum factor to return.
+     * @return Reduction factor appropriate for the instance.
+     */
+    public ReductionFactor getReductionFactor(final Dimension reducedSize,
+                                              final int maxFactor) {
+        ReductionFactor rf = new ReductionFactor();
+        if (hasEffect()) {
+            if (getPercent() != null) {
+                rf = ReductionFactor.forScale(getPercent(), maxFactor);
+            } else {
+                switch (getMode()) {
+                    case ASPECT_FIT_WIDTH:
+                        double hvScale = (double) getWidth() /
+                                (double) reducedSize.width;
+                        rf = ReductionFactor.forScale(hvScale, maxFactor);
+                        break;
+                    case ASPECT_FIT_HEIGHT:
+                        hvScale = (double) getHeight() /
+                                (double) reducedSize.height;
+                        rf = ReductionFactor.forScale(hvScale, maxFactor);
+                        break;
+                    case ASPECT_FIT_INSIDE:
+                        double hScale = (double) getWidth() /
+                                (double) reducedSize.width;
+                        double vScale = (double) getHeight() /
+                                (double) reducedSize.height;
+                        rf = ReductionFactor.forScale(
+                                Math.min(hScale, vScale), maxFactor);
+                        break;
+                }
+            }
+        }
+        return rf;
     }
 
     /**
