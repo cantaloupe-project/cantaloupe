@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Crop;
@@ -169,7 +168,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     }
 
     private List<String> getConvertArguments(final OperationList ops,
-                                             final Dimension fullSize) {
+                                             final Info imageInfo) {
         final List<String> args = new ArrayList<>();
         args.add(getPath("gm"));
         args.add("convert");
@@ -177,14 +176,17 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
 
         // Normalization needs to happen before cropping to maintain the
         // intensity of cropped regions relative to the full image.
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         if (config.getBoolean(NORMALIZE_CONFIG_KEY, false)) {
             args.add("-normalize");
         }
 
+        final Dimension fullSize = imageInfo.getSize();
+
         for (Operation op : ops) {
             if (op instanceof Crop) {
                 Crop crop = (Crop) op;
+                crop.applyOrientation(imageInfo.getOrientation(), fullSize);
                 if (crop.hasEffect(fullSize, ops)) {
                     args.add("-crop");
                     if (crop.getShape().equals(Crop.Shape.SQUARE)) {
@@ -332,7 +334,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
         super.process(ops, imageInfo, outputStream);
 
         try (InputStream inputStream = streamSource.newInputStream()) {
-            final List<String> args = getConvertArguments(ops, imageInfo.getSize());
+            final List<String> args = getConvertArguments(ops, imageInfo);
             final ProcessStarter cmd = new ProcessStarter();
             cmd.setInputProvider(new Pipe(inputStream, null));
             cmd.setOutputConsumer(new Pipe(null, outputStream));
@@ -351,12 +353,9 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             args.add("identify");
             args.add("-ping");
             args.add("-format");
-            if (Configuration.getInstance().
-                    getBoolean(RESPECT_ORIENTATION_CONFIG_KEY, false)) {
-                args.add("%w\n%h\n%[EXIF:Orientation]");
-            } else {
-                args.add("%w\n%h");
-            }
+            // We need to read this even when not respecting orientation,
+            // because GM's crop operation is orientation-unaware.
+            args.add("%w\n%h\n%[EXIF:Orientation]");
 
             args.add(format.getPreferredExtension() + ":-");
 
