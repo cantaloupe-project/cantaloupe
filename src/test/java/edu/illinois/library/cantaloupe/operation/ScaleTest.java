@@ -16,18 +16,6 @@ public class ScaleTest extends BaseTest {
     public static class FilterTest extends BaseTest {
 
         @Test
-        public void testNamed() {
-            assertSame(Scale.Filter.BELL, Scale.Filter.named("bell"));
-            assertSame(Scale.Filter.BICUBIC, Scale.Filter.named("bicubic"));
-            assertSame(Scale.Filter.BOX, Scale.Filter.named("box"));
-            assertSame(Scale.Filter.BSPLINE, Scale.Filter.named("bspline"));
-            assertSame(Scale.Filter.HERMITE, Scale.Filter.named("hermite"));
-            assertSame(Scale.Filter.LANCZOS3, Scale.Filter.named("lanczos3"));
-            assertSame(Scale.Filter.MITCHELL, Scale.Filter.named("mitchell"));
-            assertSame(Scale.Filter.TRIANGLE, Scale.Filter.named("triangle"));
-        }
-
-        @Test
         public void testToResampleFilter() {
             assertSame(ResampleFilters.getBellFilter(),
                     Scale.Filter.BELL.toResampleFilter());

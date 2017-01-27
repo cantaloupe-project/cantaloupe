@@ -17,11 +17,11 @@ import java.util.Map;
 public class Scale implements Operation {
 
     /**
-     * Represents a resample algorithm.
+     * <p>Represents a resample algorithm.</p>
+     *
+     * <p>N.B. Lowercase enum values should match configuration values.</p>
      */
     public enum Filter implements Operation {
-
-        // N.B. Lowercase enum values should match config values.
 
         BELL("Bell", ResampleFilters.getBellFilter()),
         BICUBIC("Bicubic", ResampleFilters.getBiCubicFilter()),
@@ -34,19 +34,6 @@ public class Scale implements Operation {
 
         private String name;
         private ResampleFilter resampleFilter;
-
-        /**
-         * @param name Filter name.
-         * @return Filter corresponding to the given string.
-         */
-        public static Filter named(String name) {
-            for (Filter filter : values()) {
-                if (filter.getName().toLowerCase().equals(name.toLowerCase())) {
-                    return filter;
-                }
-            }
-            return null;
-        }
 
         Filter(String name, ResampleFilter resampleFilter) {
             this.name = name;
