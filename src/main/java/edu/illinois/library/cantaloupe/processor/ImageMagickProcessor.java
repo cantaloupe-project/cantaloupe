@@ -35,16 +35,23 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * <p>Processor using the ImageMagick `magick` (version 7) or `convert` and
- * `identify` (earlier versions) command-line tools.</p>
+ * <p>Processor using the ImageMagick <code>magick</code> (version 7) or
+ * <code>convert</code> and <code>identify</code> (earlier versions)
+ * command-line tools.</p>
  *
- * <p>This class does not implement <var>FileProcessor</var> because testing
- * indicates that reading from streams is significantly faster.</p>
+ * <p>Implementation notes:</p>
  *
- * <p>This processor does not respect the
- * {@link Processor#PRESERVE_METADATA_CONFIG_KEY} setting because telling IM
- * not to preserve metadata means telling it not to preserve an ICC profile.
- * Therefore, metadata always passes through.</p>
+ * <ul>
+ *     <li>{@link FileProcessor} is not implemented because testing indicates
+ *     that reading from streams is significantly faster.</li>
+ *     <li>This processor does not respect the
+ *     {@link Processor#PRESERVE_METADATA_CONFIG_KEY} setting because telling
+ *     IM not to preserve metadata means telling it not to preserve an ICC
+ *     profile. Therefore, metadata always passes through.</li>
+ *     <li>This processor does not respect the
+ *     {@link Processor#RESPECT_ORIENTATION_CONFIG_KEY} setting. The
+ *     orientation is always respected.</li>
+ * </ul>
  */
 class ImageMagickProcessor extends AbstractMagickProcessor
         implements StreamProcessor {

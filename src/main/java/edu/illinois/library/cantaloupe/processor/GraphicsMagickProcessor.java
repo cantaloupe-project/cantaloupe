@@ -37,13 +37,19 @@ import java.util.Set;
  * <p>Processor using the GraphicsMagick <code>gm</code> command-line tool.
  * Tested with version 1.3.21; other versions may or may not work.</p>
  *
- * <p>This class does not implement <var>FileProcessor</var> because testing
- * indicates that reading from streams is significantly faster.</p>
+ * <p>Implementation notes:</p>
  *
- * <p>This processor does not respect the
- * {@link Processor#PRESERVE_METADATA_CONFIG_KEY} setting because telling GM
- * not to preserve metadata also tells it not to preserve an ICC profile.
- * Therefore, metadata always passes through.</p>
+ * <ul>
+ *     <li>{@link FileProcessor} is not implemented because testing indicates
+ *     that reading from streams is significantly faster.</li>
+ *     <li>This processor does not respect the
+ *     {@link Processor#PRESERVE_METADATA_CONFIG_KEY} setting because telling
+ *     IM not to preserve metadata means telling it not to preserve an ICC
+ *     profile. Therefore, metadata always passes through.</li>
+ *     <li>This processor does not respect the
+ *     {@link Processor#RESPECT_ORIENTATION_CONFIG_KEY} setting. The
+ *     orientation is always respected.</li>
+ * </ul>
  */
 class GraphicsMagickProcessor extends AbstractMagickProcessor
         implements StreamProcessor {
@@ -356,7 +362,6 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             // We need to read this even when not respecting orientation,
             // because GM's crop operation is orientation-unaware.
             args.add("%w\n%h\n%[EXIF:Orientation]");
-
             args.add(format.getPreferredExtension() + ":-");
 
             final ArrayListOutputConsumer consumer =
