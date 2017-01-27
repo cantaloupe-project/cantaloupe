@@ -166,7 +166,11 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
                     mediaType = Format.inferFormat(identifier).
                             getPreferredMediaType();
                 }
-                sourceFormat = mediaType.toFormat();
+                if (mediaType != null) {
+                    sourceFormat = mediaType.toFormat();
+                } else {
+                    sourceFormat = Format.UNKNOWN;
+                }
             } catch (ScriptException | SQLException |
                     DelegateScriptDisabledException e) {
                 throw new IOException(e.getMessage(), e);
