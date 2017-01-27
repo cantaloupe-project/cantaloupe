@@ -177,9 +177,9 @@ public class Java2dUtilTest extends BaseTest {
         int green = (pixel >> 8) & 0xff;
         int blue = (pixel) & 0xff;
         assertEquals(255, alpha);
-        assertEquals(181, red);
-        assertEquals(173, green);
-        assertEquals(158, blue);
+        assertEquals(253, red);
+        assertEquals(252, green);
+        assertEquals(252, blue);
     }
 
     @Test

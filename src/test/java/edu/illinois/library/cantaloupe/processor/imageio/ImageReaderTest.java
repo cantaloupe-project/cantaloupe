@@ -41,11 +41,11 @@ public class ImageReaderTest extends BaseTest {
     @Test
     public void testSupportedFormats() {
         final HashSet<Format> formats = new HashSet<>();
-        for (String mediaType : ImageIO.getReaderMIMETypes()) {
-            if (mediaType.equals("image/jp2")) {
+        for (String mediaTypeStr : ImageIO.getReaderMIMETypes()) {
+            if (mediaTypeStr.length() < 1 || mediaTypeStr.equals("image/jp2")) {
                 continue;
             }
-            final Format format = new MediaType(mediaType).toFormat();
+            final Format format = new MediaType(mediaTypeStr).toFormat();
             if (format != null && !format.equals(Format.UNKNOWN)) {
                 formats.add(format);
             }

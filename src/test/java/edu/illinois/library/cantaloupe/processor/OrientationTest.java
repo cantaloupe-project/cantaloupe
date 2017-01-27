@@ -10,8 +10,6 @@ public class OrientationTest extends BaseTest {
 
     @Test
     public void testForEXIFOrientation() {
-        System.out.println(Integer.valueOf(""));
-
         assertEquals(Orientation.ROTATE_0, Orientation.forEXIFOrientation(1));
         assertEquals(Orientation.ROTATE_180, Orientation.forEXIFOrientation(3));
         assertEquals(Orientation.ROTATE_90, Orientation.forEXIFOrientation(6));

@@ -80,9 +80,6 @@ public class JdbcResolverTest extends BaseTest {
         assertEquals(Format.JPG, instance.getSourceFormat());
         instance.setIdentifier(new Identifier("bogus"));
         assertEquals(Format.UNKNOWN, instance.getSourceFormat());
-
-        // JdbcResolver.function.media_type returns a media type
-        // TODO: write this
     }
 
     @Test
