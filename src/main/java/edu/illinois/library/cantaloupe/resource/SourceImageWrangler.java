@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.SourceCache;
-import edu.illinois.library.cantaloupe.cache.SourceCacheDisabledException;
+import edu.illinois.library.cantaloupe.cache.CacheDisabledException;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
@@ -104,7 +104,7 @@ public class SourceImageWrangler {
      *
      * @throws IOException
      * @throws CacheException
-     * @throws SourceCacheDisabledException
+     * @throws CacheDisabledException
      * @throws IncompatibleResolverException
      */
     public void wrangle() throws IOException, CacheException,
@@ -149,7 +149,7 @@ public class SourceImageWrangler {
                             logger.info("Source cache available.");
                             setSourceCacheAsSource(sourceCache);
                         } else {
-                            throw new SourceCacheDisabledException();
+                            throw new CacheDisabledException("Source cache is disabled.");
                         }
                         break;
                     default: // stream

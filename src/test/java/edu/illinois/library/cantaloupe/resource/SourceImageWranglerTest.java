@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
-import edu.illinois.library.cantaloupe.cache.SourceCacheDisabledException;
+import edu.illinois.library.cantaloupe.cache.CacheDisabledException;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -286,7 +286,7 @@ public class SourceImageWranglerTest extends BaseTest {
             try {
                 new SourceImageWrangler(resolver, processor, identifier).wrangle();
                 fail("Expected exception");
-            } catch (SourceCacheDisabledException e) {
+            } catch (CacheDisabledException e) {
                 // pass
             }
         } finally {
