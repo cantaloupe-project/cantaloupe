@@ -349,30 +349,9 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
                 // height/width are <=50% of full size.
                 final Scale scale = (Scale) op;
                 final Dimension tileSize = getCroppedSize(opList, imageSize);
-                if (scale.getMode() != Scale.Mode.FULL && !ignoreCrop) {
-                    if (scale.getPercent() != null) {
-                        reduction.factor = ReductionFactor.forScale(
-                                scale.getPercent(), MAX_REDUCTION_FACTOR).factor;
-                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                        double hvScale = (double) scale.getWidth() /
-                                (double) tileSize.width;
-                        reduction.factor = ReductionFactor.forScale(
-                                hvScale, MAX_REDUCTION_FACTOR).factor;
-                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                        double hvScale = (double) scale.getHeight() /
-                                (double) tileSize.height;
-                        reduction.factor = ReductionFactor.forScale(
-                                hvScale, MAX_REDUCTION_FACTOR).factor;
-                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                        double hScale = (double) scale.getWidth() /
-                                (double) tileSize.width;
-                        double vScale = (double) scale.getHeight() /
-                                (double) tileSize.height;
-                        reduction.factor = ReductionFactor.forScale(
-                                Math.min(hScale, vScale), MAX_REDUCTION_FACTOR).factor;
-                    } else {
-                        reduction.factor = 0;
-                    }
+                if (!ignoreCrop) {
+                    reduction.factor = scale.getReductionFactor(
+                            tileSize, MAX_REDUCTION_FACTOR).factor;
                     if (reduction.factor > 0) {
                         command.add("-r");
                         command.add(reduction.factor + "");
