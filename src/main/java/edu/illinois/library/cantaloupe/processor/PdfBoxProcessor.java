@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
@@ -113,8 +112,8 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
             page = Math.max(page, 1);
 
             final BufferedImage image = readImage(page - 1, reductionFactor.factor);
-            postProcess(image, null, opList, imageInfo, reductionFactor,
-                    Orientation.ROTATE_0, false, outputStream);
+            postProcess(image, null, opList, imageInfo, reductionFactor, false,
+                    outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }

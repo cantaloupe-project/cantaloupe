@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
@@ -117,7 +116,6 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
                      final OperationList opList,
                      final Info imageInfo,
                      ReductionFactor reductionFactor,
-                     final Orientation orientation,
                      final boolean normalize,
                      final OutputStream outputStream)
             throws IOException, ProcessorException {
@@ -138,7 +136,7 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
         // Apply the crop operation, if present, and maintain a reference
         // to it for subsequent operations to refer to.
         Crop crop = new Crop(0, 0, image.getWidth(), image.getHeight(),
-                orientation, imageInfo.getSize());
+                imageInfo.getOrientation(), imageInfo.getSize());
         for (Operation op : opList) {
             if (op instanceof Crop) {
                 crop = (Crop) op;
@@ -171,7 +169,7 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
                     image = Java2dUtil.transposeImage(image, (Transpose) op);
                 } else if (op instanceof Rotate) {
                     Rotate rotation = (Rotate) op;
-                    rotation.addDegrees(orientation.getDegrees());
+                    rotation.addDegrees(imageInfo.getOrientation().getDegrees());
                     image = Java2dUtil.rotateImage(image, rotation);
                 } else if (op instanceof Color) {
                     image = Java2dUtil.transformColor(image, (Color) op);

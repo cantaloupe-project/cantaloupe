@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
@@ -82,9 +81,9 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
     private static Logger logger = LoggerFactory.
             getLogger(KakaduProcessor.class);
 
-    static final String NORMALIZE_CONFIG_KEY =
+    private static final String NORMALIZE_CONFIG_KEY =
             "KakaduProcessor.normalize";
-    static final String PATH_TO_BINARIES_CONFIG_KEY =
+    private static final String PATH_TO_BINARIES_CONFIG_KEY =
             "KakaduProcessor.path_to_binaries";
 
     private static final short MAX_REDUCTION_FACTOR = 5;
@@ -320,8 +319,7 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
                         hints.add(ImageReader.Hint.ALREADY_CROPPED);
                     }
                     postProcess(image, hints, opList, imageInfo,
-                            reductionFactor, Orientation.ROTATE_0, normalize,
-                            outputStream);
+                            reductionFactor, normalize, outputStream);
                     final int code = process.waitFor();
                     if (code != 0) {
                         logger.warn("kdu_expand returned with code {}", code);

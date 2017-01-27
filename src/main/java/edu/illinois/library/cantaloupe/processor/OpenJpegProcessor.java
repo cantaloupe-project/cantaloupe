@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
@@ -67,9 +66,9 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
     private static Logger logger = LoggerFactory.
             getLogger(OpenJpegProcessor.class);
 
-    static final String NORMALIZE_CONFIG_KEY =
+    private static final String NORMALIZE_CONFIG_KEY =
             "OpenJpegProcessor.normalize";
-    static final String PATH_TO_BINARIES_CONFIG_KEY =
+    private static final String PATH_TO_BINARIES_CONFIG_KEY =
             "OpenJpegProcessor.path_to_binaries";
 
     private static final short MAX_REDUCTION_FACTOR = 5;
@@ -275,8 +274,7 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
                         hints.add(ImageReader.Hint.ALREADY_CROPPED);
                     }
                     postProcess(image, hints, opList, imageInfo,
-                            reductionFactor, Orientation.ROTATE_0, normalize,
-                            outputStream);
+                            reductionFactor, normalize, outputStream);
                     final int code = process.waitFor();
                     if (code != 0) {
                         logger.warn("opj_decompress returned with code {}", code);

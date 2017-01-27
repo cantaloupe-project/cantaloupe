@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
@@ -43,7 +42,7 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
     private static Logger logger = LoggerFactory.
             getLogger(FfmpegProcessor.class);
 
-    static final String PATH_TO_BINARIES_CONFIG_KEY =
+    private static final String PATH_TO_BINARIES_CONFIG_KEY =
             "FfmpegProcessor.path_to_binaries";
 
     private static final ExecutorService executorService =
@@ -159,7 +158,7 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
                 final BufferedImage image = reader.read();
                 try {
                     postProcess(image, null, opList, imageInfo, null,
-                            Orientation.ROTATE_0, false, outputStream);
+                            false, outputStream);
                     final int code = process.waitFor();
                     if (code != 0) {
                         logger.error("ffmpeg returned with code {}", code);

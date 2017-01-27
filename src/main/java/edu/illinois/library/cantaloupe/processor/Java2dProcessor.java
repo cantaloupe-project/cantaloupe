@@ -23,7 +23,7 @@ import java.util.Set;
 class Java2dProcessor extends AbstractJava2dProcessor
         implements StreamProcessor, FileProcessor {
 
-    static final String NORMALIZE_CONFIG_KEY = "Java2dProcessor.normalize";
+    private static final String NORMALIZE_CONFIG_KEY = "Java2dProcessor.normalize";
 
     @Override
     public void process(final OperationList ops,
@@ -34,7 +34,6 @@ class Java2dProcessor extends AbstractJava2dProcessor
 
         final ImageReader reader = getReader();
         try {
-            final Orientation orientation = getEffectiveOrientation();
             final ReductionFactor rf = new ReductionFactor();
             final Set<ImageReader.Hint> hints = new HashSet<>();
 
@@ -48,9 +47,10 @@ class Java2dProcessor extends AbstractJava2dProcessor
                 hints.add(ImageReader.Hint.IGNORE_CROP);
             }
 
-            BufferedImage image = reader.read(ops, orientation, rf, hints);
-            postProcess(image, hints, ops, imageInfo, rf, orientation,
-                    normalize, outputStream);
+            BufferedImage image = reader.read(ops, imageInfo.getOrientation(),
+                    rf, hints);
+            postProcess(image, hints, ops, imageInfo, rf, normalize,
+                    outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         } finally {
