@@ -21,14 +21,16 @@ public class Scale implements Operation {
      */
     public enum Filter implements Operation {
 
-        BELL("bell", ResampleFilters.getBellFilter()),
-        BICUBIC("bicubic", ResampleFilters.getBiCubicFilter()),
-        BOX("box", ResampleFilters.getBoxFilter()),
-        BSPLINE("bspline", ResampleFilters.getBSplineFilter()),
-        HERMITE("hermite", ResampleFilters.getHermiteFilter()),
-        LANCZOS3("lanczos3", ResampleFilters.getLanczos3Filter()),
-        MITCHELL("mitchell", ResampleFilters.getMitchellFilter()),
-        TRIANGLE("triangle", ResampleFilters.getTriangleFilter());
+        // N.B. Lowercase enum values should match config values.
+
+        BELL("Bell", ResampleFilters.getBellFilter()),
+        BICUBIC("Bicubic", ResampleFilters.getBiCubicFilter()),
+        BOX("Box", ResampleFilters.getBoxFilter()),
+        BSPLINE("B-Spline", ResampleFilters.getBSplineFilter()),
+        HERMITE("Hermite", ResampleFilters.getHermiteFilter()),
+        LANCZOS3("Lanczos3", ResampleFilters.getLanczos3Filter()),
+        MITCHELL("Mitchell", ResampleFilters.getMitchellFilter()),
+        TRIANGLE("Triangle", ResampleFilters.getTriangleFilter());
 
         private String name;
         private ResampleFilter resampleFilter;
@@ -39,7 +41,7 @@ public class Scale implements Operation {
          */
         public static Filter named(String name) {
             for (Filter filter : values()) {
-                if (filter.getName().equals(name)) {
+                if (filter.getName().toLowerCase().equals(name.toLowerCase())) {
                     return filter;
                 }
             }
@@ -400,7 +402,7 @@ public class Scale implements Operation {
             }
         }
         if (getFilter() != null) {
-            str += "," + getFilter().toString();
+            str += "," + getFilter().name().toLowerCase();
         }
         return str;
     }
