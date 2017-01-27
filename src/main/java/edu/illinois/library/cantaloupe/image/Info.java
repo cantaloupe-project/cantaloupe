@@ -183,6 +183,7 @@ public final class Info {
      * @param size Main image size
      */
     public Info(Dimension size) {
+        this();
         images.add(new Image(size));
     }
 
@@ -191,7 +192,7 @@ public final class Info {
      * @param sourceFormat
      */
     public Info(Dimension size, Format sourceFormat) {
-        images.add(new Image(size));
+        this(size);
         setSourceFormat(sourceFormat);
     }
 
@@ -200,7 +201,7 @@ public final class Info {
      * @param height Main image height
      */
     public Info(int width, int height) {
-        images.add(new Image(width, height));
+        this(new Dimension(width, height));
     }
 
     /**
@@ -209,7 +210,7 @@ public final class Info {
      * @param sourceFormat
      */
     public Info(int width, int height, Format sourceFormat) {
-        images.add(new Image(width, height));
+        this(width, height);
         setSourceFormat(sourceFormat);
     }
 
@@ -218,10 +219,10 @@ public final class Info {
      * @param tileSize Main image tile size
      */
     public Info(Dimension size, Dimension tileSize) {
-        Image image = new Image(size);
+        this(size);
+        final Image image = getImages().get(0);
         image.tileWidth = tileSize.width;
         image.tileHeight = tileSize.height;
-        images.add(image);
     }
 
     /**
@@ -231,10 +232,8 @@ public final class Info {
      * @param tileHeight Main image tile height
      */
     public Info(int width, int height, int tileWidth, int tileHeight) {
-        Image image = new Image(width, height);
-        image.tileWidth = tileWidth;
-        image.tileHeight = tileHeight;
-        images.add(image);
+        this(new Dimension(width, height),
+                new Dimension(tileWidth, tileHeight));
     }
 
     /**
@@ -246,10 +245,8 @@ public final class Info {
      */
     public Info(int width, int height, int tileWidth, int tileHeight,
                 Format sourceFormat) {
-        Image image = new Image(width, height);
-        image.tileWidth = tileWidth;
-        image.tileHeight = tileHeight;
-        images.add(image);
+        this(new Dimension(width, height),
+                new Dimension(tileWidth, tileHeight));
         setSourceFormat(sourceFormat);
     }
 
