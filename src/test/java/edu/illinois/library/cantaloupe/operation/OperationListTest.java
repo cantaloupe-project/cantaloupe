@@ -138,6 +138,24 @@ public class OperationListTest extends BaseTest {
         assertNotNull(ops.getFirst(Scale.class));
     }
 
+    /* getOptions() */
+
+    @Test
+    public void testGetOptions() {
+        assertNotNull(ops.getOptions());
+    }
+
+    @Test
+    public void testGetOptionsWhileFrozen() {
+        ops.freeze();
+        try {
+            ops.getOptions().put("test", "test");
+            fail("Expected exception");
+        } catch (UnsupportedOperationException e) {
+            // pass
+        }
+    }
+
     /* getResultingSize(Dimension) */
 
     @Test

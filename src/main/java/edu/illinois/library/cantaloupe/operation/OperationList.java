@@ -13,6 +13,7 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -117,9 +118,13 @@ public final class OperationList implements Comparable<OperationList>,
 
     /**
      * @return Map of auxiliary options separate from the basic
-     * crop/scale/etc., such as URI query variables, etc.
+     *         crop/scale/etc., such as URI query variables, etc. If the
+     *         instance is frozen, the map will be unmodifiable.
      */
     public Map<String,Object> getOptions() {
+        if (frozen) {
+            return Collections.unmodifiableMap(options);
+        }
         return options;
     }
 
