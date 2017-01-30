@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,16 +18,19 @@ import static org.junit.Assert.*;
 
 public class RedactionServiceTest extends BaseTest {
 
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-
+    public static void setUpConfiguration() throws IOException {
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
                 true);
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         config.setProperty(RedactionService.REDACTION_ENABLED_CONFIG_KEY, true);
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+        setUpConfiguration();
     }
 
     @Test

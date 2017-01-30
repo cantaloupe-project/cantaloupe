@@ -16,10 +16,7 @@ public class BasicStringOverlayServiceTest extends BaseTest {
 
     private BasicStringOverlayService instance;
 
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-
+    public static void setUpConfiguration() {
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(OverlayService.ENABLED_CONFIG_KEY, true);
         config.setProperty(OverlayService.STRATEGY_CONFIG_KEY, "BasicStrategy");
@@ -34,6 +31,13 @@ public class BasicStringOverlayServiceTest extends BaseTest {
         config.setProperty(BasicStringOverlayService.FONT_WEIGHT_CONFIG_KEY, 2f);
         config.setProperty(BasicStringOverlayService.STROKE_COLOR_CONFIG_KEY, "blue");
         config.setProperty(BasicStringOverlayService.STROKE_WIDTH_CONFIG_KEY, 3);
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+
+        setUpConfiguration();
 
         instance = new BasicStringOverlayService();
     }

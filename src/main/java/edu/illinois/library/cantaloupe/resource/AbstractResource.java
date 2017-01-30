@@ -88,7 +88,7 @@ public abstract class AbstractResource extends ServerResource {
 
     /**
      * @return Map of template variables common to most or all views, such as
-     * variables that appear in a common header.
+     *         variables that appear in a common header.
      */
     public static Map<String, Object> getCommonTemplateVars(Request request) {
         Map<String,Object> vars = new HashMap<>();
@@ -99,8 +99,8 @@ public abstract class AbstractResource extends ServerResource {
 
     /**
      * @param request
-     * @return A root reference usable in public, respecting the
-     * <code>base_uri</code> option in the application configuration.
+     * @return Root reference usable in public, respecting the
+     *         <code>base_uri</code> option in the application configuration.
      */
     public static Reference getPublicRootRef(final Request request) {
         Reference rootRef = new Reference(request.getRootRef());
@@ -155,16 +155,16 @@ public abstract class AbstractResource extends ServerResource {
     /**
      * @param identifier
      * @param outputFormat
-     * @return A content disposition based on the setting of
-     * {@link #CONTENT_DISPOSITION_CONFIG_KEY} in the application configuration.
-     * If it is set to <code>attachment</code>, the disposition will have a
-     * filename set to a reasonable value based on the given identifier and
-     * output format.
+     * @return Content disposition based on the setting of
+     *         {@link #CONTENT_DISPOSITION_CONFIG_KEY} in the application
+     *         configuration. If it is set to <code>attachment</code>, the
+     *         disposition will have a filename set to a reasonable value based
+     *         on the given identifier and output format.
      */
     public static Disposition getRepresentationDisposition(
             Identifier identifier, Format outputFormat) {
         Disposition disposition = new Disposition();
-        switch (ConfigurationFactory.getInstance().
+        switch (Configuration.getInstance().
                 getString(CONTENT_DISPOSITION_CONFIG_KEY, "none")) {
             case "inline":
                 disposition.setType(Disposition.TYPE_INLINE);
@@ -199,25 +199,11 @@ public abstract class AbstractResource extends ServerResource {
      * @param opList Operation list to add the operations and/or options to.
      * @param fullSize Full size of the source image.
      */
-    protected void addNonEndpointOperations(final OperationList opList,
-                                            final Dimension fullSize) { // TODO: test this
+    public void addNonEndpointOperations(final OperationList opList,
+                                         final Dimension fullSize) {
         final Configuration config = Configuration.getInstance();
 
-        // Background color
-        opList.getOptions().put(Processor.BACKGROUND_COLOR_CONFIG_KEY,
-                config.getString(Processor.BACKGROUND_COLOR_CONFIG_KEY));
-
-        // Sharpening
-        opList.getOptions().put(Processor.SHARPEN_CONFIG_KEY,
-                config.getFloat(Processor.SHARPEN_CONFIG_KEY));
-
-        // JPEG quality
-        opList.getOptions().put(Processor.JPG_QUALITY_CONFIG_KEY,
-                config.getInt(Processor.JPG_QUALITY_CONFIG_KEY));
-
-        // TIFF compression
-        opList.getOptions().put(Processor.TIF_COMPRESSION_CONFIG_KEY,
-                config.getString(Processor.TIF_COMPRESSION_CONFIG_KEY));
+        /////////////////////////// Operations /////////////////////////////
 
         // Redactions
         try {
@@ -292,6 +278,28 @@ public abstract class AbstractResource extends ServerResource {
         if (config.getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());
         }
+
+        //////////////////////////// Options ///////////////////////////////
+
+        // Background color
+        final String bgColor =
+                config.getString(Processor.BACKGROUND_COLOR_CONFIG_KEY, "black");
+        opList.getOptions().put(Processor.BACKGROUND_COLOR_CONFIG_KEY,
+                bgColor);
+        logger.debug("addNonEndpointOperations: background color: {}", bgColor);
+
+        // JPEG quality
+        final int jpgQuality = config.getInt(Processor.JPG_QUALITY_CONFIG_KEY, 80);
+        opList.getOptions().put(Processor.JPG_QUALITY_CONFIG_KEY, jpgQuality);
+        logger.debug("addNonEndpointOperations: JPEG quality: {}", jpgQuality);
+
+        // TIFF compression
+        final String tiffCompression =
+                config.getString(Processor.TIF_COMPRESSION_CONFIG_KEY, "LZW");
+        opList.getOptions().put(Processor.TIF_COMPRESSION_CONFIG_KEY,
+                tiffCompression);
+        logger.debug("addNonEndpointOperations: TIFF compression: {}",
+                tiffCompression);
 
         // At this point, the list is complete, so it can be safely frozen.
         // This will prevent it from being modified by clients (e.g. processors)
@@ -478,7 +486,7 @@ public abstract class AbstractResource extends ServerResource {
 
     /**
      * @return The client IP address, respecting the X-Forwarded-For header,
-     * if present.
+     *         if present.
      */
     protected String getCanonicalClientIpAddress() {
         final List<String> forwardedIps = getRequest().getClientInfo().
