@@ -22,6 +22,7 @@ title: What's New
   </li>
   <li>Processors
     <ul>
+      <li>Most processor-specific configuration settings now apply across all processors, making them integrate better into the caching architecture.</li>
       <li>Added an auto-normalize option to all image processors.</li>
       <li>Added experimental support for DICOM images to GraphicsMagickProcessor, ImageMagickProcessor, Java2dProcessor, and JaiProcessor. (This is a very complex format and not all variants are working.)</li>
       <li>FfmpegProcessor uses a Java 2D processing pipeline, giving it more capabilities.</li>
@@ -30,7 +31,6 @@ title: What's New
       <li>GraphicsMagickProcessor and ImageMagickProcessor respect the EXIF Orientation tag.</li>
       <li>ImageMagickProcessor supports ImageMagick 7.</li>
       <li>PdfBoxProcessor supports JBIG2-encoded embedded images.</li>
-      <li>Per-processor resample filter and sharpening configuration settings are now applied across all processors, making them integrate better into the caching architecture.</li>
     </ul>
   </li>
   <li>Caching

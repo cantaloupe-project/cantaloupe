@@ -244,6 +244,21 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         return null;
     }
 
+    private String imTiffCompression(String configValue) {
+        switch (configValue.toLowerCase()) {
+            case "lzw":
+                return "LZW";
+            case "zlib":
+                return "Zip";
+            case "jpeg":
+                return "JPEG";
+            case "packbits":
+                return "RLE";
+            default:
+                return "None";
+        }
+    }
+
     @Override
     public Set<Format> getAvailableOutputFormats() {
         Set<Format> formats = getFormats().get(format);
@@ -383,6 +398,26 @@ class ImageMagickProcessor extends AbstractMagickProcessor
 
         args.add("-depth");
         args.add("8");
+
+        switch (ops.getOutputFormat()) {
+            case JPG:
+                // Quality
+                final int jpgQuality = (int) ops.getOptions().
+                        getOrDefault(Processor.JPG_QUALITY_CONFIG_KEY, 80);
+                args.add("-quality");
+                args.add(String.format("%d%%", jpgQuality));
+                // Interlace
+                args.add("-interlace");
+                args.add("Plane");
+                break;
+            case TIF:
+                // Compression
+                final String compression = (String) ops.getOptions().
+                        getOrDefault(Processor.TIF_COMPRESSION_CONFIG_KEY, "LZW");
+                args.add("-compress");
+                args.add(imTiffCompression(compression));
+                break;
+        }
 
         // Write to stdout.
         args.add(ops.getOutputFormat().getPreferredExtension() + ":-");
