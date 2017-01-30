@@ -21,12 +21,20 @@ abstract class AbstractProcessor {
     }
 
     /**
+     * @param ops Operation list to check.
+     * @return True.
+     */
+    public boolean isValid(final OperationList ops) {
+        return true;
+    }
+
+    /**
      * Limited implementation that performs some preflight checks. Subclasses
      * should override and call super.
      *
-     * @param ops
-     * @param imageInfo
-     * @param outputStream
+     * @param ops Operation list to process.
+     * @param imageInfo Source image info.
+     * @param outputStream Output stream to write to.
      * @throws ProcessorException
      */
     public void process(final OperationList ops,

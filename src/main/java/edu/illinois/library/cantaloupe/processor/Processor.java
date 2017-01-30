@@ -64,6 +64,17 @@ public interface Processor {
     getSupportedIiif2_0Qualities();
 
     /**
+     * Will always be called before {@link #process}.
+     *
+     * @param opList OperationList to process. Will be equal to the one passed
+     *               to {@link #process}.
+     * @return Whether the supplied operation list can be successfully
+     *         fulfilled.
+     * @throws ProcessorException
+     */
+    boolean isValid(OperationList opList) throws ProcessorException;
+
+    /**
      * <p>Performs the supplied operations on an image, writing the result to
      * the supplied output stream.</p>
      *
@@ -106,14 +117,15 @@ public interface Processor {
      *     method, for efficiency's sake.</li>
      * </ul>
      *
-     * @param ops OperationList of the image to process.
+     * @param opList OperationList to process. Will be equal to the one passed
+     *               to {@link #isValid}.
      * @param sourceInfo Information about the source image.
      * @param outputStream Stream to write the image to.
      *                     Implementations should not close it.
      * @throws UnsupportedOutputFormatException
      * @throws ProcessorException
      */
-    void process(OperationList ops, Info sourceInfo,
+    void process(OperationList opList, Info sourceInfo,
                  OutputStream outputStream) throws ProcessorException;
 
     /**
