@@ -82,8 +82,6 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
     private static Logger logger = LoggerFactory.
             getLogger(KakaduProcessor.class);
 
-    private static final String NORMALIZE_CONFIG_KEY =
-            "KakaduProcessor.normalize";
     private static final String PATH_TO_BINARIES_CONFIG_KEY =
             "KakaduProcessor.path_to_binaries";
 

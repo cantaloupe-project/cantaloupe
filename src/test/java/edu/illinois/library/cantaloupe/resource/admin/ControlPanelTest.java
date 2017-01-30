@@ -262,6 +262,7 @@ public class ControlPanelTest extends ResourceTest {
                 selectByVisibleText("Java2dProcessor");
         new Select(css("[name=\"processor.fallback\"]")).
                 selectByVisibleText("JaiProcessor");
+        css("[name=\"processor.normalize\"]").click();
         new Select(css("[name=\"processor.background_color\"]")).
                 selectByValue("white");
         new Select(css("[name=\"processor.upscale_filter\"]")).
@@ -280,25 +281,19 @@ public class ControlPanelTest extends ResourceTest {
         // GraphicsMagickProcessor
         css("#cl-processors li > a[href=\"#GraphicsMagickProcessor\"]").click();
         css("[name=\"GraphicsMagickProcessor.path_to_binaries\"]").sendKeys("/gmpath");
-        css("[name=\"GraphicsMagickProcessor.normalize\"]").click();
         // ImageMagickProcessor
         css("#cl-processors li > a[href=\"#ImageMagickProcessor\"]").click();
         css("[name=\"ImageMagickProcessor.path_to_binaries\"]").sendKeys("/impath");
-        css("[name=\"ImageMagickProcessor.normalize\"]").click();
         // JaiProcessor
         css("#cl-processors li > a[href=\"#JaiProcessor\"]").click();
-        css("[name=\"JaiProcessor.normalize\"]").click();
         // Java2dProcessor
         css("#cl-processors li > a[href=\"#Java2dProcessor\"]").click();
-        css("[name=\"Java2dProcessor.normalize\"]").click();
         // KakaduProcessor
         css("#cl-processors li > a[href=\"#KakaduProcessor\"]").click();
         css("[name=\"KakaduProcessor.path_to_binaries\"]").sendKeys("/kpath");
-        css("[name=\"KakaduProcessor.normalize\"]").click();
         // OpenJpegProcessor
         css("#cl-processors li > a[href=\"#OpenJpegProcessor\"]").click();
         css("[name=\"OpenJpegProcessor.path_to_binaries\"]").sendKeys("/ojpath");
-        css("[name=\"OpenJpegProcessor.normalize\"]").click();
         // PdfBoxProcessor
         css("#cl-processors li > a[href=\"#PdfBoxProcessor\"]").click();
         css("[name=\"PdfBoxProcessor.dpi\"]").sendKeys("300");
@@ -312,6 +307,7 @@ public class ControlPanelTest extends ResourceTest {
         final Configuration config = ConfigurationFactory.getInstance();
         assertEquals("Java2dProcessor", config.getString("processor.gif"));
         assertEquals("JaiProcessor", config.getString("processor.fallback"));
+        assertTrue(config.getBoolean("processor.normalize"));
         assertEquals("white", config.getString("processor.background_color"));
         assertEquals("triangle",
                 config.getString("processor.upscale_filter"));
@@ -328,23 +324,17 @@ public class ControlPanelTest extends ResourceTest {
         // GraphicsMagickProcessor
         assertEquals("/gmpath",
                 config.getString("GraphicsMagickProcessor.path_to_binaries"));
-        assertTrue(config.getBoolean("GraphicsMagickProcessor.normalize"));
         // ImageMagickProcessor
         assertEquals("/impath",
                 config.getString("ImageMagickProcessor.path_to_binaries"));
-        assertTrue(config.getBoolean("ImageMagickProcessor.normalize"));
         // JaiProcessor
-        assertTrue(config.getBoolean("JaiProcessor.normalize"));
         // Java2dProcessor
-        assertTrue(config.getBoolean("Java2dProcessor.normalize"));
         // KakaduProcessor
         assertEquals("/kpath",
                 config.getString("KakaduProcessor.path_to_binaries"));
-        assertTrue(config.getBoolean("KakaduProcessor.normalize"));
         // OpenJpegProcessor
         assertEquals("/ojpath",
                 config.getString("OpenJpegProcessor.path_to_binaries"));
-        assertTrue(config.getBoolean("OpenJpegProcessor.normalize"));
         // PdfBoxProcessor
         assertEquals(300, config.getInt("PdfBoxProcessor.dpi"));
     }

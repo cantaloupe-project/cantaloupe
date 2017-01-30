@@ -23,8 +23,6 @@ import java.util.Set;
 class Java2dProcessor extends AbstractJava2dProcessor
         implements StreamProcessor, FileProcessor {
 
-    private static final String NORMALIZE_CONFIG_KEY = "Java2dProcessor.normalize";
-
     @Override
     public void process(final OperationList ops,
                         final Info imageInfo,

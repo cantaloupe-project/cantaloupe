@@ -67,8 +67,6 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
     private static Logger logger = LoggerFactory.
             getLogger(OpenJpegProcessor.class);
 
-    private static final String NORMALIZE_CONFIG_KEY =
-            "OpenJpegProcessor.normalize";
     private static final String PATH_TO_BINARIES_CONFIG_KEY =
             "OpenJpegProcessor.path_to_binaries";
 

@@ -295,9 +295,6 @@ FfmpegProcessor.path_to_binaries =
 # binary. Overrides the PATH.
 GraphicsMagickProcessor.path_to_binaries =
 
-# Adjusts levels to utilize available dynamic range.
-GraphicsMagickProcessor.normalize = false
-
 #----------------------------------------
 # ImageMagickProcessor
 #----------------------------------------
@@ -305,25 +302,6 @@ GraphicsMagickProcessor.normalize = false
 # !! Optional absolute path of the directory containing the ImageMagick
 # binaries. Overrides the PATH.
 ImageMagickProcessor.path_to_binaries = /usr/local/bin
-
-# Expands contrast to utilize available dynamic range.
-ImageMagickProcessor.normalize = false
-
-#----------------------------------------
-# JaiProcessor
-#----------------------------------------
-
-# Expands contrast to utilize available dynamic range. This forces the entire
-# source image to be read into memory, so can be slow with large images.
-JaiProcessor.normalize = false
-
-#----------------------------------------
-# Java2dProcessor
-#----------------------------------------
-
-# Expands contrast to utilize available dynamic range. This forces the entire
-# source image to be read into memory, so can be slow with large images.
-Java2dProcessor.normalize = false
 
 #----------------------------------------
 # KakaduProcessor
@@ -333,10 +311,6 @@ Java2dProcessor.normalize = false
 # Overrides the PATH.
 KakaduProcessor.path_to_binaries =
 
-# Expands contrast to utilize available dynamic range. This forces the entire
-# image area to be read into memory.
-KakaduProcessor.normalize = false
-
 #----------------------------------------
 # OpenJpegProcessor
 #----------------------------------------
@@ -344,10 +318,6 @@ KakaduProcessor.normalize = false
 # Optional absolute path of the directory containing the OpenJPEG binaries.
 # Overrides the PATH.
 OpenJpegProcessor.path_to_binaries =
-
-# Expands contrast to utilize available dynamic range. This forces the entire
-# image area to be read into memory.
-OpenJpegProcessor.normalize = false
 
 #----------------------------------------
 # PdfBoxProcessor

@@ -49,8 +49,6 @@ class JaiProcessor extends AbstractImageIoProcessor
 
     private static Logger logger = LoggerFactory.getLogger(JaiProcessor.class);
 
-    static final String NORMALIZE_CONFIG_KEY = "JaiProcessor.normalize";
-
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>

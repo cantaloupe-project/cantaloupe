@@ -1139,6 +1139,28 @@
                                         </td>
                                     </tr>
                                     <tr>
+                                        <td>
+                                            <a tabindex="0" class="btn btn-sm cl-help"
+                                               role="button" data-toggle="popover"
+                                               data-trigger="focus"
+                                               data-content="Expands contrast to utilize
+                                                   available dynamic range. This forces the entire
+                                                   source image to be read into memory, so can
+                                                   be slow with large images.">?</a>
+                                        </td>
+                                        <td>
+                                            <div class="checkbox">
+                                                <label>
+                                                    <input type="checkbox"
+                                                           name="processor.normalize"
+                                                           value="true"
+                                                           data-requires-restart="false">
+                                                    Normalize
+                                                </label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
                                         <td>Background color
                                             <a tabindex="0" class="btn btn-sm cl-help"
                                                role="button" data-toggle="popover"
@@ -1293,16 +1315,6 @@
                                        data-toggle="tab">ImageMagickProcessor</a>
                                 </li>
                                 <li role="presentation">
-                                    <a href="#JaiProcessor"
-                                       aria-controls="JaiProcessor" role="tab"
-                                       data-toggle="tab">JaiProcessor</a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#Java2dProcessor"
-                                       aria-controls="Java2dProcessor" role="tab"
-                                       data-toggle="tab">Java2dProcessor</a>
-                                </li>
-                                <li role="presentation">
                                     <a href="#KakaduProcessor"
                                        aria-controls="KakaduProcessor" role="tab"
                                        data-toggle="tab">KakaduProcessor</a>
@@ -1355,26 +1367,6 @@
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td>
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Adjusts levels to utilize available
-                                                   dynamic range.">?</a>
-                                            </td>
-                                            <td>
-                                                <div class="checkbox">
-                                                    <label>
-                                                        <input type="checkbox"
-                                                               name="GraphicsMagickProcessor.normalize"
-                                                               value="true"
-                                                               data-requires-restart="false">
-                                                        Normalize
-                                                    </label>
-                                                </div>
-                                            </td>
-                                        </tr>
                                     </table>
                                 </div>
 
@@ -1392,80 +1384,6 @@
                                                 <input class="form-control" type="text"
                                                        name="ImageMagickProcessor.path_to_binaries"
                                                        data-requires-restart="true">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Expands contrast to utilize available
-                                                   dynamic range.">?</a>
-                                            </td>
-                                            <td>
-                                                <div class="checkbox">
-                                                    <label>
-                                                        <input type="checkbox"
-                                                               name="ImageMagickProcessor.normalize"
-                                                               value="true"
-                                                               data-requires-restart="false">
-                                                        Normalize
-                                                    </label>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </div>
-
-                                <div role="tabpanel" class="tab-pane" id="JaiProcessor">
-                                    <table class="table table-striped">
-                                        <tr>
-                                            <td>
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Expands contrast to utilize
-                                                   available dynamic range. This forces the entire
-                                                   source image to be read into memory, so can
-                                                   be slow with large images.">?</a>
-                                            </td>
-                                            <td>
-                                                <div class="checkbox">
-                                                    <label>
-                                                        <input type="checkbox"
-                                                               name="JaiProcessor.normalize"
-                                                               value="true"
-                                                               data-requires-restart="false">
-                                                        Normalize
-                                                    </label>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </div>
-
-                                <div role="tabpanel" class="tab-pane" id="Java2dProcessor">
-                                    <table class="table table-striped">
-                                        <tr>
-                                            <td>
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Expands contrast to utilize
-                                                   available dynamic range. This forces the entire
-                                                   source image to be read into memory, so can
-                                                   be slow with large images.">?</a>
-                                            </td>
-                                            <td>
-                                                <div class="checkbox">
-                                                    <label>
-                                                        <input type="checkbox"
-                                                               name="Java2dProcessor.normalize"
-                                                               value="true"
-                                                               data-requires-restart="false">
-                                                        Normalize
-                                                    </label>
-                                                </div>
                                             </td>
                                         </tr>
                                     </table>
@@ -1487,27 +1405,6 @@
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td>
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Expands contrast to utilize available
-                                                   dynamic range. This forces the entire image area
-                                                   to be read into memory.">?</a>
-                                            </td>
-                                            <td>
-                                                <div class="checkbox">
-                                                    <label>
-                                                        <input type="checkbox"
-                                                               name="KakaduProcessor.normalize"
-                                                               value="true"
-                                                               data-requires-restart="false">
-                                                        Normalize
-                                                    </label>
-                                                </div>
-                                            </td>
-                                        </tr>
                                     </table>
                                 </div>
 
@@ -1525,27 +1422,6 @@
                                                 <input class="form-control" type="text"
                                                        name="OpenJpegProcessor.path_to_binaries"
                                                        data-requires-restart="false">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Expands contrast to utilize available
-                                                   dynamic range. This forces the entire image area
-                                                   to be read into memory.">?</a>
-                                            </td>
-                                            <td>
-                                                <div class="checkbox">
-                                                    <label>
-                                                        <input type="checkbox"
-                                                               name="OpenJpegProcessor.normalize"
-                                                               value="true"
-                                                               data-requires-restart="false">
-                                                        Normalize
-                                                    </label>
-                                                </div>
                                             </td>
                                         </tr>
                                     </table>
