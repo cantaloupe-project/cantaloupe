@@ -6,7 +6,7 @@
   <artifactId>Cantaloupe</artifactId>
   <packaging>war</packaging>
   <!-- needs to be kept synchronized with properties/cantaloupe.version -->
-  <version>3.2.2</version>
+  <version>3.2.3</version>
   <name>Cantaloupe</name>
   <url>https://medusa-project.github.io/cantaloupe/</url>
   <inceptionYear>2015</inceptionYear>
