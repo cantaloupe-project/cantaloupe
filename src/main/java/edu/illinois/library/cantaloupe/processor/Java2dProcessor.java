@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -35,9 +33,8 @@ class Java2dProcessor extends AbstractJava2dProcessor
             final ReductionFactor rf = new ReductionFactor();
             final Set<ImageReader.Hint> hints = new HashSet<>();
 
-            final Configuration config = ConfigurationFactory.getInstance();
-            final boolean normalize =
-                    config.getBoolean(NORMALIZE_CONFIG_KEY, false);
+            final boolean normalize = (boolean) ops.getOptions().
+                    getOrDefault(NORMALIZE_CONFIG_KEY, false);
             if (normalize) {
                 // When normalizing, the reader needs to read the entire image
                 // so that its histogram can be sampled accurately. This will

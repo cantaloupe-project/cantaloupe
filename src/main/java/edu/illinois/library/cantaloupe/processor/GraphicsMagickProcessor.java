@@ -178,8 +178,9 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
 
         // Normalization needs to happen before cropping to maintain the
         // intensity of cropped regions relative to the full image.
-        final Configuration config = Configuration.getInstance();
-        if (config.getBoolean(NORMALIZE_CONFIG_KEY, false)) {
+        final boolean normalize = (boolean) ops.getOptions().
+                getOrDefault(NORMALIZE_CONFIG_KEY, false);
+        if (normalize) {
             args.add("-normalize");
         }
 
@@ -267,7 +268,8 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                     if (ops.getOutputFormat().supportsTransparency()) {
                         args.add("none");
                     } else {
-                        args.add(config.getString(BACKGROUND_COLOR_CONFIG_KEY, "black"));
+                        args.add((String) ops.getOptions().
+                                getOrDefault(BACKGROUND_COLOR_CONFIG_KEY, "black"));
                     }
                     args.add("-rotate");
                     args.add(Double.toString(rotate.getDegrees()));

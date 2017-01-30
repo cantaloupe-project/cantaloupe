@@ -190,17 +190,35 @@ public abstract class AbstractResource extends ServerResource {
 
     /**
      * <p>Most image-processing operations (crop, scale, etc.) are specified in
-     * a client request to an endpoint. This method adds any operations that
-     * endpoints have nothing to do with.</p>
+     * a client request to an endpoint. This method adds any operations or
+     * options that endpoints have nothing to do with.</p>
      *
      * <p>It will also call {@link OperationList#freeze()} on the operation
-     * list.</p>
+     * list before returning.</p>
      *
-     * @param opList Operation list to add the operations to.
+     * @param opList Operation list to add the operations and/or options to.
      * @param fullSize Full size of the source image.
      */
     protected void addNonEndpointOperations(final OperationList opList,
-                                            final Dimension fullSize) {
+                                            final Dimension fullSize) { // TODO: test this
+        final Configuration config = Configuration.getInstance();
+
+        // Background color
+        opList.getOptions().put(Processor.BACKGROUND_COLOR_CONFIG_KEY,
+                config.getString(Processor.BACKGROUND_COLOR_CONFIG_KEY));
+
+        // Sharpening
+        opList.getOptions().put(Processor.SHARPEN_CONFIG_KEY,
+                config.getFloat(Processor.SHARPEN_CONFIG_KEY));
+
+        // JPEG quality
+        opList.getOptions().put(Processor.JPG_QUALITY_CONFIG_KEY,
+                config.getInt(Processor.JPG_QUALITY_CONFIG_KEY));
+
+        // TIFF compression
+        opList.getOptions().put(Processor.TIF_COMPRESSION_CONFIG_KEY,
+                config.getString(Processor.TIF_COMPRESSION_CONFIG_KEY));
+
         // Redactions
         try {
             if (RedactionService.isEnabled()) {
@@ -249,7 +267,6 @@ public abstract class AbstractResource extends ServerResource {
         if (scale != null) {
             final Float scalePct = scale.getResultingScale(fullSize);
             if (scalePct != null) {
-                final Configuration config = Configuration.getInstance();
                 final String filterKey = (scalePct > 1) ?
                         UPSCALE_FILTER_CONFIG_KEY : DOWNSCALE_FILTER_CONFIG_KEY;
                 try {
@@ -264,8 +281,6 @@ public abstract class AbstractResource extends ServerResource {
                 }
             }
         }
-
-        final Configuration config = Configuration.getInstance();
 
         // Sharpening
         float sharpen = config.getFloat(Processor.SHARPEN_CONFIG_KEY, 0f);

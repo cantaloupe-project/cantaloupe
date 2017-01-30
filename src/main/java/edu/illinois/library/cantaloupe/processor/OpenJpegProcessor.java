@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Operation;
@@ -121,7 +120,7 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
      * @return
      */
     private static String getPath(String binaryName) {
-        String path = ConfigurationFactory.getInstance().
+        String path = Configuration.getInstance().
                 getString(PATH_TO_BINARIES_CONFIG_KEY);
         if (path != null && path.length() > 0) {
             path = StringUtils.stripEnd(path, File.separator) +
@@ -247,10 +246,9 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
         try {
             final ReductionFactor reductionFactor = new ReductionFactor();
 
-            final Configuration config = ConfigurationFactory.getInstance();
             // If we are normalizing, we need to read the entire image region.
-            final boolean normalize =
-                    config.getBoolean(NORMALIZE_CONFIG_KEY, false);
+            final boolean normalize = (boolean) opList.getOptions().
+                    getOrDefault(NORMALIZE_CONFIG_KEY, false);
 
             final ProcessBuilder pb = getProcessBuilder(
                     opList, imageInfo.getSize(), reductionFactor, normalize);

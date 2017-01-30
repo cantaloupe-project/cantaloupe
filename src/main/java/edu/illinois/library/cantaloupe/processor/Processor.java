@@ -94,6 +94,13 @@ public interface Processor {
      *     Implementations are discouraged from performing their own operations
      *     separate from the ones in the list, as this could interfere with the
      *     caching architecture.</li>
+     *     <li>In addition to operations, the operation list may contain a
+     *     number of options accessible via its
+     *     {@link OperationList#getOptions()} method, which implementations
+     *     should respect, where applicable. These typically come from the
+     *     configuration, so implementations should not try to read the
+     *     configuration themselves, except to get any processor-specific
+     *     configuration info they may need.</li>
      *     <li>Implementations should get the full size of the source image from
      *     the {@link Info} argument and not their {#link #readImageInfo}
      *     method, for efficiency's sake.</li>
