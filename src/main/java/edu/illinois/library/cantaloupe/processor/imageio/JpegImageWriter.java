@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Java2dUtil;
@@ -86,11 +84,11 @@ class JpegImageWriter extends AbstractImageWriter {
     }
 
     private ImageWriteParam getWriteParam(ImageWriter writer) {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final int quality = (int) opList.getOptions().
+                getOrDefault(Processor.JPG_QUALITY_CONFIG_KEY, 80f);
         final ImageWriteParam writeParam = writer.getDefaultWriteParam();
         writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-        writeParam.setCompressionQuality(config.
-                getFloat(Processor.JPG_QUALITY_CONFIG_KEY, 70f) * 0.01f);
+        writeParam.setCompressionQuality(quality * 0.01f);
         writeParam.setCompressionType("JPEG");
         return writeParam;
     }
