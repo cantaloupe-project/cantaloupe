@@ -59,20 +59,23 @@ public final class OperationList implements Comparable<OperationList>,
 
     /**
      * @param op Operation to add. Null values will be discarded.
-     * @throws ImmutableException If the instance is frozen.
+     * @throws UnsupportedOperationException If the instance is frozen.
      */
     public void add(Operation op) {
         if (frozen) {
-            throw new ImmutableException();
+            throw new UnsupportedOperationException();
         }
         if (op != null) {
             operations.add(op);
         }
     }
 
+    /**
+     * @throws UnsupportedOperationException If the instance is frozen.
+     */
     public void clear() {
         if (frozen) {
-            throw new ImmutableException();
+            throw new UnsupportedOperationException();
         }
         operations.clear();
     }
@@ -190,7 +193,7 @@ public final class OperationList implements Comparable<OperationList>,
     /**
      * @return Iterator over the instance's operations. If the instance is
      *         frozen, {@link Iterator#remove()} will throw an
-     *         {@link ImmutableException}.
+     *         {@link UnsupportedOperationException}.
      */
     @Override
     public Iterator<Operation> iterator() {
@@ -210,7 +213,7 @@ public final class OperationList implements Comparable<OperationList>,
 
                 @Override
                 public void remove() {
-                    throw new ImmutableException();
+                    throw new UnsupportedOperationException();
                 }
             };
         }
@@ -219,22 +222,22 @@ public final class OperationList implements Comparable<OperationList>,
 
     /**
      * @param identifier
-     * @throws ImmutableException If the instance is frozen.
+     * @throws UnsupportedOperationException If the instance is frozen.
      */
     public void setIdentifier(Identifier identifier) {
         if (frozen) {
-            throw new ImmutableException();
+            throw new UnsupportedOperationException();
         }
         this.identifier = identifier;
     }
 
     /**
      * @param outputFormat
-     * @throws ImmutableException If the instance is frozen.
+     * @throws UnsupportedOperationException If the instance is frozen.
      */
     public void setOutputFormat(Format outputFormat) {
         if (frozen) {
-            throw new ImmutableException();
+            throw new UnsupportedOperationException();
         }
         this.outputFormat = outputFormat;
     }

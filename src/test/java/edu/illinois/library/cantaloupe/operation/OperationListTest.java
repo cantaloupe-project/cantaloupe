@@ -58,7 +58,7 @@ public class OperationListTest extends BaseTest {
         try {
             ops.add(new Rotate());
             fail("Expected exception");
-        } catch (ImmutableException e) {
+        } catch (UnsupportedOperationException e) {
             // pass
         }
     }
@@ -91,7 +91,7 @@ public class OperationListTest extends BaseTest {
         try {
             ops.clear();
             fail("Expected exception");
-        } catch (ImmutableException e) {
+        } catch (UnsupportedOperationException e) {
             // pass
         }
     }
@@ -383,7 +383,7 @@ public class OperationListTest extends BaseTest {
         try {
             it.remove();
             fail("Expected exception");
-        } catch (ImmutableException e) {
+        } catch (UnsupportedOperationException e) {
             // pass
         }
     }
@@ -396,7 +396,7 @@ public class OperationListTest extends BaseTest {
         try {
             ops.setIdentifier(new Identifier("alpaca"));
             fail("Expected exception");
-        } catch (ImmutableException e) {
+        } catch (UnsupportedOperationException e) {
             // pass
         }
     }
@@ -409,7 +409,7 @@ public class OperationListTest extends BaseTest {
         try {
             ops.setOutputFormat(Format.GIF);
             fail("Expected exception");
-        } catch (ImmutableException e) {
+        } catch (UnsupportedOperationException e) {
             // pass
         }
     }
