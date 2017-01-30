@@ -270,6 +270,8 @@ public class ControlPanelTest extends ResourceTest {
                 selectByVisibleText("Mitchell");
         css("[name=\"processor.sharpen\"]").sendKeys("0.2");
         css("[name=\"processor.jpg.quality\"]").sendKeys("55");
+        new Select(css("[name=\"processor.tif.compression\"]")).
+                selectByVisibleText("PackBits");
         new Select(css("[name=\"StreamProcessor.retrieval_strategy\"]")).
                 selectByValue("StreamStrategy");
         // FfmpegProcessor
@@ -286,13 +288,9 @@ public class ControlPanelTest extends ResourceTest {
         // JaiProcessor
         css("#cl-processors li > a[href=\"#JaiProcessor\"]").click();
         css("[name=\"JaiProcessor.normalize\"]").click();
-        new Select(css("[name=\"JaiProcessor.tif.compression\"]")).
-                selectByVisibleText("PackBits");
         // Java2dProcessor
         css("#cl-processors li > a[href=\"#Java2dProcessor\"]").click();
         css("[name=\"Java2dProcessor.normalize\"]").click();
-        new Select(css("[name=\"Java2dProcessor.tif.compression\"]")).
-                selectByVisibleText("PackBits");
         // KakaduProcessor
         css("#cl-processors li > a[href=\"#KakaduProcessor\"]").click();
         css("[name=\"KakaduProcessor.path_to_binaries\"]").sendKeys("/kpath");
@@ -321,6 +319,7 @@ public class ControlPanelTest extends ResourceTest {
                 config.getString("processor.downscale_filter"));
         assertEquals("0.2", config.getString("processor.sharpen"));
         assertEquals("55", config.getString("processor.jpg.quality"));
+        assertEquals("PackBits", config.getString("processor.tif.compression"));
         assertEquals("StreamStrategy",
                 config.getString("StreamProcessor.retrieval_strategy"));
         // FfmpegProcessor
@@ -336,12 +335,8 @@ public class ControlPanelTest extends ResourceTest {
         assertTrue(config.getBoolean("ImageMagickProcessor.normalize"));
         // JaiProcessor
         assertTrue(config.getBoolean("JaiProcessor.normalize"));
-        assertEquals("PackBits",
-                config.getString("JaiProcessor.tif.compression"));
         // Java2dProcessor
         assertTrue(config.getBoolean("Java2dProcessor.normalize"));
-        assertEquals("PackBits",
-                config.getString("Java2dProcessor.tif.compression"));
         // KakaduProcessor
         assertEquals("/kpath",
                 config.getString("KakaduProcessor.path_to_binaries"));

@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.processor.Processor;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFField;
 
@@ -33,11 +34,6 @@ import java.util.Iterator;
  *     ImageIO TIFF Plugin Documentation</a>
  */
 class TiffImageWriter extends AbstractImageWriter {
-
-    static final String JAI_TIF_COMPRESSION_CONFIG_KEY =
-            "JaiProcessor.tif.compression";
-    static final String JAVA2D_TIF_COMPRESSION_CONFIG_KEY =
-            "Java2dProcessor.tif.compression";
 
     TiffImageWriter(OperationList opList) {
         super(opList);
@@ -122,27 +118,11 @@ class TiffImageWriter extends AbstractImageWriter {
      * @param writer Writer to abtain parameters for
      * @return Write parameters respecting the application configuration.
      */
-    private ImageWriteParam getJaiWriteParam(ImageWriter writer) {
+    private ImageWriteParam getWriteParam(ImageWriter writer) {
         final ImageWriteParam writeParam = writer.getDefaultWriteParam();
         final Configuration config = ConfigurationFactory.getInstance();
         final String compressionType = config.getString(
-                JAI_TIF_COMPRESSION_CONFIG_KEY);
-        if (compressionType != null) {
-            writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-            writeParam.setCompressionType(compressionType);
-        }
-        return writeParam;
-    }
-
-    /**
-     * @param writer Writer to abtain parameters for
-     * @return Write parameters respecting the application configuration.
-     */
-    private ImageWriteParam getJava2dWriteParam(ImageWriter writer) {
-        final ImageWriteParam writeParam = writer.getDefaultWriteParam();
-        final Configuration config = ConfigurationFactory.getInstance();
-        final String compressionType = config.getString(
-                JAVA2D_TIF_COMPRESSION_CONFIG_KEY);
+                Processor.TIF_COMPRESSION_CONFIG_KEY);
         if (compressionType != null) {
             writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             writeParam.setCompressionType(compressionType);
@@ -165,7 +145,7 @@ class TiffImageWriter extends AbstractImageWriter {
             final ImageWriter writer = it.next();
             if (writer instanceof it.geosolutions.imageioimpl.plugins.tiff.TIFFImageWriter) {
                 try {
-                    final ImageWriteParam writeParam = getJava2dWriteParam(writer);
+                    final ImageWriteParam writeParam = getWriteParam(writer);
                     final IIOMetadata metadata = getMetadata(writer, writeParam, image);
                     final IIOImage iioImage = new IIOImage(image, null, metadata);
                     final ImageOutputStream ios =
@@ -196,7 +176,7 @@ class TiffImageWriter extends AbstractImageWriter {
             final ImageWriter writer = it.next();
             if (writer instanceof it.geosolutions.imageioimpl.plugins.tiff.TIFFImageWriter) {
                 try {
-                    final ImageWriteParam writeParam = getJaiWriteParam(writer);
+                    final ImageWriteParam writeParam = getWriteParam(writer);
                     final IIOMetadata metadata = getMetadata(writer, writeParam, image);
                     final IIOImage iioImage = new IIOImage(image, null, metadata);
                     final ImageOutputStream ios =

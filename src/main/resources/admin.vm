@@ -1225,6 +1225,26 @@
                                         </td>
                                     </tr>
                                     <tr>
+                                        <td>TIFF compression
+                                            <a tabindex="0" class="btn btn-sm cl-help"
+                                               role="button" data-toggle="popover"
+                                               data-trigger="focus"
+                                               data-content="TIFF output compression type.">?</a>
+                                        </td>
+                                        <td>
+                                            <select class="form-control"
+                                                    name="processor.tif.compression"
+                                                    data-requires-restart="false">
+                                                <option value="">No Compression</option>
+                                                <option value="LZW">LZW</option>
+                                                <option value="Deflate">Deflate</option>
+                                                <option value="ZLib">ZLib</option>
+                                                <option value="JPEG">JPEG</option>
+                                                <option value="PackBits">PackBits</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
                                         <td>StreamProcessor Retrieval Strategy
                                             <a tabindex="0" class="btn btn-sm cl-help"
                                                role="button" data-toggle="popover"
@@ -1421,26 +1441,6 @@
                                                 </div>
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td>TIFF compression
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="TIFF output compression type.">?</a>
-                                            </td>
-                                            <td>
-                                                <select class="form-control"
-                                                        name="JaiProcessor.tif.compression"
-                                                        data-requires-restart="false">
-                                                    <option value="">No Compression</option>
-                                                    <option value="LZW">LZW</option>
-                                                    <option value="Deflate">Deflate</option>
-                                                    <option value="ZLib">ZLib</option>
-                                                    <option value="JPEG">JPEG</option>
-                                                    <option value="PackBits">PackBits</option>
-                                                </select>
-                                            </td>
-                                        </tr>
                                     </table>
                                 </div>
 
@@ -1466,25 +1466,6 @@
                                                         Normalize
                                                     </label>
                                                 </div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>TIFF compression
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="TIFF output compression type.">?</a>
-                                            </td>
-                                            <td>
-                                                <select class="form-control"
-                                                        name="Java2dProcessor.tif.compression"
-                                                        data-requires-restart="false">
-                                                    <option>LZW</option>
-                                                    <option>Deflate</option>
-                                                    <option>ZLib</option>
-                                                    <option>JPEG</option>
-                                                    <option>PackBits</option>
-                                                </select>
                                             </td>
                                         </tr>
                                     </table>

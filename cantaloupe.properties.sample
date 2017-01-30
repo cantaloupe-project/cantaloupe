@@ -269,6 +269,10 @@ processor.sharpen = 0
 # JPEG output quality.
 processor.jpg.quality = 80
 
+# TIFF output compression type. Available values are `LZW`, `Deflate`,
+# `ZLib`, `JPEG`, and `PackBits`. Leave blank for no compression.
+processor.tif.compression = LZW
+
 # Available values are `StreamStrategy` and `CacheStrategy`. StreamStrategy
 # will try to stream source images from non-filesystem resolvers, when this
 # is possible; CacheStrategy will first download them into the source cache
@@ -313,10 +317,6 @@ ImageMagickProcessor.normalize = false
 # source image to be read into memory, so can be slow with large images.
 JaiProcessor.normalize = false
 
-# TIFF output compression type. Available values are `LZW`, `Deflate`,
-# `ZLib`, `JPEG`, and `PackBits`. Leave blank for no compression.
-JaiProcessor.tif.compression = LZW
-
 #----------------------------------------
 # Java2dProcessor
 #----------------------------------------
@@ -324,10 +324,6 @@ JaiProcessor.tif.compression = LZW
 # Expands contrast to utilize available dynamic range. This forces the entire
 # source image to be read into memory, so can be slow with large images.
 Java2dProcessor.normalize = false
-
-# TIFF output compression type. Available values are `LZW`, `Deflate`,
-# `ZLib`, `JPEG`, and `PackBits`. Leave blank for no compression.
-Java2dProcessor.tif.compression = LZW
 
 #----------------------------------------
 # KakaduProcessor
