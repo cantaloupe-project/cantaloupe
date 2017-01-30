@@ -59,8 +59,6 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     private static Logger logger = LoggerFactory.
             getLogger(ImageMagickProcessor.class);
 
-    static final String BACKGROUND_COLOR_CONFIG_KEY =
-            "ImageMagickProcessor.background_color";
     static final String NORMALIZE_CONFIG_KEY =
             "ImageMagickProcessor.normalize";
     static final String PATH_TO_BINARIES_CONFIG_KEY =

@@ -57,8 +57,6 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     private static Logger logger = LoggerFactory.
             getLogger(GraphicsMagickProcessor.class);
 
-    private static final String BACKGROUND_COLOR_CONFIG_KEY =
-            "GraphicsMagickProcessor.background_color";
     private static final String NORMALIZE_CONFIG_KEY =
             "GraphicsMagickProcessor.normalize";
     private static final String PATH_TO_BINARIES_CONFIG_KEY =

@@ -220,6 +220,10 @@ AzureStorageResolver.lookup_strategy = BasicLookupStrategy
 # PROCESSORS
 ###########################################################################
 
+#----------------------------------------
+# Processor Selection
+#----------------------------------------
+
 # Image processors to use for various source formats. Available values are
 # `Java2dProcessor`, `GraphicsMagickProcessor`, `ImageMagickProcessor`,
 # `KakaduProcessor`, `OpenJpegProcessor`, `JaiProcessor`, `PdfBoxProcessor`,
@@ -243,6 +247,14 @@ processor.webp = ImageMagickProcessor
 
 # Fall back to this processor for any formats not assigned above.
 processor.fallback = Java2dProcessor
+
+#----------------------------------------
+# Global Processor Configuration
+#----------------------------------------
+
+# Color of the background when an image is rotated. Only affects output
+# formats that do not support transparency.
+processor.background_color = black
 
 # Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
 # `lanczos3`, `mitchell`, `triangle`.
@@ -276,10 +288,6 @@ FfmpegProcessor.path_to_binaries =
 # binary. Overrides the PATH.
 GraphicsMagickProcessor.path_to_binaries =
 
-# Color of the background when an image is rotated. Only affects output
-# formats that do not support transparency.
-GraphicsMagickProcessor.background_color = black
-
 # Adjusts levels to utilize available dynamic range.
 GraphicsMagickProcessor.normalize = false
 
@@ -290,10 +298,6 @@ GraphicsMagickProcessor.normalize = false
 # !! Optional absolute path of the directory containing the ImageMagick
 # binaries. Overrides the PATH.
 ImageMagickProcessor.path_to_binaries = /usr/local/bin
-
-# Color of the background when an image is rotated. Only affects output
-# formats that do not support transparency.
-ImageMagickProcessor.background_color = black
 
 # Expands contrast to utilize available dynamic range.
 ImageMagickProcessor.normalize = false

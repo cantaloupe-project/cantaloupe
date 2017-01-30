@@ -262,6 +262,8 @@ public class ControlPanelTest extends ResourceTest {
                 selectByVisibleText("Java2dProcessor");
         new Select(css("[name=\"processor.fallback\"]")).
                 selectByVisibleText("JaiProcessor");
+        new Select(css("[name=\"processor.background_color\"]")).
+                selectByValue("white");
         new Select(css("[name=\"processor.upscale_filter\"]")).
                 selectByVisibleText("Triangle");
         new Select(css("[name=\"processor.downscale_filter\"]")).
@@ -275,14 +277,10 @@ public class ControlPanelTest extends ResourceTest {
         // GraphicsMagickProcessor
         css("#cl-processors li > a[href=\"#GraphicsMagickProcessor\"]").click();
         css("[name=\"GraphicsMagickProcessor.path_to_binaries\"]").sendKeys("/gmpath");
-        new Select(css("[name=\"GraphicsMagickProcessor.background_color\"]")).
-                selectByValue("black");
         css("[name=\"GraphicsMagickProcessor.normalize\"]").click();
         // ImageMagickProcessor
         css("#cl-processors li > a[href=\"#ImageMagickProcessor\"]").click();
         css("[name=\"ImageMagickProcessor.path_to_binaries\"]").sendKeys("/impath");
-        new Select(css("[name=\"ImageMagickProcessor.background_color\"]")).
-                selectByValue("white");
         css("[name=\"ImageMagickProcessor.normalize\"]").click();
         // JaiProcessor
         css("#cl-processors li > a[href=\"#JaiProcessor\"]").click();
@@ -317,6 +315,7 @@ public class ControlPanelTest extends ResourceTest {
         final Configuration config = ConfigurationFactory.getInstance();
         assertEquals("Java2dProcessor", config.getString("processor.gif"));
         assertEquals("JaiProcessor", config.getString("processor.fallback"));
+        assertEquals("white", config.getString("processor.background_color"));
         assertEquals("triangle",
                 config.getString("processor.upscale_filter"));
         assertEquals("mitchell",
@@ -331,14 +330,10 @@ public class ControlPanelTest extends ResourceTest {
         // GraphicsMagickProcessor
         assertEquals("/gmpath",
                 config.getString("GraphicsMagickProcessor.path_to_binaries"));
-        assertEquals("black",
-                config.getString("GraphicsMagickProcessor.background_color"));
         assertTrue(config.getBoolean("GraphicsMagickProcessor.normalize"));
         // ImageMagickProcessor
         assertEquals("/impath",
                 config.getString("ImageMagickProcessor.path_to_binaries"));
-        assertEquals("white",
-                config.getString("ImageMagickProcessor.background_color"));
         assertTrue(config.getBoolean("ImageMagickProcessor.normalize"));
         // JaiProcessor
         assertTrue(config.getBoolean("JaiProcessor.normalize"));
