@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Java2dUtil;
+import edu.illinois.library.cantaloupe.processor.Processor;
 import org.w3c.dom.Node;
 
 import javax.imageio.IIOImage;
@@ -28,11 +29,6 @@ import java.util.Iterator;
  * {@link BufferedImage}s and JAI {@link PlanarImage}s as JPEGs.
  */
 class JpegImageWriter extends AbstractImageWriter {
-
-    static final String JAVA2D_JPG_QUALITY_CONFIG_KEY =
-            "Java2dProcessor.jpg.quality";
-    static final String JAI_JPG_QUALITY_CONFIG_KEY =
-            "JaiProcessor.jpg.quality";
 
     JpegImageWriter(OperationList opList) {
         super(opList);
@@ -89,22 +85,12 @@ class JpegImageWriter extends AbstractImageWriter {
         }
     }
 
-    private ImageWriteParam getJaiWriteParam(ImageWriter writer) {
+    private ImageWriteParam getWriteParam(ImageWriter writer) {
         final Configuration config = ConfigurationFactory.getInstance();
         final ImageWriteParam writeParam = writer.getDefaultWriteParam();
         writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
         writeParam.setCompressionQuality(config.
-                getFloat(JAI_JPG_QUALITY_CONFIG_KEY, 0.7f));
-        writeParam.setCompressionType("JPEG");
-        return writeParam;
-    }
-
-    private ImageWriteParam getJava2dWriteParam(ImageWriter writer) {
-        final Configuration config = ConfigurationFactory.getInstance();
-        final ImageWriteParam writeParam = writer.getDefaultWriteParam();
-        writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-        writeParam.setCompressionQuality(config.
-                getFloat(JAVA2D_JPG_QUALITY_CONFIG_KEY, 0.7f));
+                getFloat(Processor.JPG_QUALITY_CONFIG_KEY, 70f) * 0.01f);
         writeParam.setCompressionType("JPEG");
         return writeParam;
     }
@@ -125,7 +111,7 @@ class JpegImageWriter extends AbstractImageWriter {
             // JPEG doesn't support alpha, so convert to RGB or else the
             // client will interpret as CMYK
             image = Java2dUtil.removeAlpha(image);
-            final ImageWriteParam writeParam = getJava2dWriteParam(writer);
+            final ImageWriteParam writeParam = getWriteParam(writer);
             final ImageOutputStream os =
                     ImageIO.createImageOutputStream(outputStream);
             writer.setOutput(os);
@@ -162,7 +148,7 @@ class JpegImageWriter extends AbstractImageWriter {
                 pb.add(bands);
                 image = JAI.create("bandselect", pb, null);
             }
-            final ImageWriteParam writeParam = getJaiWriteParam(writer);
+            final ImageWriteParam writeParam = getWriteParam(writer);
             final IIOMetadata metadata = getMetadata(writer, writeParam, image);
             // JPEGImageWriter doesn't like RenderedOps, so give it
             // a BufferedImage.

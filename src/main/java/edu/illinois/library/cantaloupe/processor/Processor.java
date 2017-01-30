@@ -24,6 +24,7 @@ public interface Processor {
 
     String BACKGROUND_COLOR_CONFIG_KEY = "rrocessor.background_color";
     String DOWNSCALE_FILTER_CONFIG_KEY = "processor.downscale_filter";
+    String JPG_QUALITY_CONFIG_KEY = "processor.jpg.quality";
     String PRESERVE_METADATA_CONFIG_KEY = "metadata.preserve";
     String RESPECT_ORIENTATION_CONFIG_KEY = "metadata.respect_orientation";
     String SHARPEN_CONFIG_KEY = "processor.sharpen";

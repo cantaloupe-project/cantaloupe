@@ -1210,6 +1210,21 @@
                                         </td>
                                     </tr>
                                     <tr>
+                                        <td>JPEG quality
+                                            <a tabindex="0" class="btn btn-sm cl-help"
+                                               role="button" data-toggle="popover"
+                                               data-trigger="focus"
+                                               data-content="JPEG output quality. Should be a number
+                                                   between 1 and 100.">?</a>
+                                        </td>
+                                        <td>
+                                            <input class="form-control" type="number"
+                                                   name="processor.jpg.quality"
+                                                   min="1" max="100"
+                                                   data-requires-restart="false">
+                                        </td>
+                                    </tr>
+                                    <tr>
                                         <td>StreamProcessor Retrieval Strategy
                                             <a tabindex="0" class="btn btn-sm cl-help"
                                                role="button" data-toggle="popover"
@@ -1407,21 +1422,6 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>JPEG quality
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="JPEG output quality. Should be a number
-                                                   between 0 and 1.">?</a>
-                                            </td>
-                                            <td>
-                                                <input class="form-control" type="text"
-                                                       name="JaiProcessor.jpg.quality"
-                                                       min="0" max="1"
-                                                       data-requires-restart="false">
-                                            </td>
-                                        </tr>
-                                        <tr>
                                             <td>TIFF compression
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
@@ -1466,21 +1466,6 @@
                                                         Normalize
                                                     </label>
                                                 </div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>JPEG quality
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="JPEG output quality. Should be a number
-                                                   between 0 and 1.">?</a>
-                                            </td>
-                                            <td>
-                                                <input class="form-control" type="text"
-                                                       name="Java2dProcessor.jpg.quality"
-                                                       min="1" max="100"
-                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>

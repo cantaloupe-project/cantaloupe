@@ -269,6 +269,7 @@ public class ControlPanelTest extends ResourceTest {
         new Select(css("[name=\"processor.downscale_filter\"]")).
                 selectByVisibleText("Mitchell");
         css("[name=\"processor.sharpen\"]").sendKeys("0.2");
+        css("[name=\"processor.jpg.quality\"]").sendKeys("55");
         new Select(css("[name=\"StreamProcessor.retrieval_strategy\"]")).
                 selectByValue("StreamStrategy");
         // FfmpegProcessor
@@ -285,13 +286,11 @@ public class ControlPanelTest extends ResourceTest {
         // JaiProcessor
         css("#cl-processors li > a[href=\"#JaiProcessor\"]").click();
         css("[name=\"JaiProcessor.normalize\"]").click();
-        css("[name=\"JaiProcessor.jpg.quality\"]").sendKeys("0.55");
         new Select(css("[name=\"JaiProcessor.tif.compression\"]")).
                 selectByVisibleText("PackBits");
         // Java2dProcessor
         css("#cl-processors li > a[href=\"#Java2dProcessor\"]").click();
         css("[name=\"Java2dProcessor.normalize\"]").click();
-        css("[name=\"Java2dProcessor.jpg.quality\"]").sendKeys("0.55");
         new Select(css("[name=\"Java2dProcessor.tif.compression\"]")).
                 selectByVisibleText("PackBits");
         // KakaduProcessor
@@ -320,8 +319,8 @@ public class ControlPanelTest extends ResourceTest {
                 config.getString("processor.upscale_filter"));
         assertEquals("mitchell",
                 config.getString("processor.downscale_filter"));
-        assertEquals("0.2",
-                config.getString("processor.sharpen"));
+        assertEquals("0.2", config.getString("processor.sharpen"));
+        assertEquals("55", config.getString("processor.jpg.quality"));
         assertEquals("StreamStrategy",
                 config.getString("StreamProcessor.retrieval_strategy"));
         // FfmpegProcessor
@@ -337,13 +336,10 @@ public class ControlPanelTest extends ResourceTest {
         assertTrue(config.getBoolean("ImageMagickProcessor.normalize"));
         // JaiProcessor
         assertTrue(config.getBoolean("JaiProcessor.normalize"));
-        assertEquals("0.55", config.getString("JaiProcessor.jpg.quality"));
         assertEquals("PackBits",
                 config.getString("JaiProcessor.tif.compression"));
         // Java2dProcessor
         assertTrue(config.getBoolean("Java2dProcessor.normalize"));
-        assertEquals("0.55",
-                config.getString("Java2dProcessor.jpg.quality"));
         assertEquals("PackBits",
                 config.getString("Java2dProcessor.tif.compression"));
         // KakaduProcessor
