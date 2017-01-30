@@ -198,24 +198,7 @@ public final class OperationList implements Comparable<OperationList>,
     @Override
     public Iterator<Operation> iterator() {
         if (frozen) {
-            // Override Iterator to make remove() a no-op.
-            final Iterator<Operation> delegate = operations.iterator();
-            return new Iterator<Operation>() {
-                @Override
-                public boolean hasNext() {
-                    return delegate.hasNext();
-                }
-
-                @Override
-                public Operation next() {
-                    return delegate.next();
-                }
-
-                @Override
-                public void remove() {
-                    throw new UnsupportedOperationException();
-                }
-            };
+            return Collections.unmodifiableList(operations).iterator();
         }
         return operations.iterator();
     }
