@@ -85,7 +85,7 @@ class JpegImageWriter extends AbstractImageWriter {
 
     private ImageWriteParam getWriteParam(ImageWriter writer) {
         final int quality = (int) opList.getOptions().
-                getOrDefault(Processor.JPG_QUALITY_CONFIG_KEY, 80f);
+                getOrDefault(Processor.JPG_QUALITY_CONFIG_KEY, 80);
         final ImageWriteParam writeParam = writer.getDefaultWriteParam();
         writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
         writeParam.setCompressionQuality(quality * 0.01f);
