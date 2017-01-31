@@ -523,13 +523,25 @@ public abstract class Java2dUtil {
     }
 
     /**
-     * @param inImage Image to rotate
-     * @param rotate Rotate operation
-     * @return Rotated image, or the input image if the given rotation is a
-     * no-op.
+     * @see #rotateImage(BufferedImage, Rotate, java.awt.Color)
      */
     static BufferedImage rotateImage(final BufferedImage inImage,
                                      final Rotate rotate) {
+        return rotateImage(inImage, rotate, null);
+    }
+
+    /**
+     * @param inImage Image to rotate
+     * @param rotate Rotate operation
+     * @param bgColor Background color to use when the rotation is not a right
+     *                angle. Supply <code>null</code> to leave the background
+     *                transparent.
+     * @return Rotated image, or the input image if the given rotation is a
+     *         no-op.
+     */
+    static BufferedImage rotateImage(final BufferedImage inImage,
+                                     final Rotate rotate,
+                                     final java.awt.Color bgColor) {
         BufferedImage rotatedImage = inImage;
         if (rotate.hasEffect()) {
             final Stopwatch watch = new Stopwatch();
@@ -554,13 +566,19 @@ public abstract class Java2dUtil {
 
             rotatedImage = new BufferedImage(canvasWidth, canvasHeight,
                     BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2d = rotatedImage.createGraphics();
+
+            final Graphics2D g2d = rotatedImage.createGraphics();
             g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
                     RenderingHints.VALUE_RENDER_QUALITY);
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
             g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                     RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+            if (bgColor != null && rotate.getDegrees() % 90 > 0.00001f) {
+                g2d.setPaint(bgColor);
+                g2d.fillRect(0, 0, canvasWidth, canvasHeight);
+            }
             g2d.drawImage(inImage, tx, null);
             logger.debug("rotateImage() executed in {} msec",
                     watch.timeElapsed());
