@@ -22,7 +22,7 @@ import java.util.Set;
  */
 public interface Processor {
 
-    String BACKGROUND_COLOR_CONFIG_KEY = "rrocessor.background_color";
+    String BACKGROUND_COLOR_CONFIG_KEY = "processor.background_color";
     String DOWNSCALE_FILTER_CONFIG_KEY = "processor.downscale_filter";
     String JPG_QUALITY_CONFIG_KEY = "processor.jpg.quality";
     String NORMALIZE_CONFIG_KEY = "processor.normalize";
