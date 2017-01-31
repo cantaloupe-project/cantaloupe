@@ -168,14 +168,25 @@ public class FfmpegProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void testValidate() {
+    public void testValidate() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         instance.validate(ops);
 
-        ops.getOptions().put("time", "00:00:12");
+        // Valid time format
+        ops.getOptions().put("time", "00:00:02");
         instance.validate(ops);
 
+        // Invalid time format
         ops.getOptions().put("time", "000012");
+        try {
+            instance.validate(ops);
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+
+        // Time beyond the video length
+        ops.getOptions().put("time", "00:38:06");
         try {
             instance.validate(ops);
             fail("Expected exception");

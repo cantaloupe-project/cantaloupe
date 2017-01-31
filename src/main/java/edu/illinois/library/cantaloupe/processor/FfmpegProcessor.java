@@ -52,6 +52,8 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
     private static final Pattern timePattern =
             Pattern.compile("[0-9][0-9]:[0-5][0-9]:[0-5][0-9]");
 
+    private double durationSec = 0;
+    private Info imageInfo;
     private File sourceFile;
 
     /**
@@ -80,57 +82,64 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
     }
 
     /**
-     * Gets information about the video by parsing the output of ffprobe.
+     * Gets information about the video by invoking ffprobe and parsing its
+     * output. The result is cached.
      *
      * @return
      * @throws ProcessorException
      */
     @Override
     public Info readImageInfo() throws ProcessorException {
-        final List<String> command = new ArrayList<>();
-        // ffprobe -v quiet -print_format xml -show_streams <file>
-        command.add(getPath("ffprobe"));
-        command.add("-v");
-        command.add("quiet");
-        command.add("-print_format");
-        command.add("xml");
-        command.add("-show_streams");
-        command.add(sourceFile.getAbsolutePath());
-        InputStream processInputStream = null;
-        try {
-            ProcessBuilder pb = new ProcessBuilder(command);
-            pb.redirectErrorStream(true);
+        if (imageInfo == null) {
+            final List<String> command = new ArrayList<>();
+            command.add(getPath("ffprobe"));
+            command.add("-v");
+            command.add("quiet");
+            command.add("-print_format");
+            command.add("xml");
+            command.add("-show_streams");
+            command.add(sourceFile.getAbsolutePath());
+            InputStream processInputStream = null;
+            try {
+                ProcessBuilder pb = new ProcessBuilder(command);
+                pb.redirectErrorStream(true);
 
-            logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
-            Process process = pb.start();
+                logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
+                Process process = pb.start();
 
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            processInputStream = process.getInputStream();
-            Document doc = db.parse(processInputStream);
+                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                DocumentBuilder db = dbf.newDocumentBuilder();
+                processInputStream = process.getInputStream();
+                Document doc = db.parse(processInputStream);
 
-            XPath xpath = XPathFactory.newInstance().newXPath();
-            XPathExpression expr = xpath.compile("//stream[@index=\"0\"]/@width");
-            int width = (int) Math.round((double) expr.evaluate(doc, XPathConstants.NUMBER));
-            expr = xpath.compile("//stream[@index=\"0\"]/@height");
-            int height = (int) Math.round((double) expr.evaluate(doc, XPathConstants.NUMBER));
-
-            return new Info(width, height, width, height,
-                    getSourceFormat());
-        } catch (SAXException e) {
-            throw new ProcessorException("Failed to parse XML. Command: " +
-                    StringUtils.join(command, " "), e);
-        } catch (Exception e) {
-            throw new ProcessorException(e.getMessage(), e);
-        } finally {
-            if (processInputStream != null) {
-                try {
-                    processInputStream.close();
-                } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
+                XPath xpath = XPathFactory.newInstance().newXPath();
+                // duration
+                XPathExpression expr = xpath.compile("//stream[@index=\"0\"]/@duration");
+                durationSec = (double) expr.evaluate(doc, XPathConstants.NUMBER);
+                expr = xpath.compile("//stream[@index=\"0\"]/@width");
+                // width
+                int width = (int) Math.round((double) expr.evaluate(doc, XPathConstants.NUMBER));
+                expr = xpath.compile("//stream[@index=\"0\"]/@height");
+                // height
+                int height = (int) Math.round((double) expr.evaluate(doc, XPathConstants.NUMBER));
+                imageInfo = new Info(width, height, width, height,
+                        getSourceFormat());
+            } catch (SAXException e) {
+                throw new ProcessorException("Failed to parse XML. Command: " +
+                        StringUtils.join(command, " "), e);
+            } catch (Exception e) {
+                throw new ProcessorException(e.getMessage(), e);
+            } finally {
+                if (processInputStream != null) {
+                    try {
+                        processInputStream.close();
+                    } catch (IOException e) {
+                        logger.error(e.getMessage(), e);
+                    }
                 }
             }
         }
+        return imageInfo;
     }
 
     @Override
@@ -234,13 +243,28 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
     }
 
     @Override
-    public void validate(OperationList opList) {
+    public void validate(OperationList opList) throws ProcessorException {
+        if (durationSec < 1) {
+            readImageInfo();
+        }
         // Check that the "time" option, if supplied, is in the correct format.
-        final String time = (String) opList.getOptions().get("time");
-        // prevent arbitrary input
-        if (time != null && !time.matches("[0-9][0-9]:[0-5][0-9]:[0-5][0-9]")) {
-            throw new IllegalArgumentException("Invalid time format. " +
-                    "(HH:MM::SS is required.)");
+        final String timeStr = (String) opList.getOptions().get("time");
+        if (timeStr != null) {
+            if (timeStr.matches("[0-9][0-9]:[0-5][0-9]:[0-5][0-9]")) {
+                // Check that the supplied time is within the bounds of the
+                // video's duration.
+                final String[] parts = timeStr.split(":");
+                final long seconds = (Integer.parseInt(parts[0]) * 60 * 60) +
+                        (Integer.parseInt(parts[1]) * 60) +
+                        Integer.parseInt(parts[2]);
+                if (seconds > durationSec) {
+                    throw new IllegalArgumentException(
+                            "Time is beyond the length of the video.");
+                }
+            } else {
+                throw new IllegalArgumentException("Invalid time format. " +
+                        "(HH:MM::SS is required.)");
+            }
         }
     }
 
