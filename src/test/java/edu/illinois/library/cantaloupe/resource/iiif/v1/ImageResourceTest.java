@@ -339,6 +339,19 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
+    public void testProcessorValidationFailure() throws Exception {
+        Configuration config = ConfigurationFactory.getInstance();
+        config.setProperty("processor.pdf", "PdfBoxProcessor");
+        ClientResource client = getClientForUriPath(
+                "/pdf-multipage.pdf/full/full/0/default.jpg?page=999999");
+        try {
+            client.get();
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        }
+    }
+
+    @Test
     public void testPurgeFromCacheWhenSourceIsMissingAndOptionIsFalse()
             throws Exception {
         doPurgeFromCacheWhenSourceIsMissing(false);

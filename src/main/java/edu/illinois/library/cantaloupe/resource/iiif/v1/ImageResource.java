@@ -117,6 +117,8 @@ public class ImageResource extends IIIF1Resource {
         ops.getOptions().putAll(
                 this.getReference().getQueryAsForm(true).getValuesMap());
 
+        processor.validate(ops);
+
         final Disposition disposition = getRepresentationDisposition(
                 ops.getIdentifier(), ops.getOutputFormat());
 

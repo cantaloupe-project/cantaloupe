@@ -112,6 +112,8 @@ public class ImageResource extends IIIF2Resource {
 
         new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
+        processor.validate(ops);
+
         final Dimension fullSize =
                 getOrReadInfo(ops.getIdentifier(), processor).getSize();
 
