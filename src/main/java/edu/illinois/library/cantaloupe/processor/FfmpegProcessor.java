@@ -217,14 +217,9 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
         // additional syntax, but this will do for now.
         // https://trac.ffmpeg.org/wiki/Seeking
         String time = (String) opList.getOptions().get("time");
-        if (time != null) {
-            Matcher m = timePattern.matcher(time);
-            if (m.matches()) {
-                command.add("-ss");
-                command.add(time);
-            } else {
-                throw new IllegalArgumentException("Invalid time format");
-            }
+        if (time != null) { // we assume it's already been validated.
+            command.add("-ss");
+            command.add(time);
         }
 
         command.add("-nostdin");
@@ -250,7 +245,8 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
         // Check that the "time" option, if supplied, is in the correct format.
         final String timeStr = (String) opList.getOptions().get("time");
         if (timeStr != null) {
-            if (timeStr.matches("[0-9][0-9]:[0-5][0-9]:[0-5][0-9]")) {
+            Matcher matcher = timePattern.matcher(timeStr);
+            if (matcher.matches()) {
                 // Check that the supplied time is within the bounds of the
                 // video's duration.
                 final String[] parts = timeStr.split(":");
