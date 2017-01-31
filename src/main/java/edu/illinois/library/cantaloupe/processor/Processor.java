@@ -78,16 +78,13 @@ public interface Processor {
      *         called, but not
      *         {@link StreamProcessor#setStreamSource(StreamSource)},
      *         implementations should read from a file.</li>
-     *         <li>If vice versa, implementations should read from a
-     *         stream.</li>
-     *         <li>If both have been called, implementations can read from
-     *         either. If one or the other would be more efficient, they
-     *         should lean toward that.</li>
+     *         <li>If vice versa, or if both have been called, implementations
+     *         should read from a stream.</li>
      *     </ul>
      *     </li>
-     *     <li>Operations should be applied in the order they occur in the
-     *     OperationList's iterator. For the sake of efficiency, implementations
-     *     should check whether each one is a no-op using
+     *     <li>Operations should be applied in the order they are iterated.
+     *     For the sake of efficiency, implementations should check whether
+     *     each one is a no-op using
      *     {@link edu.illinois.library.cantaloupe.operation.Operation#hasEffect(Dimension, OperationList)}
      *     before performing it.</li>
      *     <li>The OperationList will be in a frozen (immutable) state.
@@ -99,20 +96,24 @@ public interface Processor {
      *     {@link OperationList#getOptions()} method, which implementations
      *     should respect, where applicable. These typically come from the
      *     configuration, so implementations should not try to read the
-     *     configuration themselves, except to get any processor-specific
-     *     configuration info they may need.</li>
-     *     <li>Implementations should get the full size of the source image from
-     *     the {@link Info} argument and not their {#link #readImageInfo}
-     *     method, for efficiency's sake.</li>
+     *     configuration themselves, except to get their own processor-specific
+     *     info.</li>
      * </ul>
      *
-     * @param opList OperationList to process. Will be equal to the one passed
-     *               to {@link #validate}.
-     * @param sourceInfo Information about the source image.
-     * @param outputStream Stream to write the image to.
-     *                     Implementations should not close it.
-     * @throws UnsupportedOutputFormatException
-     * @throws ProcessorException
+     * @param opList Operation list to process. As it will be equal to the one
+     *               passed to {@link #validate}, there is no need to validate
+     *               it again.
+     * @param sourceInfo Information about the source image. This will be equal
+     *                   to the return value of {@link #readImageInfo}, but it
+     *                   might not be the same instance, as it may have come
+     *                   from a cache.
+     * @param outputStream Stream to write the image to, which should not be
+     *                     closed.
+     * @throws UnsupportedOutputFormatException Implementations can extend
+     *                                          {@link AbstractProcessor} and
+     *                                          call super to get this check for
+     *                                          free.
+     * @throws ProcessorException If anything goes wrong.
      */
     void process(OperationList opList, Info sourceInfo,
                  OutputStream outputStream) throws ProcessorException;
@@ -121,7 +122,7 @@ public interface Processor {
      * <p>Reads and returns information about the source image.</p>
      *
      * @return Information about the source image.
-     * @throws ProcessorException
+     * @throws ProcessorException If anything goes wrong.
      */
     Info readImageInfo() throws ProcessorException;
 
@@ -144,8 +145,8 @@ public interface Processor {
      *     <li>This method is mainly for validating processor-specific options
      *     in the list's options map. There is typically no need to validate
      *     the operations themselves, as this will have already been done by
-     *     the endpoints. Most implementations will therefore have little to
-     *     do.</li>
+     *     the endpoints. Most implementations will therefore not need to do
+     *     much, if anything.</li>
      *     <li>It is guaranteed that this method, if called, will always be
      *     called before {@link #process}.</li>
      * </ul>
@@ -157,8 +158,6 @@ public interface Processor {
      *                                  validation.
      */
     default void validate(OperationList opList)
-            throws IllegalArgumentException, ProcessorException {
-        // no-op
-    }
+            throws IllegalArgumentException, ProcessorException {}
 
 }

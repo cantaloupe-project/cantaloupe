@@ -15,13 +15,13 @@ public interface Resolver {
 
     /**
      * @return The expected source format of the image corresponding to the
-     * identifier set by {@link #setIdentifier}, or {@link Format#UNKNOWN} if
-     * unknown; never null.
+     *         identifier set by {@link #setIdentifier}, or
+     *         {@link Format#UNKNOWN} if unknown; never <code>null</code>.
      * @throws FileNotFoundException if an image corresponding to the given
-     * identifier does not exist
+     *         identifier does not exist.
      * @throws AccessDeniedException if an image corresponding to the given
-     * identifier is not readable
-     * @throws IOException if there is some other issue accessing the image
+     *         identifier is not readable.
+     * @throws IOException if there is some other issue accessing the image.
      */
     Format getSourceFormat() throws IOException;
 

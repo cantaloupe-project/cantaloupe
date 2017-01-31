@@ -4,7 +4,7 @@ import edu.illinois.library.cantaloupe.resolver.StreamSource;
 
 /**
  * Interface to be implemented by image processors that support input via
- * input streams.
+ * streams.
  */
 public interface StreamProcessor extends Processor {
 
