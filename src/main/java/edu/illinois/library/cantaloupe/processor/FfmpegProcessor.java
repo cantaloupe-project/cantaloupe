@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Processor that uses the ffmpeg command-line tool to extract video frames,
@@ -47,6 +49,8 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
 
     private static final ExecutorService executorService =
             Executors.newCachedThreadPool();
+    private static final Pattern timePattern =
+            Pattern.compile("[0-9][0-9]:[0-5][0-9]:[0-5][0-9]");
 
     private File sourceFile;
 
@@ -135,6 +139,15 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
     }
 
     @Override
+    public boolean isValid(OperationList opList) {
+        // Check that the "time" option, if supplied, is in the correct format.
+        final String time = (String) opList.getOptions().get("time");
+        // prevent arbitrary input
+        return (time == null) ||
+                time.matches("[0-9][0-9]:[0-5][0-9]:[0-5][0-9]");
+    }
+
+    @Override
     public void process(final OperationList opList,
                         final Info imageInfo,
                         final OutputStream outputStream)
@@ -173,7 +186,7 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
             } finally {
                 process.destroy();
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (Exception e) {
             String msg = e.getMessage();
             final String errorStr = errorBucket.toString();
             if (errorStr != null && errorStr.length() > 0) {
@@ -191,6 +204,7 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
     /**
      * @param opList
      * @return Command string
+     * @throws IllegalArgumentException
      */
     private ProcessBuilder getProcessBuilder(OperationList opList) {
         final List<String> command = new ArrayList<>();
@@ -198,17 +212,18 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
         command.add("-i");
         command.add(sourceFile.getAbsolutePath());
 
-        // Seeking (to a particular time) is supported via a "time" URL query
+        // Seeking to a particular time is supported via a "time" URL query
         // parameter which gets injected into an -ss flag. FFmpeg supports
         // additional syntax, but this will do for now.
         // https://trac.ffmpeg.org/wiki/Seeking
-        if (opList.getOptions().size() > 0) {
-            String time = (String) opList.getOptions().get("time");
-            // prevent arbitrary input
-            if (time != null &&
-                    time.matches("[0-9][0-9]:[0-5][0-9]:[0-5][0-9]")) {
+        String time = (String) opList.getOptions().get("time");
+        if (time != null) {
+            Matcher m = timePattern.matcher(time);
+            if (m.matches()) {
                 command.add("-ss");
                 command.add(time);
+            } else {
+                throw new IllegalArgumentException("Invalid time format");
             }
         }
 

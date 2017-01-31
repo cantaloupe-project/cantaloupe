@@ -6,12 +6,14 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -64,16 +66,6 @@ public class FfmpegProcessorTest extends ProcessorTest {
         }
     }
 
-    @Override
-    @Test
-    public void testReadImageInfo() throws Exception {
-        instance.setSourceFile(TestUtil.getImage("mpg"));
-        instance.setSourceFormat(Format.MPG);
-        Info expectedInfo = new Info(640, 360, 640, 360, Format.MPG);
-        assertEquals(expectedInfo.toString(),
-                instance.readImageInfo().toString());
-    }
-
     @Test
     public void testGetSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
@@ -92,25 +84,6 @@ public class FfmpegProcessorTest extends ProcessorTest {
                 ProcessorFeature.SIZE_BY_WIDTH,
                 ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
         assertEquals(expectedFeatures, instance.getSupportedFeatures());
-    }
-
-    @Test
-    public void testProcessWithFrameOption() throws Exception {
-        final Info imageInfo = instance.readImageInfo();
-
-        // time option missing
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        OperationList ops = TestUtil.newOperationList();
-        instance.process(ops, imageInfo, outputStream);
-        final byte[] frame1 = outputStream.toByteArray();
-
-        // time option present
-        ops.getOptions().put("time", "00:00:05");
-        outputStream = new ByteArrayOutputStream();
-        instance.process(ops, imageInfo, outputStream);
-        final byte[] frame2 = outputStream.toByteArray();
-
-        assertFalse(Arrays.equals(frame1, frame2));
     }
 
     @Test
@@ -147,6 +120,63 @@ public class FfmpegProcessorTest extends ProcessorTest {
                 edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY);
         assertEquals(expectedQualities,
                 instance.getSupportedIiif2_0Qualities());
+    }
+
+    @Test
+    public void testIsValid() {
+        OperationList ops = TestUtil.newOperationList();
+        assertTrue(instance.isValid(ops));
+
+        ops.getOptions().put("time", "00:00:12");
+        assertTrue(instance.isValid(ops));
+
+        ops.getOptions().put("time", "000012");
+        assertFalse(instance.isValid(ops));
+    }
+
+    @Test
+    public void testProcessWithFrameOption() throws Exception {
+        final Info imageInfo = instance.readImageInfo();
+
+        // time option missing
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        OperationList ops = TestUtil.newOperationList();
+        instance.process(ops, imageInfo, outputStream);
+        final byte[] frame1 = outputStream.toByteArray();
+
+        // time option present
+        ops.getOptions().put("time", "00:00:05");
+        outputStream = new ByteArrayOutputStream();
+        instance.process(ops, imageInfo, outputStream);
+        final byte[] frame2 = outputStream.toByteArray();
+
+        assertFalse(Arrays.equals(frame1, frame2));
+    }
+
+    @Test
+    public void testProcessWithInvalidFrameOptionThrowsException()
+            throws Exception {
+        final Info imageInfo = instance.readImageInfo();
+
+        OperationList ops = TestUtil.newOperationList();
+        ops.getOptions().put("time", "cats");
+        OutputStream outputStream = new NullOutputStream();
+        try {
+            instance.process(ops, imageInfo, outputStream);
+            fail("Expected exception");
+        } catch (ProcessorException e) {
+            // pass
+        }
+    }
+
+    @Override
+    @Test
+    public void testReadImageInfo() throws Exception {
+        instance.setSourceFile(TestUtil.getImage("mpg"));
+        instance.setSourceFormat(Format.MPG);
+        Info expectedInfo = new Info(640, 360, 640, 360, Format.MPG);
+        assertEquals(expectedInfo.toString(),
+                instance.readImageInfo().toString());
     }
 
 }
