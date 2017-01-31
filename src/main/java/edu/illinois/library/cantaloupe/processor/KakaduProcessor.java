@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
@@ -47,8 +48,6 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * <p>Processor using the Kakadu kdu_expand and kdu_jp2info command-line
@@ -85,9 +84,6 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
             "KakaduProcessor.path_to_binaries";
 
     private static final short MAX_REDUCTION_FACTOR = 5;
-
-    private static final ExecutorService executorService =
-            Executors.newCachedThreadPool();
 
     private static Path stdoutSymlink;
 
@@ -303,7 +299,7 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
             try (final InputStream processInputStream =
                          new BufferedInputStream(process.getInputStream());
                  final InputStream processErrorStream = process.getErrorStream()) {
-                executorService.submit(
+                ThreadPool.getInstance().submit(
                         new StreamCopier(processErrorStream, errorBucket));
 
                 final ImageReader reader = new ImageReader(

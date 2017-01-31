@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
@@ -47,8 +48,6 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
     private static final String PATH_TO_BINARIES_CONFIG_KEY =
             "FfmpegProcessor.path_to_binaries";
 
-    private static final ExecutorService executorService =
-            Executors.newCachedThreadPool();
     private static final Pattern timePattern =
             Pattern.compile("[0-9][0-9]:[0-5][0-9]:[0-5][0-9]");
 
@@ -162,7 +161,7 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
 
             try (final InputStream processInputStream = process.getInputStream();
                  final InputStream processErrorStream = process.getErrorStream()) {
-                executorService.submit(
+                ThreadPool.getInstance().submit(
                         new StreamCopier(processErrorStream, errorBucket));
 
                 final ImageReader reader = new ImageReader(
