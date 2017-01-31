@@ -23,8 +23,9 @@ abstract class AbstractProcessor {
     /**
      * @param ops Operation list to check.
      * @return True.
+     * @throws ProcessorException Never.
      */
-    public boolean isValid(final OperationList ops) {
+    public boolean isValid(final OperationList ops) throws ProcessorException {
         return true;
     }
 

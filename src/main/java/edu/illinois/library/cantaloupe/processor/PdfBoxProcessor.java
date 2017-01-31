@@ -9,11 +9,13 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -35,9 +37,18 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
 
     static final String DPI_CONFIG_KEY = "PdfBoxProcessor.dpi";
 
-    private BufferedImage fullImage;
+    private PDDocument doc;
+    private InputStream docInputStream;
+    private Dimension imageSize;
     private File sourceFile;
     private StreamSource streamSource;
+
+    private void closeResources() {
+        IOUtils.closeQuietly(docInputStream);
+        docInputStream = null;
+        IOUtils.closeQuietly(doc);
+        doc = null;
+    }
 
     @Override
     public Set<Format> getAvailableOutputFormats() {
@@ -48,22 +59,18 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
         return outputFormats;
     }
 
-    @Override
-    public Info readImageInfo() throws ProcessorException {
-        try {
-            if (fullImage == null) {
-                // This is a very inefficient method of getting the size.
-                // Unfortunately, it's the only choice PDFBox offers.
-                // At least cache it in an ivar to avoid having to load it
-                // multiple times.
-                fullImage = readImage();
-            }
-            return new Info(fullImage.getWidth(), fullImage.getHeight(),
-                    fullImage.getWidth(), fullImage.getHeight(),
-                    getSourceFormat());
-        } catch (IOException e) {
-            throw new ProcessorException(e.getMessage(), e);
+    private float getDPI(int reductionFactor) {
+        float dpi = ConfigurationFactory.getInstance().
+                getFloat(DPI_CONFIG_KEY, 150);
+        // Decrease the DPI if the reduction factor is positive.
+        for (int i = 0; i < reductionFactor; i++) {
+            dpi /= 2f;
         }
+        // Increase the DPI if the reduction factor is negative.
+        for (int i = 0; i > reductionFactor; i--) {
+            dpi *= 2f;
+        }
+        return dpi;
     }
 
     @Override
@@ -74,6 +81,42 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
     @Override
     public StreamSource getStreamSource() {
         return streamSource;
+    }
+
+    @Override
+    public boolean isValid(OperationList opList) throws ProcessorException {
+        // Check the format of the "page" option, if present.
+        final String pageStr = (String) opList.getOptions().get("page");
+        if (pageStr != null) {
+            try {
+                final int page = Integer.parseInt(pageStr);
+                if (page > 0) {
+                    // Check that the page is actually contained in the PDF.
+                    try {
+                        loadDocument();
+                        return (page <= doc.getNumberOfPages());
+                    } catch (IOException e) {
+                        closeResources();
+                        throw new ProcessorException(e.getMessage(), e);
+                    }
+                }
+                return false;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void loadDocument() throws IOException {
+        if (doc == null) {
+            if (sourceFile != null) {
+                doc = PDDocument.load(sourceFile);
+            } else {
+                docInputStream = streamSource.newInputStream();
+                doc = PDDocument.load(docInputStream);
+            }
+        }
     }
 
     @Override
@@ -115,7 +158,7 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
             final BufferedImage image = readImage(page - 1, reductionFactor.factor);
             postProcess(image, null, opList, imageInfo, reductionFactor, false,
                     outputStream);
-        } catch (IOException e) {
+        } catch (IOException | IndexOutOfBoundsException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
     }
@@ -136,50 +179,31 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
         float dpi = getDPI(reductionFactor);
         logger.debug("readImage(): using a DPI of {} ({}x reduction factor)",
                 Math.round(dpi), reductionFactor);
-
-        InputStream inputStream = null;
-        PDDocument doc = null;
         try {
-            if (sourceFile != null) {
-                doc = PDDocument.load(sourceFile);
-            } else {
-                inputStream = streamSource.newInputStream();
-                doc = PDDocument.load(inputStream);
-            }
-
+            loadDocument();
             // If the given page index is out of bounds, the renderer will
-            // throw an exception. In that case, render the first page.
+            // throw an IndexOutOfBoundsException.
             PDFRenderer renderer = new PDFRenderer(doc);
-            try {
-                return renderer.renderImageWithDPI(pageIndex, dpi);
-            } catch (IndexOutOfBoundsException e) {
-                return renderer.renderImageWithDPI(0, dpi);
-            }
+            return renderer.renderImageWithDPI(pageIndex, dpi);
         } finally {
-            try {
-                if (doc != null) {
-                    doc.close();
-                }
-            } finally {
-                if (inputStream != null) {
-                    inputStream.close();
-                }
-            }
+            closeResources();
         }
     }
 
-    private float getDPI(int reductionFactor) {
-        float dpi = ConfigurationFactory.getInstance().
-                getFloat(DPI_CONFIG_KEY, 150);
-        // Decrease the DPI if the reduction factor is positive.
-        for (int i = 0; i < reductionFactor; i++) {
-            dpi /= 2f;
+    @Override
+    public Info readImageInfo() throws ProcessorException {
+        try {
+            if (imageSize == null) {
+                // This is a very inefficient method of getting the size.
+                // Unfortunately, it's the only choice PDFBox offers.
+                BufferedImage image = readImage();
+                imageSize = new Dimension(image.getWidth(), image.getHeight());
+            }
+            return new Info(imageSize.width, imageSize.height,
+                    imageSize.width, imageSize.height, getSourceFormat());
+        } catch (IOException e) {
+            throw new ProcessorException(e.getMessage(), e);
         }
-        // Increase the DPI if the reduction factor is negative.
-        for (int i = 0; i > reductionFactor; i--) {
-            dpi *= 2f;
-        }
-        return dpi;
     }
 
     @Override
