@@ -83,31 +83,6 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
         return streamSource;
     }
 
-    @Override
-    public boolean isValid(OperationList opList) throws ProcessorException {
-        // Check the format of the "page" option, if present.
-        final String pageStr = (String) opList.getOptions().get("page");
-        if (pageStr != null) {
-            try {
-                final int page = Integer.parseInt(pageStr);
-                if (page > 0) {
-                    // Check that the page is actually contained in the PDF.
-                    try {
-                        loadDocument();
-                        return (page <= doc.getNumberOfPages());
-                    } catch (IOException e) {
-                        closeResources();
-                        throw new ProcessorException(e.getMessage(), e);
-                    }
-                }
-                return false;
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     private void loadDocument() throws IOException {
         if (doc == null) {
             if (sourceFile != null) {
@@ -216,6 +191,34 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
     public void setStreamSource(StreamSource streamSource) {
         this.sourceFile = null;
         this.streamSource = streamSource;
+    }
+
+    @Override
+    public void validate(OperationList opList) throws ProcessorException {
+        // Check the format of the "page" option, if present.
+        final String pageStr = (String) opList.getOptions().get("page");
+        if (pageStr != null) {
+            try {
+                final int page = Integer.parseInt(pageStr);
+                if (page > 0) {
+                    // Check that the page is actually contained in the PDF.
+                    try {
+                        loadDocument();
+                        if (page > doc.getNumberOfPages()) {
+                            throw new IllegalArgumentException(
+                                    "Page number is out-of-bounds.");
+                        }
+                    } catch (IOException e) {
+                        closeResources();
+                        throw new ProcessorException(e.getMessage(), e);
+                    }
+                }
+                throw new IllegalArgumentException(
+                        "Page number is out-of-bounds.");
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid page number.");
+            }
+        }
     }
 
 }

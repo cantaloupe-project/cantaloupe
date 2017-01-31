@@ -64,17 +64,6 @@ public interface Processor {
     getSupportedIiif2_0Qualities();
 
     /**
-     * Will always be called before {@link #process}.
-     *
-     * @param opList OperationList to process. Will be equal to the one passed
-     *               to {@link #process}.
-     * @return Whether the supplied operation list can be successfully
-     *         fulfilled.
-     * @throws ProcessorException
-     */
-    boolean isValid(OperationList opList) throws ProcessorException;
-
-    /**
      * <p>Performs the supplied operations on an image, writing the result to
      * the supplied output stream.</p>
      *
@@ -118,7 +107,7 @@ public interface Processor {
      * </ul>
      *
      * @param opList OperationList to process. Will be equal to the one passed
-     *               to {@link #isValid}.
+     *               to {@link #validate}.
      * @param sourceInfo Information about the source image.
      * @param outputStream Stream to write the image to.
      *                     Implementations should not close it.
@@ -142,5 +131,21 @@ public interface Processor {
      * @throws UnsupportedSourceFormatException
      */
     void setSourceFormat(Format format) throws UnsupportedSourceFormatException;
+
+    /**
+     * <p>Validates the given operation list, throwing an
+     * {@link IllegalArgumentException} if invalid.</p>
+     *
+     * <p>It is guaranteed that this method, if called, will always be called
+     * before {@link #process}.</p>
+     *
+     * @param opList OperationList to process. Will be equal to the one passed
+     *               to {@link #process}.
+     * @throws IllegalArgumentException If validation fails.
+     * @throws ProcessorException       If there is some issue performing the
+     *                                  validation.
+     */
+    void validate(OperationList opList) throws IllegalArgumentException,
+            ProcessorException;
 
 }

@@ -139,15 +139,6 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
     }
 
     @Override
-    public boolean isValid(OperationList opList) {
-        // Check that the "time" option, if supplied, is in the correct format.
-        final String time = (String) opList.getOptions().get("time");
-        // prevent arbitrary input
-        return (time == null) ||
-                time.matches("[0-9][0-9]:[0-5][0-9]:[0-5][0-9]");
-    }
-
-    @Override
     public void process(final OperationList opList,
                         final Info imageInfo,
                         final OutputStream outputStream)
@@ -240,6 +231,17 @@ class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
         command.add("pipe:1");
 
         return new ProcessBuilder(command);
+    }
+
+    @Override
+    public void validate(OperationList opList) {
+        // Check that the "time" option, if supplied, is in the correct format.
+        final String time = (String) opList.getOptions().get("time");
+        // prevent arbitrary input
+        if (time != null && !time.matches("[0-9][0-9]:[0-5][0-9]:[0-5][0-9]")) {
+            throw new IllegalArgumentException("Invalid time format. " +
+                    "(HH:MM::SS is required.)");
+        }
     }
 
 }

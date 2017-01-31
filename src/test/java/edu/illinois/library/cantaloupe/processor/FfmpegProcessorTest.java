@@ -123,18 +123,6 @@ public class FfmpegProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void testIsValid() {
-        OperationList ops = TestUtil.newOperationList();
-        assertTrue(instance.isValid(ops));
-
-        ops.getOptions().put("time", "00:00:12");
-        assertTrue(instance.isValid(ops));
-
-        ops.getOptions().put("time", "000012");
-        assertFalse(instance.isValid(ops));
-    }
-
-    @Test
     public void testProcessWithFrameOption() throws Exception {
         final Info imageInfo = instance.readImageInfo();
 
@@ -177,6 +165,23 @@ public class FfmpegProcessorTest extends ProcessorTest {
         Info expectedInfo = new Info(640, 360, 640, 360, Format.MPG);
         assertEquals(expectedInfo.toString(),
                 instance.readImageInfo().toString());
+    }
+
+    @Test
+    public void testValidate() {
+        OperationList ops = TestUtil.newOperationList();
+        instance.validate(ops);
+
+        ops.getOptions().put("time", "00:00:12");
+        instance.validate(ops);
+
+        ops.getOptions().put("time", "000012");
+        try {
+            instance.validate(ops);
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
     }
 
 }

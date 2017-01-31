@@ -61,26 +61,6 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void testIsValid() throws Exception {
-        instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
-
-        OperationList ops = TestUtil.newOperationList();
-        assertTrue(instance.isValid(ops));
-
-        ops.getOptions().put("page", "1");
-        assertTrue(instance.isValid(ops));
-
-        ops.getOptions().put("page", "3");
-        assertFalse(instance.isValid(ops));
-
-        ops.getOptions().put("page", "0");
-        assertFalse(instance.isValid(ops));
-
-        ops.getOptions().put("page", "-1");
-        assertFalse(instance.isValid(ops));
-    }
-
-    @Test
     public void testProcessWithPageOption() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
         final Info imageInfo = instance.readImageInfo();
@@ -125,6 +105,42 @@ public class PdfBoxProcessorTest extends ProcessorTest {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
         instance.setSourceFormat(Format.PDF);
         assertEquals(expectedInfo, instance.readImageInfo());
+    }
+
+    @Test
+    public void testValidate() throws Exception {
+        instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
+
+        OperationList ops = TestUtil.newOperationList();
+        instance.validate(ops);
+
+        ops.getOptions().put("page", "1");
+        instance.validate(ops);
+
+        ops.getOptions().put("page", "3");
+        try {
+            instance.validate(ops);
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+
+        ops.getOptions().put("page", "0");
+        instance.validate(ops);
+        try {
+            instance.validate(ops);
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+
+        ops.getOptions().put("page", "-1");
+        try {
+            instance.validate(ops);
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
     }
 
 }

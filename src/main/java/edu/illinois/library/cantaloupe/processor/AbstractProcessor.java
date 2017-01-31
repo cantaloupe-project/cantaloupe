@@ -21,15 +21,6 @@ abstract class AbstractProcessor {
     }
 
     /**
-     * @param ops Operation list to check.
-     * @return True.
-     * @throws ProcessorException Never.
-     */
-    public boolean isValid(final OperationList ops) throws ProcessorException {
-        return true;
-    }
-
-    /**
      * Limited implementation that performs some preflight checks. Subclasses
      * should override and call super.
      *
@@ -54,6 +45,16 @@ abstract class AbstractProcessor {
             throw new UnsupportedSourceFormatException(
                     (Processor) this, format);
         }
+    }
+
+    /**
+     * No-op.
+     *
+     * @param ops Operation list to check.
+     * @throws ProcessorException Never.
+     */
+    public void validate(final OperationList ops) throws ProcessorException {
+        // no-op
     }
 
 }
