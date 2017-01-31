@@ -136,8 +136,19 @@ public interface Processor {
      * <p>Validates the given operation list, throwing an
      * {@link IllegalArgumentException} if invalid.</p>
      *
-     * <p>It is guaranteed that this method, if called, will always be called
-     * before {@link #process}.</p>
+     * <p>This default implementation does nothing.</p>
+     *
+     * <p>Notes:</p>
+     *
+     * <ul>
+     *     <li>This method is mainly for validating processor-specific options
+     *     in the list's options map. There is typically no need to validate
+     *     the operations themselves, as this will have already been done by
+     *     the endpoints. Most implementations will therefore have little to
+     *     do.</li>
+     *     <li>It is guaranteed that this method, if called, will always be
+     *     called before {@link #process}.</li>
+     * </ul>
      *
      * @param opList OperationList to process. Will be equal to the one passed
      *               to {@link #process}.
@@ -145,7 +156,9 @@ public interface Processor {
      * @throws ProcessorException       If there is some issue performing the
      *                                  validation.
      */
-    void validate(OperationList opList) throws IllegalArgumentException,
-            ProcessorException;
+    default void validate(OperationList opList)
+            throws IllegalArgumentException, ProcessorException {
+        // no-op
+    }
 
 }

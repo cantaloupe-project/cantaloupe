@@ -47,14 +47,4 @@ abstract class AbstractProcessor {
         }
     }
 
-    /**
-     * No-op.
-     *
-     * @param ops Operation list to check.
-     * @throws ProcessorException Never.
-     */
-    public void validate(final OperationList ops) throws ProcessorException {
-        // no-op
-    }
-
 }
