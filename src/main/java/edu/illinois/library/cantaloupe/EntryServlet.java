@@ -40,8 +40,8 @@ public class EntryServlet extends ServerServlet {
         System.setProperty("java.awt.headless", "true");
 
         // Logback has already initialized itself, which is a problem because
-        // logback.xml depends on the application configuration, which had
-        // not been initialized yet. So, reload it.
+        // logback.xml depends on the application configuration, which at the
+        // time, had not been initialized yet. So, reload it.
         LoggerUtil.reloadConfiguration();
 
         final int mb = 1024 * 1024;
@@ -164,6 +164,7 @@ public class EntryServlet extends ServerServlet {
         super.destroy();
         CacheWorkerRunner.stop();
         ConfigurationFactory.getInstance().stopWatching();
+        ThreadPool.getInstance().shutdown();
         try {
             ScriptEngineFactory.getScriptEngine().stopWatching();
         } catch (DelegateScriptDisabledException e) {
