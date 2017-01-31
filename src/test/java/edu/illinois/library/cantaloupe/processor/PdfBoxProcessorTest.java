@@ -126,7 +126,6 @@ public class PdfBoxProcessorTest extends ProcessorTest {
         }
 
         ops.getOptions().put("page", "0");
-        instance.validate(ops);
         try {
             instance.validate(ops);
             fail("Expected exception");

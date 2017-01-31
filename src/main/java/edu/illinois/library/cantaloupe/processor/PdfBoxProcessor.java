@@ -212,9 +212,10 @@ class PdfBoxProcessor extends AbstractJava2dProcessor
                         closeResources();
                         throw new ProcessorException(e.getMessage(), e);
                     }
+                } else {
+                    throw new IllegalArgumentException(
+                            "Page number is out-of-bounds.");
                 }
-                throw new IllegalArgumentException(
-                        "Page number is out-of-bounds.");
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("Invalid page number.");
             }
