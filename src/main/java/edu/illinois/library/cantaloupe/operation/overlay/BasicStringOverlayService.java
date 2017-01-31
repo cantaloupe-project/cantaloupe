@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.operation.ColorUtil;
 
 import java.awt.Color;
 import java.awt.Font;

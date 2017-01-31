@@ -1,16 +1,16 @@
-package edu.illinois.library.cantaloupe.operation.overlay;
+package edu.illinois.library.cantaloupe.operation;
 
 import java.awt.Color;
 import java.lang.reflect.Field;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-abstract class ColorUtil {
+public abstract class ColorUtil {
 
     private static final Pattern rgbPattern =
             Pattern.compile("rgb *\\( *([0-9]+), *([0-9]+), *([0-9]+) *\\)");
 
-    static Color fromString(final String string) {
+    public static Color fromString(final String string) {
         // Check for #rgb, #rrggbb, etc.
         try {
             String str = string.replace("#", "");
@@ -41,7 +41,7 @@ abstract class ColorUtil {
     /**
      * @return Hexadecimal value of the color in the sRGB color model.
      */
-    static String getHex(Color color) {
+    public static String getHex(Color color) {
         return "#" + toHex(color.getRed()) + toHex(color.getGreen()) +
                 toHex(color.getBlue());
     }

@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
+import edu.illinois.library.cantaloupe.operation.ColorUtil;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
