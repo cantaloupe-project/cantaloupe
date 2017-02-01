@@ -169,26 +169,27 @@ class OpenJpegProcessor extends AbstractJava2dProcessor
             }
             final Info.Image image = new Info.Image();
 
-            final Scanner scan = new Scanner(imageInfo);
-            while (scan.hasNextLine()) {
-                String line = scan.nextLine().trim();
-                if (line.startsWith("x1=")) {
-                    String[] parts = StringUtils.split(line, ",");
-                    for (int i = 0; i < 2; i++) {
-                        String[] kv = StringUtils.split(parts[i], "=");
-                        if (kv.length == 2) {
-                            if (i == 0) {
-                                image.width = Integer.parseInt(kv[1].trim());
-                            } else {
-                                image.height = Integer.parseInt(kv[1].trim());
+            try (final Scanner scan = new Scanner(imageInfo)) {
+                while (scan.hasNextLine()) {
+                    String line = scan.nextLine().trim();
+                    if (line.startsWith("x1=")) {
+                        String[] parts = StringUtils.split(line, ",");
+                        for (int i = 0; i < 2; i++) {
+                            String[] kv = StringUtils.split(parts[i], "=");
+                            if (kv.length == 2) {
+                                if (i == 0) {
+                                    image.width = Integer.parseInt(kv[1].trim());
+                                } else {
+                                    image.height = Integer.parseInt(kv[1].trim());
+                                }
                             }
                         }
-                    }
-                } else if (line.startsWith("tdx=")) {
-                    String[] parts = StringUtils.split(line, ",");
-                    if (parts.length == 2) {
-                        image.tileWidth = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
-                        image.tileHeight = Integer.parseInt(parts[1].replaceAll("[^0-9]", ""));
+                    } else if (line.startsWith("tdx=")) {
+                        String[] parts = StringUtils.split(line, ",");
+                        if (parts.length == 2) {
+                            image.tileWidth = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
+                            image.tileHeight = Integer.parseInt(parts[1].replaceAll("[^0-9]", ""));
+                        }
                     }
                 }
             }
