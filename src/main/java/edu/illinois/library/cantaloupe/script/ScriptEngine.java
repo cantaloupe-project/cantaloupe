@@ -11,8 +11,6 @@ public interface ScriptEngine {
 
     String METHOD_INVOCATION_CACHE_ENABLED_CONFIG_KEY =
             "delegate_script.cache.enabled";
-    String METHOD_INVOCATION_CACHE_MAX_SIZE_CONFIG_KEY =
-            "delegate_script.cache.max_size";
 
     /**
      * Invokes a method. Implementations should employ a cache respecting the

@@ -47,9 +47,7 @@ title: Delegate Script
 
 <h2 id="Caching">Caching</h2>
 
-<p>Since version 3.3, the <code>delegate_script.cache.enabled</code> option is available to cache the results of delegate method invocations. The cache is an in-memory least-recently-used (LRU) cache with infinite time-to-live and a maximum size specified by <code>delegate_script.cache.max_size</code>. When this limit is approached, the oldest invocations will be purged automatically.</p>
-
-<p>As of this writing, no research has gone into determining an optimal maximum cache size. The number will depend on how much memory is available to the JVM as well as which delegate methods are being invoked most often. But, even a small size should provide more benefit than no cache at all.</p>
+<p>Since version 3.3, the <code>delegate_script.cache.enabled</code> option is available to cache the results of delegate method invocations. The cache is an in-memory least-recently-used (LRU) cache with infinite time-to-live and a maximum size auto-computed based on the maximum JVM heap size. When the limit is approached, the oldest invocations will be purged automatically.</p>
 
 <p>Because the cache is in memory and not persisted, it will be cleared when the application is stopped.</p>
 

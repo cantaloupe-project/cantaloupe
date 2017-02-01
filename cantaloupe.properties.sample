@@ -72,10 +72,6 @@ delegate_script.pathname = delegates.rb
 # return values in memory. See the user manual for more information.
 delegate_script.cache.enabled = false
 
-# !! Maximum size of the invocation cache. This is pretty much a wild
-# guess.
-delegate_script.cache.max_size = 1000000
-
 ###########################################################################
 # ENDPOINTS
 ###########################################################################
