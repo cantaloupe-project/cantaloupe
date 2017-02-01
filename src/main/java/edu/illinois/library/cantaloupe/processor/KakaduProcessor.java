@@ -200,7 +200,7 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
             String result = (String) expr.evaluate(infoDocument,
                     XPathConstants.STRING);
             // Read the tile dimensions out of the Stiles={n,n} line
-            try(final Scanner scan = new Scanner(result)) {
+            try (final Scanner scan = new Scanner(result)) {
                 while (scan.hasNextLine()) {
                     String line = scan.nextLine().trim();
                     if (line.startsWith("Stiles=")) {
@@ -328,8 +328,10 @@ class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
                 process.destroy();
             }
         } catch (EOFException e) {
-            // This will generally not have a message.
-            String msg = "process(): EOFException";
+            String msg = e.getMessage();
+            msg = String.format("process(): %s (%s)",
+                    (msg != null && msg.length() > 0) ? msg : "EOFException",
+                    opList.toString());
             logger.error(msg, e);
             throw new ProcessorException(msg, e);
         } catch (IOException | InterruptedException e) {
