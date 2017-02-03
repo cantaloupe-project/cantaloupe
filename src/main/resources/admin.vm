@@ -1338,6 +1338,16 @@
                                        data-toggle="tab">ImageMagickProcessor</a>
                                 </li>
                                 <li role="presentation">
+                                    <a href="#JaiProcessor"
+                                       aria-controls="JaiProcessor" role="tab"
+                                       data-toggle="tab">JaiProcessor</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#Java2dProcessor"
+                                       aria-controls="Java2dProcessor" role="tab"
+                                       data-toggle="tab">Java2dProcessor</a>
+                                </li>
+                                <li role="presentation">
                                     <a href="#KakaduProcessor"
                                        aria-controls="KakaduProcessor" role="tab"
                                        data-toggle="tab">KakaduProcessor</a>
@@ -1391,6 +1401,14 @@
                                             </td>
                                         </tr>
                                     </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="JaiProcessor">
+                                    <p>This processor is not configurable.</p>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="Java2dProcessor">
+                                    <p>This processor is not configurable.</p>
                                 </div>
 
                                 <div role="tabpanel" class="tab-pane" id="ImageMagickProcessor">
