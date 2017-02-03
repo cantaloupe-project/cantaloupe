@@ -45,10 +45,10 @@ public class GifImageWriterTest extends BaseTest {
 
         // Read an image fixture into memory
         final File fixture = TestUtil.getImage("gif-xmp.gif");
-        metadata = new GifImageReader(fixture).getMetadata(0);
-        bufferedImage = new GifImageReader(fixture).read();
+        metadata = new GIFImageReader(fixture).getMetadata(0);
+        bufferedImage = new GIFImageReader(fixture).read();
         planarImage =  PlanarImage.wrapRenderedImage(
-                new GifImageReader(fixture).readRendered());
+                new GIFImageReader(fixture).readRendered());
 
         // Create a temp file and output stream to write to
         tempFile = File.createTempFile("test", "tmp");

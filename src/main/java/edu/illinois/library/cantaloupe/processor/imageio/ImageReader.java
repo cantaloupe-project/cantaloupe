@@ -80,7 +80,7 @@ public class ImageReader {
                 reader = new DICOMImageReader(sourceFile);
                 break;
             case GIF:
-                reader = new GifImageReader(sourceFile);
+                reader = new GIFImageReader(sourceFile);
                 break;
             case JPG:
                 reader = new JPEGImageReader(sourceFile);
@@ -111,7 +111,7 @@ public class ImageReader {
                 reader = new DICOMImageReader(streamSource);
                 break;
             case GIF:
-                reader = new GifImageReader(streamSource);
+                reader = new GIFImageReader(streamSource);
                 break;
             case JPG:
                 reader = new JPEGImageReader(streamSource);

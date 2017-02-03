@@ -7,13 +7,13 @@ import javax.imageio.metadata.IIOMetadata;
 import java.io.File;
 import java.io.IOException;
 
-class GifImageReader extends AbstractImageReader {
+class GIFImageReader extends AbstractImageReader {
 
     /**
      * @param sourceFile Source file to read.
      * @throws IOException
      */
-    GifImageReader(File sourceFile) throws IOException {
+    GIFImageReader(File sourceFile) throws IOException {
         super(sourceFile, Format.GIF);
     }
 
@@ -21,7 +21,7 @@ class GifImageReader extends AbstractImageReader {
      * @param streamSource Source of streams to read.
      * @throws IOException
      */
-    GifImageReader(StreamSource streamSource) throws IOException {
+    GIFImageReader(StreamSource streamSource) throws IOException {
         super(streamSource, Format.GIF);
     }
 
