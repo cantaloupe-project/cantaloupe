@@ -45,10 +45,10 @@ class PNGImageWriter extends AbstractImageWriter {
     @Override
     protected void addMetadata(final IIOMetadataNode baseTree)
             throws IOException {
-        if (sourceMetadata instanceof PngMetadata) {
+        if (sourceMetadata instanceof PNGMetadata) {
             // Add native metadata.
             final List<IIOMetadataNode> nativeMetadata =
-                    ((PngMetadata) sourceMetadata).getNativeMetadata();
+                    ((PNGMetadata) sourceMetadata).getNativeMetadata();
             if (nativeMetadata.size() > 0) {
                 // Get the /tEXt node, creating it if it does not already exist.
                 final NodeList textNodes = baseTree.getElementsByTagName("tEXt");

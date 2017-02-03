@@ -14,7 +14,7 @@ import java.util.Map;
  * @see <a href="http://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/PNG.html">
  *      PNG Tags</a>
  */
-class PngMetadata extends AbstractMetadata implements Metadata {
+class PNGMetadata extends AbstractMetadata implements Metadata {
 
     private static final Map<String,String> recognizedTags = new HashMap<>();
 
@@ -58,7 +58,7 @@ class PngMetadata extends AbstractMetadata implements Metadata {
      * @param metadata
      * @param formatName
      */
-    PngMetadata(IIOMetadata metadata, String formatName) {
+    PNGMetadata(IIOMetadata metadata, String formatName) {
         super(metadata, formatName);
     }
 

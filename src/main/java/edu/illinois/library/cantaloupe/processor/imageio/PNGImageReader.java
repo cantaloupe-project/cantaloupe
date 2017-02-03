@@ -36,7 +36,7 @@ class PNGImageReader extends AbstractImageReader {
         }
         final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
         final String metadataFormat = metadata.getNativeMetadataFormatName();
-        return new PngMetadata(metadata, metadataFormat);
+        return new PNGMetadata(metadata, metadataFormat);
     }
 
 }
