@@ -7,13 +7,13 @@ import javax.imageio.metadata.IIOMetadata;
 import java.io.File;
 import java.io.IOException;
 
-class BmpImageReader extends AbstractImageReader {
+class BMPImageReader extends AbstractImageReader {
 
     /**
      * @param sourceFile Source file to read.
      * @throws IOException
      */
-    BmpImageReader(File sourceFile) throws IOException {
+    BMPImageReader(File sourceFile) throws IOException {
         super(sourceFile, Format.BMP);
     }
 
@@ -21,7 +21,7 @@ class BmpImageReader extends AbstractImageReader {
      * @param streamSource Source of streams to read.
      * @throws IOException
      */
-    BmpImageReader(StreamSource streamSource) throws IOException {
+    BMPImageReader(StreamSource streamSource) throws IOException {
         super(streamSource, Format.BMP);
     }
 

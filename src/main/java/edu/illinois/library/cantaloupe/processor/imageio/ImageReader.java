@@ -74,7 +74,7 @@ public class ImageReader {
             throws IOException {
         switch (format) {
             case BMP:
-                reader = new BmpImageReader(sourceFile);
+                reader = new BMPImageReader(sourceFile);
                 break;
             case DCM:
                 reader = new DICOMImageReader(sourceFile);
@@ -105,7 +105,7 @@ public class ImageReader {
             throws IOException {
         switch (format) {
             case BMP:
-                reader = new BmpImageReader(streamSource);
+                reader = new BMPImageReader(streamSource);
                 break;
             case DCM:
                 reader = new DICOMImageReader(streamSource);
