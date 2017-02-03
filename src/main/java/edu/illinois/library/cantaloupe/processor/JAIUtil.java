@@ -26,9 +26,9 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.renderable.ParameterBlock;
 
-abstract class JaiUtil {
+abstract class JAIUtil {
 
-    private static Logger logger = LoggerFactory.getLogger(JaiUtil.class);
+    private static Logger logger = LoggerFactory.getLogger(JAIUtil.class);
 
     /**
      * Reduces an image's component size to 8 bits if greater.

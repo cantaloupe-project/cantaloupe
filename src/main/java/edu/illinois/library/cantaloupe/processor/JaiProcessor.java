@@ -137,20 +137,20 @@ class JaiProcessor extends AbstractImageIoProcessor
 
             final RenderedImage renderedImage = reader.readRendered(opList,
                     orientation, rf, hints);
-            RenderedOp renderedOp = JaiUtil.getAsRenderedOp(
+            RenderedOp renderedOp = JAIUtil.getAsRenderedOp(
                     RenderedOp.wrapRenderedImage(renderedImage));
 
             // Normalize the image, if specified in the configuration.
             if (normalize) {
-                renderedOp = JaiUtil.stretchContrast(renderedOp);
+                renderedOp = JAIUtil.stretchContrast(renderedOp);
             }
-            renderedOp = JaiUtil.rescalePixels(renderedOp);
-            renderedOp = JaiUtil.convertTo8Bits(renderedOp);
+            renderedOp = JAIUtil.rescalePixels(renderedOp);
+            renderedOp = JAIUtil.convertTo8Bits(renderedOp);
 
             for (Operation op : opList) {
                 if (op.hasEffect(fullSize, opList)) {
                     if (op instanceof Crop) {
-                        renderedOp = JaiUtil.cropImage(renderedOp, (Crop) op, rf);
+                        renderedOp = JAIUtil.cropImage(renderedOp, (Crop) op, rf);
                     } else if (op instanceof Scale) {
                         /*
                         JAI has a bug that causes it to fail on right-edge
@@ -172,7 +172,7 @@ class JaiProcessor extends AbstractImageIoProcessor
                                     "ZLib-compressed TIFF; using the scale " +
                                     "operator with nearest-neighbor " +
                                     "interpolation.");
-                            renderedOp = JaiUtil.scaleImage(renderedOp, (Scale) op,
+                            renderedOp = JAIUtil.scaleImage(renderedOp, (Scale) op,
                                     Interpolation.getInstance(Interpolation.INTERP_NEAREST),
                                     rf);
                         } else if (renderedOp.getWidth() < 3 ||
@@ -182,26 +182,26 @@ class JaiProcessor extends AbstractImageIoProcessor
                             // Scale operation, with a better (but still bad
                             // [but it doesn't matter because of the tiny
                             // dimension(s)]) filter.
-                            renderedOp = JaiUtil.scaleImage(renderedOp, (Scale) op,
+                            renderedOp = JAIUtil.scaleImage(renderedOp, (Scale) op,
                                     Interpolation.getInstance(Interpolation.INTERP_BILINEAR),
                                     rf);
                         } else {
                             // All clear to use SubsampleAverage.
-                            renderedOp = JaiUtil.scaleImageUsingSubsampleAverage(
+                            renderedOp = JAIUtil.scaleImageUsingSubsampleAverage(
                                     renderedOp, (Scale) op, rf);
                         }
                     } else if (op instanceof Transpose) {
-                        renderedOp = JaiUtil.
+                        renderedOp = JAIUtil.
                                 transposeImage(renderedOp, (Transpose) op);
                     } else if (op instanceof Rotate) {
                         Rotate rotate = (Rotate) op;
                         rotate.addDegrees(orientation.getDegrees());
-                        renderedOp = JaiUtil.rotateImage(renderedOp, rotate);
+                        renderedOp = JAIUtil.rotateImage(renderedOp, rotate);
                     } else if (op instanceof Color) {
-                        renderedOp = JaiUtil.
+                        renderedOp = JAIUtil.
                                 transformColor(renderedOp, (Color) op);
                     } else if (op instanceof Sharpen) {
-                        renderedOp = JaiUtil.
+                        renderedOp = JAIUtil.
                                 sharpenImage(renderedOp, (Sharpen) op);
                     }
                 }

@@ -29,7 +29,7 @@ import java.io.IOException;
 
 import static org.junit.Assert.*;
 
-public class JaiUtilTest extends BaseTest {
+public class JAIUtilTest extends BaseTest {
 
     private static final String IMAGE = "images/jpg-rgb-64x56x8-baseline.jpg";
 
@@ -40,13 +40,13 @@ public class JaiUtilTest extends BaseTest {
         // full
         Crop crop = new Crop();
         crop.setFull(true);
-        RenderedOp outImage = JaiUtil.cropImage(inImage, crop);
+        RenderedOp outImage = JAIUtil.cropImage(inImage, crop);
         assertSame(inImage, outImage);
 
         // square
         crop = new Crop();
         crop.setShape(Crop.Shape.SQUARE);
-        outImage = JaiUtil.cropImage(inImage, crop);
+        outImage = JAIUtil.cropImage(inImage, crop);
         assertEquals(56, outImage.getWidth());
         assertEquals(56, outImage.getHeight());
 
@@ -54,7 +54,7 @@ public class JaiUtilTest extends BaseTest {
         crop = new Crop();
         crop.setWidth(50f);
         crop.setHeight(50f);
-        outImage = JaiUtil.cropImage(inImage, crop);
+        outImage = JAIUtil.cropImage(inImage, crop);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
@@ -65,7 +65,7 @@ public class JaiUtilTest extends BaseTest {
         crop.setY(0.5f);
         crop.setWidth(0.5f);
         crop.setHeight(0.5f);
-        outImage = JaiUtil.cropImage(inImage, crop);
+        outImage = JAIUtil.cropImage(inImage, crop);
         assertEquals(32, outImage.getWidth());
         assertEquals(28, outImage.getHeight());
     }
@@ -88,7 +88,7 @@ public class JaiUtilTest extends BaseTest {
         RenderedImage image = reader.readRendered(ops, Orientation.ROTATE_0,
                 new ReductionFactor(), null);
         PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
-        RenderedOp renderedOp = JaiUtil.getAsRenderedOp(planarImage);
+        RenderedOp renderedOp = JAIUtil.getAsRenderedOp(planarImage);
         assertEquals(64, renderedOp.getWidth());
         assertEquals(56, renderedOp.getHeight());
     }
@@ -99,12 +99,12 @@ public class JaiUtilTest extends BaseTest {
 
         // test with no-op rotate
         Rotate rotate = new Rotate(0);
-        RenderedOp rotatedImage = JaiUtil.rotateImage(inImage, rotate);
+        RenderedOp rotatedImage = JAIUtil.rotateImage(inImage, rotate);
         assertSame(inImage, rotatedImage);
 
         // test with non-no-op crop
         rotate = new Rotate(45);
-        rotatedImage = JaiUtil.rotateImage(inImage, rotate);
+        rotatedImage = JAIUtil.rotateImage(inImage, rotate);
 
         final int sourceWidth = inImage.getWidth();
         final int sourceHeight = inImage.getHeight();
@@ -132,7 +132,7 @@ public class JaiUtilTest extends BaseTest {
         // test with Mode.FULL
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
-        RenderedOp scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
+        RenderedOp scaledImage = JAIUtil.scaleImage(image, scale, interpolation, rf);
         assertSame(image, scaledImage);
 
         // Mode.ASPECT_FIT_WIDTH
@@ -141,7 +141,7 @@ public class JaiUtilTest extends BaseTest {
         // down
         int width = 50;
         scale.setWidth(width);
-        scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
+        scaledImage = JAIUtil.scaleImage(image, scale, interpolation, rf);
         assertEquals(width, scaledImage.getWidth(), fudge);
         assertEquals(
                 Math.round((width / (float) image.getWidth()) * image.getHeight()),
@@ -149,7 +149,7 @@ public class JaiUtilTest extends BaseTest {
         // up
         width = 90;
         scale.setWidth(width);
-        scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
+        scaledImage = JAIUtil.scaleImage(image, scale, interpolation, rf);
         assertEquals(width, scaledImage.getWidth(), fudge);
         assertEquals(
                 Math.round((width / (float) image.getWidth()) * image.getHeight()),
@@ -161,7 +161,7 @@ public class JaiUtilTest extends BaseTest {
         // down
         int height = 25;
         scale.setHeight(height);
-        scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
+        scaledImage = JAIUtil.scaleImage(image, scale, interpolation, rf);
         assertEquals(
                 Math.round((height / (float) image.getHeight()) * image.getWidth()),
                 scaledImage.getWidth(), fudge);
@@ -169,7 +169,7 @@ public class JaiUtilTest extends BaseTest {
         // up
         height = 90;
         scale.setHeight(height);
-        scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
+        scaledImage = JAIUtil.scaleImage(image, scale, interpolation, rf);
         assertEquals(
                 Math.round((height / (float) image.getHeight()) * image.getWidth()),
                 scaledImage.getWidth(), fudge);
@@ -183,7 +183,7 @@ public class JaiUtilTest extends BaseTest {
         height = 38;
         scale.setWidth(width);
         scale.setHeight(height);
-        scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
+        scaledImage = JAIUtil.scaleImage(image, scale, interpolation, rf);
         assertEquals(width, scaledImage.getWidth(), fudge);
         assertEquals(
                 Math.round((width / (float) image.getWidth()) * image.getHeight()),
@@ -193,7 +193,7 @@ public class JaiUtilTest extends BaseTest {
         height = 88;
         scale.setWidth(width);
         scale.setHeight(height);
-        scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
+        scaledImage = JAIUtil.scaleImage(image, scale, interpolation, rf);
         assertEquals(width, scaledImage.getWidth(), fudge);
         assertEquals(
                 Math.round((width / (float) image.getWidth()) * image.getHeight()),
@@ -207,7 +207,7 @@ public class JaiUtilTest extends BaseTest {
         height = 42;
         scale.setWidth(width);
         scale.setHeight(height);
-        scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
+        scaledImage = JAIUtil.scaleImage(image, scale, interpolation, rf);
         assertEquals(width, scaledImage.getWidth(), fudge);
         assertEquals(height, scaledImage.getHeight(), fudge);
         // up
@@ -215,7 +215,7 @@ public class JaiUtilTest extends BaseTest {
         height = 82;
         scale.setWidth(width);
         scale.setHeight(height);
-        scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
+        scaledImage = JAIUtil.scaleImage(image, scale, interpolation, rf);
         assertEquals(width, scaledImage.getWidth(), fudge);
         assertEquals(height, scaledImage.getHeight(), fudge);
 
@@ -224,13 +224,13 @@ public class JaiUtilTest extends BaseTest {
         // down
         float percent = 0.5f;
         scale.setPercent(percent);
-        scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
+        scaledImage = JAIUtil.scaleImage(image, scale, interpolation, rf);
         assertEquals(image.getWidth() * percent, scaledImage.getWidth(), fudge);
         assertEquals(image.getHeight() * percent, scaledImage.getHeight(), fudge);
         // up
         percent = 1.1f;
         scale.setPercent(percent);
-        scaledImage = JaiUtil.scaleImage(image, scale, interpolation, rf);
+        scaledImage = JAIUtil.scaleImage(image, scale, interpolation, rf);
         assertEquals(Math.round(image.getWidth() * percent),
                 scaledImage.getWidth());
         assertEquals(Math.round(image.getHeight() * percent),
@@ -246,7 +246,7 @@ public class JaiUtilTest extends BaseTest {
         // test with Mode.FULL
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.FULL);
-        RenderedOp scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        RenderedOp scaledImage = JAIUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
         assertSame(image, scaledImage);
 
         // Mode.ASPECT_FIT_WIDTH
@@ -255,7 +255,7 @@ public class JaiUtilTest extends BaseTest {
         // down
         int width = 50;
         scale.setWidth(width);
-        scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        scaledImage = JAIUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
         assertEquals(width, scaledImage.getWidth(), fudge);
         assertEquals(
                 Math.round((width / (float) image.getWidth()) * image.getHeight()),
@@ -263,7 +263,7 @@ public class JaiUtilTest extends BaseTest {
         // up
         width = 80;
         scale.setWidth(width);
-        scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        scaledImage = JAIUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
         assertEquals(width, scaledImage.getWidth(), fudge);
         assertEquals(
                 Math.round((width / (float) image.getWidth()) * image.getHeight()),
@@ -275,7 +275,7 @@ public class JaiUtilTest extends BaseTest {
         // down
         int height = 36;
         scale.setHeight(height);
-        scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        scaledImage = JAIUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
         assertEquals(
                 Math.round((height / (float) image.getHeight()) * image.getWidth()),
                 scaledImage.getWidth(), fudge);
@@ -283,7 +283,7 @@ public class JaiUtilTest extends BaseTest {
         // up
         height = 72;
         scale.setHeight(height);
-        scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        scaledImage = JAIUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
         assertEquals(
                 Math.round((height / (float) image.getHeight()) * image.getWidth()),
                 scaledImage.getWidth(), fudge);
@@ -297,7 +297,7 @@ public class JaiUtilTest extends BaseTest {
         height = 40;
         scale.setWidth(width);
         scale.setHeight(height);
-        scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        scaledImage = JAIUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
         assertEquals(width, scaledImage.getWidth(), fudge);
         assertEquals(
                 Math.round((height / (float) image.getWidth()) * image.getHeight()),
@@ -307,7 +307,7 @@ public class JaiUtilTest extends BaseTest {
         height = 90;
         scale.setWidth(width);
         scale.setHeight(height);
-        scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        scaledImage = JAIUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
         assertEquals(width, scaledImage.getWidth(), fudge);
         assertEquals(
                 Math.round((width / (float) image.getWidth()) * image.getHeight()),
@@ -321,7 +321,7 @@ public class JaiUtilTest extends BaseTest {
         height = 42;
         scale.setWidth(width);
         scale.setHeight(height);
-        scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        scaledImage = JAIUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
         assertEquals(width, scaledImage.getWidth(), fudge);
         assertEquals(height, scaledImage.getHeight(), fudge);
         // up
@@ -329,7 +329,7 @@ public class JaiUtilTest extends BaseTest {
         height = 88;
         scale.setWidth(width);
         scale.setHeight(height);
-        scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        scaledImage = JAIUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
         assertEquals(width, scaledImage.getWidth(), fudge);
         assertEquals(height, scaledImage.getHeight(), fudge);
 
@@ -338,13 +338,13 @@ public class JaiUtilTest extends BaseTest {
         // down
         float percent = 0.5f;
         scale.setPercent(percent);
-        scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        scaledImage = JAIUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
         assertEquals(image.getWidth() * percent, scaledImage.getWidth(), fudge);
         assertEquals(image.getHeight() * percent, scaledImage.getHeight(), fudge);
         // up
         percent = 1.2f;
         scale.setPercent(percent);
-        scaledImage = JaiUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
+        scaledImage = JAIUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
         assertEquals(Math.round(image.getWidth() * percent),
                 scaledImage.getWidth());
         assertEquals(Math.round(image.getHeight() * percent),
@@ -358,13 +358,13 @@ public class JaiUtilTest extends BaseTest {
         // test with no-op sharpen
         Sharpen sharpen = new Sharpen();
         sharpen.setAmount(0);
-        RenderedOp sharpenedImage = JaiUtil.sharpenImage(image, sharpen);
+        RenderedOp sharpenedImage = JAIUtil.sharpenImage(image, sharpen);
         assertSame(image, sharpenedImage);
 
         // test with non-no-op sharpen
         sharpen = new Sharpen();
         sharpen.setAmount(0.5f);
-        sharpenedImage = JaiUtil.sharpenImage(image, sharpen);
+        sharpenedImage = JAIUtil.sharpenImage(image, sharpen);
         assertNotSame(image, sharpenedImage);
     }
 
@@ -381,8 +381,8 @@ public class JaiUtilTest extends BaseTest {
         g2d.setColor(java.awt.Color.LIGHT_GRAY);
         g2d.fill(rightHalf);
 
-        RenderedOp renderedOp = JaiUtil.getAsRenderedOp(RenderedOp.wrapRenderedImage(image));
-        renderedOp = JaiUtil.stretchContrast(renderedOp);
+        RenderedOp renderedOp = JAIUtil.getAsRenderedOp(RenderedOp.wrapRenderedImage(image));
+        renderedOp = JAIUtil.stretchContrast(renderedOp);
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         ImageIO.write(renderedOp, "JPEG", os);
@@ -396,7 +396,7 @@ public class JaiUtilTest extends BaseTest {
     public void testTransformColor() throws Exception {
         RenderedOp image = getFixture(IMAGE);
         Color color = Color.GRAY;
-        RenderedOp result = JaiUtil.transformColor(image, color);
+        RenderedOp result = JAIUtil.transformColor(image, color);
         assertEquals(1, result.getSampleModel().getNumBands());
         assertEquals(8, result.getColorModel().getComponentSize(0));
         // TODO: test Color.BITONAL
@@ -408,12 +408,12 @@ public class JaiUtilTest extends BaseTest {
         RenderedOp image = getFixture(IMAGE);
         // horizontal
         Transpose transpose = Transpose.HORIZONTAL;
-        RenderedOp result = JaiUtil.transposeImage(image, transpose);
+        RenderedOp result = JAIUtil.transposeImage(image, transpose);
         assertEquals(image.getWidth(), result.getWidth());
         assertEquals(image.getHeight(), result.getHeight());
         // vertical
         transpose = Transpose.VERTICAL;
-        result = JaiUtil.transposeImage(image, transpose);
+        result = JAIUtil.transposeImage(image, transpose);
         assertEquals(image.getWidth(), result.getWidth());
         assertEquals(image.getHeight(), result.getHeight());
     }
@@ -425,7 +425,7 @@ public class JaiUtilTest extends BaseTest {
         RenderedImage image = reader.readRendered(ops, Orientation.ROTATE_0,
                 new ReductionFactor(), null);
         PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
-        return JaiUtil.getAsRenderedOp(planarImage);
+        return JAIUtil.getAsRenderedOp(planarImage);
     }
 
 }
