@@ -48,7 +48,7 @@ class JPEGImageWriter extends AbstractImageWriter {
     @Override
     protected void addMetadata(final IIOMetadataNode baseTree)
             throws IOException {
-        if (sourceMetadata instanceof JpegMetadata) {
+        if (sourceMetadata instanceof JPEGMetadata) {
             final Object exif = sourceMetadata.getExif();
             if (exif != null) {
                 // Create the EXIF node.

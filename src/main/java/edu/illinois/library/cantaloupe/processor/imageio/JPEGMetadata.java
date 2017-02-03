@@ -10,7 +10,7 @@ import javax.imageio.metadata.IIOMetadataNode;
  * @see <a href="http://docs.oracle.com/javase/7/docs/api/javax/imageio/metadata/doc-files/jpeg_metadata.html">
  *      JPEG Metadata Format Specification and Usage Notes</a>
  */
-class JpegMetadata extends AbstractMetadata implements Metadata {
+class JPEGMetadata extends AbstractMetadata implements Metadata {
 
     private boolean checkedForExif = false;
     private boolean checkedForIptc = false;
@@ -32,7 +32,7 @@ class JpegMetadata extends AbstractMetadata implements Metadata {
      * @param metadata
      * @param formatName
      */
-    JpegMetadata(IIOMetadata metadata, String formatName) {
+    JPEGMetadata(IIOMetadata metadata, String formatName) {
         super(metadata, formatName);
     }
 

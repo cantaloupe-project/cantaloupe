@@ -36,7 +36,7 @@ class JPEGImageReader extends AbstractImageReader {
         }
         final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
         final String metadataFormat = metadata.getNativeMetadataFormatName();
-        return new JpegMetadata(metadata, metadataFormat);
+        return new JPEGMetadata(metadata, metadataFormat);
     }
 
 }

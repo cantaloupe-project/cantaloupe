@@ -20,9 +20,9 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
-public class JpegMetadataTest extends BaseTest {
+public class JPEGMetadataTest extends BaseTest {
 
-    private JpegMetadata getInstance(String fixtureName)
+    private JPEGMetadata getInstance(String fixtureName)
             throws IOException {
         final Iterator<ImageReader> it = ImageIO.getImageReadersByFormatName("JPEG");
         final ImageReader reader = it.next();
@@ -30,7 +30,7 @@ public class JpegMetadataTest extends BaseTest {
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile)) {
             reader.setInput(is);
             final IIOMetadata metadata = reader.getImageMetadata(0);
-            return new JpegMetadata(metadata,
+            return new JPEGMetadata(metadata,
                     metadata.getNativeMetadataFormatName());
         } finally {
             reader.dispose();
