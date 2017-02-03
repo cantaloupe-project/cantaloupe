@@ -7,6 +7,8 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFField;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -32,6 +34,8 @@ import java.util.Iterator;
  *     ImageIO TIFF Plugin Documentation</a>
  */
 class TiffImageWriter extends AbstractImageWriter {
+
+    private static Logger logger = LoggerFactory.getLogger(TiffImageWriter.class);
 
     TiffImageWriter(OperationList opList) {
         super(opList);
@@ -123,6 +127,7 @@ class TiffImageWriter extends AbstractImageWriter {
         if (compressionType != null) {
             writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             writeParam.setCompressionType(compressionType);
+            logger.debug("Compression type: {}", compressionType);
         }
         return writeParam;
     }

@@ -576,6 +576,12 @@ public abstract class Java2dUtil {
                     RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
             if (bgColor != null && rotate.getDegrees() % 90 > 0.00001f) {
+                float[] components = new float[3];
+                bgColor.getRGBColorComponents(components);
+                logger.debug("rotateImage(): background RGB color: {}, {}, {}",
+                        Math.round(components[0] * 255),
+                        Math.round(components[1] * 255),
+                        Math.round(components[2] * 255));
                 g2d.setPaint(bgColor);
                 g2d.fillRect(0, 0, canvasWidth, canvasHeight);
             }

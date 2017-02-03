@@ -4,6 +4,8 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Java2dUtil;
 import edu.illinois.library.cantaloupe.processor.Processor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
 import javax.imageio.IIOImage;
@@ -27,6 +29,8 @@ import java.util.Iterator;
  * {@link BufferedImage}s and JAI {@link PlanarImage}s as JPEGs.
  */
 class JpegImageWriter extends AbstractImageWriter {
+
+    private static Logger logger = LoggerFactory.getLogger(JpegImageWriter.class);
 
     JpegImageWriter(OperationList opList) {
         super(opList);
@@ -85,16 +89,19 @@ class JpegImageWriter extends AbstractImageWriter {
 
     private ImageWriteParam getWriteParam(ImageWriter writer) {
         final ImageWriteParam writeParam = writer.getDefaultWriteParam();
-        // Compression
+        // Quality
         final int quality = (int) opList.getOptions().
                 getOrDefault(Processor.JPG_QUALITY_CONFIG_KEY, 80);
         writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
         writeParam.setCompressionQuality(quality * 0.01f);
+        logger.debug("Using quality: {}", quality);
+
         // Interlacing
         final boolean interlace = (boolean) opList.getOptions().
                 getOrDefault(Processor.JPG_INTERLACE_CONFIG_KEY, false);
         writeParam.setProgressiveMode(interlace ?
                 ImageWriteParam.MODE_DEFAULT : ImageWriteParam.MODE_DISABLED);
+        logger.debug("Progressive: {}", interlace);
 
         writeParam.setCompressionType("JPEG");
         return writeParam;

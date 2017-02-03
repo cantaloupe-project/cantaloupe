@@ -261,11 +261,10 @@ public abstract class AbstractResource extends ServerResource {
                     final String filterStr = config.getString(filterKey);
                     final Scale.Filter filter =
                             Scale.Filter.valueOf(filterStr.toUpperCase());
-                    logger.debug("addNonEndpointOperations(): using the {} scale filter",
-                            filter);
                     scale.setFilter(filter);
                 } catch (Exception e) {
-                    logger.warn("Invalid value for {}", filterKey);
+                    logger.warn("addNonEndpointOperations(): invalid value for {}",
+                            filterKey);
                 }
             }
         }
@@ -288,27 +287,21 @@ public abstract class AbstractResource extends ServerResource {
                 config.getString(Processor.BACKGROUND_COLOR_CONFIG_KEY, "black");
         opList.getOptions().put(Processor.BACKGROUND_COLOR_CONFIG_KEY,
                 bgColor);
-        logger.debug("addNonEndpointOperations(): background color: {}", bgColor);
 
         // JPEG interlace
         final boolean jpgInterlace =
                 config.getBoolean(Processor.JPG_INTERLACE_CONFIG_KEY, false);
         opList.getOptions().put(Processor.JPG_INTERLACE_CONFIG_KEY,
                 jpgInterlace);
-        logger.debug("addNonEndpointOperations(): JPEG interlace: {}",
-                jpgInterlace);
 
         // JPEG quality
         final int jpgQuality = config.getInt(Processor.JPG_QUALITY_CONFIG_KEY, 80);
         opList.getOptions().put(Processor.JPG_QUALITY_CONFIG_KEY, jpgQuality);
-        logger.debug("addNonEndpointOperations(): JPEG quality: {}", jpgQuality);
 
         // TIFF compression
         final String tiffCompression =
                 config.getString(Processor.TIF_COMPRESSION_CONFIG_KEY, "LZW");
         opList.getOptions().put(Processor.TIF_COMPRESSION_CONFIG_KEY,
-                tiffCompression);
-        logger.debug("addNonEndpointOperations(): TIFF compression: {}",
                 tiffCompression);
 
         // At this point, the list is complete, so it can be safely frozen.
