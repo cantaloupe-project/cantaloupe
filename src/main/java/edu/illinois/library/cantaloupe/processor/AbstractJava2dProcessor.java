@@ -80,7 +80,9 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
             try {
                 final String colorStr = (String) opList.getOptions().
                         get(Processor.BACKGROUND_COLOR_CONFIG_KEY);
-                return ColorUtil.fromString(colorStr);
+                if (colorStr != null) {
+                    return ColorUtil.fromString(colorStr);
+                }
             } catch (IllegalArgumentException e) {
                 logger.warn("getBackgroundColor(): " + e.getMessage());
             }
