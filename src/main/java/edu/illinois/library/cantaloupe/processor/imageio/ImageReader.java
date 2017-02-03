@@ -86,7 +86,7 @@ public class ImageReader {
                 reader = new JPEGImageReader(sourceFile);
                 break;
             case PNG:
-                reader = new PngImageReader(sourceFile);
+                reader = new PNGImageReader(sourceFile);
                 break;
             case TIF:
                 reader = new TIFFImageReader(sourceFile);
@@ -117,7 +117,7 @@ public class ImageReader {
                 reader = new JPEGImageReader(streamSource);
                 break;
             case PNG:
-                reader = new PngImageReader(streamSource);
+                reader = new PNGImageReader(streamSource);
                 break;
             case TIF:
                 reader = new TIFFImageReader(streamSource);

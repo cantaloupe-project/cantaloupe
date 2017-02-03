@@ -7,13 +7,13 @@ import javax.imageio.metadata.IIOMetadata;
 import java.io.File;
 import java.io.IOException;
 
-class PngImageReader extends AbstractImageReader {
+class PNGImageReader extends AbstractImageReader {
 
     /**
      * @param sourceFile Source file to read.
      * @throws IOException
      */
-    PngImageReader(File sourceFile) throws IOException {
+    PNGImageReader(File sourceFile) throws IOException {
         super(sourceFile, Format.PNG);
     }
 
@@ -21,7 +21,7 @@ class PngImageReader extends AbstractImageReader {
      * @param streamSource Source of streams to read.
      * @throws IOException
      */
-    PngImageReader(StreamSource streamSource) throws IOException {
+    PNGImageReader(StreamSource streamSource) throws IOException {
         super(streamSource, Format.PNG);
     }
 

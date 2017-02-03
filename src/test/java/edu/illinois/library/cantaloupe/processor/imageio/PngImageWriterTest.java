@@ -31,7 +31,7 @@ public class PngImageWriterTest extends BaseTest {
     @Test
     public void testWriteWithBufferedImage() throws Exception {
         final File fixture = TestUtil.getImage("png-xmp.png");
-        final PngImageReader reader = new PngImageReader(fixture);
+        final PNGImageReader reader = new PNGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final BufferedImage image = reader.read();
 
@@ -45,7 +45,7 @@ public class PngImageWriterTest extends BaseTest {
         final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("png-nativemetadata.png");
-        final PngImageReader reader = new PngImageReader(fixture);
+        final PNGImageReader reader = new PNGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final BufferedImage image = reader.read();
 
@@ -59,7 +59,7 @@ public class PngImageWriterTest extends BaseTest {
         final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("png-xmp.png");
-        final PngImageReader reader = new PngImageReader(fixture);
+        final PNGImageReader reader = new PNGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final BufferedImage image = reader.read();
 
@@ -71,7 +71,7 @@ public class PngImageWriterTest extends BaseTest {
     @Test
     public void testWriteWithPlanarImage() throws Exception {
         final File fixture = TestUtil.getImage("png-xmp.png");
-        final PngImageReader reader = new PngImageReader(fixture);
+        final PNGImageReader reader = new PNGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final PlanarImage image =
                 PlanarImage.wrapRenderedImage(reader.readRendered());
@@ -86,7 +86,7 @@ public class PngImageWriterTest extends BaseTest {
         final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("png-nativemetadata.png");
-        final PngImageReader reader = new PngImageReader(fixture);
+        final PNGImageReader reader = new PNGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final PlanarImage image =
                 PlanarImage.wrapRenderedImage(reader.readRendered());
@@ -101,7 +101,7 @@ public class PngImageWriterTest extends BaseTest {
         final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("png-xmp.png");
-        final PngImageReader reader = new PngImageReader(fixture);
+        final PNGImageReader reader = new PNGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final PlanarImage image =
                 PlanarImage.wrapRenderedImage(reader.readRendered());
