@@ -1232,12 +1232,35 @@
                                         </td>
                                     </tr>
                                     <tr>
+                                        <td>
+                                            <a tabindex="0" class="btn btn-sm cl-help"
+                                               role="button" data-toggle="popover"
+                                               data-trigger="focus"
+                                               data-content="Interlaced JPEGs are generally more
+                                               space-efficient and can provide a better user
+                                               experience, but they are not quite as well-supported
+                                               by all software.">?</a>
+                                        </td>
+                                        <td>
+                                            <div class="checkbox">
+                                                <label>
+                                                    <input type="checkbox"
+                                                           name="processor.jpg.interlace"
+                                                           value="true"
+                                                           data-requires-restart="false">
+                                                    Interlace JPEGs
+                                                </label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
                                         <td>JPEG quality
                                             <a tabindex="0" class="btn btn-sm cl-help"
                                                role="button" data-toggle="popover"
                                                data-trigger="focus"
-                                               data-content="JPEG output quality. Should be a number
-                                                   between 1 and 100.">?</a>
+                                               data-content="Should be a number
+                                                   between 1 and 100. Larger numbers numbers offer better
+                                                   quality at the expense of larger files.">?</a>
                                         </td>
                                         <td>
                                             <input class="form-control" type="number"

@@ -290,6 +290,14 @@ public abstract class AbstractResource extends ServerResource {
                 bgColor);
         logger.debug("addNonEndpointOperations(): background color: {}", bgColor);
 
+        // JPEG interlace
+        final boolean jpgInterlace =
+                config.getBoolean(Processor.JPG_INTERLACE_CONFIG_KEY, false);
+        opList.getOptions().put(Processor.JPG_INTERLACE_CONFIG_KEY,
+                jpgInterlace);
+        logger.debug("addNonEndpointOperations(): JPEG interlace: {}",
+                jpgInterlace);
+
         // JPEG quality
         final int jpgQuality = config.getInt(Processor.JPG_QUALITY_CONFIG_KEY, 80);
         opList.getOptions().put(Processor.JPG_QUALITY_CONFIG_KEY, jpgQuality);

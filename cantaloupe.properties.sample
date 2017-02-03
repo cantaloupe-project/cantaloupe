@@ -262,7 +262,10 @@ processor.upscale_filter = bicubic
 # Intensity of an unsharp mask from 0 to 1.
 processor.sharpen = 0
 
-# JPEG output quality.
+# Interlaced a.k.a. progressive JPEGs are generally more space-efficient.
+processor.jpg.interlace = true
+
+# JPEG output quality (1-100).
 processor.jpg.quality = 80
 
 # TIFF output compression type. Available values are `LZW`, `Deflate`,

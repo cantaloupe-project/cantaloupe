@@ -303,8 +303,11 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                 args.add("-quality");
                 args.add("" + jpgQuality);
                 // Interlace
-                args.add("-interlace");
-                args.add("Plane");
+                if ((boolean) ops.getOptions().
+                        getOrDefault(Processor.JPG_INTERLACE_CONFIG_KEY, false)) {
+                    args.add("-interlace");
+                    args.add("Plane");
+                }
                 break;
             case TIF:
                 // Compression
