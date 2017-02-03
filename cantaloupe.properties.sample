@@ -478,11 +478,11 @@ overlays.BasicStrategy.string = Copyright \u00A9️ My Great Organization\nAll r
 overlays.BasicStrategy.string.font = Helvetica
 
 # Font size in points.
-overlays.BasicStrategy.string.font.size = 18
+overlays.BasicStrategy.string.font.size = 24
 
 # If the string doesn't fit in the image at the above size, the largest size
 # at which it does fit will be used, down to this.
-overlays.BasicStrategy.string.font.min_size = 15
+overlays.BasicStrategy.string.font.min_size = 18
 
 # Font weight. 1 = regular, 2 = bold. Note that many fonts don't support
 # fractional weights.
