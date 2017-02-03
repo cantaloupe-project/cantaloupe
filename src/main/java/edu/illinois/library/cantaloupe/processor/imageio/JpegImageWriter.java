@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.processor.Java2dUtil;
+import edu.illinois.library.cantaloupe.processor.Java2DUtil;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,7 +122,7 @@ class JpegImageWriter extends AbstractImageWriter {
         try {
             // JPEG doesn't support alpha, so convert to RGB or else the
             // client will interpret as CMYK
-            image = Java2dUtil.removeAlpha(image);
+            image = Java2DUtil.removeAlpha(image);
             final ImageWriteParam writeParam = getWriteParam(writer);
             final ImageOutputStream os =
                     ImageIO.createImageOutputStream(outputStream);

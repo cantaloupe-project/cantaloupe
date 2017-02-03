@@ -217,7 +217,7 @@ class JaiProcessor extends AbstractImageIoProcessor
                     // the case of drawing text).
                     image = renderedOp.getAsBufferedImage();
                     try {
-                        image = Java2dUtil.applyOverlay(image,
+                        image = Java2DUtil.applyOverlay(image,
                                 (Overlay) op);
                     } catch (ConfigurationException e) {
                         logger.error(e.getMessage());

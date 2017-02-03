@@ -150,9 +150,9 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
         }
 
         if (normalize) {
-            image = Java2dUtil.stretchContrast(image);
+            image = Java2DUtil.stretchContrast(image);
         }
-        image = Java2dUtil.reduceTo8Bits(image);
+        image = Java2DUtil.reduceTo8Bits(image);
 
         final Dimension fullSize = imageInfo.getSize();
 
@@ -165,7 +165,7 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
                 crop = (Crop) op;
                 if (crop.hasEffect(fullSize, opList) &&
                         !readerHints.contains(ImageReader.Hint.ALREADY_CROPPED)) {
-                    image = Java2dUtil.cropImage(image, crop, reductionFactor);
+                    image = Java2DUtil.cropImage(image, crop, reductionFactor);
                 }
             }
         }
@@ -179,29 +179,29 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
                 }
             }
         }
-        image = Java2dUtil.applyRedactions(image, crop, reductionFactor,
+        image = Java2DUtil.applyRedactions(image, crop, reductionFactor,
                 redactions);
 
         // Apply remaining operations.
         for (Operation op : opList) {
             if (op.hasEffect(fullSize, opList)) {
                 if (op instanceof Scale) {
-                    image = Java2dUtil.scaleImage(image, (Scale) op,
+                    image = Java2DUtil.scaleImage(image, (Scale) op,
                             reductionFactor);
                 } else if (op instanceof Transpose) {
-                    image = Java2dUtil.transposeImage(image, (Transpose) op);
+                    image = Java2DUtil.transposeImage(image, (Transpose) op);
                 } else if (op instanceof Rotate) {
                     Rotate rotation = (Rotate) op;
                     rotation.addDegrees(imageInfo.getOrientation().getDegrees());
-                    image = Java2dUtil.rotateImage(image, rotation,
+                    image = Java2DUtil.rotateImage(image, rotation,
                             getBackgroundColor(opList));
                 } else if (op instanceof Color) {
-                    image = Java2dUtil.transformColor(image, (Color) op);
+                    image = Java2DUtil.transformColor(image, (Color) op);
                 } else if (op instanceof Sharpen) {
-                    image = Java2dUtil.sharpenImage(image, (Sharpen) op);
+                    image = Java2DUtil.sharpenImage(image, (Sharpen) op);
                 } else if (op instanceof Overlay) {
                     try {
-                        image = Java2dUtil.applyOverlay(image, (Overlay) op);
+                        image = Java2DUtil.applyOverlay(image, (Overlay) op);
                     } catch (ConfigurationException e) {
                         logger.error(e.getMessage());
                     }

@@ -47,9 +47,9 @@ import java.util.List;
 /**
  * A collection of methods for operating on {@link BufferedImage}s.
  */
-public abstract class Java2dUtil {
+public abstract class Java2DUtil {
 
-    private static Logger logger = LoggerFactory.getLogger(Java2dUtil.class);
+    private static Logger logger = LoggerFactory.getLogger(Java2DUtil.class);
 
     /**
      * See the inline documentation in scaleImage() for a rationale for

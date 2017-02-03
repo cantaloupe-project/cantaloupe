@@ -27,7 +27,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class Java2dUtilTest extends BaseTest {
+public class Java2DUtilTest extends BaseTest {
 
     @Test
     public void testApplyRedactions() throws Exception {
@@ -54,7 +54,7 @@ public class Java2dUtilTest extends BaseTest {
                 baseImage.getTileHeight());
 
         // apply them
-        final BufferedImage redactedImage = Java2dUtil.applyRedactions(
+        final BufferedImage redactedImage = Java2DUtil.applyRedactions(
                 baseImage, crop, rf, redactions);
 
         // test for the first one
@@ -102,7 +102,7 @@ public class Java2dUtilTest extends BaseTest {
                 Position.TOP_LEFT, 0);
 
         // apply it
-        final BufferedImage overlaidImage = Java2dUtil.applyOverlay(
+        final BufferedImage overlaidImage = Java2DUtil.applyOverlay(
                 baseImage, overlay);
 
         pixel = overlaidImage.getRGB(0, 0);
@@ -140,7 +140,7 @@ public class Java2dUtilTest extends BaseTest {
                 inset);
 
         // apply it
-        final BufferedImage overlaidImage = Java2dUtil.applyOverlay(
+        final BufferedImage overlaidImage = Java2DUtil.applyOverlay(
                 baseImage, overlay);
 
         pixel = overlaidImage.getRGB(
@@ -169,7 +169,7 @@ public class Java2dUtilTest extends BaseTest {
                 Color.black, Color.white, 2f);
 
         // apply it
-        final BufferedImage overlaidImage = Java2dUtil.applyOverlay(
+        final BufferedImage overlaidImage = Java2DUtil.applyOverlay(
                 baseImage, overlay);
 
         int pixel = overlaidImage.getRGB(0, 0);
@@ -190,7 +190,7 @@ public class Java2dUtilTest extends BaseTest {
         // full
         Crop crop = new Crop();
         crop.setFull(true);
-        BufferedImage outImage = Java2dUtil.cropImage(inImage, crop);
+        BufferedImage outImage = Java2DUtil.cropImage(inImage, crop);
         assertSame(inImage, outImage);
 
         // square
@@ -198,7 +198,7 @@ public class Java2dUtilTest extends BaseTest {
         crop.setShape(Crop.Shape.SQUARE);
         crop.setWidth(50f);
         crop.setHeight(50f);
-        outImage = Java2dUtil.cropImage(inImage, crop);
+        outImage = Java2DUtil.cropImage(inImage, crop);
         assertEquals(100, outImage.getWidth());
         assertEquals(100, outImage.getHeight());
 
@@ -206,7 +206,7 @@ public class Java2dUtilTest extends BaseTest {
         crop = new Crop();
         crop.setWidth(50f);
         crop.setHeight(50f);
-        outImage = Java2dUtil.cropImage(inImage, crop);
+        outImage = Java2DUtil.cropImage(inImage, crop);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
@@ -217,7 +217,7 @@ public class Java2dUtilTest extends BaseTest {
         crop.setY(0.5f);
         crop.setWidth(0.5f);
         crop.setHeight(0.5f);
-        outImage = Java2dUtil.cropImage(inImage, crop);
+        outImage = Java2DUtil.cropImage(inImage, crop);
         assertEquals(100, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
     }
@@ -231,7 +231,7 @@ public class Java2dUtilTest extends BaseTest {
         Crop crop = new Crop();
         crop.setFull(true);
         ReductionFactor rf = new ReductionFactor(1);
-        BufferedImage outImage = Java2dUtil.cropImage(inImage, crop, rf);
+        BufferedImage outImage = Java2DUtil.cropImage(inImage, crop, rf);
         assertSame(inImage, outImage);
 
         // pixel crop
@@ -239,7 +239,7 @@ public class Java2dUtilTest extends BaseTest {
         crop.setWidth(50f);
         crop.setHeight(50f);
         rf = new ReductionFactor(1);
-        outImage = Java2dUtil.cropImage(inImage, crop, rf);
+        outImage = Java2DUtil.cropImage(inImage, crop, rf);
         assertEquals(25, outImage.getWidth());
         assertEquals(25, outImage.getHeight());
 
@@ -251,7 +251,7 @@ public class Java2dUtilTest extends BaseTest {
         crop.setWidth(0.5f);
         crop.setHeight(0.5f);
         rf = new ReductionFactor(1);
-        outImage = Java2dUtil.cropImage(inImage, crop, rf);
+        outImage = Java2DUtil.cropImage(inImage, crop, rf);
         assertEquals(25, outImage.getWidth());
         assertEquals(25, outImage.getHeight());
     }
@@ -265,7 +265,7 @@ public class Java2dUtilTest extends BaseTest {
     public void testGetOverlayImage() throws Exception {
         ImageOverlay overlay = new ImageOverlay(
                 TestUtil.getImage("png"), Position.BOTTOM_RIGHT, 0);
-        assertNotNull(Java2dUtil.getOverlayImage(overlay));
+        assertNotNull(Java2DUtil.getOverlayImage(overlay));
     }
 
     @Test
@@ -273,7 +273,7 @@ public class Java2dUtilTest extends BaseTest {
         // assert that an 8-bit image is untouched
         BufferedImage image = new BufferedImage(100, 100,
                 BufferedImage.TYPE_INT_RGB);
-        BufferedImage result = Java2dUtil.reduceTo8Bits(image);
+        BufferedImage result = Java2DUtil.reduceTo8Bits(image);
         assertSame(image, result);
 
         // assert that a 16-bit image is downsampled
@@ -293,7 +293,7 @@ public class Java2dUtilTest extends BaseTest {
         final int sourceHeight = inImage.getHeight();
 
         Rotate rotate = new Rotate(15);
-        BufferedImage outImage = Java2dUtil.rotateImage(inImage, rotate);
+        BufferedImage outImage = Java2DUtil.rotateImage(inImage, rotate);
 
         final double radians = Math.toRadians(rotate.getDegrees());
         final int expectedWidth = (int) Math.round(Math.abs(sourceWidth *
@@ -314,20 +314,20 @@ public class Java2dUtilTest extends BaseTest {
 
         // Scale.Mode.FULL
         Scale scale = new Scale();
-        BufferedImage outImage = Java2dUtil.scaleImage(inImage, scale);
+        BufferedImage outImage = Java2DUtil.scaleImage(inImage, scale);
         assertSame(inImage, outImage);
 
         // Scale.Mode.ASPECT_FIT_WIDTH
         scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         scale.setWidth(50);
-        outImage = Java2dUtil.scaleImage(inImage, scale);
+        outImage = Java2DUtil.scaleImage(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_HEIGHT
         scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
         scale.setHeight(50);
-        outImage = Java2dUtil.scaleImage(inImage, scale);
+        outImage = Java2DUtil.scaleImage(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
@@ -335,13 +335,13 @@ public class Java2dUtilTest extends BaseTest {
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setWidth(50);
         scale.setHeight(50);
-        outImage = Java2dUtil.scaleImage(inImage, scale);
+        outImage = Java2DUtil.scaleImage(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // scale-by percent
         scale = new Scale(0.25f);
-        outImage = Java2dUtil.scaleImage(inImage, scale);
+        outImage = Java2DUtil.scaleImage(inImage, scale);
         assertEquals(25, outImage.getWidth());
         assertEquals(25, outImage.getHeight());
     }
@@ -351,7 +351,7 @@ public class Java2dUtilTest extends BaseTest {
         BufferedImage inImage = new BufferedImage(200, 100,
                 BufferedImage.TYPE_INT_RGB);
         Sharpen sharpen = new Sharpen(0.1f);
-        BufferedImage outImage = Java2dUtil.sharpenImage(inImage, sharpen);
+        BufferedImage outImage = Java2DUtil.sharpenImage(inImage, sharpen);
 
         assertEquals(200, outImage.getWidth());
         assertEquals(100, outImage.getHeight());
@@ -365,28 +365,28 @@ public class Java2dUtilTest extends BaseTest {
         // Scale.Mode.ASPECT_FIT_WIDTH
         Scale scale = new Scale(50, null, Scale.Mode.ASPECT_FIT_WIDTH);
         ReductionFactor rf = new ReductionFactor(1);
-        BufferedImage outImage = Java2dUtil.scaleImage(inImage, scale, rf);
+        BufferedImage outImage = Java2DUtil.scaleImage(inImage, scale, rf);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_HEIGHT
         scale = new Scale(null, 50, Scale.Mode.ASPECT_FIT_HEIGHT);
         rf = new ReductionFactor(1);
-        outImage = Java2dUtil.scaleImage(inImage, scale, rf);
+        outImage = Java2DUtil.scaleImage(inImage, scale, rf);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_INSIDE
         scale = new Scale(50, 50, Scale.Mode.ASPECT_FIT_INSIDE);
         rf = new ReductionFactor(1);
-        outImage = Java2dUtil.scaleImage(inImage, scale, rf);
+        outImage = Java2DUtil.scaleImage(inImage, scale, rf);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // scale-by-percent
         scale = new Scale(0.25f);
         rf = new ReductionFactor(2);
-        outImage = Java2dUtil.scaleImage(inImage, scale, rf);
+        outImage = Java2DUtil.scaleImage(inImage, scale, rf);
         assertEquals(100, outImage.getWidth());
         assertEquals(100, outImage.getHeight());
     }
@@ -404,7 +404,7 @@ public class Java2dUtilTest extends BaseTest {
         g2d.setColor(Color.LIGHT_GRAY);
         g2d.fill(rightHalf);
 
-        image = Java2dUtil.stretchContrast(image);
+        image = Java2DUtil.stretchContrast(image);
 
         assertEquals(-16777216, image.getRGB(10, 10));
         assertEquals(-1, image.getRGB(90, 90));
@@ -415,7 +415,7 @@ public class Java2dUtilTest extends BaseTest {
         BufferedImage inImage = new BufferedImage(200, 100,
                 BufferedImage.TYPE_INT_RGB);
         Transpose transpose = Transpose.HORIZONTAL;
-        BufferedImage outImage = Java2dUtil.transposeImage(inImage, transpose);
+        BufferedImage outImage = Java2DUtil.transposeImage(inImage, transpose);
 
         assertEquals(200, outImage.getWidth());
         assertEquals(100, outImage.getHeight());
