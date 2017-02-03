@@ -36,7 +36,7 @@ class GIFImageReader extends AbstractImageReader {
         }
         final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
         final String metadataFormat = metadata.getNativeMetadataFormatName();
-        return new GifMetadata(metadata, metadataFormat);
+        return new GIFMetadata(metadata, metadataFormat);
     }
 
 }

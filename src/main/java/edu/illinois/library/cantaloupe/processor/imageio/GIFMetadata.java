@@ -8,7 +8,7 @@ import javax.imageio.metadata.IIOMetadata;
  * @see <a href="https://docs.oracle.com/javase/7/docs/api/javax/imageio/metadata/doc-files/gif_metadata.html">
  *      GIF Metadata Format Specification</a>
  */
-class GifMetadata extends AbstractMetadata implements Metadata {
+class GIFMetadata extends AbstractMetadata implements Metadata {
 
     private boolean checkedForXmp = false;
 
@@ -22,7 +22,7 @@ class GifMetadata extends AbstractMetadata implements Metadata {
      * @param metadata
      * @param formatName
      */
-    GifMetadata(IIOMetadata metadata, String formatName) {
+    GIFMetadata(IIOMetadata metadata, String formatName) {
         super(metadata, formatName);
     }
 

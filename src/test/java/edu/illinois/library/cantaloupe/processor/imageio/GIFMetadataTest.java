@@ -2,10 +2,6 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.riot.RIOT;
-import org.junit.Test;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -14,14 +10,11 @@ import javax.imageio.stream.ImageInputStream;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.Iterator;
 
-import static org.junit.Assert.*;
+public class GIFMetadataTest extends BaseTest {
 
-public class GifMetadataTest extends BaseTest {
-
-    private GifMetadata newInstance(String fixtureName)
+    private GIFMetadata newInstance(String fixtureName)
             throws IOException {
         final File srcFile = TestUtil.getImage(fixtureName);
         final Iterator<ImageReader> it = ImageIO.getImageReadersByFormatName("GIF");
@@ -29,14 +22,14 @@ public class GifMetadataTest extends BaseTest {
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile)) {
             reader.setInput(is);
             final IIOMetadata metadata = reader.getImageMetadata(0);
-            return new GifMetadata(metadata,
+            return new GIFMetadata(metadata,
                     metadata.getNativeMetadataFormatName());
         } finally {
             reader.dispose();
         }
     }
 
-    /* These tests are disabled because GifMetadata.getXmp() and getXmpRdf()
+    /* These tests are disabled because GIFMetadata.getXmp() and getXmpRdf()
     are disabled.
     @Test
     public void testGetOrientation() throws IOException {

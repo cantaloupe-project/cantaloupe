@@ -42,7 +42,7 @@ class GIFImageWriter extends AbstractImageWriter {
     @Override
     protected void addMetadata(final IIOMetadataNode baseTree)
             throws IOException {
-        if (sourceMetadata instanceof GifMetadata) {
+        if (sourceMetadata instanceof GIFMetadata) {
             // GIF doesn't support EXIF or IPTC metadata -- only XMP.
             // The XMP node will be located at /ApplicationExtensions/
             // ApplicationExtension[@applicationID="XMP Data" @authenticationCode="XMP"]
