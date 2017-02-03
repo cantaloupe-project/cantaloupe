@@ -24,16 +24,16 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 
-class TiffImageReader extends AbstractImageReader {
+class TIFFImageReader extends AbstractImageReader {
 
     private static Logger logger = LoggerFactory.
-            getLogger(TiffImageReader.class);
+            getLogger(TIFFImageReader.class);
 
     /**
      * @param sourceFile Source file to read.
      * @throws IOException
      */
-    TiffImageReader(File sourceFile) throws IOException {
+    TIFFImageReader(File sourceFile) throws IOException {
         super(sourceFile, Format.TIF);
     }
 
@@ -41,7 +41,7 @@ class TiffImageReader extends AbstractImageReader {
      * @param streamSource Source of streams to read.
      * @throws IOException
      */
-    TiffImageReader(StreamSource streamSource) throws IOException {
+    TIFFImageReader(StreamSource streamSource) throws IOException {
         super(streamSource, Format.TIF);
     }
 

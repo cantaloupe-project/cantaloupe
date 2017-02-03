@@ -17,14 +17,14 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-public class TiffImageReaderTest extends BaseTest {
+public class TIFFImageReaderTest extends BaseTest {
 
-    private TiffImageReader reader;
+    private TIFFImageReader reader;
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        reader = new TiffImageReader(
+        reader = new TIFFImageReader(
                 TestUtil.getImage("tif-rgb-multires-64x56x16-tiled-uncompressed.tif"));
     }
 
@@ -39,31 +39,31 @@ public class TiffImageReaderTest extends BaseTest {
         reader.dispose();
 
         // uncompressed
-        reader = new TiffImageReader(
+        reader = new TIFFImageReader(
                 TestUtil.getImage("tif-rgb-monores-64x56x16-striped-uncompressed.tif"));
         assertEquals(Compression.UNCOMPRESSED, reader.getCompression(0));
         reader.dispose();
 
         // JPEG
-        reader = new TiffImageReader(
+        reader = new TIFFImageReader(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-striped-jpeg.tif"));
         assertEquals(Compression.JPEG, reader.getCompression(0));
         reader.dispose();
 
         // LZW
-        reader = new TiffImageReader(
+        reader = new TIFFImageReader(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-striped-lzw.tif"));
         assertEquals(Compression.LZW, reader.getCompression(0));
         reader.dispose();
 
         // PackBits
-        reader = new TiffImageReader(
+        reader = new TIFFImageReader(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-striped-packbits.tif"));
         assertEquals(Compression.PACKBITS, reader.getCompression(0));
         reader.dispose();
 
         // Deflate/ZLib/Zip
-        reader = new TiffImageReader(
+        reader = new TIFFImageReader(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-striped-zip.tif"));
         assertEquals(Compression.ZLIB, reader.getCompression(0));
         reader.dispose();

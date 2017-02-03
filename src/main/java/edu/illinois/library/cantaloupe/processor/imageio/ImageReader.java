@@ -89,7 +89,7 @@ public class ImageReader {
                 reader = new PngImageReader(sourceFile);
                 break;
             case TIF:
-                reader = new TiffImageReader(sourceFile);
+                reader = new TIFFImageReader(sourceFile);
                 break;
         }
     }
@@ -120,7 +120,7 @@ public class ImageReader {
                 reader = new PngImageReader(streamSource);
                 break;
             case TIF:
-                reader = new TiffImageReader(streamSource);
+                reader = new TIFFImageReader(streamSource);
                 break;
         }
     }
