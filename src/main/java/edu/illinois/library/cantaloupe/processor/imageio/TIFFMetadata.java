@@ -20,9 +20,9 @@ import java.util.Set;
  * @see <a href="http://www.digitalpreservation.gov/formats/content/tiff_tags.shtml">
  *      Tags for TIFF, DNG, and Related Specifications</a>
  */
-class TiffMetadata extends AbstractMetadata implements Metadata {
+class TIFFMetadata extends AbstractMetadata implements Metadata {
 
-    private static Logger logger = LoggerFactory.getLogger(TiffMetadata.class);
+    private static Logger logger = LoggerFactory.getLogger(TIFFMetadata.class);
 
     /**
      * Native TIFF tags to preserve from the baseline IFD by
@@ -60,7 +60,7 @@ class TiffMetadata extends AbstractMetadata implements Metadata {
      * @param metadata
      * @param formatName
      */
-    TiffMetadata(IIOMetadata metadata, String formatName) {
+    TIFFMetadata(IIOMetadata metadata, String formatName) {
         super(metadata, formatName);
         try {
             ifd = TIFFDirectory.createFromMetadata(getIioMetadata());

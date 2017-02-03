@@ -63,11 +63,11 @@ class TiffImageWriter extends AbstractImageWriter {
     private IIOMetadata addMetadata(final Metadata sourceMetadata,
                                     IIOMetadata derivativeMetadata)
             throws IOException {
-        if (sourceMetadata instanceof TiffMetadata) {
+        if (sourceMetadata instanceof TIFFMetadata) {
             final TIFFDirectory destDir =
                     TIFFDirectory.createFromMetadata(derivativeMetadata);
 
-            for (TIFFField field : ((TiffMetadata) sourceMetadata).getNativeMetadata()) {
+            for (TIFFField field : ((TIFFMetadata) sourceMetadata).getNativeMetadata()) {
                 destDir.addTIFFField(field);
             }
 
@@ -77,7 +77,7 @@ class TiffImageWriter extends AbstractImageWriter {
             }
 
             final TIFFField xmpField =
-                    ((TiffMetadata) sourceMetadata).getXmpField();
+                    ((TIFFMetadata) sourceMetadata).getXmpField();
             if (xmpField != null) {
                 destDir.addTIFFField(xmpField);
             }

@@ -22,7 +22,7 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
-public class TiffMetadataTest extends BaseTest {
+public class TIFFMetadataTest extends BaseTest {
 
     private ImageReader reader;
 
@@ -39,11 +39,11 @@ public class TiffMetadataTest extends BaseTest {
         reader.dispose();
     }
 
-    private TiffMetadata newInstance(final ImageInputStream is)
+    private TIFFMetadata newInstance(final ImageInputStream is)
             throws IOException {
         reader.setInput(is);
         final IIOMetadata metadata = reader.getImageMetadata(0);
-        return new TiffMetadata(metadata,
+        return new TIFFMetadata(metadata,
                 metadata.getNativeMetadataFormatName());
     }
 
