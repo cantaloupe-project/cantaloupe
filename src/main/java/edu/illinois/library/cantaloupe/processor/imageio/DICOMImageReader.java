@@ -7,13 +7,13 @@ import javax.imageio.metadata.IIOMetadata;
 import java.io.File;
 import java.io.IOException;
 
-class DicomImageReader extends AbstractImageReader {
+class DICOMImageReader extends AbstractImageReader {
 
     /**
      * @param sourceFile Source file to read.
      * @throws IOException
      */
-    DicomImageReader(File sourceFile) throws IOException {
+    DICOMImageReader(File sourceFile) throws IOException {
         super(sourceFile, Format.DCM);
     }
 
@@ -21,7 +21,7 @@ class DicomImageReader extends AbstractImageReader {
      * @param streamSource Source of streams to read.
      * @throws IOException
      */
-    DicomImageReader(StreamSource streamSource) throws IOException {
+    DICOMImageReader(StreamSource streamSource) throws IOException {
         super(streamSource, Format.DCM);
     }
 

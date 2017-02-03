@@ -77,7 +77,7 @@ public class ImageReader {
                 reader = new BmpImageReader(sourceFile);
                 break;
             case DCM:
-                reader = new DicomImageReader(sourceFile);
+                reader = new DICOMImageReader(sourceFile);
                 break;
             case GIF:
                 reader = new GifImageReader(sourceFile);
@@ -108,7 +108,7 @@ public class ImageReader {
                 reader = new BmpImageReader(streamSource);
                 break;
             case DCM:
-                reader = new DicomImageReader(streamSource);
+                reader = new DICOMImageReader(streamSource);
                 break;
             case GIF:
                 reader = new GifImageReader(streamSource);
