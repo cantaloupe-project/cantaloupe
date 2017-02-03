@@ -55,7 +55,7 @@ public class ImageWriter {
                         write(image, outputStream);
                 break;
             case JPG:
-                new JpegImageWriter(opList, sourceMetadata).
+                new JPEGImageWriter(opList, sourceMetadata).
                         write(image, outputStream);
                 break;
             case PNG:
@@ -86,7 +86,7 @@ public class ImageWriter {
                         write(image, outputStream);
                 break;
             case JPG:
-                new JpegImageWriter(opList, sourceMetadata).
+                new JPEGImageWriter(opList, sourceMetadata).
                         write(image, outputStream);
                 break;
             case PNG:

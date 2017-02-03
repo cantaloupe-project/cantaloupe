@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -26,7 +25,7 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
-public class JpegImageWriterTest extends BaseTest {
+public class JPEGImageWriterTest extends BaseTest {
 
     @Test
     public void testWriteWithBufferedImage() throws Exception {
@@ -231,13 +230,13 @@ and other readers are more lenient.
         }
     }
 
-    private JpegImageWriter getWriter(Metadata metadata) throws IOException {
+    private JPEGImageWriter getWriter(Metadata metadata) throws IOException {
         OperationList opList = new OperationList();
         if (ConfigurationFactory.getInstance().
                 getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());
         }
-        return new JpegImageWriter(opList, metadata);
+        return new JPEGImageWriter(opList, metadata);
     }
 
 }
