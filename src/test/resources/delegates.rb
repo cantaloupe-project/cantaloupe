@@ -114,6 +114,7 @@ module Cantaloupe
             'font_size' => 20,
             'font_min_size' => 11,
             'font_weight' => 1.5,
+            'glyph_spacing' => 0.1,
             'stroke_color' => 'blue',
             'stroke_width' => 3
         }

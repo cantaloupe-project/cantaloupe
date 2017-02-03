@@ -23,6 +23,8 @@ class BasicStringOverlayService extends BasicOverlayService {
             "overlays.BasicStrategy.string.font.size";
     static final String FONT_WEIGHT_CONFIG_KEY =
             "overlays.BasicStrategy.string.font.weight";
+    static final String GLYPH_SPACING_CONFIG_KEY =
+            "overlays.BasicStrategy.string.glyph_spacing";
     static final String STRING_CONFIG_KEY =
             "overlays.BasicStrategy.string";
     static final String STROKE_COLOR_CONFIG_KEY =
@@ -61,6 +63,8 @@ class BasicStringOverlayService extends BasicOverlayService {
                 config.getInt(FONT_SIZE_CONFIG_KEY, 18));
         attributes.put(TextAttribute.WEIGHT,
                 config.getFloat(FONT_WEIGHT_CONFIG_KEY, 1f));
+        attributes.put(TextAttribute.TRACKING,
+                config.getFloat(GLYPH_SPACING_CONFIG_KEY, 0f));
         font = Font.getFont(attributes);
 
         // Min size

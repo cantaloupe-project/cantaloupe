@@ -27,6 +27,7 @@ public class StringOverlayTest extends BaseTest {
         attributes.put(TextAttribute.FAMILY, "Helvetica");
         attributes.put(TextAttribute.SIZE, 12);
         attributes.put(TextAttribute.WEIGHT, 2.0f);
+        attributes.put(TextAttribute.TRACKING, 0.1f);
         final Font font = Font.getFont(attributes);
 
         instance = new StringOverlay("cats", Position.BOTTOM_RIGHT, 5,
@@ -46,14 +47,16 @@ public class StringOverlayTest extends BaseTest {
 
         Map<String,Object> map = instance.toMap(fullSize);
         assertEquals(instance.getClass().getSimpleName(), map.get("class"));
-        assertEquals(instance.getString(), map.get("string"));
-        assertEquals(instance.getInset(), map.get("inset"));
         assertEquals(ColorUtil.getHex(instance.getColor()), map.get("color"));
-        assertEquals(instance.getPosition().toString(), map.get("position"));
         assertEquals(instance.getFont().getFamily(), map.get("font"));
         assertEquals(instance.getFont().getSize(), map.get("font_size"));
         assertEquals(instance.getFont().getAttributes().get(TextAttribute.WEIGHT),
                 map.get("font_weight"));
+        assertEquals(instance.getFont().getAttributes().get(TextAttribute.TRACKING),
+                map.get("glyph_spacing"));
+        assertEquals(instance.getInset(), map.get("inset"));
+        assertEquals(instance.getPosition().toString(), map.get("position"));
+        assertEquals(instance.getString(), map.get("string"));
         assertEquals(ColorUtil.getHex(instance.getStrokeColor()),
                 map.get("stroke_color"));
         assertEquals(5f, map.get("stroke_width"));
@@ -62,7 +65,7 @@ public class StringOverlayTest extends BaseTest {
     @Test
     public void testToString() throws IOException {
         instance.setString("DOGSdogs123!@#$%\n%^&*()");
-        assertEquals("801774c691b35cbd89e3bd8cb6803681_SE_5_Helvetica_12_2.0_#0000FF_#FF0000_5.0",
+        assertEquals("801774c691b35cbd89e3bd8cb6803681_SE_5_Helvetica_12_2.0_0.1_#0000FF_#FF0000_5.0",
                 instance.toString());
     }
 

@@ -488,6 +488,9 @@ overlays.BasicStrategy.string.font.min_size = 18
 # fractional weights.
 overlays.BasicStrategy.string.font.weight = 1.0
 
+# Point spacing between glyphs, typically between -0.1 and 0.1.
+overlays.BasicStrategy.string.glyph_spacing = 0.02
+
 # Color name, rgb(r,g,b), and #rrggbb syntax are supported.
 overlays.BasicStrategy.string.color = white
 

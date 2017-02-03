@@ -48,10 +48,9 @@ public class DelegateOverlayServiceTest extends BaseTest {
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
-        final ImageOverlay overlay =
-                (ImageOverlay) instance.getOverlay(
-                        opList, fullSize, requestUrl, requestHeaders, clientIp,
-                        cookies);
+        final ImageOverlay overlay = (ImageOverlay) instance.getOverlay(
+                opList, fullSize, requestUrl, requestHeaders, clientIp,
+                cookies);
         assertEquals(new File("/dev/cats"), overlay.getFile());
         assertEquals((long) 5, overlay.getInset());
         assertEquals(Position.BOTTOM_LEFT, overlay.getPosition());
@@ -76,6 +75,7 @@ public class DelegateOverlayServiceTest extends BaseTest {
         assertEquals(20, overlay.getFont().getSize());
         assertEquals(11, overlay.getMinSize());
         assertEquals(1.5f, overlay.getFont().getAttributes().get(TextAttribute.WEIGHT));
+        assertEquals(0.1f, overlay.getFont().getAttributes().get(TextAttribute.TRACKING));
         assertEquals((long) 5, overlay.getInset());
         assertEquals(Position.BOTTOM_LEFT, overlay.getPosition());
         assertEquals(Color.red, overlay.getColor());

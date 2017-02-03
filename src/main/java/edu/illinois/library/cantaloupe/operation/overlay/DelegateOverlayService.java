@@ -62,6 +62,7 @@ class DelegateOverlayService {
                 attributes.put(TextAttribute.FAMILY, defs.get("font"));
                 attributes.put(TextAttribute.SIZE, defs.get("font_size"));
                 attributes.put(TextAttribute.WEIGHT, defs.get("font_weight"));
+                attributes.put(TextAttribute.TRACKING, defs.get("glyph_spacing"));
                 final Font font = Font.getFont(attributes);
 
                 final int minSize =
@@ -72,6 +73,7 @@ class DelegateOverlayService {
                         ColorUtil.fromString((String) defs.get("stroke_color"));
                 final float strokeWidth =
                         Float.parseFloat(defs.get("stroke_width").toString());
+
                 return new StringOverlay(string, position, inset, font, minSize,
                         color, strokeColor, strokeWidth);
             }
@@ -91,8 +93,9 @@ class DelegateOverlayService {
      * @return For image overlays, a map with <var>inset</var>,
      *         <var>position</var>, and <var>pathname</var> keys. For string
      *         overlays, a map with <var>inset</var>, <var>position</var>,
-     *         <var>string</var>, <var>color</var>, <var>font</var>, and
-     *         <var>font_size</var> keys. <var>null</var> for no overlay.
+     *         <var>string</var>, <var>color</var>, <var>font</var>,
+     *         <var>font_size</var>, and <var>glyph_spacing</var> keys.
+     *         <var>null</var> for no overlay.
      * @throws IOException
      * @throws ScriptException
      * @throws DelegateScriptDisabledException

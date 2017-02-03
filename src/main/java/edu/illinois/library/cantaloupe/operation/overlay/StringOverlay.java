@@ -108,29 +108,34 @@ public class StringOverlay extends Overlay implements Operation {
     /**
      * @param fullSize Full size of the source image on which the operation
      *                 is being applied.
-     * @return Map with <var>string</var>, <var>font</var>,
-     *         <var>font_size</var>, <var>font_weight</var>, <var>color</var>,
-     *         <var>position</var>, and <var>inset</var> keys.
+     * @return Map with <var>color</var>, <var>font</var>, <var>font_size</var>,
+     *         <var>font_weight</var>, <var>glyph_spacing</var>,
+     *         <var>inset</var>, <var>position</var>, <var>string</var>,
+     *         <var>stroke_color</var>, and <var>stroke_width</var> keys.
      */
     @Override
     public Map<String, Object> toMap(Dimension fullSize) {
         final HashMap<String,Object> map = new HashMap<>();
         map.put("class", getClass().getSimpleName());
-        map.put("string", getString());
-        map.put("position", getPosition().toString());
-        map.put("inset", getInset());
+        map.put("color", ColorUtil.getHex(getColor()));
         map.put("font", getFont().getFamily());
         map.put("font_size", getFont().getSize());
-        map.put("font_weight", getFont().getAttributes().get(TextAttribute.WEIGHT));
-        map.put("color", ColorUtil.getHex(getColor()));
+        map.put("font_weight",
+                getFont().getAttributes().get(TextAttribute.WEIGHT));
+        map.put("glyph_spacing",
+                getFont().getAttributes().get(TextAttribute.TRACKING));
+        map.put("inset", getInset());
+        map.put("position", getPosition().toString());
+        map.put("string", getString());
         map.put("stroke_color", ColorUtil.getHex(getStrokeColor()));
         map.put("stroke_width", getStrokeWidth());
         return map;
     }
 
     /**
-     * @return String representation of the instance, in the format
-     * "{string MD5 checksum}_{position}_{inset}_{family}_{size}_{color}_{stroke color}_{stroke width}".
+     * @return String representation of the instance, guaranteed to uniquely
+     *         represent the instance, but not guaranteed to be in any
+     *         particular format.
      */
     @Override
     public String toString() {
@@ -145,13 +150,14 @@ public class StringOverlay extends Overlay implements Operation {
         }
         // minSize does not need to be included, as it is more of a potential
         // property than a property.
-        return String.format("%s_%s_%d_%s_%d_%.1f_%s_%s_%.1f",
+        return String.format("%s_%s_%d_%s_%d_%.1f_%.01f_%s_%s_%.1f",
                 string,
                 getPosition(),
                 getInset(),
                 getFont().getFamily(),
                 getFont().getSize(),
                 getFont().getAttributes().get(TextAttribute.WEIGHT),
+                getFont().getAttributes().get(TextAttribute.TRACKING),
                 ColorUtil.getHex(getColor()),
                 ColorUtil.getHex(getStrokeColor()),
                 getStrokeWidth());

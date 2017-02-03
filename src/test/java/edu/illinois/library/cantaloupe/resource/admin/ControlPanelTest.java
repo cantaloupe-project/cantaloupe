@@ -461,6 +461,7 @@ public class ControlPanelTest extends ResourceTest {
         css("[name=\"overlays.BasicStrategy.string.font.size\"]").sendKeys("13");
         css("[name=\"overlays.BasicStrategy.string.font.min_size\"]").sendKeys("11");
         css("[name=\"overlays.BasicStrategy.string.font.weight\"]").sendKeys("1.2");
+        css("[name=\"overlays.BasicStrategy.string.glyph_spacing\"]").sendKeys("-0.1");
         css("[name=\"overlays.BasicStrategy.string.color\"]").sendKeys("#d0d0d0");
         css("[name=\"overlays.BasicStrategy.string.stroke.color\"]").sendKeys("#e0e0e0");
         css("[name=\"overlays.BasicStrategy.string.stroke.width\"]").sendKeys("5");
@@ -497,6 +498,8 @@ public class ControlPanelTest extends ResourceTest {
                 config.getString("overlays.BasicStrategy.string.font.min_size"));
         assertEquals("1.2",
                 config.getString("overlays.BasicStrategy.string.font.weight"));
+        assertEquals("-0.1",
+                config.getString("overlays.BasicStrategy.string.glyph_spacing"));
         assertEquals("#d0d0d0",
                 config.getString("overlays.BasicStrategy.string.color"));
         assertEquals("#e0e0e0",
