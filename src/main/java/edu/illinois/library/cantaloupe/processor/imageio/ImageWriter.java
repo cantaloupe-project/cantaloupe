@@ -51,7 +51,7 @@ public class ImageWriter {
                       final OutputStream outputStream) throws IOException {
         switch (outputFormat) {
             case GIF:
-                new GifImageWriter(opList, sourceMetadata).
+                new GIFImageWriter(opList, sourceMetadata).
                         write(image, outputStream);
                 break;
             case JPG:
@@ -82,7 +82,7 @@ public class ImageWriter {
                       final OutputStream outputStream) throws IOException {
         switch (outputFormat) {
             case GIF:
-                new GifImageWriter(opList, sourceMetadata).
+                new GIFImageWriter(opList, sourceMetadata).
                         write(image, outputStream);
                 break;
             case JPG:

@@ -27,7 +27,7 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
-public class GifImageWriterTest extends BaseTest {
+public class GIFImageWriterTest extends BaseTest {
 
     private BufferedImage bufferedImage;
     private Metadata metadata;
@@ -131,13 +131,13 @@ public class GifImageWriterTest extends BaseTest {
         }
     }
 
-    private GifImageWriter getWriter() throws IOException {
+    private GIFImageWriter getWriter() throws IOException {
         OperationList opList = new OperationList();
         if (ConfigurationFactory.getInstance().
                 getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());
         }
-        return new GifImageWriter(opList, metadata);
+        return new GIFImageWriter(opList, metadata);
     }
 
 }
