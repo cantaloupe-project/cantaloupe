@@ -27,13 +27,13 @@ import java.util.zip.DeflaterOutputStream;
  * @see <a href="http://libpng.org/pub/png/spec/1.2/PNG-Contents.html">
  *     PNG Specification, Version 1.2</a>
  */
-class PngImageWriter extends AbstractImageWriter {
+class PNGImageWriter extends AbstractImageWriter {
 
-    PngImageWriter(OperationList opList) {
+    PNGImageWriter(OperationList opList) {
         super(opList);
     }
 
-    PngImageWriter(OperationList opList,
+    PNGImageWriter(OperationList opList,
                    Metadata sourceMetadata) {
         super(opList, sourceMetadata);
     }

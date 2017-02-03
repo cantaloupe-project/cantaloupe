@@ -59,7 +59,7 @@ public class ImageWriter {
                         write(image, outputStream);
                 break;
             case PNG:
-                new PngImageWriter(opList, sourceMetadata).
+                new PNGImageWriter(opList, sourceMetadata).
                         write(image, outputStream);
                 break;
             case TIF:
@@ -90,7 +90,7 @@ public class ImageWriter {
                         write(image, outputStream);
                 break;
             case PNG:
-                new PngImageWriter(opList, sourceMetadata).
+                new PNGImageWriter(opList, sourceMetadata).
                         write(image, outputStream);
                 break;
             case TIF:

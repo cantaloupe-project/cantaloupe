@@ -26,7 +26,7 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
-public class PngImageWriterTest extends BaseTest {
+public class PNGImageWriterTest extends BaseTest {
 
     @Test
     public void testWriteWithBufferedImage() throws Exception {
@@ -184,13 +184,13 @@ public class PngImageWriterTest extends BaseTest {
         }
     }
 
-    private PngImageWriter getWriter(Metadata metadata) throws IOException {
+    private PNGImageWriter getWriter(Metadata metadata) throws IOException {
         OperationList opList = new OperationList();
         if (ConfigurationFactory.getInstance().
                 getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());
         }
-        return new PngImageWriter(opList, metadata);
+        return new PNGImageWriter(opList, metadata);
     }
 
 }
