@@ -7,13 +7,13 @@ import javax.imageio.metadata.IIOMetadata;
 import java.io.File;
 import java.io.IOException;
 
-class JpegImageReader extends AbstractImageReader {
+class JPEGImageReader extends AbstractImageReader {
 
     /**
      * @param sourceFile Source file to read.
      * @throws IOException
      */
-    JpegImageReader(File sourceFile) throws IOException {
+    JPEGImageReader(File sourceFile) throws IOException {
         super(sourceFile, Format.JPG);
     }
 
@@ -21,7 +21,7 @@ class JpegImageReader extends AbstractImageReader {
      * @param streamSource Source of streams to read.
      * @throws IOException
      */
-    JpegImageReader(StreamSource streamSource) throws IOException {
+    JPEGImageReader(StreamSource streamSource) throws IOException {
         super(streamSource, Format.JPG);
     }
 

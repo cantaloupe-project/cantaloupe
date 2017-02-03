@@ -30,7 +30,7 @@ public class JPEGImageWriterTest extends BaseTest {
     @Test
     public void testWriteWithBufferedImage() throws Exception {
         final File fixture = TestUtil.getImage("jpg-xmp.jpg");
-        final JpegImageReader reader = new JpegImageReader(fixture);
+        final JPEGImageReader reader = new JPEGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final BufferedImage image = reader.read();
 
@@ -46,7 +46,7 @@ and other readers are more lenient.
         final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("jpg-exif.jpg");
-        final JpegImageReader reader = new JpegImageReader(fixture);
+        final JPEGImageReader reader = new JPEGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final BufferedImage image = reader.read();
 
@@ -60,7 +60,7 @@ and other readers are more lenient.
         final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("jpg-iptc.jpg");
-        final JpegImageReader reader = new JpegImageReader(fixture);
+        final JPEGImageReader reader = new JPEGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final BufferedImage image = reader.read();
 
@@ -74,7 +74,7 @@ and other readers are more lenient.
         final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("jpg-xmp.jpg");
-        final JpegImageReader reader = new JpegImageReader(fixture);
+        final JPEGImageReader reader = new JPEGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final BufferedImage image = reader.read();
 
@@ -86,7 +86,7 @@ and other readers are more lenient.
     @Test
     public void testWriteWithPlanarImage() throws Exception {
         final File fixture = TestUtil.getImage("jpg-xmp.jpg");
-        final JpegImageReader reader = new JpegImageReader(fixture);
+        final JPEGImageReader reader = new JPEGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final PlanarImage image =  PlanarImage.wrapRenderedImage(
                 reader.readRendered());
@@ -103,7 +103,7 @@ and other readers are more lenient.
         final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("jpg-exif.jpg");
-        final JpegImageReader reader = new JpegImageReader(fixture);
+        final JPEGImageReader reader = new JPEGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final PlanarImage image =  PlanarImage.wrapRenderedImage(
                 reader.readRendered());
@@ -118,7 +118,7 @@ and other readers are more lenient.
         final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("jpg-iptc.jpg");
-        final JpegImageReader reader = new JpegImageReader(fixture);
+        final JPEGImageReader reader = new JPEGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final PlanarImage image =  PlanarImage.wrapRenderedImage(
                 reader.readRendered());
@@ -133,7 +133,7 @@ and other readers are more lenient.
         final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
         final File fixture = TestUtil.getImage("jpg-xmp.jpg");
-        final JpegImageReader reader = new JpegImageReader(fixture);
+        final JPEGImageReader reader = new JPEGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final PlanarImage image =  PlanarImage.wrapRenderedImage(
                 reader.readRendered());
