@@ -3,19 +3,8 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.Rotate;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
-import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.junit.Test;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -119,43 +108,6 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
 
     protected ImageMagickProcessor newInstance() {
         return new ImageMagickProcessor();
-    }
-
-    @Test
-    public void testProcessWithRotationAndCustomBackgroundColorAndNonTransparentOutputFormat()
-            throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
-        config.clear();
-        config.setProperty(ImageMagickProcessor.BACKGROUND_COLOR_CONFIG_KEY, "blue");
-
-        OperationList ops = new OperationList();
-        ops.setIdentifier(new Identifier("bla"));
-        Rotate rotation = new Rotate(15);
-        ops.add(rotation);
-        ops.setOutputFormat(Format.JPG);
-
-        Info imageInfo = new Info(64, 58);
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        final StreamProcessor instance = newInstance();
-        instance.setSourceFormat(Format.JPG);
-        StreamSource streamSource = new TestStreamSource(
-                TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
-        instance.setStreamSource(streamSource);
-        instance.process(ops, imageInfo, outputStream);
-
-        ByteArrayInputStream inputStream =
-                new ByteArrayInputStream(outputStream.toByteArray());
-        final BufferedImage rotatedImage = ImageIO.read(inputStream);
-
-        int pixel = rotatedImage.getRGB(0, 0);
-        int alpha = (pixel >> 24) & 0xff;
-        int red = (pixel >> 16) & 0xff;
-        int green = (pixel >> 8) & 0xff;
-        int blue = (pixel) & 0xff;
-        assertEquals(255, alpha);
-        assertTrue(red < 5);
-        assertTrue(green < 8);
-        assertTrue(blue > 240);
     }
 
 }

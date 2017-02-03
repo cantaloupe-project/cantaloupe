@@ -27,9 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 abstract class MagickProcessorTest extends ProcessorTest {
 
@@ -142,7 +140,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
             throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
-        config.setProperty(ImageMagickProcessor.BACKGROUND_COLOR_CONFIG_KEY, "blue");
+        config.setProperty(Processor.BACKGROUND_COLOR_CONFIG_KEY, "blue");
 
         OperationList ops = new OperationList();
         ops.setIdentifier(new Identifier("bla"));
@@ -172,6 +170,40 @@ abstract class MagickProcessorTest extends ProcessorTest {
         assertEquals(0, red);
         assertEquals(0, green);
         assertEquals(0, blue);
+    }
+
+    @Test
+    public void testProcessWithRotationAndCustomBackgroundColorAndNonTransparentOutputFormat()
+            throws Exception {
+        OperationList ops = new OperationList();
+        ops.setIdentifier(new Identifier("bla"));
+        Rotate rotation = new Rotate(15);
+        ops.add(rotation);
+        ops.getOptions().put(Processor.BACKGROUND_COLOR_CONFIG_KEY, "blue");
+        ops.setOutputFormat(Format.JPG);
+
+        Info imageInfo = new Info(64, 58);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        final StreamProcessor instance = (StreamProcessor) newInstance();
+        instance.setSourceFormat(Format.JPG);
+        StreamSource streamSource = new TestStreamSource(
+                TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
+        instance.setStreamSource(streamSource);
+        instance.process(ops, imageInfo, outputStream);
+
+        ByteArrayInputStream inputStream =
+                new ByteArrayInputStream(outputStream.toByteArray());
+        final BufferedImage rotatedImage = ImageIO.read(inputStream);
+
+        int pixel = rotatedImage.getRGB(0, 0);
+        int alpha = (pixel >> 24) & 0xff;
+        int red = (pixel >> 16) & 0xff;
+        int green = (pixel >> 8) & 0xff;
+        int blue = (pixel) & 0xff;
+        assertEquals(255, alpha);
+        assertTrue(red < 10);
+        assertTrue(green < 20);
+        assertTrue(blue > 230);
     }
 
 }
