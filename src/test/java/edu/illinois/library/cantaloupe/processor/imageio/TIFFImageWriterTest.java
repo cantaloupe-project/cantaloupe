@@ -27,7 +27,7 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
-public class TiffImageWriterTest extends BaseTest {
+public class TIFFImageWriterTest extends BaseTest {
 
     @Test
     public void testWriteWithBufferedImage() throws Exception {
@@ -199,13 +199,13 @@ public class TiffImageWriterTest extends BaseTest {
         }
     }
 
-    private TiffImageWriter newWriter(Metadata metadata) throws IOException {
+    private TIFFImageWriter newWriter(Metadata metadata) throws IOException {
         OperationList opList = new OperationList();
         if (ConfigurationFactory.getInstance().
                 getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());
         }
-        return new TiffImageWriter(opList, metadata);
+        return new TIFFImageWriter(opList, metadata);
     }
 
 }

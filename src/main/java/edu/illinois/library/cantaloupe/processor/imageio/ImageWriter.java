@@ -63,7 +63,7 @@ public class ImageWriter {
                         write(image, outputStream);
                 break;
             case TIF:
-                new TiffImageWriter(opList, sourceMetadata).
+                new TIFFImageWriter(opList, sourceMetadata).
                         write(image, outputStream);
                 break;
         }
@@ -94,7 +94,7 @@ public class ImageWriter {
                         write(image, outputStream);
                 break;
             case TIF:
-                new TiffImageWriter(opList, sourceMetadata).
+                new TIFFImageWriter(opList, sourceMetadata).
                         write(image, outputStream);
                 break;
         }

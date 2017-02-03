@@ -33,15 +33,15 @@ import java.util.Iterator;
  * @see <a href="http://download.java.net/media/jai-imageio/javadoc/1.1/com/sun/media/imageio/plugins/tiff/package-summary.html">
  *     ImageIO TIFF Plugin Documentation</a>
  */
-class TiffImageWriter extends AbstractImageWriter {
+class TIFFImageWriter extends AbstractImageWriter {
 
-    private static Logger logger = LoggerFactory.getLogger(TiffImageWriter.class);
+    private static Logger logger = LoggerFactory.getLogger(TIFFImageWriter.class);
 
-    TiffImageWriter(OperationList opList) {
+    TIFFImageWriter(OperationList opList) {
         super(opList);
     }
 
-    TiffImageWriter(OperationList opList,
+    TIFFImageWriter(OperationList opList,
                     Metadata sourceMetadata) {
         super(opList, sourceMetadata);
     }
