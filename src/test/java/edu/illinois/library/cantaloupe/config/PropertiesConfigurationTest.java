@@ -154,8 +154,8 @@ public class PropertiesConfigurationTest extends BaseTest {
 
     @Test
     public void testGetString() {
-        instance.setProperty("test1", "cats");
-        assertEquals("cats", instance.getString("test1"));
+        instance.setProperty("test1", "cats,cats,cats");
+        assertEquals("cats,cats,cats", instance.getString("test1"));
         assertNull(instance.getString("bogus"));
     }
 

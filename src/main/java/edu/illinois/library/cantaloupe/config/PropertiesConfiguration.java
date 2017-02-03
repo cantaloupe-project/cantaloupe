@@ -85,12 +85,27 @@ class PropertiesConfiguration extends FileConfiguration implements Configuration
 
     @Override
     public String getString(String key) {
-        return commonsConfig.getString(key);
+        // Commas in values are interpreted as multiple values. We don't want
+        // that, so we join them into one value.
+        String[] parts = commonsConfig.getStringArray(key);
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0, count = parts.length; i < count; i++) {
+            builder.append(parts[i]);
+            if (i < count - 1) {
+                builder.append(",");
+            }
+        }
+        String str = builder.toString();
+        return str.length() > 0 ? str : null;
     }
 
     @Override
     public String getString(String key, String defaultValue) {
-        return commonsConfig.getString(key, defaultValue);
+        String str = getString(key);
+        if (str == null) {
+            str = defaultValue;
+        }
+        return str;
     }
 
     @Override
