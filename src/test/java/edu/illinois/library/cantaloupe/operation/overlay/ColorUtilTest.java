@@ -276,10 +276,7 @@ public class ColorUtilTest extends BaseTest {
 
     @Test
     public void testGetHex() {
-        assertEquals("#000000", ColorUtil.getHex(Color.black));
-        assertEquals("#FF0000", ColorUtil.getHex(Color.red));
-        assertEquals("#00FF00", ColorUtil.getHex(Color.green));
-        assertEquals("#0000FF", ColorUtil.getHex(Color.blue));
+        assertEquals("#C017222D", ColorUtil.getHex(new Color(12, 23, 34, 45)));
     }
 
 }

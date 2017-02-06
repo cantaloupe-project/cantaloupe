@@ -240,7 +240,7 @@ public abstract class ColorUtil {
      */
     public static String getHex(Color color) {
         return "#" + toHex(color.getRed()) + toHex(color.getGreen()) +
-                toHex(color.getBlue());
+                toHex(color.getBlue()) + toHex(color.getAlpha());
     }
 
     private static String toHex(int number) {
