@@ -491,10 +491,10 @@ overlays.BasicStrategy.string.font.weight = 1.0
 # Point spacing between glyphs, typically between -0.1 and 0.1.
 overlays.BasicStrategy.string.glyph_spacing = 0.02
 
-# Color name, rgb(r,g,b), and #rrggbb syntax are supported.
+# CSS color syntax is supported.
 overlays.BasicStrategy.string.color = white
 
-# Color name, rgb(r,g,b), and #rrggbb syntax are supported.
+# CSS color syntax is supported.
 overlays.BasicStrategy.string.stroke.color = black
 
 # Stroke width in pixels.

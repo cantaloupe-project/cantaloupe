@@ -2326,8 +2326,7 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="Color name, rgb(r,g,b),
-                                           and #rrggbb syntax are supported.">?</a>
+                                           data-content="CSS color syntax is supported.">?</a>
                                     </td>
                                     <td>
                                         <input type="text" class="form-control"
@@ -2340,8 +2339,7 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="Color name, rgb(r,g,b),
-                                           and #rrggbb syntax are supported.">?</a>
+                                           data-content="CSS color syntax is supported.">?</a>
                                     </td>
                                     <td>
                                         <input type="text" class="form-control"
