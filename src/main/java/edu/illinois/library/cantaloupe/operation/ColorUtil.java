@@ -243,14 +243,6 @@ public abstract class ColorUtil {
                 toHex(color.getBlue());
     }
 
-    /**
-     * @return rgba(r,g,b,a) value of the color.
-     */
-    public static String getRGBA(Color color) {
-        return String.format("rgba(%d, %d, %d, %d)", color.getRed(),
-                color.getGreen(), color.getBlue(), color.getAlpha());
-    }
-
     private static String toHex(int number) {
         StringBuilder builder = new StringBuilder(Integer.toHexString(number & 0xff));
         while (builder.length() < 2) {
