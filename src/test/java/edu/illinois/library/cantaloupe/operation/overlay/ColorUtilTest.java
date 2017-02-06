@@ -41,4 +41,10 @@ public class ColorUtilTest extends BaseTest {
         assertEquals("#0000FF", ColorUtil.getHex(Color.blue));
     }
 
+    @Test
+    public void testGetRGBA() {
+        assertEquals("rgba(12, 23, 34, 45)",
+                ColorUtil.getRGBA(new Color(12, 23, 34, 45)));
+    }
+
 }

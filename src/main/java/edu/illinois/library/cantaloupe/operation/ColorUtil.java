@@ -39,11 +39,19 @@ public abstract class ColorUtil {
     }
 
     /**
-     * @return Hexadecimal value of the color in the sRGB color model.
+     * @return Hexadecimal value of the color.
      */
     public static String getHex(Color color) {
         return "#" + toHex(color.getRed()) + toHex(color.getGreen()) +
                 toHex(color.getBlue());
+    }
+
+    /**
+     * @return rgba(r,g,b,a) value of the color.
+     */
+    public static String getRGBA(Color color) {
+        return String.format("rgba(%d, %d, %d, %d)", color.getRed(),
+                color.getGreen(), color.getBlue(), color.getAlpha());
     }
 
     private static String toHex(int number) {
