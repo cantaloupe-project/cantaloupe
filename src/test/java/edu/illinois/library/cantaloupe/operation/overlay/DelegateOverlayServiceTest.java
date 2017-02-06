@@ -80,6 +80,7 @@ public class DelegateOverlayServiceTest extends BaseTest {
         assertEquals(Position.BOTTOM_LEFT, overlay.getPosition());
         assertEquals(Color.red, overlay.getColor());
         assertEquals(Color.blue, overlay.getStrokeColor());
+        assertEquals(new Color(12, 23, 34, 45), overlay.getBackgroundColor());
         assertEquals(3, overlay.getStrokeWidth(), 0.00001f);
     }
 

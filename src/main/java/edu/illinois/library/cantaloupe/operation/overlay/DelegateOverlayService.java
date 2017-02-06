@@ -65,17 +65,19 @@ class DelegateOverlayService {
                 attributes.put(TextAttribute.TRACKING, defs.get("glyph_spacing"));
                 final Font font = Font.getFont(attributes);
 
-                final int minSize =
-                        ((Long) defs.get("font_min_size")).intValue();
+                final Color backgroundColor =
+                        ColorUtil.fromString((String) defs.get("background_color"));
                 final Color color =
                         ColorUtil.fromString((String) defs.get("color"));
+                final int minSize =
+                        ((Long) defs.get("font_min_size")).intValue();
                 final Color strokeColor =
                         ColorUtil.fromString((String) defs.get("stroke_color"));
                 final float strokeWidth =
                         Float.parseFloat(defs.get("stroke_width").toString());
 
                 return new StringOverlay(string, position, inset, font, minSize,
-                        color, strokeColor, strokeWidth);
+                        color, backgroundColor, strokeColor, strokeWidth);
             }
         }
         return null;
@@ -84,18 +86,51 @@ class DelegateOverlayService {
     /**
      * Invokes the overlay delegate method to retrieve overlay properties.
      *
+     * <p>The returned map will have the following keys:</p>
+     *
+     * <dl>
+     *     <dt>Image overlays</dt>
+     *     <dd>
+     *         <dl>
+     *             <dt><var>inset</var></dt>
+     *             <dd>Integer</dd>
+     *             <dt><var>position</var></dt>
+     *             <dd>{@link Position}</dd>
+     *             <dt><var>pathname</var></dt>
+     *             <dd>File</dd>
+     *         </dl>
+     *     </dd>
+     *     <dt>String overlays</dt>
+     *     <dd>
+     *         <dl>
+     *             <dt><var>background_color</var></dt>
+     *             <dd>String</dd>
+     *             <dt><var>color</var></dt>
+     *             <dd>String</dd>
+     *             <dt><var>font</var></dt>
+     *             <dd>String</dd>
+     *             <dt><var>font_size</var></dt>
+     *             <dd>Float</dd>
+     *             <dt><var>glyph_spacing</var></dt>
+     *             <dd>Float</dd>
+     *             <dt><var>inset</var></dt>
+     *             <dd>Integer</dd>
+     *             <dt><var>position</var></dt>
+     *             <dd>{@link Position}</dd>
+     *             <dt><var>string</var></dt>
+     *             <dd>String</dd>
+     *         </dl>
+     *     </dd>
+     * </dl>
+     *
      * @param opList
      * @param fullSize
      * @param requestUrl
      * @param requestHeaders
      * @param clientIp
      * @param cookies
-     * @return For image overlays, a map with <var>inset</var>,
-     *         <var>position</var>, and <var>pathname</var> keys. For string
-     *         overlays, a map with <var>inset</var>, <var>position</var>,
-     *         <var>string</var>, <var>color</var>, <var>font</var>,
-     *         <var>font_size</var>, and <var>glyph_spacing</var> keys.
-     *         <var>null</var> for no overlay.
+     * @return Map with one of the above structures, or <code>null</code> for
+     *         no overlay.
      * @throws IOException
      * @throws ScriptException
      * @throws DelegateScriptDisabledException

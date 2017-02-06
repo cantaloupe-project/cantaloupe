@@ -23,13 +23,14 @@ public class BasicStringOverlayServiceTest extends BaseTest {
         config.setProperty(BasicOverlayService.TYPE_CONFIG_KEY, "string");
         config.setProperty(BasicOverlayService.INSET_CONFIG_KEY, 10);
         config.setProperty(BasicOverlayService.POSITION_CONFIG_KEY, "top left");
-        config.setProperty(BasicStringOverlayService.STRING_CONFIG_KEY, "cats");
+        config.setProperty(BasicStringOverlayService.BACKGROUND_COLOR_CONFIG_KEY, "rgba(12, 23, 34, 45)");
         config.setProperty(BasicStringOverlayService.COLOR_CONFIG_KEY, "red");
         config.setProperty(BasicStringOverlayService.FONT_CONFIG_KEY, "Helvetica");
-        config.setProperty(BasicStringOverlayService.FONT_SIZE_CONFIG_KEY, 14);
         config.setProperty(BasicStringOverlayService.FONT_MIN_SIZE_CONFIG_KEY, 11);
+        config.setProperty(BasicStringOverlayService.FONT_SIZE_CONFIG_KEY, 14);
         config.setProperty(BasicStringOverlayService.FONT_WEIGHT_CONFIG_KEY, 2f);
         config.setProperty(BasicStringOverlayService.GLYPH_SPACING_CONFIG_KEY, 0.2f);
+        config.setProperty(BasicStringOverlayService.STRING_CONFIG_KEY, "cats");
         config.setProperty(BasicStringOverlayService.STROKE_COLOR_CONFIG_KEY, "blue");
         config.setProperty(BasicStringOverlayService.STROKE_WIDTH_CONFIG_KEY, 3);
     }
@@ -47,10 +48,11 @@ public class BasicStringOverlayServiceTest extends BaseTest {
     public void testGetOverlay() throws Exception {
         final StringOverlay overlay = instance.getOverlay();
         assertEquals("cats", overlay.getString());
-        assertEquals((long) 10, overlay.getInset());
-        assertEquals(Position.TOP_LEFT, overlay.getPosition());
+        assertEquals(new Color(12, 23, 34, 45), overlay.getBackgroundColor());
         assertEquals(Color.red, overlay.getColor());
         assertEquals("Helvetica", overlay.getFont().getFamily());
+        assertEquals((long) 10, overlay.getInset());
+        assertEquals(Position.TOP_LEFT, overlay.getPosition());
         assertEquals(14, overlay.getFont().getSize());
         assertEquals(11, overlay.getMinSize());
         assertEquals(2f, overlay.getFont().getAttributes().get(TextAttribute.WEIGHT));

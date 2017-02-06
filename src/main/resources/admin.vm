@@ -2322,7 +2322,7 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>Fill Color
+                                    <td>Font Color
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
@@ -2358,6 +2358,20 @@
                                         <input type="number" class="form-control"
                                                name="overlays.BasicStrategy.string.stroke.width"
                                                min="0"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Background Color
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="CSS color syntax (including alpha)
+                                           is supported.">?</a>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                               name="overlays.BasicStrategy.string.background.color"
                                                data-requires-restart="false">
                                     </td>
                                 </tr>

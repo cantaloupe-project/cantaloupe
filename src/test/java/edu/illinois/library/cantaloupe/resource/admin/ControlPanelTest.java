@@ -465,6 +465,7 @@ public class ControlPanelTest extends ResourceTest {
         css("[name=\"overlays.BasicStrategy.string.color\"]").sendKeys("#d0d0d0");
         css("[name=\"overlays.BasicStrategy.string.stroke.color\"]").sendKeys("#e0e0e0");
         css("[name=\"overlays.BasicStrategy.string.stroke.width\"]").sendKeys("5");
+        css("[name=\"overlays.BasicStrategy.string.background.color\"]").sendKeys("#ffd000");
         css("[name=\"redaction.enabled\"]").click();
 
         // Submit the form
@@ -506,6 +507,8 @@ public class ControlPanelTest extends ResourceTest {
                 config.getString("overlays.BasicStrategy.string.stroke.color"));
         assertEquals("5",
                 config.getString("overlays.BasicStrategy.string.stroke.width"));
+        assertEquals("#ffd000",
+                config.getString("overlays.BasicStrategy.string.background.color"));
         assertTrue(config.getBoolean("redaction.enabled"));
     }
 

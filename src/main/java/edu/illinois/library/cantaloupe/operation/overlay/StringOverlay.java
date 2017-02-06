@@ -27,6 +27,7 @@ public class StringOverlay extends Overlay implements Operation {
     private static final Logger logger = LoggerFactory.
             getLogger(StringOverlay.class);
 
+    private Color backgroundColor;
     private Color color;
     private Font font;
     private int minSize;
@@ -35,15 +36,21 @@ public class StringOverlay extends Overlay implements Operation {
     private float strokeWidth;
 
     public StringOverlay(String string, Position position, int inset,
-                         Font font, int minSize, Color color, Color strokeColor,
+                         Font font, int minSize, Color color,
+                         Color backgroundColor, Color strokeColor,
                          float strokeWidth) {
         super(position, inset);
         this.setString(string);
         this.setFont(font);
         this.setColor(color);
+        this.setBackgroundColor(backgroundColor);
         this.setMinSize(minSize);
         this.setStrokeColor(strokeColor);
         this.setStrokeWidth(strokeWidth);
+    }
+
+    public Color getBackgroundColor() {
+        return backgroundColor;
     }
 
     public Color getColor() {
@@ -78,6 +85,10 @@ public class StringOverlay extends Overlay implements Operation {
         return (getString() != null && getString().length() > 0);
     }
 
+    public void setBackgroundColor(Color color) {
+        this.backgroundColor = color;
+    }
+
     public void setColor(Color color) {
         this.color = color;
     }
@@ -108,7 +119,8 @@ public class StringOverlay extends Overlay implements Operation {
     /**
      * @param fullSize Full size of the source image on which the operation
      *                 is being applied.
-     * @return Map with <var>color</var>, <var>font</var>, <var>font_size</var>,
+     * @return Map with <var>background_color</var>, <var>class</var>,
+     *         <var>color</var>, <var>font</var>, <var>font_size</var>,
      *         <var>font_weight</var>, <var>glyph_spacing</var>,
      *         <var>inset</var>, <var>position</var>, <var>string</var>,
      *         <var>stroke_color</var>, and <var>stroke_width</var> keys.
@@ -116,8 +128,9 @@ public class StringOverlay extends Overlay implements Operation {
     @Override
     public Map<String, Object> toMap(Dimension fullSize) {
         final HashMap<String,Object> map = new HashMap<>();
+        map.put("background_color", ColorUtil.getRGBAHex(getBackgroundColor()));
         map.put("class", getClass().getSimpleName());
-        map.put("color", ColorUtil.getRGBHex(getColor()));
+        map.put("color", ColorUtil.getRGBAHex(getColor()));
         map.put("font", getFont().getFamily());
         map.put("font_size", getFont().getSize());
         map.put("font_weight",
@@ -127,7 +140,7 @@ public class StringOverlay extends Overlay implements Operation {
         map.put("inset", getInset());
         map.put("position", getPosition().toString());
         map.put("string", getString());
-        map.put("stroke_color", ColorUtil.getRGBHex(getStrokeColor()));
+        map.put("stroke_color", ColorUtil.getRGBAHex(getStrokeColor()));
         map.put("stroke_width", getStrokeWidth());
         return map;
     }
@@ -158,9 +171,9 @@ public class StringOverlay extends Overlay implements Operation {
                 getFont().getSize(),
                 getFont().getAttributes().get(TextAttribute.WEIGHT),
                 getFont().getAttributes().get(TextAttribute.TRACKING),
-                ColorUtil.getHex(getColor()),
-                ColorUtil.getRGBHex(getColor()),
-                ColorUtil.getRGBHex(getStrokeColor()),
+                ColorUtil.getRGBAHex(getColor()),
+                ColorUtil.getRGBAHex(getBackgroundColor()),
+                ColorUtil.getRGBAHex(getStrokeColor()),
                 getStrokeWidth());
     }
 

@@ -13,6 +13,8 @@ import java.util.Map;
 
 class BasicStringOverlayService extends BasicOverlayService {
 
+    static final String BACKGROUND_COLOR_CONFIG_KEY =
+            "overlays.BasicStrategy.string.background.color";
     static final String COLOR_CONFIG_KEY =
             "overlays.BasicStrategy.string.color";
     static final String FONT_CONFIG_KEY =
@@ -32,6 +34,7 @@ class BasicStringOverlayService extends BasicOverlayService {
     static final String STROKE_WIDTH_CONFIG_KEY =
             "overlays.BasicStrategy.string.stroke.width";
 
+    private Color backgroundColor;
     private Color color;
     private Font font;
     private int minSize;
@@ -46,11 +49,15 @@ class BasicStringOverlayService extends BasicOverlayService {
 
     StringOverlay getOverlay() {
         return new StringOverlay(string, getPosition(), getInset(), font,
-                minSize, color, strokeColor, strokeWidth);
+                minSize, color, backgroundColor, strokeColor, strokeWidth);
     }
 
     private void readConfig() throws ConfigurationException {
         final Configuration config = ConfigurationFactory.getInstance();
+
+        // Background color
+        backgroundColor = ColorUtil.fromString(
+                config.getString(BACKGROUND_COLOR_CONFIG_KEY));
 
         // Fill color
         color = ColorUtil.fromString(config.getString(COLOR_CONFIG_KEY));

@@ -106,6 +106,7 @@ module Cantaloupe
         }
       when 'string'
         return {
+            'background_color' => 'rgba(12, 23, 34, 45)',
             'string' => "dogs\ndogs",
             'inset' => 5,
             'position' => 'bottom left',
