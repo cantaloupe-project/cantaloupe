@@ -47,7 +47,7 @@ public class StringOverlayTest extends BaseTest {
 
         Map<String,Object> map = instance.toMap(fullSize);
         assertEquals(instance.getClass().getSimpleName(), map.get("class"));
-        assertEquals(ColorUtil.getHex(instance.getColor()), map.get("color"));
+        assertEquals(ColorUtil.getRGBHex(instance.getColor()), map.get("color"));
         assertEquals(instance.getFont().getFamily(), map.get("font"));
         assertEquals(instance.getFont().getSize(), map.get("font_size"));
         assertEquals(instance.getFont().getAttributes().get(TextAttribute.WEIGHT),
@@ -57,7 +57,7 @@ public class StringOverlayTest extends BaseTest {
         assertEquals(instance.getInset(), map.get("inset"));
         assertEquals(instance.getPosition().toString(), map.get("position"));
         assertEquals(instance.getString(), map.get("string"));
-        assertEquals(ColorUtil.getHex(instance.getStrokeColor()),
+        assertEquals(ColorUtil.getRGBHex(instance.getStrokeColor()),
                 map.get("stroke_color"));
         assertEquals(5f, map.get("stroke_width"));
     }

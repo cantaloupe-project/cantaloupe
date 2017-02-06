@@ -275,8 +275,13 @@ public class ColorUtilTest extends BaseTest {
     }
 
     @Test
-    public void testGetHex() {
-        assertEquals("#C017222D", ColorUtil.getHex(new Color(12, 23, 34, 45)));
+    public void testGetRGBHex() {
+        assertEquals("#C01722", ColorUtil.getRGBHex(new Color(12, 23, 34, 45)));
+    }
+
+    @Test
+    public void testGetRGBAHex() {
+        assertEquals("#C017222D", ColorUtil.getRGBAHex(new Color(12, 23, 34, 45)));
     }
 
 }

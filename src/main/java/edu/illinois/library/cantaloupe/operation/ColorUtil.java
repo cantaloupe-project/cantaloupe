@@ -236,9 +236,17 @@ public abstract class ColorUtil {
     }
 
     /**
-     * @return Hexadecimal value of the color.
+     * @return RGB hexadecimal value of the color.
      */
-    public static String getHex(Color color) {
+    public static String getRGBHex(Color color) {
+        return "#" + toHex(color.getRed()) + toHex(color.getGreen()) +
+                toHex(color.getBlue());
+    }
+
+    /**
+     * @return RGBA hexadecimal value of the color.
+     */
+    public static String getRGBAHex(Color color) {
         return "#" + toHex(color.getRed()) + toHex(color.getGreen()) +
                 toHex(color.getBlue()) + toHex(color.getAlpha());
     }

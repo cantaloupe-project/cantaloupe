@@ -117,7 +117,7 @@ public class StringOverlay extends Overlay implements Operation {
     public Map<String, Object> toMap(Dimension fullSize) {
         final HashMap<String,Object> map = new HashMap<>();
         map.put("class", getClass().getSimpleName());
-        map.put("color", ColorUtil.getHex(getColor()));
+        map.put("color", ColorUtil.getRGBHex(getColor()));
         map.put("font", getFont().getFamily());
         map.put("font_size", getFont().getSize());
         map.put("font_weight",
@@ -127,7 +127,7 @@ public class StringOverlay extends Overlay implements Operation {
         map.put("inset", getInset());
         map.put("position", getPosition().toString());
         map.put("string", getString());
-        map.put("stroke_color", ColorUtil.getHex(getStrokeColor()));
+        map.put("stroke_color", ColorUtil.getRGBHex(getStrokeColor()));
         map.put("stroke_width", getStrokeWidth());
         return map;
     }
@@ -148,9 +148,9 @@ public class StringOverlay extends Overlay implements Operation {
             logger.error("toString(): {}", e.getMessage());
             string = getString().replaceAll("[^A-Za-z0-9]", "");
         }
-        // minSize does not need to be included, as it is more of a potential
-        // property than a property.
-        return String.format("%s_%s_%d_%s_%d_%.1f_%.01f_%s_%s_%.1f",
+        // minSize is not included, as it is more of a potential property than
+        // a property.
+        return String.format("%s_%s_%d_%s_%d_%.1f_%.01f_%s_%s_%s_%.1f",
                 string,
                 getPosition(),
                 getInset(),
@@ -159,7 +159,8 @@ public class StringOverlay extends Overlay implements Operation {
                 getFont().getAttributes().get(TextAttribute.WEIGHT),
                 getFont().getAttributes().get(TextAttribute.TRACKING),
                 ColorUtil.getHex(getColor()),
-                ColorUtil.getHex(getStrokeColor()),
+                ColorUtil.getRGBHex(getColor()),
+                ColorUtil.getRGBHex(getStrokeColor()),
                 getStrokeWidth());
     }
 
