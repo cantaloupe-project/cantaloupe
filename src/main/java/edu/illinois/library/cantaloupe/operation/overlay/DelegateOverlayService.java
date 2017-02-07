@@ -1,13 +1,12 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
-import edu.illinois.library.cantaloupe.operation.ColorUtil;
+import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 
 import javax.script.ScriptException;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.font.TextAttribute;
@@ -66,13 +65,13 @@ class DelegateOverlayService {
                 final Font font = Font.getFont(attributes);
 
                 final Color backgroundColor =
-                        ColorUtil.fromString((String) defs.get("background_color"));
+                        Color.fromString((String) defs.get("background_color"));
                 final Color color =
-                        ColorUtil.fromString((String) defs.get("color"));
+                        Color.fromString((String) defs.get("color"));
                 final int minSize =
                         ((Long) defs.get("font_min_size")).intValue();
                 final Color strokeColor =
-                        ColorUtil.fromString((String) defs.get("stroke_color"));
+                        Color.fromString((String) defs.get("stroke_color"));
                 final float strokeWidth =
                         Float.parseFloat(defs.get("stroke_width").toString());
 

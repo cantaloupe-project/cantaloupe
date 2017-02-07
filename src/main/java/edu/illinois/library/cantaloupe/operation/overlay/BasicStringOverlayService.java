@@ -3,9 +3,8 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.operation.ColorUtil;
+import edu.illinois.library.cantaloupe.image.Color;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.font.TextAttribute;
 import java.util.HashMap;
@@ -56,11 +55,11 @@ class BasicStringOverlayService extends BasicOverlayService {
         final Configuration config = ConfigurationFactory.getInstance();
 
         // Background color
-        backgroundColor = ColorUtil.fromString(
+        backgroundColor = Color.fromString(
                 config.getString(BACKGROUND_COLOR_CONFIG_KEY));
 
         // Fill color
-        color = ColorUtil.fromString(config.getString(COLOR_CONFIG_KEY));
+        color = Color.fromString(config.getString(COLOR_CONFIG_KEY));
 
         // Font
         final Map<TextAttribute, Object> attributes = new HashMap<>();
@@ -81,7 +80,7 @@ class BasicStringOverlayService extends BasicOverlayService {
         string = config.getString(STRING_CONFIG_KEY, "");
 
         // Stroke color
-        strokeColor = ColorUtil.fromString(
+        strokeColor = Color.fromString(
                 config.getString(STROKE_COLOR_CONFIG_KEY, "black"));
 
         // Stroke width

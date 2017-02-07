@@ -1,11 +1,10 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
-import edu.illinois.library.cantaloupe.operation.ColorUtil;
+import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.font.TextAttribute;
@@ -31,7 +30,7 @@ public class StringOverlayTest extends BaseTest {
         final Font font = Font.getFont(attributes);
 
         instance = new StringOverlay("cats", Position.BOTTOM_RIGHT, 5,
-                font, 11, Color.blue, Color.orange, Color.red, 5f);
+                font, 11, Color.BLUE, Color.ORANGE, Color.RED, 5f);
     }
 
     @Test
@@ -47,9 +46,9 @@ public class StringOverlayTest extends BaseTest {
 
         Map<String,Object> map = instance.toMap(fullSize);
         assertEquals(instance.getClass().getSimpleName(), map.get("class"));
-        assertEquals(ColorUtil.getRGBAHex(instance.getBackgroundColor()),
+        assertEquals(instance.getBackgroundColor().toRGBAHex(),
                 map.get("background_color"));
-        assertEquals(ColorUtil.getRGBAHex(instance.getColor()), map.get("color"));
+        assertEquals(instance.getColor().toRGBAHex(), map.get("color"));
         assertEquals(instance.getFont().getFamily(), map.get("font"));
         assertEquals(instance.getFont().getSize(), map.get("font_size"));
         assertEquals(instance.getFont().getAttributes().get(TextAttribute.WEIGHT),
@@ -59,7 +58,7 @@ public class StringOverlayTest extends BaseTest {
         assertEquals(instance.getInset(), map.get("inset"));
         assertEquals(instance.getPosition().toString(), map.get("position"));
         assertEquals(instance.getString(), map.get("string"));
-        assertEquals(ColorUtil.getRGBAHex(instance.getStrokeColor()),
+        assertEquals(instance.getStrokeColor().toRGBAHex(),
                 map.get("stroke_color"));
         assertEquals(5f, map.get("stroke_width"));
     }
@@ -67,7 +66,7 @@ public class StringOverlayTest extends BaseTest {
     @Test
     public void testToString() throws IOException {
         instance.setString("DOGSdogs123!@#$%\n%^&*()");
-        assertEquals("801774c691b35cbd89e3bd8cb6803681_SE_5_Helvetica_12_2.0_0.1_#0000FFFF_#FFC800FF_#FF0000FF_5.0",
+        assertEquals("801774c691b35cbd89e3bd8cb6803681_SE_5_Helvetica_12_2.0_0.1_#0000FFFF_#FFA500FF_#FF0000FF_5.0",
                 instance.toString());
     }
 

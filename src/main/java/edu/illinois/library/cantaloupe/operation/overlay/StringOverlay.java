@@ -1,12 +1,11 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
-import edu.illinois.library.cantaloupe.operation.ColorUtil;
+import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.font.TextAttribute;
@@ -128,9 +127,9 @@ public class StringOverlay extends Overlay implements Operation {
     @Override
     public Map<String, Object> toMap(Dimension fullSize) {
         final HashMap<String,Object> map = new HashMap<>();
-        map.put("background_color", ColorUtil.getRGBAHex(getBackgroundColor()));
+        map.put("background_color", getBackgroundColor().toRGBAHex());
         map.put("class", getClass().getSimpleName());
-        map.put("color", ColorUtil.getRGBAHex(getColor()));
+        map.put("color", getColor().toRGBAHex());
         map.put("font", getFont().getFamily());
         map.put("font_size", getFont().getSize());
         map.put("font_weight",
@@ -140,7 +139,7 @@ public class StringOverlay extends Overlay implements Operation {
         map.put("inset", getInset());
         map.put("position", getPosition().toString());
         map.put("string", getString());
-        map.put("stroke_color", ColorUtil.getRGBAHex(getStrokeColor()));
+        map.put("stroke_color", getStrokeColor().toRGBAHex());
         map.put("stroke_width", getStrokeWidth());
         return map;
     }
@@ -171,9 +170,9 @@ public class StringOverlay extends Overlay implements Operation {
                 getFont().getSize(),
                 getFont().getAttributes().get(TextAttribute.WEIGHT),
                 getFont().getAttributes().get(TextAttribute.TRACKING),
-                ColorUtil.getRGBAHex(getColor()),
-                ColorUtil.getRGBAHex(getBackgroundColor()),
-                ColorUtil.getRGBAHex(getStrokeColor()),
+                getColor().toRGBAHex(),
+                getBackgroundColor().toRGBAHex(),
+                getStrokeColor().toRGBAHex(),
                 getStrokeWidth());
     }
 

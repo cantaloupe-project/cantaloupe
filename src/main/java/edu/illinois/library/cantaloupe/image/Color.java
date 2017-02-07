@@ -1,12 +1,18 @@
-package edu.illinois.library.cantaloupe.operation;
+package edu.illinois.library.cantaloupe.image;
 
-import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public abstract class ColorUtil {
+public class Color extends java.awt.Color {
+
+    public static final Color BLACK = new Color(0, 0, 0);
+    public static final Color BLUE = new Color(0, 0, 255);
+    public static final Color GREEN = new Color(0, 128, 0);
+    public static final Color ORANGE = new Color(255, 165, 0);
+    public static final Color RED = new Color(255, 0, 0);
+    public static final Color WHITE = new Color(255, 255, 255);
 
     private static final Map<String, int[]> namedRGBColors = new HashMap<>();
     private static final Pattern rgbPattern =
@@ -170,7 +176,22 @@ public abstract class ColorUtil {
         namedRGBColors.put("rebeccapurple", new int[] {102, 51, 153});
     }
 
+    /**
+     * Alternative to {@link java.awt.Color#decode(String)} that supports most
+     * CSS color syntax, including named colors and alpha values.
+     *
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color">color</a>
+     * @see <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value">color</a>
+     *
+     * @param string Hexadecimal, named, or functional color.
+     * @return Color instance corresponding to the given string, or
+     *         <code>null</code> if the given string is null.
+     * @throws IllegalArgumentException
+     */
     public static Color fromString(final String string) {
+        if (string == null) {
+            return null;
+        }
         // Check for hexadecimal.
         if ("#".equals(string.substring(0, 1))) {
             int r = 0, g = 0, b = 0, a = 255;
@@ -235,28 +256,48 @@ public abstract class ColorUtil {
         throw new IllegalArgumentException("Unrecognized color string: " + string);
     }
 
-    /**
-     * @return RGB hexadecimal value of the color.
-     */
-    public static String getRGBHex(Color color) {
-        return "#" + toHex(color.getRed()) + toHex(color.getGreen()) +
-                toHex(color.getBlue());
-    }
-
-    /**
-     * @return RGBA hexadecimal value of the color.
-     */
-    public static String getRGBAHex(Color color) {
-        return "#" + toHex(color.getRed()) + toHex(color.getGreen()) +
-                toHex(color.getBlue()) + toHex(color.getAlpha());
-    }
-
     private static String toHex(int number) {
         StringBuilder builder = new StringBuilder(Integer.toHexString(number & 0xff));
         while (builder.length() < 2) {
             builder.append("0");
         }
         return builder.toString().toUpperCase();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Color(int rgb) {
+        super(rgb);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Color(int r, int g, int b) {
+        super(r, g, b);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Color(int r, int g, int b, int a) {
+        super(r, g, b, a);
+    }
+
+    /**
+     * @return RGB hexadecimal value of the instance.
+     */
+    public String toRGBHex() {
+        return "#" + toHex(getRed()) + toHex(getGreen()) + toHex(getBlue());
+    }
+
+    /**
+     * @return RGBA hexadecimal value of the color.
+     */
+    public String toRGBAHex() {
+        return "#" + toHex(getRed()) + toHex(getGreen()) + toHex(getBlue()) +
+                toHex(getAlpha());
     }
 
 }

@@ -1,9 +1,9 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
-import edu.illinois.library.cantaloupe.operation.ColorUtil;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -81,7 +81,7 @@ abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
                 final String colorStr = (String) opList.getOptions().
                         get(Processor.BACKGROUND_COLOR_CONFIG_KEY);
                 if (colorStr != null) {
-                    return ColorUtil.fromString(colorStr);
+                    return Color.fromString(colorStr);
                 }
             } catch (IllegalArgumentException e) {
                 logger.warn("getBackgroundColor(): " + e.getMessage());

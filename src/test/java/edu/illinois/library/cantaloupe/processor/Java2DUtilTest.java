@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.Color;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Rotate;
@@ -15,7 +16,6 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -166,7 +166,7 @@ public class Java2DUtilTest extends BaseTest {
         final StringOverlay overlay = new StringOverlay(
                 "XXXXXX", Position.TOP_LEFT, 0,
                 new Font("Helvetica", Font.PLAIN, 4), 11,
-                Color.black, Color.black, Color.white, 2f);
+                Color.BLACK, Color.BLACK, Color.WHITE, 2f);
 
         // apply it
         final BufferedImage overlaidImage = Java2DUtil.applyOverlay(

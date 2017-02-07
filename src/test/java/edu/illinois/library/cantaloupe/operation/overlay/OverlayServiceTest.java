@@ -85,7 +85,7 @@ public class OverlayServiceTest extends BaseTest {
         assertEquals("cats", overlay.getString());
         assertEquals(10, overlay.getInset());
         assertEquals(Position.TOP_LEFT, overlay.getPosition());
-        assertEquals(Color.green, overlay.getColor());
+        assertEquals(new Color(0, 128, 0), overlay.getColor());
     }
 
     @Test
