@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import edu.illinois.library.cantaloupe.operation.Color;
+import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
 
@@ -19,10 +19,10 @@ public class QualityTest extends BaseTest {
 
     @Test
     public void testToFilter() {
-        assertEquals(Color.BITONAL, Quality.BITONAL.toFilter());
+        assertEquals(ColorTransform.BITONAL, Quality.BITONAL.toFilter());
         assertNull(Quality.COLOR.toFilter());
         assertNull(Quality.DEFAULT.toFilter());
-        assertEquals(Color.GRAY, Quality.GRAY.toFilter());
+        assertEquals(ColorTransform.GRAY, Quality.GRAY.toFilter());
     }
 
 }

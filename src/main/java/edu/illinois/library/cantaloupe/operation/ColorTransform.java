@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * Encapsulates a color transform operation.
  */
-public enum Color implements Operation {
+public enum ColorTransform implements Operation {
 
     BITONAL, GRAY;
 

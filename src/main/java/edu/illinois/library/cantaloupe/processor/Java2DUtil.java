@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.processor;
 import com.mortennobel.imagescaling.ResampleFilter;
 import com.mortennobel.imagescaling.ResampleOp;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
-import edu.illinois.library.cantaloupe.operation.Color;
+import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.Operation;
@@ -859,16 +859,16 @@ public abstract class Java2DUtil {
     }
 
     /**
-     * @param inImage Image to filter
-     * @param color   Color operation
-     * @return Filtered image, or the input image if the given color operation
-     *         is a no-op.
+     * @param inImage         Image to filter
+     * @param colorTransform  ColorTransform operation
+     * @return Filtered image, or the input image if the given color transform
+     *         operation is a no-op.
      */
     static BufferedImage transformColor(final BufferedImage inImage,
-                                        final Color color) {
+                                        final ColorTransform colorTransform) {
         BufferedImage filteredImage = inImage;
         final Stopwatch watch = new Stopwatch();
-        switch (color) {
+        switch (colorTransform) {
             case GRAY:
                 filteredImage = new BufferedImage(inImage.getWidth(),
                         inImage.getHeight(),

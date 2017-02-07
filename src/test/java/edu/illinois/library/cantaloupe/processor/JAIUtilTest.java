@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.operation.Color;
+import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -395,11 +395,11 @@ public class JAIUtilTest extends BaseTest {
     @Test
     public void testTransformColor() throws Exception {
         RenderedOp image = getFixture(IMAGE);
-        Color color = Color.GRAY;
-        RenderedOp result = JAIUtil.transformColor(image, color);
+        ColorTransform transform = ColorTransform.GRAY;
+        RenderedOp result = JAIUtil.transformColor(image, transform);
         assertEquals(1, result.getSampleModel().getNumBands());
         assertEquals(8, result.getColorModel().getComponentSize(0));
-        // TODO: test Color.BITONAL
+        // TODO: test ColorTransform.BITONAL
     }
 
     @Test

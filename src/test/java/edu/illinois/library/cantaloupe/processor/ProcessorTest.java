@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.Color;
+import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -230,9 +230,9 @@ public abstract class ProcessorTest extends BaseTest {
 
     @Test
     public void testProcessWithFilterOperation() throws Exception {
-        for (Color color : Color.values()) {
+        for (ColorTransform transform : ColorTransform.values()) {
             OperationList ops = TestUtil.newOperationList();
-            ops.add(color);
+            ops.add(transform);
             doProcessTest(ops);
         }
     }
@@ -337,7 +337,7 @@ public abstract class ProcessorTest extends BaseTest {
                             // The JAI bandcombine operation does not like to
                             // work with GIFs, apparently only when testing. (?)
                             if (this instanceof JaiProcessorTest &&
-                                    ops.getFirst(Color.class) != null &&
+                                    ops.getFirst(ColorTransform.class) != null &&
                                     fixture.getName().endsWith("gif")) {
                                 continue;
                             }

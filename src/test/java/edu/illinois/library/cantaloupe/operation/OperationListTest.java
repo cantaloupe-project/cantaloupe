@@ -429,7 +429,7 @@ public class OperationListTest extends BaseTest {
         Scale scale = new Scale(0.4f);
         ops.add(scale);
         ops.add(new Rotate(15));
-        ops.add(Color.BITONAL);
+        ops.add(ColorTransform.BITONAL);
         ops.setOutputFormat(Format.JPG);
         ops.getOptions().put("animal", "cat");
 
@@ -481,7 +481,7 @@ public class OperationListTest extends BaseTest {
         Scale scale = new Scale(0.4f);
         ops.add(scale);
         ops.add(new Rotate(15));
-        ops.add(Color.BITONAL);
+        ops.add(ColorTransform.BITONAL);
         ops.setOutputFormat(Format.JPG);
         ops.getOptions().put("animal", "cat");
 

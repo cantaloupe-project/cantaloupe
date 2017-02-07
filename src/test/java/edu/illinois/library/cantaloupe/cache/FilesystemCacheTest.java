@@ -5,7 +5,7 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.operation.Color;
+import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -221,7 +221,7 @@ public class FilesystemCacheTest extends BaseTest {
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setPercent(0.905f);
         Rotate rotate = new Rotate(10);
-        Color color = Color.BITONAL;
+        ColorTransform transform = ColorTransform.BITONAL;
         Format format = Format.TIF;
 
         OperationList ops = new OperationList();
@@ -229,7 +229,7 @@ public class FilesystemCacheTest extends BaseTest {
         ops.add(crop);
         ops.add(scale);
         ops.add(rotate);
-        ops.add(color);
+        ops.add(transform);
         ops.setOutputFormat(format);
 
         final String expected = String.format("%s%simage%s%s%s",
@@ -286,7 +286,7 @@ public class FilesystemCacheTest extends BaseTest {
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();
 
-        ops.add(Color.GRAY);
+        ops.add(ColorTransform.GRAY);
         imageFile = instance.derivativeImageFile(ops);
         imageFile.getParentFile().mkdirs();
         imageFile.createNewFile();

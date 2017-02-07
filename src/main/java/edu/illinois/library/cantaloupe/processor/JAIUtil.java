@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.operation.Color;
+import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -383,13 +383,14 @@ abstract class JAIUtil {
     }
 
     /**
-     * @param inImage Image to filter
-     * @param color   Color transform operation
+     * @param inImage        Image to filter
+     * @param colorTransform Color transform operation
      * @return Transformed image, or the input image if the given operation
      *         is a no-op.
      */
     @SuppressWarnings({"deprecation"}) // really, JAI itself is basically deprecated
-    static RenderedOp transformColor(RenderedOp inImage, Color color) {
+    static RenderedOp transformColor(RenderedOp inImage,
+                                     ColorTransform colorTransform) {
         // convert to grayscale
         ParameterBlock pb = new ParameterBlock();
         pb.addSource(inImage);
@@ -404,7 +405,7 @@ abstract class JAIUtil {
         }
         pb.add(matrix);
         RenderedOp filteredImage = JAI.create("bandcombine", pb, null);
-        if (color == Color.BITONAL) {
+        if (ColorTransform.BITONAL.equals(colorTransform)) {
             pb = new ParameterBlock();
             pb.addSource(filteredImage);
             pb.add(1.0 * 128);

@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.Color;
+import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -197,9 +197,9 @@ class JaiProcessor extends AbstractImageIoProcessor
                         Rotate rotate = (Rotate) op;
                         rotate.addDegrees(orientation.getDegrees());
                         renderedOp = JAIUtil.rotateImage(renderedOp, rotate);
-                    } else if (op instanceof Color) {
+                    } else if (op instanceof ColorTransform) {
                         renderedOp = JAIUtil.
-                                transformColor(renderedOp, (Color) op);
+                                transformColor(renderedOp, (ColorTransform) op);
                     } else if (op instanceof Sharpen) {
                         renderedOp = JAIUtil.
                                 sharpenImage(renderedOp, (Sharpen) op);
