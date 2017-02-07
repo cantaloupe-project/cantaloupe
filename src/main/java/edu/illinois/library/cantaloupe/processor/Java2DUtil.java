@@ -434,7 +434,8 @@ public abstract class Java2DUtil {
                             break;
                         case CENTER:
                             x = (baseImage.getWidth() - lineWidths[i]) / 2;
-                            y = (baseImage.getHeight() - totalHeight) / 2;
+                            y = (baseImage.getHeight() - totalHeight) / 2 +
+                                    lineHeight * i;
                             break;
                         default: // bottom right
                             x = baseImage.getWidth() - lineWidths[i] - inset;
