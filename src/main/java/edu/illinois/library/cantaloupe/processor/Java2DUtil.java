@@ -443,7 +443,17 @@ public abstract class Java2DUtil {
                                     lineHeight * i;
                             break;
                     }
-                    y += lineHeight * 0.8; // TODO: this is arbitrary fudge
+
+                    // Draw the background, if it is not transparent.
+                    if (i == 0 && overlay.getBackgroundColor().getAlpha() > 0) {
+                        final int padding = 3;
+                        g2d.setPaint(overlay.getBackgroundColor());
+                        g2d.fillRect(x - padding, y - padding,
+                                maxLineWidth + padding * 2,
+                                totalHeight + padding * 2);
+                    }
+
+                    y += lineHeight * 0.73; // TODO: this is arbitrary fudge
 
                     // Draw the text outline.
                     if (overlay.getStrokeWidth() > 0.001f) {
