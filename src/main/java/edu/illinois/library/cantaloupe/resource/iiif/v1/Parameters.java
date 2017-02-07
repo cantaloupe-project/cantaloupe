@@ -139,7 +139,7 @@ class Parameters implements ParameterList, Comparable<Parameters> {
         ops.add(getRegion().toCrop());
         ops.add(getSize().toScale());
         ops.add(getRotation().toRotate());
-        ops.add(getQuality().toFilter());
+        ops.add(getQuality().toColorTransform());
         return ops;
     }
 

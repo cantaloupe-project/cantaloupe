@@ -18,11 +18,11 @@ public class QualityTest extends BaseTest {
     }
 
     @Test
-    public void testToFilter() {
-        assertEquals(ColorTransform.BITONAL, Quality.BITONAL.toFilter());
-        assertNull(Quality.COLOR.toFilter());
-        assertEquals(ColorTransform.GRAY, Quality.GRAY.toFilter());
-        assertNull(Quality.NATIVE.toFilter());
+    public void testToColorTransform() {
+        assertEquals(ColorTransform.BITONAL, Quality.BITONAL.toColorTransform());
+        assertNull(Quality.COLOR.toColorTransform());
+        assertEquals(ColorTransform.GRAY, Quality.GRAY.toColorTransform());
+        assertNull(Quality.NATIVE.toColorTransform());
     }
 
 }

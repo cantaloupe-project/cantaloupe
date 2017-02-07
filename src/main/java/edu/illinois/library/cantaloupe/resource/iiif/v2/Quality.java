@@ -6,7 +6,7 @@ public enum Quality {
 
     BITONAL, COLOR, DEFAULT, GRAY;
 
-    public ColorTransform toFilter() {
+    public ColorTransform toColorTransform() {
         switch (this) {
             case BITONAL:
                 return ColorTransform.BITONAL;
