@@ -30,7 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-abstract class AbstractJava2dProcessor extends AbstractImageIoProcessor {
+abstract class AbstractJava2dProcessor extends AbstractImageIOProcessor {
 
     private static Logger logger = LoggerFactory.
             getLogger(AbstractJava2dProcessor.class);

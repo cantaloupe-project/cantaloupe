@@ -42,7 +42,7 @@ import java.util.Set;
  * @see <a href="http://docs.oracle.com/cd/E19957-01/806-5413-10/806-5413-10.pdf">
  *     Programming in Java Advanced Imaging</a>
  */
-class JaiProcessor extends AbstractImageIoProcessor
+class JaiProcessor extends AbstractImageIOProcessor
         implements FileProcessor, StreamProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(JaiProcessor.class);

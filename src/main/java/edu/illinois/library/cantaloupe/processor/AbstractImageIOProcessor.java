@@ -20,10 +20,10 @@ import java.util.Set;
  * Abstract class that can be extended by processors that rely on the ImageIO
  * framework to read images.
  */
-abstract class AbstractImageIoProcessor extends AbstractProcessor {
+abstract class AbstractImageIOProcessor extends AbstractProcessor {
 
     private static Logger logger = LoggerFactory.
-            getLogger(AbstractImageIoProcessor.class);
+            getLogger(AbstractImageIOProcessor.class);
 
     private static final HashMap<Format,Set<Format>> FORMATS =
             availableOutputFormats();
