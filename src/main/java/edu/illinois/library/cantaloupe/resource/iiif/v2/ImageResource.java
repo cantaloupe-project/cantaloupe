@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Handles IIIF image requests.
+ * Handles IIIF Image API 2.x image requests.
  *
  * @see <a href="http://iiif.io/api/image/2.0/#image-request-parameters">Image
  * Request Operations</a>

@@ -1,5 +1,5 @@
 /**
- * <p>Package containing caches.</p>
+ * <p>Contains source and derivative image caches.</p>
  *
  * <h3>Writing Custom Caches</h3>
  *

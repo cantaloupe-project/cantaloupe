@@ -18,23 +18,24 @@ public interface Operation {
     Dimension getResultingSize(Dimension fullSize);
 
     /**
-     * N.B. {@link #hasEffect(Dimension, OperationList)} is more reliable.
+     * Simpler but less-accurate counterpart of
+     * {@link #hasEffect(Dimension, OperationList)}.
      *
-     * @return Whether applying the operation on its own would change the image
-     *         in any way.
+     * @return Whether applying the operation on its own would result in a
+     *         changed image.
      */
     boolean hasEffect();
 
     /**
-     * Contextually-aware counterpart to {@link #hasEffect()}. For example, a
-     * scale operation specifying a scale to 300x200, when the given operation
-     * list contains a crop of 300x200, would return <code>false</code>.
+     * Context-aware counterpart to {@link #hasEffect()}. For example, a scale
+     * operation specifying a scale to 300x200, when the given operation list
+     * contains a crop of 300x200, would return <code>false</code>.
      *
      * @param fullSize Full size of the source image.
      * @param opList Operation list of which the operation may or may not be a
      *               member.
      * @return Whether applying the operation in the context of the given
-     *         full size and operation list would result in an changed image.
+     *         full size and operation list would result in a changed image.
      */
     boolean hasEffect(Dimension fullSize, OperationList opList);
 
@@ -43,7 +44,7 @@ public interface Operation {
      *                 is being applied.
      * @return Map serialization of the operation that expresses the essence
      *         of the operation relative to the given full size. The map
-     *         should include a string <code>operation</code> key pointing to
+     *         should include a string <code>class</code> key pointing to
      *         the simple class name of the operation.
      */
     Map<String,Object> toMap(Dimension fullSize);
