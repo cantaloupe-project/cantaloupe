@@ -162,7 +162,7 @@ public class Java2DUtilTest extends BaseTest {
         final File fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
         final BufferedImage baseImage = ImageIO.read(fixture);
 
-        // create a Overlay
+        // create a StringOverlay
         final StringOverlay overlay = new StringOverlay(
                 "XXXXXX", Position.TOP_LEFT, 0,
                 new Font("Helvetica", Font.PLAIN, 4), 11,
@@ -172,15 +172,15 @@ public class Java2DUtilTest extends BaseTest {
         final BufferedImage overlaidImage = Java2DUtil.applyOverlay(
                 baseImage, overlay);
 
-        int pixel = overlaidImage.getRGB(0, 0);
+        int pixel = overlaidImage.getRGB(5, 0);
         int alpha = (pixel >> 24) & 0xff;
         int red = (pixel >> 16) & 0xff;
         int green = (pixel >> 8) & 0xff;
         int blue = (pixel) & 0xff;
         assertEquals(255, alpha);
-        assertEquals(253, red);
-        assertEquals(252, green);
-        assertEquals(252, blue);
+        assertEquals(124, red);
+        assertEquals(124, green);
+        assertEquals(124, blue);
     }
 
     @Test
