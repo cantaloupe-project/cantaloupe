@@ -1,5 +1,6 @@
-package edu.illinois.library.cantaloupe.image;
+package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
 

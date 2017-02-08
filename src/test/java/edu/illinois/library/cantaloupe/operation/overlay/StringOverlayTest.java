@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
-import edu.illinois.library.cantaloupe.image.Color;
+import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;

@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
-import edu.illinois.library.cantaloupe.image.Color;
+import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;

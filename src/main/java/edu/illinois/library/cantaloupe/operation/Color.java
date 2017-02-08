@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.image;
+package edu.illinois.library.cantaloupe.operation;
 
 import java.util.HashMap;
 import java.util.Map;
