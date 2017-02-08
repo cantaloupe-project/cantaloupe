@@ -10,9 +10,9 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 /**
- * Ostensible main application class, which is vestigial and should probably
- * be eliminated.
+ * Vestigial main application class.
  */
+@Deprecated
 public final class Application {
 
     private static Logger logger = LoggerFactory.getLogger(Application.class);
