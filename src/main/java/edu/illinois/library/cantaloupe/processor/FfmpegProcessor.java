@@ -30,8 +30,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,7 +38,7 @@ import java.util.regex.Pattern;
  * and the ffprobe tool to get video information. Works with ffmpeg 2.8 (other
  * versions untested).
  */
-class FfmpegProcessor extends AbstractJava2dProcessor implements FileProcessor {
+class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
     private static Logger logger = LoggerFactory.
             getLogger(FfmpegProcessor.class);

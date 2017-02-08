@@ -75,7 +75,7 @@ import java.util.UUID;
  *     Usage Examples for the Demonstration Applications Supplied with Kakadu
  *     V7.7</a>
  */
-class KakaduProcessor extends AbstractJava2dProcessor implements FileProcessor {
+class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
     private static Logger logger = LoggerFactory.
             getLogger(KakaduProcessor.class);

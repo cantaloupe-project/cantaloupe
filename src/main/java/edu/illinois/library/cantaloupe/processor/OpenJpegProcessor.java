@@ -59,7 +59,7 @@ import java.util.UUID;
  * The temporary symlink is created in the static initializer and deleted on
  * exit.</p>
  */
-class OpenJpegProcessor extends AbstractJava2dProcessor
+class OpenJpegProcessor extends AbstractJava2DProcessor
         implements FileProcessor {
 
     private static Logger logger = LoggerFactory.

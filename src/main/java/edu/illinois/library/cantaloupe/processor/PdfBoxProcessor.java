@@ -29,7 +29,7 @@ import java.util.Set;
  * library to render source PDFs, and Java 2D to perform post-rasterization
  * processing steps.
  */
-class PdfBoxProcessor extends AbstractJava2dProcessor
+class PdfBoxProcessor extends AbstractJava2DProcessor
         implements FileProcessor, StreamProcessor {
 
     private static Logger logger = LoggerFactory.

@@ -30,10 +30,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-abstract class AbstractJava2dProcessor extends AbstractImageIOProcessor {
+abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
 
     private static Logger logger = LoggerFactory.
-            getLogger(AbstractJava2dProcessor.class);
+            getLogger(AbstractJava2DProcessor.class);
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
