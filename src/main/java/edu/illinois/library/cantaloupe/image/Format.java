@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Contains constants for a wide variety of source formats, including all that
@@ -161,11 +162,8 @@ public enum Format {
      * @see #getPreferredMediaType()
      */
     public List<MediaType> getMediaTypes() {
-        final List<MediaType> types = new ArrayList<>();
-        for (String typeStr : mediaTypes) {
-            types.add(new MediaType(typeStr));
-        }
-        return types;
+        return mediaTypes.stream().map(MediaType::new).
+                collect(Collectors.toList());
     }
 
     /**
