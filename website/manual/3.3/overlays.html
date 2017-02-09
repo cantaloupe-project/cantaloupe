@@ -24,9 +24,7 @@ title: Overlays
   <li><a href="#Positioning">Positioning</a></li>
   <li><a href="#Implications">Implications</a>
     <ul>
-      <li><a href="#Performance">Performance</a></li>
       <li><a href="#Zooming%20Image%20Viewers">Zooming Image Viewers</a></li>
-      <li><a href="#Caching">Caching</a></li>
     </ul>
   </li>
 </ul>
@@ -168,16 +166,8 @@ end
 
 <h2 id="Implications">Implications</h2>
 
-<h3 id="Performance">Performance</h3>
-
-<p>Overlay application has minimal impact on response times, adding probably no more than a few milliseconds most of the time. One thing to note, though, is that normally, requests for source images with no modification are streamed through with no processing. When overlays are enabled, this will no longer be the case.</p>
-
 <h3 id="Zooming Image Viewers">Zooming Image Viewers</h3>
 
 <p>Zooming image viewers display a mosaic of cropped image tiles. When overlays are enabled, each tile will have one, which is bound to look strange.</p>
 
 <p>One way of working around this might be to set the <code>overlays.BasicStrategy.output_width_threshold</code> and <code>overlays.BasicStrategy.output_height_threshold</code> configuration options to values that are slightly larger than the tile size used by the image viewer. This will disable overlays for images the size of image viewer tiles, and enable them for anything larger. Unfortunately, the tile size used by the viewer may differ depending on the source image, as the recommended tile sizes in <a href="endpoints.html">information responses</a> will vary on a per-image basis.</p>
-
-<h3 id="Caching">Caching</h3>
-
-<p>Overlay parameters (filename, position, inset, etc.) are encoded in cached-image identifiers. When overlay settings change, cached affected images will be re-generated automatically, and images with different overlay settings (when using <a href="#ScriptStrategy">ScriptStrategy</a>) will be cached separately.</p>

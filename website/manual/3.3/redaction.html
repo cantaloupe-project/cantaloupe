@@ -15,12 +15,6 @@ title: Redaction
 <ul>
   <li><a href="#Example">Example</a></li>
   <li><a href="#Processor%20Support">Processor Support</a></li>
-  <li><a href="#Implications">Implications</a>
-    <ul>
-      <li><a href="#Performance">Performance</a></li>
-      <li><a href="#Caching">Caching</a></li>
-    </ul>
-  </li>
 </ul>
 
 <p>Redactions are black rectangles that are overlaid onto source images in order to obscure parts of them. This can be used for copyright protection, privacy protection, or censorship, without altering any source images. Different redactions can be applied to the same image dynamically for different audiences based on client IP address, cookies, and more.</p>
@@ -79,13 +73,3 @@ end
 <h2 id="Processor Support">Processor Support</h2>
 
 <p>Not all processors support redaction; see the <a href="processors.html#Supported%20Features">table of processor-supported features</a>.</p>
-
-<h2 id="Implications">Implications</h2>
-
-<h3 id="Performance">Performance</h3>
-
-<p>The performance of the redaction feature largely depends on the efficiency of the delegate script method implementation. Drawing of the redactions is very cheap, costing probably no more than a few milliseconds, in most cases.</p>
-
-<h3 id="Caching">Caching</h3>
-
-<p>Redaction coordinates are encoded in cached-image identifiers. When redaction settings change, cached redacted images will be re-generated automatically, and images with different redactions will be cached separately.</p>
