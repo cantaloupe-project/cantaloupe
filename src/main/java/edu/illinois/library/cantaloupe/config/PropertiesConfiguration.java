@@ -13,6 +13,12 @@ class PropertiesConfiguration extends FileConfiguration implements Configuration
     private org.apache.commons.configuration.PropertiesConfiguration commonsConfig =
             new org.apache.commons.configuration.PropertiesConfiguration();
 
+    public PropertiesConfiguration() {
+        // Prevent commas in values from being interpreted as list item
+        // delimiters.
+        commonsConfig.setDelimiterParsingDisabled(true);
+    }
+
     @Override
     public void clear() {
         commonsConfig.clear();
@@ -85,18 +91,7 @@ class PropertiesConfiguration extends FileConfiguration implements Configuration
 
     @Override
     public String getString(String key) {
-        // Commas in values are interpreted as multiple values. We don't want
-        // that, so we join them into one value.
-        String[] parts = commonsConfig.getStringArray(key);
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0, count = parts.length; i < count; i++) {
-            builder.append(parts[i]);
-            if (i < count - 1) {
-                builder.append(",");
-            }
-        }
-        String str = builder.toString();
-        return str.length() > 0 ? str : null;
+        return commonsConfig.getString(key);
     }
 
     @Override
@@ -112,14 +107,18 @@ class PropertiesConfiguration extends FileConfiguration implements Configuration
     public synchronized void reload() {
         final File configFile = getFile();
         if (configFile != null) {
+            if (commonsConfig != null) {
+                System.out.println("Reloading config file: " + configFile);
+            } else {
+                System.out.println("Loading config file: " + configFile);
+            }
+            commonsConfig = new org.apache.commons.configuration.PropertiesConfiguration();
+            // Prevent commas in values from being interpreted as list item
+            // delimiters.
+            commonsConfig.setDelimiterParsingDisabled(true);
+            commonsConfig.setFile(configFile);
             try {
-                if (commonsConfig != null) {
-                    System.out.println("Reloading config file: " + configFile);
-                } else {
-                    System.out.println("Loading config file: " + configFile);
-                }
-                commonsConfig = new org.apache.commons.configuration.
-                        PropertiesConfiguration(configFile);
+                commonsConfig.load();
             } catch (org.apache.commons.configuration.ConfigurationException e) {
                 // The logger may not have been initialized yet, as it depends
                 // on a working configuration. (Also, we don't want to
