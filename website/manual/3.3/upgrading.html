@@ -14,12 +14,12 @@ title: Upgrading
 
 <div class="alert alert-info">If you are skipping versions, it will be necessary to work through this list upwards from the version you are currently on.</div>
 
-<h2>From 3.2 to 3.3</h2>
+<h2>From 3.2.3 to 3.3</h2>
 
 <ul>
   <li>Add the following keys from the sample configuration:
     <ul>
-      <li><code>delegate_script.cache.*</code></li>
+      <li><code>delegate_script.cache.enabled</code></li>
       <li><code>endpoint.api.*</code></li>
       <li><code>processor.dcm</code></li>
       <li><code>processor.normalize</code></li>
@@ -30,8 +30,6 @@ title: Upgrading
       <li><code>processor.jpg.interlace</code></li>
       <li><code>processor.jpg.quality</code></li>
       <li><code>processor.tif.compression</code></li>
-      <li><code>FfmpegProcessor.upscale_filter</code></li>
-      <li><code>FfmpegProcessor.downscale_filter</code></li>
       <li><code>cache.server.ttl_seconds</code></li>
       <li><code>overlays.BasicStrategy.type</code></li>
       <li><code>overlays.BasicStrategy.string</code></li>
@@ -43,6 +41,7 @@ title: Upgrading
       <li><code>overlays.BasicStrategy.string.color</code></li>
       <li><code>overlays.BasicStrategy.string.stroke.color</code></li>
       <li><code>overlays.BasicStrategy.string.stroke.width</code></li>
+      <li><code>overlays.BasicStrategy.string.background.color</code></li>
     </ul>
   </li>
   <li>Rename the following keys:
@@ -89,6 +88,10 @@ title: Upgrading
   <li>If you are using the <code>watermark()</code> delegate method, note that the <code>pathname</code> key in the returned hash must be changed to <code>image</code>.</li>
   <li>Rename the <code>watermark()</code> delegate method to <code>overlay()</code>.</li>
 </ul>
+
+<h2>From 3.2 to 3.2.3</h2>
+
+<p>Nothing to do.</p>
 
 <h2>From 3.1.2 to 3.2</h2>
 
