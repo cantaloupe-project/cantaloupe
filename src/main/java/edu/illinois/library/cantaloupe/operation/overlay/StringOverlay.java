@@ -77,7 +77,7 @@ public class StringOverlay extends Overlay implements Operation {
     }
 
     /**
-     * @return True if the string length is > 0; false if not.
+     * @return True if the string length is greater than 0; false if not.
      */
     @Override
     public boolean hasEffect() {

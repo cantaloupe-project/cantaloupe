@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
+import edu.illinois.library.cantaloupe.resolver.Resolver;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -8,90 +10,153 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Contains constants for a wide variety of source formats, including all that
- * any processor supports.
+ * Enum representing all source and derivative formats recognized by the
+ * application, including all that any processor supports.
  */
 public enum Format {
 
     // For each one of these, there should be a corresponding file with a name
     // of the lowercased enum value present in the test resources directory.
 
+    /**
+     * AVI video format.
+     */
     AVI("AVI",
             Arrays.asList("video/avi", "video/msvideo", "video/x-msvideo"),
             Arrays.asList("avi"),
             Type.VIDEO,
             false),
+
+    /**
+     * Windows Bitmap image format.
+     */
     BMP("BMP",
             Arrays.asList("image/bmp", "image/x-bmp", "image/x-ms-bmp"),
             Arrays.asList("bmp", "dib"),
             Type.IMAGE,
             true),
+
+    /**
+     * DICOM image format.
+     */
     DCM("DICOM",
             Arrays.asList("application/dicom"),
             Arrays.asList("dcm", "dic"),
             Type.IMAGE,
             false),
+
+    /**
+     * CompuServe GIF image format.
+     */
     GIF("GIF",
             Arrays.asList("image/gif"),
             Arrays.asList("gif"),
             Type.IMAGE,
             true),
+
+    /**
+     * JPEG2000 image format.
+     */
     JP2("JPEG2000",
             Arrays.asList("image/jp2"),
             Arrays.asList("jp2", "j2k"),
             Type.IMAGE,
             true),
+
+    /**
+     * JPEG JFIF image format.
+     */
     JPG("JPEG",
             Arrays.asList("image/jpeg"),
             Arrays.asList("jpg", "jpeg"),
             Type.IMAGE,
             false),
+
+    /**
+     * Apple QuickTime video format.
+     */
     MOV("QuickTime",
             Arrays.asList("video/quicktime", "video/x-quicktime"),
             Arrays.asList("mov"),
             Type.VIDEO,
             false),
+
+    /**
+     * MPEG-4 video format.
+     */
     MP4("MPEG-4",
             Arrays.asList("video/mp4"),
             Arrays.asList("mp4", "m4v"),
             Type.VIDEO,
             false),
+
+    /**
+     * MPEG-1 video format.
+     */
     MPG("MPEG",
             Arrays.asList("video/mpeg"),
             Arrays.asList("mpg"),
             Type.VIDEO,
             false),
+
+    /**
+     * Portable Document Format.
+     */
     PDF("PDF",
             Arrays.asList("application/pdf"),
             Arrays.asList("pdf"),
             Type.IMAGE,
             false),
+
+    /**
+     * Portable Network Graphics image format.
+     */
     PNG("PNG",
             Arrays.asList("image/png"),
             Arrays.asList("png"),
             Type.IMAGE,
             true),
+
+    /**
+     * LizardTech MrSID image format.
+     */
     SID("MrSID",
             Arrays.asList("image/x-mrsid", "image/x.mrsid",
                     "image/x-mrsid-image"),
             Arrays.asList("sid"),
             Type.IMAGE,
             true),
+
+    /**
+     * Tagged Image File Format.
+     */
     TIF("TIFF",
             Arrays.asList("image/tiff"),
             Arrays.asList("tif", "ptif", "tiff"),
             Type.IMAGE,
             true),
+
+    /**
+     * WebM video format.
+     */
     WEBM("WebM",
             Arrays.asList("video/webm"),
             Arrays.asList("webm"),
             Type.VIDEO,
             false),
+
+    /**
+     * WebP image format.
+     */
     WEBP("WebP",
             Arrays.asList("image/webp"),
             Arrays.asList("webp"),
             Type.IMAGE,
             true),
+
+    /**
+     * Unknown format.
+     */
     UNKNOWN("Unknown",
             Arrays.asList("unknown/unknown"),
             Arrays.asList("unknown"),
@@ -109,16 +174,15 @@ public enum Format {
     private Type type;
 
     /**
-     * <p>Attempts to infer a source format from the given identifier.</p>
+     * <p>Attempts to infer a format from the given identifier.</p>
      *
-     * <p>(It is usually more reliable (but also perhaps more expensive) to get
-     * this information from a
-     * {@link edu.illinois.library.cantaloupe.resolver.Resolver}.)</p>
+     * <p>It is usually more reliable (but also maybe more expensive) to get
+     * this information from {@link Resolver#getSourceFormat()}.</p>
      *
      * @param identifier
      * @return The source format corresponding to the given identifier,
-     * assuming that its value will have a recognizable filename extension. If
-     * not, {@link #UNKNOWN} will be returned.
+     *         assuming that its value will have a recognizable filename
+     *         extension. If not, {@link #UNKNOWN} will be returned.
      */
     public static Format inferFormat(Identifier identifier) {
         String extension = null;

@@ -11,6 +11,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Encapsulates an IANA media (a.k.a. MIME) type.
+ */
 public final class MediaType {
 
     private String subtype;
