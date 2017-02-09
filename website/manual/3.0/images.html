@@ -62,7 +62,7 @@ title: Source Formats
 
 <h4 id="Strip-Based vs. Tile-Based">Strip-Based vs. Tile-Based</h4>
 
-<p>The <a href="http://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf">Adobe TIFF 6.0 specification</a> permits arrangements of image data in either strips or tiles. Most TIFF encoders produce strip-based TIFFs unless told to do otherwise. These are increasingly slow to read as their size increases. <strong>High-resolution TIFFs should be tile-based</strong> in order to permit efficient region extraction. An easy way to check is with the <span class="filename">tiffdump</span> utility:</p>
+<p>The <a href="http://www.exif.org/TIFF6.pdf">Adobe TIFF 6.0 specification</a> permits arrangements of image data in either strips or tiles. Most TIFF encoders produce strip-based TIFFs unless told to do otherwise. These are increasingly slow to read as their size increases. <strong>High-resolution TIFFs should be tile-based</strong> in order to permit efficient region extraction. An easy way to check is with the <span class="filename">tiffdump</span> utility:</p>
 
 <pre>$ tiffdump image.tif</pre>
 
