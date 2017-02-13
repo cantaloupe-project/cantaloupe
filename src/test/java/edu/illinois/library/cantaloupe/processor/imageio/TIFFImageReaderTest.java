@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
+import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;

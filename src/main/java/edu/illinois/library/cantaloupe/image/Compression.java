@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.processor.imageio;
+package edu.illinois.library.cantaloupe.image;
 
 public enum Compression {
 
