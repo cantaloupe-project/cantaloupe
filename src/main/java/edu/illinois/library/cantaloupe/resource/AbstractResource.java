@@ -7,7 +7,9 @@ import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
+import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
@@ -283,10 +285,14 @@ public abstract class AbstractResource extends ServerResource {
         //////////////////////////// Options ///////////////////////////////
 
         // Background color
-        final String bgColor =
-                config.getString(Processor.BACKGROUND_COLOR_CONFIG_KEY, "black");
-        opList.getOptions().put(Processor.BACKGROUND_COLOR_CONFIG_KEY,
-                bgColor);
+        if (!opList.getOutputFormat().supportsTransparency()) {
+            final String bgColor =
+                    config.getString(Processor.BACKGROUND_COLOR_CONFIG_KEY, "black");
+            final Rotate rotate = (Rotate) opList.getFirst(Rotate.class);
+            if (rotate != null) {
+                rotate.setFillColor(Color.fromString(bgColor));
+            }
+        }
 
         // JPEG interlace
         final boolean jpgInterlace =

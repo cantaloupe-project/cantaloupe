@@ -1,10 +1,11 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.overlay.BasicStringOverlayServiceTest;
@@ -55,17 +56,19 @@ public class AbstractResourceTest extends BaseTest {
 
         final OperationList opList = TestUtil.newOperationList();
         opList.add(new Scale(0.5f));
+        opList.add(new Rotate(45));
         final Dimension fullSize = new Dimension(2000,1000);
 
         resource.addNonEndpointOperations(opList, fullSize);
 
         Iterator<Operation> it = opList.iterator();
         assertEquals(Scale.Filter.BICUBIC, ((Scale) it.next()).getFilter());
+        assertTrue(it.next() instanceof Rotate);
         assertTrue(it.next() instanceof Sharpen);
         assertTrue(it.next() instanceof MetadataCopy);
 
-        assertEquals("white",
-                opList.getOptions().get(Processor.BACKGROUND_COLOR_CONFIG_KEY));
+        assertEquals(Color.fromString("#FFFFFF"),
+                ((Rotate) opList.getFirst(Rotate.class)).getFillColor());
         assertEquals(50,
                 opList.getOptions().get(Processor.JPG_QUALITY_CONFIG_KEY));
         assertEquals("LZW",

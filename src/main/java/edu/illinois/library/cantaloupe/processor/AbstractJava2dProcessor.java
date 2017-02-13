@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
-import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
@@ -67,27 +66,6 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
                 ProcessorFeature.SIZE_BY_PERCENT,
                 ProcessorFeature.SIZE_BY_WIDTH,
                 ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
-    }
-
-    /**
-     * @param opList
-     * @return If the output format does not support transparency, the
-     *         background color specified in the operation list's options.
-     *         Otherwise, <code>null</code>.
-     */
-    private java.awt.Color getBackgroundColor(OperationList opList) {
-        if (!opList.getOutputFormat().supportsTransparency()) {
-            try {
-                final String colorStr = (String) opList.getOptions().
-                        get(Processor.BACKGROUND_COLOR_CONFIG_KEY);
-                if (colorStr != null) {
-                    return Color.fromString(colorStr);
-                }
-            } catch (IllegalArgumentException e) {
-                logger.warn("getBackgroundColor(): " + e.getMessage());
-            }
-        }
-        return null;
     }
 
     public Set<ProcessorFeature> getSupportedFeatures() {
@@ -193,8 +171,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
                 } else if (op instanceof Rotate) {
                     Rotate rotation = (Rotate) op;
                     rotation.addDegrees(imageInfo.getOrientation().getDegrees());
-                    image = Java2DUtil.rotateImage(image, rotation,
-                            getBackgroundColor(opList));
+                    image = Java2DUtil.rotateImage(image, rotation);
                 } else if (op instanceof ColorTransform) {
                     image = Java2DUtil.transformColor(image, (ColorTransform) op);
                 } else if (op instanceof Sharpen) {

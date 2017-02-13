@@ -111,19 +111,21 @@ public class RotateTest extends BaseTest {
     @Test
     public void testToMap() {
         this.rotate.setDegrees(15);
+        this.rotate.setFillColor(Color.fromString("#FFFFFF"));
         Map<String,Object> map = this.rotate.toMap(new Dimension(0, 0));
         assertEquals(rotate.getClass().getSimpleName(), map.get("class"));
         assertEquals(15f, map.get("degrees"));
+        assertEquals("#FFFFFF", map.get("fill_color"));
     }
 
     @Test
     public void testToString() {
-        Rotate r = new Rotate(50f);
-        assertEquals("50", r.toString());
-        r = new Rotate(50.5f);
-        assertEquals("50.5", r.toString());
+        Rotate r = new Rotate(50f, Color.fromString("#FFFFFF"));
+        assertEquals("50_#FFFFFF", r.toString());
+        r = new Rotate(50.5f, Color.fromString("#FFFFFF"));
+        assertEquals("50.5_#FFFFFF", r.toString());
         r = new Rotate(50.5000f);
-        assertEquals("50.5", r.toString());
+        assertEquals("50.5_null", r.toString());
     }
 
 }

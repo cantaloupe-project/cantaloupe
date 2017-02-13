@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.processor;
 import com.mortennobel.imagescaling.ResampleFilter;
 import com.mortennobel.imagescaling.ResampleOp;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -534,25 +535,13 @@ public abstract class Java2DUtil {
     }
 
     /**
-     * @see #rotateImage(BufferedImage, Rotate, java.awt.Color)
-     */
-    static BufferedImage rotateImage(final BufferedImage inImage,
-                                     final Rotate rotate) {
-        return rotateImage(inImage, rotate, null);
-    }
-
-    /**
      * @param inImage Image to rotate
      * @param rotate Rotate operation
-     * @param bgColor Background color to use when the rotation is not a right
-     *                angle. Supply <code>null</code> to leave the background
-     *                transparent.
      * @return Rotated image, or the input image if the given rotation is a
      *         no-op.
      */
     static BufferedImage rotateImage(final BufferedImage inImage,
-                                     final Rotate rotate,
-                                     final java.awt.Color bgColor) {
+                                     final Rotate rotate) {
         BufferedImage rotatedImage = inImage;
         if (rotate.hasEffect()) {
             final Stopwatch watch = new Stopwatch();
@@ -586,14 +575,15 @@ public abstract class Java2DUtil {
             g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                     RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-            if (bgColor != null && rotate.getDegrees() % 90 > 0.00001f) {
+            final Color fillColor = rotate.getFillColor();
+            if (fillColor != null && rotate.getDegrees() % 90 > 0.00001f) {
                 float[] components = new float[3];
-                bgColor.getRGBColorComponents(components);
+                fillColor.getRGBColorComponents(components);
                 logger.debug("rotateImage(): background RGB color: {}, {}, {}",
                         Math.round(components[0] * 255),
                         Math.round(components[1] * 255),
                         Math.round(components[2] * 255));
-                g2d.setPaint(bgColor);
+                g2d.setPaint(fillColor);
                 g2d.fillRect(0, 0, canvasWidth, canvasHeight);
             }
             g2d.drawImage(inImage, tx, null);

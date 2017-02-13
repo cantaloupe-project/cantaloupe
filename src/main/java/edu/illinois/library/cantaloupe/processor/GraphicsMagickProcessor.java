@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -268,8 +269,10 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                     if (ops.getOutputFormat().supportsTransparency()) {
                         args.add("none");
                     } else {
-                        args.add((String) ops.getOptions().
-                                getOrDefault(BACKGROUND_COLOR_CONFIG_KEY, "black"));
+                        final Color fillColor = rotate.getFillColor();
+                        if (fillColor != null) {
+                            args.add(fillColor.toRGBHex());
+                        }
                     }
                     args.add("-rotate");
                     args.add(Double.toString(rotate.getDegrees()));
