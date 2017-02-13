@@ -32,6 +32,14 @@ public class Rotate implements Operation {
         this.degrees = (this.degrees + degrees) % 360;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Rotate) {
+            return toString().equals(obj.toString());
+        }
+        return super.equals(obj);
+    }
+
     /**
      * @return Degrees.
      */

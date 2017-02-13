@@ -32,6 +32,13 @@ public class RotateTest extends BaseTest {
     }
 
     @Test
+    public void testEquals() {
+        assertTrue(rotate.equals(new Rotate()));
+        assertFalse(rotate.equals(new Rotate(1)));
+        assertFalse(rotate.equals(new Object()));
+    }
+
+    @Test
     public void testGetEffectiveSize() {
         Dimension fullSize = new Dimension(300, 200);
         assertEquals(fullSize, rotate.getResultingSize(fullSize));
