@@ -231,6 +231,41 @@ public abstract class AbstractResource extends ServerResource {
             logger.error(e.getMessage(), e);
         }
 
+        // Scale filter
+        final Scale scale = (Scale) opList.getFirst(Scale.class);
+        if (scale != null) {
+            final Float scalePct = scale.getResultingScale(fullSize);
+            if (scalePct != null) {
+                final String filterKey = (scalePct > 1) ?
+                        UPSCALE_FILTER_CONFIG_KEY : DOWNSCALE_FILTER_CONFIG_KEY;
+                try {
+                    final String filterStr = config.getString(filterKey);
+                    final Scale.Filter filter =
+                            Scale.Filter.valueOf(filterStr.toUpperCase());
+                    scale.setFilter(filter);
+                } catch (Exception e) {
+                    logger.warn("addNonEndpointOperations(): invalid value for {}",
+                            filterKey);
+                }
+            }
+        }
+
+        // Rotation background color
+        if (!opList.getOutputFormat().supportsTransparency()) {
+            final String bgColor =
+                    config.getString(Processor.BACKGROUND_COLOR_CONFIG_KEY, "black");
+            final Rotate rotate = (Rotate) opList.getFirst(Rotate.class);
+            if (rotate != null) {
+                rotate.setFillColor(Color.fromString(bgColor));
+            }
+        }
+
+        // Sharpening
+        float sharpen = config.getFloat(Processor.SHARPEN_CONFIG_KEY, 0f);
+        if (sharpen > 0.001f) {
+            opList.add(new Sharpen(sharpen));
+        }
+
         // Overlay
         try {
             final OverlayService service = new OverlayService();
@@ -252,47 +287,12 @@ public abstract class AbstractResource extends ServerResource {
             logger.error(e.getMessage(), e);
         }
 
-        // Scale filter
-        final Scale scale = (Scale) opList.getFirst(Scale.class);
-        if (scale != null) {
-            final Float scalePct = scale.getResultingScale(fullSize);
-            if (scalePct != null) {
-                final String filterKey = (scalePct > 1) ?
-                        UPSCALE_FILTER_CONFIG_KEY : DOWNSCALE_FILTER_CONFIG_KEY;
-                try {
-                    final String filterStr = config.getString(filterKey);
-                    final Scale.Filter filter =
-                            Scale.Filter.valueOf(filterStr.toUpperCase());
-                    scale.setFilter(filter);
-                } catch (Exception e) {
-                    logger.warn("addNonEndpointOperations(): invalid value for {}",
-                            filterKey);
-                }
-            }
-        }
-
-        // Sharpening
-        float sharpen = config.getFloat(Processor.SHARPEN_CONFIG_KEY, 0f);
-        if (sharpen > 0.001f) {
-            opList.add(new Sharpen(sharpen));
-        }
-
         // Metadata copies
         if (config.getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());
         }
 
         //////////////////////////// Options ///////////////////////////////
-
-        // Background color
-        if (!opList.getOutputFormat().supportsTransparency()) {
-            final String bgColor =
-                    config.getString(Processor.BACKGROUND_COLOR_CONFIG_KEY, "black");
-            final Rotate rotate = (Rotate) opList.getFirst(Rotate.class);
-            if (rotate != null) {
-                rotate.setFillColor(Color.fromString(bgColor));
-            }
-        }
 
         // JPEG interlace
         final boolean jpgInterlace =
