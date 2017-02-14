@@ -248,6 +248,10 @@ processor.fallback = Java2dProcessor
 # Global Processor Configuration
 #----------------------------------------
 
+# Expands contrast to utilize available dynamic range. This forces the entire
+# source image to be read into memory, so can be slow with large images.
+processor.normalize = false
+
 # Color of the background when an image is rotated. Only affects output
 # formats that do not support transparency.
 processor.background_color = black
