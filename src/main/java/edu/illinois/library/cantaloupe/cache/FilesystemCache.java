@@ -465,22 +465,14 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      */
     Collection<File> derivativeImageFiles(Identifier identifier)
             throws CacheException {
-        class IdentifierFilter implements FilenameFilter {
-            private Identifier identifier;
-
-            private IdentifierFilter(Identifier identifier) {
-                this.identifier = identifier;
-            }
-
+        final File cacheFolder = new File(rootDerivativeImagePathname() +
+                getHashedStringBasedSubdirectory(identifier.toString()));
+        final File[] files = cacheFolder.listFiles(new FilenameFilter() {
+            @Override
             public boolean accept(File dir, String name) {
                 return name.startsWith(identifier.toFilename());
             }
-        }
-
-        final File cacheFolder = new File(rootDerivativeImagePathname() +
-                getHashedStringBasedSubdirectory(identifier.toString()));
-        final File[] files =
-                cacheFolder.listFiles(new IdentifierFilter(identifier));
+        });
         ArrayList<File> fileList;
         if (files != null && files.length > 0) {
             fileList = new ArrayList<>(Arrays.asList(files));
