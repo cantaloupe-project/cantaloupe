@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
@@ -53,21 +52,21 @@ public class WebServer {
      * configuration.
      */
     public WebServer() {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         if (config != null) {
-            httpEnabled = config.getBoolean(HTTP_ENABLED_CONFIG_KEY, false);
-            httpHost = config.getString(HTTP_HOST_CONFIG_KEY, "0.0.0.0");
-            httpPort = config.getInt(HTTP_PORT_CONFIG_KEY, 8182);
-            httpsEnabled = config.getBoolean(HTTPS_ENABLED_CONFIG_KEY, false);
-            httpsHost = config.getString(HTTPS_HOST_CONFIG_KEY, "0.0.0.0");
-            httpsKeyPassword = config.getString(HTTPS_KEY_PASSWORD_CONFIG_KEY);
-            httpsKeyStorePassword =
-                    config.getString(HTTPS_KEY_STORE_PASSWORD_CONFIG_KEY);
-            httpsKeyStorePath =
-                    config.getString(HTTPS_KEY_STORE_PATH_CONFIG_KEY);
-            httpsKeyStoreType =
-                    config.getString(HTTPS_KEY_STORE_TYPE_CONFIG_KEY);
-            httpsPort = config.getInt(HTTPS_PORT_CONFIG_KEY, 8183);
+            setHttpEnabled(config.getBoolean(HTTP_ENABLED_CONFIG_KEY, false));
+            setHttpHost(config.getString(HTTP_HOST_CONFIG_KEY, "0.0.0.0"));
+            setHttpPort(config.getInt(HTTP_PORT_CONFIG_KEY, 8182));
+            setHttpsEnabled(config.getBoolean(HTTPS_ENABLED_CONFIG_KEY, false));
+            setHttpsHost(config.getString(HTTPS_HOST_CONFIG_KEY, "0.0.0.0"));
+            setHttpsKeyPassword(config.getString(HTTPS_KEY_PASSWORD_CONFIG_KEY));
+            setHttpsKeyStorePassword(
+                    config.getString(HTTPS_KEY_STORE_PASSWORD_CONFIG_KEY));
+            setHttpsKeyStorePath(
+                    config.getString(HTTPS_KEY_STORE_PATH_CONFIG_KEY));
+            setHttpsKeyStoreType(
+                    config.getString(HTTPS_KEY_STORE_TYPE_CONFIG_KEY));
+            setHttpsPort(config.getInt(HTTPS_PORT_CONFIG_KEY, 8183));
         }
     }
 
