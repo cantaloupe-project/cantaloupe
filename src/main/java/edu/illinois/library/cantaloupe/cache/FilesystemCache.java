@@ -418,6 +418,15 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         return rootPathname() + File.separator + SOURCE_IMAGE_FOLDER;
     }
 
+    private ReadWriteLock acquireInfoLock(final Identifier identifier) {
+        ReadWriteLock lock = infoLocks.get(identifier);
+        if (lock == null) {
+            infoLocks.putIfAbsent(identifier, new ReentrantReadWriteLock());
+            lock = infoLocks.get(identifier);
+        }
+        return lock;
+    }
+
     /**
      * Cleans up temp and zero-byte files.
      *
@@ -494,8 +503,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
     @Override
     public Info getImageInfo(Identifier identifier) throws CacheException {
-        infoLocks.putIfAbsent(identifier, new ReentrantReadWriteLock());
-        final ReadWriteLock lock = infoLocks.get(identifier);
+        final ReadWriteLock lock = acquireInfoLock(identifier);
         lock.readLock().lock();
 
         try {
@@ -925,8 +933,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     @Override
     public void put(Identifier identifier, Info imageInfo)
             throws CacheException {
-        infoLocks.putIfAbsent(identifier, new ReentrantReadWriteLock());
-        final ReadWriteLock lock = infoLocks.get(identifier);
+        final ReadWriteLock lock = acquireInfoLock(identifier);
         lock.writeLock().lock();
 
         logger.info("put(): caching: {}", identifier);
