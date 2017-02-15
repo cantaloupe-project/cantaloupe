@@ -39,6 +39,11 @@ public class EntryServlet extends ServerServlet {
         // Suppress a Dock icon in OS X
         System.setProperty("java.awt.headless", "true");
 
+        // Tell Restlet to use SLF4J instead of java.util.logging. This needs
+        // to be performed before Restlet has been initialized.
+        System.setProperty("org.restlet.engine.loggerFacadeClass",
+                "org.restlet.ext.slf4j.Slf4jLoggerFacade");
+
         // Logback has already initialized itself, which is a problem because
         // logback.xml depends on the application configuration, which at the
         // time, had not been initialized yet. So, reload it.
