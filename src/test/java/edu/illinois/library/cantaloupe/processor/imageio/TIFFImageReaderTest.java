@@ -60,7 +60,7 @@ public class TIFFImageReaderTest extends BaseTest {
         // PackBits
         reader = new TIFFImageReader(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-striped-packbits.tif"));
-        assertEquals(Compression.PACKBITS, reader.getCompression(0));
+        assertEquals(Compression.RLE, reader.getCompression(0));
         reader.dispose();
 
         // Deflate/ZLib/Zip

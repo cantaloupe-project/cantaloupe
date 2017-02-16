@@ -272,8 +272,8 @@ processor.jpg.interlace = true
 # JPEG output quality (1-100).
 processor.jpg.quality = 80
 
-# TIFF output compression type. Available values are `LZW`, `Deflate`,
-# `ZLib`, `JPEG`, and `PackBits`. Leave blank for no compression.
+# TIFF output compression type. Available values are `Deflate`, `JPEG`,
+# `LZW`, and `RLE`. Leave blank for no compression.
 processor.tif.compression = LZW
 
 # Available values are `StreamStrategy` and `CacheStrategy`. StreamStrategy

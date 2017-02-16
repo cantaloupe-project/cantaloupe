@@ -1285,7 +1285,7 @@
                                                 <option value="Deflate">Deflate</option>
                                                 <option value="ZLib">ZLib</option>
                                                 <option value="JPEG">JPEG</option>
-                                                <option value="PackBits">PackBits</option>
+                                                <option value="RLE">RLE</option>
                                             </select>
                                         </td>
                                     </tr>

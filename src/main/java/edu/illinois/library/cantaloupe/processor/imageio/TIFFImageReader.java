@@ -91,7 +91,7 @@ class TIFFImageReader extends AbstractImageReader {
             case "LZW":
                 return Compression.LZW;
             case "PackBits":
-                return Compression.PACKBITS;
+                return Compression.RLE;
             case "Uncompressed":
                 return Compression.UNCOMPRESSED;
             case "ZLib":
