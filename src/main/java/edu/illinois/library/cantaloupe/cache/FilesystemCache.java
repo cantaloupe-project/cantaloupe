@@ -164,7 +164,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
         @Override
         public FileVisitResult visitFileFailed(Path file, IOException e) {
-            logger.warn(e.getMessage());
+            logger.warn("visitFileFailed(): {}", e.getMessage());
             return java.nio.file.FileVisitResult.CONTINUE;
         }
     }
