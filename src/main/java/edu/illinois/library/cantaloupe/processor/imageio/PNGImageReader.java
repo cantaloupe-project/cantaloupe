@@ -28,7 +28,7 @@ class PNGImageReader extends AbstractImageReader {
 
     @Override
     Compression getCompression(int imageIndex) throws IOException {
-        return Compression.ZLIB;
+        return Compression.DEFLATE;
     }
 
     Metadata getMetadata(int imageIndex) throws IOException {

@@ -167,7 +167,7 @@ class JaiProcessor extends AbstractImageIOProcessor
                         2) otherwise, use the SubsampleAverage operation.
                         */
                         if (getSourceFormat().equals(Format.TIF) &&
-                                reader.getCompression(0).equals(Compression.ZLIB)) {
+                                reader.getCompression(0).equals(Compression.DEFLATE)) {
                             logger.debug("process(): detected " +
                                     "ZLib-compressed TIFF; using the scale " +
                                     "operator with nearest-neighbor " +

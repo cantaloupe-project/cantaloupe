@@ -66,7 +66,7 @@ public class TIFFImageReaderTest extends BaseTest {
         // Deflate/ZLib/Zip
         reader = new TIFFImageReader(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-striped-zip.tif"));
-        assertEquals(Compression.ZLIB, reader.getCompression(0));
+        assertEquals(Compression.DEFLATE, reader.getCompression(0));
         reader.dispose();
     }
 

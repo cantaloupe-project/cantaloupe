@@ -95,7 +95,7 @@ class TIFFImageReader extends AbstractImageReader {
             case "Uncompressed":
                 return Compression.UNCOMPRESSED;
             case "ZLib":
-                return Compression.ZLIB;
+                return Compression.DEFLATE;
             default:
                 return Compression.UNKNOWN;
         }
