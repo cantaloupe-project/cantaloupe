@@ -1281,10 +1281,9 @@
                                                     name="processor.tif.compression"
                                                     data-requires-restart="false">
                                                 <option value="">No Compression</option>
-                                                <option value="LZW">LZW</option>
                                                 <option value="Deflate">Deflate</option>
-                                                <option value="ZLib">ZLib</option>
                                                 <option value="JPEG">JPEG</option>
+                                                <option value="LZW">LZW</option>
                                                 <option value="RLE">RLE</option>
                                             </select>
                                         </td>
