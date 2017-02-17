@@ -152,7 +152,9 @@ class RubyScriptEngine extends AbstractScriptEngine implements ScriptEngine {
         } else {
             logger.debug("invoke({}::{}): cache miss", TOP_MODULE, methodName);
             returnValue = doInvoke(methodName, args);
-            invocationCache.put(cacheKey, returnValue);
+            if (returnValue != null) {
+                invocationCache.put(cacheKey, returnValue);
+            }
         }
         return returnValue;
     }
