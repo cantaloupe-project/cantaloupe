@@ -97,8 +97,7 @@ class JPEGImageWriter extends AbstractImageWriter {
         logger.debug("Using quality: {}", quality);
 
         // Interlacing
-        final boolean interlace = (boolean) opList.getOptions().
-                getOrDefault(Processor.JPG_INTERLACE_CONFIG_KEY, false);
+        final boolean interlace = opList.isOutputInterlacing();
         writeParam.setProgressiveMode(interlace ?
                 ImageWriteParam.MODE_DEFAULT : ImageWriteParam.MODE_DISABLED);
         logger.debug("Progressive: {}", interlace);

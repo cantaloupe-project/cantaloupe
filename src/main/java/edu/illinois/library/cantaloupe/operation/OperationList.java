@@ -42,6 +42,7 @@ public final class OperationList implements Comparable<OperationList>,
     private List<Operation> operations = new ArrayList<>();
     private Map<String,Object> options = new HashMap<>();
     private Format outputFormat;
+    private boolean outputInterlacing = false;
 
     /**
      * No-op constructor.
@@ -49,11 +50,12 @@ public final class OperationList implements Comparable<OperationList>,
     public OperationList() {}
 
     public OperationList(Identifier identifier) {
+        this();
         setIdentifier(identifier);
     }
 
     public OperationList(Identifier identifier, Format outputFormat) {
-        setIdentifier(identifier);
+        this(identifier);
         setOutputFormat(outputFormat);
     }
 
@@ -191,6 +193,14 @@ public final class OperationList implements Comparable<OperationList>,
     }
 
     /**
+     * @return Interlacing status. This only applies to output formats that
+     *         support interlacing.
+     */
+    public boolean isOutputInterlacing() {
+        return outputInterlacing;
+    }
+
+    /**
      * @return Iterator over the instance's operations. If the instance is
      *         frozen, {@link Iterator#remove()} will throw an
      *         {@link UnsupportedOperationException}.
@@ -223,6 +233,10 @@ public final class OperationList implements Comparable<OperationList>,
             throw new UnsupportedOperationException();
         }
         this.outputFormat = outputFormat;
+    }
+
+    public void setOutputInterlacing(boolean interlacing) {
+        this.outputInterlacing = interlacing;
     }
 
     public Stream<Operation> stream() {
@@ -273,6 +287,7 @@ public final class OperationList implements Comparable<OperationList>,
      *         "key": "value"
      *     },
      *     "output_format": "result of {@link Format#toMap}"
+     *     "output_interlacing": boolean
      * }</pre>
      *
      * @param fullSize Full size of the source image on which the instance is
@@ -281,28 +296,21 @@ public final class OperationList implements Comparable<OperationList>,
      */
     public Map<String,Object> toMap(Dimension fullSize) {
         final Map<String,Object> map = new HashMap<>();
-        // identifier
         map.put("identifier", getIdentifier().toString());
-        // operations
-        final List<Map<String,Object>> opsList = new ArrayList<>();
-        for (Operation op : this) {
-            if (op.hasEffect()) {
-                opsList.add(op.toMap(fullSize));
-            }
-        }
-        map.put("operations", opsList);
-        // options
+        map.put("operations", this.stream().
+                filter(Operation::hasEffect).
+                map(op -> op.toMap(fullSize)).
+                collect(Collectors.toList()));
         map.put("options", getOptions());
-        // output format
         map.put("output_format", getOutputFormat().toMap());
-
+        map.put("output_interlacing", isOutputInterlacing());
         return map;
     }
 
     /**
      * @return String representation of the instance, guaranteed to uniquely
-     * represent the instance, but not guaranteed to have any particular
-     * format.
+     *         represent the instance, but not guaranteed to have any particular
+     *         format.
      */
     @Override
     public String toString() {
@@ -317,6 +325,11 @@ public final class OperationList implements Comparable<OperationList>,
         for (String key : this.getOptions().keySet()) {
             parts.add(key + ":" + this.getOptions().get(key));
         }
+
+        if (isOutputInterlacing()) {
+            parts.add("interlace");
+        }
+
         return StringUtils.join(parts, "_") + "." +
                 getOutputFormat().getPreferredExtension();
     }

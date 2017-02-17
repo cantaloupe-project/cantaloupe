@@ -292,13 +292,26 @@ public abstract class AbstractResource extends ServerResource {
             opList.add(new MetadataCopy());
         }
 
-        //////////////////////////// Options ///////////////////////////////
+        switch (opList.getOutputFormat()) {
+            case JPG:
+                // Interlacing
+                final boolean interlace =
+                        config.getBoolean(Processor.JPG_INTERLACE_CONFIG_KEY, false);
+                opList.setOutputInterlacing(interlace);
+                break;
+            case TIF:
+                /*
+                // Compression
+                final String compressionStr =
+                        config.getString(Processor.TIF_COMPRESSION_CONFIG_KEY, "LZW");
+                final Compression compression =
+                        Compression.valueOf(compressionStr.toUpperCase());
+                opList.getOutputFormat().setCompression(compression);
+                break;
+                */
+        }
 
-        // JPEG interlace
-        final boolean jpgInterlace =
-                config.getBoolean(Processor.JPG_INTERLACE_CONFIG_KEY, false);
-        opList.getOptions().put(Processor.JPG_INTERLACE_CONFIG_KEY,
-                jpgInterlace);
+        //////////////////////////// Options ///////////////////////////////
 
         // JPEG quality
         final int jpgQuality = config.getInt(Processor.JPG_QUALITY_CONFIG_KEY, 80);

@@ -306,8 +306,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                 args.add("-quality");
                 args.add("" + jpgQuality);
                 // Interlace
-                if ((boolean) ops.getOptions().
-                        getOrDefault(Processor.JPG_INTERLACE_CONFIG_KEY, false)) {
+                if (ops.isOutputInterlacing()) {
                     args.add("-interlace");
                     args.add("Plane");
                 }

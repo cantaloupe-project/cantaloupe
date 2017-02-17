@@ -29,7 +29,7 @@ public class AbstractResourceTest extends BaseTest {
     private TestResource resource = new TestResource();
 
     @Test
-    public void testAddNonEndpointOperations() throws IOException {
+    public void testAddNonEndpointOperationsWithJPEGOutputFormat() throws IOException {
         final Configuration config = Configuration.getInstance();
 
         //////////////////////////// Setup ////////////////////////////////
@@ -49,8 +49,8 @@ public class AbstractResourceTest extends BaseTest {
         config.setProperty(Processor.BACKGROUND_COLOR_CONFIG_KEY, "white");
         // JPEG quality
         config.setProperty(Processor.JPG_QUALITY_CONFIG_KEY, 50);
-        // TIFF compression
-        config.setProperty(Processor.TIF_COMPRESSION_CONFIG_KEY, "LZW");
+        // JPEG interlacing
+        config.setProperty(Processor.JPG_INTERLACE_CONFIG_KEY, true);
 
         ///////////////////////////// Test ////////////////////////////////
 
@@ -71,8 +71,8 @@ public class AbstractResourceTest extends BaseTest {
                 ((Rotate) opList.getFirst(Rotate.class)).getFillColor());
         assertEquals(50,
                 opList.getOptions().get(Processor.JPG_QUALITY_CONFIG_KEY));
-        assertEquals("LZW",
-                opList.getOptions().get(Processor.TIF_COMPRESSION_CONFIG_KEY));
+        assertTrue(opList.isOutputInterlacing());
+    }
     }
 
     @Test
