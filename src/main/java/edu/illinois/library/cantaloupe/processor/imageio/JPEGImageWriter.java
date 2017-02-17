@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Java2DUtil;
-import edu.illinois.library.cantaloupe.processor.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
@@ -90,8 +89,7 @@ class JPEGImageWriter extends AbstractImageWriter {
     private ImageWriteParam getWriteParam(ImageWriter writer) {
         final ImageWriteParam writeParam = writer.getDefaultWriteParam();
         // Quality
-        final int quality = (int) opList.getOptions().
-                getOrDefault(Processor.JPG_QUALITY_CONFIG_KEY, 80);
+        final int quality = opList.getOutputQuality();
         writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
         writeParam.setCompressionQuality(quality * 0.01f);
         logger.debug("Using quality: {}", quality);

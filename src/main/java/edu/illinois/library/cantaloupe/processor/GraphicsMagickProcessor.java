@@ -301,8 +301,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
         switch (ops.getOutputFormat()) {
             case JPG:
                 // Quality
-                final int jpgQuality = (int) ops.getOptions().
-                        getOrDefault(Processor.JPG_QUALITY_CONFIG_KEY, 80);
+                final int jpgQuality = ops.getOutputQuality();
                 args.add("-quality");
                 args.add("" + jpgQuality);
                 // Interlace

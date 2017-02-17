@@ -37,12 +37,15 @@ public final class OperationList implements Comparable<OperationList>,
     private static final Logger logger = LoggerFactory.
             getLogger(OperationList.class);
 
+    public static final short MAX_OUTPUT_QUALITY = 100;
+
     private boolean frozen = false;
     private Identifier identifier;
     private List<Operation> operations = new ArrayList<>();
     private Map<String,Object> options = new HashMap<>();
     private Format outputFormat;
     private boolean outputInterlacing = false;
+    private int outputQuality = MAX_OUTPUT_QUALITY;
 
     /**
      * No-op constructor.
@@ -135,6 +138,15 @@ public final class OperationList implements Comparable<OperationList>,
 
     public Format getOutputFormat() {
         return outputFormat;
+    }
+
+    /**
+     * @return Output quality in the range of 1-{@link #MAX_OUTPUT_QUALITY}.
+     *         This only applies to certain output formats, and perhaps also
+     *         only with certain compressions.
+     */
+    public int getOutputQuality() {
+        return outputQuality;
     }
 
     /**
@@ -239,6 +251,19 @@ public final class OperationList implements Comparable<OperationList>,
         this.outputInterlacing = interlacing;
     }
 
+    /**
+     * @param quality
+     * @throws IllegalArgumentException If the given quality is outside the
+     *         range of 1-{@link #MAX_OUTPUT_QUALITY}.
+     */
+    public void setOutputQuality(int quality) throws IllegalArgumentException {
+        if (quality < 1 || quality > MAX_OUTPUT_QUALITY) {
+            throw new IllegalArgumentException(
+                    "Quality must be in the range of 1-" + MAX_OUTPUT_QUALITY + ".");
+        }
+        this.outputQuality = quality;
+    }
+
     public Stream<Operation> stream() {
         return operations.stream();
     }
@@ -287,7 +312,8 @@ public final class OperationList implements Comparable<OperationList>,
      *         "key": "value"
      *     },
      *     "output_format": "result of {@link Format#toMap}"
-     *     "output_interlacing": boolean
+     *     "output_interlacing": boolean,
+     *     "output_quality": short
      * }</pre>
      *
      * @param fullSize Full size of the source image on which the instance is
@@ -304,6 +330,7 @@ public final class OperationList implements Comparable<OperationList>,
         map.put("options", getOptions());
         map.put("output_format", getOutputFormat().toMap());
         map.put("output_interlacing", isOutputInterlacing());
+        map.put("output_quality", getOutputQuality());
         return map;
     }
 
@@ -328,6 +355,9 @@ public final class OperationList implements Comparable<OperationList>,
 
         if (isOutputInterlacing()) {
             parts.add("interlace");
+        }
+        if (getOutputQuality() < MAX_OUTPUT_QUALITY) {
+            parts.add("quality:" + getOutputQuality());
         }
 
         return StringUtils.join(parts, "_") + "." +

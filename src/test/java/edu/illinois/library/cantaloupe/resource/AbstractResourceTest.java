@@ -69,8 +69,7 @@ public class AbstractResourceTest extends BaseTest {
 
         assertEquals(Color.fromString("#FFFFFF"),
                 ((Rotate) opList.getFirst(Rotate.class)).getFillColor());
-        assertEquals(50,
-                opList.getOptions().get(Processor.JPG_QUALITY_CONFIG_KEY));
+        assertEquals(50, opList.getOutputQuality());
         assertTrue(opList.isOutputInterlacing());
     }
     }

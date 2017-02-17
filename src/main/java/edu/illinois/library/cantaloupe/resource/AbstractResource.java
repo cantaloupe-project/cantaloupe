@@ -207,8 +207,6 @@ public abstract class AbstractResource extends ServerResource {
                                             final Dimension fullSize) {
         final Configuration config = Configuration.getInstance();
 
-        /////////////////////////// Operations /////////////////////////////
-
         // Redactions
         try {
             if (RedactionService.isEnabled()) {
@@ -298,6 +296,10 @@ public abstract class AbstractResource extends ServerResource {
                 final boolean interlace =
                         config.getBoolean(Processor.JPG_INTERLACE_CONFIG_KEY, false);
                 opList.setOutputInterlacing(interlace);
+                // Quality
+                final int quality =
+                        config.getInt(Processor.JPG_QUALITY_CONFIG_KEY, 80);
+                opList.setOutputQuality(quality);
                 break;
             case TIF:
                 /*
@@ -307,15 +309,9 @@ public abstract class AbstractResource extends ServerResource {
                 final Compression compression =
                         Compression.valueOf(compressionStr.toUpperCase());
                 opList.getOutputFormat().setCompression(compression);
-                break;
                 */
+                break;
         }
-
-        //////////////////////////// Options ///////////////////////////////
-
-        // JPEG quality
-        final int jpgQuality = config.getInt(Processor.JPG_QUALITY_CONFIG_KEY, 80);
-        opList.getOptions().put(Processor.JPG_QUALITY_CONFIG_KEY, jpgQuality);
 
         // TIFF compression
         final String tiffCompression =

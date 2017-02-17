@@ -6,12 +6,10 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.awt.Dimension;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -433,7 +431,7 @@ public class OperationListTest extends BaseTest {
         ops.setOutputFormat(Format.JPG);
         ops.getOptions().put("animal", "cat");
 
-        assertEquals("50c63748527e634134449ae20b199cc0_d170a86a2473afda8cc0fa1a30740274.jpg",
+        assertEquals("50c63748527e634134449ae20b199cc0_3fd04b4eec756fa3517d8690f4dde4d5.jpg",
                 ops.toFilename());
     }
 
@@ -454,9 +452,12 @@ public class OperationListTest extends BaseTest {
         Scale scale = new Scale();
         ops.add(scale);
         ops.add(new Rotate(0));
-        ops.setOutputFormat(Format.JPG);
         // transpose
         ops.add(Transpose.HORIZONTAL);
+        // output
+        ops.setOutputFormat(Format.JPG);
+        ops.setOutputInterlacing(true);
+        ops.setOutputQuality(80);
 
         final Dimension fullSize = new Dimension(100, 100);
         Map<String,Object> map = ops.toMap(fullSize);
@@ -464,6 +465,8 @@ public class OperationListTest extends BaseTest {
         assertEquals(2, ((List) map.get("operations")).size());
         assertEquals(0, ((Map) map.get("options")).size());
         assertEquals("jpg", ((Map) map.get("output_format")).get("extension"));
+        assertEquals(80, map.get("output_quality"));
+        assertTrue((boolean) map.get("output_interlacing"));
     }
 
     /* toString() */
@@ -483,21 +486,12 @@ public class OperationListTest extends BaseTest {
         ops.add(new Rotate(15));
         ops.add(ColorTransform.BITONAL);
         ops.setOutputFormat(Format.JPG);
+        ops.setOutputInterlacing(true);
+        ops.setOutputQuality(80);
         ops.getOptions().put("animal", "cat");
 
-        List<String> parts = new ArrayList<>();
-        parts.add(ops.getIdentifier().toString());
-        for (Operation op : ops) {
-            if (op.hasEffect()) {
-                parts.add(op.getClass().getSimpleName().toLowerCase() + ":" +
-                        op.toString());
-            }
-        }
-        for (String key : ops.getOptions().keySet()) {
-            parts.add(key + ":" + ops.getOptions().get(key));
-        }
-        String expected = StringUtils.join(parts, "_") + "." +
-                ops.getOutputFormat().getPreferredExtension();
+
+        String expected = "identifier.jpg_crop:5,6,20,22_scale:40%_rotate:15_null_colortransform:bitonal_animal:cat_interlace_quality:80.jpg";
         assertEquals(expected, ops.toString());
     }
 
