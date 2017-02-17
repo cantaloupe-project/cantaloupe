@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Compression;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.Operation;
@@ -72,6 +74,44 @@ public class AbstractResourceTest extends BaseTest {
         assertEquals(50, opList.getOutputQuality());
         assertTrue(opList.isOutputInterlacing());
     }
+
+    @Test
+    public void testAddNonEndpointOperationsWithTIFFOutputFormat() throws IOException {
+        final Configuration config = Configuration.getInstance();
+
+        //////////////////////////// Setup ////////////////////////////////
+
+        // redactions
+        RedactionServiceTest.setUpConfiguration();
+        // overlay
+        BasicStringOverlayServiceTest.setUpConfiguration();
+        // scale filters
+        config.setProperty(Processor.DOWNSCALE_FILTER_CONFIG_KEY, "bicubic");
+        config.setProperty(Processor.UPSCALE_FILTER_CONFIG_KEY, "triangle");
+        // sharpening
+        config.setProperty(Processor.SHARPEN_CONFIG_KEY, 0.2f);
+        // metadata copies
+        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        // TIFF compression
+        config.setProperty(Processor.TIF_COMPRESSION_CONFIG_KEY, "LZW");
+
+        ///////////////////////////// Test ////////////////////////////////
+
+        final OperationList opList = TestUtil.newOperationList();
+        opList.add(new Scale(0.5f));
+        opList.add(new Rotate(45));
+        opList.setOutputFormat(Format.TIF);
+        final Dimension fullSize = new Dimension(2000,1000);
+
+        resource.addNonEndpointOperations(opList, fullSize);
+
+        Iterator<Operation> it = opList.iterator();
+        assertEquals(Scale.Filter.BICUBIC, ((Scale) it.next()).getFilter());
+        assertTrue(it.next() instanceof Rotate);
+        assertTrue(it.next() instanceof Sharpen);
+        assertTrue(it.next() instanceof MetadataCopy);
+
+        assertEquals(Compression.LZW, opList.getOutputCompression());
     }
 
     @Test

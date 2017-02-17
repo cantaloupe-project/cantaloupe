@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
@@ -225,7 +226,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                 if (scale.hasEffect(fullSize, ops)) {
                     final Scale.Filter scaleFilter = scale.getFilter();
                     if (scaleFilter != null) {
-                        final String gmFilter = gmFilter(scaleFilter);
+                        final String gmFilter = getGMFilter(scaleFilter);
                         if (gmFilter != null) {
                             args.add("-filter");
                             args.add(gmFilter);
@@ -312,10 +313,9 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                 break;
             case TIF:
                 // Compression
-                final String compression = (String) ops.getOptions().
-                        getOrDefault(Processor.TIF_COMPRESSION_CONFIG_KEY, "LZW");
+                final Compression compression = ops.getOutputCompression();
                 args.add("-compress");
-                args.add(gmTiffCompression(compression));
+                args.add(getGMTIFFCompression(compression));
                 break;
         }
 
@@ -331,7 +331,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
      *         <code>-filter</code> argument, or <code>null</code> if an
      *         equivalent is unknown.
      */
-    private String gmFilter(Scale.Filter filter) {
+    private String getGMFilter(Scale.Filter filter) {
         // http://www.graphicsmagick.org/GraphicsMagick.html#details-filter
         switch (filter) {
             case BELL:
@@ -354,19 +354,25 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
         return null;
     }
 
-    private String gmTiffCompression(String configValue) {
-        switch (configValue.toLowerCase()) {
-            case "lzw":
-                return "LZW";
-            case "zlib":
-                return "Zip";
-            case "jpeg":
-                return "JPEG";
-            case "packbits":
-                return "RLE";
-            default:
-                return "None";
+    /**
+     * @param compression May be <code>null</code>.
+     * @return String suitable for passing to gm convert's
+     *         <code>-compress</code> argument.
+     */
+    private String getGMTIFFCompression(Compression compression) {
+        if (compression != null) {
+            switch (compression) {
+                case LZW:
+                    return "LZW";
+                case DEFLATE:
+                    return "Zip";
+                case JPEG:
+                    return "JPEG";
+                case RLE:
+                    return "RLE";
+            }
         }
+        return "None";
     }
 
     @Override

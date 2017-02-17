@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
@@ -43,6 +44,7 @@ public final class OperationList implements Comparable<OperationList>,
     private Identifier identifier;
     private List<Operation> operations = new ArrayList<>();
     private Map<String,Object> options = new HashMap<>();
+    private Compression outputCompression = Compression.UNDEFINED;
     private Format outputFormat;
     private boolean outputInterlacing = false;
     private int outputQuality = MAX_OUTPUT_QUALITY;
@@ -134,6 +136,14 @@ public final class OperationList implements Comparable<OperationList>,
             return Collections.unmodifiableMap(options);
         }
         return options;
+    }
+
+    /**
+     * @return Output compression type. This only applies to certain output
+     *         formats.
+     */
+    public Compression getOutputCompression() {
+        return outputCompression;
     }
 
     public Format getOutputFormat() {
@@ -236,6 +246,10 @@ public final class OperationList implements Comparable<OperationList>,
         this.identifier = identifier;
     }
 
+    public void setOutputCompression(Compression compression) {
+        this.outputCompression = compression;
+    }
+
     /**
      * @param outputFormat
      * @throws UnsupportedOperationException If the instance is frozen.
@@ -306,14 +320,15 @@ public final class OperationList implements Comparable<OperationList>,
      * <pre>{
      *     "identifier": "result of {@link Identifier#toString()}",
      *     "operations": [
-     *         "result of {@link Operation#toMap(Dimension)}"
+     *         result of {@link Operation#toMap(Dimension)}
      *     ],
      *     "options": {
-     *         "key": "value"
+     *         "key": value
      *     },
-     *     "output_format": "result of {@link Format#toMap}"
+     *     "output_format": result of {@link Format#toMap}
      *     "output_interlacing": boolean,
-     *     "output_quality": short
+     *     "output_quality": short,
+     *     "output_compression": string
      * }</pre>
      *
      * @param fullSize Full size of the source image on which the instance is
@@ -331,6 +346,7 @@ public final class OperationList implements Comparable<OperationList>,
         map.put("output_format", getOutputFormat().toMap());
         map.put("output_interlacing", isOutputInterlacing());
         map.put("output_quality", getOutputQuality());
+        map.put("output_compression", getOutputCompression().toString());
         return map;
     }
 
@@ -358,6 +374,11 @@ public final class OperationList implements Comparable<OperationList>,
         }
         if (getOutputQuality() < MAX_OUTPUT_QUALITY) {
             parts.add("quality:" + getOutputQuality());
+        }
+        if (getOutputCompression() != null &&
+                !getOutputCompression().equals(Compression.UNCOMPRESSED) &&
+                !getOutputCompression().equals(Compression.UNDEFINED)) {
+            parts.add("compression:" + getOutputCompression());
         }
 
         return StringUtils.join(parts, "_") + "." +

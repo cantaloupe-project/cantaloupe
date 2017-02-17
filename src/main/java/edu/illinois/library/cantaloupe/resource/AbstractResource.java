@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
@@ -302,22 +303,14 @@ public abstract class AbstractResource extends ServerResource {
                 opList.setOutputQuality(quality);
                 break;
             case TIF:
-                /*
                 // Compression
                 final String compressionStr =
                         config.getString(Processor.TIF_COMPRESSION_CONFIG_KEY, "LZW");
                 final Compression compression =
                         Compression.valueOf(compressionStr.toUpperCase());
-                opList.getOutputFormat().setCompression(compression);
-                */
+                opList.setOutputCompression(compression);
                 break;
         }
-
-        // TIFF compression
-        final String tiffCompression =
-                config.getString(Processor.TIF_COMPRESSION_CONFIG_KEY, "LZW");
-        opList.getOptions().put(Processor.TIF_COMPRESSION_CONFIG_KEY,
-                tiffCompression);
 
         // At this point, the list is complete, so it can be safely frozen.
         // This will prevent it from being modified by clients (e.g. processors)

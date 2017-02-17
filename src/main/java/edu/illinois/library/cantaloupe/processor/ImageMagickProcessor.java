@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
@@ -217,49 +218,6 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         return isUsingVersion7.get();
     }
 
-    /**
-     * @param filter
-     * @return String suitable for passing to convert's <code>-filter</code>
-     *         argument, or <code>null</code> if an equivalent is unknown.
-     */
-    private String imFilter(Scale.Filter filter) {
-        // http://www.imagemagick.org/Usage/filter/
-        switch (filter) {
-            case BELL:
-                return "hamming";
-            case BICUBIC:
-                return "catrom";
-            case BOX:
-                return "box";
-            case BSPLINE:
-                return "spline";
-            case HERMITE:
-                return "hermite";
-            case LANCZOS3:
-                return "lanczos";
-            case MITCHELL:
-                return "mitchell";
-            case TRIANGLE:
-                return "triangle";
-        }
-        return null;
-    }
-
-    private String imTiffCompression(String configValue) {
-        switch (configValue.toLowerCase()) {
-            case "lzw":
-                return "LZW";
-            case "zlib":
-                return "Zip";
-            case "jpeg":
-                return "JPEG";
-            case "packbits":
-                return "RLE";
-            default:
-                return "None";
-        }
-    }
-
     @Override
     public Set<Format> getAvailableOutputFormats() {
         Set<Format> formats = getFormats().get(format);
@@ -329,7 +287,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                 if (scale.hasEffect(fullSize, ops)) {
                     final Scale.Filter scaleFilter = scale.getFilter();
                     if (scaleFilter != null) {
-                        final String imFilter = imFilter(scaleFilter);
+                        final String imFilter = getIMFilter(scaleFilter);
                         if (imFilter != null) {
                             args.add("-filter");
                             args.add(imFilter);
@@ -416,10 +374,9 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                 break;
             case TIF:
                 // Compression
-                final String compression = (String) ops.getOptions().
-                        getOrDefault(Processor.TIF_COMPRESSION_CONFIG_KEY, "LZW");
+                final Compression compression = ops.getOutputCompression();
                 args.add("-compress");
-                args.add(imTiffCompression(compression));
+                args.add(getIMTIFFCompression(compression));
                 break;
         }
 
@@ -427,6 +384,55 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         args.add(ops.getOutputFormat().getPreferredExtension() + ":-");
 
         return args;
+    }
+
+    /**
+     * @param filter
+     * @return String suitable for passing to convert's <code>-filter</code>
+     *         argument, or <code>null</code> if an equivalent is unknown.
+     */
+    private String getIMFilter(Scale.Filter filter) {
+        // http://www.imagemagick.org/Usage/filter/
+        switch (filter) {
+            case BELL:
+                return "hamming";
+            case BICUBIC:
+                return "catrom";
+            case BOX:
+                return "box";
+            case BSPLINE:
+                return "spline";
+            case HERMITE:
+                return "hermite";
+            case LANCZOS3:
+                return "lanczos";
+            case MITCHELL:
+                return "mitchell";
+            case TRIANGLE:
+                return "triangle";
+        }
+        return null;
+    }
+
+    /**
+     * @param compression May be <code>null</code>.
+     * @return String suitable for passing to convert's <code>-compress</code>
+     *         argument.
+     */
+    private String getIMTIFFCompression(Compression compression) {
+        if (compression != null) {
+            switch (compression) {
+                case LZW:
+                    return "LZW";
+                case DEFLATE:
+                    return "Zip";
+                case JPEG:
+                    return "JPEG";
+                case RLE:
+                    return "RLE";
+            }
+        }
+        return "None";
     }
 
     @Override

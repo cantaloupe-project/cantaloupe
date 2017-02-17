@@ -1,10 +1,10 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
+import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.processor.Processor;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFField;
 import org.slf4j.Logger;
@@ -93,6 +93,27 @@ class TIFFImageWriter extends AbstractImageWriter {
     }
 
     /**
+     * @return Compression type in the javax.imageio vernacular. May return
+     *         <code>null</code> to indicate no equivalent or no compression.
+     */
+    private String getImageIOType(Compression compression) {
+        switch (compression) {
+            case DEFLATE:
+                return "ZLib";
+            case JPEG:
+                return "JPEG";
+            case JPEG2000:
+                return "JPEG2000";
+            case LZW:
+                return "LZW";
+            case RLE:
+                return "PackBits";
+            default:
+                return null;
+        }
+    }
+
+    /**
      * @param writer Writer to obtain the default metadata from.
      * @param writeParam Write parameters on which to base the metadata.
      * @param image Image to apply the metadata to.
@@ -122,12 +143,15 @@ class TIFFImageWriter extends AbstractImageWriter {
      */
     private ImageWriteParam getWriteParam(ImageWriter writer) {
         final ImageWriteParam writeParam = writer.getDefaultWriteParam();
-        final String compressionType = (String) opList.getOptions().
-                get(Processor.TIF_COMPRESSION_CONFIG_KEY);
-        if (compressionType != null) {
-            writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-            writeParam.setCompressionType(compressionType);
-            logger.debug("Compression type: {}", compressionType);
+
+        final Compression compression = opList.getOutputCompression();
+        if (compression != null) {
+            final String type = getImageIOType(compression);
+            if (type != null) {
+                writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                writeParam.setCompressionType(type);
+                logger.debug("Compression type: {}", type);
+            }
         }
         return writeParam;
     }

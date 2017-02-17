@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.operation;
 
 import static org.junit.Assert.*;
 
+import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -28,6 +29,9 @@ public class OperationListTest extends BaseTest {
         ops.add(scale);
         ops.add(new Rotate(0));
         ops.setOutputFormat(Format.JPG);
+        ops.setOutputCompression(Compression.JPEG);
+        ops.setOutputQuality(80);
+        ops.setOutputInterlacing(true);
         return ops;
     }
 
@@ -107,6 +111,9 @@ public class OperationListTest extends BaseTest {
         ops2.add(scale);
         ops2.add(new Rotate(0));
         ops2.setOutputFormat(Format.JPG);
+        ops2.setOutputCompression(Compression.JPEG);
+        ops2.setOutputQuality(80);
+        ops2.setOutputInterlacing(true);
         assertEquals(0, ops2.compareTo(this.ops));
     }
 
@@ -456,6 +463,7 @@ public class OperationListTest extends BaseTest {
         ops.add(Transpose.HORIZONTAL);
         // output
         ops.setOutputFormat(Format.JPG);
+        ops.setOutputCompression(Compression.JPEG);
         ops.setOutputInterlacing(true);
         ops.setOutputQuality(80);
 
@@ -467,6 +475,7 @@ public class OperationListTest extends BaseTest {
         assertEquals("jpg", ((Map) map.get("output_format")).get("extension"));
         assertEquals(80, map.get("output_quality"));
         assertTrue((boolean) map.get("output_interlacing"));
+        assertEquals("JPEG", map.get("output_compression"));
     }
 
     /* toString() */
@@ -488,10 +497,10 @@ public class OperationListTest extends BaseTest {
         ops.setOutputFormat(Format.JPG);
         ops.setOutputInterlacing(true);
         ops.setOutputQuality(80);
+        ops.setOutputCompression(Compression.JPEG);
         ops.getOptions().put("animal", "cat");
 
-
-        String expected = "identifier.jpg_crop:5,6,20,22_scale:40%_rotate:15_null_colortransform:bitonal_animal:cat_interlace_quality:80.jpg";
+        String expected = "identifier.jpg_crop:5,6,20,22_scale:40%_rotate:15_null_colortransform:bitonal_animal:cat_interlace_quality:80_compression:JPEG.jpg";
         assertEquals(expected, ops.toString());
     }
 
