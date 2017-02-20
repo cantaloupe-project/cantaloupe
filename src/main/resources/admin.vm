@@ -1236,7 +1236,7 @@
                                             <a tabindex="0" class="btn btn-sm cl-help"
                                                role="button" data-toggle="popover"
                                                data-trigger="focus"
-                                               data-content="Interlaced JPEGs are generally more
+                                               data-content="Progressive JPEGs are generally more
                                                space-efficient and can provide a better user
                                                experience, but they are not quite as well-supported
                                                by all software.">?</a>
@@ -1245,10 +1245,10 @@
                                             <div class="checkbox">
                                                 <label>
                                                     <input type="checkbox"
-                                                           name="processor.jpg.interlace"
+                                                           name="processor.jpg.progressive"
                                                            value="true"
                                                            data-requires-restart="false">
-                                                    Interlace JPEGs
+                                                    Progressive JPEG
                                                 </label>
                                             </div>
                                         </td>

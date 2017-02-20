@@ -51,8 +51,8 @@ public class AbstractResourceTest extends BaseTest {
         config.setProperty(Processor.BACKGROUND_COLOR_CONFIG_KEY, "white");
         // JPEG quality
         config.setProperty(Processor.JPG_QUALITY_CONFIG_KEY, 50);
-        // JPEG interlacing
-        config.setProperty(Processor.JPG_INTERLACE_CONFIG_KEY, true);
+        // JPEG progressive
+        config.setProperty(Processor.JPG_PROGRESSIVE_CONFIG_KEY, true);
 
         ///////////////////////////// Test ////////////////////////////////
 

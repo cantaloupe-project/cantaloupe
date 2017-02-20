@@ -270,10 +270,10 @@ public class ControlPanelTest extends ResourceTest {
         new Select(css("[name=\"processor.downscale_filter\"]")).
                 selectByVisibleText("Mitchell");
         css("[name=\"processor.sharpen\"]").sendKeys("0.2");
-        css("[name=\"processor.jpg.interlace\"]").click();
+        css("[name=\"processor.jpg.progressive\"]").click();
         css("[name=\"processor.jpg.quality\"]").sendKeys("55");
         new Select(css("[name=\"processor.tif.compression\"]")).
-                selectByVisibleText("PackBits");
+                selectByVisibleText("LZW");
         new Select(css("[name=\"StreamProcessor.retrieval_strategy\"]")).
                 selectByValue("StreamStrategy");
         // FfmpegProcessor
@@ -315,9 +315,9 @@ public class ControlPanelTest extends ResourceTest {
         assertEquals("mitchell",
                 config.getString("processor.downscale_filter"));
         assertEquals("0.2", config.getString("processor.sharpen"));
-        assertEquals("true", config.getString("processor.jpg.interlace"));
+        assertEquals("true", config.getString("processor.jpg.progressive"));
         assertEquals("55", config.getString("processor.jpg.quality"));
-        assertEquals("PackBits", config.getString("processor.tif.compression"));
+        assertEquals("LZW", config.getString("processor.tif.compression"));
         assertEquals("StreamStrategy",
                 config.getString("StreamProcessor.retrieval_strategy"));
         // FfmpegProcessor

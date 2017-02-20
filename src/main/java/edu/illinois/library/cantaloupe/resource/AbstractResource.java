@@ -294,9 +294,9 @@ public abstract class AbstractResource extends ServerResource {
         switch (opList.getOutputFormat()) {
             case JPG:
                 // Interlacing
-                final boolean interlace =
-                        config.getBoolean(Processor.JPG_INTERLACE_CONFIG_KEY, false);
-                opList.setOutputInterlacing(interlace);
+                final boolean progressive =
+                        config.getBoolean(Processor.JPG_PROGRESSIVE_CONFIG_KEY, false);
+                opList.setOutputInterlacing(progressive);
                 // Quality
                 final int quality =
                         config.getInt(Processor.JPG_QUALITY_CONFIG_KEY, 80);

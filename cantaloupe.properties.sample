@@ -266,8 +266,8 @@ processor.upscale_filter = bicubic
 # Intensity of an unsharp mask from 0 to 1.
 processor.sharpen = 0
 
-# Interlaced a.k.a. progressive JPEGs are generally more space-efficient.
-processor.jpg.interlace = true
+# Progressive JPEGs are generally more space-efficient.
+processor.jpg.progressive = true
 
 # JPEG output quality (1-100).
 processor.jpg.quality = 80
