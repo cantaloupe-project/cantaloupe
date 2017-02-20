@@ -79,7 +79,14 @@ public class ImageRepresentation extends OutputRepresentation {
                     if (inputStream != null) {
                         // The image is available in the cache; write it to the
                         // response output stream.
+                        final Stopwatch watch = new Stopwatch();
+
                         IOUtils.copy(inputStream, outputStream);
+
+                        logger.debug("Streamed from {} in {} msec: {}",
+                                cache.getClass().getSimpleName(),
+                                watch.timeElapsed(),
+                                opList);
                     } else {
                         // Create a TeeOutputStream to write to the response
                         // output stream and the cache pseudo-simultaneously.
