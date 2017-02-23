@@ -25,10 +25,24 @@ public interface Configuration {
 
     boolean getBoolean(String key);
 
+    /**
+     * @param key
+     * @param defaultValue
+     * @return Boolean value corresponding to the given key, or the given
+     *         default value if the target value is null or cannot be coerced
+     *         to a boolean.
+     */
     boolean getBoolean(String key, boolean defaultValue);
 
     double getDouble(String key);
 
+    /**
+     * @param key
+     * @param defaultValue
+     * @return Double value corresponding to the given key, or the given
+     *         default value if the target value is null or cannot be coerced
+     *         to a double.
+     */
     double getDouble(String key, double defaultValue);
 
     /**
@@ -39,10 +53,24 @@ public interface Configuration {
 
     float getFloat(String key);
 
+    /**
+     * @param key
+     * @param defaultValue
+     * @return Float value corresponding to the given key, or the given
+     *         default value if the target value is null or cannot be coerced
+     *         to a float.
+     */
     float getFloat(String key, float defaultValue);
 
     int getInt(String key);
 
+    /**
+     * @param key
+     * @param defaultValue
+     * @return Int value corresponding to the given key, or the given default
+     *         value if the target value is null or cannot be coerced to an
+     *         int.
+     */
     int getInt(String key, int defaultValue);
 
     /**
@@ -52,12 +80,25 @@ public interface Configuration {
 
     long getLong(String key);
 
+    /**
+     * @param key
+     * @param defaultValue
+     * @return Long value corresponding to the given key, or the given default
+     *         value if the target value is null or cannot be coerced to a
+     *         long.
+     */
     long getLong(String key, long defaultValue);
 
     Object getProperty(String key);
 
     String getString(String key);
 
+    /**
+     * @param key
+     * @param defaultValue
+     * @return String value corresponding to the given key, or the given
+     *         default value if the target value is null.
+     */
     String getString(String key, String defaultValue);
 
     /**
