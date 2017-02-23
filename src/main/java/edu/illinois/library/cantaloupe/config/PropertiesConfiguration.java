@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.config;
 
+import org.apache.commons.configuration.ConversionException;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
@@ -36,7 +38,11 @@ class PropertiesConfiguration extends FileConfiguration implements Configuration
 
     @Override
     public boolean getBoolean(String key, boolean defaultValue) {
-        return commonsConfig.getBoolean(key, defaultValue);
+        try {
+            return commonsConfig.getBoolean(key, defaultValue);
+        } catch (ConversionException e) {
+            return defaultValue;
+        }
     }
 
     @Override
@@ -46,7 +52,11 @@ class PropertiesConfiguration extends FileConfiguration implements Configuration
 
     @Override
     public double getDouble(String key, double defaultValue) {
-        return commonsConfig.getDouble(key, defaultValue);
+        try {
+            return commonsConfig.getDouble(key, defaultValue);
+        } catch (ConversionException e) {
+            return defaultValue;
+        }
     }
 
     @Override
@@ -56,7 +66,11 @@ class PropertiesConfiguration extends FileConfiguration implements Configuration
 
     @Override
     public float getFloat(String key, float defaultValue) {
-        return commonsConfig.getFloat(key, defaultValue);
+        try {
+            return commonsConfig.getFloat(key, defaultValue);
+        } catch (ConversionException e) {
+            return defaultValue;
+        }
     }
 
     @Override
@@ -66,7 +80,11 @@ class PropertiesConfiguration extends FileConfiguration implements Configuration
 
     @Override
     public int getInt(String key, int defaultValue) {
-        return commonsConfig.getInt(key, defaultValue);
+        try {
+            return commonsConfig.getInt(key, defaultValue);
+        } catch (ConversionException e) {
+            return defaultValue;
+        }
     }
 
     @Override
@@ -81,7 +99,11 @@ class PropertiesConfiguration extends FileConfiguration implements Configuration
 
     @Override
     public long getLong(String key, long defaultValue) {
-        return commonsConfig.getLong(key, defaultValue);
+        try {
+            return commonsConfig.getLong(key, defaultValue);
+        } catch (ConversionException e) {
+            return defaultValue;
+        }
     }
 
     @Override

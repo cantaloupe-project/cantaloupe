@@ -48,7 +48,7 @@ class MemoryConfiguration implements Configuration {
     public boolean getBoolean(String key, boolean defaultValue) {
         try {
             return getBoolean(key);
-        } catch (NoSuchElementException e) {
+        } catch (NoSuchElementException | ConversionException e) {
             return defaultValue;
         }
     }
@@ -57,7 +57,11 @@ class MemoryConfiguration implements Configuration {
     public double getDouble(String key) {
         Object value = configuration.get(key);
         if (value != null) {
-            return Double.parseDouble(value.toString());
+            try {
+                return Double.parseDouble(value.toString());
+            } catch (NumberFormatException e) {
+                throw new ConversionException(e.getMessage(), e);
+            }
         }
         throw new NoSuchElementException(key);
     }
@@ -66,7 +70,7 @@ class MemoryConfiguration implements Configuration {
     public double getDouble(String key, double defaultValue) {
         try {
             return getDouble(key);
-        } catch (NoSuchElementException | NumberFormatException e) {
+        } catch (NoSuchElementException | ConversionException e) {
             return defaultValue;
         }
     }
@@ -83,7 +87,11 @@ class MemoryConfiguration implements Configuration {
     public float getFloat(String key) {
         Object value = configuration.get(key);
         if (value != null) {
-            return Float.parseFloat(value.toString());
+            try {
+                return Float.parseFloat(value.toString());
+            } catch (NumberFormatException e) {
+                throw new ConversionException(e.getMessage(), e);
+            }
         }
         throw new NoSuchElementException(key);
     }
@@ -92,7 +100,7 @@ class MemoryConfiguration implements Configuration {
     public float getFloat(String key, float defaultValue) {
         try {
             return getFloat(key);
-        } catch (NoSuchElementException | NumberFormatException e) {
+        } catch (NoSuchElementException | ConversionException e) {
             return defaultValue;
         }
     }
@@ -101,7 +109,11 @@ class MemoryConfiguration implements Configuration {
     public int getInt(String key) {
         Object value = configuration.get(key);
         if (value != null) {
-            return Integer.parseInt(value.toString());
+            try {
+                return Integer.parseInt(value.toString());
+            } catch (NumberFormatException e) {
+                throw new ConversionException(e.getMessage(), e);
+            }
         }
         throw new NoSuchElementException(key);
     }
@@ -110,7 +122,7 @@ class MemoryConfiguration implements Configuration {
     public int getInt(String key, int defaultValue) {
         try {
             return getInt(key);
-        } catch (NoSuchElementException | NumberFormatException e) {
+        } catch (NoSuchElementException | ConversionException e) {
             return defaultValue;
         }
     }
@@ -124,7 +136,11 @@ class MemoryConfiguration implements Configuration {
     public long getLong(String key) {
         Object value = configuration.get(key);
         if (value != null) {
-            return Long.parseLong(value.toString());
+            try {
+                return Long.parseLong(value.toString());
+            } catch (NumberFormatException e) {
+                throw new ConversionException(e.getMessage(), e);
+            }
         }
         throw new NoSuchElementException(key);
     }
@@ -133,7 +149,7 @@ class MemoryConfiguration implements Configuration {
     public long getLong(String key, long defaultValue) {
         try {
             return getLong(key);
-        } catch (NoSuchElementException | NumberFormatException e) {
+        } catch (NoSuchElementException | ConversionException e) {
             return defaultValue;
         }
     }
