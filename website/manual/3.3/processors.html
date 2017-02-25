@@ -604,6 +604,12 @@ landing page, as well as in one of the tables below. A list of output formats su
 
 <p>Years ago, Sun published <a href="http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-java-client-419417.html">platform-native accelerator JARs</a> called <a href="http://www.oracle.com/technetwork/java/install-1-1-2-135866.html">mediaLib</a> for Windows, Linux, and Solaris, which improved JAI's performance. It is unknown whether these still work on modern platforms, or what degree of benefit they provide.</p>
 
+<div class="alert alert-info">
+  <p>When using this processor, it is normal to see the following log message:</p>
+  <blockquote>Error: Could not find mediaLib accelerator wrapper classes. Continuing in pure Java mode.</blockquote>
+  <p>This is caused by the absence of a mediaLib JAR on the classpath, and is harmless. Add the <code>-Dcom.sun.media.jai.disableMediaLib=true</code> VM option to suppress it.</p>
+</div>
+
 <hr>
 
 <h3 id="GraphicsMagickProcessor">GraphicsMagickProcessor</h3>
