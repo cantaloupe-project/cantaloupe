@@ -92,7 +92,7 @@ class JPEGImageWriter extends AbstractImageWriter {
         final int quality = opList.getOutputQuality();
         writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
         writeParam.setCompressionQuality(quality * 0.01f);
-        logger.debug("Using quality: {}", quality);
+        logger.debug("Quality: {}", quality);
 
         // Interlacing
         final boolean interlace = opList.isOutputInterlacing();
