@@ -328,11 +328,12 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
                 process.destroy();
             }
         } catch (EOFException e) {
+            // This is usually caused by the connection closing.
             String msg = e.getMessage();
             msg = String.format("process(): %s (%s)",
                     (msg != null && msg.length() > 0) ? msg : "EOFException",
                     opList.toString());
-            logger.error(msg, e);
+            logger.warn(msg, e);
             throw new ProcessorException(msg, e);
         } catch (IOException | InterruptedException e) {
             String msg = e.getMessage();
