@@ -68,7 +68,10 @@ public abstract class CacheFactory {
             } else {
                 derivativeCache = null;
             }
-        } catch (Exception e) {
+        } catch (ClassNotFoundException e) {
+            logger.error("Class not found: {}", e.getMessage());
+            derivativeCache = null;
+        } catch (IllegalAccessException | InstantiationException e) {
             logger.error(e.getMessage());
             derivativeCache = null;
         }
@@ -99,10 +102,14 @@ public abstract class CacheFactory {
             } else {
                 sourceCache = null;
             }
-        } catch (Exception e) {
+        } catch (ClassNotFoundException e) {
+            logger.error("Class not found: {}", e.getMessage());
+            sourceCache = null;
+        } catch (IllegalAccessException | InstantiationException e) {
             logger.error(e.getMessage());
             sourceCache = null;
         }
+
         return sourceCache;
     }
 
