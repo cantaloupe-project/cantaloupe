@@ -64,7 +64,7 @@ class TIFFImageReader extends AbstractImageReader {
         }
         if (iioReader != null) {
             iioReader.setInput(inputStream);
-            logger.info("createReader(): using {}", iioReader.getClass().getName());
+            logger.debug("createReader(): using {}", iioReader.getClass().getName());
         } else {
             throw new IOException("Unable to determine the format of the " +
                     "source image.");

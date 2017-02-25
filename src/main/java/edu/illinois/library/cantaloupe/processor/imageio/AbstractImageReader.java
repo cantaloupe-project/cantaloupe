@@ -118,7 +118,7 @@ abstract class AbstractImageReader {
 
             iioReader = it.next();
             iioReader.setInput(inputStream, false, ignoreMetadata);
-            logger.info("createReader(): using {}",
+            logger.debug("createReader(): using {}",
                     iioReader.getClass().getName());
         } else {
             throw new IOException("createReader(): unable to determine the " +
