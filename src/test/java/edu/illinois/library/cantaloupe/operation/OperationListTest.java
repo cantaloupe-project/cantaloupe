@@ -504,4 +504,34 @@ public class OperationListTest extends BaseTest {
         assertEquals(expected, ops.toString());
     }
 
+
+    /* validate() */
+
+    @Test
+    public void testValidateWithValidInstance() {
+        Dimension fullSize = new Dimension(1000, 1000);
+        OperationList ops = new OperationList();
+        Crop crop = new Crop(0, 0, 100, 100);
+        ops.add(crop);
+        try {
+            ops.validate(fullSize);
+        } catch (ValidationException e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testValidateWithOutOfBoundsCrop() {
+        Dimension fullSize = new Dimension(1000, 1000);
+        OperationList ops = new OperationList();
+        Crop crop = new Crop(1001, 1001, 100, 100);
+        ops.add(crop);
+        try {
+            ops.validate(fullSize);
+            fail("Expected exception");
+        } catch (ValidationException e) {
+            // pass
+        }
+    }
+
 }

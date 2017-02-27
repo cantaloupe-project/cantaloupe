@@ -385,4 +385,18 @@ public final class OperationList implements Comparable<OperationList>,
                 getOutputFormat().getPreferredExtension();
     }
 
+    /**
+     * Validates the instance, throwing a {@link ValidationException} if
+     * invalid.
+     *
+     * @param fullSize Full size of the source image on which the instance is
+     *                 being applied.
+     * @throws ValidationException
+     */
+    public void validate(Dimension fullSize) throws ValidationException {
+        for (Operation op : this) {
+            op.validate(fullSize);
+        }
+    }
+
 }
