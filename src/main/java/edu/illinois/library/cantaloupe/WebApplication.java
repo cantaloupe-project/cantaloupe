@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute;
+import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
@@ -92,6 +93,7 @@ public class WebApplication extends Application {
             if (t instanceof ResourceException) {
                 status = ((ResourceException) t).getStatus();
             } else if (t instanceof IllegalArgumentException ||
+                    t instanceof ValidationException ||
                     t instanceof UnsupportedEncodingException) {
                 status = new Status(Status.CLIENT_ERROR_BAD_REQUEST, t);
             } else if (t instanceof UnsupportedOutputFormatException) {
