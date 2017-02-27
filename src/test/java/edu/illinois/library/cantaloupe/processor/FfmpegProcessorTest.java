@@ -10,6 +10,7 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.awt.Dimension;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -170,16 +171,17 @@ public class FfmpegProcessorTest extends ProcessorTest {
     @Test
     public void testValidate() throws Exception {
         OperationList ops = TestUtil.newOperationList();
-        instance.validate(ops);
+        Dimension fullSize = new Dimension(1000, 1000);
+        instance.validate(ops, fullSize);
 
         // Valid time format
         ops.getOptions().put("time", "00:00:02");
-        instance.validate(ops);
+        instance.validate(ops, fullSize);
 
         // Invalid time format
         ops.getOptions().put("time", "000012");
         try {
-            instance.validate(ops);
+            instance.validate(ops, fullSize);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             // pass
@@ -188,7 +190,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
         // Time beyond the video length
         ops.getOptions().put("time", "00:38:06");
         try {
-            instance.validate(ops);
+            instance.validate(ops, fullSize);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             // pass

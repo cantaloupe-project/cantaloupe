@@ -117,7 +117,9 @@ public class ImageResource extends IIIF1Resource {
         ops.getOptions().putAll(
                 this.getReference().getQueryAsForm(true).getValuesMap());
 
-        processor.validate(ops);
+        final Dimension fullSize = getOrReadInfo(identifier, processor).getSize();
+
+        processor.validate(ops, fullSize);
 
         final Disposition disposition = getRepresentationDisposition(
                 ops.getIdentifier(), ops.getOutputFormat());
@@ -144,8 +146,6 @@ public class ImageResource extends IIIF1Resource {
                 processor.getAvailableOutputFormats());
         getResponse().getHeaders().add("Link",
                 String.format("<%s>;rel=\"profile\";", complianceLevel.getUri()));
-
-        final Dimension fullSize = getOrReadInfo(identifier, processor).getSize();
 
         StringRepresentation redirectingRep = checkAuthorization(ops, fullSize);
         if (redirectingRep != null) {

@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
@@ -135,30 +136,32 @@ public interface Processor {
     void setSourceFormat(Format format) throws UnsupportedSourceFormatException;
 
     /**
-     * <p>Validates the given operation list, throwing an
-     * {@link IllegalArgumentException} if invalid.</p>
+     * <p>Validates the given operation list, throwing an exception if
+     * invalid.</p>
      *
-     * <p>This default implementation does nothing.</p>
+     * <p>This default implementation simply validates the given operation
+     * list.</p>
      *
      * <p>Notes:</p>
      *
      * <ul>
      *     <li>This method is mainly for validating processor-specific options
-     *     in the list's options map. There is typically no need to validate
-     *     the operations themselves, as this will have already been done by
-     *     the endpoints. Most implementations will therefore not need to do
-     *     much, if anything.</li>
+     *     in the list's options map. Implementations that don't use these will
+     *     not need to override this.</li>
+     *     <li>Implementations should call <code>super</code>.</li>
      *     <li>It is guaranteed that this method, if called, will always be
      *     called before {@link #process}.</li>
      * </ul>
      *
      * @param opList OperationList to process. Will be equal to the one passed
      *               to {@link #process}.
-     * @throws IllegalArgumentException If validation fails.
-     * @throws ProcessorException       If there is some issue performing the
-     *                                  validation.
+     * @throws ValidationException If validation fails.
+     * @throws ProcessorException  If there is some issue performing the
+     *                             validation.
      */
-    default void validate(OperationList opList)
-            throws IllegalArgumentException, ProcessorException {}
+    default void validate(OperationList opList, Dimension fullSize)
+            throws ValidationException, ProcessorException {
+        opList.validate(fullSize);
+    }
 
 }

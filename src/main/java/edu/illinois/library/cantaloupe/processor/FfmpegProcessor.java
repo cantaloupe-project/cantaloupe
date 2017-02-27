@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
@@ -20,6 +21,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -235,7 +237,10 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
     }
 
     @Override
-    public void validate(OperationList opList) throws ProcessorException {
+    public void validate(OperationList opList, Dimension fullSize)
+            throws ValidationException, ProcessorException {
+        FileProcessor.super.validate(opList, fullSize);
+
         if (durationSec < 1) {
             readImageInfo();
         }

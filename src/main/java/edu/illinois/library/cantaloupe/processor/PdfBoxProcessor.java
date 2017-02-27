@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.apache.commons.io.IOUtils;
@@ -194,7 +195,10 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     }
 
     @Override
-    public void validate(OperationList opList) throws ProcessorException {
+    public void validate(OperationList opList, Dimension fullSize)
+            throws ValidationException, ProcessorException {
+        StreamProcessor.super.validate(opList, fullSize);
+
         // Check the format of the "page" option, if present.
         final String pageStr = (String) opList.getOptions().get("page");
         if (pageStr != null) {
@@ -205,7 +209,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                     try {
                         loadDocument();
                         if (page > doc.getNumberOfPages()) {
-                            throw new IllegalArgumentException(
+                            throw new ValidationException(
                                     "Page number is out-of-bounds.");
                         }
                     } catch (IOException e) {
@@ -213,11 +217,11 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                         throw new ProcessorException(e.getMessage(), e);
                     }
                 } else {
-                    throw new IllegalArgumentException(
+                    throw new ValidationException(
                             "Page number is out-of-bounds.");
                 }
             } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Invalid page number.");
+                throw new ValidationException("Invalid page number.");
             }
         }
     }

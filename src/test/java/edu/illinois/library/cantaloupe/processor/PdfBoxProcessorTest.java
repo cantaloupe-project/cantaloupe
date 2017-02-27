@@ -5,12 +5,14 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.awt.Dimension;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
@@ -112,32 +114,33 @@ public class PdfBoxProcessorTest extends ProcessorTest {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
         OperationList ops = TestUtil.newOperationList();
-        instance.validate(ops);
+        Dimension fullSize = new Dimension(1000, 1000);
+        instance.validate(ops, fullSize);
 
         ops.getOptions().put("page", "1");
-        instance.validate(ops);
+        instance.validate(ops, fullSize);
 
         ops.getOptions().put("page", "3");
         try {
-            instance.validate(ops);
+            instance.validate(ops, fullSize);
             fail("Expected exception");
-        } catch (IllegalArgumentException e) {
+        } catch (ValidationException e) {
             // pass
         }
 
         ops.getOptions().put("page", "0");
         try {
-            instance.validate(ops);
+            instance.validate(ops, fullSize);
             fail("Expected exception");
-        } catch (IllegalArgumentException e) {
+        } catch (ValidationException e) {
             // pass
         }
 
         ops.getOptions().put("page", "-1");
         try {
-            instance.validate(ops);
+            instance.validate(ops, fullSize);
             fail("Expected exception");
-        } catch (IllegalArgumentException e) {
+        } catch (ValidationException e) {
             // pass
         }
     }
