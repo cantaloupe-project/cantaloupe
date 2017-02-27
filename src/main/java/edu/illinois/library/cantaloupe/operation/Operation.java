@@ -49,4 +49,18 @@ public interface Operation {
      */
     Map<String,Object> toMap(Dimension fullSize);
 
+    /**
+     * <p>Validates the instance, throwing an exception if invalid.</p>
+     *
+     * <p>Implementations can also throw exceptions from property setters as an
+     * alternative to using this method.</p>
+     *
+     * <p>This default implementation does nothing.</p>
+     *
+     * @param fullSize Full size of the source image on which the operation
+     *                 is being applied.
+     * @throws ValidationException If the instance is invalid.
+     */
+    default void validate(Dimension fullSize) throws ValidationException {};
+
 }
