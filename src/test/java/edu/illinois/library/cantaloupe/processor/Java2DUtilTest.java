@@ -339,22 +339,19 @@ public class Java2DUtilTest extends BaseTest {
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
+        // Scale.Mode.NON_ASPECT_FILL
+        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
+        scale.setWidth(80);
+        scale.setHeight(50);
+        outImage = Java2DUtil.scaleImage(inImage, scale);
+        assertEquals(80, outImage.getWidth());
+        assertEquals(50, outImage.getHeight());
+
         // scale-by percent
         scale = new Scale(0.25f);
         outImage = Java2DUtil.scaleImage(inImage, scale);
         assertEquals(25, outImage.getWidth());
         assertEquals(25, outImage.getHeight());
-    }
-
-    @Test
-    public void testSharpenImage() {
-        BufferedImage inImage = new BufferedImage(200, 100,
-                BufferedImage.TYPE_INT_RGB);
-        Sharpen sharpen = new Sharpen(0.1f);
-        BufferedImage outImage = Java2DUtil.sharpenImage(inImage, sharpen);
-
-        assertEquals(200, outImage.getWidth());
-        assertEquals(100, outImage.getHeight());
     }
 
     @Test
@@ -388,6 +385,17 @@ public class Java2DUtilTest extends BaseTest {
         rf = new ReductionFactor(2);
         outImage = Java2DUtil.scaleImage(inImage, scale, rf);
         assertEquals(100, outImage.getWidth());
+        assertEquals(100, outImage.getHeight());
+    }
+
+    @Test
+    public void testSharpenImage() {
+        BufferedImage inImage = new BufferedImage(200, 100,
+                BufferedImage.TYPE_INT_RGB);
+        Sharpen sharpen = new Sharpen(0.1f);
+        BufferedImage outImage = Java2DUtil.sharpenImage(inImage, sharpen);
+
+        assertEquals(200, outImage.getWidth());
         assertEquals(100, outImage.getHeight());
     }
 

@@ -355,28 +355,14 @@ abstract class AbstractImageReader {
                         bestImage.getWidth(), bestImage.getHeight());
             } else if (numImages > 1) {
                 // Loop through the reduced images from smallest to largest to
-                // find the first one that can supply the requested scale
+                // find the first one that can supply the requested scale.
                 for (int i = numImages - 1; i >= 0; i--) {
                     final int subimageWidth = iioReader.getWidth(i);
                     final int subimageHeight = iioReader.getHeight(i);
 
                     final double reducedScale = (double) subimageWidth /
                             (double) fullSize.width;
-                    boolean fits = false;
-                    if (scale.getPercent() != null) {
-                        fits = (scale.getPercent() <= reducedScale);
-                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                        fits = (scale.getWidth() / (double) regionRect.width <= reducedScale);
-                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                        fits = (scale.getHeight() / (double) regionRect.height <= reducedScale);
-                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                        fits = (scale.getWidth() / (double) regionRect.width <= reducedScale &&
-                                scale.getHeight() / (double) regionRect.height <= reducedScale);
-                    } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
-                        fits = (scale.getWidth() / (double) regionRect.width <= reducedScale &&
-                                scale.getHeight() / (double) regionRect.height <= reducedScale);
-                    }
-                    if (fits) {
+                    if (fits(regionRect, scale, reducedScale)) {
                         rf.factor = ReductionFactor.
                                 forScale(reducedScale, 0).factor;
                         logger.debug("readSmallestUsableSubimage(): " +
@@ -596,21 +582,7 @@ abstract class AbstractImageReader {
 
                     final double reducedScale = (double) subimageWidth /
                             (double) fullSize.width;
-                    boolean fits = false;
-                    if (scale.getPercent() != null) {
-                        fits = (scale.getPercent() <= reducedScale);
-                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                        fits = (scale.getWidth() / (double) regionRect.width <= reducedScale);
-                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                        fits = (scale.getHeight() / (double) regionRect.height <= reducedScale);
-                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                        fits = (scale.getWidth() / (double) regionRect.width <= reducedScale &&
-                                scale.getHeight() / (double) regionRect.height <= reducedScale);
-                    } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
-                        fits = (scale.getWidth() / (double) regionRect.width <= reducedScale &&
-                                scale.getHeight() / (double) regionRect.height <= reducedScale);
-                    }
-                    if (fits) {
+                    if (fits(regionRect, scale, reducedScale)) {
                         rf.factor = ReductionFactor.forScale(reducedScale, 0).factor;
                         logger.debug("readSmallestUsableSubimage(): " +
                                         "subimage {}: {}x{} - fits! " +
@@ -628,6 +600,42 @@ abstract class AbstractImageReader {
             }
         }
         return bestImage;
+    }
+
+    /**
+     * @param regionRect   Cropped source image region, in source image
+     *                     coordinates.
+     * @param scale        Requested scale.
+     * @param reducedScale Reduced scale of a pyramid level.
+     * @return Whether the given source image region can be satisfied by the
+     *         given reduced scale at the requested scale.
+     */
+    private boolean fits(Rectangle regionRect,
+                         Scale scale,
+                         double reducedScale) {
+        boolean fits = false;
+        if (scale.getPercent() != null) {
+            float cappedScale = scale.getPercent() > 0 ?
+                    1 : scale.getPercent();
+            fits = (cappedScale <= reducedScale);
+        } else if (Scale.Mode.ASPECT_FIT_WIDTH.equals(scale.getMode())) {
+            int cappedWidth = (scale.getWidth() > regionRect.width) ?
+                    regionRect.width : scale.getWidth();
+            fits = (cappedWidth / (double) regionRect.width <= reducedScale);
+        } else if (Scale.Mode.ASPECT_FIT_HEIGHT.equals(scale.getMode())) {
+            int cappedHeight = (scale.getHeight() > regionRect.height) ?
+                    regionRect.height : scale.getHeight();
+            fits = (cappedHeight / (double) regionRect.height <= reducedScale);
+        } else if (Scale.Mode.ASPECT_FIT_INSIDE.equals(scale.getMode()) ||
+                Scale.Mode.NON_ASPECT_FILL.equals(scale.getMode())) {
+            int cappedWidth = (scale.getWidth() > regionRect.width) ?
+                    regionRect.width : scale.getWidth();
+            int cappedHeight = (scale.getHeight() > regionRect.height) ?
+                    regionRect.height : scale.getHeight();
+            fits = (cappedWidth / (double) regionRect.width <= reducedScale &&
+                    cappedHeight / (double) regionRect.height <= reducedScale);
+        }
+        return fits;
     }
 
 }

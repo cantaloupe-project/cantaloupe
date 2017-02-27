@@ -696,7 +696,7 @@ public abstract class Java2DUtil {
         targetSize.height = (targetSize.height < 3) ? 3 : targetSize.height;
 
         BufferedImage scaledImage = inImage;
-        if (scale.hasEffect() && (targetSize.width != sourceSize.width &&
+        if (scale.hasEffect() && (targetSize.width != sourceSize.width ||
                 targetSize.height != sourceSize.height)) {
             final Stopwatch watch = new Stopwatch();
 
