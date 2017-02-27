@@ -137,25 +137,27 @@ class JaiProcessor extends AbstractImageIoProcessor
                     renderedOp = JaiUtil.cropImage(renderedOp, (Crop) op, rf);
                 } else if (op instanceof Scale && !op.isNoOp()) {
                     /*
-                    JAI has a bug that causes it to fail on right-edge
-                    deflate-compressed tiles when using the
-                    SubsampleAverage operation, as well as the scale operation
-                    with any interpolation other than nearest-neighbor. The
-                    error is an ArrayIndexOutOfBoundsException in
-                    PlanarImage.cobbleByte().
-                    Example: /iiif/2/56324x18006-pyramidal-tiled-deflate.tif/32768,0,23556,18006/737,/0/default.jpg
-                    So, the strategy is:
-                    1) if the TIFF is deflate-compressed, use the scale
-                       operation with nearest-neighbor interpolation, which
-                       is horrible, but better than nothing.
+                    JAI has a bug that causes it to fail on certain right-edge
+                    compressed TIFF tiles when using the SubsampleAverage
+                    operation, as well as the Scale operation with any
+                    interpolation other than nearest-neighbor. The error is an
+                    ArrayIndexOutOfBoundsException in PlanarImage.cobbleByte().
+
+                    Issue: https://github.com/medusa-project/cantaloupe/issues/94
+                    Example: /iiif/2/champaign-pyramidal-tiled-lzw.tif/8048,0,800,6928/99,/0/default.jpg
+
+                    So, the strategy here is:
+                    1) if the TIFF is compressed, use the Scale operation with
+                       nearest-neighbor interpolation, which is horrible, but
+                       better than nothing.
                     2) otherwise, use the SubsampleAverage operation.
                     */
                     if (getSourceFormat().equals(Format.TIF) &&
-                            reader.getCompression(0).equals(Compression.ZLIB)) {
-                        logger.debug("process(): detected " +
-                                "ZLib-compressed TIFF; using the scale " +
-                                "operator with nearest-neighbor " +
-                                "interpolation.");
+                            (!reader.getCompression(0).equals(Compression.UNCOMPRESSED) &&
+                                    !reader.getCompression(0).equals(Compression.UNKNOWN))) {
+                        logger.debug("process(): detected compressed TIFF; " +
+                                "using the Scale operation with nearest-" +
+                                "neighbor interpolation.");
                         renderedOp = JaiUtil.scaleImage(renderedOp, (Scale) op,
                                 Interpolation.getInstance(Interpolation.INTERP_NEAREST),
                                 rf);
