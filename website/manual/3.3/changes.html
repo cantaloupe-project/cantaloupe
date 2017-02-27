@@ -17,6 +17,7 @@ title: What's New
     <ul>
       <li>Auto-computed tile sizes of source images with an odd number of pixels in a dimension in information responses are rounded up, to prevent clients from requesting extremely narrow edge tiles.</li>
       <li>Operations that would have no effect in their context&mdash;for example, a crop to 0,0/300&times;200, followed by a scale-to-fit to 300 pixels wide&mdash;are skipped.</li>
+      <li>Improved request validation.</li>
       <li>Added a RESTful API endpoint to retrieve and update the configuration.</li>
     </ul>
   </li>
