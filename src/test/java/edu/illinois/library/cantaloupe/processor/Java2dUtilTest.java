@@ -323,6 +323,14 @@ public class Java2dUtilTest {
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
+        // Scale.Mode.NON_ASPECT_FILL
+        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
+        scale.setWidth(80);
+        scale.setHeight(50);
+        outImage = Java2dUtil.scaleImage(inImage, scale);
+        assertEquals(80, outImage.getWidth());
+        assertEquals(50, outImage.getHeight());
+
         // scale-by percent
         scale = new Scale();
         scale.setPercent(0.25f);
