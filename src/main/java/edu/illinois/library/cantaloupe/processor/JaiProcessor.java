@@ -153,35 +153,37 @@ class JaiProcessor extends AbstractImageIOProcessor
                         renderedOp = JAIUtil.cropImage(renderedOp, (Crop) op, rf);
                     } else if (op instanceof Scale) {
                         /*
-                        JAI has a bug that causes it to fail on right-edge
-                        deflate-compressed tiles when using the
-                        SubsampleAverage operation, as well as the scale
+                        JAI has a bug that causes it to fail on certain right-
+                        edge compressed TIFF tiles when using the
+                        SubsampleAverage operation, as well as the Scale
                         operation with any interpolation other than nearest-
                         neighbor. The error is an ArrayIndexOutOfBoundsException
                         in PlanarImage.cobbleByte().
-                        Example: /iiif/2/56324x18006-pyramidal-tiled-deflate.tif/32768,0,23556,18006/737,/0/default.jpg
-                        So, the strategy is:
-                        1) if the TIFF is deflate-compressed, use the scale
-                           operation with nearest-neighbor interpolation, which
-                           is horrible, but better than nothing.
+
+                        Issue: https://github.com/medusa-project/cantaloupe/issues/94
+                        Example: /iiif/2/champaign-pyramidal-tiled-lzw.tif/8048,0,800,6928/99,/0/default.jpg
+
+                        So, the strategy here is:
+                        1) if the TIFF is compressed, use the Scale operation with
+                           nearest-neighbor interpolation, which is horrible, but
+                           better than nothing.
                         2) otherwise, use the SubsampleAverage operation.
                         */
                         if (getSourceFormat().equals(Format.TIF) &&
-                                reader.getCompression(0).equals(Compression.DEFLATE)) {
-                            logger.debug("process(): detected " +
-                                    "ZLib-compressed TIFF; using the scale " +
-                                    "operator with nearest-neighbor " +
-                                    "interpolation.");
+                                (!reader.getCompression(0).equals(Compression.UNCOMPRESSED) &&
+                                        !reader.getCompression(0).equals(Compression.UNDEFINED))) {
+                            logger.debug("process(): detected compressed TIFF; " +
+                                    "using the Scale operation with nearest-" +
+                                    "neighbor interpolation.");
                             renderedOp = JAIUtil.scaleImage(renderedOp, (Scale) op,
                                     Interpolation.getInstance(Interpolation.INTERP_NEAREST),
                                     rf);
                         } else if (renderedOp.getWidth() < 3 ||
                                 renderedOp.getHeight() < 3) {
-                            // SubsampleAverage requires the image to be at
-                            // least 3 pixels on a side. So, again use the
-                            // Scale operation, with a better (but still bad
-                            // [but it doesn't matter because of the tiny
-                            // dimension(s)]) filter.
+                            // SubsampleAverage requires the image to be at least 3
+                            // pixels on a side. So, again use the Scale operation,
+                            // with a better (but still bad [but it doesn't matter
+                            // because of the tiny dimension(s)]) filter.
                             renderedOp = JAIUtil.scaleImage(renderedOp, (Scale) op,
                                     Interpolation.getInstance(Interpolation.INTERP_BILINEAR),
                                     rf);
