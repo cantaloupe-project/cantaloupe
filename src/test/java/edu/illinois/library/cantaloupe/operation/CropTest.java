@@ -328,6 +328,8 @@ public class CropTest extends BaseTest {
         }
     }
 
+    /* toMap() */
+
     @Test
     public void testToMap() {
         final Crop crop = new Crop(25, 25, 50, 50);
@@ -343,6 +345,8 @@ public class CropTest extends BaseTest {
         assertEquals(50, map.get("width"));
         assertEquals(50, map.get("height"));
     }
+
+    /* toString() */
 
     @Test
     public void testToString() {
@@ -368,6 +372,64 @@ public class CropTest extends BaseTest {
         crop.setWidth(0.5f);
         crop.setHeight(0.4f);
         assertEquals("0%,0%,50%,40%", crop.toString());
+    }
+
+    /* validate() */
+
+    @Test
+    public void testValidateWithValidInstance() {
+        Dimension fullSize = new Dimension(1000, 1000);
+        crop.setWidth(100);
+        crop.setHeight(100);
+        try {
+            crop.validate(fullSize);
+        } catch (ValidationException e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testValidateWithOutOfBoundsCrop() {
+        // OOB X
+        Dimension fullSize = new Dimension(1000, 1000);
+        Crop crop = new Crop(1001, 0, 5, 5);
+        try {
+            crop.validate(fullSize);
+            fail("Expected exception");
+        } catch (ValidationException e) {
+            // pass
+        }
+
+        // OOB Y
+        crop = new Crop(0, 1001, 5, 5);
+        try {
+            crop.validate(fullSize);
+            fail("Expected exception");
+        } catch (ValidationException e) {
+            // pass
+        }
+    }
+
+    @Test
+    public void testValidateWithZeroDimensionCrop() {
+        // X
+        Dimension fullSize = new Dimension(1000, 1000);
+        Crop crop = new Crop(1000, 0, 100, 100);
+        try {
+            crop.validate(fullSize);
+            fail("Expected exception");
+        } catch (ValidationException e) {
+            // pass
+        }
+
+        // Y
+        crop = new Crop(0, 1000, 100, 100);
+        try {
+            crop.validate(fullSize);
+            fail("Expected exception");
+        } catch (ValidationException e) {
+            // pass
+        }
     }
 
 }
