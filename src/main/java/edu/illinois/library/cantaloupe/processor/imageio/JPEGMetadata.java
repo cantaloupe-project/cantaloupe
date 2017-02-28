@@ -16,16 +16,16 @@ class JPEGMetadata extends AbstractMetadata implements Metadata {
     private boolean checkedForIptc = false;
     private boolean checkedForXmp = false;
 
-    /** Cached by getExif() */
+    /** Cached by getEXIF() */
     private byte[] exif;
 
-    /** Cached by getIptc() */
+    /** Cached by getIPTC() */
     private byte[] iptc;
 
     /** Cached by getOrientation() */
     private Orientation orientation;
 
-    /** Cached by getXmp() */
+    /** Cached by getXMP() */
     private byte[] xmp;
 
     /**
@@ -40,7 +40,7 @@ class JPEGMetadata extends AbstractMetadata implements Metadata {
      * @return EXIF data, or null if none was found in the source metadata.
      */
     @Override
-    public byte[] getExif() {
+    public byte[] getEXIF() {
         if (!checkedForExif) {
             checkedForExif = true;
             // EXIF and XMP metadata both appear in the IIOMetadataNode tree as
@@ -66,14 +66,14 @@ class JPEGMetadata extends AbstractMetadata implements Metadata {
      * @return Orientation from the non-XMP EXIF metadata. May be null.
      */
     Orientation getExifOrientation() {
-        return readOrientation(getExif());
+        return readOrientation(getEXIF());
     }
 
     /**
      * @return IPTC data, or null if none was found in the source metadata.
      */
     @Override
-    public byte[] getIptc() {
+    public byte[] getIPTC() {
         if (!checkedForIptc) {
             checkedForIptc = true;
             // IPTC metadata appears in the IIOMetadataNode tree at
@@ -102,7 +102,7 @@ class JPEGMetadata extends AbstractMetadata implements Metadata {
             orientation = getExifOrientation();
             if (orientation == null) {
                 // Check XMP.
-                final String xmp = getXmpRdf();
+                final String xmp = getXMPRDF();
                 if (xmp != null) {
                     orientation = getXmpOrientation();
                 }
@@ -115,7 +115,7 @@ class JPEGMetadata extends AbstractMetadata implements Metadata {
     }
 
     @Override
-    public byte[] getXmp() {
+    public byte[] getXMP() {
         if (!checkedForXmp) {
             checkedForXmp = true;
             // EXIF and XMP metadata both appear in the IIOMetadataNode tree as
@@ -142,7 +142,7 @@ class JPEGMetadata extends AbstractMetadata implements Metadata {
      */
     Orientation getXmpOrientation() {
         Orientation orientation = null;
-        final String xmp = getXmpRdf();
+        final String xmp = getXMPRDF();
         if (xmp != null) {
             orientation = readOrientation(xmp);
         }
@@ -150,8 +150,8 @@ class JPEGMetadata extends AbstractMetadata implements Metadata {
     }
 
     @Override
-    public String getXmpRdf() {
-        final byte[] xmpData = getXmp();
+    public String getXMPRDF() {
+        final byte[] xmpData = getXMP();
         if (xmpData != null) {
             final String xmp = new String(xmpData);
             // Trim off the junk

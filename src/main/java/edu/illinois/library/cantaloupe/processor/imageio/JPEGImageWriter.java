@@ -48,7 +48,7 @@ class JPEGImageWriter extends AbstractImageWriter {
     protected void addMetadata(final IIOMetadataNode baseTree)
             throws IOException {
         if (sourceMetadata instanceof JPEGMetadata) {
-            final Object exif = sourceMetadata.getExif();
+            final Object exif = sourceMetadata.getEXIF();
             if (exif != null) {
                 // Create the EXIF node.
                 final IIOMetadataNode node = new IIOMetadataNode("unknown");
@@ -60,7 +60,7 @@ class JPEGImageWriter extends AbstractImageWriter {
                 markerSequence.insertBefore(node, markerSequence.getFirstChild());
             }
 
-            final Object iptc = sourceMetadata.getIptc();
+            final Object iptc = sourceMetadata.getIPTC();
             if (iptc != null) {
                 // Create the IPTC node.
                 final IIOMetadataNode node = new IIOMetadataNode("unknown");
@@ -72,7 +72,7 @@ class JPEGImageWriter extends AbstractImageWriter {
                 markerSequence.insertBefore(node, markerSequence.getFirstChild());
             }
 
-            final byte[] xmp = sourceMetadata.getXmp();
+            final byte[] xmp = sourceMetadata.getXMP();
             if (xmp != null) {
                 // Create the XMP node.
                 final IIOMetadataNode node = new IIOMetadataNode("unknown");

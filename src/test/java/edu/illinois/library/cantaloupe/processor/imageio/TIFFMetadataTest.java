@@ -51,7 +51,7 @@ public class TIFFMetadataTest extends BaseTest {
     public void testGetExif() throws IOException {
         final File srcFile = TestUtil.getImage("tif-exif.tif");
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile)) {
-            assertNotNull(newInstance(is).getExif());
+            assertNotNull(newInstance(is).getEXIF());
         }
     }
 
@@ -59,7 +59,7 @@ public class TIFFMetadataTest extends BaseTest {
     public void testGetIptc() throws IOException {
         final File srcFile = TestUtil.getImage("tif-iptc.tif");
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile)) {
-            assertNotNull(newInstance(is).getIptc());
+            assertNotNull(newInstance(is).getIPTC());
         }
     }
 
@@ -76,7 +76,7 @@ public class TIFFMetadataTest extends BaseTest {
     public void testGetXmp() throws IOException {
         final File srcFile = TestUtil.getImage("tif-xmp.tif");
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile)) {
-            assertNotNull(newInstance(is).getXmp());
+            assertNotNull(newInstance(is).getXMP());
         }
     }
 
@@ -86,7 +86,7 @@ public class TIFFMetadataTest extends BaseTest {
 
         final File srcFile = TestUtil.getImage("tif-xmp.tif");
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile)) {
-            final String rdf = newInstance(is).getXmpRdf();
+            final String rdf = newInstance(is).getXMPRDF();
             final Model model = ModelFactory.createDefaultModel();
             model.read(new StringReader(rdf), null, "RDF/XML");
         }

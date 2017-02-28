@@ -39,7 +39,7 @@ public class JPEGMetadataTest extends BaseTest {
 
     @Test
     public void testGetExif() throws IOException {
-        assertNotNull(getInstance("jpg-exif.jpg").getXmp());
+        assertNotNull(getInstance("jpg-exif.jpg").getXMP());
     }
 
     @Test
@@ -51,7 +51,7 @@ public class JPEGMetadataTest extends BaseTest {
 
     @Test
     public void testGetIptc() throws IOException {
-        assertNotNull(getInstance("jpg-iptc.jpg").getXmp());
+        assertNotNull(getInstance("jpg-iptc.jpg").getXMP());
     }
 
     @Test
@@ -62,7 +62,7 @@ public class JPEGMetadataTest extends BaseTest {
 
     @Test
     public void testGetXmp() throws IOException {
-        assertNotNull(getInstance("jpg-xmp.jpg").getXmp());
+        assertNotNull(getInstance("jpg-xmp.jpg").getXMP());
     }
 
     @Test
@@ -73,7 +73,7 @@ public class JPEGMetadataTest extends BaseTest {
     @Test
     public void testGetXmpRdf() throws IOException {
         RIOT.init();
-        final String rdf = getInstance("jpg-xmp.jpg").getXmpRdf();
+        final String rdf = getInstance("jpg-xmp.jpg").getXMPRDF();
         final Model model = ModelFactory.createDefaultModel();
         model.read(new StringReader(rdf), null, "RDF/XML");
     }

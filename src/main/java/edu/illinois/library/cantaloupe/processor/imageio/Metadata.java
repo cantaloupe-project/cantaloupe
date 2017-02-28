@@ -20,14 +20,14 @@ public interface Metadata {
     /**
      * @return EXIF data, or null if none was found in the source metadata.
      */
-    Object getExif();
+    Object getEXIF();
 
-    IIOMetadata getIioMetadata();
+    IIOMetadata getIIOMetadata();
 
     /**
      * @return IPTC data, or null if none was found in the source metadata.
      */
-    Object getIptc();
+    Object getIPTC();
 
     /**
      * @return Orientation of the image based on the EXIF "Orientation" tag.
@@ -40,12 +40,12 @@ public interface Metadata {
      * @return XMP data packet, or null if none was found in the source
      *         metadata.
      */
-    byte[] getXmp();
+    byte[] getXMP();
 
     /**
      * @return XMP RDF/XML string, or null if none was found in the source
      *         metadata.
      */
-    String getXmpRdf();
+    String getXMPRDF();
 
 }

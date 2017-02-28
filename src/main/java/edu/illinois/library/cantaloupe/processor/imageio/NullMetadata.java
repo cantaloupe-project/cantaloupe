@@ -18,7 +18,7 @@ class NullMetadata extends AbstractMetadata implements Metadata {
      * @return Null.
      */
     @Override
-    public Object getExif() {
+    public Object getEXIF() {
         return null;
     }
 
@@ -26,7 +26,7 @@ class NullMetadata extends AbstractMetadata implements Metadata {
      * @return Null.
      */
     @Override
-    public Object getIptc() {
+    public Object getIPTC() {
         return null;
     }
 
@@ -42,7 +42,7 @@ class NullMetadata extends AbstractMetadata implements Metadata {
      * @return Null.
      */
     @Override
-    public byte[] getXmp() {
+    public byte[] getXMP() {
         return null;
     }
 
@@ -50,7 +50,7 @@ class NullMetadata extends AbstractMetadata implements Metadata {
      * @return Null.
      */
     @Override
-    public String getXmpRdf() {
+    public String getXMPRDF() {
         return null;
     }
 

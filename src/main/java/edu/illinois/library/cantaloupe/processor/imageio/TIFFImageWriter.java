@@ -71,7 +71,7 @@ class TIFFImageWriter extends AbstractImageWriter {
                 destDir.addTIFFField(field);
             }
 
-            final TIFFField iptcField = (TIFFField) sourceMetadata.getIptc();
+            final TIFFField iptcField = (TIFFField) sourceMetadata.getIPTC();
             if (iptcField != null) {
                 destDir.addTIFFField(iptcField);
             }
@@ -82,7 +82,7 @@ class TIFFImageWriter extends AbstractImageWriter {
                 destDir.addTIFFField(xmpField);
             }
 
-            final TIFFField exifField = (TIFFField) sourceMetadata.getExif();
+            final TIFFField exifField = (TIFFField) sourceMetadata.getEXIF();
             if (exifField != null) {
                 destDir.addTIFFField(exifField);
             }

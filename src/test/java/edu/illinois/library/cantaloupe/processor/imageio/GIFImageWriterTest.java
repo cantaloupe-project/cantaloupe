@@ -67,7 +67,7 @@ public class GIFImageWriterTest extends BaseTest {
         getWriter().write(bufferedImage, outputStream);
         ImageIO.read(tempFile);
     }
-    /* Disabled, as GIFMetadata.getXmp() is disabled.
+    /* Disabled, as GIFMetadata.getXMP() is disabled.
     @Test
     public void testWriteWithBufferedImageAndMetadata()  throws Exception {
         final Configuration config = Configuration.getInstance();
@@ -81,7 +81,7 @@ public class GIFImageWriterTest extends BaseTest {
         getWriter().write(planarImage, outputStream);
         ImageIO.read(tempFile);
     }
-    /* Disabled, as GIFMetadata.getXmp() is disabled.
+    /* Disabled, as GIFMetadata.getXMP() is disabled.
     @Test
     public void testWriteWithPlanarImageAndMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();

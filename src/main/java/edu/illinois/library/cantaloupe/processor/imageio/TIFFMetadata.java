@@ -42,7 +42,7 @@ class TIFFMetadata extends AbstractMetadata implements Metadata {
     private boolean checkedForNativeMetadata = false;
     private boolean checkedForXmp = false;
 
-    /** Cached by getExif() */
+    /** Cached by getEXIF() */
     private TIFFField exif;
 
     /** Set by constructor. */
@@ -53,7 +53,7 @@ class TIFFMetadata extends AbstractMetadata implements Metadata {
     /** Cached by getOrientation() */
     private Orientation orientation;
 
-    /** Cached by getXmp() */
+    /** Cached by getXMP() */
     private byte[] xmp;
 
     /**
@@ -63,14 +63,14 @@ class TIFFMetadata extends AbstractMetadata implements Metadata {
     TIFFMetadata(IIOMetadata metadata, String formatName) {
         super(metadata, formatName);
         try {
-            ifd = TIFFDirectory.createFromMetadata(getIioMetadata());
+            ifd = TIFFDirectory.createFromMetadata(getIIOMetadata());
         } catch (IIOInvalidTreeException e) {
             logger.error(e.getMessage(), e);
         }
     }
 
     @Override
-    public TIFFField getExif() {
+    public TIFFField getEXIF() {
         if (!checkedForExif) {
             checkedForExif = true;
             final TIFFField srcExifField =
@@ -86,7 +86,7 @@ class TIFFMetadata extends AbstractMetadata implements Metadata {
     }
 
     @Override
-    public TIFFField getIptc() {
+    public TIFFField getIPTC() {
         return ifd.getTIFFField(33723);
     }
 
@@ -126,7 +126,7 @@ class TIFFMetadata extends AbstractMetadata implements Metadata {
     }
 
     @Override
-    public byte[] getXmp() {
+    public byte[] getXMP() {
         if (!checkedForXmp) {
             checkedForXmp = true;
             final TIFFField xmpField = getXmpField();
@@ -142,8 +142,8 @@ class TIFFMetadata extends AbstractMetadata implements Metadata {
     }
 
     @Override
-    public String getXmpRdf() {
-        final byte[] xmpData = getXmp();
+    public String getXMPRDF() {
+        final byte[] xmpData = getXMP();
         if (xmpData != null) {
             final String xmp = new String(xmpData);
             // Trim off the junk

@@ -34,12 +34,12 @@ public class NullMetadataTest extends BaseTest {
 
     @Test
     public void testGetExif() throws IOException {
-        assertNull(getInstance("bmp-rgb-64x56x8.bmp").getXmp());
+        assertNull(getInstance("bmp-rgb-64x56x8.bmp").getXMP());
     }
 
     @Test
     public void testGetIptc() throws IOException {
-        assertNull(getInstance("bmp-rgb-64x56x8.bmp").getIptc());
+        assertNull(getInstance("bmp-rgb-64x56x8.bmp").getIPTC());
     }
 
     @Test
@@ -50,7 +50,7 @@ public class NullMetadataTest extends BaseTest {
 
     @Test
     public void testGetXmp() throws IOException {
-        assertNull(getInstance("bmp-rgb-64x56x8.bmp").getXmp());
+        assertNull(getInstance("bmp-rgb-64x56x8.bmp").getXMP());
     }
 
 }

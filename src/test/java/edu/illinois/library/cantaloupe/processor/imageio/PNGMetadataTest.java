@@ -44,13 +44,13 @@ public class PNGMetadataTest extends BaseTest {
 
     @Test
     public void testGetXmp() throws IOException {
-        assertNotNull(getInstance("png-xmp.png").getXmp());
+        assertNotNull(getInstance("png-xmp.png").getXMP());
     }
 
     @Test
     public void testGetXmpRdf() throws IOException {
         RIOT.init();
-        final String rdf = getInstance("png-xmp.png").getXmpRdf();
+        final String rdf = getInstance("png-xmp.png").getXMPRDF();
         final Model model = ModelFactory.createDefaultModel();
         model.read(new StringReader(rdf), null, "RDF/XML");
     }

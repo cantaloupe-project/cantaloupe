@@ -29,7 +29,7 @@ public class GIFMetadataTest extends BaseTest {
         }
     }
 
-    /* These tests are disabled because GIFMetadata.getXmp() and getXmpRdf()
+    /* These tests are disabled because GIFMetadata.getXMP() and getXMPRDF()
     are disabled.
     @Test
     public void testGetOrientation() throws IOException {
@@ -39,13 +39,13 @@ public class GIFMetadataTest extends BaseTest {
 
     @Test
     public void testGetXmp() throws IOException {
-        assertNotNull(newInstance("gif-xmp.gif").getXmp());
+        assertNotNull(newInstance("gif-xmp.gif").getXMP());
     }
 
     @Test
     public void testGetXmpRdf() throws IOException {
         RIOT.init();
-        final String rdf = newInstance("gif-xmp.gif").getXmpRdf();
+        final String rdf = newInstance("gif-xmp.gif").getXMPRDF();
         System.out.println(rdf);
         final Model model = ModelFactory.createDefaultModel();
         model.read(new StringReader(rdf), null, "RDF/XML");

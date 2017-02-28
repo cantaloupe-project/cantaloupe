@@ -27,7 +27,7 @@ class PNGMetadata extends AbstractMetadata implements Metadata {
     /** Cached by getOrientation() */
     private Orientation orientation;
 
-    /** Cached by getXmp() */
+    /** Cached by getXMP() */
     private byte[] xmp;
 
     static {
@@ -66,7 +66,7 @@ class PNGMetadata extends AbstractMetadata implements Metadata {
      * @return Null.
      */
     @Override
-    public Object getExif() {
+    public Object getEXIF() {
         return null;
     }
 
@@ -74,7 +74,7 @@ class PNGMetadata extends AbstractMetadata implements Metadata {
      * @return Null.
      */
     @Override
-    public Object getIptc() {
+    public Object getIPTC() {
         return null;
     }
 
@@ -103,7 +103,7 @@ class PNGMetadata extends AbstractMetadata implements Metadata {
     @Override
     public Orientation getOrientation() {
         if (orientation == null) {
-            final String xmp = getXmpRdf();
+            final String xmp = getXMPRDF();
             if (xmp != null) {
                 final Orientation readOrientation = readOrientation(xmp);
                 if (readOrientation != null) {
@@ -118,7 +118,7 @@ class PNGMetadata extends AbstractMetadata implements Metadata {
     }
 
     @Override
-    public byte[] getXmp() {
+    public byte[] getXMP() {
         if (!checkedForXmp) {
             checkedForXmp = true;
             final NodeList itxtNodes = getAsTree().getElementsByTagName("iTXt");
@@ -139,8 +139,8 @@ class PNGMetadata extends AbstractMetadata implements Metadata {
     }
 
     @Override
-    public String getXmpRdf() {
-        final byte[] xmpData = getXmp();
+    public String getXMPRDF() {
+        final byte[] xmpData = getXMP();
         if (xmpData != null) {
             final String xmp = new String(xmpData);
             // Trim off the junk

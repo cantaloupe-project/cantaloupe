@@ -15,7 +15,7 @@ class GIFMetadata extends AbstractMetadata implements Metadata {
     /** Cached by getOrientation() */
     private Orientation orientation;
 
-    /** Cached by getXmp() */
+    /** Cached by getXMP() */
     private byte[] xmp;
 
     /**
@@ -30,7 +30,7 @@ class GIFMetadata extends AbstractMetadata implements Metadata {
      * @return Null, as GIF does not support EXIF.
      */
     @Override
-    public Object getExif() {
+    public Object getEXIF() {
         return null;
     }
 
@@ -38,7 +38,7 @@ class GIFMetadata extends AbstractMetadata implements Metadata {
      * @return Null, as GIF does not support IPTC IIM.
      */
     @Override
-    public Object getIptc() {
+    public Object getIPTC() {
         return null;
     }
 
@@ -48,7 +48,7 @@ class GIFMetadata extends AbstractMetadata implements Metadata {
     @Override
     public Orientation getOrientation() {
         if (orientation == null) {
-            String xmp = getXmpRdf();
+            String xmp = getXMPRDF();
             if (xmp != null) {
                 orientation = readOrientation(xmp);
             }
@@ -67,7 +67,7 @@ class GIFMetadata extends AbstractMetadata implements Metadata {
      *      Embedding XMP Metadata in Application Files</a>
      */
     @Override
-    public byte[] getXmp() {
+    public byte[] getXMP() {
         if (!checkedForXmp) {
             checkedForXmp = true;
             /*
@@ -109,8 +109,8 @@ class GIFMetadata extends AbstractMetadata implements Metadata {
     }
 
     @Override
-    public String getXmpRdf() {
-        final byte[] xmpData = getXmp();
+    public String getXMPRDF() {
+        final byte[] xmpData = getXMP();
         if (xmpData != null) {
             final String xmp = new String(xmpData);
             // Trim off the junk

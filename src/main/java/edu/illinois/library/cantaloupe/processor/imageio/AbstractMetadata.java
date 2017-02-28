@@ -36,14 +36,14 @@ abstract class AbstractMetadata {
     }
 
     public IIOMetadataNode getAsTree() {
-        return (IIOMetadataNode) getIioMetadata().getAsTree(getFormatName());
+        return (IIOMetadataNode) getIIOMetadata().getAsTree(getFormatName());
     }
 
     private String getFormatName() {
         return formatName;
     }
 
-    public IIOMetadata getIioMetadata() {
+    public IIOMetadata getIIOMetadata() {
         return iioMetadata;
     }
 
