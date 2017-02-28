@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
@@ -178,8 +179,8 @@ abstract class MagickProcessorTest extends ProcessorTest {
         OperationList ops = new OperationList();
         ops.setIdentifier(new Identifier("bla"));
         Rotate rotation = new Rotate(15);
+        rotation.setFillColor(Color.fromString("#0000FF"));
         ops.add(rotation);
-        ops.getOptions().put(Processor.BACKGROUND_COLOR_CONFIG_KEY, "blue");
         ops.setOutputFormat(Format.JPG);
 
         Info imageInfo = new Info(64, 58);
