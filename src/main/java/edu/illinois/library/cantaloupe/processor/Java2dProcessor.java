@@ -13,10 +13,6 @@ import java.util.Set;
 
 /**
  * <p>Processor using the Java 2D and ImageIO frameworks.</p>
- *
- * <p>Because they both use ImageIO, this processor has a lot in common with
- * {@link JaiProcessor} and so common functionality has been extracted into a
- * base class.</p>
  */
 class Java2dProcessor extends AbstractJava2DProcessor
         implements StreamProcessor, FileProcessor {
