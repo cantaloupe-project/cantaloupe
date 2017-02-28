@@ -10,9 +10,9 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 /**
- * Vestigial main application class.
+ * Class representing the application. This is not the main application class,
+ * which is actually {@link StandaloneEntry}.
  */
-@Deprecated
 public final class Application {
 
     private static Logger logger = LoggerFactory.getLogger(Application.class);
