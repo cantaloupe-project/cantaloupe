@@ -18,30 +18,27 @@ public final class Application {
     private static Logger logger = LoggerFactory.getLogger(Application.class);
 
     /**
-     * Caches the lazy-loaded version from getVersion().
+     * Thread-safely reads and caches the version.
      */
-    private static String cachedVersion = null;
+    private static class LazyVersionReader {
 
-    /**
-     * Lock object for synchronization.
-     */
-    private static final Object lock = new Object();
+        private static String cachedVersion = null;
+
+        static {
+            cachedVersion = readVersionFromManifest();
+            if (cachedVersion == null) {
+                cachedVersion = "Unknown";
+            }
+        }
+    }
 
     /**
      * @return The application version from MANIFEST.MF, or a string like
-     *         "Unknown" if not running from a jar. The return value is
+     *         "Unknown" if not running from a JAR/WAR. The return value is
      *         cached.
      */
     public static String getVersion() {
-        if (cachedVersion == null) {
-            synchronized(lock) {
-                cachedVersion = readVersionFromManifest();
-                if (cachedVersion == null) {
-                    cachedVersion = "Unknown";
-                }
-            }
-        }
-        return cachedVersion;
+        return LazyVersionReader.cachedVersion;
     }
 
     /**
