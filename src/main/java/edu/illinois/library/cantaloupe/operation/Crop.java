@@ -129,35 +129,55 @@ public class Crop implements Operation {
     /**
      * @param fullSize Full-sized image dimensions.
      * @return Crop coordinates relative to the given full-sized image
-     * dimensions.
+     *         dimensions.
      */
     public Rectangle getRectangle(Dimension fullSize) {
-        int x, y, width, height;
+        return getRectangle(fullSize, new ReductionFactor());
+    }
+
+    /**
+     * @param imageSize Size of the input image, which may have been reduced.
+     * @param rf Factor by which the image has been reduced.
+     * @return Crop coordinates relative to the given full-sized image
+     *         dimensions.
+     */
+    public Rectangle getRectangle(Dimension imageSize, ReductionFactor rf) {
+        final double scale = rf.getScale();
+        final double regionX = this.getX() * scale;
+        final double regionY = this.getY() * scale;
+        final double regionWidth = this.getWidth() * scale;
+        final double regionHeight = this.getHeight() * scale;
+
+        int x, y, requestedWidth, requestedHeight, croppedWidth,
+                croppedHeight;
         if (this.isFull()) {
             x = 0;
             y = 0;
-            width = fullSize.width;
-            height = fullSize.height;
-        } else if (this.getShape().equals(Shape.SQUARE)) {
-            final int shortestSide = Math.min(fullSize.width, fullSize.height);
-            x = (fullSize.width - shortestSide) / 2;
-            y = (fullSize.height - shortestSide) / 2;
-            width = height = shortestSide;
-        } else if (this.getUnit().equals(Unit.PERCENT)) {
-            x = Math.round(this.getX() * fullSize.width);
-            y = Math.round(this.getY() * fullSize.height);
-            width = Math.round(this.getWidth() * fullSize.width);
-            height = Math.round(this.getHeight() * fullSize.height);
+            requestedWidth = imageSize.width;
+            requestedHeight = imageSize.height;
+        } else if (this.getShape().equals(Crop.Shape.SQUARE)) {
+            final int shortestSide =
+                    Math.min(imageSize.width, imageSize.height);
+            x = (imageSize.width - shortestSide) / 2;
+            y = (imageSize.height - shortestSide) / 2;
+            requestedWidth = requestedHeight = shortestSide;
+        } else if (this.getUnit().equals(Crop.Unit.PERCENT)) {
+            x = (int) Math.round(regionX * imageSize.width);
+            y = (int) Math.round(regionY * imageSize.height);
+            requestedWidth = (int) Math.round(regionWidth  * imageSize.width);
+            requestedHeight = (int) Math.round(regionHeight * imageSize.height);
         } else {
-            x = Math.round(this.getX());
-            y = Math.round(this.getY());
-            width = Math.round(this.getWidth());
-            height = Math.round(this.getHeight());
+            x = (int) Math.round(regionX);
+            y = (int) Math.round(regionY);
+            requestedWidth = (int) Math.round(regionWidth);
+            requestedHeight = (int) Math.round(regionHeight);
         }
-        // confine width and height to the source image bounds
-        width = Math.min(width, fullSize.width - x);
-        height = Math.min(height, fullSize.height - y);
-        return new Rectangle(x, y, width, height);
+        // Confine width and height to the image bounds.
+        croppedWidth = (x + requestedWidth > imageSize.width) ?
+                imageSize.width - x : requestedWidth;
+        croppedHeight = (y + requestedHeight > imageSize.height) ?
+                imageSize.height - y : requestedHeight;
+        return new Rectangle(x, y, croppedWidth, croppedHeight);
     }
 
     @Override

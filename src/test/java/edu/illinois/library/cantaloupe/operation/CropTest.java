@@ -105,6 +105,8 @@ public class CropTest extends BaseTest {
         assertEquals(400, crop.getHeight(), DELTA);
     }
 
+    /* getRectangle(Dimension) */
+
     @Test
     public void testGetRectangleWithFull() {
         final Dimension fullSize = new Dimension(300, 200);
@@ -142,6 +144,58 @@ public class CropTest extends BaseTest {
         Crop crop = new Crop(200f, 150f, 100f, 100f);
         assertEquals(new Rectangle(200, 150, 100, 50), crop.getRectangle(fullSize));
     }
+
+    /* getRectangle(Dimension, ReductionFactor) */
+
+    @Test
+    public void testGetRectangleWithReductionFactorWithFull() {
+        final Dimension imageSize = new Dimension(300, 200);
+        final ReductionFactor rf = new ReductionFactor(2);
+        Crop crop = new Crop();
+        crop.setFull(true);
+        assertEquals(new Rectangle(0, 0, 300, 200),
+                crop.getRectangle(imageSize, rf));
+    }
+
+    @Test
+    public void testGetRectangleWithReductionFactorWithSquare() {
+        final Dimension fullSize = new Dimension(300, 200);
+        final ReductionFactor rf = new ReductionFactor(2);
+        Crop crop = new Crop();
+        crop.setShape(Crop.Shape.SQUARE);
+        assertEquals(new Rectangle(50, 0, 200, 200),
+                crop.getRectangle(fullSize, rf));
+    }
+
+    @Test
+    public void testGetRectangleWithReductionFactorWithPixels() {
+        final Dimension fullSize = new Dimension(300, 200);
+        final ReductionFactor rf = new ReductionFactor(2);
+        Crop crop = new Crop(20, 20, 50, 50);
+        assertEquals(new Rectangle(5, 5, 13, 13),
+                crop.getRectangle(fullSize, rf));
+    }
+
+    @Test
+    public void testGetRectangleWithReductionFactorWithPercentage() {
+        final Dimension fullSize = new Dimension(300, 200);
+        final ReductionFactor rf = new ReductionFactor(2);
+        Crop crop = new Crop(0.2f, 0.2f, 0.5f, 0.5f);
+        crop.setUnit(Crop.Unit.PERCENT);
+        assertEquals(new Rectangle(15, 10, 38, 25),
+                crop.getRectangle(fullSize, rf));
+    }
+
+    @Test
+    public void testGetRectangleWithReductionFactorDoesNotExceedFullSizeBounds() {
+        final Dimension fullSize = new Dimension(300, 200);
+        final ReductionFactor rf = new ReductionFactor(2);
+        Crop crop = new Crop(200f, 150f, 100f, 100f);
+        assertEquals(new Rectangle(50, 38, 25, 25),
+                crop.getRectangle(fullSize, rf));
+    }
+
+    /* getResultingSize(Dimension) */
 
     @Test
     public void testGetResultingSize() {
