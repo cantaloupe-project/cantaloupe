@@ -5,7 +5,7 @@
   <groupId>edu.illinois.library.cantaloupe</groupId>
   <artifactId>Cantaloupe</artifactId>
   <packaging>war</packaging>
-  <version>3.3</version>
+  <version>3.4-SNAPSHOT</version>
   <name>Cantaloupe</name>
   <url>https://medusa-project.github.io/cantaloupe/</url>
   <inceptionYear>2015</inceptionYear>
