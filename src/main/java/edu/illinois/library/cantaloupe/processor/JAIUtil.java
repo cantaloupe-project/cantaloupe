@@ -84,49 +84,17 @@ abstract class JAIUtil {
                                 Crop crop,
                                 ReductionFactor rf) {
         if (crop.hasEffect()) {
-            // Calculate the region x, y, and actual width/height.
-            final double scale = rf.getScale();
-            final double regionX = crop.getX() * scale;
-            final double regionY = crop.getY() * scale;
-            final double regionWidth = crop.getWidth() * scale;
-            final double regionHeight = crop.getHeight() * scale;
-
-            float x, y, requestedWidth, requestedHeight, croppedWidth,
-                    croppedHeight;
-            if (crop.getShape().equals(Crop.Shape.SQUARE)) {
-                final int shortestSide =
-                        Math.min(inImage.getWidth(), inImage.getHeight());
-                x = (inImage.getWidth() - shortestSide) / 2;
-                y = (inImage.getHeight() - shortestSide) / 2;
-                requestedWidth = requestedHeight = shortestSide;
-            } else if (crop.getUnit().equals(Crop.Unit.PERCENT)) {
-                x = (int) Math.round(regionX * inImage.getWidth());
-                y = (int) Math.round(regionY * inImage.getHeight());
-                requestedWidth = (int) Math.round(regionWidth *
-                        inImage.getWidth());
-                requestedHeight = (int) Math.round(regionHeight *
-                        inImage.getHeight());
-            } else {
-                x = (int) Math.round(regionX);
-                y = (int) Math.round(regionY);
-                requestedWidth = (int) Math.round(regionWidth);
-                requestedHeight = (int) Math.round(regionHeight);
-            }
-            // Prevent width/height from exceeding the image bounds.
-            croppedWidth = (x + requestedWidth > inImage.getWidth()) ?
-                    inImage.getWidth() - x : requestedWidth;
-            croppedHeight = (y + requestedHeight > inImage.getHeight()) ?
-                    inImage.getHeight() - y : requestedHeight;
-
+            final Rectangle cropRegion = crop.getRectangle(
+                    new Dimension(inImage.getWidth(), inImage.getHeight()), rf);
             logger.debug("cropImage(): x: {}; y: {}; width: {}; height: {}",
-                    x, y, croppedWidth, croppedHeight);
-
+                    cropRegion.x, cropRegion.y,
+                    cropRegion.width, cropRegion.height);
             final ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
-            pb.add(x);
-            pb.add(y);
-            pb.add(croppedWidth);
-            pb.add(croppedHeight);
+            pb.add((float) cropRegion.x);
+            pb.add((float) cropRegion.y);
+            pb.add((float) cropRegion.width);
+            pb.add((float) cropRegion.height);
             inImage = JAI.create("crop", pb);
         }
         return inImage;

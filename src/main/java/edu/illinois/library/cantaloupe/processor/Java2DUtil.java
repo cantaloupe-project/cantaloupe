@@ -69,11 +69,11 @@ public abstract class Java2DUtil {
     /**
      * Redacts regions from the given image.
      *
-     * @param baseImage Image to apply the overlay on top of.
-     * @param appliedCrop Crop already applied to <code>baseImage</code>.
+     * @param baseImage       Image to apply the overlay on top of.
+     * @param appliedCrop     Crop already applied to <code>baseImage</code>.
      * @param reductionFactor Reduction factor already applied to
      *                        <code>baseImage</code>.
-     * @param redactions Regions of the image to redact.
+     * @param redactions      Regions of the image to redact.
      * @return Input image with redactions applied.
      */
     static BufferedImage applyRedactions(final BufferedImage baseImage,
@@ -120,7 +120,7 @@ public abstract class Java2DUtil {
      * string ({@link StringOverlay}) or an image ({@link ImageOverlay}).
      *
      * @param baseImage Image to apply the overlay on top of.
-     * @param overlay Overlay to apply to the base image.
+     * @param overlay   Overlay to apply to the base image.
      * @return Overlaid image, or the input image if the overlay should not be
      *         applied according to the application configuration.
      * @throws ConfigurationException
@@ -147,9 +147,9 @@ public abstract class Java2DUtil {
 
     /**
      * @param inImage Image to crop.
-     * @param crop Crop operation. Clients should call
-     *             {@link Operation#hasEffect(Dimension, OperationList)}
-     *             before invoking.
+     * @param crop    Crop operation. Clients should call
+     *                {@link Operation#hasEffect(Dimension, OperationList)}
+     *                before invoking.
      * @return Cropped image, or the input image if the given operation is a
      *         no-op.
      */
@@ -165,11 +165,12 @@ public abstract class Java2DUtil {
      * but the given region is relative to the full-sized image.
      *
      * @param inImage Image to crop.
-     * @param crop Crop operation. Clients should call
-     *             {@link Operation#hasEffect(Dimension, OperationList)} before
-     *             invoking.
-     * @param rf Number of times the dimensions of <code>inImage</code> have
-     *           already been halved relative to the full-sized version.
+     * @param crop    Crop operation. Clients should call
+     *                {@link Operation#hasEffect(Dimension, OperationList)}
+     *                before invoking.
+     * @param rf      Number of times the dimensions of <code>inImage</code>
+     *                have already been halved relative to the full-sized
+     *                version.
      * @return Cropped image, or the input image if the given operation is a
      *         no-op.
      */
@@ -184,41 +185,11 @@ public abstract class Java2DUtil {
             croppedImage = inImage;
         } else {
             final Stopwatch watch = new Stopwatch();
-            final double scale = rf.getScale();
-            final double regionX = crop.getX() * scale;
-            final double regionY = crop.getY() * scale;
-            final double regionWidth = crop.getWidth() * scale;
-            final double regionHeight = crop.getHeight() * scale;
 
-            int x, y, requestedWidth, requestedHeight, croppedWidth,
-                    croppedHeight;
-            if (crop.getShape().equals(Crop.Shape.SQUARE)) {
-                final int shortestSide =
-                        Math.min(inImage.getWidth(), inImage.getHeight());
-                x = (inImage.getWidth() - shortestSide) / 2;
-                y = (inImage.getHeight() - shortestSide) / 2;
-                requestedWidth = requestedHeight = shortestSide;
-            } else if (crop.getUnit().equals(Crop.Unit.PERCENT)) {
-                x = (int) Math.round(regionX * inImage.getWidth());
-                y = (int) Math.round(regionY * inImage.getHeight());
-                requestedWidth = (int) Math.round(regionWidth  *
-                        inImage.getWidth());
-                requestedHeight = (int) Math.round(regionHeight *
-                        inImage.getHeight());
-            } else {
-                x = (int) Math.round(regionX);
-                y = (int) Math.round(regionY);
-                requestedWidth = (int) Math.round(regionWidth);
-                requestedHeight = (int) Math.round(regionHeight);
-            }
-            // BufferedImage.getSubimage() will protest if asked for more
-            // width/height than is available
-            croppedWidth = (x + requestedWidth > inImage.getWidth()) ?
-                    inImage.getWidth() - x : requestedWidth;
-            croppedHeight = (y + requestedHeight > inImage.getHeight()) ?
-                    inImage.getHeight() - y : requestedHeight;
-            croppedImage = inImage.getSubimage(x, y, croppedWidth,
-                    croppedHeight);
+            final Rectangle cropRegion = crop.getRectangle(
+                    new Dimension(inImage.getWidth(), inImage.getHeight()), rf);
+            croppedImage = inImage.getSubimage(cropRegion.x, cropRegion.y,
+                    cropRegion.width, cropRegion.height);
 
             logger.debug("cropImage(): cropped {}x{} image to {} in {} msec",
                     inImage.getWidth(), inImage.getHeight(), crop,
@@ -242,10 +213,10 @@ public abstract class Java2DUtil {
     }
 
     /**
-     * @param baseImage Image to overlay the image onto.
+     * @param baseImage    Image to overlay the image onto.
      * @param overlayImage Image to overlay.
-     * @param position Position of the overlaid image.
-     * @param inset Inset in pixels.
+     * @param position     Position of the overlaid image.
+     * @param inset        Inset in pixels.
      * @return
      */
     private static BufferedImage overlayImage(final BufferedImage baseImage,
@@ -536,7 +507,7 @@ public abstract class Java2DUtil {
 
     /**
      * @param inImage Image to rotate
-     * @param rotate Rotate operation
+     * @param rotate  Rotate operation
      * @return Rotated image, or the input image if the given rotation is a
      *         no-op.
      */
@@ -615,13 +586,13 @@ public abstract class Java2DUtil {
      * full-sized image.
      *
      * @param inImage Image to scale.
-     * @param scale Requested size ignoring any reduction factor. If no
-     *              resample filter is set, a reasonable default will be used.
-     *              Clients should call
-     *              {@link Operation#hasEffect(Dimension, OperationList)}
-     *              before invoking.
-     * @param rf Reduction factor that has already been applied to
-     *           <code>inImage</code>.
+     * @param scale   Requested size ignoring any reduction factor. If no
+     *                resample filter is set, a reasonable default will be used.
+     *                Clients should call
+     *                {@link Operation#hasEffect(Dimension, OperationList)}
+     *                before invoking.
+     * @param rf      Reduction factor that has already been applied to
+     *                <code>inImage</code>.
      * @return Downscaled image, or the input image if the given scale is a
      *         no-op.
      */
@@ -849,8 +820,8 @@ public abstract class Java2DUtil {
     }
 
     /**
-     * @param inImage         Image to filter
-     * @param colorTransform  ColorTransform operation
+     * @param inImage        Image to filter
+     * @param colorTransform ColorTransform operation
      * @return Filtered image, or the input image if the given color transform
      *         operation is a no-op.
      */
@@ -884,7 +855,7 @@ public abstract class Java2DUtil {
     }
 
     /**
-     * @param inImage Image to transpose.
+     * @param inImage   Image to transpose.
      * @param transpose The transpose operation.
      * @return Transposed image.
      */
