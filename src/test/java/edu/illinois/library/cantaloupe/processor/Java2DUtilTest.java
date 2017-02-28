@@ -164,23 +164,35 @@ public class Java2DUtilTest extends BaseTest {
 
         // create a StringOverlay
         final StringOverlay overlay = new StringOverlay(
-                "XXXXXX", Position.TOP_LEFT, 0,
-                new Font("Helvetica", Font.PLAIN, 4), 11,
-                Color.BLACK, Color.BLACK, Color.WHITE, 2f);
+                "X", Position.TOP_LEFT, 0,
+                new Font("Helvetica", Font.PLAIN, 12), 11,
+                Color.WHITE, Color.BLACK, Color.WHITE, 0f);
 
         // apply it
         final BufferedImage overlaidImage = Java2DUtil.applyOverlay(
                 baseImage, overlay);
 
-        int pixel = overlaidImage.getRGB(5, 0);
+        // Test the background color
+        int pixel = overlaidImage.getRGB(2, 2);
         int alpha = (pixel >> 24) & 0xff;
         int red = (pixel >> 16) & 0xff;
         int green = (pixel >> 8) & 0xff;
         int blue = (pixel) & 0xff;
         assertEquals(255, alpha);
-        assertEquals(124, red);
-        assertEquals(124, green);
-        assertEquals(124, blue);
+        assertEquals(0, red);
+        assertEquals(0, green);
+        assertEquals(0, blue);
+
+        // Test the font color
+        pixel = overlaidImage.getRGB(8, 8);
+        alpha = (pixel >> 24) & 0xff;
+        red = (pixel >> 16) & 0xff;
+        green = (pixel >> 8) & 0xff;
+        blue = (pixel) & 0xff;
+        assertEquals(255, alpha);
+        assertTrue(red > 240);
+        assertTrue(green > 240);
+        assertTrue(blue > 240);
     }
 
     @Test
