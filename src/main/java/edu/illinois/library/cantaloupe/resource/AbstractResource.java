@@ -210,8 +210,9 @@ public abstract class AbstractResource extends ServerResource {
 
         // Redactions
         try {
-            if (RedactionService.isEnabled()) {
-                List<Redaction> redactions = RedactionService.redactionsFor(
+            final RedactionService service = new RedactionService();
+            if (service.isEnabled()) {
+                List<Redaction> redactions = service.redactionsFor(
                         opList.getIdentifier(),
                         getRequest().getHeaders().getValuesMap(),
                         getCanonicalClientIpAddress(),

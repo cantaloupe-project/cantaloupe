@@ -18,6 +18,8 @@ import static org.junit.Assert.*;
 
 public class RedactionServiceTest extends BaseTest {
 
+    private RedactionService instance;
+
     public static void setUpConfiguration() throws IOException {
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
@@ -31,6 +33,7 @@ public class RedactionServiceTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
         setUpConfiguration();
+        instance = new RedactionService();
     }
 
     @Test
@@ -40,7 +43,7 @@ public class RedactionServiceTest extends BaseTest {
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
-        List<Redaction> redactions = RedactionService.redactionsFor(
+        List<Redaction> redactions = instance.redactionsFor(
                 identifier, requestHeaders, clientIp, cookies);
         assertEquals(1, redactions.size());
         assertEquals(0, redactions.get(0).getRegion().x);
@@ -55,10 +58,10 @@ public class RedactionServiceTest extends BaseTest {
         config.clear();
         // false
         config.setProperty(RedactionService.REDACTION_ENABLED_CONFIG_KEY, false);
-        assertFalse(RedactionService.isEnabled());
+        assertFalse(instance.isEnabled());
         // true
         config.setProperty(RedactionService.REDACTION_ENABLED_CONFIG_KEY, true);
-        assertTrue(RedactionService.isEnabled());
+        assertTrue(instance.isEnabled());
     }
 
 }

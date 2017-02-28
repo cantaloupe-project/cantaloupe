@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.operation.redaction;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * Provides information about redactions.
  */
-public abstract class RedactionService {
+public class RedactionService {
 
     public static final String REDACTION_ENABLED_CONFIG_KEY =
             "redaction.enabled";
@@ -25,8 +25,8 @@ public abstract class RedactionService {
     /**
      * @return Whether {@link #REDACTION_ENABLED_CONFIG_KEY} is true.
      */
-    public static boolean isEnabled() {
-        return ConfigurationFactory.getInstance().
+    public boolean isEnabled() {
+        return Configuration.getInstance().
                 getBoolean(REDACTION_ENABLED_CONFIG_KEY, false);
     }
 
@@ -45,10 +45,10 @@ public abstract class RedactionService {
      * @throws DelegateScriptDisabledException
      * @throws ConfigurationException
      */
-    public static List<Redaction> redactionsFor(Identifier identifier,
-                                                Map<String,String> requestHeaders,
-                                                String clientIp,
-                                                Map<String,String> cookies)
+    public List<Redaction> redactionsFor(Identifier identifier,
+                                         Map<String,String> requestHeaders,
+                                         String clientIp,
+                                         Map<String,String> cookies)
             throws IOException, ScriptException,
             DelegateScriptDisabledException, ConfigurationException {
         final List<Redaction> redactions = new ArrayList<>();
@@ -72,13 +72,14 @@ public abstract class RedactionService {
      * @param requestHeaders
      * @param clientIp
      * @param cookies
-     * @return Map with "file", "inset", and "position" keys; or null
+     * @return Map with <code>x</code>, <code>y</code>, <code>width</code>, and
+     *         <code>height</code> keys; or <code>null</code>.
      * @throws IOException
      * @throws ScriptException
      * @throws DelegateScriptDisabledException
      */
     @SuppressWarnings("unchecked")
-    private static List<Map<String,Long>> getRedactionDefsFromScript(
+    private List<Map<String,Long>> getRedactionDefsFromScript(
             final Identifier identifier,
             final Map<String,String> requestHeaders,
             final String clientIp,
