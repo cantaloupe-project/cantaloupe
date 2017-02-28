@@ -506,7 +506,7 @@ overlays.BasicStrategy.string.stroke.width = 1
 
 # Color of a background to draw under the string.
 # CSS color syntax is supported.
-overlays.BasicStrategy.string.background.color = rgba(0, 0, 0, 0.5)
+overlays.BasicStrategy.string.background.color = rgba(0, 0, 0, 100)
 
 # Allowed values: `top left`, `top center`, `top right`, `left center`,
 # `center`, `right center`, `bottom left`, `bottom center`, `bottom right`.
