@@ -39,7 +39,7 @@ title: What's New
   </li>
   <li>Caching
     <ul>
-      <li>The <code>-Dcantaloupe.cache.purge</code> VM option accepts an identifier argument to purge content related to individual identifiers.</li>
+      <li>The <code>-Dcantaloupe.cache.purge</code> VM option accepts an identifier argument to purge all content related to an individual identifier.</li>
       <li>Added a RESTful API endpoint to purge individual images from the cache.</li>
       <li>A <code>cache=false</code> URL query option can be used in all endpoints to bypass the derivative cache and disable the <code>Cache-Control</code> header per-request.</li>
       <li>FilesystemCache supports identifiers longer than the filesystem's filename length limit.</li>
@@ -50,7 +50,7 @@ title: What's New
       <li>Watermarks have been renamed to overlays.</li>
       <li>Added textual overlays.</li>
       <li>Overlay images can be located on the filesystem or an HTTP(S) server.</li>
-      <li>Overlay images are cached in memory for improved performance.</li>
+      <li>Overlay images are cached in memory for better efficiency.</li>
     </ul>
   </li>
   <li>Delegate Script

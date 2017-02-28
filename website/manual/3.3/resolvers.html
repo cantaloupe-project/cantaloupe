@@ -41,13 +41,13 @@ title: Resolvers
 
 <h3 id="Static Resolver">Static Resolver</h2>
 
-<p>When the <code>resolver.static</code> configuration key is set to the name of a resolver, Cantaloupe will use that resolver for all requests. This is simple and should work in most scenarios.</p>
+<p>When the <code>resolver.static</code> configuration key is set to the name of a resolver, that resolver will be used for all requests.</p>
 
 <h3 id="Dynamic Resolvers">Dynamic Resolvers</h2>
 
 <p>When a static resolver is not flexible enough, it is also possible to serve images from different sources simultaneously. For example, you may have some images stored on a filesystem, and others stored on Amazon S3. <em>If you can differentiate their sources based on their identifier in code</em>&mdash;either by analyzing the identifier string, or performing some kind of service request&mdash;you can use the <a href="delegate-script.html">delegate script</a> mechanism to write a simple Ruby method to tell the image server which resolver to use for a given request.</p>
 
-<p>To enable dynamic resolver selection, set the <code>resolver.delegate</code> configuration key to <code>true</code>. Then, implement the <code>get_resolver(identifier)</code> method in the delegate script, which takes in an identifier and returns a resolver name (such as FilesystemResolver, HttpResolver, etc.) For example:</p>
+<p>To enable dynamic resolver selection, set the <code>resolver.delegate</code> configuration key to <code>true</code>. Then, implement the <code>get_resolver(identifier)</code> method in the delegate script, which takes in an identifier and returns a resolver name (like FilesystemResolver, HttpResolver, etc.) For example:</p>
 
 {% highlight ruby %}
 module Cantaloupe

@@ -133,9 +133,9 @@ cache.client.no_transform = true
 
 <ul>
   <li>Requests for full-sized, unaltered source images are not cached, and are instead streamed through with no processing.</li>
-  <li>Entire IIIF information response representations are not cached&mdash;only image metadata, which is the only expensive part to generate. This means it is possible to change other configuration options that would affect the contents of information responses without having to purge the cache.</li>
-  <li>When derivative caching is enabled, "miss" responses are streamed to the client and cache synchronously. If the cache I/O is slower than the connection to the client, response times may be adversely affected.</li>
-  <li>The derivative cache is shared across API endpoints. Requests for the same image from different endpoints will return the same cached image.</li>
+  <li>Entire IIIF information response representations are not cached&mdash;only image metadata, which is the only expensive part to generate. This means it is possible to change other configuration options that would affect the contents of information responses without invalidating the cache.</li>
+  <li>When derivative caching is enabled, "miss" responses are streamed to the client and cache simultaneously. If the cache I/O is slower than the connection to the client, response times may be adversely affected.</li>
+  <li>The derivative cache is shared across endpoints. Requests for the same image from different endpoints will return the same cached image.</li>
 </ul>
 
 <hr>

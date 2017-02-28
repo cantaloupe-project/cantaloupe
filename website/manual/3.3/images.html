@@ -47,7 +47,7 @@ title: Source Formats
 
 <p>Most processors support non-8-bits-per-channel source images, but all output (derivative) images have 8 bits per channel. The pixel luminance values of non-8-bit images will be scaled linerarly to fit within 8 bits.</p>
 
-<p><a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a> offers an <code>ImageMagickProcessor.auto_levels</code> configuration option which modifies this behavior, normalizing the pixel values to utilize a full 8 bits of dynamic range. This is primarily useful when working with 16-bit source images (for example) that do not use a full 16 bits of dynamic range and would appear overly dark when scaled down to 8 bits.</p>
+<p>When set to <code>true</code>, the <code>processor.normalize</code> configuration option modifies this behavior, normalizing the pixel values to utilize the full 8 bits of dynamic range. This is useful when working with 16-bit source images (for example) that do not use a full 16 bits of dynamic range and would appear overly dark when scaled down to 8 bits.</p>
 
 <hr>
 
@@ -63,7 +63,7 @@ title: Source Formats
 
 <p>Most processors that support image sources support this format, some perhaps more efficiently than others, though this is untested.</p>
 
-<p>JPEG is not an ideal format for delivery of high-resolution images because the entire source image data must be read into memory and decoded.</p>
+<p>JPEG is not an ideal format for delivery of high-resolution images because the entire source image data must be read into memory before being decoded.</p>
 
 <h3 id="JPEG2000">JPEG2000</h3>
 
