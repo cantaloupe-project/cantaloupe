@@ -24,6 +24,7 @@ import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -322,15 +323,16 @@ public abstract class Java2DUtil {
             float fontSize = font.getSize();
             final int inset = overlay.getInset();
             final String[] lines = StringUtils.split(overlay.getString(), "\n");
+            final int padding = getBoxPadding(overlay);
             int lineHeight;
             int totalHeight;
             int[] lineWidths;
             int maxLineWidth;
             boolean fits = false;
 
-            // Starting at the initial font size, keep looping through smaller
-            // sizes down to the minimum in order to find the largest that will
-            // fit entirely within the image.
+            // Starting at the initial font size, loop through smaller sizes
+            // down to the minimum in order to find the largest that will fit
+            // entirely within the image.
             while (true) {
                 maxLineWidth = 0;
                 g2d.setFont(font);
@@ -347,8 +349,8 @@ public abstract class Java2DUtil {
                 }
 
                 // Will the overlay fit inside the image?
-                if (maxLineWidth + (inset * 2) <= baseImage.getWidth() &&
-                        totalHeight + (inset * 2) <= baseImage.getHeight()) {
+                if (maxLineWidth + (inset * 2) + (padding * 2) <= baseImage.getWidth() &&
+                        totalHeight + (inset * 2) + (padding * 2) <= baseImage.getHeight()) {
                     fits = true;
                     break;
                 } else {
@@ -368,64 +370,62 @@ public abstract class Java2DUtil {
 
                 g2d.drawImage(baseImage, 0, 0, null);
 
+                final Rectangle bgBox = getBoundingBox(overlay, inset,
+                        lineWidths, lineHeight,
+                        new Dimension(baseImage.getWidth(), baseImage.getHeight()));
+
+                // Draw the background, if it is not transparent.
+                if (overlay.getBackgroundColor().getAlpha() > 0) {
+                    g2d.setPaint(overlay.getBackgroundColor());
+                    g2d.fillRect(bgBox.x, bgBox.y, bgBox.width,
+                            bgBox.height);
+                }
+
+                // Draw each line individually.
                 for (int i = 0; i < lines.length; i++) {
                     int x, y;
                     switch (overlay.getPosition()) {
                         case TOP_LEFT:
-                            x = inset;
-                            y = inset + lineHeight * i;
+                            x = bgBox.x + padding;
+                            y = bgBox.y + lineHeight * i + padding;
                             break;
                         case TOP_RIGHT:
-                            x = baseImage.getWidth() - lineWidths[i] - inset;
-                            y = inset + lineHeight * i;
+                            x = bgBox.x + maxLineWidth - lineWidths[i] + padding;
+                            y = bgBox.y + lineHeight * i + padding;
                             break;
                         case BOTTOM_LEFT:
-                            x = inset;
-                            y = baseImage.getHeight() - totalHeight - inset +
-                                    lineHeight * i;
+                            x = bgBox.x + padding;
+                            y = bgBox.y + lineHeight * i + padding;
                             break;
                         // case BOTTOM_RIGHT: will be handled in default:
                         case TOP_CENTER:
-                            x = (baseImage.getWidth() - lineWidths[i]) / 2;
-                            y = inset + lineHeight * i;
+                            x = bgBox.x + Math.round((bgBox.width - lineWidths[i]) / 2f);
+                            y = bgBox.y + lineHeight * i + padding;
                             break;
                         case BOTTOM_CENTER:
-                            x = (baseImage.getWidth() - lineWidths[i]) / 2;
-                            y = baseImage.getHeight() - totalHeight - inset +
-                                    lineHeight * i;
+                            x = bgBox.x + Math.round((bgBox.width - lineWidths[i]) / 2f);
+                            y = bgBox.y + lineHeight * i + padding;
                             break;
                         case LEFT_CENTER:
-                            x = inset;
-                            y = (baseImage.getHeight() - totalHeight) / 2 +
-                                    lineHeight * i;
+                            x = bgBox.x + padding;
+                            y = bgBox.y + lineHeight * i + padding;
                             break;
                         case RIGHT_CENTER:
-                            x = baseImage.getWidth() - lineWidths[i] - inset;
-                            y = (baseImage.getHeight() - totalHeight) / 2 +
-                                    lineHeight * i;
+                            x = bgBox.x + maxLineWidth - lineWidths[i] + padding;
+                            y = bgBox.y + lineHeight * i + padding;
                             break;
                         case CENTER:
-                            x = (baseImage.getWidth() - lineWidths[i]) / 2;
-                            y = (baseImage.getHeight() - totalHeight) / 2 +
-                                    lineHeight * i;
+                            x = bgBox.x + Math.round((bgBox.width - lineWidths[i]) / 2f);
+                            y = bgBox.y + lineHeight * i + padding;
                             break;
                         default: // bottom right
-                            x = baseImage.getWidth() - lineWidths[i] - inset;
-                            y = baseImage.getHeight() - totalHeight - inset +
-                                    lineHeight * i;
+                            x = bgBox.x + maxLineWidth - lineWidths[i] + padding;
+                            y = bgBox.y + lineHeight * i + padding;
                             break;
                     }
 
-                    // Draw the background, if it is not transparent.
-                    if (i == 0 && overlay.getBackgroundColor().getAlpha() > 0) {
-                        final int padding = 3;
-                        g2d.setPaint(overlay.getBackgroundColor());
-                        g2d.fillRect(x - padding, y - padding,
-                                maxLineWidth + padding * 2,
-                                totalHeight + padding * 2);
-                    }
-
-                    y += lineHeight * 0.73; // TODO: this is arbitrary fudge
+                    // This is arbitrary fudge, but it seems to work OK.
+                    y += lineHeight * 0.73;
 
                     // Draw the text outline.
                     if (overlay.getStrokeWidth() > 0.001f) {
@@ -437,7 +437,7 @@ public abstract class Java2DUtil {
                         g2d.draw(shape);
                     }
 
-                    // Draw the text.
+                    // Draw the string.
                     g2d.setPaint(overlay.getColor());
                     g2d.drawString(lines[i], x, y);
                 }
@@ -454,6 +454,63 @@ public abstract class Java2DUtil {
             g2d.dispose();
         }
         return baseImage;
+    }
+
+    private static Rectangle getBoundingBox(final StringOverlay overlay,
+                                            final int inset,
+                                            final int[] lineWidths,
+                                            final int lineHeight,
+                                            final Dimension imageSize) {
+        // If the overlay background is visible, add some padding between the
+        // text and the margin.
+        final int padding = getBoxPadding(overlay);
+        final int boxWidth = NumberUtils.max(lineWidths) + padding * 2;
+        final int boxHeight = lineHeight * lineWidths.length + padding * 2;
+        int boxX, boxY;
+        switch (overlay.getPosition()) {
+            case TOP_LEFT:
+                boxX = inset;
+                boxY = inset;
+                break;
+            case TOP_CENTER:
+                boxX = Math.round((imageSize.width - boxWidth) / 2f);
+                boxY = inset;
+                break;
+            case TOP_RIGHT:
+                boxX = imageSize.width - boxWidth - inset - padding;
+                boxY = inset;
+                break;
+            case LEFT_CENTER:
+                boxX = inset;
+                boxY = Math.round((imageSize.height - boxHeight) / 2f);
+                break;
+            case RIGHT_CENTER:
+                boxX = imageSize.width - boxWidth - inset - padding;
+                boxY = Math.round((imageSize.height - boxHeight) / 2f);
+                break;
+            case CENTER:
+                boxX = Math.round((imageSize.width - boxWidth) / 2f);
+                boxY = Math.round((imageSize.height - boxHeight) / 2f);
+                break;
+            case BOTTOM_LEFT:
+                boxX = inset;
+                boxY = imageSize.height - boxHeight - inset - padding;
+                break;
+            // case BOTTOM_RIGHT: will be handled in default:
+            case BOTTOM_CENTER:
+                boxX = Math.round((imageSize.width - boxWidth) / 2f);
+                boxY = imageSize.height - boxHeight - inset - padding;
+                break;
+            default: // bottom right
+                boxX = imageSize.width - boxWidth - inset - padding;
+                boxY = imageSize.height - boxHeight - inset - padding;
+                break;
+        }
+        return new Rectangle(boxX, boxY, boxWidth, boxHeight);
+    }
+
+    private static int getBoxPadding(StringOverlay overlay) {
+        return (overlay.getBackgroundColor().getAlpha() > 0) ? 5 : 0;
     }
 
     /**
