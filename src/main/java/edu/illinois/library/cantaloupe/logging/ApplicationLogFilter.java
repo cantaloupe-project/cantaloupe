@@ -27,6 +27,12 @@ public class ApplicationLogFilter extends Filter<ILoggingEvent> {
         if (event.getLoggerName().equals("LogService")) {
             return FilterReply.DENY;
         }
+        // The Amazon S3 client logs request/response bodies in binary. These
+        // should really be trace-level.
+        if (event.getLoggerName().equals("org.apache.http.wire") &&
+                event.getLevel().equals(Level.DEBUG)) {
+            return FilterReply.DENY;
+        }
         return FilterReply.NEUTRAL;
     }
 
