@@ -286,18 +286,34 @@ public final class OperationList implements Comparable<OperationList>,
      * <p>Returns a filename-safe string guaranteed to uniquely represent the
      * instance. The filename is in the format:</p>
      *
-     * <pre>{hashed identifier}_{hashed operation list}.{output format extension}</pre>
+     * <pre>{hashed identifier}_{hashed operation list + options list}.{output format extension}</pre>
      *
      * @return Filename-safe string guaranteed to uniquely represent the
      *         instance.
      */
     public String toFilename() {
-        final String identifierFilename = getIdentifier().toFilename();
-
+        // Compile operations
         final List<String> opStrings = stream().
                 filter(Operation::hasEffect).
                 map(Operation::toString).
                 collect(Collectors.toList());
+        // Add options
+        for (String key : this.getOptions().keySet()) {
+            opStrings.add(key + ":" + this.getOptions().get(key));
+        }
+        // Add other instance properties
+        if (isOutputInterlacing()) {
+            opStrings.add("interlace");
+        }
+        if (getOutputQuality() < MAX_OUTPUT_QUALITY) {
+            opStrings.add("quality:" + getOutputQuality());
+        }
+        if (getOutputCompression() != null &&
+                !getOutputCompression().equals(Compression.UNCOMPRESSED) &&
+                !getOutputCompression().equals(Compression.UNDEFINED)) {
+            opStrings.add("compression:" + getOutputCompression());
+        }
+
         String opsString = StringUtils.join(opStrings, "_");
 
         try {
@@ -308,7 +324,7 @@ public final class OperationList implements Comparable<OperationList>,
             logger.error("toFilename(): {}", e.getMessage());
         }
 
-        return identifierFilename + "_" + opsString + "." +
+        return getIdentifier().toFilename() + "_" + opsString + "." +
                 getOutputFormat().getPreferredExtension();
     }
 

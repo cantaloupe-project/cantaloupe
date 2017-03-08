@@ -438,8 +438,18 @@ public class OperationListTest extends BaseTest {
         ops.setOutputFormat(Format.JPG);
         ops.getOptions().put("animal", "cat");
 
-        assertEquals("50c63748527e634134449ae20b199cc0_3fd04b4eec756fa3517d8690f4dde4d5.jpg",
-                ops.toFilename());
+        String expected = "50c63748527e634134449ae20b199cc0_f694166f0f0aa4f0a88d5d7a7315a15f.jpg";
+        assertEquals(expected, ops.toFilename());
+
+        // Assert that changing an operation changes the filename
+        crop.setX(10f);
+        assertNotEquals(expected, ops.toFilename());
+
+        // Assert that changing an option changes the filename
+        crop.setX(5f);
+        assertEquals(expected, ops.toFilename());
+        ops.getOptions().put("animal", "dog");
+        assertNotEquals(expected, ops.toFilename());
     }
 
     /* toMap() */
