@@ -1,0 +1,30 @@
+---
+layout: manual_3.4
+title: Color Profiles
+---
+
+<ol class="breadcrumb">
+  <li><a href="{{ site.baseurl }}/">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/3.4/">3.4</a></li>
+  <li class="active">Color Profiles</li>
+</ol>
+
+<h1>Color Profiles</h1>
+
+<ul>
+  <li><a href="#Overview">Overview</a></li>
+  <li><a href="#Processor%20Support">Processor Support</a></li>
+</ul>
+
+<h2 id="Overview">Overview</h2>
+
+<p>ICC color profiles are small files, or packets of data, that define transformations from one color space to another. Color profiles can be inserted at various stages in an image processing workflow&mdash;from scanner to computer, computer to printer, and even monitor to eye&mdash;to ensure that accurate colors are maintained throughout the workflow.</p>
+
+<p>Color profiles can also be embedded within image files, for the purpose of mapping the color space in which an image was produced to its internal color data. This enables viewers to reproduce image colors accurately, as they were seen by the producer. By embedding a profile, the producer need not know anything about the displays on which an image will be viewed, and need not destructively modify the color values within the image data itself.</p>
+
+<p>Note that one color profile in particular, sRGB, has become a "de facto" standard profile on the World Wide Web. There is typically no need to embed an sRGB profile into profile-less images, as viewers will tend to automatically assume that these map to an sRGB space, and apply the conversion themselves. There is therefore no provision for embedding profiles into profile-less images.</p>
+
+<h3 id="Processor Support">Processor Support</h3>
+
+<p>Most processors support embedded color profiles; see the <a href="processors.html#Supported%20Features">table of processor-supported features</a>.</p>

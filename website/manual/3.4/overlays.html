@@ -1,0 +1,187 @@
+---
+layout: manual_3.4
+title: Overlays
+---
+
+<ol class="breadcrumb">
+  <li><a href="{{ site.baseurl }}/">Home</a></li>
+  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
+  <li><a href="{{ site.baseurl }}/manual/3.4/">3.4</a></li>
+  <li class="active">Overlays</li>
+</ol>
+
+<h1>Overlays</h1>
+
+<ul>
+  <li><a href="#Image%20Overlays">Image Overlays</a></li>
+  <li><a href="#String%20Overlays">String Overlays</a></li>
+  <li><a href="#Modes%20of%20Operation">Modes of Operation</a>
+    <ul>
+        <li><a href="#BasicStrategy">BasicStrategy</a></li>
+        <li><a href="#ScriptStrategy">ScriptStrategy</a></li>
+    </ul>
+  </li>
+  <li><a href="#Positioning">Positioning</a></li>
+  <li><a href="#Implications">Implications</a>
+    <ul>
+      <li><a href="#Zooming%20Image%20Viewers">Zooming Image Viewers</a></li>
+    </ul>
+  </li>
+</ul>
+
+<p>The overlay feature overlays an image or text string on top of a derivative (output) image. This can be useful for description, branding, attribution, copyright notices, and so on.</p>
+
+<figure>
+  <img src="images/image-overlay-1600.jpg" class="img img-responsive" alt="Image with image overlay applied.">
+  <figcaption>Image overlay.</figcaption>
+</figure>
+
+<figure>
+  <img src="images/string-overlay-1600.jpg" class="img img-responsive" alt="Image with string overlay applied.">
+  <figcaption>String overlay.</figcaption>
+</figure>
+
+<p>With both types of overlays, the position, inset, and output width/height threshold (below which the overlay won't be displayed) are configurable.</p>
+
+<p>Not all processors support overlays; see the <a href="processors.html#Supported%20Features">table of supported features</a>.</p>
+
+<hr>
+
+<h2 id="Image Overlays">Image Overlays</h2>
+
+<p>An image overlay must be a 24-bit PNG image, either RGB or RGBA. It will be blended pixel-for-pixel into the output image.</p>
+
+<p>Overlay images can be located on the filesystem, and also, as of version 3.3, on a web server. Regardless, they are cached in memory after being loaded the first time, so there is no performance penalty for using web-hosted overlay images.</p>
+
+<div class="alert alert-info">Note: when using multiple image overlays, their filenames must all be different, regardless of where they reside.</div>
+
+<p><a href="images/overlay-sample.png">Sample overlay image (PNG)</a></p>
+
+<hr>
+
+<h2 id="String Overlays">String Overlays</h2>
+
+<p>String overlays are dynamically rendered onto an image using Java 2D. The font, font size, font weight, color, stroke color, background color and opacity, etc., are configurable.</p>
+
+<p>Line breaks within the string (<code>\n</code>) are respected, enabling multi-line strings. Each line is auto-aligned to the edge of the image according to the <a href="#Positioning">overlay position</a>.</p>
+
+<p>Strings are guaranteed to never overflow outside of the image. When a string doesn't fit entirely inside at its specified font size, the image server will try to use the largest font size that fits, down to the configurable minimum allowed size. If none fit, the string won't be drawn.</p>
+
+<hr>
+
+<h2 id="Modes of Operation">Modes of Operation</h2>
+
+<p>The overlay system offers two "strategies," or modes of operation: a basic strategy, where overlay properties are hard-coded in the configuration file and applied to all requests; and a <a href="#ScriptStrategy">script strategy</a>, where the decision of whether to apply an overlay, and what kind, depends on the return value of a delegate method. The <code>overlays.strategy</code> configuration key is used to set the strategy.</p>
+
+<h3 id="BasicStrategy">BasicStrategy</h3>
+
+<p>With BasicStrategy, the <code>overlays.BasicStrategy.*</code> keys in the configuration file are used to set an overlay type (image or string), position, inset, and others. This strategy is easy to configure and is all that is needed when it is intended for the same overlay to be applied to all images.</p>
+
+<h3 id="ScriptStrategy">ScriptStrategy</h3>
+
+<p>Perhaps you want to apply an image overlay to some of your images, and to others, you want to apply a string overlay, or no overlay. Perhaps you want to control overlays based on the client's IP address or user agent. Or, perhaps you only want to apply overlays to JPEG output images, and not GIFs. Or, perhaps you don't want to apply an overlay to images that have been rotated. All of this is possible by writing just a few lines of code.</p>
+
+<p>With the <code>Cantaloupe::overlay()</code> delegate method, you can tell the image server whether to apply an overlay in response to a particular request, and what its properties should be. An example of how this can be accomplished appears below:</p>
+
+{% highlight ruby %}
+module Cantaloupe
+  ##
+  # See the argument & return value documentation in delegates.rb.sample.
+  #
+  def self.overlay(identifier, operations, resulting_size, output_format,
+                   request_uri, request_headers, client_ip, cookies)
+    # If the resulting image is less than this many pixels on a side, don't
+    # apply an overlay.
+    min_size_cutoff = 300
+    return false if resulting_size['width'] < min_size_cutoff or
+        resulting_size['height'] < min_size_cutoff
+
+    # Don't render an overlay for clients on localhost.
+    return false if %w(127.0.0.1 ::1/128).include?(client_ip)
+
+    # Don't render an overlay on GIF images.
+    return false if output_format['media_type'] == 'image/gif'
+
+    # Don't render an overlay on images of cantaloupes.
+    return false if identifier.downcase.include?('cantaloupe')
+
+    # Render an image overlay for iOS clients.
+    if request_headers.
+        select{ |k,v| k.downcase == 'user-agent' and v.include?('iOS') }.any?
+      return {
+        'image' => '/path/to/ios-overlay.png',
+        'position' => 'bottom right',
+        'inset' => 5
+      }
+    end
+
+    # Render a string overlay for all other clients.
+    {
+      'string' => "This dynamic string\nhas multiple lines",
+      'position' => 'bottom left',
+      'inset' => 5,
+      'font' => 'Helvetica',
+      'font_size' => 20,
+      'font_min_size' => 18,
+      'font_weight' => 1.0,
+      'color' => 'white',
+      'background_color' => 'rgba(0, 0, 0, 0.6)'
+      'glyph_spacing' => 0,
+      'stroke_color' => 'black',
+      'stroke_width' => 1
+    }
+  end
+end
+{% endhighlight %}
+
+<hr>
+
+<h2 id="Positioning">Positioning</h2>
+
+<p>Position and inset are configurable. Supported positions are:</p>
+
+<table class="table text-center">
+  <tr>
+    <td>
+      <code>top left</code>
+    </td>
+    <td>
+      <code>top center</code>
+    </td>
+    <td>
+      <code>top right</code>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <code>left center</code>
+    </td>
+    <td>
+      <code>center</code>
+    </td>
+    <td>
+      <code>right center</code>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <code>bottom left</code>
+    </td>
+    <td>
+      <code>bottom center</code>
+    </td>
+    <td>
+      <code>bottom right</code>
+    </td>
+  </tr>
+</table>
+
+<hr>
+
+<h2 id="Implications">Implications</h2>
+
+<h3 id="Zooming Image Viewers">Zooming Image Viewers</h3>
+
+<p>Zooming image viewers display a mosaic of cropped image tiles. When overlays are enabled, each tile will have one, which is bound to look strange.</p>
+
+<p>One way of working around this might be to set the <code>overlays.BasicStrategy.output_width_threshold</code> and <code>overlays.BasicStrategy.output_height_threshold</code> configuration options to values that are slightly larger than the tile size used by the image viewer. This will disable overlays for images the size of image viewer tiles, and enable them for anything larger. Unfortunately, the tile size used by the viewer may differ depending on the source image, as the recommended tile sizes in <a href="endpoints.html">information responses</a> will vary on a per-image basis.</p>
