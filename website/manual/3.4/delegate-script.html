@@ -15,6 +15,7 @@ title: Delegate Script
 <ul>
   <li><a href="#Rules">Rules</a></li>
   <li><a href="#Caching">Caching</a></li>
+  <li><a href="#Logging">Logging</a></li>
   <li><a href="#Example">Example</a></li>
   <li><a href="#Testing%20Script%20Methods">Testing Script Methods</a></li>
 </ul>
@@ -52,6 +53,22 @@ title: Delegate Script
 <p>Because the cache is in memory and not persisted, it will be cleared when the application is stopped.</p>
 
 <p>Note that cached invocations are <strong>not</strong> purged when the script file is edited and auto-reloaded.</p>
+
+<hr>
+
+<h2 id="Logging">Logging</h2>
+
+<p>Since version 3.4, delegate methods may access a logger that writes to the application log. Here is how:</p>
+
+{% highlight ruby %}
+require 'java'
+
+logger = Java::edu.illinois.library.cantaloupe.script.RubyScriptEngine.getLogger
+logger.debug('Debug-level message')
+logger.info('Info-level message')
+logger.warn('Warning-level message')
+logger.error('Error-level message')
+{% endhighlight %}
 
 <hr>
 
