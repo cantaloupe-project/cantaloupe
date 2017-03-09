@@ -1,18 +1,84 @@
 ---
-layout: manual_3.2
+layout: default
 title: Upgrading
 ---
-
-<ol class="breadcrumb">
-  <li><a href="{{ site.baseurl }}/">Home</a></li>
-  <li><a href="{{ site.baseurl }}/manual/">User Manual</a></li>
-  <li><a href="{{ site.baseurl }}/manual/3.2/">3.2</a></li>
-  <li class="active">Upgrading</li>
-</ol>
 
 <h1>Upgrading</h1>
 
 <div class="alert alert-info">If you are skipping versions, it will be necessary to work through this list upwards from the version you are currently on.</div>
+
+<h2>From 3.3.1 to 3.4</h2>
+
+<p>Nothing to do.</p>
+
+<h2>From 3.3 to 3.3.1</h2>
+
+<p>Nothing to do.</p>
+
+<h2>From 3.2.x to 3.3</h2>
+
+<ul>
+  <li>Add the following keys from the sample configuration:
+    <ul>
+      <li><code>delegate_script.cache.enabled</code></li>
+      <li><code>endpoint.api.*</code></li>
+      <li><code>processor.dcm</code></li>
+      <li><code>processor.normalize</code></li>
+      <li><code>processor.background_color</code></li>
+      <li><code>processor.upscale_filter</code></li>
+      <li><code>processor.downscale_filter</code></li>
+      <li><code>processor.sharpen</code></li>
+      <li><code>processor.jpg.progressive</code></li>
+      <li><code>processor.jpg.quality</code></li>
+      <li><code>processor.tif.compression</code></li>
+      <li><code>cache.server.ttl_seconds</code></li>
+      <li><code>overlays.BasicStrategy.type</code></li>
+      <li><code>overlays.BasicStrategy.string</code></li>
+      <li><code>overlays.BasicStrategy.string.*</code></li>
+    </ul>
+  </li>
+  <li>Rename the following keys:
+    <ul>
+      <li><code>watermark.*</code> to <code>overlays.*</code></li>
+    </ul>
+  </li>
+  <li>Remove the following keys from the configuration:
+    <ul>
+      <li><code>JdbcResolver.max_pool_size</code></li>
+      <li><code>FfmpegProcessor.sharpen</code></li>
+      <li><code>GraphicsMagickProcessor.sharpen</code></li>
+      <li><code>GraphicsMagickProcessor.background_color</code></li>
+      <li><code>ImageMagickProcessor.sharpen</code></li>
+      <li><code>ImageMagickProcessor.background_color</code></li>
+      <li><code>JaiProcessor.sharpen</code></li>
+      <li><code>JaiProcessor.jpg.quality</code></li>
+      <li><code>JaiProcessor.tif.compression</code></li>
+      <li><code>Java2dProcessor.upscale_filter</code></li>
+      <li><code>Java2dProcessor.downscale_filter</code></li>
+      <li><code>Java2dProcessor.sharpen</code></li>
+      <li><code>Java2dProcessor.jpg.quality</code></li>
+      <li><code>Java2dProcessor.tif.compression</code></li>
+      <li><code>KakaduProcessor.upscale_filter</code></li>
+      <li><code>KakaduProcessor.downscale_filter</code></li>
+      <li><code>KakaduProcessor.sharpen</code></li>
+      <li><code>OpenJpegProcessor.upscale_filter</code></li>
+      <li><code>OpenJpegProcessor.downscale_filter</code></li>
+      <li><code>OpenJpegProcessor.sharpen</code></li>
+      <li><code>PdfBoxProcessor.upscale_filter</code></li>
+      <li><code>PdfBoxProcessor.downscale_filter</code></li>
+      <li><code>PdfBoxProcessor.sharpen</code></li>
+      <li><code>FilesystemCache.ttl_seconds</code></li>
+      <li><code>JdbcCache.max_pool_size</code></li>
+      <li><code>JdbcCache.ttl_seconds</code></li>
+      <li><code>AmazonS3Cache.ttl_seconds</code></li>
+      <li><code>AzureStorageCache.ttl_seconds</code></li>
+    </ul>
+  </li>
+  <li>If you are using FilesystemCache, purge your cache.</li>
+  <li>If you are using the <code>authorized?()</code> or <code>watermark()</code> delegate methods, note that the contents of the <code>operations</code> argument have changed; see the new sample delegate script for more information.</li>
+  <li>If you are using the <code>watermark()</code> delegate method, note that the <code>pathname</code> key in the returned hash must be changed to <code>image</code>.</li>
+  <li>Rename the <code>watermark()</code> delegate method to <code>overlay()</code>.</li>
+</ul>
 
 <h2>From 3.2 to 3.2.4</h2>
 
