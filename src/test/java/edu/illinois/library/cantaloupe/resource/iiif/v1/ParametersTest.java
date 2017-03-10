@@ -1,12 +1,29 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.Operation;
+import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.Rotate;
+import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
 public class ParametersTest extends BaseTest {
+
+    private Parameters instance;
+
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+        instance = new Parameters("identifier", "0,0,200,200", "pct:50", "5",
+                "native", "jpg");
+    }
 
     @Test
     public void testFromUri() {
@@ -39,8 +56,12 @@ public class ParametersTest extends BaseTest {
     }
 
     @Test
-    public void testToOperationList() {
-        // TODO: write this
+    public void testToOperationList() throws Exception {
+        final OperationList opList = instance.toOperationList();
+        Iterator<Operation> it = opList.iterator();
+        assertTrue(it.next() instanceof Crop);
+        assertTrue(it.next() instanceof Scale);
+        assertTrue(it.next() instanceof Rotate);
     }
 
 }

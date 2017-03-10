@@ -10,7 +10,10 @@ import org.restlet.data.Form;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Dimension;
 import java.io.IOException;
+import java.net.URL;
+import java.util.Map;
 
 /**
  * Encapsulates the parameters of an IIIF request.
@@ -148,19 +151,23 @@ class Parameters implements ParameterList, Comparable<Parameters> {
     }
 
     /**
-     * @return OperationList analog of the parameters. Note that any additional
-     * operations that may need to be performed, such as overlays, will not be
-     * included.
+     * {@inheritDoc}
      */
     @Override
     public OperationList toOperationList() {
         OperationList ops = new OperationList();
         ops.setIdentifier(getIdentifier());
         ops.setOutputFormat(getOutputFormat());
-        ops.add(getRegion().toCrop());
-        ops.add(getSize().toScale());
+        if (!Region.Type.FULL.equals(getRegion().getType())) {
+            ops.add(getRegion().toCrop());
+        }
+        if (!Size.ScaleMode.MAX.equals(getSize().getScaleMode())) {
+            ops.add(getSize().toScale());
+        }
         ops.add(getRotation().toTranspose());
-        ops.add(getRotation().toRotate());
+        if (getRotation().getDegrees() != 0) {
+            ops.add(getRotation().toRotate());
+        }
         ops.add(getQuality().toColorTransform());
         return ops;
     }

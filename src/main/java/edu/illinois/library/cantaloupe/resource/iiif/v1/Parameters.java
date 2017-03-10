@@ -7,6 +7,10 @@ import edu.illinois.library.cantaloupe.resource.ParameterList;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Reference;
 
+import java.awt.Dimension;
+import java.net.URL;
+import java.util.Map;
+
 /**
  * Encapsulates the parameters of an IIIF request.
  *
@@ -127,18 +131,22 @@ class Parameters implements ParameterList, Comparable<Parameters> {
     }
 
     /**
-     * @return OperationList analog of the parameters. Note that any additional
-     * operations that may need to be performed, such as overlays, will not be
-     * included.
+     * {@inheritDoc}
      */
     @Override
     public OperationList toOperationList() {
         OperationList ops = new OperationList();
         ops.setIdentifier(getIdentifier());
         ops.setOutputFormat(getOutputFormat());
-        ops.add(getRegion().toCrop());
-        ops.add(getSize().toScale());
-        ops.add(getRotation().toRotate());
+        if (!getRegion().isFull()) {
+            ops.add(getRegion().toCrop());
+        }
+        if (!Size.ScaleMode.FULL.equals(getSize().getScaleMode())) {
+            ops.add(getSize().toScale());
+        }
+        if (getRotation().getDegrees() != 0) {
+            ops.add(getRotation().toRotate());
+        }
         ops.add(getQuality().toColorTransform());
         return ops;
     }
