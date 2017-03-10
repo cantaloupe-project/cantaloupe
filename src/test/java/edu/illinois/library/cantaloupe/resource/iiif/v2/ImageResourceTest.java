@@ -3,12 +3,10 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
-import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
@@ -197,17 +195,15 @@ public class ImageResourceTest extends ResourceTest {
             cacheFolder.mkdir();
         }
 
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY,
+                true);
         config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
                 cacheFolder.getAbsolutePath());
         config.setProperty(Cache.TTL_CONFIG_KEY, 10);
         config.setProperty(Cache.RESOLVE_FIRST_CONFIG_KEY, true);
-
-        OperationList ops = TestUtil.newOperationList();
-        ops.setIdentifier(new Identifier(IMAGE));
-        ops.setOutputFormat(Format.JPG);
 
         assertEquals(0, FileUtils.listFiles(cacheFolder, null, true).size());
 
@@ -230,17 +226,15 @@ public class ImageResourceTest extends ResourceTest {
             cacheFolder.mkdir();
         }
 
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY,
+                true);
         config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
                 cacheFolder.getAbsolutePath());
         config.setProperty(Cache.TTL_CONFIG_KEY, 10);
         config.setProperty(Cache.RESOLVE_FIRST_CONFIG_KEY, true);
-
-        OperationList ops = TestUtil.newOperationList();
-        ops.setIdentifier(new Identifier(IMAGE));
-        ops.setOutputFormat(Format.JPG);
 
         assertEquals(0, FileUtils.listFiles(cacheFolder, null, true).size());
 
@@ -420,9 +414,11 @@ public class ImageResourceTest extends ResourceTest {
             cacheDir.mkdir();
         }
 
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",
                 sourceDir.getAbsolutePath() + "/");
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY,
+                true);
         config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
@@ -432,21 +428,14 @@ public class ImageResourceTest extends ResourceTest {
         config.setProperty(Cache.PURGE_MISSING_CONFIG_KEY, purgeMissing);
 
         try {
-            OperationList ops = TestUtil.newOperationList();
-            ops.setIdentifier(new Identifier(IMAGE));
-            ops.setOutputFormat(Format.JPG);
-
             assertEquals(0, FileUtils.listFiles(cacheDir, null, true).size());
 
             // request an image to cache it
             getClientForUriPath("/" + IMAGE + "/full/full/0/default.jpg").get();
-            getClientForUriPath("/" + IMAGE + "/info.json").get();
 
-            // assert that it has been cached
+            // assert that it has been cached (there should be both an image
+            // and an info)
             assertEquals(2, FileUtils.listFiles(cacheDir, null, true).size());
-            DerivativeCache cache = CacheFactory.getDerivativeCache();
-            assertNotNull(cache.newDerivativeImageInputStream(ops));
-            assertNotNull(cache.getImageInfo(ops.getIdentifier()));
 
             // Delete the source image.
             sourceImage.delete();
@@ -460,11 +449,9 @@ public class ImageResourceTest extends ResourceTest {
             }
 
             if (purgeMissing) {
-                assertNull(cache.newDerivativeImageInputStream(ops));
-                assertNull(cache.getImageInfo(ops.getIdentifier()));
+                assertEquals(0, FileUtils.listFiles(cacheDir, null, true).size());
             } else {
-                assertNotNull(cache.newDerivativeImageInputStream(ops));
-                assertNotNull(cache.getImageInfo(ops.getIdentifier()));
+                assertEquals(2, FileUtils.listFiles(cacheDir, null, true).size());
             }
         } finally {
             FileUtils.deleteDirectory(sourceDir);

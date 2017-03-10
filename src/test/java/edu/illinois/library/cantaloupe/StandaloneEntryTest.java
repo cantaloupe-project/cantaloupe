@@ -236,7 +236,9 @@ public class StandaloneEntryTest extends BaseTest {
         imageDir.mkdirs();
         infoDir.mkdirs();
 
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY,
+                true);
         config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
@@ -273,6 +275,8 @@ public class StandaloneEntryTest extends BaseTest {
 
         // set up the cache
         Configuration config = ConfigurationFactory.getInstance();
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY,
+                true);
         config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
@@ -330,6 +334,8 @@ public class StandaloneEntryTest extends BaseTest {
 
         // set up the cache
         Configuration config = ConfigurationFactory.getInstance();
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY,
+                true);
         config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",
@@ -395,6 +401,8 @@ public class StandaloneEntryTest extends BaseTest {
         infoDir.mkdirs();
 
         Configuration config = ConfigurationFactory.getInstance();
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY,
+                true);
         config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
                 "FilesystemCache");
         config.setProperty("FilesystemCache.pathname",

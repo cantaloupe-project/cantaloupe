@@ -19,6 +19,8 @@ public abstract class CacheFactory {
 
     public static final String DERIVATIVE_CACHE_CONFIG_KEY =
             "cache.derivative";
+    public static final String DERIVATIVE_CACHE_ENABLED_CONFIG_KEY =
+            "cache.derivative.enabled";
     public static final String SOURCE_CACHE_CONFIG_KEY =
             "cache.source";
     public static final String SOURCE_CACHE_ENABLED_CONFIG_KEY =
@@ -50,33 +52,41 @@ public abstract class CacheFactory {
     }
 
     /**
-     * <p>Provides access to the shared {@link Cache} instance.</p>
+     * <p>Provides access to the shared {@link DerivativeCache} instance.</p>
      *
-     * <p>This method respects live changes in application configuration,
-     * mostly for the sake of testing.</p>
+     * <p>This method respects live changes in application configuration.</p>
      *
-     * @return The shared Cache Singleton, or null if a cache is not available.
+     * @return The shared DerivativeCache instance, or <code>null</code> if a
+     *         derivative cache is not available.
      */
     public static synchronized DerivativeCache getDerivativeCache() {
-        try {
-            String cacheName = Configuration.getInstance().
-                    getString(DERIVATIVE_CACHE_CONFIG_KEY);
+        final Configuration config = Configuration.getInstance();
+        final boolean enabled =
+                config.getBoolean(DERIVATIVE_CACHE_ENABLED_CONFIG_KEY, false);
+        if (enabled) {
+            String cacheName = config.getString(DERIVATIVE_CACHE_CONFIG_KEY);
             if (cacheName != null && cacheName.length() > 0) {
-                String className = CacheFactory.class.getPackage().getName() +
-                        "." + cacheName;
-                Class class_ = Class.forName(className);
-                if (derivativeCache == null ||
-                        !derivativeCache.getClass().getSimpleName().equals(className)) {
-                    derivativeCache = (DerivativeCache) class_.newInstance();
+                try {
+                    String className = CacheFactory.class.getPackage().getName() +
+                            "." + cacheName;
+                    if (derivativeCache == null ||
+                            !derivativeCache.getClass().getName().equals(className)) {
+                        logger.debug("getDerivativeCache(): implementation " +
+                                "changed; creating a new instance");
+                        Class class_ = Class.forName(className);
+                        derivativeCache = (DerivativeCache) class_.newInstance();
+                    }
+                } catch (ClassNotFoundException e) {
+                    logger.error("Class not found: {}", e.getMessage());
+                    derivativeCache = null;
+                } catch (IllegalAccessException | InstantiationException e) {
+                    logger.error(e.getMessage());
+                    derivativeCache = null;
                 }
             } else {
                 derivativeCache = null;
             }
-        } catch (ClassNotFoundException e) {
-            logger.error("Class not found: {}", e.getMessage());
-            derivativeCache = null;
-        } catch (IllegalAccessException | InstantiationException e) {
-            logger.error(e.getMessage());
+        } else {
             derivativeCache = null;
         }
         return derivativeCache;

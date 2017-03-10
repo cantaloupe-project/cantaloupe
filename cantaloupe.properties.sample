@@ -361,9 +361,11 @@ cache.source.enabled = false
 # FilesystemCache is the only available source cache.
 cache.source = FilesystemCache
 
-# Enables the derivative (processed image) cache. Available values are
-# `FilesystemCache`, `JdbcCache`, `AmazonS3Cache`, and `AzureStorageCache`.
-# Set blank to disable derivative caching.
+# Enables the derivative (processed image) cache.
+cache.derivative.enabled =
+
+# Available values are `FilesystemCache`, `JdbcCache`, `AmazonS3Cache`, and
+# `AzureStorageCache`.
 cache.derivative =
 
 # Time before a cached image becomes stale and needs to be reloaded. Set to

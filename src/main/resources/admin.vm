@@ -1688,13 +1688,22 @@
                                            for post-processed images.">?</a>
                                     </td>
                                     <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.derivative.enabled"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Derivative Cache Implementation</td>
+                                    <td>
                                         <select class="form-control"
                                                 name="cache.derivative">
-                                            #if (!$currentDerivativeCache)
-                                                <option value="" selected>Disabled</option>
-                                            #else
-                                                <option value="">Disabled</option>
-                                            #end
                                             #foreach ($cache in $derivativeCaches)
                                                 #if ($cache.equals($currentDerivativeCache))
                                                     <option selected>$cache.getName()</option>
