@@ -356,7 +356,9 @@ public class ControlPanelTest extends ResourceTest {
         css("[name=\"cache.client.must_revalidate\"]").click();
         css("[name=\"cache.client.proxy_revalidate\"]").click();
         css("[name=\"cache.client.no_transform\"]").click();
-        new Select(css("[name=\"cache.source\"]")).selectByValue("");
+        new Select(css("[name=\"cache.source\"]")).
+                selectByVisibleText("FilesystemCache");
+        css("[name=\"cache.source.enabled\"]").click();
         new Select(css("[name=\"cache.derivative\"]")).
                 selectByVisibleText("FilesystemCache");
         css("[name=\"" + Cache.PURGE_MISSING_CONFIG_KEY + "\"]").click();
@@ -408,7 +410,8 @@ public class ControlPanelTest extends ResourceTest {
         assertTrue(config.getBoolean("cache.client.must_revalidate"));
         assertTrue(config.getBoolean("cache.client.proxy_revalidate"));
         assertTrue(config.getBoolean("cache.client.no_transform"));
-        assertEquals("", config.getString("cache.source"));
+        assertEquals("FilesystemCache", config.getString("cache.source"));
+        assertTrue(config.getBoolean("cache.source.enabled"));
         assertEquals("FilesystemCache", config.getString("cache.derivative"));
         //assertTrue(config.getBoolean(Cache.PURGE_MISSING_CONFIG_KEY)); TODO: why does this not work?
         assertTrue(config.getBoolean(Cache.RESOLVE_FIRST_CONFIG_KEY));

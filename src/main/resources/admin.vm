@@ -1653,13 +1653,22 @@
                                            strategy of &lt;code&gt;CacheStrategy&lt;/code&gt;.">?</a>
                                     </td>
                                     <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="cache.source.enabled"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Source Cache Implementation</td>
+                                    <td>
                                         <select class="form-control"
                                                 name="cache.source">
-                                            #if (!$currentSourceCache)
-                                                <option value="" selected>Disabled</option>
-                                            #else
-                                                <option value="">Disabled</option>
-                                            #end
                                             #foreach ($cache in $sourceCaches)
                                                 #if ($cache.equals($currentSourceCache))
                                                     <option selected>$cache.getName()</option>

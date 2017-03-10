@@ -87,9 +87,10 @@ public class SourceImageWrangler {
      *     <li>If the resolver is a {@link StreamResolver} (only) and the
      *     processor is a {@link FileProcessor} (only):
      *         <ul>
-     *             <li>If {@link CacheFactory#SOURCE_CACHE_CONFIG_KEY} is set,
-     *             the source image will be downloaded to the source cache,
-     *             and the processor will read the file returned by
+     *             <li>If {@link CacheFactory#SOURCE_CACHE_ENABLED_CONFIG_KEY}
+     *             is <code>true</code>, the source image will be downloaded
+     *             to the source cache, and the processor will read the file
+     *             returned by
      *             {@link SourceCache#getSourceImageFile(Identifier)}. This will
      *             block, and other threads trying to access the same source
      *             image will wait for it to download.</li>

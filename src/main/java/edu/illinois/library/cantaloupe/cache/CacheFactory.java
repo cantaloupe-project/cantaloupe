@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,8 +17,12 @@ public abstract class CacheFactory {
 
     private static Logger logger = LoggerFactory.getLogger(CacheFactory.class);
 
-    public static final String DERIVATIVE_CACHE_CONFIG_KEY = "cache.derivative";
-    public static final String SOURCE_CACHE_CONFIG_KEY = "cache.source";
+    public static final String DERIVATIVE_CACHE_CONFIG_KEY =
+            "cache.derivative";
+    public static final String SOURCE_CACHE_CONFIG_KEY =
+            "cache.source";
+    public static final String SOURCE_CACHE_ENABLED_CONFIG_KEY =
+            "cache.source.enabled";
 
     /** Singleton instance */
     private static DerivativeCache derivativeCache;
@@ -55,7 +59,7 @@ public abstract class CacheFactory {
      */
     public static synchronized DerivativeCache getDerivativeCache() {
         try {
-            String cacheName = ConfigurationFactory.getInstance().
+            String cacheName = Configuration.getInstance().
                     getString(DERIVATIVE_CACHE_CONFIG_KEY);
             if (cacheName != null && cacheName.length() > 0) {
                 String className = CacheFactory.class.getPackage().getName() +
@@ -84,32 +88,39 @@ public abstract class CacheFactory {
      * <p>This method respects live changes in application configuration,
      * mostly for the sake of testing.</p>
      *
-     * @return The shared SourceCache Singleton, or null if a source cache is
+     * @return The shared SourceCache instance, or null if a source cache is
      *         not available.
      */
     public static synchronized SourceCache getSourceCache() {
-        try {
-            String cacheName = ConfigurationFactory.getInstance().
-                    getString(SOURCE_CACHE_CONFIG_KEY);
+        final Configuration config = Configuration.getInstance();
+        final boolean enabled =
+                config.getBoolean(SOURCE_CACHE_ENABLED_CONFIG_KEY, false);
+        if (enabled) {
+            String cacheName = config.getString(SOURCE_CACHE_CONFIG_KEY);
             if (cacheName != null && cacheName.length() > 0) {
-                String className = CacheFactory.class.getPackage().getName() +
-                        "." + cacheName;
-                Class class_ = Class.forName(className);
-                if (sourceCache == null ||
-                        !sourceCache.getClass().getSimpleName().equals(className)) {
-                    sourceCache = (SourceCache) class_.newInstance();
+                try {
+                    String className = CacheFactory.class.getPackage().getName() +
+                            "." + cacheName;
+                    Class class_ = Class.forName(className);
+                    if (sourceCache == null ||
+                            !sourceCache.getClass().getName().equals(className)) {
+                        logger.debug("getSourceCache(): implementation " +
+                                "changed; creating a new instance");
+                        sourceCache = (SourceCache) class_.newInstance();
+                    }
+                } catch (ClassNotFoundException e) {
+                    logger.error("Class not found: {}", e.getMessage());
+                    sourceCache = null;
+                } catch (IllegalAccessException | InstantiationException e) {
+                    logger.error(e.getMessage());
+                    sourceCache = null;
                 }
             } else {
                 sourceCache = null;
             }
-        } catch (ClassNotFoundException e) {
-            logger.error("Class not found: {}", e.getMessage());
-            sourceCache = null;
-        } catch (IllegalAccessException | InstantiationException e) {
-            logger.error(e.getMessage());
+        } else {
             sourceCache = null;
         }
-
         return sourceCache;
     }
 
