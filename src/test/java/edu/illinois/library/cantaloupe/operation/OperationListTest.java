@@ -2,22 +2,30 @@ package edu.illinois.library.cantaloupe.operation;
 
 import static org.junit.Assert.*;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.operation.overlay.BasicStringOverlayServiceTest;
+import edu.illinois.library.cantaloupe.operation.overlay.StringOverlay;
+import edu.illinois.library.cantaloupe.operation.redaction.RedactionServiceTest;
+import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.awt.Dimension;
+import java.io.IOException;
+import java.net.URL;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 public class OperationListTest extends BaseTest {
 
-    private OperationList ops;
+    private OperationList instance;
 
     private static OperationList newOperationList() {
         OperationList ops = new OperationList();
@@ -39,30 +47,124 @@ public class OperationListTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        ops = newOperationList();
-        assertNotNull(ops.getOptions());
+        instance = newOperationList();
+        assertNotNull(instance.getOptions());
     }
 
     /* add(Operation) */
 
     @Test
     public void testAdd() {
-        ops = new OperationList();
-        assertFalse(ops.iterator().hasNext());
-        ops.add(new Rotate());
-        assertTrue(ops.iterator().hasNext());
+        instance = new OperationList();
+        assertFalse(instance.iterator().hasNext());
+        instance.add(new Rotate());
+        assertTrue(instance.iterator().hasNext());
     }
 
     @Test
     public void testAddWhileFrozen() {
-        ops = new OperationList();
-        ops.freeze();
+        instance = new OperationList();
+        instance.freeze();
         try {
-            ops.add(new Rotate());
+            instance.add(new Rotate());
             fail("Expected exception");
         } catch (UnsupportedOperationException e) {
             // pass
         }
+    }
+
+    /* applyNonEndpointMutations() */
+
+    @Test
+    public void testApplyNonEndpointMutationsWithJPEGOutputFormat()
+            throws Exception {
+        final Configuration config = Configuration.getInstance();
+
+        //////////////////////////// Setup ////////////////////////////////
+
+        // redactions
+        RedactionServiceTest.setUpConfiguration();
+        // overlay
+        BasicStringOverlayServiceTest.setUpConfiguration();
+        // scale filters
+        config.setProperty(Processor.DOWNSCALE_FILTER_CONFIG_KEY, "bicubic");
+        config.setProperty(Processor.UPSCALE_FILTER_CONFIG_KEY, "triangle");
+        // sharpening
+        config.setProperty(Processor.SHARPEN_CONFIG_KEY, 0.2f);
+        // metadata copies
+        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        // background color
+        config.setProperty(Processor.BACKGROUND_COLOR_CONFIG_KEY, "white");
+        // JPEG quality
+        config.setProperty(Processor.JPG_QUALITY_CONFIG_KEY, 50);
+        // JPEG progressive
+        config.setProperty(Processor.JPG_PROGRESSIVE_CONFIG_KEY, true);
+
+        ///////////////////////////// Test ////////////////////////////////
+
+        final OperationList opList = new OperationList();
+        opList.add(new Scale(0.5f));
+        opList.add(new Rotate(45));
+        opList.setOutputFormat(Format.JPG);
+        final Dimension fullSize = new Dimension(2000,1000);
+
+        opList.applyNonEndpointMutations(
+                fullSize, "127.0.0.1", new URL("http://example.org/"),
+                new HashMap<>(), new HashMap<>());
+
+        Iterator<Operation> it = opList.iterator();
+        assertEquals(Scale.Filter.BICUBIC, ((Scale) it.next()).getFilter());
+        assertTrue(it.next() instanceof Rotate);
+        assertTrue(it.next() instanceof Sharpen);
+        assertTrue(it.next() instanceof StringOverlay);
+        assertTrue(it.next() instanceof MetadataCopy);
+
+        assertEquals(Color.fromString("#FFFFFF"),
+                ((Rotate) opList.getFirst(Rotate.class)).getFillColor());
+        assertEquals(50, opList.getOutputQuality());
+        assertTrue(opList.isOutputInterlacing());
+    }
+
+    @Test
+    public void testAddNonEndpointMutationsWithTIFFOutputFormat()
+            throws IOException {
+        final Configuration config = Configuration.getInstance();
+
+        //////////////////////////// Setup ////////////////////////////////
+
+        // redactions
+        RedactionServiceTest.setUpConfiguration();
+        // overlay
+        BasicStringOverlayServiceTest.setUpConfiguration();
+        // scale filters
+        config.setProperty(Processor.DOWNSCALE_FILTER_CONFIG_KEY, "bicubic");
+        config.setProperty(Processor.UPSCALE_FILTER_CONFIG_KEY, "triangle");
+        // sharpening
+        config.setProperty(Processor.SHARPEN_CONFIG_KEY, 0.2f);
+        // metadata copies
+        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        // TIFF compression
+        config.setProperty(Processor.TIF_COMPRESSION_CONFIG_KEY, "LZW");
+
+        ///////////////////////////// Test ////////////////////////////////
+
+        final OperationList opList = new OperationList();
+        opList.add(new Scale(0.5f));
+        opList.add(new Rotate(45));
+        opList.setOutputFormat(Format.TIF);
+        final Dimension fullSize = new Dimension(2000,1000);
+
+        opList.applyNonEndpointMutations(
+                fullSize, "127.0.0.1", new URL("http://example.org/"),
+                new HashMap<>(), new HashMap<>());
+
+        Iterator<Operation> it = opList.iterator();
+        assertEquals(Scale.Filter.BICUBIC, ((Scale) it.next()).getFilter());
+        assertTrue(it.next() instanceof Rotate);
+        assertTrue(it.next() instanceof Sharpen);
+        assertTrue(it.next() instanceof StringOverlay);
+        assertTrue(it.next() instanceof MetadataCopy);
+        assertEquals(Compression.LZW, opList.getOutputCompression());
     }
 
     /* clear() */
@@ -70,16 +172,16 @@ public class OperationListTest extends BaseTest {
     @Test
     public void testClear() {
         int opCount = 0;
-        Iterator it = ops.iterator();
+        Iterator it = instance.iterator();
         while (it.hasNext()) {
             it.next();
             opCount++;
         }
         assertEquals(3, opCount);
-        ops.clear();
+        instance.clear();
 
         opCount = 0;
-        it = ops.iterator();
+        it = instance.iterator();
         while (it.hasNext()) {
             it.next();
             opCount++;
@@ -89,9 +191,9 @@ public class OperationListTest extends BaseTest {
 
     @Test
     public void testClearWhileFrozen() {
-        ops.freeze();
+        instance.freeze();
         try {
-            ops.clear();
+            instance.clear();
             fail("Expected exception");
         } catch (UnsupportedOperationException e) {
             // pass
@@ -114,7 +216,7 @@ public class OperationListTest extends BaseTest {
         ops2.setOutputCompression(Compression.JPEG);
         ops2.setOutputQuality(80);
         ops2.setOutputInterlacing(true);
-        assertEquals(0, ops2.compareTo(this.ops));
+        assertEquals(0, ops2.compareTo(this.instance));
     }
 
     /* equals(Object) */
@@ -139,22 +241,22 @@ public class OperationListTest extends BaseTest {
 
     @Test
     public void testGetFirst() {
-        assertNull(ops.getFirst(MetadataCopy.class));
-        assertNotNull(ops.getFirst(Scale.class));
+        assertNull(instance.getFirst(MetadataCopy.class));
+        assertNotNull(instance.getFirst(Scale.class));
     }
 
     /* getOptions() */
 
     @Test
     public void testGetOptions() {
-        assertNotNull(ops.getOptions());
+        assertNotNull(instance.getOptions());
     }
 
     @Test
     public void testGetOptionsWhileFrozen() {
-        ops.freeze();
+        instance.freeze();
         try {
-            ops.getOptions().put("test", "test");
+            instance.getOptions().put("test", "test");
             fail("Expected exception");
         } catch (UnsupportedOperationException e) {
             // pass
@@ -166,25 +268,25 @@ public class OperationListTest extends BaseTest {
     @Test
     public void testGetResultingSize() {
         Dimension fullSize = new Dimension(300, 200);
-        ops = new OperationList();
+        instance = new OperationList();
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
         Rotate rotate = new Rotate();
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(rotate);
-        assertEquals(fullSize, ops.getResultingSize(fullSize));
+        instance.add(crop);
+        instance.add(scale);
+        instance.add(rotate);
+        assertEquals(fullSize, instance.getResultingSize(fullSize));
 
-        ops = new OperationList();
+        instance = new OperationList();
         crop = new Crop();
         crop.setUnit(Crop.Unit.PERCENT);
         crop.setWidth(0.5f);
         crop.setHeight(0.5f);
         scale = new Scale(0.5f);
-        ops.add(crop);
-        ops.add(scale);
-        assertEquals(new Dimension(75, 50), ops.getResultingSize(fullSize));
+        instance.add(crop);
+        instance.add(scale);
+        assertEquals(new Dimension(75, 50), instance.getResultingSize(fullSize));
     }
 
     /* isNoOp() */
@@ -196,13 +298,13 @@ public class OperationListTest extends BaseTest {
         Scale scale = new Scale();
         Rotate rotate = new Rotate(0);
         Format format = Format.JPG;
-        ops = new OperationList();
-        ops.setIdentifier(new Identifier("identifier"));
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(rotate);
-        ops.setOutputFormat(format);
-        assertFalse(ops.isNoOp());
+        instance = new OperationList();
+        instance.setIdentifier(new Identifier("identifier"));
+        instance.add(crop);
+        instance.add(scale);
+        instance.add(rotate);
+        instance.setOutputFormat(format);
+        assertFalse(instance.isNoOp());
     }
 
     @Test
@@ -210,13 +312,13 @@ public class OperationListTest extends BaseTest {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        ops = new OperationList();
-        ops.setIdentifier(new Identifier("identifier"));
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(new Rotate(0));
-        ops.setOutputFormat(Format.JPG);
-        assertFalse(ops.isNoOp()); // false because the identifier has no discernible source format
+        instance = new OperationList();
+        instance.setIdentifier(new Identifier("identifier"));
+        instance.add(crop);
+        instance.add(scale);
+        instance.add(new Rotate(0));
+        instance.setOutputFormat(Format.JPG);
+        assertFalse(instance.isNoOp()); // false because the identifier has no discernible source format
     }
 
     @Test
@@ -224,13 +326,13 @@ public class OperationListTest extends BaseTest {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        ops = new OperationList();
-        ops.setIdentifier(new Identifier("identifier.gif"));
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(new Rotate(0));
-        ops.setOutputFormat(Format.GIF);
-        assertTrue(ops.isNoOp());
+        instance = new OperationList();
+        instance.setIdentifier(new Identifier("identifier.gif"));
+        instance.add(crop);
+        instance.add(scale);
+        instance.add(new Rotate(0));
+        instance.setOutputFormat(Format.GIF);
+        assertTrue(instance.isNoOp());
     }
 
     @Test
@@ -242,13 +344,13 @@ public class OperationListTest extends BaseTest {
         crop.setWidth(30f);
         crop.setHeight(30f);
         Scale scale = new Scale();
-        ops = new OperationList();
-        ops.setIdentifier(new Identifier("identifier.gif"));
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(new Rotate(0));
-        ops.setOutputFormat(Format.GIF);
-        assertFalse(ops.isNoOp());
+        instance = new OperationList();
+        instance.setIdentifier(new Identifier("identifier.gif"));
+        instance.add(crop);
+        instance.add(scale);
+        instance.add(new Rotate(0));
+        instance.setOutputFormat(Format.GIF);
+        assertFalse(instance.isNoOp());
     }
 
     @Test
@@ -257,13 +359,13 @@ public class OperationListTest extends BaseTest {
         crop.setFull(true);
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        ops = new OperationList();
-        ops.setIdentifier(new Identifier("identifier.gif"));
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(new Rotate(0));
-        ops.setOutputFormat(Format.GIF);
-        assertTrue(ops.isNoOp());
+        instance = new OperationList();
+        instance.setIdentifier(new Identifier("identifier.gif"));
+        instance.add(crop);
+        instance.add(scale);
+        instance.add(new Rotate(0));
+        instance.setOutputFormat(Format.GIF);
+        assertTrue(instance.isNoOp());
     }
 
     @Test
@@ -271,13 +373,13 @@ public class OperationListTest extends BaseTest {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale(0.5f);
-        ops = new OperationList();
-        ops.setIdentifier(new Identifier("identifier.gif"));
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(new Rotate(0));
-        ops.setOutputFormat(Format.GIF);
-        assertFalse(ops.isNoOp());
+        instance = new OperationList();
+        instance.setIdentifier(new Identifier("identifier.gif"));
+        instance.add(crop);
+        instance.add(scale);
+        instance.add(new Rotate(0));
+        instance.setOutputFormat(Format.GIF);
+        assertFalse(instance.isNoOp());
     }
 
     @Test
@@ -285,13 +387,13 @@ public class OperationListTest extends BaseTest {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        ops = new OperationList();
-        ops.setIdentifier(new Identifier("identifier.gif"));
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(new Rotate(2));
-        ops.setOutputFormat(Format.GIF);
-        assertFalse(ops.isNoOp());
+        instance = new OperationList();
+        instance.setIdentifier(new Identifier("identifier.gif"));
+        instance.add(crop);
+        instance.add(scale);
+        instance.add(new Rotate(2));
+        instance.setOutputFormat(Format.GIF);
+        assertFalse(instance.isNoOp());
     }
 
     @Test
@@ -299,13 +401,13 @@ public class OperationListTest extends BaseTest {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        ops = new OperationList();
-        ops.setIdentifier(new Identifier("identifier.gif"));
-        ops.add(crop);
-        ops.add(scale);;
-        ops.add(new Rotate());
-        ops.setOutputFormat(Format.GIF);
-        assertTrue(ops.isNoOp());
+        instance = new OperationList();
+        instance.setIdentifier(new Identifier("identifier.gif"));
+        instance.add(crop);
+        instance.add(scale);;
+        instance.add(new Rotate());
+        instance.setOutputFormat(Format.GIF);
+        assertTrue(instance.isNoOp());
     }
 
     @Test
@@ -313,13 +415,13 @@ public class OperationListTest extends BaseTest {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        ops = new OperationList();
-        ops.setIdentifier(new Identifier("identifier.gif"));
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(new Rotate(0));
-        ops.setOutputFormat(Format.GIF);
-        assertTrue(ops.isNoOp());
+        instance = new OperationList();
+        instance.setIdentifier(new Identifier("identifier.gif"));
+        instance.add(crop);
+        instance.add(scale);
+        instance.add(new Rotate(0));
+        instance.setOutputFormat(Format.GIF);
+        assertTrue(instance.isNoOp());
     }
 
     @Test
@@ -328,17 +430,17 @@ public class OperationListTest extends BaseTest {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        ops = new OperationList();
-        ops.setIdentifier(new Identifier("identifier.gif"));
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(new Rotate(0));
-        ops.setOutputFormat(Format.GIF);
+        instance = new OperationList();
+        instance.setIdentifier(new Identifier("identifier.gif"));
+        instance.add(crop);
+        instance.add(scale);
+        instance.add(new Rotate(0));
+        instance.setOutputFormat(Format.GIF);
 
         // Add a MetadataCopy
-        ops.add(new MetadataCopy());
+        instance.add(new MetadataCopy());
 
-        assertTrue(ops.isNoOp());
+        assertTrue(instance.isNoOp());
     }
 
     /* isNoOp(Format) */
@@ -346,25 +448,25 @@ public class OperationListTest extends BaseTest {
     @Test
     public void testIsNoOpWithSourceFormat() {
         // same format
-        ops = new OperationList();
-        ops.setIdentifier(new Identifier("identifier.gif"));
-        ops.setOutputFormat(Format.GIF);
-        assertTrue(ops.isNoOp(Format.GIF));
+        instance = new OperationList();
+        instance.setIdentifier(new Identifier("identifier.gif"));
+        instance.setOutputFormat(Format.GIF);
+        assertTrue(instance.isNoOp(Format.GIF));
 
         // different formats
-        ops = new OperationList();
-        ops.setIdentifier(new Identifier("identifier.jpg"));
-        ops.setOutputFormat(Format.GIF);
-        assertFalse(ops.isNoOp(Format.JPG));
+        instance = new OperationList();
+        instance.setIdentifier(new Identifier("identifier.jpg"));
+        instance.setOutputFormat(Format.GIF);
+        assertFalse(instance.isNoOp(Format.JPG));
     }
 
     @Test
     public void testIsNoOpWithPdfSourceAndPdfOutputAndOverlay() {
         // same format
-        ops = new OperationList();
-        ops.setIdentifier(new Identifier("identifier.pdf"));
-        ops.setOutputFormat(Format.PDF);
-        assertTrue(ops.isNoOp(Format.PDF));
+        instance = new OperationList();
+        instance.setIdentifier(new Identifier("identifier.pdf"));
+        instance.setOutputFormat(Format.PDF);
+        assertTrue(instance.isNoOp(Format.PDF));
     }
 
     /* iterator() */
@@ -372,7 +474,7 @@ public class OperationListTest extends BaseTest {
     @Test
     public void testIterator() {
         int count = 0;
-        Iterator it = ops.iterator();
+        Iterator it = instance.iterator();
         while (it.hasNext()) {
             it.next();
             count++;
@@ -382,8 +484,8 @@ public class OperationListTest extends BaseTest {
 
     @Test
     public void testIteratorCannotRemoveWhileFrozen() {
-        ops.freeze();
-        Iterator it = ops.iterator();
+        instance.freeze();
+        Iterator it = instance.iterator();
         it.next();
         try {
             it.remove();
@@ -397,9 +499,9 @@ public class OperationListTest extends BaseTest {
 
     @Test
     public void testSetIdentifierWhileFrozen() {
-        ops.freeze();
+        instance.freeze();
         try {
-            ops.setIdentifier(new Identifier("alpaca"));
+            instance.setIdentifier(new Identifier("alpaca"));
             fail("Expected exception");
         } catch (UnsupportedOperationException e) {
             // pass
@@ -410,9 +512,9 @@ public class OperationListTest extends BaseTest {
 
     @Test
     public void testSetOutputFormatWhileFrozen() {
-        ops.freeze();
+        instance.freeze();
         try {
-            ops.setOutputFormat(Format.GIF);
+            instance.setOutputFormat(Format.GIF);
             fail("Expected exception");
         } catch (UnsupportedOperationException e) {
             // pass
@@ -423,62 +525,62 @@ public class OperationListTest extends BaseTest {
 
     @Test
     public void testToFilename() {
-        ops = new OperationList();
-        ops.setIdentifier(new Identifier("identifier.jpg"));
+        instance = new OperationList();
+        instance.setIdentifier(new Identifier("identifier.jpg"));
         Crop crop = new Crop();
         crop.setX(5f);
         crop.setY(6f);
         crop.setWidth(20f);
         crop.setHeight(22f);
-        ops.add(crop);
+        instance.add(crop);
         Scale scale = new Scale(0.4f);
-        ops.add(scale);
-        ops.add(new Rotate(15));
-        ops.add(ColorTransform.BITONAL);
-        ops.setOutputFormat(Format.JPG);
-        ops.getOptions().put("animal", "cat");
+        instance.add(scale);
+        instance.add(new Rotate(15));
+        instance.add(ColorTransform.BITONAL);
+        instance.setOutputFormat(Format.JPG);
+        instance.getOptions().put("animal", "cat");
 
         String expected = "50c63748527e634134449ae20b199cc0_f694166f0f0aa4f0a88d5d7a7315a15f.jpg";
-        assertEquals(expected, ops.toFilename());
+        assertEquals(expected, instance.toFilename());
 
         // Assert that changing an operation changes the filename
         crop.setX(10f);
-        assertNotEquals(expected, ops.toFilename());
+        assertNotEquals(expected, instance.toFilename());
 
         // Assert that changing an option changes the filename
         crop.setX(5f);
-        assertEquals(expected, ops.toFilename());
-        ops.getOptions().put("animal", "dog");
-        assertNotEquals(expected, ops.toFilename());
+        assertEquals(expected, instance.toFilename());
+        instance.getOptions().put("animal", "dog");
+        assertNotEquals(expected, instance.toFilename());
     }
 
     /* toMap() */
 
     @Test
     public void testToMap() {
-        ops = new OperationList();
-        ops.setIdentifier(new Identifier("identifier.jpg"));
+        instance = new OperationList();
+        instance.setIdentifier(new Identifier("identifier.jpg"));
         // crop
         Crop crop = new Crop();
         crop.setX(2);
         crop.setY(4);
         crop.setWidth(50);
         crop.setHeight(50);
-        ops.add(crop);
+        instance.add(crop);
         // no-op scale
         Scale scale = new Scale();
-        ops.add(scale);
-        ops.add(new Rotate(0));
+        instance.add(scale);
+        instance.add(new Rotate(0));
         // transpose
-        ops.add(Transpose.HORIZONTAL);
+        instance.add(Transpose.HORIZONTAL);
         // output
-        ops.setOutputFormat(Format.JPG);
-        ops.setOutputCompression(Compression.JPEG);
-        ops.setOutputInterlacing(true);
-        ops.setOutputQuality(80);
+        instance.setOutputFormat(Format.JPG);
+        instance.setOutputCompression(Compression.JPEG);
+        instance.setOutputInterlacing(true);
+        instance.setOutputQuality(80);
 
         final Dimension fullSize = new Dimension(100, 100);
-        Map<String,Object> map = ops.toMap(fullSize);
+        Map<String,Object> map = instance.toMap(fullSize);
         assertEquals("identifier.jpg", map.get("identifier"));
         assertEquals(2, ((List) map.get("operations")).size());
         assertEquals(0, ((Map) map.get("options")).size());
@@ -492,26 +594,26 @@ public class OperationListTest extends BaseTest {
 
     @Test
     public void testToString() {
-        ops = new OperationList();
-        ops.setIdentifier(new Identifier("identifier.jpg"));
+        instance = new OperationList();
+        instance.setIdentifier(new Identifier("identifier.jpg"));
         Crop crop = new Crop();
         crop.setX(5f);
         crop.setY(6f);
         crop.setWidth(20f);
         crop.setHeight(22f);
-        ops.add(crop);
+        instance.add(crop);
         Scale scale = new Scale(0.4f);
-        ops.add(scale);
-        ops.add(new Rotate(15));
-        ops.add(ColorTransform.BITONAL);
-        ops.setOutputFormat(Format.JPG);
-        ops.setOutputInterlacing(true);
-        ops.setOutputQuality(80);
-        ops.setOutputCompression(Compression.JPEG);
-        ops.getOptions().put("animal", "cat");
+        instance.add(scale);
+        instance.add(new Rotate(15));
+        instance.add(ColorTransform.BITONAL);
+        instance.setOutputFormat(Format.JPG);
+        instance.setOutputInterlacing(true);
+        instance.setOutputQuality(80);
+        instance.setOutputCompression(Compression.JPEG);
+        instance.getOptions().put("animal", "cat");
 
         String expected = "identifier.jpg_crop:5,6,20,22_scale:40%_rotate:15_null_colortransform:bitonal_animal:cat_interlace_quality:80_compression:JPEG.jpg";
-        assertEquals(expected, ops.toString());
+        assertEquals(expected, instance.toString());
     }
 
 

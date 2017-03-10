@@ -6,20 +6,10 @@ import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.Color;
-import edu.illinois.library.cantaloupe.operation.MetadataCopy;
-import edu.illinois.library.cantaloupe.operation.Rotate;
-import edu.illinois.library.cantaloupe.operation.Scale;
-import edu.illinois.library.cantaloupe.operation.Sharpen;
-import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
-import edu.illinois.library.cantaloupe.operation.redaction.RedactionService;
-import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.overlay.OverlayService;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
@@ -50,9 +40,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-
-import static edu.illinois.library.cantaloupe.processor.Processor.DOWNSCALE_FILTER_CONFIG_KEY;
-import static edu.illinois.library.cantaloupe.processor.Processor.UPSCALE_FILTER_CONFIG_KEY;
 
 public abstract class AbstractResource extends ServerResource {
 
@@ -191,132 +178,6 @@ public abstract class AbstractResource extends ServerResource {
         getResponse().getHeaders().add("X-Powered-By",
                 "Cantaloupe/" + Application.getVersion());
         logger.info("doInit(): handling {} {}", getMethod(), getReference());
-    }
-
-    /**
-     * <p>Most image-processing operations (crop, scale, etc.) are specified in
-     * a client request to an endpoint. This method adds any operations or
-     * options that endpoints have nothing to do with.</p>
-     *
-     * <p>It will also call {@link OperationList#freeze()} on the operation
-     * list before returning.</p>
-     *
-     * @param opList Operation list to add the operations and/or options to.
-     * @param fullSize Full size of the source image.
-     */
-    protected void addNonEndpointOperations(final OperationList opList,
-                                            final Dimension fullSize) {
-        final Configuration config = Configuration.getInstance();
-
-        // Redactions
-        try {
-            final RedactionService service = new RedactionService();
-            if (service.isEnabled()) {
-                List<Redaction> redactions = service.redactionsFor(
-                        opList.getIdentifier(),
-                        getRequest().getHeaders().getValuesMap(),
-                        getCanonicalClientIpAddress(),
-                        getRequest().getCookies().getValuesMap());
-                for (Redaction redaction : redactions) {
-                    opList.add(redaction);
-                }
-            } else {
-                logger.debug("addNonEndpointOperations(): redactions are " +
-                        "disabled; skipping.");
-            }
-        } catch (DelegateScriptDisabledException e) {
-            logger.debug("addNonEndpointOperations(): delegate script is " +
-                    "disabled; skipping redactions.");
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-
-        // Scale filter
-        final Scale scale = (Scale) opList.getFirst(Scale.class);
-        if (scale != null) {
-            final Float scalePct = scale.getResultingScale(fullSize);
-            if (scalePct != null) {
-                final String filterKey = (scalePct > 1) ?
-                        UPSCALE_FILTER_CONFIG_KEY : DOWNSCALE_FILTER_CONFIG_KEY;
-                try {
-                    final String filterStr = config.getString(filterKey);
-                    final Scale.Filter filter =
-                            Scale.Filter.valueOf(filterStr.toUpperCase());
-                    scale.setFilter(filter);
-                } catch (Exception e) {
-                    logger.warn("addNonEndpointOperations(): invalid value for {}",
-                            filterKey);
-                }
-            }
-        }
-
-        // Rotation background color
-        if (!opList.getOutputFormat().supportsTransparency()) {
-            final String bgColor =
-                    config.getString(Processor.BACKGROUND_COLOR_CONFIG_KEY, "black");
-            final Rotate rotate = (Rotate) opList.getFirst(Rotate.class);
-            if (rotate != null) {
-                rotate.setFillColor(Color.fromString(bgColor));
-            }
-        }
-
-        // Sharpening
-        float sharpen = config.getFloat(Processor.SHARPEN_CONFIG_KEY, 0f);
-        if (sharpen > 0.001f) {
-            opList.add(new Sharpen(sharpen));
-        }
-
-        // Overlay
-        try {
-            final OverlayService service = new OverlayService();
-            if (service.isEnabled()) {
-                final Overlay overlay = service.newOverlay(
-                        opList, fullSize, getReference().toUrl(),
-                        getRequest().getHeaders().getValuesMap(),
-                        getCanonicalClientIpAddress(),
-                        getRequest().getCookies().getValuesMap());
-                opList.add(overlay);
-            } else {
-                logger.debug("addNonEndpointOperations(): overlays are " +
-                        "disabled; skipping.");
-            }
-        } catch (DelegateScriptDisabledException e) {
-            logger.debug("addNonEndpointOperations(): delegate script is " +
-                    "disabled; skipping overlay.");
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-
-        // Metadata copies
-        if (config.getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
-            opList.add(new MetadataCopy());
-        }
-
-        switch (opList.getOutputFormat()) {
-            case JPG:
-                // Interlacing
-                final boolean progressive =
-                        config.getBoolean(Processor.JPG_PROGRESSIVE_CONFIG_KEY, false);
-                opList.setOutputInterlacing(progressive);
-                // Quality
-                final int quality =
-                        config.getInt(Processor.JPG_QUALITY_CONFIG_KEY, 80);
-                opList.setOutputQuality(quality);
-                break;
-            case TIF:
-                // Compression
-                final String compressionStr =
-                        config.getString(Processor.TIF_COMPRESSION_CONFIG_KEY, "LZW");
-                final Compression compression =
-                        Compression.valueOf(compressionStr.toUpperCase());
-                opList.setOutputCompression(compression);
-                break;
-        }
-
-        // At this point, the list is complete, so it can be safely frozen.
-        // This will prevent it from being modified by clients (e.g. processors)
-        // which could interfere with e.g. caching.
-        opList.freeze();
     }
 
     /**

@@ -1,15 +1,22 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
+import edu.illinois.library.cantaloupe.operation.overlay.OverlayService;
+import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
+import edu.illinois.library.cantaloupe.operation.redaction.RedactionService;
+import edu.illinois.library.cantaloupe.processor.Processor;
+import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -21,6 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static edu.illinois.library.cantaloupe.processor.Processor.DOWNSCALE_FILTER_CONFIG_KEY;
+import static edu.illinois.library.cantaloupe.processor.Processor.UPSCALE_FILTER_CONFIG_KEY;
 
 /**
  * <p>Normalized list of {@link Operation image transform operations}
@@ -74,6 +84,129 @@ public final class OperationList implements Comparable<OperationList>,
         }
         if (op != null) {
             operations.add(op);
+        }
+    }
+
+    /**
+     * <p>Most image-processing operations (crop, scale, etc.) are specified in
+     * a client request to an endpoint. This method adds any operations or
+     * options that endpoints have nothing to do with. (Normally these will come
+     * either from the configuration, or a delegate method.)</p>
+     *
+     * <p>This method should be called after all endpoint operations have been
+     * added, as it may modify them.</p>
+     *
+     * @param sourceImageSize Full size of the source image.
+     * @param clientIp        Client IP address.
+     * @param requestUrl      Request URL.
+     * @param requestHeaders  Request headers.
+     * @param cookies         Client cookies.
+     */
+    public void applyNonEndpointMutations(final Dimension sourceImageSize,
+                                          final String clientIp,
+                                          final URL requestUrl,
+                                          final Map<String,String> requestHeaders,
+                                          final Map<String,String> cookies) {
+        final Configuration config = Configuration.getInstance();
+
+        // Redactions
+        try {
+            final RedactionService service = new RedactionService();
+            if (service.isEnabled()) {
+                List<Redaction> redactions = service.redactionsFor(
+                        getIdentifier(), requestHeaders, clientIp, cookies);
+                for (Redaction redaction : redactions) {
+                    add(redaction);
+                }
+            } else {
+                logger.debug("addNonEndpointOperations(): redactions are " +
+                        "disabled; skipping.");
+            }
+        } catch (DelegateScriptDisabledException e) {
+            logger.debug("addNonEndpointOperations(): delegate script is " +
+                    "disabled; skipping redactions.");
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+
+        // Scale filter
+        final Scale scale = (Scale) getFirst(Scale.class);
+        if (scale != null) {
+            final Float scalePct = scale.getResultingScale(sourceImageSize);
+            if (scalePct != null) {
+                final String filterKey = (scalePct > 1) ?
+                        UPSCALE_FILTER_CONFIG_KEY : DOWNSCALE_FILTER_CONFIG_KEY;
+                try {
+                    final String filterStr = config.getString(filterKey);
+                    final Scale.Filter filter =
+                            Scale.Filter.valueOf(filterStr.toUpperCase());
+                    scale.setFilter(filter);
+                } catch (Exception e) {
+                    logger.warn("addNonEndpointOperations(): invalid value for {}",
+                            filterKey);
+                }
+            }
+        }
+
+        // Rotation background color
+        if (!getOutputFormat().supportsTransparency()) {
+            final String bgColor =
+                    config.getString(Processor.BACKGROUND_COLOR_CONFIG_KEY, "black");
+            final Rotate rotate = (Rotate) getFirst(Rotate.class);
+            if (rotate != null) {
+                rotate.setFillColor(Color.fromString(bgColor));
+            }
+        }
+
+        // Sharpening
+        float sharpen = config.getFloat(Processor.SHARPEN_CONFIG_KEY, 0f);
+        if (sharpen > 0.001f) {
+            add(new Sharpen(sharpen));
+        }
+
+        // Overlay
+        try {
+            final OverlayService service = new OverlayService();
+            if (service.isEnabled()) {
+                final Overlay overlay = service.newOverlay(
+                        this, sourceImageSize, requestUrl, requestHeaders,
+                        clientIp, cookies);
+                add(overlay);
+            } else {
+                logger.debug("addNonEndpointOperations(): overlays are " +
+                        "disabled; skipping.");
+            }
+        } catch (DelegateScriptDisabledException e) {
+            logger.debug("addNonEndpointOperations(): delegate script is " +
+                    "disabled; skipping overlay.");
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+
+        // Metadata copies
+        if (config.getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
+            add(new MetadataCopy());
+        }
+
+        switch (getOutputFormat()) {
+            case JPG:
+                // Interlacing
+                final boolean progressive =
+                        config.getBoolean(Processor.JPG_PROGRESSIVE_CONFIG_KEY, false);
+                setOutputInterlacing(progressive);
+                // Quality
+                final int quality =
+                        config.getInt(Processor.JPG_QUALITY_CONFIG_KEY, 80);
+                setOutputQuality(quality);
+                break;
+            case TIF:
+                // Compression
+                final String compressionStr =
+                        config.getString(Processor.TIF_COMPRESSION_CONFIG_KEY, "LZW");
+                final Compression compression =
+                        Compression.valueOf(compressionStr.toUpperCase());
+                setOutputCompression(compression);
+                break;
         }
     }
 

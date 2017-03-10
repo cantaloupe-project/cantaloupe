@@ -155,7 +155,11 @@ public class ImageResource extends IIIF1Resource {
         // Will throw an exception if anything is wrong.
         checkRequest(ops, fullSize);
 
-        addNonEndpointOperations(ops, fullSize);
+        ops.applyNonEndpointMutations(fullSize,
+                getCanonicalClientIpAddress(),
+                getReference().toUrl(),
+                getRequest().getHeaders().getValuesMap(),
+                getCookies().getValuesMap());
 
         // Find out whether the processor supports that source format by
         // asking it whether it offers any output formats for it
