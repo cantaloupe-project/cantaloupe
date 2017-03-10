@@ -85,11 +85,10 @@ public abstract class CacheFactory {
     /**
      * <p>Provides access to the shared {@link SourceCache} instance.</p>
      *
-     * <p>This method respects live changes in application configuration,
-     * mostly for the sake of testing.</p>
+     * <p>This method respects live changes in application configuration.</p>
      *
-     * @return The shared SourceCache instance, or null if a source cache is
-     *         not available.
+     * @return The shared SourceCache instance, or <code>null</code> if a
+     *         source cache is not available.
      */
     public static synchronized SourceCache getSourceCache() {
         final Configuration config = Configuration.getInstance();
@@ -101,11 +100,11 @@ public abstract class CacheFactory {
                 try {
                     String className = CacheFactory.class.getPackage().getName() +
                             "." + cacheName;
-                    Class class_ = Class.forName(className);
                     if (sourceCache == null ||
                             !sourceCache.getClass().getName().equals(className)) {
                         logger.debug("getSourceCache(): implementation " +
                                 "changed; creating a new instance");
+                        Class class_ = Class.forName(className);
                         sourceCache = (SourceCache) class_.newInstance();
                     }
                 } catch (ClassNotFoundException e) {

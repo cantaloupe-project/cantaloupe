@@ -37,4 +37,21 @@ public class CacheFactoryTest extends BaseTest {
         assertNull(CacheFactory.getDerivativeCache());
     }
 
+    @Test
+    public void testGetSourceCache() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(CacheFactory.SOURCE_CACHE_ENABLED_CONFIG_KEY, true);
+
+        final String key = CacheFactory.SOURCE_CACHE_CONFIG_KEY;
+
+        config.setProperty(key, "FilesystemCache");
+        assertTrue(CacheFactory.getSourceCache() instanceof FilesystemCache);
+
+        config.setProperty(key, "");
+        assertNull(CacheFactory.getSourceCache());
+
+        config.setProperty(key, "bogus");
+        assertNull(CacheFactory.getSourceCache());
+    }
+
 }
