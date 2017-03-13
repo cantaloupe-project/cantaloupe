@@ -460,6 +460,25 @@ AzureStorageCache.container_name =
 # !! String that will be prefixed to object keys.
 AzureStorageCache.object_key_prefix =
 
+#----------------------------------------
+# RedisCache
+#----------------------------------------
+
+# !! Redis host.
+RedisCache.host = localhost
+
+# !! Redis port.
+RedisCache.port = 6379
+
+# !! Whether to connect via SSL.
+RedisCache.ssl = false
+
+# !! Redis connection password. Leave blank for no password.
+RedisCache.password =
+
+# !! Database to use.
+RedisCache.database = 0
+
 ###########################################################################
 # OVERLAYS
 ###########################################################################

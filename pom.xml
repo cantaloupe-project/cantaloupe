@@ -48,6 +48,12 @@
   </issueManagement>
 
   <dependencies>
+    <!-- Used by RedisCache -->
+    <dependency>
+      <groupId>biz.paluch.redis</groupId>
+      <artifactId>lettuce</artifactId>
+      <version>4.3.1.Final</version>
+    </dependency>
     <!-- The application logger. -->
     <dependency>
       <groupId>ch.qos.logback</groupId>

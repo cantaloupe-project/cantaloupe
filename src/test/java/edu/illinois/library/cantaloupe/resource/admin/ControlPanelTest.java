@@ -394,6 +394,13 @@ public class ControlPanelTest extends ResourceTest {
         css("[name=\"JdbcCache.connection_timeout\"]").sendKeys("9");
         css("[name=\"JdbcCache.derivative_image_table\"]").sendKeys("hula");
         css("[name=\"JdbcCache.info_table\"]").sendKeys("box");
+        // RedisCache
+        css("#cl-caches li > a[href=\"#RedisCache\"]").click();
+        css("[name=\"RedisCache.host\"]").sendKeys("localhost");
+        css("[name=\"RedisCache.port\"]").sendKeys("12398");
+        css("[name=\"RedisCache.password\"]").sendKeys("redispass");
+        css("[name=\"RedisCache.ssl\"]").click();
+        css("[name=\"RedisCache.database\"]").sendKeys("5");
 
         // Submit the form
         css("#cl-caches input[type=\"submit\"]").click();
@@ -445,6 +452,12 @@ public class ControlPanelTest extends ResourceTest {
         assertEquals("9", config.getString("JdbcCache.connection_timeout"));
         assertEquals("hula", config.getString("JdbcCache.derivative_image_table"));
         assertEquals("box", config.getString("JdbcCache.info_table"));
+        // RedisCache
+        assertEquals("localhost", config.getString("RedisCache.host"));
+        assertEquals("12398", config.getString("RedisCache.port"));
+        assertEquals("redispass", config.getString("RedisCache.password"));
+        assertTrue(config.getBoolean("RedisCache.ssl"));
+        assertEquals("5", config.getString("RedisCache.database"));
     }
 
     @Test

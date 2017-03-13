@@ -14,3 +14,10 @@ amazons3.bucket =
 azurestorage.account_name =
 azurestorage.account_key =
 azurestorage.container =
+
+# Used by RedisCacheTest.
+redis.host = localhost
+redis.port = 6379
+redis.ssl = false
+redis.password =
+redis.database = 0

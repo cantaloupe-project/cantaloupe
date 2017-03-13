@@ -1802,6 +1802,11 @@
                                        aria-controls="JdbcCache" role="tab"
                                        data-toggle="tab">JdbcCache</a>
                                 </li>
+                                <li role="presentation">
+                                    <a href="#RedisCache"
+                                       aria-controls="RedisCache" role="tab"
+                                       data-toggle="tab">RedisCache</a>
+                                </li>
                             </ul>
 
                             <div class="tab-content">
@@ -2057,6 +2062,58 @@
                                                 <input type="text" class="form-control"
                                                        name="JdbcCache.info_table"
                                                        data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="RedisCache">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Host</td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="RedisCache.host"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Port</td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="RedisCache.port"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td>
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox"
+                                                               name="RedisCache.ssl"
+                                                               value="true"
+                                                               data-requires-restart="true">
+                                                        Use SSL
+                                                    </label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Password</td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="RedisCache.password"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Database</td>
+                                            <td>
+                                                <input type="number" class="form-control"
+                                                       name="RedisCache.database"
+                                                       min="0"
+                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                     </table>

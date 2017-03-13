@@ -40,7 +40,8 @@ public abstract class CacheFactory {
                 new AmazonS3Cache(),
                 new AzureStorageCache(),
                 new FilesystemCache(),
-                new JdbcCache()));
+                new JdbcCache(),
+                new RedisCache()));
     }
 
     /**
