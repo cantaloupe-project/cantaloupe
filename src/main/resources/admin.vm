@@ -1691,7 +1691,7 @@
                                         <div class="checkbox">
                                             <label>
                                                 <input type="checkbox"
-                                                       name="cache.derivative.enabled"
+                                                       name="cache.server.derivative.enabled"
                                                        value="true"
                                                        data-requires-restart="false">
                                                 Enabled

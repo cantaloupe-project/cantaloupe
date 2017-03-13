@@ -362,7 +362,7 @@ cache.server.source.enabled = false
 cache.server.source = FilesystemCache
 
 # Enables the derivative (processed image) cache.
-cache.derivative.enabled =
+cache.server.derivative.enabled =
 
 # Available values are `FilesystemCache`, `JdbcCache`, `AmazonS3Cache`, and
 # `AzureStorageCache`.

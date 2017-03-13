@@ -361,7 +361,7 @@ public class ControlPanelTest extends ResourceTest {
         css("[name=\"cache.server.source.enabled\"]").click();
         new Select(css("[name=\"cache.derivative\"]")).
                 selectByVisibleText("FilesystemCache");
-        css("[name=\"cache.derivative.enabled\"]").click();
+        css("[name=\"cache.server.derivative.enabled\"]").click();
         css("[name=\"" + Cache.PURGE_MISSING_CONFIG_KEY + "\"]").click();
         css("[name=\"" + Cache.RESOLVE_FIRST_CONFIG_KEY + "\"]").click();
         css("[name=\"" + Cache.TTL_CONFIG_KEY + "\"]").sendKeys("10");
@@ -414,7 +414,7 @@ public class ControlPanelTest extends ResourceTest {
         assertEquals("FilesystemCache", config.getString("cache.server.source"));
         assertTrue(config.getBoolean("cache.server.source.enabled"));
         assertEquals("FilesystemCache", config.getString("cache.derivative"));
-        assertTrue(config.getBoolean("cache.derivative.enabled"));
+        assertTrue(config.getBoolean("cache.server.derivative.enabled"));
         //assertTrue(config.getBoolean(Cache.PURGE_MISSING_CONFIG_KEY)); TODO: why does this not work?
         assertTrue(config.getBoolean(Cache.RESOLVE_FIRST_CONFIG_KEY));
         assertEquals(10, config.getInt(Cache.TTL_CONFIG_KEY));
