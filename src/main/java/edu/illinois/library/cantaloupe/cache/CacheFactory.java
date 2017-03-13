@@ -26,11 +26,11 @@ public abstract class CacheFactory {
     public static final String SOURCE_CACHE_ENABLED_CONFIG_KEY =
             "cache.source.enabled";
 
-    /** Singleton instance */
-    private static DerivativeCache derivativeCache;
+    /** Shared instance initialized by {@link #getDerivativeCache()}. */
+    private static volatile DerivativeCache derivativeCache;
 
-    /** Singleton instance */
-    private static SourceCache sourceCache;
+    /** Shared instance initialized by {@link #getSourceCache()}. */
+    private static volatile SourceCache sourceCache;
 
     /**
      * @return Set of single instances of all available derivative caches.
@@ -59,37 +59,45 @@ public abstract class CacheFactory {
      * @return The shared DerivativeCache instance, or <code>null</code> if a
      *         derivative cache is not available.
      */
-    public static synchronized DerivativeCache getDerivativeCache() {
+    public static DerivativeCache getDerivativeCache() {
+        // The implementation is explained in "Fixing Double-Checked Locking
+        // using Volatile":
+        // http://www.cs.umd.edu/~pugh/java/memoryModel/DoubleCheckedLocking.html
+        DerivativeCache cache = null;
         final Configuration config = Configuration.getInstance();
-        final boolean enabled =
-                config.getBoolean(DERIVATIVE_CACHE_ENABLED_CONFIG_KEY, false);
-        if (enabled) {
-            String cacheName = config.getString(DERIVATIVE_CACHE_CONFIG_KEY);
-            if (cacheName != null && cacheName.length() > 0) {
-                try {
-                    String className = CacheFactory.class.getPackage().getName() +
-                            "." + cacheName;
-                    if (derivativeCache == null ||
-                            !derivativeCache.getClass().getName().equals(className)) {
-                        logger.debug("getDerivativeCache(): implementation " +
-                                "changed; creating a new instance");
-                        Class class_ = Class.forName(className);
-                        derivativeCache = (DerivativeCache) class_.newInstance();
+        if (config.getBoolean(DERIVATIVE_CACHE_ENABLED_CONFIG_KEY, false)) {
+            final String unqualifiedName =
+                    config.getString(DERIVATIVE_CACHE_CONFIG_KEY);
+            if (unqualifiedName != null && unqualifiedName.length() > 0) {
+                final String qualifiedName =
+                        CacheFactory.class.getPackage().getName() + "." +
+                                unqualifiedName;
+                cache = derivativeCache;
+                if (cache == null ||
+                        !cache.getClass().getName().equals(qualifiedName)) {
+                    synchronized (CacheFactory.class) {
+                        if (cache == null ||
+                                !cache.getClass().getName().equals(qualifiedName)) {
+                            logger.debug("getDerivativeCache(): " +
+                                    "implementation changed; creating a new " +
+                                    "instance");
+                            try {
+                                Class implClass = Class.forName(qualifiedName);
+                                cache = (DerivativeCache) implClass.newInstance();
+                                derivativeCache = cache;
+                            } catch (ClassNotFoundException e) {
+                                cache = null;
+                                logger.error("Class not found: {}", e.getMessage());
+                            } catch (IllegalAccessException | InstantiationException e) {
+                                cache = null;
+                                logger.error(e.getMessage());
+                            }
+                        }
                     }
-                } catch (ClassNotFoundException e) {
-                    logger.error("Class not found: {}", e.getMessage());
-                    derivativeCache = null;
-                } catch (IllegalAccessException | InstantiationException e) {
-                    logger.error(e.getMessage());
-                    derivativeCache = null;
                 }
-            } else {
-                derivativeCache = null;
             }
-        } else {
-            derivativeCache = null;
         }
-        return derivativeCache;
+        return cache;
     }
 
     /**
@@ -100,37 +108,44 @@ public abstract class CacheFactory {
      * @return The shared SourceCache instance, or <code>null</code> if a
      *         source cache is not available.
      */
-    public static synchronized SourceCache getSourceCache() {
+    public static SourceCache getSourceCache() {
+        // The implementation is explained in "Fixing Double-Checked Locking
+        // using Volatile":
+        // http://www.cs.umd.edu/~pugh/java/memoryModel/DoubleCheckedLocking.html
+        SourceCache cache = null;
         final Configuration config = Configuration.getInstance();
-        final boolean enabled =
-                config.getBoolean(SOURCE_CACHE_ENABLED_CONFIG_KEY, false);
-        if (enabled) {
-            String cacheName = config.getString(SOURCE_CACHE_CONFIG_KEY);
-            if (cacheName != null && cacheName.length() > 0) {
-                try {
-                    String className = CacheFactory.class.getPackage().getName() +
-                            "." + cacheName;
-                    if (sourceCache == null ||
-                            !sourceCache.getClass().getName().equals(className)) {
-                        logger.debug("getSourceCache(): implementation " +
-                                "changed; creating a new instance");
-                        Class class_ = Class.forName(className);
-                        sourceCache = (SourceCache) class_.newInstance();
+        if (config.getBoolean(SOURCE_CACHE_ENABLED_CONFIG_KEY, false)) {
+            final String unqualifiedName =
+                    config.getString(SOURCE_CACHE_CONFIG_KEY);
+            if (unqualifiedName != null && unqualifiedName.length() > 0) {
+                final String qualifiedName =
+                        CacheFactory.class.getPackage().getName() + "." +
+                                unqualifiedName;
+                cache = sourceCache;
+                if (cache == null ||
+                        !cache.getClass().getName().equals(qualifiedName)) {
+                    synchronized (CacheFactory.class) {
+                        if (cache == null ||
+                                !cache.getClass().getName().equals(qualifiedName)) {
+                            logger.debug("getSourceCache(): implementation " +
+                                    "changed; creating a new instance");
+                            try {
+                                Class implClass = Class.forName(qualifiedName);
+                                cache = (SourceCache) implClass.newInstance();
+                                sourceCache = cache;
+                            } catch (ClassNotFoundException e) {
+                                cache = null;
+                                logger.error("Class not found: {}", e.getMessage());
+                            } catch (IllegalAccessException | InstantiationException e) {
+                                cache = null;
+                                logger.error(e.getMessage());
+                            }
+                        }
                     }
-                } catch (ClassNotFoundException e) {
-                    logger.error("Class not found: {}", e.getMessage());
-                    sourceCache = null;
-                } catch (IllegalAccessException | InstantiationException e) {
-                    logger.error(e.getMessage());
-                    sourceCache = null;
                 }
-            } else {
-                sourceCache = null;
             }
-        } else {
-            sourceCache = null;
         }
-        return sourceCache;
+        return cache;
     }
 
 }
