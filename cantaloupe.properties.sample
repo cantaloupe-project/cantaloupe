@@ -356,7 +356,7 @@ cache.client.no_transform = true
 # when a FileProcessor is used with a StreamResolver, or when a
 # StreamProcessor is used with `StreamProcessor.retrieval_strategy` set to
 # `CacheStrategy`.
-cache.source.enabled = false
+cache.server.source.enabled = false
 
 # FilesystemCache is the only available source cache.
 cache.source = FilesystemCache

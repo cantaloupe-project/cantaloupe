@@ -1656,7 +1656,7 @@
                                         <div class="checkbox">
                                             <label>
                                                 <input type="checkbox"
-                                                       name="cache.source.enabled"
+                                                       name="cache.server.source.enabled"
                                                        value="true"
                                                        data-requires-restart="false">
                                                 Enabled

@@ -358,7 +358,7 @@ public class ControlPanelTest extends ResourceTest {
         css("[name=\"cache.client.no_transform\"]").click();
         new Select(css("[name=\"cache.source\"]")).
                 selectByVisibleText("FilesystemCache");
-        css("[name=\"cache.source.enabled\"]").click();
+        css("[name=\"cache.server.source.enabled\"]").click();
         new Select(css("[name=\"cache.derivative\"]")).
                 selectByVisibleText("FilesystemCache");
         css("[name=\"cache.derivative.enabled\"]").click();
@@ -412,7 +412,7 @@ public class ControlPanelTest extends ResourceTest {
         assertTrue(config.getBoolean("cache.client.proxy_revalidate"));
         assertTrue(config.getBoolean("cache.client.no_transform"));
         assertEquals("FilesystemCache", config.getString("cache.source"));
-        assertTrue(config.getBoolean("cache.source.enabled"));
+        assertTrue(config.getBoolean("cache.server.source.enabled"));
         assertEquals("FilesystemCache", config.getString("cache.derivative"));
         assertTrue(config.getBoolean("cache.derivative.enabled"));
         //assertTrue(config.getBoolean(Cache.PURGE_MISSING_CONFIG_KEY)); TODO: why does this not work?

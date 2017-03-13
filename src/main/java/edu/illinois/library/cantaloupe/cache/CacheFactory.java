@@ -24,7 +24,7 @@ public abstract class CacheFactory {
     public static final String SOURCE_CACHE_CONFIG_KEY =
             "cache.source";
     public static final String SOURCE_CACHE_ENABLED_CONFIG_KEY =
-            "cache.source.enabled";
+            "cache.server.source.enabled";
 
     /** Shared instance initialized by {@link #getDerivativeCache()}. */
     private static volatile DerivativeCache derivativeCache;
