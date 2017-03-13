@@ -35,6 +35,7 @@ title: Caches
           <li><a href="#JdbcCache">JdbcCache</a></li>
           <li><a href="#AmazonS3Cache">AmazonS3Cache</a></li>
           <li><a href="#AzureStorageCache">AzureStorageCache</a></li>
+          <li><a href="#RedisCache">RedisCache</a></li>
         </ul>
       </li>
     </ul>
@@ -298,7 +299,11 @@ CREATE INDEX identifier_idx ON {JdbcCache.info_table} (identifier);
 
 <h4 id="AmazonS3Cache">AmazonS3Cache</h4>
 
-<p>AmazonS3Cache caches derivative images and metadata into an Amazon Simple Storage Service (S3) bucket. It can be configured with the following options:</p>
+<p>AmazonS3Cache caches derivative images and metadata into an Amazon Simple Storage Service (S3) bucket.</p>
+
+<p>Note that if you are running Cantaloupe within an EC2 instance, you may prefer to use <a href="https://aws.amazon.com/elasticache/">ElastiCache</a> with <a href="#RedisCache">RedisCache</a> instead.</p>
+
+<p>AmazonS3Cache can be configured with the following options:</p>
 
 <dl>
   <dt><code>AmazonS3Cache.access_key_id</code></dt>
@@ -337,3 +342,19 @@ CREATE INDEX identifier_idx ON {JdbcCache.info_table} (identifier);
 <div class="alert alert-info">
   Note: Azure Storage does not provide a last-accessed time in object metadata, meaning that the time-to-live will be on the basis of last-modified time (generally the same as creation time) instead.
 </div>
+
+<hr>
+
+<h4 id="RedisCache">RedisCache</h4>
+
+<p>RedisCache, available since version 3.4, caches derivative images and metadata using the <a href="https://redis.io">Redis</a> data structure store. It supports the following configuration options:</p>
+
+<ul>
+  <li><code>RedisCache.host</code></li>
+  <li><code>RedisCache.port</code></li>
+  <li><code>RedisCache.ssl</code></li>
+  <li><code>RedisCache.password</code></li>
+  <li><code>RedisCache.database</code></li>
+</ul>
+
+<p>Note that unlike the other caches, cache policy is configured on the Redis side, and <code>cache.server.ttl_seconds</code> will have no effect with this cache. Likewise, if enabled, the <a href="#Automatic%20Maintenance">cache worker</a> thread will run as usual, but will have nothing to do.</p>
