@@ -1668,7 +1668,7 @@
                                     <td>Source Cache Implementation</td>
                                     <td>
                                         <select class="form-control"
-                                                name="cache.source">
+                                                name="cache.server.source">
                                             #foreach ($cache in $sourceCaches)
                                                 #if ($cache.equals($currentSourceCache))
                                                     <option selected>$cache.getName()</option>

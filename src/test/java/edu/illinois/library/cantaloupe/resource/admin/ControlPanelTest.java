@@ -356,7 +356,7 @@ public class ControlPanelTest extends ResourceTest {
         css("[name=\"cache.client.must_revalidate\"]").click();
         css("[name=\"cache.client.proxy_revalidate\"]").click();
         css("[name=\"cache.client.no_transform\"]").click();
-        new Select(css("[name=\"cache.source\"]")).
+        new Select(css("[name=\"cache.server.source\"]")).
                 selectByVisibleText("FilesystemCache");
         css("[name=\"cache.server.source.enabled\"]").click();
         new Select(css("[name=\"cache.derivative\"]")).
@@ -411,7 +411,7 @@ public class ControlPanelTest extends ResourceTest {
         assertTrue(config.getBoolean("cache.client.must_revalidate"));
         assertTrue(config.getBoolean("cache.client.proxy_revalidate"));
         assertTrue(config.getBoolean("cache.client.no_transform"));
-        assertEquals("FilesystemCache", config.getString("cache.source"));
+        assertEquals("FilesystemCache", config.getString("cache.server.source"));
         assertTrue(config.getBoolean("cache.server.source.enabled"));
         assertEquals("FilesystemCache", config.getString("cache.derivative"));
         assertTrue(config.getBoolean("cache.derivative.enabled"));

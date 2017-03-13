@@ -359,7 +359,7 @@ cache.client.no_transform = true
 cache.server.source.enabled = false
 
 # FilesystemCache is the only available source cache.
-cache.source = FilesystemCache
+cache.server.source = FilesystemCache
 
 # Enables the derivative (processed image) cache.
 cache.derivative.enabled =

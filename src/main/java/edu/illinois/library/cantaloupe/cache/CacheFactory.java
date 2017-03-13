@@ -22,7 +22,7 @@ public abstract class CacheFactory {
     public static final String DERIVATIVE_CACHE_ENABLED_CONFIG_KEY =
             "cache.derivative.enabled";
     public static final String SOURCE_CACHE_CONFIG_KEY =
-            "cache.source";
+            "cache.server.source";
     public static final String SOURCE_CACHE_ENABLED_CONFIG_KEY =
             "cache.server.source.enabled";
 
