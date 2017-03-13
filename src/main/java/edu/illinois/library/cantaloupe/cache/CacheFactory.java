@@ -18,7 +18,7 @@ public abstract class CacheFactory {
     private static Logger logger = LoggerFactory.getLogger(CacheFactory.class);
 
     public static final String DERIVATIVE_CACHE_CONFIG_KEY =
-            "cache.derivative";
+            "cache.server.derivative";
     public static final String DERIVATIVE_CACHE_ENABLED_CONFIG_KEY =
             "cache.server.derivative.enabled";
     public static final String SOURCE_CACHE_CONFIG_KEY =

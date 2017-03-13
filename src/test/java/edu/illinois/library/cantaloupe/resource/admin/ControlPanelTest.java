@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource.admin;
 
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
@@ -356,12 +357,12 @@ public class ControlPanelTest extends ResourceTest {
         css("[name=\"cache.client.must_revalidate\"]").click();
         css("[name=\"cache.client.proxy_revalidate\"]").click();
         css("[name=\"cache.client.no_transform\"]").click();
-        new Select(css("[name=\"cache.server.source\"]")).
+        new Select(css("[name=\"" + CacheFactory.SOURCE_CACHE_CONFIG_KEY + "\"]")).
                 selectByVisibleText("FilesystemCache");
-        css("[name=\"cache.server.source.enabled\"]").click();
-        new Select(css("[name=\"cache.derivative\"]")).
+        css("[name=\"" + CacheFactory.SOURCE_CACHE_ENABLED_CONFIG_KEY + "\"]").click();
+        new Select(css("[name=\"" + CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY + "\"]")).
                 selectByVisibleText("FilesystemCache");
-        css("[name=\"cache.server.derivative.enabled\"]").click();
+        css("[name=\"" + CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY + "\"]").click();
         css("[name=\"" + Cache.PURGE_MISSING_CONFIG_KEY + "\"]").click();
         css("[name=\"" + Cache.RESOLVE_FIRST_CONFIG_KEY + "\"]").click();
         css("[name=\"" + Cache.TTL_CONFIG_KEY + "\"]").sendKeys("10");
@@ -411,10 +412,12 @@ public class ControlPanelTest extends ResourceTest {
         assertTrue(config.getBoolean("cache.client.must_revalidate"));
         assertTrue(config.getBoolean("cache.client.proxy_revalidate"));
         assertTrue(config.getBoolean("cache.client.no_transform"));
-        assertEquals("FilesystemCache", config.getString("cache.server.source"));
-        assertTrue(config.getBoolean("cache.server.source.enabled"));
-        assertEquals("FilesystemCache", config.getString("cache.derivative"));
-        assertTrue(config.getBoolean("cache.server.derivative.enabled"));
+        assertEquals("FilesystemCache",
+                config.getString(CacheFactory.SOURCE_CACHE_CONFIG_KEY));
+        assertTrue(config.getBoolean(CacheFactory.SOURCE_CACHE_ENABLED_CONFIG_KEY));
+        assertEquals("FilesystemCache",
+                config.getString(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY));
+        assertTrue(config.getBoolean(CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY));
         //assertTrue(config.getBoolean(Cache.PURGE_MISSING_CONFIG_KEY)); TODO: why does this not work?
         assertTrue(config.getBoolean(Cache.RESOLVE_FIRST_CONFIG_KEY));
         assertEquals(10, config.getInt(Cache.TTL_CONFIG_KEY));

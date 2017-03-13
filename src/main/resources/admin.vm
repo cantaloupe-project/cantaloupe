@@ -1703,7 +1703,7 @@
                                     <td>Derivative Cache Implementation</td>
                                     <td>
                                         <select class="form-control"
-                                                name="cache.derivative">
+                                                name="cache.server.derivative">
                                             #foreach ($cache in $derivativeCaches)
                                                 #if ($cache.equals($currentDerivativeCache))
                                                     <option selected>$cache.getName()</option>
