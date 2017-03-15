@@ -26,11 +26,15 @@ public abstract class CacheFactory {
     public static final String SOURCE_CACHE_ENABLED_CONFIG_KEY =
             "cache.server.source.enabled";
 
-    /** Shared instance initialized by {@link #getDerivativeCache()}. */
+    /** Lazy-initialized by {@link #getDerivativeCache()}. */
     private static volatile DerivativeCache derivativeCache;
 
-    /** Shared instance initialized by {@link #getSourceCache()}. */
+    private static Thread derivativeCacheShutdownHook;
+
+    /** Lazy-initialized by {@link #getSourceCache()}. */
     private static volatile SourceCache sourceCache;
+
+    private static Thread sourceCacheShutdownHook;
 
     /**
      * @return Set of single instances of all available derivative caches.
@@ -85,7 +89,7 @@ public abstract class CacheFactory {
                             try {
                                 Class implClass = Class.forName(qualifiedName);
                                 cache = (DerivativeCache) implClass.newInstance();
-                                derivativeCache = cache;
+                                setDerivativeCache(cache);
                             } catch (ClassNotFoundException e) {
                                 cache = null;
                                 logger.error("Class not found: {}", e.getMessage());
@@ -133,7 +137,7 @@ public abstract class CacheFactory {
                             try {
                                 Class implClass = Class.forName(qualifiedName);
                                 cache = (SourceCache) implClass.newInstance();
-                                sourceCache = cache;
+                                setSourceCache(cache);
                             } catch (ClassNotFoundException e) {
                                 cache = null;
                                 logger.error("Class not found: {}", e.getMessage());
@@ -147,6 +151,57 @@ public abstract class CacheFactory {
             }
         }
         return cache;
+    }
+
+    /**
+     * Shuts down any existing derivative cache and removes its shutdown hook,
+     * then sets the current derivative cache to the given instance and adds
+     * a shutdown hook for it; then initializes it.
+     *
+     * @param cache Derivative cache to use.
+     */
+    private static synchronized void setDerivativeCache(DerivativeCache cache) {
+        final Runtime runtime = Runtime.getRuntime();
+        if (derivativeCacheShutdownHook != null) {
+            runtime.removeShutdownHook(derivativeCacheShutdownHook);
+        }
+        if (derivativeCache != null) {
+            logger.debug("setDerivativeCache(): calling Cache.shutdown()");
+            derivativeCache.shutdown();
+        }
+
+        derivativeCache = cache;
+        derivativeCacheShutdownHook =
+                new Thread(() -> derivativeCache.shutdown());
+        runtime.addShutdownHook(derivativeCacheShutdownHook);
+
+        logger.debug("setDerivativeCache(): calling Cache.initialize()");
+        derivativeCache.initialize();
+    }
+
+    /**
+     * Shuts down any existing source cache and removes its shutdown hook,
+     * then sets the current source cache to the given instance and adds
+     * a shutdown hook for it; then initializes it.
+     *
+     * @param cache Source cache to use.
+     */
+    private static synchronized void setSourceCache(SourceCache cache) {
+        final Runtime runtime = Runtime.getRuntime();
+        if (sourceCacheShutdownHook != null) {
+            runtime.removeShutdownHook(sourceCacheShutdownHook);
+        }
+        if (sourceCache != null) {
+            logger.debug("setSourceCache(): calling Cache.shutdown()");
+            sourceCache.shutdown();
+        }
+
+        sourceCache = cache;
+        sourceCacheShutdownHook = new Thread(sourceCache::shutdown);
+        runtime.addShutdownHook(sourceCacheShutdownHook);
+
+        logger.debug("setSourceCache(): calling Cache.initialize()");
+        sourceCache.initialize();
     }
 
 }

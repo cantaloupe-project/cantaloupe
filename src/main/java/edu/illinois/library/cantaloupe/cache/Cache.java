@@ -36,6 +36,14 @@ public interface Cache {
     default void cleanUp() throws CacheException {}
 
     /**
+     * <p>Implementations should perform all necessary initialization in this
+     * method rather than a constructor or static initializer.</p>
+     *
+     * <p>The default implementation does nothing.</p>
+     */
+    default void initialize() {}
+
+    /**
      * Deletes the entire cache contents.
      *
      * @throws CacheException Upon fatal error. Implementations should do the
@@ -63,5 +71,13 @@ public interface Cache {
      *         non-fatal errors.
      */
     void purgeExpired() throws CacheException;
+
+    /**
+     * <p>Shuts down the instance, freeing any resource handles, stopping any
+     * worker threads, etc.</p>
+     *
+     * <p>The default implementation does nothing.</p>
+     */
+    default void shutdown() {}
 
 }
