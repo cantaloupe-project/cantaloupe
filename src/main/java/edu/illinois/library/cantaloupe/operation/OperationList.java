@@ -119,11 +119,11 @@ public final class OperationList implements Comparable<OperationList>,
                     add(redaction);
                 }
             } else {
-                logger.debug("addNonEndpointOperations(): redactions are " +
+                logger.debug("applyNonEndpointMutations(): redactions are " +
                         "disabled; skipping.");
             }
         } catch (DelegateScriptDisabledException e) {
-            logger.debug("addNonEndpointOperations(): delegate script is " +
+            logger.debug("applyNonEndpointMutations(): delegate script is " +
                     "disabled; skipping redactions.");
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -142,7 +142,7 @@ public final class OperationList implements Comparable<OperationList>,
                             Scale.Filter.valueOf(filterStr.toUpperCase());
                     scale.setFilter(filter);
                 } catch (Exception e) {
-                    logger.warn("addNonEndpointOperations(): invalid value for {}",
+                    logger.warn("applyNonEndpointMutations(): invalid value for {}",
                             filterKey);
                 }
             }
@@ -173,11 +173,11 @@ public final class OperationList implements Comparable<OperationList>,
                         clientIp, cookies);
                 add(overlay);
             } else {
-                logger.debug("addNonEndpointOperations(): overlays are " +
+                logger.debug("applyNonEndpointMutations(): overlays are " +
                         "disabled; skipping.");
             }
         } catch (DelegateScriptDisabledException e) {
-            logger.debug("addNonEndpointOperations(): delegate script is " +
+            logger.debug("applyNonEndpointMutations(): delegate script is " +
                     "disabled; skipping overlay.");
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
