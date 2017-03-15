@@ -140,12 +140,6 @@ class AzureStorageCache implements DerivativeCache {
                 getString(CONTAINER_NAME_CONFIG_KEY).toLowerCase();
     }
 
-    /**
-     * Does nothing, as this cache is always clean.
-     */
-    @Override
-    public void cleanUp() throws CacheException {}
-
     @Override
     public Info getImageInfo(Identifier identifier) throws CacheException {
         final String containerName = getContainerName();

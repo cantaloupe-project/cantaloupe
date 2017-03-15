@@ -29,9 +29,11 @@ public interface Cache {
      * never be called. Implementations should try to keep themselves clean
      * without relying on this method.</p>
      *
+     * <p>The default implementation does nothing.</p>
+     *
      * @throws CacheException
      */
-    void cleanUp() throws CacheException;
+    default void cleanUp() throws CacheException {}
 
     /**
      * Deletes the entire cache contents.

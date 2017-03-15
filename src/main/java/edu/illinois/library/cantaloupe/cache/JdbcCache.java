@@ -275,12 +275,6 @@ class JdbcCache implements DerivativeCache {
         statement.executeUpdate();
     }
 
-    /**
-     * Does nothing, as this cache is always clean.
-     */
-    @Override
-    public void cleanUp() {}
-
     @Override
     public Info getImageInfo(Identifier identifier) throws CacheException {
         try (Connection connection = getConnection()) {

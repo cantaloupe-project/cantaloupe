@@ -221,14 +221,6 @@ class RedisCache implements DerivativeCache {
         return identifier.toString();
     }
 
-    /**
-     * No-op.
-     */
-    @Override
-    public void cleanUp() {
-        // No-op
-    }
-
     @Override
     public Info getImageInfo(Identifier identifier) throws CacheException {
         byte[] json = getConnection().sync().hget(INFO_HASH_KEY,

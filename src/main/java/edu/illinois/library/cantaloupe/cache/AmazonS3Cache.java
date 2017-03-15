@@ -184,12 +184,6 @@ class AmazonS3Cache implements DerivativeCache {
         return client;
     }
 
-    /**
-     * Does nothing, as this cache is always clean.
-     */
-    @Override
-    public void cleanUp() {}
-
     String getBucketName() {
         return ConfigurationFactory.getInstance().
                 getString(BUCKET_NAME_CONFIG_KEY);
