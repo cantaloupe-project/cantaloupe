@@ -311,4 +311,9 @@ class RedisCache implements DerivativeCache {
         }
     }
 
+    @Override
+    public void shutdown() {
+        getConnection().close();
+    }
+
 }
