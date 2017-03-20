@@ -18,9 +18,7 @@ import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
 import org.restlet.data.ChallengeScheme;
-import org.restlet.data.MediaType;
 import org.restlet.data.Status;
-import org.restlet.ext.velocity.TemplateRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Directory;
 import org.restlet.resource.ResourceException;
@@ -79,9 +77,8 @@ public class WebApplication extends Application {
             templateVars.put("message", message);
             templateVars.put("stackTrace", stackTrace);
 
-            org.apache.velocity.Template template = Velocity.getTemplate("error.vm");
-            return new TemplateRepresentation(template, templateVars,
-                    MediaType.TEXT_HTML);
+            class AnonymousResource extends AbstractResource {}
+            return new AnonymousResource().template("/error.vm", templateVars);
         }
 
         @Override
