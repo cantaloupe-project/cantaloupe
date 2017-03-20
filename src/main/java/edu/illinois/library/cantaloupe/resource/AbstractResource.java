@@ -98,7 +98,10 @@ public abstract class AbstractResource extends ServerResource {
     public static Map<String, Object> getCommonTemplateVars(Request request) {
         Map<String,Object> vars = new HashMap<>();
         vars.put("version", Application.getVersion());
-        vars.put("baseUri", getPublicRootRef(request).toString());
+        if (request != null) { // this will be null when testing
+            Reference publicRef = getPublicRootRef(request);
+            vars.put("baseUri", publicRef.toString());
+        }
         return vars;
     }
 
