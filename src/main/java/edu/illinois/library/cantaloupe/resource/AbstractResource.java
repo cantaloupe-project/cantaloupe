@@ -105,53 +105,59 @@ public abstract class AbstractResource extends ServerResource {
     /**
      * @param request
      * @return Root reference usable in public, respecting the
-     *         <code>base_uri</code> option in the application configuration.
+     *         <code>base_uri</code> option in the application configuration;
+     *         or <code>null</code> if a <code>request</code> is
+     *         <code>null</code>.
      */
     public static Reference getPublicRootRef(final Request request) {
-        Reference rootRef = new Reference(request.getRootRef());
+        Reference rootRef = null;
+        if (request != null) {
+            rootRef = new Reference(request.getRootRef());
 
-        final String baseUri = ConfigurationFactory.getInstance().
-                getString(BASE_URI_CONFIG_KEY);
-        if (baseUri != null && baseUri.length() > 0) {
-            final Reference baseRef = new Reference(baseUri);
-            rootRef.setScheme(baseRef.getScheme());
-            rootRef.setHostDomain(baseRef.getHostDomain());
-            // if the "port" is a local socket, Reference will serialize it as
-            // -1.
-            if (baseRef.getHostPort() == -1) {
-                rootRef.setHostPort(null);
-            } else {
-                rootRef.setHostPort(baseRef.getHostPort());
-            }
-            rootRef.setPath(StringUtils.stripEnd(baseRef.getPath(), "/"));
-        } else {
-            final Series<Header> headers = request.getHeaders();
-            final String hostStr = headers.getFirstValue(
-                    "X-Forwarded-Host", true, null);
-            if (hostStr != null) {
-                final String protocolStr = headers.getFirstValue(
-                        "X-Forwarded-Proto", true, "HTTP");
-                final String portStr = headers.getFirstValue(
-                        "X-Forwarded-Port", true, "80");
-                final String pathStr = headers.getFirstValue(
-                        "X-Forwarded-Path", true, "");
-                logger.debug("Assembling base URI from X-Forwarded headers. " +
-                                "Proto: {}; Host: {}; Port: {}; Path: {}",
-                        protocolStr, hostStr, portStr, pathStr);
-
-                rootRef.setHostDomain(hostStr);
-                rootRef.setPath(StringUtils.stripEnd(pathStr, "/"));
-
-                final Protocol protocol = protocolStr.toUpperCase().equals("HTTPS") ?
-                        Protocol.HTTPS : Protocol.HTTP;
-                rootRef.setProtocol(protocol);
-
-                Integer port = Integer.parseInt(portStr);
-                if ((port == 80 && protocol.equals(Protocol.HTTP)) ||
-                        (port == 443 && protocol.equals(Protocol.HTTPS))) {
-                    port = null;
+            final String baseUri = ConfigurationFactory.getInstance().
+                    getString(BASE_URI_CONFIG_KEY);
+            if (baseUri != null && baseUri.length() > 0) {
+                final Reference baseRef = new Reference(baseUri);
+                rootRef.setScheme(baseRef.getScheme());
+                rootRef.setHostDomain(baseRef.getHostDomain());
+                // if the "port" is a local socket, Reference will serialize it
+                // as -1.
+                if (baseRef.getHostPort() == -1) {
+                    rootRef.setHostPort(null);
+                } else {
+                    rootRef.setHostPort(baseRef.getHostPort());
                 }
-                rootRef.setHostPort(port);
+                rootRef.setPath(StringUtils.stripEnd(baseRef.getPath(), "/"));
+            } else {
+                final Series<Header> headers = request.getHeaders();
+                final String hostStr = headers.getFirstValue(
+                        "X-Forwarded-Host", true, null);
+                if (hostStr != null) {
+                    final String protocolStr = headers.getFirstValue(
+                            "X-Forwarded-Proto", true, "HTTP");
+                    final String portStr = headers.getFirstValue(
+                            "X-Forwarded-Port", true, "80");
+                    final String pathStr = headers.getFirstValue(
+                            "X-Forwarded-Path", true, "");
+                    logger.debug("Assembling base URI from X-Forwarded headers. " +
+                                    "Proto: {}; Host: {}; Port: {}; Path: {}",
+                            protocolStr, hostStr, portStr, pathStr);
+
+                    rootRef.setHostDomain(hostStr);
+                    rootRef.setPath(StringUtils.stripEnd(pathStr, "/"));
+
+                    final Protocol protocol =
+                            protocolStr.toUpperCase().equals("HTTPS") ?
+                                    Protocol.HTTPS : Protocol.HTTP;
+                    rootRef.setProtocol(protocol);
+
+                    Integer port = Integer.parseInt(portStr);
+                    if ((port == 80 && protocol.equals(Protocol.HTTP)) ||
+                            (port == 443 && protocol.equals(Protocol.HTTPS))) {
+                        port = null;
+                    }
+                    rootRef.setHostPort(port);
+                }
             }
         }
         return rootRef;
