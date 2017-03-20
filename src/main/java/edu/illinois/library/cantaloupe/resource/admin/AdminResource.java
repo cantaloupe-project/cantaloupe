@@ -16,13 +16,9 @@ import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
-import org.apache.velocity.Template;
-import org.apache.velocity.app.Velocity;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.Header;
-import org.restlet.data.MediaType;
 import org.restlet.ext.jackson.JacksonRepresentation;
-import org.restlet.ext.velocity.TemplateRepresentation;
 import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
@@ -111,9 +107,7 @@ public class AdminResource extends AbstractResource {
      */
     @Get("html")
     public Representation doGetAsHtml() throws Exception {
-        Template template = Velocity.getTemplate("admin.vm");
-        return new TemplateRepresentation(template, getTemplateVars(),
-                MediaType.TEXT_HTML);
+        return template("/admin.vm", getTemplateVars());
     }
 
     /**

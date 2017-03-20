@@ -21,10 +21,14 @@ import org.restlet.Request;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.Disposition;
 import org.restlet.data.Header;
+import org.restlet.data.MediaType;
 import org.restlet.data.Parameter;
 import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.data.Status;
+import org.restlet.ext.velocity.TemplateRepresentation;
+import org.restlet.representation.EmptyRepresentation;
+import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
@@ -78,6 +82,8 @@ public abstract class AbstractResource extends ServerResource {
 
     private static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
 
+    private static final TemplateCache templateCache = new TemplateCache();
+
     /**
      * @return Map of template variables common to most or all views, such as
      *         variables that appear in a common header.
@@ -85,60 +91,69 @@ public abstract class AbstractResource extends ServerResource {
     public static Map<String, Object> getCommonTemplateVars(Request request) {
         Map<String,Object> vars = new HashMap<>();
         vars.put("version", Application.getVersion());
-        vars.put("baseUri", getPublicRootRef(request).toString());
+        if (request != null) { // this will be null when testing
+            Reference publicRef = getPublicRootRef(request);
+            vars.put("baseUri", publicRef.toString());
+        }
         return vars;
     }
 
     /**
      * @param request
      * @return Root reference usable in public, respecting the
-     *         <code>base_uri</code> option in the application configuration.
+     *         <code>base_uri</code> option in the application configuration;
+     *         or <code>null</code> if a <code>request</code> is
+     *         <code>null</code>.
      */
     public static Reference getPublicRootRef(final Request request) {
-        Reference rootRef = new Reference(request.getRootRef());
+        Reference rootRef = null;
+        if (request != null) {
+            rootRef = new Reference(request.getRootRef());
 
-        final String baseUri = ConfigurationFactory.getInstance().
-                getString(BASE_URI_CONFIG_KEY);
-        if (baseUri != null && baseUri.length() > 0) {
-            final Reference baseRef = new Reference(baseUri);
-            rootRef.setScheme(baseRef.getScheme());
-            rootRef.setHostDomain(baseRef.getHostDomain());
-            // if the "port" is a local socket, Reference will serialize it as
-            // -1.
-            if (baseRef.getHostPort() == -1) {
-                rootRef.setHostPort(null);
-            } else {
-                rootRef.setHostPort(baseRef.getHostPort());
-            }
-            rootRef.setPath(StringUtils.stripEnd(baseRef.getPath(), "/"));
-        } else {
-            final Series<Header> headers = request.getHeaders();
-            final String hostStr = headers.getFirstValue(
-                    "X-Forwarded-Host", true, null);
-            if (hostStr != null) {
-                final String protocolStr = headers.getFirstValue(
-                        "X-Forwarded-Proto", true, "HTTP");
-                final String portStr = headers.getFirstValue(
-                        "X-Forwarded-Port", true, "80");
-                final String pathStr = headers.getFirstValue(
-                        "X-Forwarded-Path", true, "");
-                logger.debug("Assembling base URI from X-Forwarded headers. " +
-                                "Proto: {}; Host: {}; Port: {}; Path: {}",
-                        protocolStr, hostStr, portStr, pathStr);
-
-                rootRef.setHostDomain(hostStr);
-                rootRef.setPath(StringUtils.stripEnd(pathStr, "/"));
-
-                final Protocol protocol = protocolStr.toUpperCase().equals("HTTPS") ?
-                        Protocol.HTTPS : Protocol.HTTP;
-                rootRef.setProtocol(protocol);
-
-                Integer port = Integer.parseInt(portStr);
-                if ((port == 80 && protocol.equals(Protocol.HTTP)) ||
-                        (port == 443 && protocol.equals(Protocol.HTTPS))) {
-                    port = null;
+            final String baseUri = ConfigurationFactory.getInstance().
+                    getString(BASE_URI_CONFIG_KEY);
+            if (baseUri != null && baseUri.length() > 0) {
+                final Reference baseRef = new Reference(baseUri);
+                rootRef.setScheme(baseRef.getScheme());
+                rootRef.setHostDomain(baseRef.getHostDomain());
+                // if the "port" is a local socket, Reference will serialize it
+                // as -1.
+                if (baseRef.getHostPort() == -1) {
+                    rootRef.setHostPort(null);
+                } else {
+                    rootRef.setHostPort(baseRef.getHostPort());
                 }
-                rootRef.setHostPort(port);
+                rootRef.setPath(StringUtils.stripEnd(baseRef.getPath(), "/"));
+            } else {
+                final Series<Header> headers = request.getHeaders();
+                final String hostStr = headers.getFirstValue(
+                        "X-Forwarded-Host", true, null);
+                if (hostStr != null) {
+                    final String protocolStr = headers.getFirstValue(
+                            "X-Forwarded-Proto", true, "HTTP");
+                    final String portStr = headers.getFirstValue(
+                            "X-Forwarded-Port", true, "80");
+                    final String pathStr = headers.getFirstValue(
+                            "X-Forwarded-Path", true, "");
+                    logger.debug("Assembling base URI from X-Forwarded headers. " +
+                                    "Proto: {}; Host: {}; Port: {}; Path: {}",
+                            protocolStr, hostStr, portStr, pathStr);
+
+                    rootRef.setHostDomain(hostStr);
+                    rootRef.setPath(StringUtils.stripEnd(pathStr, "/"));
+
+                    final Protocol protocol =
+                            protocolStr.toUpperCase().equals("HTTPS") ?
+                                    Protocol.HTTPS : Protocol.HTTP;
+                    rootRef.setProtocol(protocol);
+
+                    Integer port = Integer.parseInt(portStr);
+                    if ((port == 80 && protocol.equals(Protocol.HTTP)) ||
+                            (port == 443 && protocol.equals(Protocol.HTTPS))) {
+                        port = null;
+                    }
+                    rootRef.setHostPort(port);
+                }
             }
         }
         return rootRef;
@@ -456,6 +471,35 @@ public abstract class AbstractResource extends ServerResource {
         logger.debug("readInfo(): read from {} in {} msec", identifier,
                 watch.timeElapsed());
         return info;
+    }
+
+    /**
+     * @param name Template pathname, with leading slash.
+     * @return Representation using the given template and the common template
+     *         variables.
+     */
+    public Representation template(String name) {
+        return template(name, getCommonTemplateVars(getRequest()));
+    }
+
+    /**
+     * @param name Template pathname, with leading slash.
+     * @return Representation using the given template and the given template
+     *         variables.
+     */
+    public Representation template(String name, Map<String,Object> vars) {
+        final String template = templateCache.get(name);
+        if (template != null) {
+            try {
+                return new TemplateRepresentation(
+                        new StringRepresentation(template), vars,
+                        MediaType.TEXT_HTML);
+            } catch (IOException e) {
+                logger.error(e.getMessage());
+                return new StringRepresentation(e.getMessage());
+            }
+        }
+        return new EmptyRepresentation();
     }
 
 }
