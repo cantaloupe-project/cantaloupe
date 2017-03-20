@@ -31,10 +31,14 @@ import org.restlet.Request;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.Disposition;
 import org.restlet.data.Header;
+import org.restlet.data.MediaType;
 import org.restlet.data.Parameter;
 import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.data.Status;
+import org.restlet.ext.velocity.TemplateRepresentation;
+import org.restlet.representation.EmptyRepresentation;
+import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
@@ -90,6 +94,8 @@ public abstract class AbstractResource extends ServerResource {
             "slash_substitute";
 
     private static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
+
+    private static final TemplateCache templateCache = new TemplateCache();
 
     /**
      * @return Map of template variables common to most or all views, such as
@@ -604,6 +610,35 @@ public abstract class AbstractResource extends ServerResource {
         logger.debug("readInfo(): read from {} in {} msec", identifier,
                 watch.timeElapsed());
         return info;
+    }
+
+    /**
+     * @param name Template pathname, with leading slash.
+     * @return Representation using the given template and the common template
+     *         variables.
+     */
+    public Representation template(String name) {
+        return template(name, getCommonTemplateVars(getRequest()));
+    }
+
+    /**
+     * @param name Template pathname, with leading slash.
+     * @return Representation using the given template and the given template
+     *         variables.
+     */
+    public Representation template(String name, Map<String,Object> vars) {
+        final String template = templateCache.get(name);
+        if (template != null) {
+            try {
+                return new TemplateRepresentation(
+                        new StringRepresentation(template), vars,
+                        MediaType.TEXT_HTML);
+            } catch (IOException e) {
+                logger.error(e.getMessage());
+                return new StringRepresentation(e.getMessage());
+            }
+        }
+        return new EmptyRepresentation();
     }
 
 }
