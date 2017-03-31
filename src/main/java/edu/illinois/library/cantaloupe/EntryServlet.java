@@ -180,7 +180,7 @@ public class EntryServlet extends ServerServlet {
         } catch (FileNotFoundException e) {
             logger.error("destroy(): file not found: {}", e.getMessage());
         } catch (Exception e) {
-            logger.info("destroy(): {}", e.getMessage());
+            logger.error("destroy(): {}", e.getMessage());
         }
     }
 
