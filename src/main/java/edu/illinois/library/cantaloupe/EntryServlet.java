@@ -169,6 +169,7 @@ public class EntryServlet extends ServerServlet {
 
     @Override
     public void destroy() {
+        logger.info("Shutting down...");
         super.destroy();
         CacheWorkerRunner.stop();
         ConfigurationFactory.getInstance().stopWatching();
