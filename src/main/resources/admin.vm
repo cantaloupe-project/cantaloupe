@@ -109,8 +109,6 @@
                         <div class="col-sm-6">
                             <section>
                                 <h2>Proxy Headers</h2>
-                                (These will not appear if this page is not accessed
-                                via a reverse proxy server.)
                                 <table class="table table-striped">
                                     <tr>
                                         <td>X-Forwarded-Proto</td>
