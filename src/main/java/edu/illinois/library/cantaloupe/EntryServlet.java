@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
+import java.io.FileNotFoundException;
 
 /**
  * <p>Serves as the entry Servlet in both standalone and Servlet container
@@ -159,6 +160,8 @@ public class EntryServlet extends ServerServlet {
             ScriptEngineFactory.getScriptEngine().startWatching();
         } catch (DelegateScriptDisabledException e) {
             logger.info("init(): {}", e.getMessage());
+        } catch (FileNotFoundException e) {
+            logger.error("init(): file not found: {}", e.getMessage());
         } catch (Exception e) {
             logger.error("init(): {}", e.getMessage());
         }
@@ -174,6 +177,8 @@ public class EntryServlet extends ServerServlet {
             ScriptEngineFactory.getScriptEngine().stopWatching();
         } catch (DelegateScriptDisabledException e) {
             logger.info("init(): {}", e.getMessage());
+        } catch (FileNotFoundException e) {
+            logger.error("destroy(): file not found: {}", e.getMessage());
         } catch (Exception e) {
             logger.info("destroy(): {}", e.getMessage());
         }
