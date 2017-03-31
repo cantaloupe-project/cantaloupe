@@ -2,13 +2,11 @@
 
 *High-performance dynamic image server in Java*
 
-### The project website is located at:
-**[https://medusa-project.github.io/cantaloupe/]
-(https://medusa-project.github.io/cantaloupe/)**
+[https://medusa-project.github.io/cantaloupe/](https://medusa-project.github.io/cantaloupe/)
 
 This is a very-quick-start guide. The user manual at the website above is
 the primary source of documentation, containing additional information about
-Servlet container and Docker setup.
+Servlet container and Docker setup, and also upgrade instructions.
 
 ## Requirements
 
@@ -23,11 +21,11 @@ see the user manual.
 The distribution archive bundles a sample configuration file, named
 `cantaloupe.properties.sample`. Make a copy and open it in an editor. Set
 `FilesystemResolver.BasicLookupStrategy.path_prefix` to a folder path
-containing some images, and leave all the other options alone.
+containing some images.
 
 ## Run
 
-From the command prompt (OS X/Linux):
+From the command prompt (macOS/Linux):
 
     java -Dcantaloupe.config=/path/to/cantaloupe.properties -Xmx2g -jar Cantaloupe-x.x.x.war
 
