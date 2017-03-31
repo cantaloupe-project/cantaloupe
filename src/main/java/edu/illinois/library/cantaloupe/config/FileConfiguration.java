@@ -8,7 +8,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 abstract class FileConfiguration {
 
-    private ConfigurationWatcher watcher = new ConfigurationWatcher();
+    private ConfigurationWatcher watcher;
     private ScheduledExecutorService watcherExecutorService;
     private Future<?> watcherFuture;
 
@@ -24,7 +24,8 @@ abstract class FileConfiguration {
             } catch (IOException e) {
                 // The logger may not have been initialized yet, as it depends
                 // on a working configuration. (Also, we don't want to
-                // introduce a dependency on the logger.)
+                // introduce a dependency on the logger, because of the way
+                // the application is packaged.)
                 System.out.println(e.getMessage());
             }
         }
@@ -35,6 +36,7 @@ abstract class FileConfiguration {
      * Starts watching the configuration file for changes.
      */
     public synchronized void startWatching() {
+        watcher = new ConfigurationWatcher();
         watcherExecutorService =
                 Executors.newSingleThreadScheduledExecutor();
         watcherFuture = watcherExecutorService.submit(watcher);
@@ -44,7 +46,9 @@ abstract class FileConfiguration {
      * Stops watching the configuration file for changes.
      */
     public synchronized void stopWatching() {
-        watcher.stop();
+        if (watcher != null) {
+            watcher.stop();
+        }
         if (watcherFuture != null) {
             watcherFuture.cancel(true);
         }
