@@ -8,7 +8,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 abstract class FileConfiguration {
 
-    private ConfigurationWatcher watcher;
+    private FileConfigurationWatcher watcher;
     private ScheduledExecutorService watcherExecutorService;
     private Future<?> watcherFuture;
 
@@ -36,7 +36,7 @@ abstract class FileConfiguration {
      * Starts watching the configuration file for changes.
      */
     public synchronized void startWatching() {
-        watcher = new ConfigurationWatcher(getFile());
+        watcher = new FileConfigurationWatcher(getFile());
         watcherExecutorService =
                 Executors.newSingleThreadScheduledExecutor();
         watcherFuture = watcherExecutorService.submit(watcher);
