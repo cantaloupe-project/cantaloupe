@@ -31,17 +31,29 @@ class FileConfigurationWatcher implements Runnable {
 
         private void handle(Path path) {
             final Configuration config = Configuration.getInstance();
-            if (path.toFile().equals(config.getFile())) {
-                try {
-                    config.reload();
-                    LoggerUtil.reloadConfiguration();
-                } catch (FileNotFoundException e) {
-                    System.err.println("FileConfigurationWatcher$CallbackImpl: " +
-                            "file not found: " + e.getMessage());
-                } catch (Exception e) {
-                    System.err.println("FileConfigurationWatcher$CallbackImpl: " +
-                            e.getMessage());
+            // If the configuration is heritable, check whether any of its
+            // files changed.
+            if (config instanceof HeritableFileConfiguration) {
+                HeritableFileConfiguration hfc =
+                        (HeritableFileConfiguration) config;
+                if (hfc.getFiles().contains(path.toFile())) {
+                    reload(config);
                 }
+            } else if (path.toFile().equals(config.getFile())) {
+                reload(config);
+            }
+        }
+
+        private void reload(Configuration config) {
+            try {
+                config.reload();
+                LoggerUtil.reloadConfiguration();
+            } catch (FileNotFoundException e) {
+                System.err.println("FileConfigurationWatcher$CallbackImpl: " +
+                        "file not found: " + e.getMessage());
+            } catch (Exception e) {
+                System.err.println("FileConfigurationWatcher$CallbackImpl: " +
+                        e.getMessage());
             }
         }
 
