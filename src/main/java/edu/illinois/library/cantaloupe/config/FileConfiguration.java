@@ -1,15 +1,14 @@
 package edu.illinois.library.cantaloupe.config;
 
+import edu.illinois.library.cantaloupe.ThreadPool;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
 
 abstract class FileConfiguration {
 
     private FileConfigurationWatcher watcher;
-    private ScheduledExecutorService watcherExecutorService;
     private Future<?> watcherFuture;
 
     public File getFile() {
@@ -37,9 +36,7 @@ abstract class FileConfiguration {
      */
     public synchronized void startWatching() {
         watcher = new FileConfigurationWatcher(getFile());
-        watcherExecutorService =
-                Executors.newSingleThreadScheduledExecutor();
-        watcherFuture = watcherExecutorService.submit(watcher);
+        watcherFuture = ThreadPool.getInstance().submit(watcher);
     }
 
     /**
@@ -51,9 +48,6 @@ abstract class FileConfiguration {
         }
         if (watcherFuture != null) {
             watcherFuture.cancel(true);
-        }
-        if (watcherExecutorService != null) {
-            watcherExecutorService.shutdown();
         }
     }
 
