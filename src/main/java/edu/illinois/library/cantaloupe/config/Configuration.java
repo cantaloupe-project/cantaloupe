@@ -104,9 +104,12 @@ public interface Configuration {
     /**
      * Reloads the configuration from its persistent store.
      *
-     * @throws IOException If there is a problem reloading the configuration.
+     * @throws IOException If there is a physical problem reloading the
+     *                     configuration.
+     * @throws IOException If there is a logical problem reloading the
+     *                     configuration.
      */
-    void reload() throws IOException;
+    void reload() throws IOException, ConfigurationException;
 
     /**
      * Saves the configuration. Implementations that don't support saving

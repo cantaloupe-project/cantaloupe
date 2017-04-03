@@ -34,7 +34,7 @@ public abstract class ConfigurationFactory {
                         }
                         try {
                             config.reload();
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                             System.err.println("ConfigurationFactory.getInstance(): " +
                                     e.getMessage());
                         }

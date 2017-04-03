@@ -38,7 +38,7 @@ class ConfigurationWatcher implements Runnable {
                 } catch (FileNotFoundException e) {
                     System.err.println("ConfigurationWatcher$CallbackImpl: " +
                             "file not found: " + e.getMessage());
-                } catch (IOException e) {
+                } catch (Exception e) {
                     System.err.println("ConfigurationWatcher$CallbackImpl: " +
                             e.getMessage());
                 }
