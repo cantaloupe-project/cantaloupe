@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Global application thread pool Singleton.
@@ -28,8 +29,8 @@ public final class ThreadPool {
         pool.shutdown();
     }
 
-    public void submit(Runnable task) {
-        pool.submit(task);
+    public Future<?> submit(Runnable task) {
+        return pool.submit(task);
     }
 
 }
