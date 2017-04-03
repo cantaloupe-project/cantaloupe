@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.config;
 import edu.illinois.library.cantaloupe.logging.LoggerUtil;
 import edu.illinois.library.cantaloupe.util.FilesystemWatcher;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -46,13 +47,17 @@ class ConfigurationWatcher implements Runnable {
 
     }
 
+    private File file;
     private FilesystemWatcher filesystemWatcher;
+
+    ConfigurationWatcher(File file) {
+        this.file = file;
+    }
 
     @Override
     public void run() {
-        final Configuration config = Configuration.getInstance();
         try {
-            Path path = config.getFile().toPath().getParent();
+            Path path = file.toPath().getParent();
             filesystemWatcher = new FilesystemWatcher(path, new CallbackImpl());
             filesystemWatcher.processEvents();
         } catch (IOException e) {

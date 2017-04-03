@@ -36,7 +36,7 @@ abstract class FileConfiguration {
      * Starts watching the configuration file for changes.
      */
     public synchronized void startWatching() {
-        watcher = new ConfigurationWatcher();
+        watcher = new ConfigurationWatcher(getFile());
         watcherExecutorService =
                 Executors.newSingleThreadScheduledExecutor();
         watcherFuture = watcherExecutorService.submit(watcher);
