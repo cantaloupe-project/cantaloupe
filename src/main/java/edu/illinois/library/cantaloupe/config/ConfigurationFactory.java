@@ -30,7 +30,7 @@ public abstract class ConfigurationFactory {
                         if (configArg.equals("memory")) {
                             config = new MemoryConfiguration();
                         } else {
-                            config = new PropertiesConfiguration();
+                            config = new HeritablePropertiesConfiguration();
                         }
                         try {
                             config.reload();
