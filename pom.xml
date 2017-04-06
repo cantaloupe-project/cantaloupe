@@ -64,7 +64,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-s3</artifactId>
-      <version>1.10.56</version>
+      <version>1.11.116</version>
     </dependency>
     <!-- Object cache used for caching delegate script method invocations
     https://github.com/ben-manes/caffeine-->
