@@ -194,11 +194,12 @@ class AmazonS3Cache implements DerivativeCache {
         final AmazonS3 s3 = getClientInstance();
         final String bucketName = getBucketName();
         final String objectKey = getObjectKey(identifier);
-        try {
-            final Stopwatch watch = new Stopwatch();
-            final S3Object object = s3.getObject(
-                    new GetObjectRequest(bucketName, objectKey));
-            final Info info = Info.fromJson(object.getObjectContent());
+
+        final Stopwatch watch = new Stopwatch();
+        try (S3Object object = s3.getObject(
+                new GetObjectRequest(bucketName, objectKey));
+             InputStream is = object.getObjectContent()) {
+            final Info info = Info.fromJson(is);
             logger.info("getImageInfo(): read {} from bucket {} in {} msec",
                     objectKey, bucketName, watch.timeElapsed());
             return info;

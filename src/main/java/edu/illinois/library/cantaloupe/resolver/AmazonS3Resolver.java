@@ -134,10 +134,9 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
         Configuration config = ConfigurationFactory.getInstance();
         final String bucketName = config.getString(BUCKET_NAME_CONFIG_KEY);
-        logger.info("Using bucket: {}", bucketName);
         final String objectKey = getObjectKey();
         try {
-            logger.info("Requesting {}", objectKey);
+            logger.info("Requesting {} from bucket {}", objectKey, bucketName);
             return s3.getObject(new GetObjectRequest(bucketName, objectKey));
         } catch (AmazonS3Exception e) {
             if (e.getErrorCode().equals("NoSuchKey")) {
@@ -188,15 +187,16 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     @Override
     public Format getSourceFormat() throws IOException {
         if (sourceFormat == null) {
-            S3Object object = getObject();
-            String contentType = object.getObjectMetadata().getContentType();
-            // See if we can determine the format from the Content-Type header.
-            if (contentType != null) {
-                sourceFormat = new MediaType(contentType).toFormat();
-            }
-            if (sourceFormat == null || sourceFormat.equals(Format.UNKNOWN)) {
-                // Try to infer a format based on the identifier.
-                sourceFormat = Format.inferFormat(identifier);
+            try (S3Object object = getObject()) {
+                String contentType = object.getObjectMetadata().getContentType();
+                // See if we can determine the format from the Content-Type header.
+                if (contentType != null) {
+                    sourceFormat = new MediaType(contentType).toFormat();
+                }
+                if (sourceFormat == null || Format.UNKNOWN.equals(sourceFormat)) {
+                    // Try to infer a format based on the identifier.
+                    sourceFormat = Format.inferFormat(identifier);
+                }
             }
         }
         return sourceFormat;
