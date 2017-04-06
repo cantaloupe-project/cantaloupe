@@ -71,26 +71,21 @@ class AmazonS3Cache implements DerivativeCache {
         private final ObjectMetadata metadata;
         private final String objectKey;
         private final AmazonS3 s3;
-        private final Set<String> uploadingKeys;
 
         /**
          * @param s3            S3 client.
          * @param bucketName    S3 bucket name.
          * @param objectKey     S3 object key.
          * @param metadata      S3 object metadata.
-         * @param uploadingKeys Set of keys of objects currently being uploaded
-         *                      to S3 in any thread.
          */
         AmazonS3OutputStream(final AmazonS3 s3,
                              final String bucketName,
                              final String objectKey,
-                             final ObjectMetadata metadata,
-                             final Set<String> uploadingKeys) {
+                             final ObjectMetadata metadata) {
             this.bucketName = bucketName;
             this.s3 = s3;
             this.objectKey = objectKey;
             this.metadata = metadata;
-            this.uploadingKeys = uploadingKeys;
         }
 
         @Override
@@ -245,7 +240,7 @@ class AmazonS3Cache implements DerivativeCache {
             metadata.setContentType(
                     opList.getOutputFormat().getPreferredMediaType().toString());
             return new AmazonS3OutputStream(s3, bucketName, objectKey,
-                    metadata, uploadingKeys);
+                    metadata);
         }
         return new NullOutputStream();
     }
