@@ -1,10 +1,6 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
@@ -16,6 +12,7 @@ import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.util.AWSClientFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,44 +78,14 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
     private static AmazonS3 client;
 
-    /** Lock object for synchronization */
-    private static final Object lock = new Object();
-
-    private static AmazonS3 getClientInstance() {
+    static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
-            synchronized (lock) {
-                final Configuration config = ConfigurationFactory.getInstance();
-
-                class ConfigFileCredentials implements AWSCredentials {
-                    @Override
-                    public String getAWSAccessKeyId() {
-                        return config.getString(ACCESS_KEY_ID_CONFIG_KEY);
-                    }
-
-                    @Override
-                    public String getAWSSecretKey() {
-                        return config.getString(SECRET_KEY_CONFIG_KEY);
-                    }
-                }
-
-                AWSCredentials credentials = new ConfigFileCredentials();
-                client = new AmazonS3Client(credentials);
-
-                // a custom endpoint will be used in testing
-                final String endpoint = config.getString(ENDPOINT_CONFIG_KEY);
-                if (endpoint != null) {
-                    logger.info("Using endpoint: {}", endpoint);
-                    client.setEndpoint(endpoint);
-                }
-
-                final String regionName = config.getString(BUCKET_REGION_CONFIG_KEY);
-                if (regionName != null && regionName.length() > 0) {
-                    Regions regions = Regions.fromName(regionName);
-                    Region region = Region.getRegion(regions);
-                    logger.info("Using region: {}", region);
-                    client.setRegion(region);
-                }
-            }
+            final Configuration config = Configuration.getInstance();
+            final AWSClientFactory factory = new AWSClientFactory(
+                    config.getString(ACCESS_KEY_ID_CONFIG_KEY),
+                    config.getString(SECRET_KEY_CONFIG_KEY),
+                    config.getString(BUCKET_REGION_CONFIG_KEY));
+            client = factory.newClient();
         }
         return client;
     }

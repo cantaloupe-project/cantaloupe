@@ -9,6 +9,7 @@ webdriver.gecko = /usr/local/bin/geckodriver
 amazons3.access_key_id =
 amazons3.secret_key =
 amazons3.bucket =
+amazons3.region = us-east-1
 
 # Used by AzureStorageResolverTest and AzureStorageCacheTest.
 azurestorage.account_name =

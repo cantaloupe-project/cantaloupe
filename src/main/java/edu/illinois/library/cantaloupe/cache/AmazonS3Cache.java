@@ -1,10 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.iterable.S3Objects;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GetObjectRequest;
@@ -15,10 +11,10 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.util.AWSClientFactory;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.StringUtils;
@@ -151,37 +147,18 @@ class AmazonS3Cache implements DerivativeCache {
 
     static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
-            final Configuration config = ConfigurationFactory.getInstance();
-
-            class ConfigFileCredentials implements AWSCredentials {
-                @Override
-                public String getAWSAccessKeyId() {
-                    return config.getString(ACCESS_KEY_ID_CONFIG_KEY);
-                }
-
-                @Override
-                public String getAWSSecretKey() {
-                    return config.getString(SECRET_KEY_CONFIG_KEY);
-                }
-            }
-            AWSCredentials credentials = new ConfigFileCredentials();
-            client = new AmazonS3Client(credentials);
-
-            final String regionName = config.
-                    getString(BUCKET_REGION_CONFIG_KEY);
-            if (regionName != null && regionName.length() > 0) {
-                Regions regions = Regions.fromName(regionName);
-                Region region = Region.getRegion(regions);
-                logger.info("Using region: {}", region);
-                client.setRegion(region);
-            }
+            final Configuration config = Configuration.getInstance();
+            final AWSClientFactory factory = new AWSClientFactory(
+                    config.getString(ACCESS_KEY_ID_CONFIG_KEY),
+                    config.getString(SECRET_KEY_CONFIG_KEY),
+                    config.getString(BUCKET_REGION_CONFIG_KEY));
+            client = factory.newClient();
         }
         return client;
     }
 
     String getBucketName() {
-        return ConfigurationFactory.getInstance().
-                getString(BUCKET_NAME_CONFIG_KEY);
+        return Configuration.getInstance().getString(BUCKET_NAME_CONFIG_KEY);
     }
 
     @Override
@@ -267,7 +244,7 @@ class AmazonS3Cache implements DerivativeCache {
      *         slash.
      */
     String getObjectKeyPrefix() {
-        String prefix = ConfigurationFactory.getInstance().
+        String prefix = Configuration.getInstance().
                 getString(OBJECT_KEY_PREFIX_CONFIG_KEY);
         if (prefix.length() < 1 || prefix.equals("/")) {
             return "";
@@ -300,7 +277,7 @@ class AmazonS3Cache implements DerivativeCache {
 
     @Override
     public void purgeExpired() throws CacheException {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         final AmazonS3 s3 = getClientInstance();
         final String bucketName = getBucketName();
 

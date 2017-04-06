@@ -45,6 +45,12 @@ public class AmazonS3CacheTest extends BaseTest {
         return testConfig.getString(ConfigurationConstants.S3_BUCKET.getKey());
     }
 
+    private static String getRegion() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.S3_REGION.getKey());
+    }
+
     private static String getSecretKey() {
         org.apache.commons.configuration.Configuration testConfig =
                 TestUtil.getTestConfig();
@@ -61,6 +67,7 @@ public class AmazonS3CacheTest extends BaseTest {
         config.setProperty(AmazonS3Cache.ACCESS_KEY_ID_CONFIG_KEY, getAccessKeyId());
         config.setProperty(AmazonS3Cache.BUCKET_NAME_CONFIG_KEY, getBucket());
         config.setProperty(AmazonS3Cache.SECRET_KEY_CONFIG_KEY, getSecretKey());
+        config.setProperty(AmazonS3Cache.BUCKET_REGION_CONFIG_KEY, getRegion());
 
         instance = new AmazonS3Cache();
     }
