@@ -237,12 +237,6 @@
       <artifactId>org.restlet</artifactId>
       <version>${restlet.version}</version>
     </dependency>
-    <!-- Provides Jackson for JSON object (de)serialization -->
-    <dependency>
-      <groupId>org.restlet.jee</groupId>
-      <artifactId>org.restlet.ext.jackson</artifactId>
-      <version>${restlet.version}</version>
-    </dependency>
     <!-- Makes Restlet log to SLF4J -->
     <dependency>
       <groupId>org.restlet.jee</groupId>

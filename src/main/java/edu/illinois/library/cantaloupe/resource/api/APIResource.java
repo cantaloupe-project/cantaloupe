@@ -8,8 +8,8 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
+import edu.illinois.library.cantaloupe.resource.JSONRepresentation;
 import org.restlet.data.Reference;
-import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
@@ -69,7 +69,7 @@ public class APIResource extends AbstractResource {
             final String key = keys.next();
             map.put(key, config.getProperty(key));
         }
-        return new JacksonRepresentation<>(map);
+        return new JSONRepresentation(map);
     }
 
     /**

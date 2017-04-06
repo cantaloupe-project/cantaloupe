@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.SerializationFeature;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
@@ -15,12 +14,11 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import edu.illinois.library.cantaloupe.resource.JSONRepresentation;
 import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
-import org.restlet.data.CharacterSet;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
-import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
@@ -61,8 +59,7 @@ public class InformationResource extends IIIF1Resource {
     /**
      * Responds to information requests.
      *
-     * @return JacksonRepresentation that will write an {@link ImageInfo}
-     *         instance to JSON.
+     * @return {@link ImageInfo} instance serialized to JSON.
      * @throws Exception
      */
     @Get
@@ -104,7 +101,7 @@ public class InformationResource extends IIIF1Resource {
         getResponse().getHeaders().add("Link",
                 String.format("<%s>;rel=\"profile\";", imageInfo.profile));
 
-        JacksonRepresentation rep = new JacksonRepresentation<>(imageInfo);
+        JSONRepresentation rep = new JSONRepresentation(imageInfo);
 
         // If the client has requested JSON-LD, set the content type to
         // that; otherwise set it to JSON
@@ -117,10 +114,6 @@ public class InformationResource extends IIIF1Resource {
             rep.setMediaType(new MediaType("application/json"));
         }
 
-        rep.getObjectWriter().
-                without(SerializationFeature.WRITE_NULL_MAP_VALUES).
-                without(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
-        rep.setCharacterSet(CharacterSet.UTF_8);
         return rep;
     }
 

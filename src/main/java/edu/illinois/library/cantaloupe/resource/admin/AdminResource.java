@@ -15,10 +15,10 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
+import edu.illinois.library.cantaloupe.resource.JSONRepresentation;
 import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.Header;
-import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
@@ -117,7 +117,7 @@ public class AdminResource extends AbstractResource {
      */
     @Get("application/json")
     public Representation doGetAsJson() throws Exception {
-        return new JacksonRepresentation<>(configurationAsMap());
+        return new JSONRepresentation(configurationAsMap());
     }
 
     /**
