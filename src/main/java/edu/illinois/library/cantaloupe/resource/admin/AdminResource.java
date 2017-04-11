@@ -115,7 +115,7 @@ public class AdminResource extends AbstractResource {
      *         sensitive info and must be protected.</strong>
      * @throws Exception
      */
-    @Get("application/json")
+    @Get("json")
     public Representation doGetAsJson() throws Exception {
         return new JSONRepresentation(configurationAsMap());
     }
@@ -127,7 +127,7 @@ public class AdminResource extends AbstractResource {
      * @param rep
      * @throws IOException
      */
-    @Post("application/json")
+    @Post("json")
     public Representation doPost(Representation rep) throws IOException {
         final Configuration config = ConfigurationFactory.getInstance();
         final Map submittedConfig = new ObjectMapper().readValue(

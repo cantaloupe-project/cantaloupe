@@ -59,7 +59,7 @@ public class APIResource extends AbstractResource {
     /**
      * @throws Exception
      */
-    @Get("application/json")
+    @Get("json")
     public Representation getConfiguration() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
 
@@ -76,7 +76,7 @@ public class APIResource extends AbstractResource {
      * @param rep PUTted JSON configuration
      * @throws Exception
      */
-    @Put("application/json")
+    @Put("json")
     public Representation putConfiguration(Representation rep) throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
         final Map submittedConfig = new ObjectMapper().readValue(
