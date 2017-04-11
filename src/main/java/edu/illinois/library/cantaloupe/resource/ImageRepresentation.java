@@ -37,8 +37,8 @@ public class ImageRepresentation extends OutputRepresentation {
 
     /**
      * @param imageInfo
-     * @param processor Processor configured for writing the image.
-     * @param opList
+     * @param processor   Processor configured for writing the image.
+     * @param opList      Will be frozen, if it isn't already.
      * @param disposition
      * @param bypassCache If true, the cache will not be written to nor read
      *                    from, regardless of whether caching is enabled in the
@@ -54,6 +54,7 @@ public class ImageRepresentation extends OutputRepresentation {
         this.imageInfo = imageInfo;
         this.processor = processor;
         this.opList = opList;
+        this.opList.freeze();
         this.bypassCache = bypassCache;
         this.setDisposition(disposition);
     }
