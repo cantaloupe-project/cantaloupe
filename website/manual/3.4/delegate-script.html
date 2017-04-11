@@ -58,12 +58,12 @@ title: Delegate Script
 
 <h2 id="Logging">Logging</h2>
 
-<p>Since version 3.4, delegate methods may access a logger that writes to the application log. Here is how:</p>
+<p>Since version 3.4, delegate methods may access a logger that writes to the application log:</p>
 
 {% highlight ruby %}
 require 'java'
 
-logger = Java::edu.illinois.library.cantaloupe.script.RubyScriptEngine.getLogger
+logger = Java::edu.illinois.library.cantaloupe.script.Helper.logger
 logger.debug('Debug-level message')
 logger.info('Info-level message')
 logger.warn('Warning-level message')

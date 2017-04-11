@@ -18,13 +18,10 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * This class is public in order to be accessible from Ruby via the JRuby-Java
- * bridge. For all other purposes, it should be considered package-protected.
- *
  * @see <a href="https://github.com/jruby/jruby/wiki/Embedding-with-JSR-223">
  *     Embedding JRuby with JSR223 - Code Examples</a>
  */
-public class RubyScriptEngine extends AbstractScriptEngine
+class RubyScriptEngine extends AbstractScriptEngine
         implements ScriptEngine {
 
     private static Logger logger = LoggerFactory.
@@ -37,18 +34,6 @@ public class RubyScriptEngine extends AbstractScriptEngine
     private final Object lock = new Object();
     private javax.script.ScriptEngine scriptEngine;
     private final AtomicBoolean scriptIsLoading = new AtomicBoolean(false);
-
-    /**
-     * <p>Public accessor for accessing the Logger instance from the delegate
-     * script:</p>
-     *
-     * <pre>Java::edu.illinois.library.cantaloupe.script.RubyScriptEngine.getLogger.debug('Debug-level message')</pre>
-     *
-     * @return Shared Logger instance.
-     */
-    public static Logger getLogger() {
-        return logger;
-    }
 
     RubyScriptEngine() {
         final long maxSize = getMaxCacheSize();
