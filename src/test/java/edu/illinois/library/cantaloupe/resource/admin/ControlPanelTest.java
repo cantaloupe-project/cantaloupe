@@ -48,8 +48,11 @@ public class ControlPanelTest extends ResourceTest {
     public static void beforeClass() throws Exception {
         BaseTest.beforeClass();
 
-        System.setProperty("webdriver.gecko.driver",
-                TestUtil.getTestConfig().getString(ConfigurationConstants.GECKO_WEBDRIVER.getKey()));
+        final org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        final String key = ConfigurationConstants.GECKO_WEBDRIVER.getKey();
+        final String value = testConfig.getString(key);
+        System.setProperty("webdriver.gecko.driver", value);
         DesiredCapabilities capabilities = DesiredCapabilities.firefox();
         capabilities.setCapability("marionette", true);
         webDriver = new FirefoxDriver(capabilities);
@@ -578,6 +581,7 @@ public class ControlPanelTest extends ResourceTest {
         css("#cl-logging-button").click();
 
         // Fill in the form
+        // Application log
         new Select(css("[name=\"log.application.level\"]")).
                 selectByValue("warn");
         css("[name=\"log.application.ConsoleAppender.enabled\"]").click();
@@ -596,6 +600,17 @@ public class ControlPanelTest extends ResourceTest {
         css("[name=\"log.application.SyslogAppender.port\"]").sendKeys("555");
         css("[name=\"log.application.SyslogAppender.facility\"]").
                 sendKeys("cats");
+        // Error log
+        css("[name=\"log.error.FileAppender.enabled\"]").click();
+        css("[name=\"log.error.FileAppender.pathname\"]").sendKeys("/path50");
+        css("[name=\"log.error.RollingFileAppender.enabled\"]").click();
+        css("[name=\"log.error.RollingFileAppender.pathname\"]").
+                sendKeys("/path2");
+        css("[name=\"log.error.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern\"]").
+                sendKeys("pattern2");
+        css("[name=\"log.error.RollingFileAppender.TimeBasedRollingPolicy.max_history\"]").
+                sendKeys("20");
+        // Access log
         css("[name=\"log.access.ConsoleAppender.enabled\"]").click();
         css("[name=\"log.access.FileAppender.enabled\"]").click();
         css("[name=\"log.access.FileAppender.pathname\"]").
@@ -619,6 +634,8 @@ public class ControlPanelTest extends ResourceTest {
 
         // Assert that the application configuration has been updated correctly
         final Configuration config = ConfigurationFactory.getInstance();
+
+        // Application log
         assertEquals("warn", config.getString("log.application.level"));
         assertTrue(config.getBoolean("log.application.ConsoleAppender.enabled"));
 
@@ -642,6 +659,20 @@ public class ControlPanelTest extends ResourceTest {
         assertEquals("cats",
                 config.getString("log.application.SyslogAppender.facility"));
 
+        // Error log
+        assertTrue(config.getBoolean("log.error.FileAppender.enabled"));
+        assertEquals("/path50",
+                config.getString("log.error.FileAppender.pathname"));
+
+        assertTrue(config.getBoolean("log.error.RollingFileAppender.enabled"));
+        assertEquals("/path2",
+                config.getString("log.error.RollingFileAppender.pathname"));
+        assertEquals("pattern2",
+                config.getString("log.error.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern"));
+        assertEquals("20",
+                config.getString("log.error.RollingFileAppender.TimeBasedRollingPolicy.max_history"));
+
+        // Access log
         assertTrue(config.getBoolean("log.access.ConsoleAppender.enabled"));
 
         assertTrue(config.getBoolean("log.access.FileAppender.enabled"));

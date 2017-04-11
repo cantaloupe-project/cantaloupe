@@ -14,6 +14,7 @@ title: Logging
 
 <ul>
   <li><a href="#Application%20Log">Application Log</a></li>
+  <li><a href="#Error%20Log">Error Log</a></li>
   <li><a href="#Access%20Log">Access Log</a></li>
 </ul>
 
@@ -48,6 +49,16 @@ title: Logging
 <h4>SyslogAppender</h4>
 
 <p>SyslogAppender appends log messages to the syslog, managed by syslogd, on a local or remote host.</p>
+
+<hr>
+
+<h2 id="Error Log">Error Log</h2>
+
+<p>The error log is a dedicated log for <code>warn</code>- and <code>error</code>-level application log messages. This log offers a FileAppender and RollingFileAppender that work the same as their <a href="#Application%20Log">application log</a> counterparts.</p>
+
+<p>Whether or not any error log appenders are enabled, error messages will still appear in the application log.</p>
+
+<hr>
 
 <h2 id="Access Log">Access Log</h2>
 

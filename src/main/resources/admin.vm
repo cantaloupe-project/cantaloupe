@@ -2664,7 +2664,7 @@
                                 <a tabindex="0" class="btn btn-sm cl-help"
                                    role="button" data-toggle="popover"
                                    data-trigger="focus"
-                                   data-content="Logs to a file which gets
+                                   data-content="Logs to a file that gets
                                    rotated daily.">?</a>
                             </h3>
                             <table class="table table-striped">
@@ -2766,6 +2766,89 @@
                         </section>
 
                         <section>
+                            <h2>Error Log</h2>
+
+                            <h3>File Appender
+                                <a tabindex="0" class="btn btn-sm cl-help"
+                                   role="button" data-toggle="popover"
+                                   data-trigger="focus"
+                                   data-content="Logs to a single file.">?</a>
+                            </h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="log.error.FileAppender.enabled"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Pathname</td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                               name="log.error.FileAppender.pathname"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <h3>Rolling File Appender
+                                <a tabindex="0" class="btn btn-sm cl-help"
+                                   role="button" data-toggle="popover"
+                                   data-trigger="focus"
+                                   data-content="Logs to a file that gets
+                                   rotated daily.">?</a>
+                            </h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="log.error.RollingFileAppender.enabled"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Pathname</td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                               name="log.error.RollingFileAppender.pathname"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Filename Pattern</td>
+                                    <td>
+                                        <input type="text" class="form-control"
+                                               name="log.error.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Max History</td>
+                                    <td>
+                                        <input type="number" class="form-control"
+                                               name="log.error.RollingFileAppender.TimeBasedRollingPolicy.max_history"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <section>
                             <h2>Access Log</h2>
 
                             <h3>Console Appender
@@ -2826,7 +2909,7 @@
                                 <a tabindex="0" class="btn btn-sm cl-help"
                                    role="button" data-toggle="popover"
                                    data-trigger="focus"
-                                   data-content="Logs to a file which gets rotated
+                                   data-content="Logs to a file that gets rotated
                                    daily.">?</a>
                             </h3>
                             <table class="table table-striped">

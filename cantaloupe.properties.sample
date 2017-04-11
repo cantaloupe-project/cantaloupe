@@ -596,6 +596,22 @@ log.application.SyslogAppender.port = 514
 log.application.SyslogAppender.facility = LOCAL0
 
 #----------------------------------------
+# Error Log
+#----------------------------------------
+
+# Application log messages with a severity of WARN or greater can be copied
+# into a dedicated error log, which may make them easier to spot.
+
+log.error.FileAppender.enabled = false
+log.error.FileAppender.pathname = /path/to/logs/combined-error.log
+
+log.error.RollingFileAppender.enabled = false
+log.error.RollingFileAppender.pathname = /path/to/logs/rolling-app.log
+log.error.RollingFileAppender.policy = TimeBasedRollingPolicy
+log.error.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/rolling-app-%d{yyyy-MM-dd}.log
+log.error.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30
+
+#----------------------------------------
 # Access Log
 #----------------------------------------
 
