@@ -1,0 +1,35 @@
+// Protobuf definition for the HeapCache persisted data format.
+//
+// When this file is changed, the HeapCacheProtos class needs to be regenerated
+// using:
+//
+// protoc -I=$SRC_DIR --java_out=$DST_DIR $SRC_DIR/HeapCache.proto
+// protoc -I=src/main/java/edu/illinois/library/cantaloupe/cache --java_out=src/main/java src/main/java/edu/illinois/library/cantaloupe/cache/HeapCache.proto
+//
+// Rules for changes:
+// https://developers.google.com/protocol-buffers/docs/javatutorial
+//
+syntax = "proto2";
+
+package edu.illinois.library.cantaloupe.cache;
+
+option java_package = "edu.illinois.library.cantaloupe.cache";
+option java_outer_classname = "HeapCacheProtos";
+
+message Image {
+    required string identifier = 1;
+    required string operation_list = 2;
+    required uint64 last_accessed = 3;
+    required bytes data = 4;
+}
+
+message Info {
+    required string identifier = 1;
+    required uint64 last_accessed = 2;
+    optional string json = 3;
+}
+
+message Cache {
+    repeated Info info = 1;
+    repeated Image image = 2;
+}

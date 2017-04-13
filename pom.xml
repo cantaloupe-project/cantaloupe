@@ -80,6 +80,12 @@
       <version>1.15.1</version>
       <scope>test</scope>
     </dependency>
+    <!-- Used by HeapCache -->
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>3.2.0</version>
+    </dependency>
     <!-- Used by JdbcResolverTest and JdbcCacheTest -->
     <dependency>
       <groupId>com.h2database</groupId>

@@ -397,6 +397,11 @@ public class ControlPanelTest extends ResourceTest {
         css("[name=\"JdbcCache.connection_timeout\"]").sendKeys("9");
         css("[name=\"JdbcCache.derivative_image_table\"]").sendKeys("hula");
         css("[name=\"JdbcCache.info_table\"]").sendKeys("box");
+        // HeapCache
+        css("#cl-caches li > a[href=\"#HeapCache\"]").click();
+        css("[name=\"HeapCache.target_size\"]").sendKeys("1234");
+        css("[name=\"HeapCache.persist\"]").click();
+        css("[name=\"HeapCache.persist.filesystem.pathname\"]").sendKeys("/tmp/cats");
         // RedisCache
         css("#cl-caches li > a[href=\"#RedisCache\"]").click();
         css("[name=\"RedisCache.host\"]").sendKeys("localhost");
@@ -455,6 +460,10 @@ public class ControlPanelTest extends ResourceTest {
         assertEquals("9", config.getString("JdbcCache.connection_timeout"));
         assertEquals("hula", config.getString("JdbcCache.derivative_image_table"));
         assertEquals("box", config.getString("JdbcCache.info_table"));
+        // HeapCache
+        assertEquals("1234", config.getString("HeapCache.target_size"));
+        assertTrue(config.getBoolean("HeapCache.persist"));
+        assertEquals("/tmp/cats", config.getString("HeapCache.persist.filesystem.pathname"));
         // RedisCache
         assertEquals("localhost", config.getString("RedisCache.host"));
         assertEquals("12398", config.getString("RedisCache.port"));
