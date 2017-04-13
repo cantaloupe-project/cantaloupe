@@ -140,7 +140,7 @@ public class ImageRepresentation extends OutputRepresentation {
         final Stopwatch watch = new Stopwatch();
         // If the operations are effectively a no-op, the source image can be
         // streamed through with no processing.
-        if (opList.isNoOp(processor.getSourceFormat())) {
+        if (!opList.hasEffect(processor.getSourceFormat())) {
             if (processor instanceof FileProcessor &&
                     ((FileProcessor) processor).getSourceFile() != null) {
                 final File sourceFile =

@@ -314,9 +314,9 @@ public final class OperationList implements Comparable<OperationList>,
      * @return Whether the operations are effectively calling for the
      *         unmodified source image.
      */
-    public boolean isNoOp(Format format) {
+    public boolean hasEffect(Format format) {
         if (!this.getOutputFormat().equals(format)) {
-            return false;
+            return true;
         }
         for (Operation op : this) {
             if (op.hasEffect()) {
@@ -327,11 +327,11 @@ public final class OperationList implements Comparable<OperationList>,
                 if (!(op instanceof Overlay &&                   // (1)
                         getOutputFormat().equals(Format.PDF)) && // (1)
                         !(op instanceof MetadataCopy)) {         // (2)
-                    return false;
+                    return true;
                 }
             }
         }
-        return true;
+        return false;
     }
 
     /**

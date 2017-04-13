@@ -391,8 +391,8 @@ public abstract class AbstractResource extends ServerResource {
                                                     Processor proc)
             throws IOException, ProcessorException, CacheException {
         // Max allowed size is ignored when the processing is a no-op.
-        final long maxAllowedSize = (ops.isNoOp(format)) ?
-                0 : ConfigurationFactory.getInstance().getLong(MAX_PIXELS_CONFIG_KEY, 0);
+        final long maxAllowedSize = (ops.hasEffect(format)) ?
+                ConfigurationFactory.getInstance().getLong(MAX_PIXELS_CONFIG_KEY, 0) : 0;
 
         final Info imageInfo = getOrReadInfo(ops.getIdentifier(), proc);
         final Dimension effectiveSize = ops.getResultingSize(imageInfo.getSize());

@@ -289,30 +289,30 @@ public class OperationListTest extends BaseTest {
         assertEquals(new Dimension(75, 50), instance.getResultingSize(fullSize));
     }
 
-    /* isNoOp(Format) */
+    /* hasEffect(Format) */
 
     @Test
-    public void testIsNoOpWithFormat() {
+    public void testHasEffect() {
         // same format
         instance = new OperationList();
         instance.setIdentifier(new Identifier("identifier.gif"));
         instance.setOutputFormat(Format.GIF);
-        assertTrue(instance.isNoOp(Format.GIF));
+        assertFalse(instance.hasEffect(Format.GIF));
 
         // different formats
         instance = new OperationList();
         instance.setIdentifier(new Identifier("identifier.jpg"));
         instance.setOutputFormat(Format.GIF);
-        assertFalse(instance.isNoOp(Format.JPG));
+        assertTrue(instance.hasEffect(Format.JPG));
     }
 
     @Test
-    public void testIsNoOpWithPdfSourceAndPdfOutputAndOverlay() {
+    public void testHasEffectWithPdfSourceAndPdfOutputAndOverlay() {
         // same format
         instance = new OperationList();
         instance.setIdentifier(new Identifier("identifier.pdf"));
         instance.setOutputFormat(Format.PDF);
-        assertTrue(instance.isNoOp(Format.PDF));
+        assertFalse(instance.hasEffect(Format.PDF));
     }
 
     /* iterator() */
