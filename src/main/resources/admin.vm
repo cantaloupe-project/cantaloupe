@@ -1801,6 +1801,11 @@
                                        data-toggle="tab">JdbcCache</a>
                                 </li>
                                 <li role="presentation">
+                                    <a href="#HeapCache"
+                                       aria-controls="HeapCache" role="tab"
+                                       data-toggle="tab">HeapCache</a>
+                                </li>
+                                <li role="presentation">
                                     <a href="#RedisCache"
                                        aria-controls="RedisCache" role="tab"
                                        data-toggle="tab">RedisCache</a>
@@ -2059,6 +2064,63 @@
                                             <td>
                                                 <input type="text" class="form-control"
                                                        name="JdbcCache.info_table"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="HeapCache">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Max Size
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Target cache size, in bytes or a number
+                                                   ending in M, MB, G, GB, etc. This may be transiently
+                                                   exceeded. Make sure your heap can accommodate this
+                                                   size using the -Xmx= VM argument.">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="HeapCache.target_size"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="If enabled, the cache contents will be
+                                                   written to a file on exit, and read back in at
+                                                   startup.">?</a>
+                                            </td>
+                                            <td>
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox"
+                                                               name="HeapCache.persist"
+                                                               value="false"
+                                                               data-requires-restart="false">
+                                                        Persist
+                                                    </label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Pathname
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="If persistence is enabled, this specifies
+                                                   the location of the cache file. If the parent directory
+                                                   does not exist, it will be created automatically.">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="HeapCache.persist.filesystem.pathname"
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>

@@ -32,6 +32,7 @@ title: Caches
       <li><a href="#Implementations">Implementations</a>
         <ul>
           <li><a href="#FilesystemCache">FilesystemCache</a></li>
+          <li><a href="#HeapCache">HeapCache</a></li>
           <li><a href="#JdbcCache">JdbcCache</a></li>
           <li><a href="#AmazonS3Cache">AmazonS3Cache</a></li>
           <li><a href="#AzureStorageCache">AzureStorageCache</a></li>
@@ -73,7 +74,7 @@ cache.client.no_transform = true
 
 <p>These are reasonable defaults that tell clients they can keep cached images for 30 days (2592000 seconds).</p>
 
-<div class="alert alert-info">Note: the Cache-Control header must have a particular structure&mdash;not just any combination of the above will work. See <a href="http://condor.depaul.edu/dmumaugh/readings/handouts/SE435/HTTP/node24.html">this brief overview</a>, for example.</div>
+<div class="alert alert-info">Note: the Cache-Control header must have a particular structure&mdash;not just any combination of the above will work.</div>
 
 <p>The <code>Cache-Control</code> header works as follows:</p>
 
@@ -134,7 +135,7 @@ cache.client.no_transform = true
 
 <ul>
   <li>Requests for full-sized, unaltered source images are not cached, and are instead streamed through with no processing.</li>
-  <li>Entire IIIF information response representations are not cached&mdash;only image metadata, which is the only expensive part to generate. This means it is possible to change other configuration options that would affect the contents of information responses without invalidating the cache.</li>
+  <li>IIIF information response representations are not cached&mdash;only image metadata, which is the only expensive part to acquire. This means it is possible to change other configuration options that would affect the contents of information responses without invalidating the cache.</li>
   <li>When derivative caching is enabled, "miss" responses are streamed to the client and cache simultaneously. If the cache I/O is slower than the connection to the client, response times may be adversely affected.</li>
   <li>The derivative cache is shared across endpoints. Requests for the same image from different endpoints will return the same cached image.</li>
 </ul>
@@ -184,7 +185,7 @@ cache.client.no_transform = true
 
 <h3 id="Limiting">Limiting</h3>
 
-<p>Depending on the amount of source content served, the varieties of derivatives generated, the time-to-live setting, and how often <a href="#Maintenance">maintenance</a> is performed, the cache may grow very large. The image server does not track its size, as this would be either expensive, or, for some cache implementations, impossible. Managing the cache size is therefore the responsibility of the administrator, and it can be accomplished by any combination of:</p>
+<p>Most caches (with the exception of <a href="#HeapCache">HeapCache</a>) age-limit their content based on last-accessed or last-modified time. Depending on the amount of source content served, the varieties of derivatives generated, the time-to-live setting, and how often <a href="#Maintenance">maintenance</a> is performed, the cache may grow very large. The image server does not track its size, as this would be either expensive, or, for some cache implementations, impossible. Managing the cache size is therefore the responsibility of the administrator, and it can be accomplished by any combination of:</p>
 
 <ol>
   <li>Performing maintenance more often;</li>
@@ -250,6 +251,26 @@ cache.client.no_transform = true
 <p>Cache files are created with a <span class="filename">.tmp</span> extension and moved into place when closed for writing.</p>
 
 <p>FilesystemCache is process-safe: it is safe to point multiple server instances at the same cache directory.</p>
+
+<hr>
+
+<h4 id="HeapCache">HeapCache</h4>
+
+<p>HeapCache, available since version 3.4, caches derivative images and metadata in the Java heap, which is the main area of RAM available to the Java VM. This is the fastest of the caches, with the main drawbacks being that it is limited to the amount of available heap and cannot be shared across instances.</p>
+
+<p>Unlike most of the other caches, this one size-limits content rather than time-limiting it. When the target size (<code>HeapCache.target_size</code>) has been exceeded, the minimum number of least-recently-accessed items are purged that will reduce it back down to this size. (The configured target size may be safely changed while the application is running.)</p>
+
+<p>Because this cache is not time-limited, <code>cache.server.ttl_seconds</code> does not apply, and, if enabled, the <a href="#Automatic%20Maintenance">cache worker</a> thread will have nothing to do, so will remain idle.</p>
+
+<p>When using this cache, ensure that your JVM heap is able to grow large enough to accommodate the desired target size (using the <code>-Xmx</code> VM option), and that you have enough RAM to accommodate this heap size.</p>
+
+<h5>Persistence</h5>
+
+<p>This cache can persist its contents to disk using the <code>HeapCache.persist</code> and <code>HeapCache.persist.filesystem.pathname</code> configuration keys. When persistence is enabled, the contents of the cache will be written to a file at shutdown, and loaded back in at startup.</p>
+
+<p>Some thought was given to storing cached data using the same on-disk format used by <a href="#FilesystemCache">FilesystemCache</a>, so that persisted data would be compatible between these caches. Unfortunately, this is currently not possible because of the one-way hashing used in the FilesystemCache format. Instead, the cache contents are serialized to a binary file.</p>
+
+<p>If persistence is disabled, the cache contents will be lost when the application exits.</p>
 
 <hr>
 

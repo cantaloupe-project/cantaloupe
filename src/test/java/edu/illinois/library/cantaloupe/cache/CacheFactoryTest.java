@@ -12,7 +12,7 @@ public class CacheFactoryTest extends BaseTest {
 
     @Test
     public void testGetAllDerivativeCaches() {
-        assertEquals(5, CacheFactory.getAllDerivativeCaches().size());
+        assertEquals(6, CacheFactory.getAllDerivativeCaches().size());
     }
 
     /* getAllSourceCaches() */
