@@ -55,8 +55,6 @@ public abstract class Java2DUtil {
 
     private static Logger logger = LoggerFactory.getLogger(Java2DUtil.class);
 
-    static final String FLATTEN_COLOR_CONFIG_KEY = "processor.flatten_color";
-
     /**
      * See the inline documentation in scaleImage() for a rationale for
      * choosing this.
@@ -558,13 +556,11 @@ public abstract class Java2DUtil {
             outImage = new BufferedImage(inImage.getWidth(),
                     inImage.getHeight(), newType);
             Graphics2D g = outImage.createGraphics();
-            try {
-                String bgColor=Configuration.getInstance().getString(FLATTEN_COLOR_CONFIG_KEY);
-                if (bgColor!=null) {
-		            g.setBackground(Color.fromString(bgColor));
-		            g.clearRect(0,0,inImage.getWidth(),inImage.getHeight());
-                }
-            } catch (Exception e) {}
+            String bgColor=Configuration.getInstance().getString(Processor.BACKGROUND_COLOR_CONFIG_KEY);
+            if (bgColor!=null) {
+	            g.setBackground(Color.fromString(bgColor));
+	            g.clearRect(0,0,inImage.getWidth(),inImage.getHeight());
+            }
             g.drawImage(inImage, 0, 0, null);
             g.dispose();
             logger.debug("removeAlpha(): converted BufferedImage type {} to " +
