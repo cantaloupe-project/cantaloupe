@@ -156,16 +156,6 @@ public final class OperationList implements Comparable<OperationList>,
             }
         }
 
-        // Rotation background color
-        if (!getOutputFormat().supportsTransparency()) {
-            final String bgColor =
-                    config.getString(Processor.BACKGROUND_COLOR_CONFIG_KEY, "black");
-            final Rotate rotate = (Rotate) getFirst(Rotate.class);
-            if (rotate != null) {
-                rotate.setFillColor(Color.fromString(bgColor));
-            }
-        }
-
         // Sharpening
         float sharpen = config.getFloat(Processor.SHARPEN_CONFIG_KEY, 0f);
         if (sharpen > 0.001f) {
@@ -219,6 +209,15 @@ public final class OperationList implements Comparable<OperationList>,
                         Compression.valueOf(compressionStr.toUpperCase());
                 encode.setCompression(compression);
                 break;
+        }
+
+        // Set the Encode operation's background color
+        if (!encode.getFormat().supportsTransparency()) {
+            final String bgColor =
+                    config.getString(Processor.BACKGROUND_COLOR_CONFIG_KEY);
+            if (bgColor != null) {
+                encode.setBackgroundColor(Color.fromString(bgColor));
+            }
         }
     }
 

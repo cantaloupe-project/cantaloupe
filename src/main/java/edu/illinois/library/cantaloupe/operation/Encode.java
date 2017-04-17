@@ -19,6 +19,7 @@ public class Encode implements Operation {
 
     static final short MAX_QUALITY = 100;
 
+    private Color backgroundColor;
     private Compression compression = Compression.UNDEFINED;
     private Format format = Format.UNKNOWN;
     private boolean interlace = false;
@@ -26,6 +27,17 @@ public class Encode implements Operation {
 
     public Encode(Format format) {
         setFormat(format);
+    }
+
+    /**
+     * @return Color with which to fill the empty portions of the image when
+     *         {@link #getFormat()} returns a format that does not
+     *         support transparency and when either rotating by a non-90-degree
+     *         multiple, or when flattening an image with alpha. May be
+     *         <code>null</code>.
+     */
+    public Color getBackgroundColor() {
+        return backgroundColor;
     }
 
     /**
@@ -83,6 +95,13 @@ public class Encode implements Operation {
         return interlace;
     }
 
+    /**
+     * @param color Background color.
+     */
+    public void setBackgroundColor(Color color) {
+        this.backgroundColor = color;
+    }
+
     public void setCompression(Compression compression) {
         this.compression = compression;
     }
@@ -116,6 +135,7 @@ public class Encode implements Operation {
      *
      * <pre>{
      *     class: "Encode",
+     *     background_color: Hexadecimal string,
      *     compression: String,
      *     format: Media type string,
      *     interlace: Boolean,
@@ -129,6 +149,9 @@ public class Encode implements Operation {
     public Map<String,Object> toMap(Dimension fullSize) {
         final Map<String,Object> map = new HashMap<>();
         map.put("class", getClass().getSimpleName());
+        if (getBackgroundColor() != null) {
+            map.put("background_color", getBackgroundColor().toRGBHex());
+        }
         map.put("compression", getCompression().toString());
         map.put("format", getFormat().getPreferredMediaType());
         map.put("interlace", isInterlacing());
@@ -138,7 +161,7 @@ public class Encode implements Operation {
 
     /**
      * @return String representation of the instance, guaranteed to uniquely
-     *         represent the instance.
+     *         represent it.
      */
     @Override
     public String toString() {
@@ -154,6 +177,9 @@ public class Encode implements Operation {
         }
         if (isInterlacing()) {
             parts.add("interlace");
+        }
+        if (getBackgroundColor() != null) {
+            parts.add(getBackgroundColor().toRGBHex());
         }
         return StringUtils.join(parts, "_");
     }

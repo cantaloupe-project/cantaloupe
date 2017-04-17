@@ -12,7 +12,6 @@ import java.util.Map;
 public class Rotate implements Operation {
 
     private float degrees = 0f;
-    private Color fillColor;
 
     /**
      * No-op constructor.
@@ -25,17 +24,6 @@ public class Rotate implements Operation {
     public Rotate(float degrees) {
         this();
         setDegrees(degrees);
-    }
-
-    /**
-     * @param degrees Degrees of rotation between 0 and 360
-     * @param fillColor Color with which to fill the empty portions of the
-     *                  image when the rotation is not a multiple of 90 degrees
-     *                  and the derivative format does not support transparency.
-     */
-    public Rotate(float degrees, Color fillColor) {
-        this(degrees);
-        setFillColor(fillColor);
     }
 
     /**
@@ -58,15 +46,6 @@ public class Rotate implements Operation {
      */
     public float getDegrees() {
         return degrees;
-    }
-
-    /**
-     * @return Color with which to fill the empty portions of the image when
-     *         the rotation is not a multiple of 90 degrees and the derivative
-     *         format does not support transparency. May be <code>null</code>.
-     */
-    public Color getFillColor() {
-        return fillColor;
     }
 
     /**
@@ -107,19 +86,11 @@ public class Rotate implements Operation {
     }
 
     /**
-     * @param color May be <code>null</code>.
-     */
-    public void setFillColor(Color color) {
-        this.fillColor = color;
-    }
-
-    /**
      * <p>Returns a map in the following format:</p>
      *
      * <pre>{
      *     class: "Rotate",
-     *     degrees: Float,
-     *     fill_color: RGB hex string or <code>null</code>
+     *     degrees: Float
      * }</pre>
      *
      * @param fullSize Ignored.
@@ -130,22 +101,16 @@ public class Rotate implements Operation {
         final Map<String,Object> map = new HashMap<>();
         map.put("class", getClass().getSimpleName());
         map.put("degrees", getDegrees());
-        map.put("fill_color", (getFillColor() != null) ?
-                getFillColor().toRGBHex() : null);
         return map;
     }
 
     /**
      * @return String representation of the instance, guaranteed to uniquely
-     *         represent the instance.
+     *         represent it.
      */
     @Override
     public String toString() {
-        final String fillColor = (getFillColor() != null) ?
-                getFillColor().toRGBHex() : null;
-        return String.format("%s_%s",
-                StringUtil.removeTrailingZeroes(getDegrees()),
-                fillColor);
+        return StringUtil.removeTrailingZeroes(getDegrees());
     }
 
 }

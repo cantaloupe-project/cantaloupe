@@ -90,9 +90,11 @@ public class EncodeTest extends BaseTest {
         instance.setCompression(Compression.JPEG);
         instance.setInterlacing(true);
         instance.setQuality(50);
+        instance.setBackgroundColor(Color.BLUE);
 
         final Map<String,Object> map = instance.toMap(new Dimension(500, 500));
         assertEquals("Encode", map.get("class"));
+        assertEquals("#0000FF", map.get("background_color"));
         assertEquals(Compression.JPEG.toString(), map.get("compression"));
         assertEquals(Format.JPG.getPreferredMediaType(), map.get("format"));
         assertTrue((boolean) map.get("interlace"));
@@ -106,7 +108,8 @@ public class EncodeTest extends BaseTest {
         instance.setCompression(Compression.JPEG);
         instance.setInterlacing(true);
         instance.setQuality(50);
-        assertEquals("jpg_JPEG_50_interlace", instance.toString());
+        instance.setBackgroundColor(Color.BLUE);
+        assertEquals("jpg_JPEG_50_interlace_#0000FF", instance.toString());
     }
 
 }

@@ -248,6 +248,23 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             args.add("-normalize");
         }
 
+        Encode encode = (Encode) ops.getFirst(Encode.class);
+
+        // If the output format supports transparency, make the background
+        // transparent. Otherwise, use a user-configurable background color.
+        if (ops.getOutputFormat().supportsTransparency()) {
+            args.add("-background");
+            args.add("none");
+        } else {
+            if (encode != null) {
+                final Color bgColor = encode.getBackgroundColor();
+                if (bgColor != null) {
+                    args.add("-background");
+                    args.add(bgColor.toRGBHex());
+                }
+            }
+        }
+
         final Dimension fullSize = imageInfo.getSize();
 
         for (Operation op : ops) {
@@ -325,18 +342,6 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             } else if (op instanceof Rotate) {
                 final Rotate rotate = (Rotate) op;
                 if (rotate.hasEffect(fullSize, ops)) {
-                    // If the output format supports transparency, make the
-                    // background transparent. Otherwise, use a
-                    // user-configurable background color.
-                    args.add("-background");
-                    if (ops.getOutputFormat().supportsTransparency()) {
-                        args.add("none");
-                    } else {
-                        final Color fillColor = rotate.getFillColor();
-                        if (fillColor != null) {
-                            args.add(fillColor.toRGBHex());
-                        }
-                    }
                     args.add("-rotate");
                     args.add(Double.toString(rotate.getDegrees()));
                 }
@@ -356,7 +361,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                     args.add(Double.toString(((Sharpen) op).getAmount()));
                 }
             } else if (op instanceof Encode) {
-                final Encode encode = (Encode) op;
+                encode = (Encode) op;
                 switch (encode.getFormat()) {
                     case JPG:
                         // Quality
@@ -381,8 +386,6 @@ class ImageMagickProcessor extends AbstractMagickProcessor
 
         args.add("-depth");
         args.add("8");
-
-        Encode encode = (Encode) ops.getFirst(Encode.class);
 
         // Write to stdout.
         args.add(encode.getFormat().getPreferredExtension() + ":-");

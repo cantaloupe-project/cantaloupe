@@ -132,12 +132,10 @@ public class OperationListTest extends BaseTest {
         assertTrue(it.next() instanceof MetadataCopy);
         assertTrue(it.next() instanceof Encode);
 
-        assertEquals(Color.fromString("#FFFFFF"),
-                ((Rotate) opList.getFirst(Rotate.class)).getFillColor());
-
         Encode encode = (Encode) opList.getFirst(Encode.class);
         assertEquals(50, encode.getQuality());
         assertTrue(encode.isInterlacing());
+        assertEquals(Color.fromString("#FFFFFF"), encode.getBackgroundColor());
     }
 
     @Test
@@ -401,7 +399,7 @@ public class OperationListTest extends BaseTest {
         instance.setOutputFormat(Format.JPG);
         instance.getOptions().put("animal", "cat");
 
-        String expected = "50c63748527e634134449ae20b199cc0_f694166f0f0aa4f0a88d5d7a7315a15f.jpg";
+        String expected = "50c63748527e634134449ae20b199cc0_1ca68d1b775cb386ddeba799a994b6af.jpg";
         assertEquals(expected, instance.toFilename());
 
         // Assert that changing an operation changes the filename
@@ -463,7 +461,7 @@ public class OperationListTest extends BaseTest {
         instance.setOutputFormat(Format.JPG);
         instance.getOptions().put("animal", "cat");
 
-        String expected = "identifier.jpg_crop:5,6,20,22_scale:40%_rotate:15_null_colortransform:bitonal_animal:cat.jpg";
+        String expected = "identifier.jpg_crop:5,6,20,22_scale:40%_rotate:15_colortransform:bitonal_animal:cat.jpg";
         assertEquals(expected, instance.toString());
     }
 

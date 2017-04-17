@@ -252,8 +252,8 @@ processor.fallback = Java2dProcessor
 # source image to be read into memory, so can be slow with large images.
 processor.normalize = false
 
-# Color of the background when an image is rotated. Only affects output
-# formats that do not support transparency.
+# Color of the background when an image is rotated or alpha-flattened, for
+# output formats that do not support transparency.
 processor.background_color = black
 
 # Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,

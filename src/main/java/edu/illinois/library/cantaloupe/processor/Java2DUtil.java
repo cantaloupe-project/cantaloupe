@@ -540,7 +540,28 @@ public abstract class Java2DUtil {
         return outImage;
     }
 
+    /**
+     * Removes alpha from an image. Transparent regions will be blended with an
+     * undefined color.
+     *
+     * @param inImage Image to remove the alpha channel from.
+     * @return        Alpha-flattened image, or the input image if it has no
+     *                alpha.
+     */
     public static BufferedImage removeAlpha(final BufferedImage inImage) {
+        return removeAlpha(inImage, null);
+    }
+
+    /**
+     * Removes alpha from an image, blending transparent regions with the given
+     * color.
+     *
+     * @param inImage Image to remove the alpha channel from.
+     * @return        Alpha-flattened image, or the input image if it has no
+     *                alpha.
+     */
+    public static BufferedImage removeAlpha(final BufferedImage inImage,
+                                            final Color bgColor) {
         BufferedImage outImage = inImage;
         if (inImage.getColorModel().hasAlpha()) {
             final Stopwatch watch = new Stopwatch();
@@ -556,15 +577,16 @@ public abstract class Java2DUtil {
             outImage = new BufferedImage(inImage.getWidth(),
                     inImage.getHeight(), newType);
             Graphics2D g = outImage.createGraphics();
-            String bgColor=Configuration.getInstance().getString(Processor.BACKGROUND_COLOR_CONFIG_KEY);
-            if (bgColor!=null) {
-	            g.setBackground(Color.fromString(bgColor));
-	            g.clearRect(0,0,inImage.getWidth(),inImage.getHeight());
+
+            if (bgColor != null) {
+                g.setBackground(bgColor);
+                g.clearRect(0, 0, inImage.getWidth(), inImage.getHeight());
             }
+
             g.drawImage(inImage, 0, 0, null);
             g.dispose();
-            logger.debug("removeAlpha(): converted BufferedImage type {} to " +
-                    "RGB in {} msec", inImage.getType(), watch.timeElapsed());
+            logger.debug("removeAlpha(): executed in {} msec",
+                    watch.timeElapsed());
         }
         return outImage;
     }
@@ -610,17 +632,6 @@ public abstract class Java2DUtil {
             g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                     RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-            final Color fillColor = rotate.getFillColor();
-            if (fillColor != null && rotate.getDegrees() % 90 > 0.00001f) {
-                float[] components = new float[3];
-                fillColor.getRGBColorComponents(components);
-                logger.debug("rotateImage(): background RGB color: {}, {}, {}",
-                        Math.round(components[0] * 255),
-                        Math.round(components[1] * 255),
-                        Math.round(components[2] * 255));
-                g2d.setPaint(fillColor);
-                g2d.fillRect(0, 0, canvasWidth, canvasHeight);
-            }
             g2d.drawImage(inImage, tx, null);
             logger.debug("rotateImage() executed in {} msec",
                     watch.timeElapsed());

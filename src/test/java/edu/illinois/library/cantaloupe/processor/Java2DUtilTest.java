@@ -20,6 +20,7 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -292,9 +293,45 @@ public class Java2DUtilTest extends BaseTest {
         // TODO: write this
     }
 
+    /* removeAlpha(BufferedImage) */
+
     @Test
-    public void testRemoveAlpha() {
-        // TODO: write this
+    public void testRemoveAlphaOnImageWithAlpha() throws IOException {
+        File file = TestUtil.getImage("png-rgba-64x56x8.png");
+        BufferedImage image = ImageIO.read(file);
+        assertTrue(image.getColorModel().hasAlpha());
+
+        image = Java2DUtil.removeAlpha(image);
+        assertFalse(image.getColorModel().hasAlpha());
+    }
+
+    @Test
+    public void testRemoveAlphaOnImageWithoutAlpha() throws IOException {
+        File file = TestUtil.getImage("png-rgb-64x56x8.png");
+        BufferedImage inImage = ImageIO.read(file);
+        assertFalse(inImage.getColorModel().hasAlpha());
+
+        BufferedImage outImage = Java2DUtil.removeAlpha(inImage);
+        assertSame(inImage, outImage);
+    }
+
+    /* removeAlpha(BufferedImage, Color) */
+
+    @Test
+    public void testRemoveAlphaOnImageWithAlphaWithBackgroundColor()
+            throws IOException {
+        File file = TestUtil.getImage("png-rgba-64x56x8.png");
+        BufferedImage inImage = ImageIO.read(file);
+        assertTrue(inImage.getColorModel().hasAlpha());
+
+        int[] rgba = { 0 };
+        inImage.getAlphaRaster().setPixel(0, 0, rgba);
+
+        BufferedImage outImage = Java2DUtil.removeAlpha(inImage, Color.RED);
+
+        int[] expected = new int[] {255, 0, 0, 0};
+        int[] actual = new int[4];
+        assertArrayEquals(expected, outImage.getRaster().getPixel(0, 0, actual));
     }
 
     @Test

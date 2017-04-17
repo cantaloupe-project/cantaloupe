@@ -100,7 +100,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
         Rotate rotation = new Rotate(15);
         ops.add(rotation);
         ops.setOutputFormat(Format.JPG);
-        ops.add(new Encode(Format.JPG));
+        ops.add(new Encode(ops.getOutputFormat()));
 
         Info imageInfo = new Info(64, 58);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -150,7 +150,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
         Rotate rotation = new Rotate(15);
         ops.add(rotation);
         ops.setOutputFormat(Format.PNG);
-        ops.add(new Encode(Format.PNG));
+        ops.add(new Encode(ops.getOutputFormat()));
 
         Info imageInfo = new Info(64, 58);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -182,10 +182,12 @@ abstract class MagickProcessorTest extends ProcessorTest {
         OperationList ops = new OperationList();
         ops.setIdentifier(new Identifier("bla"));
         Rotate rotation = new Rotate(15);
-        rotation.setFillColor(Color.fromString("#0000FF"));
         ops.add(rotation);
         ops.setOutputFormat(Format.JPG);
-        ops.add(new Encode(Format.JPG));
+
+        Encode encode = new Encode(ops.getOutputFormat());
+        encode.setBackgroundColor(Color.fromString("#0000FF"));
+        ops.add(encode);
 
         Info imageInfo = new Info(64, 58);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Java2DUtil;
@@ -90,11 +91,10 @@ class JPEGImageWriter extends AbstractImageWriter {
     private ImageWriteParam getWriteParam(ImageWriter writer) {
         final ImageWriteParam writeParam = writer.getDefaultWriteParam();
 
-        Encode encode = (Encode) opList.getFirst(Encode.class);
+        final Encode encode = (Encode) opList.getFirst(Encode.class);
         if (encode != null) {
             // Quality
             final int quality = encode.getQuality();
-            writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             writeParam.setCompressionQuality(quality * 0.01f);
 
             // Interlacing
@@ -105,8 +105,33 @@ class JPEGImageWriter extends AbstractImageWriter {
             logger.debug("Quality: {}; progressive: {}", quality, interlace);
         }
 
+        writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
         writeParam.setCompressionType("JPEG");
         return writeParam;
+    }
+
+    /**
+     * Removes the alpha channel from the given image, taking the return value
+     * of the operation list's {@link Encode#getBackgroundColor()} method into
+     * account, if available.
+     *
+     * @param image Image to remove alpha from.
+     * @return Flattened image.
+     */
+    private BufferedImage removeAlpha(BufferedImage image) {
+        boolean haveBGColor = false;
+        Encode encode = (Encode) opList.getFirst(Encode.class);
+        if (encode != null) {
+            Color bgColor = encode.getBackgroundColor();
+            if (bgColor != null) {
+                haveBGColor = true;
+                image = Java2DUtil.removeAlpha(image, bgColor);
+            }
+        }
+        if (!haveBGColor) {
+            image = Java2DUtil.removeAlpha(image);
+        }
+        return image;
     }
 
     /**
@@ -123,8 +148,8 @@ class JPEGImageWriter extends AbstractImageWriter {
         final ImageWriter writer = writers.next();
         try {
             // JPEG doesn't support alpha, so convert to RGB or else the
-            // client will interpret as CMYK
-            image = Java2DUtil.removeAlpha(image);
+            // client will interpret as CMYK.
+            image = removeAlpha(image);
             final ImageWriteParam writeParam = getWriteParam(writer);
             final ImageOutputStream os =
                     ImageIO.createImageOutputStream(outputStream);
