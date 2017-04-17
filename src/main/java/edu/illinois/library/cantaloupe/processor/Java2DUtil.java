@@ -2,6 +2,8 @@ package edu.illinois.library.cantaloupe.processor;
 
 import com.mortennobel.imagescaling.ResampleFilter;
 import com.mortennobel.imagescaling.ResampleOp;
+
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
@@ -554,6 +556,11 @@ public abstract class Java2DUtil {
             outImage = new BufferedImage(inImage.getWidth(),
                     inImage.getHeight(), newType);
             Graphics2D g = outImage.createGraphics();
+            String bgColor=Configuration.getInstance().getString(Processor.BACKGROUND_COLOR_CONFIG_KEY);
+            if (bgColor!=null) {
+	            g.setBackground(Color.fromString(bgColor));
+	            g.clearRect(0,0,inImage.getWidth(),inImage.getHeight());
+            }
             g.drawImage(inImage, 0, 0, null);
             g.dispose();
             logger.debug("removeAlpha(): converted BufferedImage type {} to " +
