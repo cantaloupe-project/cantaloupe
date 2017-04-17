@@ -34,13 +34,19 @@ import static edu.illinois.library.cantaloupe.processor.Processor.UPSCALE_FILTER
 
 /**
  * <p>Normalized list of {@link Operation image transform operations}
- * corresponding to an image identified by its {@link Identifier}, along with
- * a {@link Format} in which the processed image is to be written.</p>
+ * corresponding to an image identified by its {@link Identifier}.</p>
  *
  * <p>Endpoints translate request parameters into instances of this class, in
  * order to pass them off into {@link
  * edu.illinois.library.cantaloupe.processor.Processor processors} and
  * {@link edu.illinois.library.cantaloupe.cache.Cache caches}.</p>
+ *
+ * <p>Processors should iterate the operations in the list and apply them
+ * (generally in order) as best they can. Instances will have an associated
+ * {@link #getOutputFormat() output format} but
+ * {@link #applyNonEndpointMutations} will also add a more comprehensive
+ * {@link Encode} operation, based on it, to the list, which processors should
+ * look at instead.</p>
  */
 public final class OperationList implements Comparable<OperationList>,
         Iterable<Operation> {
@@ -48,16 +54,11 @@ public final class OperationList implements Comparable<OperationList>,
     private static final Logger logger = LoggerFactory.
             getLogger(OperationList.class);
 
-    public static final short MAX_OUTPUT_QUALITY = 100;
-
     private boolean frozen = false;
     private Identifier identifier;
     private List<Operation> operations = new ArrayList<>();
     private Map<String,Object> options = new HashMap<>();
-    private Compression outputCompression = Compression.UNDEFINED;
     private Format outputFormat;
-    private boolean outputInterlacing = false;
-    private int outputQuality = MAX_OUTPUT_QUALITY;
 
     /**
      * No-op constructor.
@@ -101,12 +102,19 @@ public final class OperationList implements Comparable<OperationList>,
      * @param requestUrl      Request URL.
      * @param requestHeaders  Request headers.
      * @param cookies         Client cookies.
+     * @throws IllegalArgumentException If the instance's output format has not
+     *                                  been set.
      */
     public void applyNonEndpointMutations(final Dimension sourceImageSize,
                                           final String clientIp,
                                           final URL requestUrl,
                                           final Map<String,String> requestHeaders,
                                           final Map<String,String> cookies) {
+        if (getOutputFormat() == null) {
+            throw new IllegalArgumentException(
+                    "Output format is null. This is probably a bug.");
+        }
+
         final Configuration config = Configuration.getInstance();
 
         // Redactions
@@ -184,20 +192,24 @@ public final class OperationList implements Comparable<OperationList>,
         }
 
         // Metadata copies
+        // TODO: consider making these a property of Encode
         if (config.getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
             add(new MetadataCopy());
         }
 
-        switch (getOutputFormat()) {
+        // Create an Encode operation corresponding to the output format.
+        Encode encode = new Encode(getOutputFormat());
+        add(encode);
+        switch (encode.getFormat()) {
             case JPG:
                 // Interlacing
                 final boolean progressive =
                         config.getBoolean(Processor.JPG_PROGRESSIVE_CONFIG_KEY, false);
-                setOutputInterlacing(progressive);
+                encode.setInterlacing(progressive);
                 // Quality
                 final int quality =
                         config.getInt(Processor.JPG_QUALITY_CONFIG_KEY, 80);
-                setOutputQuality(quality);
+                encode.setQuality(quality);
                 break;
             case TIF:
                 // Compression
@@ -205,7 +217,7 @@ public final class OperationList implements Comparable<OperationList>,
                         config.getString(Processor.TIF_COMPRESSION_CONFIG_KEY, "LZW");
                 final Compression compression =
                         Compression.valueOf(compressionStr.toUpperCase());
-                setOutputCompression(compression);
+                encode.setCompression(compression);
                 break;
         }
     }
@@ -272,24 +284,16 @@ public final class OperationList implements Comparable<OperationList>,
     }
 
     /**
-     * @return Output compression type. This only applies to certain output
-     *         formats.
+     * <p>Used for quickly checking the output format.</p>
+     *
+     * <p>N.B. After {@link #applyNonEndpointMutations} has been called, there
+     * is more comprehensive encoding information available by passing an
+     * {@link Encode} class to {@link #getFirst(Class)}.</p>
+     *
+     * @return The output format.
      */
-    public Compression getOutputCompression() {
-        return outputCompression;
-    }
-
     public Format getOutputFormat() {
         return outputFormat;
-    }
-
-    /**
-     * @return Output quality in the range of 1-{@link #MAX_OUTPUT_QUALITY}.
-     *         This only applies to certain output formats, and perhaps also
-     *         only with certain compressions.
-     */
-    public int getOutputQuality() {
-        return outputQuality;
     }
 
     /**
@@ -335,14 +339,6 @@ public final class OperationList implements Comparable<OperationList>,
     }
 
     /**
-     * @return Interlacing status. This only applies to output formats that
-     *         support interlacing.
-     */
-    public boolean isOutputInterlacing() {
-        return outputInterlacing;
-    }
-
-    /**
      * @return Iterator over the instance's operations. If the instance is
      *         frozen, {@link Iterator#remove()} will throw an
      *         {@link UnsupportedOperationException}.
@@ -366,10 +362,6 @@ public final class OperationList implements Comparable<OperationList>,
         this.identifier = identifier;
     }
 
-    public void setOutputCompression(Compression compression) {
-        this.outputCompression = compression;
-    }
-
     /**
      * @param outputFormat
      * @throws UnsupportedOperationException If the instance is frozen.
@@ -379,23 +371,6 @@ public final class OperationList implements Comparable<OperationList>,
             throw new UnsupportedOperationException();
         }
         this.outputFormat = outputFormat;
-    }
-
-    public void setOutputInterlacing(boolean interlacing) {
-        this.outputInterlacing = interlacing;
-    }
-
-    /**
-     * @param quality
-     * @throws IllegalArgumentException If the given quality is outside the
-     *         range of 1-{@link #MAX_OUTPUT_QUALITY}.
-     */
-    public void setOutputQuality(int quality) throws IllegalArgumentException {
-        if (quality < 1 || quality > MAX_OUTPUT_QUALITY) {
-            throw new IllegalArgumentException(
-                    "Quality must be in the range of 1-" + MAX_OUTPUT_QUALITY + ".");
-        }
-        this.outputQuality = quality;
     }
 
     public Stream<Operation> stream() {
@@ -420,18 +395,6 @@ public final class OperationList implements Comparable<OperationList>,
         // Add options
         for (String key : this.getOptions().keySet()) {
             opStrings.add(key + ":" + this.getOptions().get(key));
-        }
-        // Add other instance properties
-        if (isOutputInterlacing()) {
-            opStrings.add("interlace");
-        }
-        if (getOutputQuality() < MAX_OUTPUT_QUALITY) {
-            opStrings.add("quality:" + getOutputQuality());
-        }
-        if (getOutputCompression() != null &&
-                !getOutputCompression().equals(Compression.UNCOMPRESSED) &&
-                !getOutputCompression().equals(Compression.UNDEFINED)) {
-            opStrings.add("compression:" + getOutputCompression());
         }
 
         String opsString = StringUtils.join(opStrings, "_");
@@ -460,16 +423,12 @@ public final class OperationList implements Comparable<OperationList>,
      *     ],
      *     "options": {
      *         "key": value
-     *     },
-     *     "output_format": result of {@link Format#toMap}
-     *     "output_interlacing": boolean,
-     *     "output_quality": short,
-     *     "output_compression": string
+     *     }
      * }</pre>
      *
      * @param fullSize Full size of the source image on which the instance is
      *                 being applied.
-     * @return Map representation of the instance.
+     * @return         Map representation of the instance.
      */
     public Map<String,Object> toMap(Dimension fullSize) {
         final Map<String,Object> map = new HashMap<>();
@@ -479,10 +438,6 @@ public final class OperationList implements Comparable<OperationList>,
                 map(op -> op.toMap(fullSize)).
                 collect(Collectors.toList()));
         map.put("options", getOptions());
-        map.put("output_format", getOutputFormat().toMap());
-        map.put("output_interlacing", isOutputInterlacing());
-        map.put("output_quality", getOutputQuality());
-        map.put("output_compression", getOutputCompression().toString());
         return map;
     }
 
@@ -504,19 +459,6 @@ public final class OperationList implements Comparable<OperationList>,
         for (String key : this.getOptions().keySet()) {
             parts.add(key + ":" + this.getOptions().get(key));
         }
-
-        if (isOutputInterlacing()) {
-            parts.add("interlace");
-        }
-        if (getOutputQuality() < MAX_OUTPUT_QUALITY) {
-            parts.add("quality:" + getOutputQuality());
-        }
-        if (getOutputCompression() != null &&
-                !getOutputCompression().equals(Compression.UNCOMPRESSED) &&
-                !getOutputCompression().equals(Compression.UNDEFINED)) {
-            parts.add("compression:" + getOutputCompression());
-        }
-
         return StringUtils.join(parts, "_") + "." +
                 getOutputFormat().getPreferredExtension();
     }
@@ -527,7 +469,6 @@ public final class OperationList implements Comparable<OperationList>,
      *
      * @param fullSize Full size of the source image on which the instance is
      *                 being applied.
-     * @throws ValidationException
      */
     public void validate(Dimension fullSize) throws ValidationException {
         for (Operation op : this) {

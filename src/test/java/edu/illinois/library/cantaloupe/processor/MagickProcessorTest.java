@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Color;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
@@ -99,6 +100,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
         Rotate rotation = new Rotate(15);
         ops.add(rotation);
         ops.setOutputFormat(Format.JPG);
+        ops.add(new Encode(Format.JPG));
 
         Info imageInfo = new Info(64, 58);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -148,6 +150,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
         Rotate rotation = new Rotate(15);
         ops.add(rotation);
         ops.setOutputFormat(Format.PNG);
+        ops.add(new Encode(Format.PNG));
 
         Info imageInfo = new Info(64, 58);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -182,6 +185,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
         rotation.setFillColor(Color.fromString("#0000FF"));
         ops.add(rotation);
         ops.setOutputFormat(Format.JPG);
+        ops.add(new Encode(Format.JPG));
 
         Info imageInfo = new Info(64, 58);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

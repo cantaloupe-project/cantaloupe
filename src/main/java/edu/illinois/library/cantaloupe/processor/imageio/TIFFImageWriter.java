@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -144,13 +145,16 @@ class TIFFImageWriter extends AbstractImageWriter {
     private ImageWriteParam getWriteParam(ImageWriter writer) {
         final ImageWriteParam writeParam = writer.getDefaultWriteParam();
 
-        final Compression compression = opList.getOutputCompression();
-        if (compression != null) {
-            final String type = getImageIOType(compression);
-            if (type != null) {
-                writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                writeParam.setCompressionType(type);
-                logger.debug("Compression type: {}", type);
+        Encode encode = (Encode) opList.getFirst(Encode.class);
+        if (encode != null) {
+            final Compression compression = encode.getCompression();
+            if (compression != null) {
+                final String type = getImageIOType(compression);
+                if (type != null) {
+                    writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                    writeParam.setCompressionType(type);
+                    logger.debug("Compression type: {}", type);
+                }
             }
         }
         return writeParam;

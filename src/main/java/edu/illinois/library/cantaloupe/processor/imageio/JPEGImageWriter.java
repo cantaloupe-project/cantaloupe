@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Java2DUtil;
 import org.slf4j.Logger;
@@ -88,17 +89,21 @@ class JPEGImageWriter extends AbstractImageWriter {
 
     private ImageWriteParam getWriteParam(ImageWriter writer) {
         final ImageWriteParam writeParam = writer.getDefaultWriteParam();
-        // Quality
-        final int quality = opList.getOutputQuality();
-        writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-        writeParam.setCompressionQuality(quality * 0.01f);
 
-        // Interlacing
-        final boolean interlace = opList.isOutputInterlacing();
-        writeParam.setProgressiveMode(interlace ?
-                ImageWriteParam.MODE_DEFAULT : ImageWriteParam.MODE_DISABLED);
+        Encode encode = (Encode) opList.getFirst(Encode.class);
+        if (encode != null) {
+            // Quality
+            final int quality = encode.getQuality();
+            writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            writeParam.setCompressionQuality(quality * 0.01f);
 
-        logger.debug("Quality: {}; progressive: {}", quality, interlace);
+            // Interlacing
+            final boolean interlace = encode.isInterlacing();
+            writeParam.setProgressiveMode(interlace ?
+                    ImageWriteParam.MODE_DEFAULT : ImageWriteParam.MODE_DISABLED);
+
+            logger.debug("Quality: {}; progressive: {}", quality, interlace);
+        }
 
         writeParam.setCompressionType("JPEG");
         return writeParam;

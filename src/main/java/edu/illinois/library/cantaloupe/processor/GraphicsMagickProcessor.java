@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Orientation;
@@ -293,34 +294,37 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                     args.add("-unsharp");
                     args.add(Double.toString(((Sharpen) op).getAmount()));
                 }
+            } else if (op instanceof Encode) {
+                final Encode encode = (Encode) op;
+                switch (encode.getFormat()) {
+                    case JPG:
+                        // Quality
+                        final int jpgQuality = encode.getQuality();
+                        args.add("-quality");
+                        args.add(String.format("%d%%", jpgQuality));
+                        // Interlace
+                        if (encode.isInterlacing()) {
+                            args.add("-interlace");
+                            args.add("Plane");
+                        }
+                        break;
+                    case TIF:
+                        // Compression
+                        final Compression compression = encode.getCompression();
+                        args.add("-compress");
+                        args.add(getGMTIFFCompression(compression));
+                        break;
+                }
             }
         }
 
         args.add("-depth");
         args.add("8");
 
-        switch (ops.getOutputFormat()) {
-            case JPG:
-                // Quality
-                final int jpgQuality = ops.getOutputQuality();
-                args.add("-quality");
-                args.add("" + jpgQuality);
-                // Interlace
-                if (ops.isOutputInterlacing()) {
-                    args.add("-interlace");
-                    args.add("Plane");
-                }
-                break;
-            case TIF:
-                // Compression
-                final Compression compression = ops.getOutputCompression();
-                args.add("-compress");
-                args.add(getGMTIFFCompression(compression));
-                break;
-        }
+        Encode encode = (Encode) ops.getFirst(Encode.class);
 
         // Write to stdout.
-        args.add(ops.getOutputFormat().getPreferredExtension() + ":-");
+        args.add(encode.getFormat().getPreferredExtension() + ":-");
 
         return args;
     }

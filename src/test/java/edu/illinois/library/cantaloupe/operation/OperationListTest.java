@@ -37,9 +37,6 @@ public class OperationListTest extends BaseTest {
         ops.add(scale);
         ops.add(new Rotate(0));
         ops.setOutputFormat(Format.JPG);
-        ops.setOutputCompression(Compression.JPEG);
-        ops.setOutputQuality(80);
-        ops.setOutputInterlacing(true);
         return ops;
     }
 
@@ -74,6 +71,21 @@ public class OperationListTest extends BaseTest {
     }
 
     /* applyNonEndpointMutations() */
+
+    @Test
+    public void testApplyNonEndpointMutationsWithNoOutputFormatSetThrowsException()
+            throws Exception {
+        final OperationList opList = new OperationList();
+        try {
+            opList.applyNonEndpointMutations(
+                    new Dimension(2000, 1000), "127.0.0.1",
+                    new URL("http://example.org/"), new HashMap<>(),
+                    new HashMap<>());
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+    }
 
     @Test
     public void testApplyNonEndpointMutationsWithJPEGOutputFormat()
@@ -118,11 +130,14 @@ public class OperationListTest extends BaseTest {
         assertTrue(it.next() instanceof Sharpen);
         assertTrue(it.next() instanceof StringOverlay);
         assertTrue(it.next() instanceof MetadataCopy);
+        assertTrue(it.next() instanceof Encode);
 
         assertEquals(Color.fromString("#FFFFFF"),
                 ((Rotate) opList.getFirst(Rotate.class)).getFillColor());
-        assertEquals(50, opList.getOutputQuality());
-        assertTrue(opList.isOutputInterlacing());
+
+        Encode encode = (Encode) opList.getFirst(Encode.class);
+        assertEquals(50, encode.getQuality());
+        assertTrue(encode.isInterlacing());
     }
 
     @Test
@@ -164,7 +179,10 @@ public class OperationListTest extends BaseTest {
         assertTrue(it.next() instanceof Sharpen);
         assertTrue(it.next() instanceof StringOverlay);
         assertTrue(it.next() instanceof MetadataCopy);
-        assertEquals(Compression.LZW, opList.getOutputCompression());
+        assertTrue(it.next() instanceof Encode);
+
+        Encode encode = (Encode) opList.getFirst(Encode.class);
+        assertEquals(Compression.LZW, encode.getCompression());
     }
 
     /* clear() */
@@ -213,9 +231,6 @@ public class OperationListTest extends BaseTest {
         ops2.add(scale);
         ops2.add(new Rotate(0));
         ops2.setOutputFormat(Format.JPG);
-        ops2.setOutputCompression(Compression.JPEG);
-        ops2.setOutputQuality(80);
-        ops2.setOutputInterlacing(true);
         assertEquals(0, ops2.compareTo(this.instance));
     }
 
@@ -421,19 +436,12 @@ public class OperationListTest extends BaseTest {
         instance.add(Transpose.HORIZONTAL);
         // output
         instance.setOutputFormat(Format.JPG);
-        instance.setOutputCompression(Compression.JPEG);
-        instance.setOutputInterlacing(true);
-        instance.setOutputQuality(80);
 
         final Dimension fullSize = new Dimension(100, 100);
         Map<String,Object> map = instance.toMap(fullSize);
         assertEquals("identifier.jpg", map.get("identifier"));
         assertEquals(2, ((List) map.get("operations")).size());
         assertEquals(0, ((Map) map.get("options")).size());
-        assertEquals("jpg", ((Map) map.get("output_format")).get("extension"));
-        assertEquals(80, map.get("output_quality"));
-        assertTrue((boolean) map.get("output_interlacing"));
-        assertEquals("JPEG", map.get("output_compression"));
     }
 
     /* toString() */
@@ -453,15 +461,11 @@ public class OperationListTest extends BaseTest {
         instance.add(new Rotate(15));
         instance.add(ColorTransform.BITONAL);
         instance.setOutputFormat(Format.JPG);
-        instance.setOutputInterlacing(true);
-        instance.setOutputQuality(80);
-        instance.setOutputCompression(Compression.JPEG);
         instance.getOptions().put("animal", "cat");
 
-        String expected = "identifier.jpg_crop:5,6,20,22_scale:40%_rotate:15_null_colortransform:bitonal_animal:cat_interlace_quality:80_compression:JPEG.jpg";
+        String expected = "identifier.jpg_crop:5,6,20,22_scale:40%_rotate:15_null_colortransform:bitonal_animal:cat.jpg";
         assertEquals(expected, instance.toString());
     }
-
 
     /* validate() */
 
