@@ -16,6 +16,9 @@ class ScriptWatcher implements Runnable {
 
     private static class CallbackImpl implements FilesystemWatcher.Callback {
 
+        private static final long MIN_INTERVAL_MSEC = 1000;
+
+        private long lastHandled = System.currentTimeMillis();
         private Logger logger = LoggerFactory.getLogger(CallbackImpl.class);
 
         @Override
@@ -34,13 +37,22 @@ class ScriptWatcher implements Runnable {
         private void handle(Path path) {
             try {
                 if (path.toFile().equals(ScriptEngineFactory.getScriptFile())) {
-                    try {
-                        ScriptEngineFactory.getScriptEngine().
-                                load(FileUtils.readFileToString(path.toFile()));
-                    } catch (DelegateScriptDisabledException e) {
-                        logger.debug(e.getMessage());
-                    } catch (Exception e) {
-                        logger.error(e.getMessage());
+                    // Handle the event only if it happened at least
+                    // MIN_INTERVAL_MSEC after the last one.
+                    final long now = System.currentTimeMillis();
+                    if (now - lastHandled >= MIN_INTERVAL_MSEC) {
+                        lastHandled = now;
+                        try {
+                            ScriptEngineFactory.getScriptEngine().
+                                    load(FileUtils.readFileToString(path.toFile()));
+                        } catch (DelegateScriptDisabledException e) {
+                            logger.debug(e.getMessage());
+                        } catch (Exception e) {
+                            logger.error(e.getMessage());
+                        }
+                    } else {
+                        logger.debug("Multiple events < " + MIN_INTERVAL_MSEC +
+                                "ms apart");
                     }
                 }
             } catch (FileNotFoundException e) {
