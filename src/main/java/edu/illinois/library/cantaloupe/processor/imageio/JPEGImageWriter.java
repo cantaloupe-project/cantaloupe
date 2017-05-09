@@ -90,6 +90,8 @@ class JPEGImageWriter extends AbstractImageWriter {
 
     private ImageWriteParam getWriteParam(ImageWriter writer) {
         final ImageWriteParam writeParam = writer.getDefaultWriteParam();
+        writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+        writeParam.setCompressionType("JPEG");
 
         final Encode encode = (Encode) opList.getFirst(Encode.class);
         if (encode != null) {
@@ -104,9 +106,6 @@ class JPEGImageWriter extends AbstractImageWriter {
 
             logger.debug("Quality: {}; progressive: {}", quality, interlace);
         }
-
-        writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-        writeParam.setCompressionType("JPEG");
         return writeParam;
     }
 
