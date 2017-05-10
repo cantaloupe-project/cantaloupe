@@ -16,6 +16,7 @@ title: What's New
 
 <ul>
     <li>Fixed caches failing to take URL query arguments into account.</li>
+    <li>Fixed a potentially incorrect <code>Cache-Control</code> header being sent in HTTP &gte; 400 responses.</li>
     <li>Fixed a connection leak in AmazonS3Resolver.</li>
     <li>Prevented the configuration file and/or delegate script from being reloaded twice on some platforms.</li>
 </ul>

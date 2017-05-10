@@ -22,7 +22,6 @@ import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Variant;
 import org.restlet.resource.Get;
-import org.restlet.resource.ResourceException;
 
 import java.awt.Dimension;
 import java.io.FileNotFoundException;
@@ -44,12 +43,6 @@ public class ImageResource extends IIIF1Resource {
      * Format to assume when no extension is present in the URI.
      */
     private static final Format DEFAULT_FORMAT = Format.JPG;
-
-    @Override
-    protected void doInit() throws ResourceException {
-        super.doInit();
-        getResponseCacheDirectives().addAll(getCacheDirectives());
-    }
 
     /**
      * Responds to image requests.
@@ -166,6 +159,11 @@ public class ImageResource extends IIIF1Resource {
             getLogger().warning(msg + ": " + this.getReference());
             throw new UnsupportedSourceFormatException(msg);
         }
+
+        // Add client cache header(s) if configured to do so. We do this later
+        // rather than sooner to prevent them from being sent along with an
+        // error response.
+        getResponseCacheDirectives().addAll(getCacheDirectives());
 
         return getRepresentation(ops, format, disposition, processor);
     }
