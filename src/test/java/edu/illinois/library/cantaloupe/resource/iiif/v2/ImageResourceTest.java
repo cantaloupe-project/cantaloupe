@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
@@ -23,7 +24,9 @@ import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 
+import java.awt.Dimension;
 import java.io.File;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -110,7 +113,7 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testCacheHeadersWhenClientCachingIsEnabled() throws Exception {
+    public void testCacheHeadersWhenClientCachingIsEnabledAndResponseIsCacheable() throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.CLIENT_CACHE_ENABLED_CONFIG_KEY, "true");
         config.setProperty(AbstractResource.CLIENT_CACHE_MAX_AGE_CONFIG_KEY, "1234");
@@ -142,6 +145,31 @@ public class ImageResourceTest extends ResourceTest {
                     assertNull(expectedDirectives.get(d.getName()));
                 }
             }
+        }
+    }
+
+    @Test
+    public void testCacheHeadersWhenClientCachingIsEnabledAndResponseIsNotCacheable()
+            throws Exception {
+        Configuration config = ConfigurationFactory.getInstance();
+        config.setProperty(AbstractResource.CLIENT_CACHE_ENABLED_CONFIG_KEY, "true");
+        config.setProperty(AbstractResource.CLIENT_CACHE_MAX_AGE_CONFIG_KEY, "1234");
+        config.setProperty(AbstractResource.CLIENT_CACHE_SHARED_MAX_AGE_CONFIG_KEY, "4567");
+        config.setProperty(AbstractResource.CLIENT_CACHE_PUBLIC_CONFIG_KEY, "true");
+        config.setProperty(AbstractResource.CLIENT_CACHE_PRIVATE_CONFIG_KEY, "false");
+        config.setProperty(AbstractResource.CLIENT_CACHE_NO_CACHE_CONFIG_KEY, "false");
+        config.setProperty(AbstractResource.CLIENT_CACHE_NO_STORE_CONFIG_KEY, "false");
+        config.setProperty(AbstractResource.CLIENT_CACHE_MUST_REVALIDATE_CONFIG_KEY, "false");
+        config.setProperty(AbstractResource.CLIENT_CACHE_PROXY_REVALIDATE_CONFIG_KEY, "false");
+        config.setProperty(AbstractResource.CLIENT_CACHE_NO_TRANSFORM_CONFIG_KEY, "true");
+
+        ClientResource client = getClientForUriPath(
+                "/bogus/full/full/0/default.jpg");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(0, client.getResponseCacheDirectives().size());
         }
     }
 
@@ -428,10 +456,18 @@ public class ImageResourceTest extends ResourceTest {
         config.setProperty(Cache.PURGE_MISSING_CONFIG_KEY, purgeMissing);
 
         try {
+            final String imagePath = "/" + IMAGE + "/full/full/0/default.jpg";
+            final OperationList ops = Parameters.fromUri(imagePath).
+                    toOperationList();
+            ops.applyNonEndpointMutations(new Dimension(64, 56), "",
+                    new URL("http://example.org/"), new HashMap<>(),
+                    new HashMap<>());
+
             assertEquals(0, FileUtils.listFiles(cacheDir, null, true).size());
 
             // request an image to cache it
-            getClientForUriPath("/" + IMAGE + "/full/full/0/default.jpg").get();
+            getClientForUriPath(imagePath).get();
+            getClientForUriPath("/" + IMAGE + "/info.json").get();
 
             // assert that it has been cached (there should be both an image
             // and an info)

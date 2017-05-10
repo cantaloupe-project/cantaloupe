@@ -22,10 +22,9 @@ import org.restlet.data.Reference;
 import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
-import org.restlet.resource.ResourceException;
 
 /**
- * Handles IIIF Image API 1.1 information requests.
+ * Handles IIIF Image API 1.x information requests.
  *
  * @see <a href="http://iiif.io/api/image/1.1/#image-info-request">Information
  * Requests</a>
@@ -48,12 +47,6 @@ public class InformationResource extends IIIF1Resource {
             redirectSeeOther(newRef);
             return new EmptyRepresentation();
         }
-    }
-
-    @Override
-    protected void doInit() throws ResourceException {
-        super.doInit();
-        getResponseCacheDirectives().addAll(getCacheDirectives());
     }
 
     /**
@@ -100,6 +93,11 @@ public class InformationResource extends IIIF1Resource {
 
         getResponse().getHeaders().add("Link",
                 String.format("<%s>;rel=\"profile\";", imageInfo.profile));
+
+        // Add client cache directives if configured to do so. We do this later
+        // rather than sooner to prevent them from being sent along with an
+        // error response.
+        getResponseCacheDirectives().addAll(getCacheDirectives());
 
         JSONRepresentation rep = new JSONRepresentation(imageInfo);
 
