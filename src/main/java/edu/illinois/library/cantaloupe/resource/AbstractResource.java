@@ -219,8 +219,8 @@ public abstract class AbstractResource extends ServerResource {
      * @param opList Operation list to add the operations and/or options to.
      * @param fullSize Full size of the source image.
      */
-    protected void addNonEndpointOperations(final OperationList opList,
-                                            final Dimension fullSize) {
+    public void addNonEndpointOperations(final OperationList opList,
+                                         final Dimension fullSize) {
         final Configuration config = Configuration.getInstance();
 
         // Redactions

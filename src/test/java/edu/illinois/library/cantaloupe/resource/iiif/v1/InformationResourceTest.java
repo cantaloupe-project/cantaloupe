@@ -22,6 +22,7 @@ import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 
+import java.awt.Dimension;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
@@ -251,14 +252,16 @@ public class InformationResourceTest extends ResourceTest {
         config.setProperty(Cache.PURGE_MISSING_CONFIG_KEY, purgeMissing);
 
         try {
-            OperationList ops = TestUtil.newOperationList();
-            ops.setIdentifier(new Identifier(IMAGE));
-            ops.setOutputFormat(Format.JPG);
+            final String imagePath = "/" + IMAGE + "/full/full/0/native.jpg";
+            final OperationList ops = Parameters.fromUri(imagePath).
+                    toOperationList();
+            new InformationResource().
+                    addNonEndpointOperations(ops, new Dimension(64, 56));
 
             assertEquals(0, FileUtils.listFiles(cacheDir, null, true).size());
 
             // request an image to cache it
-            getClientForUriPath("/" + IMAGE + "/full/full/0/native.jpg").get();
+            getClientForUriPath(imagePath).get();
             getClientForUriPath("/" + IMAGE + "/info.json").get();
 
             // assert that it has been cached
