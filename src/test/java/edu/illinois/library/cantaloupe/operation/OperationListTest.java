@@ -321,11 +321,19 @@ public class OperationListTest extends BaseTest {
 
     @Test
     public void testHasEffectWithPdfSourceAndPdfOutputAndOverlay() {
-        // same format
         instance = new OperationList();
         instance.setIdentifier(new Identifier("identifier.pdf"));
         instance.setOutputFormat(Format.PDF);
         assertFalse(instance.hasEffect(Format.PDF));
+    }
+
+    @Test
+    public void testHasEffectWithEncodeAndSameOutputFormat() {
+        instance = new OperationList();
+        instance.setIdentifier(new Identifier("identifier.jpg"));
+        instance.setOutputFormat(Format.JPG);
+        instance.add(new Encode(Format.JPG));
+        assertFalse(instance.hasEffect(Format.JPG));
     }
 
     /* iterator() */

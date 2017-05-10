@@ -323,13 +323,22 @@ public final class OperationList implements Comparable<OperationList>,
         }
         for (Operation op : this) {
             if (op.hasEffect()) {
-                // 1. Ignore overlays when the output format is PDF.
-                // 2. Ignore MetadataCopies. If the instance would otherwise
-                //    be a no-op, metadata will get passed through anyway, and
-                //    if it isn't, then this method will return false anyway.
-                if (!(op instanceof Overlay &&                   // (1)
-                        getOutputFormat().equals(Format.PDF)) && // (1)
-                        !(op instanceof MetadataCopy)) {         // (2)
+                // 1. Ignore MetadataCopies. If the instance would otherwise be
+                //    a no-op, metadata will get passed through anyway, and if
+                //    it isn't, then this method will return false anyway.
+                // 2. Ignore overlays when the output format is PDF.
+                // 3. Ignore Encodes when the given output format is the same
+                //    as the instance's output format. (This helps enable
+                //    streaming source images without re-encoding them.)
+                if (op instanceof MetadataCopy) { // (1)
+                    continue;
+                } else if (op instanceof Overlay &&
+                        getOutputFormat().equals(Format.PDF)) { // (2)
+                    continue;
+                } else if (op instanceof Encode &&
+                        getOutputFormat().equals(format)) { // (3)
+                    continue;
+                } else {
                     return true;
                 }
             }
