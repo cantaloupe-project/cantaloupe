@@ -191,11 +191,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
             assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
         }
 
-        // We are not going to assert a 400 for "region entirely outside the
-        // bounds of the reported dimensions" because it would require
-        // ImageResource.doGet() to get the dimensions of the source image
-        // (before any processing), which is unnecessarily expensive.
-        /*
         // x/y out of bounds
         client = getClientForUriPath("/iiif/1/" + IMAGE + "/99999,99999,50,50/full/0/native.jpg");
         try {
@@ -204,7 +199,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
         } catch (ResourceException e) {
             assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
         }
-        */
     }
 
     /**
