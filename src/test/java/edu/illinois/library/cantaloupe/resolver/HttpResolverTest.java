@@ -6,15 +6,18 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.resource.AccessDeniedException;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.restlet.data.Reference;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -72,19 +75,19 @@ public class HttpResolverTest extends BaseTest {
     }
 
     @Test
+    @Ignore // TODO: possible restlet bug: https://github.com/restlet/restlet-framework-java/issues/1179
     public void testNewStreamSourceWithPresentUnreadableImage() throws IOException {
-        /* TODO: possible restlet bug: https://github.com/restlet/restlet-framework-java/issues/1179
         File image = TestUtil.getFixture("gif");
         try {
             image.setReadable(false);
-            instance.newStreamSource(new Identifier("gif"));
+            instance.setIdentifier(new Identifier("gif"));
+            instance.newStreamSource();
             fail("Expected exception");
         } catch (AccessDeniedException e) {
             // pass
         } finally {
             image.setReadable(true);
         }
-        */
     }
 
     @Test

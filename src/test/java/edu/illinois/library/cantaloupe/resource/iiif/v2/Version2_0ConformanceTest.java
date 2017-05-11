@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
@@ -673,14 +674,12 @@ public class Version2_0ConformanceTest extends ResourceTest {
      * @throws IOException
      */
     @Test
+    @Ignore // TODO: possibly a restlet bug: http://restlet-discuss.1400322.n2.nabble.com/How-can-I-set-Origin-and-Access-Control-Request-Method-when-doing-a-request-td7579398.html
     public void testInformationRequestCorsHeader() throws IOException {
-        /* TODO: possibly a restlet bug:
-         http://restlet-discuss.1400322.n2.nabble.com/How-can-I-set-Origin-and-Access-Control-Request-Method-when-doing-a-request-td7579398.html
         ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/info.json");
         client.getRequest().getHeaders().set("Origin", "*");
         client.get();
         assertEquals("*", client.getResponse().getAccessControlAllowOrigin());
-        */
     }
 
     /**

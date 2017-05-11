@@ -6,9 +6,8 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.restlet.data.ChallengeResponse;
-import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
@@ -102,8 +101,9 @@ public class APIResourceTest extends ResourceTest {
     }
 
     /* putConfiguration() */
-/* TODO: why does this fail?
+
     @Test
+    @Ignore // TODO: why does this fail?
     public void testPutConfiguration() throws Exception {
         Map<String,Object> entityMap = new HashMap<>();
         entityMap.put("test", "cats");
@@ -115,5 +115,5 @@ public class APIResourceTest extends ResourceTest {
 
         assertEquals("cats", ConfigurationFactory.getInstance().getString("test"));
     }
-*/
+
 }
