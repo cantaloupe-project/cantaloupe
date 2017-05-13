@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -405,7 +406,11 @@ class HeapCache implements DerivativeCache {
         }
 
         // Start a worker thread to manage the size.
-        ThreadPool.getInstance().submit(new Worker());
+        try {
+            ThreadPool.getInstance().submit(new Worker());
+        } catch (RejectedExecutionException e) {
+            logger.error("initialize(): {}", e.getMessage());
+        }
     }
 
     boolean isDirty() {
