@@ -1,8 +1,11 @@
 package edu.illinois.library.cantaloupe.config;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.configuration.ConversionException;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,6 +30,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
      */
     private Map<File, org.apache.commons.configuration.PropertiesConfiguration>
             commonsConfigs = new LinkedHashMap<>();
+    private String mainContentsChecksum = "";
 
     /**
      * @return Wrapped configurations in order from main to most distant
@@ -245,6 +249,21 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
     public synchronized void reload() throws ConfigurationException {
         final File mainConfigFile = getFile();
         if (mainConfigFile != null) {
+            // Calculate the checksum of the file contents and compare it to
+            // what has already been loaded. If the checksums match, skip the
+            // reload.
+            try (FileInputStream is = new FileInputStream(mainConfigFile)) {
+                final String newChecksum = DigestUtils.md5Hex(is);
+                if (newChecksum.equals(mainContentsChecksum)) {
+                    return;
+                }
+                mainContentsChecksum = newChecksum;
+            } catch (FileNotFoundException e) {
+                System.err.println("File not found: " + e.getMessage());
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
+            }
+
             commonsConfigs.clear();
             loadFileAndAncestors(mainConfigFile);
         }
