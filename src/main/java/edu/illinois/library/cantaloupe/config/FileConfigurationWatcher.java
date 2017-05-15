@@ -16,10 +16,6 @@ class FileConfigurationWatcher implements Runnable {
 
     private static class CallbackImpl implements FilesystemWatcher.Callback {
 
-        private static final long MIN_INTERVAL_MSEC = 1000;
-
-        private long lastHandled = System.currentTimeMillis();
-
         @Override
         public void created(Path path) {
             handle(path);
@@ -41,16 +37,7 @@ class FileConfigurationWatcher implements Runnable {
                 HeritableFileConfiguration hfc =
                         (HeritableFileConfiguration) config;
                 if (hfc.getFiles().contains(path.toFile())) {
-                    // Handle the event only if it happened at least
-                    // MIN_INTERVAL_MSEC after the last one.
-                    final long now = System.currentTimeMillis();
-                    if (now - lastHandled >= MIN_INTERVAL_MSEC) {
-                        lastHandled = now;
-                        reload(config);
-                    } else {
-                        System.out.println("FileConfigurationWatcher$CallbackImpl: " +
-                                "multiple events < " + MIN_INTERVAL_MSEC + "ms apart");
-                    }
+                    reload(config);
                 }
             } else if (path.toFile().equals(config.getFile())) {
                 reload(config);
