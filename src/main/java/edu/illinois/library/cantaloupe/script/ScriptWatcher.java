@@ -1,10 +1,13 @@
 package edu.illinois.library.cantaloupe.script;
 
 import edu.illinois.library.cantaloupe.util.FilesystemWatcher;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -16,9 +19,7 @@ class ScriptWatcher implements Runnable {
 
     private static class CallbackImpl implements FilesystemWatcher.Callback {
 
-        private static final long MIN_INTERVAL_MSEC = 1000;
-
-        private long lastHandled = System.currentTimeMillis();
+        private String contentsChecksum = "";
         private Logger logger = LoggerFactory.getLogger(CallbackImpl.class);
 
         @Override
@@ -36,23 +37,26 @@ class ScriptWatcher implements Runnable {
 
         private void handle(Path path) {
             try {
-                if (path.toFile().equals(ScriptEngineFactory.getScriptFile())) {
-                    // Handle the event only if it happened at least
-                    // MIN_INTERVAL_MSEC after the last one.
-                    final long now = System.currentTimeMillis();
-                    if (now - lastHandled >= MIN_INTERVAL_MSEC) {
-                        lastHandled = now;
-                        try {
-                            ScriptEngineFactory.getScriptEngine().
-                                    load(FileUtils.readFileToString(path.toFile()));
-                        } catch (DelegateScriptDisabledException e) {
-                            logger.debug(e.getMessage());
-                        } catch (Exception e) {
-                            logger.error(e.getMessage());
+                final File script = path.toFile();
+                if (script.equals(ScriptEngineFactory.getScriptFile())) {
+                    // Calculate the checksum of the file contents and compare
+                    // it to what has already been loaded. If the checksums
+                    // match, skip the load.
+                    try (FileInputStream is = new FileInputStream(script)) {
+                        final String newChecksum = DigestUtils.md5Hex(is);
+                        if (newChecksum.equals(contentsChecksum)) {
+                            return;
                         }
-                    } else {
-                        logger.debug("Multiple events < " + MIN_INTERVAL_MSEC +
-                                "ms apart");
+                        contentsChecksum = newChecksum;
+
+                        ScriptEngineFactory.getScriptEngine().
+                                load(FileUtils.readFileToString(script));
+                    } catch (FileNotFoundException e) {
+                        logger.error("File not found: {}", e.getMessage());
+                    } catch (DelegateScriptDisabledException e) {
+                            logger.debug(e.getMessage());
+                    } catch (Exception e) {
+                        logger.error(e.getMessage());
                     }
                 }
             } catch (FileNotFoundException e) {
