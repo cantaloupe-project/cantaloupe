@@ -15,10 +15,6 @@ class ConfigurationWatcher implements Runnable {
 
     private static class CallbackImpl implements FilesystemWatcher.Callback {
 
-        private static final long MIN_INTERVAL_MSEC = 1000;
-
-        private long lastHandled = System.currentTimeMillis();
-
         @Override
         public void created(Path path) {
             handle(path);
@@ -35,24 +31,15 @@ class ConfigurationWatcher implements Runnable {
         private void handle(Path path) {
             final Configuration config = Configuration.getInstance();
             if (path.toFile().equals(config.getFile())) {
-                // Handle the event only if it happened at least
-                // MIN_INTERVAL_MSEC after the last one.
-                final long now = System.currentTimeMillis();
-                if (now - lastHandled >= MIN_INTERVAL_MSEC) {
-                    lastHandled = now;
-                    try {
-                        config.reload();
-                        LoggerUtil.reloadConfiguration();
-                    } catch (FileNotFoundException e) {
-                        System.err.println("ConfigurationWatcher$CallbackImpl: " +
-                                "file not found: " + e.getMessage());
-                    } catch (IOException e) {
-                        System.err.println("ConfigurationWatcher$CallbackImpl: " +
-                                e.getMessage());
-                    }
-                } else {
-                    System.out.println("ConfigurationWatcher$CallbackImpl: " +
-                            "multiple events < " + MIN_INTERVAL_MSEC + "ms apart");
+                try {
+                    config.reload();
+                    LoggerUtil.reloadConfiguration();
+                } catch (FileNotFoundException e) {
+                    System.err.println("ConfigurationWatcher$CallbackImpl: " +
+                            "file not found: " + e.getMessage());
+                } catch (IOException e) {
+                    System.err.println("ConfigurationWatcher$CallbackImpl: " +
+                            e.getMessage());
                 }
             }
         }
