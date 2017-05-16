@@ -7,6 +7,7 @@ import java.util.Map;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.DerivativeFileCache;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -85,6 +86,17 @@ public class InformationResource extends IIIF1Resource {
         final Processor processor = ProcessorFactory.getProcessor(format);
 
         new SourceImageWrangler(resolver, processor, identifier).wrangle();
+
+        // If the cache is enabled and is file-based, add an X-Sendfile header.
+        final Cache cache = CacheFactory.getDerivativeCache();
+        if (cache instanceof DerivativeFileCache) {
+            DerivativeFileCache fileCache = (DerivativeFileCache) cache;
+            if (fileCache.infoExists(identifier)) {
+                final String relativePathname =
+                        ((DerivativeFileCache) cache).getRelativePathname(identifier);
+                addXSendfileHeader(relativePathname);
+            }
+        }
 
         // Get an Info instance corresponding to the source image
         ImageInfo imageInfo = ImageInfoFactory.newImageInfo(

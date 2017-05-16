@@ -624,4 +624,97 @@ public class ImageResourceTest extends ResourceTest {
         }
     }
 
+    /**
+     * Tests that an X-Sendfile header is added to the response when
+     * FilesystemCache registers a hit, and not added otherwise.
+     */
+    @Test
+    public void testXSendfileHeaderIsSentWhenAllConditionsAreMet()
+            throws Exception {
+        File cacheFolder = TestUtil.getTempFolder();
+        cacheFolder = new File(cacheFolder.getAbsolutePath() + "/cache");
+        if (cacheFolder.exists()) {
+            FileUtils.cleanDirectory(cacheFolder);
+        } else {
+            cacheFolder.mkdir();
+        }
+
+        final Configuration config = Configuration.getInstance();
+
+        // Set up the cache. We must use FilesystemCache because X-Sendfile
+        // will work only with that.
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY,
+                true);
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
+                "FilesystemCache");
+        config.setProperty("FilesystemCache.pathname",
+                cacheFolder.getAbsolutePath());
+        config.setProperty(Cache.TTL_CONFIG_KEY, 10);
+
+        // Configure the X-Sendfile header
+        config.setProperty(AbstractResource.FILESYSTEMCACHE_XSENDFILE_ENABLED_CONFIG_KEY,
+                true);
+        config.setProperty(AbstractResource.FILESYSTEMCACHE_XSENDFILE_HEADER_CONFIG_KEY,
+                "X-Sendfile");
+
+        // Request an image. Since it hasn't yet been cached, the response
+        // shouldn't include the X-Sendfile header.
+        ClientResource resource =
+                getClientForUriPath("/" + IMAGE + "/full/full/0/default.png");
+        resource.get();
+        Header header = resource.getResponse().getHeaders().getFirst("X-Sendfile");
+        assertNull(header);
+
+        // Now it should be cached, so the next response should include the
+        // X-Sendfile header.
+        resource.get();
+        header = resource.getResponse().getHeaders().getFirst("X-Sendfile");
+
+        // /image/08/34/25/083425bc68eece64753ec83a25f87230_540586ed73955b63fd3c8d510a32fcac.png
+        assertTrue(header.getValue().matches("^\\/image\\/[0-9a-f_/]*\\.png"));
+    }
+
+    @Test
+    public void testXSendfileHeaderIsNotSentWhenDisabled() throws Exception {
+        File cacheFolder = TestUtil.getTempFolder();
+        cacheFolder = new File(cacheFolder.getAbsolutePath() + "/cache");
+        if (cacheFolder.exists()) {
+            FileUtils.cleanDirectory(cacheFolder);
+        } else {
+            cacheFolder.mkdir();
+        }
+
+        final Configuration config = Configuration.getInstance();
+
+        // Set up the cache. We must use FilesystemCache because X-Sendfile
+        // will work only with that.
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY,
+                true);
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
+                "FilesystemCache");
+        config.setProperty("FilesystemCache.pathname",
+                cacheFolder.getAbsolutePath());
+        config.setProperty(Cache.TTL_CONFIG_KEY, 10);
+
+        // Configure the X-Sendfile header
+        config.setProperty(AbstractResource.FILESYSTEMCACHE_XSENDFILE_ENABLED_CONFIG_KEY,
+                false);
+        config.setProperty(AbstractResource.FILESYSTEMCACHE_XSENDFILE_HEADER_CONFIG_KEY,
+                "X-Sendfile");
+
+        // Request an image. Since it hasn't yet been cached, the response
+        // shouldn't include the X-Sendfile header.
+        ClientResource resource =
+                getClientForUriPath("/" + IMAGE + "/full/full/0/default.png");
+        resource.get();
+        Header header = resource.getResponse().getHeaders().getFirst("X-Sendfile");
+        assertNull(header);
+
+        // Since the header is disabled, the next response shouldn't include it,
+        // either.
+        resource.get();
+        header = resource.getResponse().getHeaders().getFirst("X-Sendfile");
+        assertNull(header);
+    }
+
 }

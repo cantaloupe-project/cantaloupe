@@ -206,6 +206,29 @@ public class FilesystemCacheTest extends BaseTest {
         assertEquals(3, count);
     }
 
+    /* derivativeImageExists(OperationList) */
+
+    @Test
+    public void testDerivativeImageExists() throws Exception {
+        Identifier identifier = new Identifier("cats_~!@#$%^&*()");
+        Crop crop = new Crop();
+        crop.setWidth(50f);
+        crop.setHeight(50f);
+        Format format = Format.TIF;
+
+        OperationList ops = new OperationList();
+        ops.setIdentifier(identifier);
+        ops.add(crop);
+        ops.setOutputFormat(format);
+
+        assertFalse(instance.derivativeImageExists(ops));
+
+        File file = instance.derivativeImageFile(ops);
+        FileUtils.touch(file);
+
+        assertTrue(instance.derivativeImageExists(ops));
+    }
+
     /* derivativeImageFile(OperationList) */
 
     @Test
@@ -333,6 +356,51 @@ public class FilesystemCacheTest extends BaseTest {
         assertNull(instance.getImageInfo(identifier));
     }
 
+    /* getRelativePathname(Identifier) */
+
+    @Test
+    public void testGetRelativePathnameWithIdentifier() {
+        Identifier identifier = new Identifier("cats_~!@#$%^&*()");
+
+        final String expected = String.format("%sinfo%s%s%s.json",
+                File.separator,
+                getHashedStringBasedSubdirectory(identifier.toString()),
+                File.separator,
+                identifier.toFilename());
+        assertEquals(expected, instance.getRelativePathname(identifier));
+    }
+
+    /* getRelativePathname(OperationList) */
+
+    @Test
+    public void testGetRelativePathnameWithOperationList() {
+        Identifier identifier = new Identifier("cats_~!@#$%^&*()");
+        Crop crop = new Crop();
+        crop.setWidth(50f);
+        crop.setHeight(50f);
+        Scale scale = new Scale();
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale.setPercent(0.905f);
+        Rotate rotate = new Rotate(10);
+        ColorTransform transform = ColorTransform.BITONAL;
+        Format format = Format.TIF;
+
+        OperationList ops = new OperationList();
+        ops.setIdentifier(identifier);
+        ops.add(crop);
+        ops.add(scale);
+        ops.add(rotate);
+        ops.add(transform);
+        ops.setOutputFormat(format);
+
+        final String expected = String.format("%simage%s%s%s",
+                File.separator,
+                getHashedStringBasedSubdirectory(identifier.toString()),
+                File.separator,
+                ops.toFilename());
+        assertEquals(expected, instance.getRelativePathname(ops));
+    }
+
     /* getSourceImageFile(Identifier) */
 
     @Test
@@ -362,6 +430,20 @@ public class FilesystemCacheTest extends BaseTest {
 
         assertNull(instance.getSourceImageFile(identifier));
         assertFalse(cacheFile.exists());
+    }
+
+    /* infoExists(Identifier) */
+
+    @Test
+    public void testInfoExists() throws Exception {
+        Identifier identifier = new Identifier("cats_~!@#$%^&*()");
+
+        assertFalse(instance.infoExists(identifier));
+
+        File file = instance.infoFile(identifier);
+        FileUtils.touch(file);
+
+        assertTrue(instance.infoExists(identifier));
     }
 
     /* infoFile(Identifier) */

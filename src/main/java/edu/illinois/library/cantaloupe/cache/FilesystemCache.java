@@ -97,7 +97,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *     when closed for writing.</li>
  * </ol>
  */
-class FilesystemCache implements SourceCache, DerivativeCache {
+class FilesystemCache implements SourceCache, DerivativeFileCache {
 
     /**
      * Used by {@link Files#walkFileTree} to delete all temporary (*.tmp) and
@@ -450,6 +450,13 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         }
     }
 
+    @Override
+    public boolean derivativeImageExists(OperationList opList)
+            throws CacheException {
+        final File cacheFile = derivativeImageFile(opList);
+        return (cacheFile != null && cacheFile.exists() && !isExpired(cacheFile));
+    }
+
     /**
      * Returns a File corresponding to the given operation list.
      *
@@ -534,6 +541,24 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     @Override
+    public String getRelativePathname(Identifier identifier) {
+        final String subfolderPath = StringUtils.stripEnd(
+                getHashedStringBasedSubdirectory(identifier.toString()),
+                File.separator);
+        return File.separator + INFO_FOLDER + subfolderPath + File.separator +
+                identifier.toFilename() + INFO_EXTENSION;
+    }
+
+    @Override
+    public String getRelativePathname(OperationList opList) {
+        final String subfolderPath = StringUtils.stripEnd(
+                getHashedStringBasedSubdirectory(opList.getIdentifier().toString()),
+                File.separator);
+        return File.separator + DERIVATIVE_IMAGE_FOLDER + subfolderPath +
+                File.separator + opList.toFilename();
+    }
+
+    @Override
     public File getSourceImageFile(Identifier identifier) throws CacheException {
         synchronized (sourceImageWriteLock) {
             while (sourceImagesBeingWritten.contains(identifier)) {
@@ -561,6 +586,11 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             }
         }
         return file;
+    }
+
+    @Override
+    public boolean infoExists(Identifier identifier) throws CacheException {
+        return infoFile(identifier).exists();
     }
 
     /**

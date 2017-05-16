@@ -2001,6 +2001,41 @@
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>
+                                        <tr>
+                                            <td>X-Sendfile
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Enables X-Sendfile download
+                                                   acceleration with certain reverse proxies.">?</a>
+                                            </td>
+                                            <td>
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox"
+                                                               name="FilesystemCache.xsendfile.enabled"
+                                                               value="false"
+                                                               data-requires-restart="false">
+                                                        Enabled
+                                                    </label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>X-Sendfile Header Name
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Use &quot;X-Sendfile&quot; for
+                                                   Apache/Lighttpd, or &quot;X-Accel-Redirect&quot;
+                                                   for nginx.">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="FilesystemCache.xsendfile.header"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
                                     </table>
                                 </div>
 

@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -75,6 +74,10 @@ public abstract class AbstractResource extends ServerResource {
             "cache.client.shared_max_age";
     public static final String CONTENT_DISPOSITION_CONFIG_KEY =
             "endpoint.iiif.content_disposition";
+    public static final String FILESYSTEMCACHE_XSENDFILE_ENABLED_CONFIG_KEY =
+            "FilesystemCache.xsendfile.enabled";
+    public static final String FILESYSTEMCACHE_XSENDFILE_HEADER_CONFIG_KEY =
+            "FilesystemCache.xsendfile.header";
     public static final String MAX_PIXELS_CONFIG_KEY =
             "max_pixels";
     public static final String SLASH_SUBSTITUTE_CONFIG_KEY =
@@ -110,7 +113,7 @@ public abstract class AbstractResource extends ServerResource {
         if (request != null) {
             rootRef = new Reference(request.getRootRef());
 
-            final String baseUri = ConfigurationFactory.getInstance().
+            final String baseUri = Configuration.getInstance().
                     getString(BASE_URI_CONFIG_KEY);
             if (baseUri != null && baseUri.length() > 0) {
                 final Reference baseRef = new Reference(baseUri);
@@ -193,6 +196,37 @@ public abstract class AbstractResource extends ServerResource {
         getResponse().getHeaders().add("X-Powered-By",
                 "Cantaloupe/" + Application.getVersion());
         logger.info("doInit(): handling {} {}", getMethod(), getReference());
+    }
+
+    /**
+     * Conditionally adds an X-Sendfile (or equivalent) header to the response,
+     * if {@link #FILESYSTEMCACHE_XSENDFILE_ENABLED_CONFIG_KEY} is
+     * <code>true</code>. The header name is specified by
+     * {@link #FILESYSTEMCACHE_XSENDFILE_HEADER_CONFIG_KEY}.
+     *
+     * @param relativePathname Relative pathname of the file.
+     */
+    protected void addXSendfileHeader(String relativePathname) {
+        final Configuration config = Configuration.getInstance();
+
+        if (!config.getBoolean(FILESYSTEMCACHE_XSENDFILE_ENABLED_CONFIG_KEY, true)) {
+            return;
+        }
+        if (relativePathname == null || relativePathname.length() < 1) {
+            logger.error("addXSendfileHeader(): relative pathname not " +
+                    "provided (this may be a bug)");
+            return;
+        }
+
+        final String header = config.
+                getString(FILESYSTEMCACHE_XSENDFILE_HEADER_CONFIG_KEY, "X-Sendfile");
+        if (header == null || header.length() < 1) {
+            logger.warn("{} is not set",
+                    FILESYSTEMCACHE_XSENDFILE_HEADER_CONFIG_KEY);
+            return;
+        }
+
+        getResponse().getHeaders().add(header, relativePathname);
     }
 
     /**
@@ -306,7 +340,7 @@ public abstract class AbstractResource extends ServerResource {
      * @return Path component with slashes decoded
      */
     protected final String decodeSlashes(final String uriPathComponent) {
-        final String substitute = ConfigurationFactory.getInstance().
+        final String substitute = Configuration.getInstance().
                 getString(SLASH_SUBSTITUTE_CONFIG_KEY, "");
         if (substitute.length() > 0) {
             return StringUtils.replace(uriPathComponent, substitute, "/");
@@ -329,7 +363,7 @@ public abstract class AbstractResource extends ServerResource {
             return directives;
         }
         try {
-            final Configuration config = ConfigurationFactory.getInstance();
+            final Configuration config = Configuration.getInstance();
             final boolean enabled = config.getBoolean(
                     CLIENT_CACHE_ENABLED_CONFIG_KEY, false);
             if (enabled) {
@@ -392,7 +426,7 @@ public abstract class AbstractResource extends ServerResource {
             throws IOException, ProcessorException, CacheException {
         // Max allowed size is ignored when the processing is a no-op.
         final long maxAllowedSize = (ops.hasEffect(format)) ?
-                ConfigurationFactory.getInstance().getLong(MAX_PIXELS_CONFIG_KEY, 0) : 0;
+                Configuration.getInstance().getLong(MAX_PIXELS_CONFIG_KEY, 0) : 0;
 
         final Info imageInfo = getOrReadInfo(ops.getIdentifier(), proc);
         final Dimension effectiveSize = ops.getResultingSize(imageInfo.getSize());

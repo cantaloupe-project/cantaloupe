@@ -3,7 +3,8 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.cache.DerivativeFileCache;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MediaType;
@@ -52,6 +53,7 @@ public class ImageResource extends IIIF1Resource {
      */
     @Get
     public Representation doGet() throws Exception {
+        final Configuration config = Configuration.getInstance();
         final Map<String,Object> attrs = this.getRequest().getAttributes();
         Identifier identifier =
                 new Identifier(Reference.decode((String) attrs.get("identifier")));
@@ -64,8 +66,7 @@ public class ImageResource extends IIIF1Resource {
         try {
             format = resolver.getSourceFormat();
         } catch (FileNotFoundException e) {
-            if (ConfigurationFactory.getInstance().
-                    getBoolean(Cache.PURGE_MISSING_CONFIG_KEY, false)) {
+            if (config.getBoolean(Cache.PURGE_MISSING_CONFIG_KEY, false)) {
                 // if the image was not found, purge it from the cache
                 final Cache cache = CacheFactory.getDerivativeCache();
                 if (cache != null) {
@@ -120,9 +121,8 @@ public class ImageResource extends IIIF1Resource {
         // If we don't need to resolve first, and are using a cache, and the
         // cache contains an image matching the request, skip all the setup and
         // just return the cached image.
-        if (!ConfigurationFactory.getInstance().
-                getBoolean(Cache.RESOLVE_FIRST_CONFIG_KEY, true)) {
-            DerivativeCache cache = CacheFactory.getDerivativeCache();
+        final DerivativeCache cache = CacheFactory.getDerivativeCache();
+        if (!config.getBoolean(Cache.RESOLVE_FIRST_CONFIG_KEY, true)) {
             if (cache != null) {
                 InputStream inputStream = cache.newDerivativeImageInputStream(ops);
                 if (inputStream != null) {
@@ -153,6 +153,18 @@ public class ImageResource extends IIIF1Resource {
                 getReference().toUrl(),
                 getRequest().getHeaders().getValuesMap(),
                 getCookies().getValuesMap());
+
+        // If the cache is enabled, and is file-based, and the file exists, add
+        // an X-Sendfile header. This has to be done *after*
+        // OperationList.applyNonEndpointMutations() has been called.
+        if (cache != null && cache instanceof DerivativeFileCache) {
+            DerivativeFileCache fileCache = (DerivativeFileCache) cache;
+            if (fileCache.derivativeImageExists(ops)) {
+                final String relativePathname =
+                        fileCache.getRelativePathname(ops);
+                addXSendfileHeader(relativePathname);
+            }
+        }
 
         // Find out whether the processor supports that source format by
         // asking it whether it offers any output formats for it

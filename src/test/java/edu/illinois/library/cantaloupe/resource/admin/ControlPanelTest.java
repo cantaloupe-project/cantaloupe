@@ -389,6 +389,8 @@ public class ControlPanelTest extends ResourceTest {
         css("[name=\"FilesystemCache.pathname\"]").sendKeys("/path");
         css("[name=\"FilesystemCache.dir.depth\"]").sendKeys("8");
         css("[name=\"FilesystemCache.dir.name_length\"]").sendKeys("4");
+        css("[name=\"FilesystemCache.xsendfile.enabled\"]").click();
+        css("[name=\"FilesystemCache.xsendfile.header\"]").sendKeys("Cats");
         // JdbcCache
         css("#cl-caches li > a[href=\"#JdbcCache\"]").click();
         css("[name=\"JdbcCache.url\"]").sendKeys("jdbc://dogs");
@@ -453,6 +455,8 @@ public class ControlPanelTest extends ResourceTest {
         assertEquals("/path", config.getString("FilesystemCache.pathname"));
         assertEquals("8", config.getString("FilesystemCache.dir.depth"));
         assertEquals("4", config.getString("FilesystemCache.dir.name_length"));
+        assertTrue(config.getBoolean("FilesystemCache.xsendfile.enabled"));
+        assertEquals("Cats", config.getString("FilesystemCache.xsendfile.header"));
         // JdbcCache
         assertEquals("jdbc://dogs", config.getString("JdbcCache.url"));
         assertEquals("person", config.getString("JdbcCache.user"));

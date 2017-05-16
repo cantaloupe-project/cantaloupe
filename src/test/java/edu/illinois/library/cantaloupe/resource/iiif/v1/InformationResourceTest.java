@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
+import edu.illinois.library.cantaloupe.cache.DerivativeFileCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -16,6 +17,7 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.restlet.data.CacheDirective;
+import org.restlet.data.Header;
 import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
@@ -420,6 +422,98 @@ public class InformationResourceTest extends ResourceTest {
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("https://example.net" +
                 WebApplication.IIIF_1_PATH + "/" + IMAGE, info.id);
+    }
+
+    /**
+     * Tests that an X-Sendfile header is added to the response when
+     * FilesystemCache registers a hit, and not added otherwise.
+     */
+    @Test
+    public void testXSendfileHeaderIsSentWhenAllConditionsAreMet()
+            throws Exception {
+        File cacheFolder = TestUtil.getTempFolder();
+        cacheFolder = new File(cacheFolder.getAbsolutePath() + "/cache");
+        if (cacheFolder.exists()) {
+            FileUtils.cleanDirectory(cacheFolder);
+        } else {
+            cacheFolder.mkdir();
+        }
+
+        final Configuration config = Configuration.getInstance();
+        // Set up the cache. We must use FilesystemCache because X-Sendfile
+        // will work only with that.
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY,
+                true);
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
+                "FilesystemCache");
+        config.setProperty("FilesystemCache.pathname",
+                cacheFolder.getAbsolutePath());
+        config.setProperty(Cache.TTL_CONFIG_KEY, 10);
+        config.setProperty(Cache.RESOLVE_FIRST_CONFIG_KEY, true);
+
+        // Configure the X-Sendfile header
+        config.setProperty(AbstractResource.FILESYSTEMCACHE_XSENDFILE_ENABLED_CONFIG_KEY,
+                true);
+        config.setProperty(AbstractResource.FILESYSTEMCACHE_XSENDFILE_HEADER_CONFIG_KEY,
+                "X-Sendfile");
+
+        // Request an info. Since it hasn't yet been cached, the response
+        // shouldn't include the X-Sendfile header.
+        ClientResource resource = getClientForUriPath("/" + IMAGE + "/info.json");
+        resource.get();
+        Header header = resource.getResponse().getHeaders().getFirst("X-Sendfile");
+        assertNull(header);
+
+        // Now it should be cached, so the next response should include the
+        // X-Sendfile header.
+        resource.get();
+        header = resource.getResponse().getHeaders().getFirst("X-Sendfile");
+
+        DerivativeFileCache cache =
+                (DerivativeFileCache) CacheFactory.getDerivativeCache();
+        assertEquals(cache.getRelativePathname(new Identifier(IMAGE)),
+                header.getValue());
+    }
+
+    @Test
+    public void testXSendfileHeaderIsNotSentWhenDisabled() throws Exception {
+        File cacheFolder = TestUtil.getTempFolder();
+        cacheFolder = new File(cacheFolder.getAbsolutePath() + "/cache");
+        if (cacheFolder.exists()) {
+            FileUtils.cleanDirectory(cacheFolder);
+        } else {
+            cacheFolder.mkdir();
+        }
+
+        final Configuration config = Configuration.getInstance();
+        // Set up the cache. We must use FilesystemCache because X-Sendfile
+        // will work only with that.
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY,
+                true);
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
+                "FilesystemCache");
+        config.setProperty("FilesystemCache.pathname",
+                cacheFolder.getAbsolutePath());
+        config.setProperty(Cache.TTL_CONFIG_KEY, 10);
+
+        // Configure the X-Sendfile header (disabled)
+        config.setProperty(AbstractResource.FILESYSTEMCACHE_XSENDFILE_ENABLED_CONFIG_KEY,
+                false);
+        config.setProperty(AbstractResource.FILESYSTEMCACHE_XSENDFILE_HEADER_CONFIG_KEY,
+                "X-Sendfile");
+
+        // Request an info. Since it hasn't yet been cached, the response
+        // shouldn't include the X-Sendfile header.
+        ClientResource resource = getClientForUriPath("/" + IMAGE + "/info.json");
+        resource.get();
+        Header header = resource.getResponse().getHeaders().getFirst("X-Sendfile");
+        assertNull(header);
+
+        // Since the header is disabled, the next response shouldn't include it,
+        // either.
+        resource.get();
+        header = resource.getResponse().getHeaders().getFirst("X-Sendfile");
+        assertNull(header);
     }
 
 }

@@ -407,6 +407,12 @@ FilesystemCache.dir.depth = 3
 # Purge the cache after changing this.
 FilesystemCache.dir.name_length = 2
 
+# Enables X-Sendfile download acceleration with certain reverse proxies.
+FilesystemCache.xsendfile.enabled = true
+
+# Use X-Sendfile for Apache & Lighttpd, or X-Accel-Redirect for nginx.
+FilesystemCache.xsendfile.header = X-Sendfile
+
 #----------------------------------------
 # HeapCache
 #----------------------------------------
