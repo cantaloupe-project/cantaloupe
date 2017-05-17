@@ -71,22 +71,22 @@ public class BasicStringOverlayServiceTest extends BaseTest {
         // image width > width threshold, image height > height threshold
         config.setProperty(BasicOverlayService.OUTPUT_WIDTH_THRESHOLD_CONFIG_KEY, 50);
         config.setProperty(BasicOverlayService.OUTPUT_HEIGHT_THRESHOLD_CONFIG_KEY, 50);
-        assertTrue(BasicImageOverlayService.shouldApplyToImage(imageSize));
+        assertTrue(BasicStringOverlayService.shouldApplyToImage(imageSize));
 
         // image width < width threshold, image height < height threshold
         config.setProperty(BasicOverlayService.OUTPUT_WIDTH_THRESHOLD_CONFIG_KEY, 200);
         config.setProperty(BasicOverlayService.OUTPUT_HEIGHT_THRESHOLD_CONFIG_KEY, 200);
-        assertFalse(BasicImageOverlayService.shouldApplyToImage(imageSize));
+        assertFalse(BasicStringOverlayService.shouldApplyToImage(imageSize));
 
         // image width < width threshold, image height > height threshold
         config.setProperty(BasicOverlayService.OUTPUT_WIDTH_THRESHOLD_CONFIG_KEY, 200);
         config.setProperty(BasicOverlayService.OUTPUT_HEIGHT_THRESHOLD_CONFIG_KEY, 50);
-        assertFalse(BasicImageOverlayService.shouldApplyToImage(imageSize));
+        assertFalse(BasicStringOverlayService.shouldApplyToImage(imageSize));
 
         // image width > width threshold, image height < height threshold
         config.setProperty(BasicOverlayService.OUTPUT_WIDTH_THRESHOLD_CONFIG_KEY, 50);
         config.setProperty(BasicOverlayService.OUTPUT_HEIGHT_THRESHOLD_CONFIG_KEY, 200);
-        assertFalse(BasicImageOverlayService.shouldApplyToImage(imageSize));
+        assertFalse(BasicStringOverlayService.shouldApplyToImage(imageSize));
     }
 
 }
