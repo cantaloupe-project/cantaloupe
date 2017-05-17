@@ -43,14 +43,14 @@ public class HeapCacheTest extends BaseTest {
             HeapCache.Key k2 = new HeapCache.Key("cats", "birds");
             assertTrue(k1.equals(k2));
 
-            // Unequal identifiers
-            k1 = new HeapCache.Key("cats", "birds");
-            k2 = new HeapCache.Key("dogs", "birds");
-            assertFalse(k1.equals(k2));
-
             // Unequal op lists
             k1 = new HeapCache.Key("cats", "birds");
             k2 = new HeapCache.Key("cats", "goats");
+            assertFalse(k1.equals(k2));
+
+            // Unequal identifiers and op lists
+            k1 = new HeapCache.Key("cats", "birds");
+            k2 = new HeapCache.Key("dogs", "goats");
             assertFalse(k1.equals(k2));
         }
 

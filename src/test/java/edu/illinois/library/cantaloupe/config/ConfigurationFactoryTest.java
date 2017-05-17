@@ -26,7 +26,8 @@ public class ConfigurationFactoryTest extends BaseTest {
         String opt = testPath + File.separator + "cantaloupe.properties";
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, opt);
 
-        assertTrue(ConfigurationFactory.getInstance() instanceof PropertiesConfiguration);
+        Configuration config = ConfigurationFactory.getInstance();
+        assertTrue(config instanceof HeritablePropertiesConfiguration);
     }
 
 }

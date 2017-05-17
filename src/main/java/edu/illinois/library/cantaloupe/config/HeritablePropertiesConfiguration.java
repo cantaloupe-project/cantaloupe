@@ -56,6 +56,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
                 commonsConfigs.values()) {
             commonsConfig.clear();
         }
+        mainContentsChecksum = "";
     }
 
     @Override
