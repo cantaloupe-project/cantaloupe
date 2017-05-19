@@ -132,7 +132,7 @@ public class AzureStorageResolverTest extends BaseTest {
     @Test
     public void testNewStreamSourceWithScriptLookupStrategy() throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
+        config.setProperty(AzureStorageResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
                 "true");
@@ -179,7 +179,7 @@ public class AzureStorageResolverTest extends BaseTest {
     @Test
     public void testGetSourceFormatWithScriptLookupStrategy() throws IOException {
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
+        config.setProperty(AzureStorageResolver.LOOKUP_STRATEGY_CONFIG_KEY,
                 "ScriptLookupStrategy");
         config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
                 "true");
