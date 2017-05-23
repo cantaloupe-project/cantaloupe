@@ -74,10 +74,6 @@ public abstract class AbstractResource extends ServerResource {
             "cache.client.shared_max_age";
     public static final String CONTENT_DISPOSITION_CONFIG_KEY =
             "endpoint.iiif.content_disposition";
-    public static final String FILESYSTEMCACHE_XSENDFILE_ENABLED_CONFIG_KEY =
-            "FilesystemCache.xsendfile.enabled";
-    public static final String FILESYSTEMCACHE_XSENDFILE_HEADER_CONFIG_KEY =
-            "FilesystemCache.xsendfile.header";
     public static final String MAX_PIXELS_CONFIG_KEY =
             "max_pixels";
     public static final String SLASH_SUBSTITUTE_CONFIG_KEY =
@@ -199,34 +195,30 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * Conditionally adds an X-Sendfile (or equivalent) header to the response,
-     * if {@link #FILESYSTEMCACHE_XSENDFILE_ENABLED_CONFIG_KEY} is
-     * <code>true</code>. The header name is specified by
-     * {@link #FILESYSTEMCACHE_XSENDFILE_HEADER_CONFIG_KEY}.
+     * Adds an X-Sendfile (or equivalent) header to the response, if the
+     * <code>X-Sendfile-Type</code> request header is set.
      *
      * @param relativePathname Relative pathname of the file.
      */
     protected void addXSendfileHeader(String relativePathname) {
-        final Configuration config = Configuration.getInstance();
-
-        if (!config.getBoolean(FILESYSTEMCACHE_XSENDFILE_ENABLED_CONFIG_KEY, true)) {
-            return;
-        }
+        // Check the input.
         if (relativePathname == null || relativePathname.length() < 1) {
             logger.error("addXSendfileHeader(): relative pathname not " +
                     "provided (this may be a bug)");
             return;
         }
 
-        final String header = config.
-                getString(FILESYSTEMCACHE_XSENDFILE_HEADER_CONFIG_KEY, "X-Sendfile");
-        if (header == null || header.length() < 1) {
-            logger.warn("{} is not set",
-                    FILESYSTEMCACHE_XSENDFILE_HEADER_CONFIG_KEY);
-            return;
+        // If there is an X-Sendfile-Type request header, set the X-Sendfile
+        // (or equivalent) response header.
+        final Header typeHeader =
+                getRequest().getHeaders().getFirst("X-Sendfile-Type");
+        if (typeHeader != null) {
+            getResponse().getHeaders().add(typeHeader.getValue(),
+                    relativePathname);
+        } else {
+            logger.debug("No X-Sendfile-Type request header. " +
+                    "X-Sendfile will be disabled.");
         }
-
-        getResponse().getHeaders().add(header, relativePathname);
     }
 
     /**

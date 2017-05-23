@@ -462,15 +462,10 @@ public class InformationResourceTest extends ResourceTest {
         config.setProperty(Cache.TTL_CONFIG_KEY, 10);
         config.setProperty(Cache.RESOLVE_FIRST_CONFIG_KEY, true);
 
-        // Configure the X-Sendfile header
-        config.setProperty(AbstractResource.FILESYSTEMCACHE_XSENDFILE_ENABLED_CONFIG_KEY,
-                true);
-        config.setProperty(AbstractResource.FILESYSTEMCACHE_XSENDFILE_HEADER_CONFIG_KEY,
-                "X-Sendfile");
-
         // Request an info. Since it hasn't yet been cached, the response
         // shouldn't include the X-Sendfile header.
         ClientResource resource = getClientForUriPath("/" + IMAGE + "/info.json");
+        resource.getRequest().getHeaders().set("X-Sendfile-Type", "X-Sendfile");
         resource.get();
         Header header = resource.getResponse().getHeaders().getFirst("X-Sendfile");
         assertNull(header);
@@ -487,7 +482,8 @@ public class InformationResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testXSendfileHeaderIsNotSentWhenDisabled() throws Exception {
+    public void testXSendfileHeaderIsNotSentWhenXSendfileTypeIsNotSupplied()
+            throws Exception {
         File cacheFolder = TestUtil.getTempFolder();
         cacheFolder = new File(cacheFolder.getAbsolutePath() + "/cache");
         if (cacheFolder.exists()) {
@@ -506,12 +502,6 @@ public class InformationResourceTest extends ResourceTest {
         config.setProperty("FilesystemCache.pathname",
                 cacheFolder.getAbsolutePath());
         config.setProperty(Cache.TTL_CONFIG_KEY, 10);
-
-        // Configure the X-Sendfile header (disabled)
-        config.setProperty(AbstractResource.FILESYSTEMCACHE_XSENDFILE_ENABLED_CONFIG_KEY,
-                false);
-        config.setProperty(AbstractResource.FILESYSTEMCACHE_XSENDFILE_HEADER_CONFIG_KEY,
-                "X-Sendfile");
 
         // Request an info. Since it hasn't yet been cached, the response
         // shouldn't include the X-Sendfile header.

@@ -254,9 +254,9 @@ cache.client.no_transform = true
 
 <h5>X-Sendfile</h5>
 
-<p>Beginning in version 3.4, when FilesystemCache is being used as a derivative cache, image and information responses may include an <code>X-Sendfile</code> (or equivalent) header. This enables more efficient delivery of cache files when the image server is deployed behind a reverse proxy like nginx or Apache, if the proxy can access the cache contents.</p>
+<p>When FilesystemCache is being used as a derivative cache, image and information responses may include an <code>X-Sendfile</code> (or equivalent) header. This enables more efficient delivery of cache files when the image server is deployed behind a reverse proxy like nginx or Apache, if the proxy can access the cache contents.</p>
 
-<p>To take advantage of X-Sendfile, the proxy must first be configured to support it. As different web servers require different header names, the name of the header that Cantaloupe sends is configurable using the <code>FilesystemCache.xsendfile.header</code> configuration key. The header itself can be enabled or disabled using the <code>FilesystemCache.xsendfile.enabled</code> configuration key.</p>
+<p>To take advantage of X-Sendfile, the proxy must be configured to support it, and it must send an <code>X-Sendfile-Type</code> header to the image server with a value of either <code>X-Sendfile</code> or <code>X-Accel-Redirect</code>. When this is set, the image server will send an <code>X-Sendfile</code> header in all responses drawn from the cache.</p>
 
 <hr>
 
