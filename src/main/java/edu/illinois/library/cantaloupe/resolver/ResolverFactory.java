@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resolver;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
@@ -32,11 +33,8 @@ public abstract class ResolverFactory {
     private static Logger logger = LoggerFactory.
             getLogger(ResolverFactory.class);
 
-    public static final String DELEGATE_RESOLVER_CONFIG_KEY =
-            "resolver.delegate";
     public static final String RESOLVER_CHOOSER_DELEGATE_METHOD =
             "get_resolver";
-    public static final String STATIC_RESOLVER_CONFIG_KEY = "resolver.static";
 
     /**
      * @return Set of instances of each unique resolver.
@@ -51,10 +49,10 @@ public abstract class ResolverFactory {
     }
 
     /**
-     * If {@link #STATIC_RESOLVER_CONFIG_KEY} is null or undefined, uses a
-     * delegate script method to return an instance of the appropriate
-     * resolver for the given identifier. Otherwise, returns an instance of
-     * the resolver specified in {@link #STATIC_RESOLVER_CONFIG_KEY}.
+     * If {@link Key#RESOLVER_STATIC} is null or undefined, uses a delegate
+     * script method to return an instance of the appropriate resolver for the
+     * given identifier. Otherwise, returns an instance of the resolver
+     * specified in {@link Key#RESOLVER_STATIC}.
      *
      * @return Instance of the appropriate resolver for the given identifier,
      *         with identifier already set.
@@ -71,12 +69,11 @@ public abstract class ResolverFactory {
                     resolver.getClass().getSimpleName(), identifier);
             return resolver;
         } else {
-            final String resolverName = config.
-                    getString(STATIC_RESOLVER_CONFIG_KEY);
+            final String resolverName = config.getString(Key.RESOLVER_STATIC);
             if (resolverName != null) {
                 return newStaticResolver(resolverName, identifier);
             } else {
-                throw new ConfigurationException(STATIC_RESOLVER_CONFIG_KEY +
+                throw new ConfigurationException(Key.RESOLVER_STATIC +
                         " is not set to a valid resolver.");
             }
         }
@@ -87,7 +84,7 @@ public abstract class ResolverFactory {
      */
     public static SelectionStrategy getSelectionStrategy() {
         final Configuration config = ConfigurationFactory.getInstance();
-        return config.getBoolean(DELEGATE_RESOLVER_CONFIG_KEY, false) ?
+        return config.getBoolean(Key.RESOLVER_DELEGATE, false) ?
                 SelectionStrategy.DELEGATE_SCRIPT : SelectionStrategy.STATIC;
     }
 

@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -9,7 +10,6 @@ import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Orientation;
-import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
@@ -87,9 +87,9 @@ abstract class AbstractImageReader {
     private boolean canIgnoreMetadata() {
         final Configuration config = ConfigurationFactory.getInstance();
         final boolean preserveMetadata = config.getBoolean(
-                Processor.PRESERVE_METADATA_CONFIG_KEY, false);
+                Key.PROCESSOR_PRESERVE_METADATA, false);
         final boolean respectOrientation = config.getBoolean(
-                "metadata.respect_orientation", false);
+                Key.PROCESSOR_RESPECT_ORIENTATION, false);
         return (!preserveMetadata && !respectOrientation);
     }
 

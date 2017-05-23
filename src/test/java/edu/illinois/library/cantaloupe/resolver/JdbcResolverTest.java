@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
@@ -32,12 +33,11 @@ public class JdbcResolverTest extends BaseTest {
 
         Configuration config = ConfigurationFactory.getInstance();
         // Use an in-memory H2 database.
-        config.setProperty(JdbcResolver.JDBC_URL_CONFIG_KEY, "jdbc:h2:mem:test");
-        config.setProperty(JdbcResolver.USER_CONFIG_KEY, "sa");
-        config.setProperty(JdbcResolver.PASSWORD_CONFIG_KEY, "");
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
-                "true");
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
+        config.setProperty(Key.JDBCRESOLVER_JDBC_URL, "jdbc:h2:mem:test");
+        config.setProperty(Key.JDBCRESOLVER_USER, "sa");
+        config.setProperty(Key.JDBCRESOLVER_PASSWORD, "");
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
 
         try (Connection conn = JdbcResolver.getConnection()) {

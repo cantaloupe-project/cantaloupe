@@ -11,9 +11,6 @@ class CacheWorker implements Runnable {
     private static final Logger logger = LoggerFactory.
             getLogger(CacheWorker.class);
 
-    static final String ENABLED_CONFIG_KEY = "cache.server.worker.enabled";
-    static final String INTERVAL_CONFIG_KEY = "cache.server.worker.interval";
-
     /**
      * Runs one sweep of the worker.
      */

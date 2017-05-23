@@ -10,6 +10,7 @@ import com.lambdaworks.redis.codec.ByteArrayCodec;
 import com.lambdaworks.redis.codec.RedisCodec;
 import com.lambdaworks.redis.codec.Utf8StringCodec;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -184,11 +185,11 @@ class RedisCache implements DerivativeCache {
         static {
             Configuration config = Configuration.getInstance();
             RedisURI redisUri =
-                    RedisURI.Builder.redis(config.getString(HOST_CONFIG_KEY)).
-                            withPort(config.getInt(PORT_CONFIG_KEY, 6379)).
-                            withSsl(config.getBoolean(SSL_CONFIG_KEY, false)).
-                            withPassword(config.getString(PASSWORD_CONFIG_KEY, "")).
-                            withDatabase(config.getInt(DATABASE_CONFIG_KEY, 0)).
+                    RedisURI.Builder.redis(config.getString(Key.REDISCACHE_HOST)).
+                            withPort(config.getInt(Key.REDISCACHE_PORT, 6379)).
+                            withSsl(config.getBoolean(Key.REDISCACHE_SSL, false)).
+                            withPassword(config.getString(Key.REDISCACHE_PASSWORD, "")).
+                            withDatabase(config.getInt(Key.REDISCACHE_DATABASE, 0)).
                             build();
             RedisClient client = RedisClient.create(redisUri);
             connection = client.connect(new CustomRedisCodec());
@@ -202,12 +203,6 @@ class RedisCache implements DerivativeCache {
             "edu.illinois.library.cantaloupe.image";
     static final String INFO_HASH_KEY =
             "edu.illinois.library.cantaloupe.info";
-
-    static final String DATABASE_CONFIG_KEY = "RedisCache.database";
-    static final String HOST_CONFIG_KEY = "RedisCache.host";
-    static final String PASSWORD_CONFIG_KEY = "RedisCache.password";
-    static final String PORT_CONFIG_KEY = "RedisCache.port";
-    static final String SSL_CONFIG_KEY = "RedisCache.ssl";
 
     private static StatefulRedisConnection<String, byte[]> getConnection() {
         return LazyConnectionHolder.connection;

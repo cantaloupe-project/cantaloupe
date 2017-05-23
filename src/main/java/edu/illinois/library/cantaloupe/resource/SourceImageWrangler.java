@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.SourceCache;
 import edu.illinois.library.cantaloupe.cache.CacheDisabledException;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.IncompatibleResolverException;
@@ -37,9 +38,6 @@ public class SourceImageWrangler {
     private static final Logger logger = LoggerFactory.
             getLogger(SourceImageWrangler.class);
 
-    static final String STREAMPROCESSOR_RETRIEVAL_STRATEGY_CONFIG_KEY =
-            "StreamProcessor.retrieval_strategy";
-
     private Identifier identifier;
     private Processor processor;
     private Resolver resolver;
@@ -47,7 +45,7 @@ public class SourceImageWrangler {
     public static StreamProcessorRetrievalStrategy
     getStreamProcessorRetrievalStrategy() {
         return ConfigurationFactory.getInstance().getString(
-                STREAMPROCESSOR_RETRIEVAL_STRATEGY_CONFIG_KEY,
+                Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
                 "StreamStrategy").equals("StreamStrategy") ?
                 StreamProcessorRetrievalStrategy.STREAM :
                 StreamProcessorRetrievalStrategy.CACHE;
@@ -71,11 +69,11 @@ public class SourceImageWrangler {
      *     <li>If the resolver is a {@link StreamResolver} (only) and the
      *     processor is a {@link StreamProcessor} (only):
      *         <ul>
-     *             <li>If {@link #STREAMPROCESSOR_RETRIEVAL_STRATEGY_CONFIG_KEY}
+     *             <li>If {@link Key#STREAMPROCESSOR_RETRIEVAL_STRATEGY}
      *             is set to <code>StreamStrategy</code>, the processor will
      *             read from the {@link StreamSource} provided by the
      *             resolver.</li>
-     *             <li>If {@link #STREAMPROCESSOR_RETRIEVAL_STRATEGY_CONFIG_KEY}
+     *             <li>If {@link Key#STREAMPROCESSOR_RETRIEVAL_STRATEGY}
      *             is set to <code>CacheStrategy</code>, the source image will
      *             be downloaded to the source cache, and the processor will
      *             read the file returned by
@@ -87,8 +85,8 @@ public class SourceImageWrangler {
      *     <li>If the resolver is a {@link StreamResolver} (only) and the
      *     processor is a {@link FileProcessor} (only):
      *         <ul>
-     *             <li>If {@link CacheFactory#SOURCE_CACHE_ENABLED_CONFIG_KEY}
-     *             is <code>true</code>, the source image will be downloaded
+     *             <li>If {@link Key#SOURCE_CACHE_ENABLED} is
+     *             <code>true</code>, the source image will be downloaded
      *             to the source cache, and the processor will read the file
      *             returned by
      *             {@link SourceCache#getSourceImageFile(Identifier)}. This will

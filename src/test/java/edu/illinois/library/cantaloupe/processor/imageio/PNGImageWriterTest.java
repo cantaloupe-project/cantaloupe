@@ -2,9 +2,9 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
@@ -43,7 +43,7 @@ public class PNGImageWriterTest extends BaseTest {
     @Test
     public void testWriteWithBufferedImageAndNativeMetadata()  throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("png-nativemetadata.png");
         final PNGImageReader reader = new PNGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -57,7 +57,7 @@ public class PNGImageWriterTest extends BaseTest {
     @Test
     public void testWriteWithBufferedImageAndXmpMetadata()  throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("png-xmp.png");
         final PNGImageReader reader = new PNGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -84,7 +84,7 @@ public class PNGImageWriterTest extends BaseTest {
     @Test
     public void testWriteWithPlanarImageAndNativeMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("png-nativemetadata.png");
         final PNGImageReader reader = new PNGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -99,7 +99,7 @@ public class PNGImageWriterTest extends BaseTest {
     @Test
     public void testWriteWithPlanarImageAndXmpMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("png-xmp.png");
         final PNGImageReader reader = new PNGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -186,8 +186,8 @@ public class PNGImageWriterTest extends BaseTest {
 
     private PNGImageWriter getWriter(Metadata metadata) throws IOException {
         OperationList opList = new OperationList();
-        if (ConfigurationFactory.getInstance().
-                getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
+        if (Configuration.getInstance().
+                getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
             opList.add(new MetadataCopy());
         }
         return new PNGImageWriter(opList, metadata);

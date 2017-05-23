@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -10,9 +11,6 @@ import edu.illinois.library.cantaloupe.resource.iiif.ImageInfoUtil;
 import java.awt.Dimension;
 
 abstract class ImageInfoFactory {
-
-    static final String MIN_TILE_SIZE_CONFIG_KEY =
-            "endpoint.iiif.min_tile_size";
 
     /** Will be used to calculate a maximum scale factor. */
     private static final int MIN_SIZE = 64;
@@ -31,7 +29,7 @@ abstract class ImageInfoFactory {
                 processor.getAvailableOutputFormats());
 
         final int minTileSize = ConfigurationFactory.getInstance().
-                getInt(MIN_TILE_SIZE_CONFIG_KEY, 1024);
+                getInt(Key.IIIF_MIN_TILE_SIZE, 1024);
 
         // Find a tile width and height. If the image is not tiled,
         // calculate a tile size close to MIN_TILE_SIZE_CONFIG_KEY pixels.

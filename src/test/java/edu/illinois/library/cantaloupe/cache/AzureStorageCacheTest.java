@@ -4,6 +4,7 @@ import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.ListBlobItem;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -57,11 +58,11 @@ public class AzureStorageCacheTest extends BaseTest {
         super.setUp();
 
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Cache.TTL_CONFIG_KEY, 1);
-        config.setProperty(AzureStorageCache.OBJECT_KEY_PREFIX_CONFIG_KEY, "test/");
-        config.setProperty(AzureStorageCache.ACCOUNT_NAME_CONFIG_KEY, getAccountName());
-        config.setProperty(AzureStorageCache.ACCOUNT_KEY_CONFIG_KEY, getAccountKey());
-        config.setProperty(AzureStorageCache.CONTAINER_NAME_CONFIG_KEY, getContainer());
+        config.setProperty(Key.CACHE_SERVER_TTL, 1);
+        config.setProperty(Key.AZURESTORAGECACHE_OBJECT_KEY_PREFIX, "test/");
+        config.setProperty(Key.AZURESTORAGECACHE_ACCOUNT_NAME, getAccountName());
+        config.setProperty(Key.AZURESTORAGECACHE_ACCOUNT_KEY, getAccountKey());
+        config.setProperty(Key.AZURESTORAGECACHE_CONTAINER_NAME, getContainer());
 
         instance = new AzureStorageCache();
     }
@@ -89,7 +90,7 @@ public class AzureStorageCacheTest extends BaseTest {
     public void testGetContainerName() {
         assertEquals(
                 ConfigurationFactory.getInstance().
-                        getString(AzureStorageCache.CONTAINER_NAME_CONFIG_KEY),
+                        getString(Key.AZURESTORAGECACHE_CONTAINER_NAME),
                 AzureStorageCache.getContainerName());
     }
 
@@ -176,16 +177,16 @@ public class AzureStorageCacheTest extends BaseTest {
     public void testGetObjectKeyPrefix() {
         Configuration config = ConfigurationFactory.getInstance();
 
-        config.setProperty(AzureStorageCache.OBJECT_KEY_PREFIX_CONFIG_KEY, "");
+        config.setProperty(Key.AZURESTORAGECACHE_OBJECT_KEY_PREFIX, "");
         assertEquals("", instance.getObjectKeyPrefix());
 
-        config.setProperty(AzureStorageCache.OBJECT_KEY_PREFIX_CONFIG_KEY, "/");
+        config.setProperty(Key.AZURESTORAGECACHE_OBJECT_KEY_PREFIX, "/");
         assertEquals("", instance.getObjectKeyPrefix());
 
-        config.setProperty(AzureStorageCache.OBJECT_KEY_PREFIX_CONFIG_KEY, "cats");
+        config.setProperty(Key.AZURESTORAGECACHE_OBJECT_KEY_PREFIX, "cats");
         assertEquals("cats/", instance.getObjectKeyPrefix());
 
-        config.setProperty(AzureStorageCache.OBJECT_KEY_PREFIX_CONFIG_KEY, "cats/");
+        config.setProperty(Key.AZURESTORAGECACHE_OBJECT_KEY_PREFIX, "cats/");
         assertEquals("cats/", instance.getObjectKeyPrefix());
     }
 

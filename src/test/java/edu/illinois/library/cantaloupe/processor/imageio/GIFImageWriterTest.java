@@ -2,9 +2,9 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
@@ -42,7 +42,7 @@ public class GIFImageWriterTest extends BaseTest {
 
         final Configuration config = ConfigurationFactory.getInstance();
         // Disable metadata preservation (will be re-enabled in certain tests)
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, false);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, false);
 
         // Read an image fixture into memory
         final File fixture = TestUtil.getImage("gif-xmp.gif");
@@ -73,7 +73,7 @@ public class GIFImageWriterTest extends BaseTest {
     @Ignore // Disabled, as GIFMetadata.getXMP() is disabled.
     public void testWriteWithBufferedImageAndMetadata()  throws Exception {
         final Configuration config = Configuration.getInstance();
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         getWriter().write(bufferedImage, outputStream);
         checkForMetadata();
     }
@@ -88,7 +88,7 @@ public class GIFImageWriterTest extends BaseTest {
     @Ignore // Disabled, as GIFMetadata.getXMP() is disabled.
     public void testWriteWithPlanarImageAndMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         getWriter().write(planarImage, outputStream);
         checkForMetadata();
     }
@@ -135,8 +135,8 @@ public class GIFImageWriterTest extends BaseTest {
 
     private GIFImageWriter getWriter() throws IOException {
         OperationList opList = new OperationList();
-        if (ConfigurationFactory.getInstance().
-                getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
+        if (Configuration.getInstance().
+                getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
             opList.add(new MetadataCopy());
         }
         return new GIFImageWriter(opList, metadata);

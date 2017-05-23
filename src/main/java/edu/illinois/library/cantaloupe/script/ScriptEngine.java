@@ -9,9 +9,6 @@ import javax.script.ScriptException;
  */
 public interface ScriptEngine {
 
-    String METHOD_INVOCATION_CACHE_ENABLED_CONFIG_KEY =
-            "delegate_script.cache.enabled";
-
     /**
      * Invokes a method. Implementations should employ a cache respecting the
      * settings of the cache configuration constants.

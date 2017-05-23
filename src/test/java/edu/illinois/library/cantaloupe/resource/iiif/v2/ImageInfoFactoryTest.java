@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
@@ -32,9 +33,8 @@ public class ImageInfoFactoryTest extends BaseTest {
         super.setUp();
 
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
-                "Java2dProcessor");
-        config.setProperty(AbstractResource.MAX_PIXELS_CONFIG_KEY, 100);
+        config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
+        config.setProperty(Key.MAX_PIXELS, 100);
 
         identifier = new Identifier("bla");
         imageUri = "http://example.org/bla";
@@ -186,16 +186,15 @@ public class ImageInfoFactoryTest extends BaseTest {
 
     @Test
     public void testNewImageInfoMaxArea() throws Exception {
+        final Configuration config = Configuration.getInstance();
         List profile = (List) imageInfo.get("profile");
 
         // with max_pixels > 0
         assertTrue(((Map) profile.get(1)).get("maxArea").
-                equals(ConfigurationFactory.getInstance().
-                        getInt(AbstractResource.MAX_PIXELS_CONFIG_KEY)));
+                equals(config.getInt(Key.MAX_PIXELS)));
 
         // with max_pixels == 0
-        ConfigurationFactory.getInstance().
-                setProperty(AbstractResource.MAX_PIXELS_CONFIG_KEY, 0);
+        config.setProperty(Key.MAX_PIXELS, 0);
         imageInfo = ImageInfoFactory.newImageInfo(identifier, imageUri,
                 processor, processor.readImageInfo());
         profile = (List) imageInfo.get("profile");
@@ -219,10 +218,8 @@ public class ImageInfoFactoryTest extends BaseTest {
     @Test
     public void testNewImageInfoDelegateScriptKeys() throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(
-                ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY, true);
-        config.setProperty(
-                ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         imageInfo = ImageInfoFactory.newImageInfo(identifier, imageUri,
                 processor, processor.readImageInfo());

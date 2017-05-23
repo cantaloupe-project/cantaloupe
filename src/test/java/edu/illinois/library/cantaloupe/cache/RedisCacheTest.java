@@ -4,6 +4,7 @@ import com.lambdaworks.redis.RedisClient;
 import com.lambdaworks.redis.RedisURI;
 import com.lambdaworks.redis.api.StatefulRedisConnection;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
@@ -62,15 +63,15 @@ public class RedisCacheTest extends BaseTest {
         org.apache.commons.configuration.Configuration testConfig =
                 TestUtil.getTestConfig();
 
-        config.setProperty(RedisCache.HOST_CONFIG_KEY,
+        config.setProperty(Key.REDISCACHE_HOST,
                 testConfig.getString(ConfigurationConstants.REDIS_HOST.getKey()));
-        config.setProperty(RedisCache.PORT_CONFIG_KEY,
+        config.setProperty(Key.REDISCACHE_PORT,
                 testConfig.getProperty(ConfigurationConstants.REDIS_PORT.getKey()));
-        config.setProperty(RedisCache.SSL_CONFIG_KEY,
+        config.setProperty(Key.REDISCACHE_SSL,
                 testConfig.getProperty(ConfigurationConstants.REDIS_SSL.getKey()));
-        config.setProperty(RedisCache.PASSWORD_CONFIG_KEY,
+        config.setProperty(Key.REDISCACHE_PASSWORD,
                 testConfig.getString(ConfigurationConstants.REDIS_PASSWORD.getKey()));
-        config.setProperty(RedisCache.DATABASE_CONFIG_KEY,
+        config.setProperty(Key.REDISCACHE_DATABASE,
                 testConfig.getProperty(ConfigurationConstants.REDIS_DATABASE.getKey()));
 
         instance = new RedisCache();

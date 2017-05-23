@@ -3,13 +3,13 @@ package edu.illinois.library.cantaloupe.operation;
 import static org.junit.Assert.*;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.overlay.BasicStringOverlayServiceTest;
 import edu.illinois.library.cantaloupe.operation.overlay.StringOverlay;
 import edu.illinois.library.cantaloupe.operation.redaction.RedactionServiceTest;
-import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
@@ -99,18 +99,18 @@ public class OperationListTest extends BaseTest {
         // overlay
         BasicStringOverlayServiceTest.setUpConfiguration();
         // scale filters
-        config.setProperty(Processor.DOWNSCALE_FILTER_CONFIG_KEY, "bicubic");
-        config.setProperty(Processor.UPSCALE_FILTER_CONFIG_KEY, "triangle");
+        config.setProperty(Key.PROCESSOR_DOWNSCALE_FILTER, "bicubic");
+        config.setProperty(Key.PROCESSOR_UPSCALE_FILTER, "triangle");
         // sharpening
-        config.setProperty(Processor.SHARPEN_CONFIG_KEY, 0.2f);
+        config.setProperty(Key.PROCESSOR_SHARPEN, 0.2f);
         // metadata copies
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         // background color
-        config.setProperty(Processor.BACKGROUND_COLOR_CONFIG_KEY, "white");
+        config.setProperty(Key.PROCESSOR_BACKGROUND_COLOR, "white");
         // JPEG quality
-        config.setProperty(Processor.JPG_QUALITY_CONFIG_KEY, 50);
+        config.setProperty(Key.PROCESSOR_JPG_QUALITY, 50);
         // JPEG progressive
-        config.setProperty(Processor.JPG_PROGRESSIVE_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_JPG_PROGRESSIVE, true);
 
         ///////////////////////////// Test ////////////////////////////////
 
@@ -150,14 +150,14 @@ public class OperationListTest extends BaseTest {
         // overlay
         BasicStringOverlayServiceTest.setUpConfiguration();
         // scale filters
-        config.setProperty(Processor.DOWNSCALE_FILTER_CONFIG_KEY, "bicubic");
-        config.setProperty(Processor.UPSCALE_FILTER_CONFIG_KEY, "triangle");
+        config.setProperty(Key.PROCESSOR_DOWNSCALE_FILTER, "bicubic");
+        config.setProperty(Key.PROCESSOR_UPSCALE_FILTER, "triangle");
         // sharpening
-        config.setProperty(Processor.SHARPEN_CONFIG_KEY, 0.2f);
+        config.setProperty(Key.PROCESSOR_SHARPEN, 0.2f);
         // metadata copies
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         // TIFF compression
-        config.setProperty(Processor.TIF_COMPRESSION_CONFIG_KEY, "LZW");
+        config.setProperty(Key.PROCESSOR_TIF_COMPRESSION, "LZW");
 
         ///////////////////////////// Test ////////////////////////////////
 

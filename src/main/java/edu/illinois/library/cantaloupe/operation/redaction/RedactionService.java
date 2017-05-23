@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.operation.redaction;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
@@ -19,15 +20,12 @@ import java.util.Map;
  */
 public class RedactionService {
 
-    public static final String REDACTION_ENABLED_CONFIG_KEY =
-            "redaction.enabled";
-
     /**
-     * @return Whether {@link #REDACTION_ENABLED_CONFIG_KEY} is true.
+     * @return Whether {@link Key#REDACTION_ENABLED} is true.
      */
     public boolean isEnabled() {
         return Configuration.getInstance().
-                getBoolean(REDACTION_ENABLED_CONFIG_KEY, false);
+                getBoolean(Key.REDACTION_ENABLED, false);
     }
 
     /**

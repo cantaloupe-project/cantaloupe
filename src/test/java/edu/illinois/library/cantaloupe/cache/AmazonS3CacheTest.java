@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.cache;
 
 import com.amazonaws.services.s3.iterable.S3Objects;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
@@ -62,12 +63,12 @@ public class AmazonS3CacheTest extends BaseTest {
         super.setUp();
 
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Cache.TTL_CONFIG_KEY, 2);
-        config.setProperty(AmazonS3Cache.OBJECT_KEY_PREFIX_CONFIG_KEY, "test/");
-        config.setProperty(AmazonS3Cache.ACCESS_KEY_ID_CONFIG_KEY, getAccessKeyId());
-        config.setProperty(AmazonS3Cache.BUCKET_NAME_CONFIG_KEY, getBucket());
-        config.setProperty(AmazonS3Cache.SECRET_KEY_CONFIG_KEY, getSecretKey());
-        config.setProperty(AmazonS3Cache.BUCKET_REGION_CONFIG_KEY, getRegion());
+        config.setProperty(Key.CACHE_SERVER_TTL, 2);
+        config.setProperty(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX, "test/");
+        config.setProperty(Key.AMAZONS3CACHE_ACCESS_KEY_ID, getAccessKeyId());
+        config.setProperty(Key.AMAZONS3CACHE_BUCKET_NAME, getBucket());
+        config.setProperty(Key.AMAZONS3CACHE_SECRET_KEY, getSecretKey());
+        config.setProperty(Key.AMAZONS3CACHE_BUCKET_REGION, getRegion());
 
         instance = new AmazonS3Cache();
     }
@@ -93,7 +94,7 @@ public class AmazonS3CacheTest extends BaseTest {
     @Test
     public void testGetBucketName() {
         assertEquals(
-                ConfigurationFactory.getInstance().getString(AmazonS3Cache.BUCKET_NAME_CONFIG_KEY),
+                ConfigurationFactory.getInstance().getString(Key.AMAZONS3CACHE_BUCKET_NAME),
                 instance.getBucketName());
     }
 
@@ -187,16 +188,16 @@ public class AmazonS3CacheTest extends BaseTest {
     public void testGetObjectKeyPrefix() {
         Configuration config = ConfigurationFactory.getInstance();
 
-        config.setProperty(AmazonS3Cache.OBJECT_KEY_PREFIX_CONFIG_KEY, "");
+        config.setProperty(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX, "");
         assertEquals("", instance.getObjectKeyPrefix());
 
-        config.setProperty(AmazonS3Cache.OBJECT_KEY_PREFIX_CONFIG_KEY, "/");
+        config.setProperty(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX, "/");
         assertEquals("", instance.getObjectKeyPrefix());
 
-        config.setProperty(AmazonS3Cache.OBJECT_KEY_PREFIX_CONFIG_KEY, "cats");
+        config.setProperty(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX, "cats");
         assertEquals("cats/", instance.getObjectKeyPrefix());
 
-        config.setProperty(AmazonS3Cache.OBJECT_KEY_PREFIX_CONFIG_KEY, "cats/");
+        config.setProperty(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX, "cats/");
         assertEquals("cats/", instance.getObjectKeyPrefix());
     }
 
@@ -262,7 +263,7 @@ public class AmazonS3CacheTest extends BaseTest {
 
     @Test
     public void testPurgeExpired() throws Exception {
-        ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 4);
+        ConfigurationFactory.getInstance().setProperty(Key.CACHE_SERVER_TTL, 4);
 
         // add an image
         InputStream inputStream = new FileInputStream(

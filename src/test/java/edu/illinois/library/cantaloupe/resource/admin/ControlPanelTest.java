@@ -1,14 +1,10 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
 import edu.illinois.library.cantaloupe.WebApplication;
-import edu.illinois.library.cantaloupe.cache.Cache;
-import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -68,16 +64,30 @@ public class ControlPanelTest extends ResourceTest {
     public void setUp() throws Exception {
         super.setUp();
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(WebApplication.ADMIN_SECRET_CONFIG_KEY, SECRET);
-        config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
-                "FilesystemResolver");
-        config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
-                "Java2dProcessor");
+        config.setProperty(Key.ADMIN_SECRET, SECRET);
+        config.setProperty(Key.RESOLVER_STATIC, "FilesystemResolver");
+        config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
 
-        config.clearProperty("FilesystemResolver.BasicLookupStrategy.path_prefix");
-        config.clearProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY);
+        config.clearProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX);
+        config.clearProperty(Key.DELEGATE_SCRIPT_PATHNAME);
 
         webDriver.get(getAdminUri());
+    }
+
+    private WebElement inputNamed(Key key) {
+        return inputNamed(key.key());
+    }
+
+    private WebElement inputNamed(String key) {
+        return css("[name=\"" + key + "\"]");
+    }
+
+    private Select selectNamed(Key key) {
+        return selectNamed(key.key());
+    }
+
+    private Select selectNamed(String key) {
+        return new Select(inputNamed(key));
     }
 
     @Test
@@ -85,21 +95,21 @@ public class ControlPanelTest extends ResourceTest {
         css("#cl-http-button").click();
 
         // Fill in the form
-        css("[name=\"http.enabled\"]").click();
-        css("[name=\"http.host\"]").sendKeys("1.2.3.4");
-        css("[name=\"http.port\"]").sendKeys("8989");
-        css("[name=\"https.enabled\"]").click();
-        css("[name=\"https.host\"]").sendKeys("2.3.4.5");
-        css("[name=\"https.port\"]").sendKeys("8990");
-        css("[name=\"https.key_store_type\"]").sendKeys("PKCS12");
-        css("[name=\"https.key_store_path\"]").sendKeys("/something");
-        css("[name=\"https.key_store_password\"]").sendKeys("cats");
-        css("[name=\"auth.basic.enabled\"]").click();
-        css("[name=\"auth.basic.username\"]").sendKeys("dogs");
-        css("[name=\"auth.basic.secret\"]").sendKeys("foxes");
-        css("[name=\"base_uri\"]").sendKeys("http://bla/bla/");
-        css("[name=\"slash_substitute\"]").sendKeys("^");
-        css("[name=\"print_stack_trace_on_error_pages\"]").click();
+        inputNamed(Key.HTTP_ENABLED).click();
+        inputNamed(Key.HTTP_HOST).sendKeys("1.2.3.4");
+        inputNamed(Key.HTTP_PORT).sendKeys("8989");
+        inputNamed(Key.HTTPS_ENABLED).click();
+        inputNamed(Key.HTTPS_HOST).sendKeys("2.3.4.5");
+        inputNamed(Key.HTTPS_PORT).sendKeys("8990");
+        inputNamed(Key.HTTPS_KEY_STORE_TYPE).sendKeys("PKCS12");
+        inputNamed(Key.HTTPS_KEY_STORE_PATH).sendKeys("/something");
+        inputNamed(Key.HTTPS_KEY_STORE_PASSWORD).sendKeys("cats");
+        inputNamed(Key.BASIC_AUTH_ENABLED).click();
+        inputNamed(Key.BASIC_AUTH_USERNAME).sendKeys("dogs");
+        inputNamed(Key.BASIC_AUTH_SECRET).sendKeys("foxes");
+        inputNamed(Key.BASE_URI).sendKeys("http://bla/bla/");
+        inputNamed(Key.SLASH_SUBSTITUTE).sendKeys("^");
+        inputNamed(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES).click();
 
         // Submit the form
         css("#cl-http input[type=\"submit\"]").click();
@@ -108,21 +118,21 @@ public class ControlPanelTest extends ResourceTest {
 
         // Assert that the application configuration has been updated correctly
         final Configuration config = ConfigurationFactory.getInstance();
-        assertTrue(config.getBoolean("http.enabled"));
-        assertEquals("1.2.3.4", config.getString("http.host"));
-        assertEquals(8989, config.getInt("http.port"));
-        assertTrue(config.getBoolean("https.enabled"));
-        assertEquals("2.3.4.5", config.getString("https.host"));
-        assertEquals(8990, config.getInt("https.port"));
-        assertEquals("PKCS12", config.getString("https.key_store_type"));
-        assertEquals("/something", config.getString("https.key_store_path"));
-        assertEquals("cats", config.getString("https.key_store_password"));
-        assertTrue(config.getBoolean("auth.basic.enabled"));
-        assertEquals("dogs", config.getString("auth.basic.username"));
-        assertEquals("foxes", config.getString("auth.basic.secret"));
-        assertEquals("http://bla/bla/", config.getString("base_uri"));
-        assertEquals("^", config.getString("slash_substitute"));
-        assertTrue(config.getBoolean("print_stack_trace_on_error_pages"));
+        assertTrue(config.getBoolean(Key.HTTP_ENABLED));
+        assertEquals("1.2.3.4", config.getString(Key.HTTP_HOST));
+        assertEquals(8989, config.getInt(Key.HTTP_PORT));
+        assertTrue(config.getBoolean(Key.HTTPS_ENABLED));
+        assertEquals("2.3.4.5", config.getString(Key.HTTPS_HOST));
+        assertEquals(8990, config.getInt(Key.HTTPS_PORT));
+        assertEquals("PKCS12", config.getString(Key.HTTPS_KEY_STORE_TYPE));
+        assertEquals("/something", config.getString(Key.HTTPS_KEY_STORE_PATH));
+        assertEquals("cats", config.getString(Key.HTTPS_KEY_STORE_PASSWORD));
+        assertTrue(config.getBoolean(Key.BASIC_AUTH_ENABLED));
+        assertEquals("dogs", config.getString(Key.BASIC_AUTH_USERNAME));
+        assertEquals("foxes", config.getString(Key.BASIC_AUTH_SECRET));
+        assertEquals("http://bla/bla/", config.getString(Key.BASE_URI));
+        assertEquals("^", config.getString(Key.SLASH_SUBSTITUTE));
+        assertTrue(config.getBoolean(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES));
     }
 
     @Test
@@ -130,16 +140,15 @@ public class ControlPanelTest extends ResourceTest {
         css("#cl-endpoints-button").click();
 
         // Fill in the form
-        css("[name=\"max_pixels\"]").sendKeys("5000");
-        new Select(css("[name=\"endpoint.iiif.content_disposition\"]")).
-                selectByValue("attachment");
-        css("[name=\"endpoint.iiif.min_tile_size\"]").sendKeys("250");
-        css("[name=\"endpoint.iiif.1.enabled\"]").click();
-        css("[name=\"endpoint.iiif.2.enabled\"]").click();
-        css("[name=\"endpoint.iiif.2.restrict_to_sizes\"]").click();
-        css("[name=\"endpoint.api.enabled\"]").click();
-        css("[name=\"endpoint.api.username\"]").sendKeys("cats");
-        css("[name=\"endpoint.api.secret\"]").sendKeys("dogs");
+        inputNamed(Key.MAX_PIXELS).sendKeys("5000");
+        selectNamed(Key.IIIF_CONTENT_DISPOSITION).selectByValue("attachment");
+        inputNamed(Key.IIIF_MIN_TILE_SIZE).sendKeys("250");
+        inputNamed(Key.IIIF_1_ENDPOINT_ENABLED).click();
+        inputNamed(Key.IIIF_2_ENDPOINT_ENABLED).click();
+        inputNamed(Key.IIIF_2_RESTRICT_TO_SIZES).click();
+        inputNamed(Key.API_ENABLED).click();
+        inputNamed(Key.API_USERNAME).sendKeys("cats");
+        inputNamed(Key.API_SECRET).sendKeys("dogs");
 
         // Submit the form
         css("#cl-endpoints input[type=\"submit\"]").click();
@@ -148,16 +157,16 @@ public class ControlPanelTest extends ResourceTest {
 
         // Assert that the application configuration has been updated correctly
         final Configuration config = ConfigurationFactory.getInstance();
-        assertEquals(5000, config.getInt("max_pixels"));
+        assertEquals(5000, config.getInt(Key.MAX_PIXELS));
         assertEquals("attachment",
-                config.getString("endpoint.iiif.content_disposition"));
-        assertEquals(250, config.getInt("endpoint.iiif.min_tile_size"));
-        assertTrue(config.getBoolean("endpoint.iiif.1.enabled"));
-        assertTrue(config.getBoolean("endpoint.iiif.2.enabled"));
-        assertTrue(config.getBoolean("endpoint.iiif.2.restrict_to_sizes"));
-        assertTrue(config.getBoolean("endpoint.api.enabled"));
-        assertEquals("cats", config.getString("endpoint.api.username"));
-        assertEquals("dogs", config.getString("endpoint.api.secret"));
+                config.getString(Key.IIIF_CONTENT_DISPOSITION));
+        assertEquals(250, config.getInt(Key.IIIF_MIN_TILE_SIZE));
+        assertTrue(config.getBoolean(Key.IIIF_1_ENDPOINT_ENABLED));
+        assertTrue(config.getBoolean(Key.IIIF_2_ENDPOINT_ENABLED));
+        assertTrue(config.getBoolean(Key.IIIF_2_RESTRICT_TO_SIZES));
+        assertTrue(config.getBoolean(Key.API_ENABLED));
+        assertEquals("cats", config.getString(Key.API_USERNAME));
+        assertEquals("dogs", config.getString(Key.API_SECRET));
     }
 
     @Test
@@ -165,48 +174,44 @@ public class ControlPanelTest extends ResourceTest {
         css("#cl-resolver-button").click();
 
         // Fill in the form
-        new Select(css("[name=\"resolver.delegate\"]")).selectByValue("false");
-        new Select(css("[name=\"resolver.static\"]")).
+        selectNamed(Key.RESOLVER_DELEGATE).selectByValue("false");
+        selectNamed(Key.RESOLVER_STATIC).
                 selectByVisibleText("FilesystemResolver");
         // AmazonS3Resolver section
         css("#cl-resolver li > a[href=\"#AmazonS3Resolver\"]").click();
-        css("[name=\"AmazonS3Resolver.access_key_id\"]").sendKeys("123");
-        css("[name=\"AmazonS3Resolver.secret_key\"]").sendKeys("456");
-        css("[name=\"AmazonS3Resolver.bucket.name\"]").sendKeys("cats");
-        css("[name=\"AmazonS3Resolver.bucket.region\"]").sendKeys("antarctica");
-        new Select(css("[name=\"AmazonS3Resolver.lookup_strategy\"]")).
+        inputNamed(Key.AMAZONS3RESOLVER_ACCESS_KEY_ID).sendKeys("123");
+        inputNamed(Key.AMAZONS3RESOLVER_SECRET_KEY).sendKeys("456");
+        inputNamed(Key.AMAZONS3RESOLVER_BUCKET_NAME).sendKeys("cats");
+        inputNamed(Key.AMAZONS3RESOLVER_BUCKET_REGION).sendKeys("antarctica");
+        selectNamed(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY).
                 selectByValue("BasicLookupStrategy");
         // AzureStorageResolver
         css("#cl-resolver li > a[href=\"#AzureStorageResolver\"]").click();
-        css("[name=\"AzureStorageResolver.account_name\"]").sendKeys("bla");
-        css("[name=\"AzureStorageResolver.account_key\"]").sendKeys("cats");
-        css("[name=\"AzureStorageResolver.container_name\"]").sendKeys("bucket");
-        new Select(css("[name=\"AzureStorageResolver.lookup_strategy\"]")).
+        inputNamed(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME).sendKeys("bla");
+        inputNamed(Key.AZURESTORAGERESOLVER_ACCOUNT_KEY).sendKeys("cats");
+        inputNamed(Key.AZURESTORAGERESOLVER_CONTAINER_NAME).sendKeys("bucket");
+        selectNamed(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY).
                 selectByValue("BasicLookupStrategy");
         // FilesystemResolver
         css("#cl-resolver li > a[href=\"#FilesystemResolver\"]").click();
-        new Select(css("[name=\"FilesystemResolver.lookup_strategy\"]")).
+        selectNamed(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY).
                 selectByValue("BasicLookupStrategy");
-        css("[name=\"FilesystemResolver.BasicLookupStrategy.path_prefix\"]").
-                sendKeys("/prefix");
-        css("[name=\"FilesystemResolver.BasicLookupStrategy.path_suffix\"]").
-                sendKeys("/suffix");
+        inputNamed(Key.FILESYSTEMRESOLVER_PATH_PREFIX).sendKeys("/prefix");
+        inputNamed(Key.FILESYSTEMRESOLVER_PATH_SUFFIX).sendKeys("/suffix");
         // HttpResolver
         css("#cl-resolver li > a[href=\"#HttpResolver\"]").click();
-        new Select(css("[name=\"HttpResolver.lookup_strategy\"]")).
+        selectNamed(Key.HTTPRESOLVER_LOOKUP_STRATEGY).
                 selectByValue("BasicLookupStrategy");
-        css("[name=\"HttpResolver.BasicLookupStrategy.url_prefix\"]").
-                sendKeys("http://prefix/");
-        css("[name=\"HttpResolver.BasicLookupStrategy.url_suffix\"]").
-                sendKeys("/suffix");
-        css("[name=\"HttpResolver.auth.basic.username\"]").sendKeys("username");
-        css("[name=\"HttpResolver.auth.basic.secret\"]").sendKeys("password");
+        inputNamed(Key.HTTPRESOLVER_URL_PREFIX).sendKeys("http://prefix/");
+        inputNamed(Key.HTTPRESOLVER_URL_SUFFIX).sendKeys("/suffix");
+        inputNamed(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME).sendKeys("username");
+        inputNamed(Key.HTTPRESOLVER_BASIC_AUTH_SECRET).sendKeys("password");
         // JdbcResolver
         css("#cl-resolver li > a[href=\"#JdbcResolver\"]").click();
-        css("[name=\"JdbcResolver.url\"]").sendKeys("cats://dogs");
-        css("[name=\"JdbcResolver.user\"]").sendKeys("user");
-        css("[name=\"JdbcResolver.password\"]").sendKeys("password");
-        css("[name=\"JdbcResolver.connection_timeout\"]").sendKeys("5");
+        inputNamed(Key.JDBCRESOLVER_JDBC_URL).sendKeys("cats://dogs");
+        inputNamed(Key.JDBCRESOLVER_USER).sendKeys("user");
+        inputNamed(Key.JDBCRESOLVER_PASSWORD).sendKeys("password");
+        inputNamed(Key.JDBCRESOLVER_CONNECTION_TIMEOUT).sendKeys("5");
 
         // Submit the form
         css("#cl-resolver input[type=\"submit\"]").click();
@@ -215,45 +220,56 @@ public class ControlPanelTest extends ResourceTest {
 
         // Assert that the application configuration has been updated correctly
         final Configuration config = ConfigurationFactory.getInstance();
-        assertFalse(config.getBoolean("resolver.delegate"));
-        assertEquals("FilesystemResolver", config.getString("resolver.static"));
+        assertFalse(config.getBoolean(Key.RESOLVER_DELEGATE));
+        assertEquals("FilesystemResolver",
+                config.getString(Key.RESOLVER_STATIC));
         // AmazonS3Resolver
-        assertEquals("123", config.getString("AmazonS3Resolver.access_key_id"));
-        assertEquals("456", config.getString("AmazonS3Resolver.secret_key"));
-        assertEquals("cats", config.getString("AmazonS3Resolver.bucket.name"));
+        assertEquals("123",
+                config.getString(Key.AMAZONS3RESOLVER_ACCESS_KEY_ID));
+        assertEquals("456",
+                config.getString(Key.AMAZONS3RESOLVER_SECRET_KEY));
+        assertEquals("cats",
+                config.getString(Key.AMAZONS3RESOLVER_BUCKET_NAME));
         assertEquals("antarctica",
-                config.getString("AmazonS3Resolver.bucket.region"));
+                config.getString(Key.AMAZONS3RESOLVER_BUCKET_REGION));
         assertEquals("BasicLookupStrategy",
-                config.getString("AmazonS3Resolver.lookup_strategy"));
+                config.getString(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY));
         // AzureStorageResolver
-        assertEquals("bla", config.getString("AzureStorageResolver.account_name"));
-        assertEquals("cats", config.getString("AzureStorageResolver.account_key"));
-        assertEquals("bucket", config.getString("AzureStorageResolver.container_name"));
+        assertEquals("bla",
+                config.getString(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME));
+        assertEquals("cats",
+                config.getString(Key.AZURESTORAGERESOLVER_ACCOUNT_KEY));
+        assertEquals("bucket",
+                config.getString(Key.AZURESTORAGERESOLVER_CONTAINER_NAME));
         assertEquals("BasicLookupStrategy",
-                config.getString("AzureStorageResolver.lookup_strategy"));
+                config.getString(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY));
         // FilesystemResolver
         assertEquals("BasicLookupStrategy",
-                config.getString("FilesystemResolver.lookup_strategy"));
+                config.getString(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY));
         assertEquals("/prefix",
-                config.getString("FilesystemResolver.BasicLookupStrategy.path_prefix"));
+                config.getString(Key.FILESYSTEMRESOLVER_PATH_PREFIX));
         assertEquals("/suffix",
-                config.getString("FilesystemResolver.BasicLookupStrategy.path_suffix"));
+                config.getString(Key.FILESYSTEMRESOLVER_PATH_SUFFIX));
         // HttpResolver
         assertEquals("BasicLookupStrategy",
-                config.getString("HttpResolver.lookup_strategy"));
+                config.getString(Key.HTTPRESOLVER_LOOKUP_STRATEGY));
         assertEquals("http://prefix/",
-                config.getString("HttpResolver.BasicLookupStrategy.url_prefix"));
+                config.getString(Key.HTTPRESOLVER_URL_PREFIX));
         assertEquals("/suffix",
-                config.getString("HttpResolver.BasicLookupStrategy.url_suffix"));
+                config.getString(Key.HTTPRESOLVER_URL_SUFFIX));
         assertEquals("username",
-                config.getString("HttpResolver.auth.basic.username"));
+                config.getString(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME));
         assertEquals("password",
-                config.getString("HttpResolver.auth.basic.secret"));
+                config.getString(Key.HTTPRESOLVER_BASIC_AUTH_SECRET));
         // JdbcResolver
-        assertEquals("cats://dogs", config.getString("JdbcResolver.url"));
-        assertEquals("user", config.getString("JdbcResolver.user"));
-        assertEquals("password", config.getString("JdbcResolver.password"));
-        assertEquals("5", config.getString("JdbcResolver.connection_timeout"));
+        assertEquals("cats://dogs",
+                config.getString(Key.JDBCRESOLVER_JDBC_URL));
+        assertEquals("user",
+                config.getString(Key.JDBCRESOLVER_USER));
+        assertEquals("password",
+                config.getString(Key.JDBCRESOLVER_PASSWORD));
+        assertEquals("5",
+                config.getString(Key.JDBCRESOLVER_CONNECTION_TIMEOUT));
     }
 
     @Test
@@ -262,46 +278,42 @@ public class ControlPanelTest extends ResourceTest {
 
         // Fill in the form
         css("#cl-processors li > a[href=\"#cl-image-assignments\"]").click();
-        new Select(css("[name=\"processor.gif\"]")).
-                selectByVisibleText("Java2dProcessor");
-        new Select(css("[name=\"processor.fallback\"]")).
-                selectByVisibleText("JaiProcessor");
-        css("[name=\"processor.normalize\"]").click();
-        new Select(css("[name=\"processor.background_color\"]")).
-                selectByValue("white");
-        new Select(css("[name=\"processor.upscale_filter\"]")).
+        selectNamed("processor.gif").selectByVisibleText("Java2dProcessor");
+        selectNamed(Key.PROCESSOR_FALLBACK).selectByVisibleText("JaiProcessor");
+        inputNamed(Key.PROCESSOR_NORMALIZE).click();
+        selectNamed(Key.PROCESSOR_BACKGROUND_COLOR).selectByValue("white");
+        selectNamed(Key.PROCESSOR_UPSCALE_FILTER).
                 selectByVisibleText("Triangle");
-        new Select(css("[name=\"processor.downscale_filter\"]")).
+        selectNamed(Key.PROCESSOR_DOWNSCALE_FILTER).
                 selectByVisibleText("Mitchell");
-        css("[name=\"processor.sharpen\"]").sendKeys("0.2");
-        css("[name=\"processor.jpg.progressive\"]").click();
-        css("[name=\"processor.jpg.quality\"]").sendKeys("55");
-        new Select(css("[name=\"processor.tif.compression\"]")).
-                selectByVisibleText("LZW");
-        new Select(css("[name=\"StreamProcessor.retrieval_strategy\"]")).
+        inputNamed(Key.PROCESSOR_SHARPEN).sendKeys("0.2");
+        inputNamed(Key.PROCESSOR_JPG_PROGRESSIVE).click();
+        inputNamed(Key.PROCESSOR_JPG_QUALITY).sendKeys("55");
+        selectNamed(Key.PROCESSOR_TIF_COMPRESSION).selectByVisibleText("LZW");
+        selectNamed(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY).
                 selectByValue("StreamStrategy");
         // FfmpegProcessor
         css("#cl-processors li > a[href=\"#FfmpegProcessor\"]").click();
-        css("[name=\"FfmpegProcessor.path_to_binaries\"]").sendKeys("/ffpath");
+        inputNamed(Key.FFMPEGPROCESSOR_PATH_TO_BINARIES).sendKeys("/ffpath");
         // GraphicsMagickProcessor
         css("#cl-processors li > a[href=\"#GraphicsMagickProcessor\"]").click();
-        css("[name=\"GraphicsMagickProcessor.path_to_binaries\"]").sendKeys("/gmpath");
+        inputNamed(Key.GRAPHICSMAGICKPROCESSOR_PATH_TO_BINARIES).sendKeys("/gmpath");
         // ImageMagickProcessor
         css("#cl-processors li > a[href=\"#ImageMagickProcessor\"]").click();
-        css("[name=\"ImageMagickProcessor.path_to_binaries\"]").sendKeys("/impath");
+        inputNamed(Key.IMAGEMAGICKPROCESSOR_PATH_TO_BINARIES).sendKeys("/impath");
         // JaiProcessor
         css("#cl-processors li > a[href=\"#JaiProcessor\"]").click();
         // Java2dProcessor
         css("#cl-processors li > a[href=\"#Java2dProcessor\"]").click();
         // KakaduProcessor
         css("#cl-processors li > a[href=\"#KakaduProcessor\"]").click();
-        css("[name=\"KakaduProcessor.path_to_binaries\"]").sendKeys("/kpath");
+        inputNamed(Key.KAKADUPROCESSOR_PATH_TO_BINARIES).sendKeys("/kpath");
         // OpenJpegProcessor
         css("#cl-processors li > a[href=\"#OpenJpegProcessor\"]").click();
-        css("[name=\"OpenJpegProcessor.path_to_binaries\"]").sendKeys("/ojpath");
+        inputNamed(Key.OPENJPEGPROCESSOR_PATH_TO_BINARIES).sendKeys("/ojpath");
         // PdfBoxProcessor
         css("#cl-processors li > a[href=\"#PdfBoxProcessor\"]").click();
-        css("[name=\"PdfBoxProcessor.dpi\"]").sendKeys("300");
+        inputNamed(Key.PDFBOXPROCESSOR_DPI).sendKeys("300");
 
         // Submit the form
         css("#cl-processors input[type=\"submit\"]").click();
@@ -311,38 +323,38 @@ public class ControlPanelTest extends ResourceTest {
         // Assert that the application configuration has been updated correctly
         final Configuration config = ConfigurationFactory.getInstance();
         assertEquals("Java2dProcessor", config.getString("processor.gif"));
-        assertEquals("JaiProcessor", config.getString("processor.fallback"));
-        assertTrue(config.getBoolean("processor.normalize"));
-        assertEquals("white", config.getString("processor.background_color"));
+        assertEquals("JaiProcessor", config.getString(Key.PROCESSOR_FALLBACK));
+        assertTrue(config.getBoolean(Key.PROCESSOR_NORMALIZE));
+        assertEquals("white", config.getString(Key.PROCESSOR_BACKGROUND_COLOR));
         assertEquals("triangle",
-                config.getString("processor.upscale_filter"));
+                config.getString(Key.PROCESSOR_UPSCALE_FILTER));
         assertEquals("mitchell",
-                config.getString("processor.downscale_filter"));
-        assertEquals("0.2", config.getString("processor.sharpen"));
-        assertEquals("true", config.getString("processor.jpg.progressive"));
-        assertEquals("55", config.getString("processor.jpg.quality"));
-        assertEquals("LZW", config.getString("processor.tif.compression"));
+                config.getString(Key.PROCESSOR_DOWNSCALE_FILTER));
+        assertEquals("0.2", config.getString(Key.PROCESSOR_SHARPEN));
+        assertEquals("true", config.getString(Key.PROCESSOR_JPG_PROGRESSIVE));
+        assertEquals("55", config.getString(Key.PROCESSOR_JPG_QUALITY));
+        assertEquals("LZW", config.getString(Key.PROCESSOR_TIF_COMPRESSION));
         assertEquals("StreamStrategy",
-                config.getString("StreamProcessor.retrieval_strategy"));
+                config.getString(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY));
         // FfmpegProcessor
         assertEquals("/ffpath",
-                config.getString("FfmpegProcessor.path_to_binaries"));
+                config.getString(Key.FFMPEGPROCESSOR_PATH_TO_BINARIES));
         // GraphicsMagickProcessor
         assertEquals("/gmpath",
-                config.getString("GraphicsMagickProcessor.path_to_binaries"));
+                config.getString(Key.GRAPHICSMAGICKPROCESSOR_PATH_TO_BINARIES));
         // ImageMagickProcessor
         assertEquals("/impath",
-                config.getString("ImageMagickProcessor.path_to_binaries"));
+                config.getString(Key.IMAGEMAGICKPROCESSOR_PATH_TO_BINARIES));
         // JaiProcessor
         // Java2dProcessor
         // KakaduProcessor
         assertEquals("/kpath",
-                config.getString("KakaduProcessor.path_to_binaries"));
+                config.getString(Key.KAKADUPROCESSOR_PATH_TO_BINARIES));
         // OpenJpegProcessor
         assertEquals("/ojpath",
-                config.getString("OpenJpegProcessor.path_to_binaries"));
+                config.getString(Key.OPENJPEGPROCESSOR_PATH_TO_BINARIES));
         // PdfBoxProcessor
-        assertEquals(300, config.getInt("PdfBoxProcessor.dpi"));
+        assertEquals(300, config.getInt(Key.PDFBOXPROCESSOR_DPI));
     }
 
     @Test
@@ -350,65 +362,63 @@ public class ControlPanelTest extends ResourceTest {
         css("#cl-caches-button").click();
 
         // Fill in the form
-        css("[name=\"cache.client.enabled\"]").click();
-        css("[name=\"cache.client.max_age\"]").sendKeys("250");
-        css("[name=\"cache.client.shared_max_age\"]").sendKeys("220");
-        css("[name=\"cache.client.public\"]").click();
-        css("[name=\"cache.client.private\"]").click();
-        css("[name=\"cache.client.no_cache\"]").click();
-        css("[name=\"cache.client.no_store\"]").click();
-        css("[name=\"cache.client.must_revalidate\"]").click();
-        css("[name=\"cache.client.proxy_revalidate\"]").click();
-        css("[name=\"cache.client.no_transform\"]").click();
-        new Select(css("[name=\"" + CacheFactory.SOURCE_CACHE_CONFIG_KEY + "\"]")).
-                selectByVisibleText("FilesystemCache");
-        css("[name=\"" + CacheFactory.SOURCE_CACHE_ENABLED_CONFIG_KEY + "\"]").click();
-        new Select(css("[name=\"" + CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY + "\"]")).
-                selectByVisibleText("FilesystemCache");
-        css("[name=\"" + CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY + "\"]").click();
-        css("[name=\"" + Cache.PURGE_MISSING_CONFIG_KEY + "\"]").click();
-        css("[name=\"" + Cache.RESOLVE_FIRST_CONFIG_KEY + "\"]").click();
-        css("[name=\"" + Cache.TTL_CONFIG_KEY + "\"]").sendKeys("10");
-        css("[name=\"cache.server.worker.enabled\"]").click();
-        css("[name=\"cache.server.worker.interval\"]").sendKeys("25");
+        inputNamed(Key.CLIENT_CACHE_ENABLED).click();
+        inputNamed(Key.CLIENT_CACHE_MAX_AGE).sendKeys("250");
+        inputNamed(Key.CLIENT_CACHE_SHARED_MAX_AGE).sendKeys("220");
+        inputNamed(Key.CLIENT_CACHE_PUBLIC).click();
+        inputNamed(Key.CLIENT_CACHE_PRIVATE).click();
+        inputNamed(Key.CLIENT_CACHE_NO_CACHE).click();
+        inputNamed(Key.CLIENT_CACHE_NO_STORE).click();
+        inputNamed(Key.CLIENT_CACHE_MUST_REVALIDATE).click();
+        inputNamed(Key.CLIENT_CACHE_PROXY_REVALIDATE).click();
+        inputNamed(Key.CLIENT_CACHE_NO_TRANSFORM).click();
+        selectNamed(Key.SOURCE_CACHE).selectByVisibleText("FilesystemCache");
+        inputNamed(Key.SOURCE_CACHE_ENABLED).click();
+        selectNamed(Key.DERIVATIVE_CACHE).selectByVisibleText("FilesystemCache");
+        inputNamed(Key.DERIVATIVE_CACHE_ENABLED).click();
+        inputNamed(Key.CACHE_SERVER_PURGE_MISSING).click();
+        inputNamed(Key.CACHE_SERVER_RESOLVE_FIRST).click();
+        inputNamed(Key.CACHE_SERVER_TTL).sendKeys("10");
+        inputNamed(Key.CACHE_WORKER_ENABLED).click();
+        inputNamed(Key.CACHE_WORKER_INTERVAL).sendKeys("25");
         // AmazonS3Cache
         css("#cl-caches li > a[href=\"#AmazonS3Cache\"]").click();
-        css("[name=\"AmazonS3Cache.access_key_id\"]").sendKeys("cats");
-        css("[name=\"AmazonS3Cache.secret_key\"]").sendKeys("dogs");
-        css("[name=\"AmazonS3Cache.bucket.name\"]").sendKeys("bucket");
-        css("[name=\"AmazonS3Cache.bucket.region\"]").sendKeys("greenland");
-        css("[name=\"AmazonS3Cache.object_key_prefix\"]").sendKeys("obj");
+        inputNamed(Key.AMAZONS3CACHE_ACCESS_KEY_ID).sendKeys("cats");
+        inputNamed(Key.AMAZONS3CACHE_SECRET_KEY).sendKeys("dogs");
+        inputNamed(Key.AMAZONS3CACHE_BUCKET_NAME).sendKeys("bucket");
+        inputNamed(Key.AMAZONS3CACHE_BUCKET_NAME).sendKeys("greenland");
+        inputNamed(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX).sendKeys("obj");
         // AzureStorageCache
         css("#cl-caches li > a[href=\"#AzureStorageCache\"]").click();
-        css("[name=\"AzureStorageCache.account_name\"]").sendKeys("bees");
-        css("[name=\"AzureStorageCache.account_key\"]").sendKeys("birds");
-        css("[name=\"AzureStorageCache.container_name\"]").sendKeys("badger");
-        css("[name=\"AzureStorageCache.object_key_prefix\"]").sendKeys("obj");
+        inputNamed(Key.AZURESTORAGECACHE_ACCOUNT_NAME).sendKeys("bees");
+        inputNamed(Key.AZURESTORAGECACHE_ACCOUNT_KEY).sendKeys("birds");
+        inputNamed(Key.AZURESTORAGECACHE_CONTAINER_NAME).sendKeys("badger");
+        inputNamed(Key.AZURESTORAGECACHE_OBJECT_KEY_PREFIX).sendKeys("obj");
         // FilesystemCache
         css("#cl-caches li > a[href=\"#FilesystemCache\"]").click();
-        css("[name=\"FilesystemCache.pathname\"]").sendKeys("/path");
-        css("[name=\"FilesystemCache.dir.depth\"]").sendKeys("8");
-        css("[name=\"FilesystemCache.dir.name_length\"]").sendKeys("4");
+        inputNamed(Key.FILESYSTEMCACHE_PATHNAME).sendKeys("/path");
+        inputNamed(Key.FILESYSTEMCACHE_DIRECTORY_DEPTH).sendKeys("8");
+        inputNamed(Key.FILESYSTEMCACHE_DIRECTORY_NAME_LENGTH).sendKeys("4");
         // JdbcCache
         css("#cl-caches li > a[href=\"#JdbcCache\"]").click();
-        css("[name=\"JdbcCache.url\"]").sendKeys("jdbc://dogs");
-        css("[name=\"JdbcCache.user\"]").sendKeys("person");
-        css("[name=\"JdbcCache.password\"]").sendKeys("cats");
-        css("[name=\"JdbcCache.connection_timeout\"]").sendKeys("9");
-        css("[name=\"JdbcCache.derivative_image_table\"]").sendKeys("hula");
-        css("[name=\"JdbcCache.info_table\"]").sendKeys("box");
+        inputNamed(Key.JDBCCACHE_JDBC_URL).sendKeys("jdbc://dogs");
+        inputNamed(Key.JDBCCACHE_USER).sendKeys("person");
+        inputNamed(Key.JDBCCACHE_PASSWORD).sendKeys("cats");
+        inputNamed(Key.JDBCCACHE_CONNECTION_TIMEOUT).sendKeys("9");
+        inputNamed(Key.JDBCCACHE_DERIVATIVE_IMAGE_TABLE).sendKeys("hula");
+        inputNamed(Key.JDBCCACHE_INFO_TABLE).sendKeys("box");
         // HeapCache
         css("#cl-caches li > a[href=\"#HeapCache\"]").click();
-        css("[name=\"HeapCache.target_size\"]").sendKeys("1234");
-        css("[name=\"HeapCache.persist\"]").click();
-        css("[name=\"HeapCache.persist.filesystem.pathname\"]").sendKeys("/tmp/cats");
+        inputNamed(Key.HEAPCACHE_TARGET_SIZE).sendKeys("1234");
+        inputNamed(Key.HEAPCACHE_PERSIST).click();
+        inputNamed(Key.HEAPCACHE_PATHNAME).sendKeys("/tmp/cats");
         // RedisCache
         css("#cl-caches li > a[href=\"#RedisCache\"]").click();
-        css("[name=\"RedisCache.host\"]").sendKeys("localhost");
-        css("[name=\"RedisCache.port\"]").sendKeys("12398");
-        css("[name=\"RedisCache.password\"]").sendKeys("redispass");
-        css("[name=\"RedisCache.ssl\"]").click();
-        css("[name=\"RedisCache.database\"]").sendKeys("5");
+        inputNamed(Key.REDISCACHE_HOST).sendKeys("localhost");
+        inputNamed(Key.REDISCACHE_PORT).sendKeys("12398");
+        inputNamed(Key.REDISCACHE_PASSWORD).sendKeys("redispass");
+        inputNamed(Key.REDISCACHE_SSL).click();
+        inputNamed(Key.REDISCACHE_DATABASE).sendKeys("5");
 
         // Submit the form
         css("#cl-caches input[type=\"submit\"]").click();
@@ -417,59 +427,57 @@ public class ControlPanelTest extends ResourceTest {
 
         // Assert that the application configuration has been updated correctly
         final Configuration config = ConfigurationFactory.getInstance();
-        assertTrue(config.getBoolean("cache.client.enabled"));
-        assertEquals("250", config.getString("cache.client.max_age"));
-        assertEquals("220", config.getString("cache.client.shared_max_age"));
-        assertTrue(config.getBoolean("cache.client.public"));
-        assertTrue(config.getBoolean("cache.client.private"));
-        assertTrue(config.getBoolean("cache.client.no_cache"));
-        assertTrue(config.getBoolean("cache.client.no_store"));
-        assertTrue(config.getBoolean("cache.client.must_revalidate"));
-        assertTrue(config.getBoolean("cache.client.proxy_revalidate"));
-        assertTrue(config.getBoolean("cache.client.no_transform"));
-        assertEquals("FilesystemCache",
-                config.getString(CacheFactory.SOURCE_CACHE_CONFIG_KEY));
-        assertTrue(config.getBoolean(CacheFactory.SOURCE_CACHE_ENABLED_CONFIG_KEY));
-        assertEquals("FilesystemCache",
-                config.getString(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY));
-        assertTrue(config.getBoolean(CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY));
+        assertTrue(config.getBoolean(Key.CLIENT_CACHE_ENABLED));
+        assertEquals("250", config.getString(Key.CLIENT_CACHE_MAX_AGE));
+        assertEquals("220", config.getString(Key.CLIENT_CACHE_SHARED_MAX_AGE));
+        assertTrue(config.getBoolean(Key.CLIENT_CACHE_PUBLIC));
+        assertTrue(config.getBoolean(Key.CLIENT_CACHE_PRIVATE));
+        assertTrue(config.getBoolean(Key.CLIENT_CACHE_NO_CACHE));
+        assertTrue(config.getBoolean(Key.CLIENT_CACHE_NO_STORE));
+        assertTrue(config.getBoolean(Key.CLIENT_CACHE_MUST_REVALIDATE));
+        assertTrue(config.getBoolean(Key.CLIENT_CACHE_PROXY_REVALIDATE));
+        assertTrue(config.getBoolean(Key.CLIENT_CACHE_NO_TRANSFORM));
+        assertEquals("FilesystemCache", config.getString(Key.SOURCE_CACHE));
+        assertTrue(config.getBoolean(Key.SOURCE_CACHE_ENABLED));
+        assertEquals("FilesystemCache", config.getString(Key.DERIVATIVE_CACHE));
+        assertTrue(config.getBoolean(Key.DERIVATIVE_CACHE_ENABLED));
         //assertTrue(config.getBoolean(Cache.PURGE_MISSING_CONFIG_KEY)); TODO: why does this not work?
-        assertTrue(config.getBoolean(Cache.RESOLVE_FIRST_CONFIG_KEY));
-        assertEquals(10, config.getInt(Cache.TTL_CONFIG_KEY));
-        assertTrue(config.getBoolean("cache.server.worker.enabled"));
-        assertEquals(25, config.getInt("cache.server.worker.interval"));
+        assertTrue(config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST));
+        assertEquals(10, config.getInt(Key.CACHE_SERVER_TTL));
+        assertTrue(config.getBoolean(Key.CACHE_WORKER_ENABLED));
+        assertEquals(25, config.getInt(Key.CACHE_WORKER_INTERVAL));
         // AmazonS3Cache
-        assertEquals("cats", config.getString("AmazonS3Cache.access_key_id"));
-        assertEquals("dogs", config.getString("AmazonS3Cache.secret_key"));
-        assertEquals("bucket", config.getString("AmazonS3Cache.bucket.name"));
-        assertEquals("greenland", config.getString("AmazonS3Cache.bucket.region"));
-        assertEquals("obj", config.getString("AmazonS3Cache.object_key_prefix"));
+        assertEquals("cats", config.getString(Key.AMAZONS3CACHE_ACCESS_KEY_ID));
+        assertEquals("dogs", config.getString(Key.AMAZONS3CACHE_SECRET_KEY));
+        assertEquals("bucket", config.getString(Key.AMAZONS3CACHE_BUCKET_NAME));
+        assertEquals("greenland", config.getString(Key.AMAZONS3CACHE_BUCKET_REGION));
+        assertEquals("obj", config.getString(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX));
         // AzureStorageCache
-        assertEquals("bees", config.getString("AzureStorageCache.account_name"));
-        assertEquals("birds", config.getString("AzureStorageCache.account_key"));
-        assertEquals("badger", config.getString("AzureStorageCache.container_name"));
-        assertEquals("obj", config.getString("AzureStorageCache.object_key_prefix"));
+        assertEquals("bees", config.getString(Key.AZURESTORAGECACHE_ACCOUNT_NAME));
+        assertEquals("birds", config.getString(Key.AZURESTORAGECACHE_ACCOUNT_KEY));
+        assertEquals("badger", config.getString(Key.AZURESTORAGECACHE_CONTAINER_NAME));
+        assertEquals("obj", config.getString(Key.AZURESTORAGECACHE_OBJECT_KEY_PREFIX));
         // FilesystemCache
-        assertEquals("/path", config.getString("FilesystemCache.pathname"));
-        assertEquals("8", config.getString("FilesystemCache.dir.depth"));
-        assertEquals("4", config.getString("FilesystemCache.dir.name_length"));
+        assertEquals("/path", config.getString(Key.FILESYSTEMCACHE_PATHNAME));
+        assertEquals("8", config.getString(Key.FILESYSTEMCACHE_DIRECTORY_DEPTH));
+        assertEquals("4", config.getString(Key.FILESYSTEMCACHE_DIRECTORY_NAME_LENGTH));
         // JdbcCache
-        assertEquals("jdbc://dogs", config.getString("JdbcCache.url"));
-        assertEquals("person", config.getString("JdbcCache.user"));
-        assertEquals("cats", config.getString("JdbcCache.password"));
-        assertEquals("9", config.getString("JdbcCache.connection_timeout"));
-        assertEquals("hula", config.getString("JdbcCache.derivative_image_table"));
-        assertEquals("box", config.getString("JdbcCache.info_table"));
+        assertEquals("jdbc://dogs", config.getString(Key.JDBCCACHE_JDBC_URL));
+        assertEquals("person", config.getString(Key.JDBCCACHE_USER));
+        assertEquals("cats", config.getString(Key.JDBCCACHE_PASSWORD));
+        assertEquals("9", config.getString(Key.JDBCCACHE_CONNECTION_TIMEOUT));
+        assertEquals("hula", config.getString(Key.JDBCCACHE_DERIVATIVE_IMAGE_TABLE));
+        assertEquals("box", config.getString(Key.JDBCCACHE_INFO_TABLE));
         // HeapCache
-        assertEquals("1234", config.getString("HeapCache.target_size"));
-        assertTrue(config.getBoolean("HeapCache.persist"));
-        assertEquals("/tmp/cats", config.getString("HeapCache.persist.filesystem.pathname"));
+        assertEquals("1234", config.getString(Key.HEAPCACHE_TARGET_SIZE));
+        assertTrue(config.getBoolean(Key.HEAPCACHE_PERSIST));
+        assertEquals("/tmp/cats", config.getString(Key.HEAPCACHE_PATHNAME));
         // RedisCache
-        assertEquals("localhost", config.getString("RedisCache.host"));
-        assertEquals("12398", config.getString("RedisCache.port"));
-        assertEquals("redispass", config.getString("RedisCache.password"));
-        assertTrue(config.getBoolean("RedisCache.ssl"));
-        assertEquals("5", config.getString("RedisCache.database"));
+        assertEquals("localhost", config.getString(Key.REDISCACHE_HOST));
+        assertEquals("12398", config.getString(Key.REDISCACHE_PORT));
+        assertEquals("redispass", config.getString(Key.REDISCACHE_PASSWORD));
+        assertTrue(config.getBoolean(Key.REDISCACHE_SSL));
+        assertEquals("5", config.getString(Key.REDISCACHE_DATABASE));
     }
 
     @Test
@@ -477,29 +485,25 @@ public class ControlPanelTest extends ResourceTest {
         css("#cl-overlays-button").click();
 
         // Fill in the form
-        css("[name=\"overlays.enabled\"]").click();
-        new Select(css("[name=\"overlays.strategy\"]")).
-                selectByValue("BasicStrategy");
-        new Select(css("[name=\"overlays.BasicStrategy.position\"]")).
-                selectByValue("bottom left");
-        css("[name=\"overlays.BasicStrategy.inset\"]").sendKeys("35");
-        css("[name=\"overlays.BasicStrategy.output_width_threshold\"]").sendKeys("5");
-        css("[name=\"overlays.BasicStrategy.output_height_threshold\"]").sendKeys("6");
-        new Select(css("[name=\"overlays.BasicStrategy.type\"]")).
-                selectByValue("string");
-        css("[name=\"overlays.BasicStrategy.image\"]").sendKeys("/image.png");
-        css("[name=\"overlays.BasicStrategy.string\"]").sendKeys("cats");
-        new Select(css("[name=\"overlays.BasicStrategy.string.font\"]")).
-                selectByVisibleText("Helvetica");
-        css("[name=\"overlays.BasicStrategy.string.font.size\"]").sendKeys("13");
-        css("[name=\"overlays.BasicStrategy.string.font.min_size\"]").sendKeys("11");
-        css("[name=\"overlays.BasicStrategy.string.font.weight\"]").sendKeys("1.2");
-        css("[name=\"overlays.BasicStrategy.string.glyph_spacing\"]").sendKeys("-0.1");
-        css("[name=\"overlays.BasicStrategy.string.color\"]").sendKeys("#d0d0d0");
-        css("[name=\"overlays.BasicStrategy.string.stroke.color\"]").sendKeys("#e0e0e0");
-        css("[name=\"overlays.BasicStrategy.string.stroke.width\"]").sendKeys("5");
-        css("[name=\"overlays.BasicStrategy.string.background.color\"]").sendKeys("#ffd000");
-        css("[name=\"redaction.enabled\"]").click();
+        inputNamed(Key.OVERLAY_ENABLED).click();
+        selectNamed(Key.OVERLAY_STRATEGY).selectByValue("BasicStrategy");
+        selectNamed(Key.OVERLAY_POSITION).selectByValue("bottom left");
+        inputNamed(Key.OVERLAY_INSET).sendKeys("35");
+        inputNamed(Key.OVERLAY_OUTPUT_WIDTH_THRESHOLD).sendKeys("5");
+        inputNamed(Key.OVERLAY_OUTPUT_HEIGHT_THRESHOLD).sendKeys("6");
+        selectNamed(Key.OVERLAY_TYPE).selectByValue("string");
+        inputNamed(Key.OVERLAY_IMAGE).sendKeys("/image.png");
+        inputNamed(Key.OVERLAY_STRING_STRING).sendKeys("cats");
+        selectNamed(Key.OVERLAY_STRING_FONT).selectByVisibleText("Helvetica");
+        inputNamed(Key.OVERLAY_STRING_FONT_SIZE).sendKeys("13");
+        inputNamed(Key.OVERLAY_STRING_FONT_MIN_SIZE).sendKeys("11");
+        inputNamed(Key.OVERLAY_STRING_FONT_WEIGHT).sendKeys("1.2");
+        inputNamed(Key.OVERLAY_STRING_GLYPH_SPACING).sendKeys("-0.1");
+        inputNamed(Key.OVERLAY_STRING_COLOR).sendKeys("#d0d0d0");
+        inputNamed(Key.OVERLAY_STRING_STROKE_COLOR).sendKeys("#e0e0e0");
+        inputNamed(Key.OVERLAY_STRING_STROKE_WIDTH).sendKeys("5");
+        inputNamed(Key.OVERLAY_STRING_BACKGROUND_COLOR).sendKeys("#ffd000");
+        inputNamed(Key.REDACTION_ENABLED).click();
 
         // Submit the form
         css("#cl-overlays input[type=\"submit\"]").click();
@@ -508,41 +512,42 @@ public class ControlPanelTest extends ResourceTest {
 
         // Assert that the application configuration has been updated correctly
         final Configuration config = ConfigurationFactory.getInstance();
-        assertTrue(config.getBoolean("overlays.enabled"));
-        assertEquals("BasicStrategy", config.getString("overlays.strategy"));
+        assertTrue(config.getBoolean(Key.OVERLAY_ENABLED));
+        assertEquals("BasicStrategy",
+                config.getString(Key.OVERLAY_STRATEGY));
         assertEquals("bottom left",
-                config.getString("overlays.BasicStrategy.position"));
+                config.getString(Key.OVERLAY_POSITION));
         assertEquals("35",
-                config.getString("overlays.BasicStrategy.inset"));
+                config.getString(Key.OVERLAY_INSET));
         assertEquals("5",
-                config.getString("overlays.BasicStrategy.output_width_threshold"));
+                config.getString(Key.OVERLAY_OUTPUT_WIDTH_THRESHOLD));
         assertEquals("6",
-                config.getString("overlays.BasicStrategy.output_height_threshold"));
+                config.getString(Key.OVERLAY_OUTPUT_HEIGHT_THRESHOLD));
         assertEquals("string",
-                config.getString("overlays.BasicStrategy.type"));
+                config.getString(Key.OVERLAY_TYPE));
         assertEquals("/image.png",
-                config.getString("overlays.BasicStrategy.image"));
+                config.getString(Key.OVERLAY_IMAGE));
         assertEquals("cats",
-                config.getString("overlays.BasicStrategy.string"));
+                config.getString(Key.OVERLAY_STRING_STRING));
         assertEquals("Helvetica",
-                config.getString("overlays.BasicStrategy.string.font"));
+                config.getString(Key.OVERLAY_STRING_FONT));
         assertEquals("13",
-                config.getString("overlays.BasicStrategy.string.font.size"));
+                config.getString(Key.OVERLAY_STRING_FONT_SIZE));
         assertEquals("11",
-                config.getString("overlays.BasicStrategy.string.font.min_size"));
+                config.getString(Key.OVERLAY_STRING_FONT_MIN_SIZE));
         assertEquals("1.2",
-                config.getString("overlays.BasicStrategy.string.font.weight"));
+                config.getString(Key.OVERLAY_STRING_FONT_WEIGHT));
         assertEquals("-0.1",
-                config.getString("overlays.BasicStrategy.string.glyph_spacing"));
+                config.getString(Key.OVERLAY_STRING_GLYPH_SPACING));
         assertEquals("#d0d0d0",
-                config.getString("overlays.BasicStrategy.string.color"));
+                config.getString(Key.OVERLAY_STRING_COLOR));
         assertEquals("#e0e0e0",
-                config.getString("overlays.BasicStrategy.string.stroke.color"));
+                config.getString(Key.OVERLAY_STRING_STROKE_COLOR));
         assertEquals("5",
-                config.getString("overlays.BasicStrategy.string.stroke.width"));
+                config.getString(Key.OVERLAY_STRING_STROKE_WIDTH));
         assertEquals("#ffd000",
-                config.getString("overlays.BasicStrategy.string.background.color"));
-        assertTrue(config.getBoolean("redaction.enabled"));
+                config.getString(Key.OVERLAY_STRING_BACKGROUND_COLOR));
+        assertTrue(config.getBoolean(Key.REDACTION_ENABLED));
     }
 
     @Test
@@ -550,7 +555,7 @@ public class ControlPanelTest extends ResourceTest {
         css("#cl-metadata-button").click();
 
         // Fill in the form
-        css("[name=\"metadata.preserve\"]").click();
+        inputNamed(Key.PROCESSOR_PRESERVE_METADATA).click();
 
         // Submit the form
         css("#cl-metadata input[type=\"submit\"]").click();
@@ -559,7 +564,7 @@ public class ControlPanelTest extends ResourceTest {
 
         // Assert that the application configuration has been updated correctly
         final Configuration config = ConfigurationFactory.getInstance();
-        assertTrue(config.getBoolean("metadata.preserve"));
+        assertTrue(config.getBoolean(Key.PROCESSOR_PRESERVE_METADATA));
     }
 
     @Test
@@ -567,10 +572,9 @@ public class ControlPanelTest extends ResourceTest {
         css("#cl-delegate-script-button").click();
 
         // Fill in the form
-        css("[name=\"delegate_script.enabled\"]").click();
-        css("[name=\"delegate_script.pathname\"]").sendKeys("file");
-        css("[name=\"delegate_script.cache.enabled\"]").click();
-        css("[name=\"delegate_script.cache.max_size\"]").sendKeys("12345");
+        inputNamed(Key.DELEGATE_SCRIPT_ENABLED).click();
+        inputNamed(Key.DELEGATE_SCRIPT_PATHNAME).sendKeys("file");
+        inputNamed(Key.DELEGATE_METHOD_INVOCATION_CACHE_ENABLED).click();
 
         // Submit the form
         css("#cl-delegate-script input[type=\"submit\"]").click();
@@ -579,10 +583,9 @@ public class ControlPanelTest extends ResourceTest {
 
         // Assert that the application configuration has been updated correctly
         final Configuration config = ConfigurationFactory.getInstance();
-        assertTrue(config.getBoolean("delegate_script.enabled"));
-        assertEquals("file", config.getString("delegate_script.pathname"));
-        assertTrue(config.getBoolean("delegate_script.cache.enabled"));
-        assertEquals("12345", config.getString("delegate_script.cache.max_size"));
+        assertTrue(config.getBoolean(Key.DELEGATE_SCRIPT_ENABLED));
+        assertEquals("file", config.getString(Key.DELEGATE_SCRIPT_PATHNAME));
+        assertTrue(config.getBoolean(Key.DELEGATE_METHOD_INVOCATION_CACHE_ENABLED));
     }
 
     @Test
@@ -591,50 +594,48 @@ public class ControlPanelTest extends ResourceTest {
 
         // Fill in the form
         // Application log
-        new Select(css("[name=\"log.application.level\"]")).
-                selectByValue("warn");
-        css("[name=\"log.application.ConsoleAppender.enabled\"]").click();
-        css("[name=\"log.application.FileAppender.enabled\"]").click();
-        css("[name=\"log.application.FileAppender.pathname\"]").
-                sendKeys("/path1");
-        css("[name=\"log.application.RollingFileAppender.enabled\"]").click();
-        css("[name=\"log.application.RollingFileAppender.pathname\"]").
+        selectNamed(Key.APPLICATION_LOG_LEVEL).selectByValue("warn");
+        inputNamed(Key.APPLICATION_LOG_CONSOLEAPPENDER_ENABLED).click();
+        inputNamed(Key.APPLICATION_LOG_FILEAPPENDER_ENABLED).click();
+        inputNamed(Key.APPLICATION_LOG_FILEAPPENDER_PATHNAME).sendKeys("/path1");
+        inputNamed(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_ENABLED).click();
+        inputNamed(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_PATHNAME).
                 sendKeys("/path2");
-        css("[name=\"log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern\"]").
+        inputNamed(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_FILENAME_PATTERN).
                 sendKeys("pattern");
-        css("[name=\"log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history\"]").
+        inputNamed(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_MAX_HISTORY).
                 sendKeys("15");
-        css("[name=\"log.application.SyslogAppender.enabled\"]").click();
-        css("[name=\"log.application.SyslogAppender.host\"]").sendKeys("host");
-        css("[name=\"log.application.SyslogAppender.port\"]").sendKeys("555");
-        css("[name=\"log.application.SyslogAppender.facility\"]").
+        inputNamed(Key.APPLICATION_LOG_SYSLOGAPPENDER_ENABLED).click();
+        inputNamed(Key.APPLICATION_LOG_SYSLOGAPPENDER_HOST).sendKeys("host");
+        inputNamed(Key.APPLICATION_LOG_SYSLOGAPPENDER_PORT).sendKeys("555");
+        inputNamed(Key.APPLICATION_LOG_SYSLOGAPPENDER_FACILITY).
                 sendKeys("cats");
         // Error log
-        css("[name=\"log.error.FileAppender.enabled\"]").click();
-        css("[name=\"log.error.FileAppender.pathname\"]").sendKeys("/path50");
-        css("[name=\"log.error.RollingFileAppender.enabled\"]").click();
-        css("[name=\"log.error.RollingFileAppender.pathname\"]").
+        inputNamed(Key.ERROR_LOG_FILEAPPENDER_ENABLED).click();
+        inputNamed(Key.ERROR_LOG_FILEAPPENDER_PATHNAME).sendKeys("/path50");
+        inputNamed(Key.ERROR_LOG_ROLLINGFILEAPPENDER_ENABLED).click();
+        inputNamed(Key.ERROR_LOG_ROLLINGFILEAPPENDER_PATHNAME).
                 sendKeys("/path2");
-        css("[name=\"log.error.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern\"]").
+        inputNamed(Key.ERROR_LOG_ROLLINGFILEAPPENDER_FILENAME_PATTERN).
                 sendKeys("pattern2");
-        css("[name=\"log.error.RollingFileAppender.TimeBasedRollingPolicy.max_history\"]").
+        inputNamed(Key.ERROR_LOG_ROLLINGFILEAPPENDER_MAX_HISTORY).
                 sendKeys("20");
         // Access log
-        css("[name=\"log.access.ConsoleAppender.enabled\"]").click();
-        css("[name=\"log.access.FileAppender.enabled\"]").click();
-        css("[name=\"log.access.FileAppender.pathname\"]").
+        inputNamed(Key.ACCESS_LOG_CONSOLEAPPENDER_ENABLED).click();
+        inputNamed(Key.ACCESS_LOG_FILEAPPENDER_ENABLED).click();
+        inputNamed(Key.ACCESS_LOG_FILEAPPENDER_PATHNAME).
                 sendKeys("/path3");
-        css("[name=\"log.access.RollingFileAppender.enabled\"]").click();
-        css("[name=\"log.access.RollingFileAppender.pathname\"]").
+        inputNamed(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_ENABLED).click();
+        inputNamed(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_PATHNAME).
                 sendKeys("/path4");
-        css("[name=\"log.access.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern\"]").
+        inputNamed(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_FILENAME_PATTERN).
                 sendKeys("dogs");
-        css("[name=\"log.access.RollingFileAppender.TimeBasedRollingPolicy.max_history\"]").
+        inputNamed(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_MAX_HISTORY).
                 sendKeys("531");
-        css("[name=\"log.access.SyslogAppender.enabled\"]").click();
-        css("[name=\"log.access.SyslogAppender.host\"]").sendKeys("host2");
-        css("[name=\"log.access.SyslogAppender.port\"]").sendKeys("251");
-        css("[name=\"log.access.SyslogAppender.facility\"]").sendKeys("foxes");
+        inputNamed(Key.ACCESS_LOG_SYSLOGAPPENDER_ENABLED).click();
+        inputNamed(Key.ACCESS_LOG_SYSLOGAPPENDER_HOST).sendKeys("host2");
+        inputNamed(Key.ACCESS_LOG_SYSLOGAPPENDER_PORT).sendKeys("251");
+        inputNamed(Key.ACCESS_LOG_SYSLOGAPPENDER_FACILITY).sendKeys("foxes");
 
         // Submit the form
         css("#cl-logging input[type=\"submit\"]").click();
@@ -645,64 +646,64 @@ public class ControlPanelTest extends ResourceTest {
         final Configuration config = ConfigurationFactory.getInstance();
 
         // Application log
-        assertEquals("warn", config.getString("log.application.level"));
-        assertTrue(config.getBoolean("log.application.ConsoleAppender.enabled"));
+        assertEquals("warn", config.getString(Key.APPLICATION_LOG_LEVEL));
+        assertTrue(config.getBoolean(Key.APPLICATION_LOG_CONSOLEAPPENDER_ENABLED));
 
-        assertTrue(config.getBoolean("log.application.FileAppender.enabled"));
+        assertTrue(config.getBoolean(Key.APPLICATION_LOG_FILEAPPENDER_ENABLED));
         assertEquals("/path1",
-                config.getString("log.application.FileAppender.pathname"));
+                config.getString(Key.APPLICATION_LOG_FILEAPPENDER_PATHNAME));
 
-        assertTrue(config.getBoolean("log.application.RollingFileAppender.enabled"));
+        assertTrue(config.getBoolean(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_ENABLED));
         assertEquals("/path2",
-                config.getString("log.application.RollingFileAppender.pathname"));
+                config.getString(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_PATHNAME));
         assertEquals("pattern",
-                config.getString("log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern"));
+                config.getString(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_FILENAME_PATTERN));
         assertEquals("15",
-                config.getString("log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history"));
+                config.getString(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_MAX_HISTORY));
 
-        assertTrue(config.getBoolean("log.application.SyslogAppender.enabled"));
+        assertTrue(config.getBoolean(Key.APPLICATION_LOG_SYSLOGAPPENDER_ENABLED));
         assertEquals("host",
-                config.getString("log.application.SyslogAppender.host"));
+                config.getString(Key.APPLICATION_LOG_SYSLOGAPPENDER_HOST));
         assertEquals("555",
-                config.getString("log.application.SyslogAppender.port"));
+                config.getString(Key.APPLICATION_LOG_SYSLOGAPPENDER_PORT));
         assertEquals("cats",
-                config.getString("log.application.SyslogAppender.facility"));
+                config.getString(Key.APPLICATION_LOG_SYSLOGAPPENDER_FACILITY));
 
         // Error log
-        assertTrue(config.getBoolean("log.error.FileAppender.enabled"));
+        assertTrue(config.getBoolean(Key.ERROR_LOG_FILEAPPENDER_ENABLED));
         assertEquals("/path50",
-                config.getString("log.error.FileAppender.pathname"));
+                config.getString(Key.ERROR_LOG_FILEAPPENDER_PATHNAME));
 
-        assertTrue(config.getBoolean("log.error.RollingFileAppender.enabled"));
+        assertTrue(config.getBoolean(Key.ERROR_LOG_ROLLINGFILEAPPENDER_ENABLED));
         assertEquals("/path2",
-                config.getString("log.error.RollingFileAppender.pathname"));
+                config.getString(Key.ERROR_LOG_ROLLINGFILEAPPENDER_PATHNAME));
         assertEquals("pattern2",
-                config.getString("log.error.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern"));
+                config.getString(Key.ERROR_LOG_ROLLINGFILEAPPENDER_FILENAME_PATTERN));
         assertEquals("20",
-                config.getString("log.error.RollingFileAppender.TimeBasedRollingPolicy.max_history"));
+                config.getString(Key.ERROR_LOG_ROLLINGFILEAPPENDER_MAX_HISTORY));
 
         // Access log
-        assertTrue(config.getBoolean("log.access.ConsoleAppender.enabled"));
+        assertTrue(config.getBoolean(Key.ACCESS_LOG_CONSOLEAPPENDER_ENABLED));
 
-        assertTrue(config.getBoolean("log.access.FileAppender.enabled"));
+        assertTrue(config.getBoolean(Key.ACCESS_LOG_FILEAPPENDER_ENABLED));
         assertEquals("/path3",
-                config.getString("log.access.FileAppender.pathname"));
+                config.getString(Key.ACCESS_LOG_FILEAPPENDER_PATHNAME));
 
-        assertTrue(config.getBoolean("log.access.RollingFileAppender.enabled"));
+        assertTrue(config.getBoolean(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_ENABLED));
         assertEquals("/path4",
-                config.getString("log.access.RollingFileAppender.pathname"));
+                config.getString(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_PATHNAME));
         assertEquals("dogs",
-                config.getString("log.access.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern"));
+                config.getString(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_FILENAME_PATTERN));
         assertEquals("531",
-                config.getString("log.access.RollingFileAppender.TimeBasedRollingPolicy.max_history"));
+                config.getString(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_MAX_HISTORY));
 
-        assertTrue(config.getBoolean("log.access.SyslogAppender.enabled"));
+        assertTrue(config.getBoolean(Key.ACCESS_LOG_SYSLOGAPPENDER_ENABLED));
         assertEquals("host2",
-                config.getString("log.access.SyslogAppender.host"));
+                config.getString(Key.ACCESS_LOG_SYSLOGAPPENDER_HOST));
         assertEquals("251",
-                config.getString("log.access.SyslogAppender.port"));
+                config.getString(Key.ACCESS_LOG_SYSLOGAPPENDER_PORT));
         assertEquals("foxes",
-                config.getString("log.access.SyslogAppender.facility"));
+                config.getString(Key.ACCESS_LOG_SYSLOGAPPENDER_FACILITY));
     }
 
 }

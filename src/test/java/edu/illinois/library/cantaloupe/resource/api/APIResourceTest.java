@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -33,9 +34,9 @@ public class APIResourceTest extends ResourceTest {
         super.setUp();
 
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(APIResource.ENABLED_CONFIG_KEY, true);
-        config.setProperty(WebApplication.API_USERNAME_CONFIG_KEY, USERNAME);
-        config.setProperty(WebApplication.API_SECRET_CONFIG_KEY, SECRET);
+        config.setProperty(Key.API_ENABLED, true);
+        config.setProperty(Key.API_USERNAME, USERNAME);
+        config.setProperty(Key.API_SECRET, SECRET);
     }
 
     /* doPurge() */
@@ -43,7 +44,7 @@ public class APIResourceTest extends ResourceTest {
     @Test
     public void testDoPurgeWithEndpointDisabled() {
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(APIResource.ENABLED_CONFIG_KEY, false);
+        config.setProperty(Key.API_ENABLED, false);
         ClientResource client = getClientForUriPath(
                 WebApplication.CACHE_PATH + "/" + IDENTIFIER, USERNAME, SECRET);
         try {

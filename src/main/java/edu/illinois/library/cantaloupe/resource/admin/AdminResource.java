@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Scale;
@@ -86,12 +86,9 @@ public class AdminResource extends AbstractResource {
     private static org.slf4j.Logger logger = LoggerFactory.
             getLogger(AdminResource.class);
 
-    static final String CONTROL_PANEL_ENABLED_CONFIG_KEY = "admin.enabled";
-
     @Override
     protected void doInit() throws ResourceException {
-        if (!ConfigurationFactory.getInstance().
-                getBoolean(CONTROL_PANEL_ENABLED_CONFIG_KEY, false)) {
+        if (!Configuration.getInstance().getBoolean(Key.ADMIN_ENABLED, false)) {
             throw new EndpointDisabledException();
         }
         super.doInit();
@@ -129,7 +126,7 @@ public class AdminResource extends AbstractResource {
      */
     @Post("json")
     public Representation doPost(Representation rep) throws IOException {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         final Map submittedConfig = new ObjectMapper().readValue(
                 rep.getStream(), HashMap.class);
 
@@ -151,7 +148,7 @@ public class AdminResource extends AbstractResource {
      * @return Map representation of the application configuration.
      */
     private Map<String,Object> configurationAsMap() {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         final Map<String,Object> configMap = new HashMap<>();
         final Iterator it = config.getKeys();
         while (it.hasNext()) {
@@ -211,8 +208,7 @@ public class AdminResource extends AbstractResource {
         vars.put("xIiifIdHeader",
                 headers.getFirstValue("X-IIIF-ID", true, ""));
 
-        final File configFile =
-                ConfigurationFactory.getInstance().getFile();
+        final File configFile = Configuration.getInstance().getFile();
         vars.put("configFilePath", (configFile != null) ?
                 configFile.getAbsolutePath() : "None");
 
@@ -339,8 +335,8 @@ public class AdminResource extends AbstractResource {
 
         vars.put("fonts", GraphicsEnvironment.getLocalGraphicsEnvironment().
                 getAvailableFontFamilyNames());
-        vars.put("currentOverlayFont", ConfigurationFactory.getInstance().
-                getString("overlays.BasicStrategy.string.font", ""));
+        vars.put("currentOverlayFont", Configuration.getInstance().
+                getString(Key.OVERLAY_STRING_FONT, ""));
 
         return vars;
     }

@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -72,8 +73,8 @@ public class HeapCacheTest extends BaseTest {
         super.setUp();
 
         Configuration config = Configuration.getInstance();
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, Math.pow(1024, 2));
-        config.setProperty(Cache.TTL_CONFIG_KEY, 0);
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, Math.pow(1024, 2));
+        config.setProperty(Key.CACHE_SERVER_TTL, 0);
 
         instance = new HeapCache();
         assertFalse(instance.isDirty());
@@ -84,13 +85,12 @@ public class HeapCacheTest extends BaseTest {
     @Test
     public void testDumpToPersistentStore() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(HeapCache.PERSIST_CONFIG_KEY, true);
+        config.setProperty(Key.HEAPCACHE_PERSIST, true);
 
         Path cacheFile = Files.createTempFile("cantaloupe", "tmp");
         try {
             Files.delete(cacheFile);
-            config.setProperty(HeapCache.PATHNAME_CONFIG_KEY,
-                    cacheFile.toString());
+            config.setProperty(Key.HEAPCACHE_PATHNAME, cacheFile.toString());
 
             // Seed an image
             Identifier id1 = new Identifier("cats");
@@ -117,7 +117,7 @@ public class HeapCacheTest extends BaseTest {
         assertEquals(0, instance.getByteSize());
 
         Configuration config = Configuration.getInstance();
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, 10000);
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, 10000);
 
         // Seed an image
         Identifier id1 = new Identifier("cats");
@@ -155,7 +155,7 @@ public class HeapCacheTest extends BaseTest {
     @Test
     public void testGetTargetByteSizeWithInvalidValue() throws Exception {
         final Configuration config = Configuration.getInstance();
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, "");
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, "");
         try {
             instance.getTargetByteSize();
             fail("Expected exception");
@@ -167,7 +167,7 @@ public class HeapCacheTest extends BaseTest {
     @Test
     public void testGetTargetByteSizeWithNumber() throws Exception {
         final Configuration config = Configuration.getInstance();
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, 1000);
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, 1000);
         assertEquals(1000, instance.getTargetByteSize());
     }
 
@@ -177,28 +177,28 @@ public class HeapCacheTest extends BaseTest {
         final float base = 500.5f;
         final float delta = 0.0001f;
 
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, base + "M");
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, base + "M");
         assertEquals(base * (long) Math.pow(1024, 2), instance.getTargetByteSize(), delta);
 
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, base + "MB");
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, base + "MB");
         assertEquals(base * (long) Math.pow(1024, 2), instance.getTargetByteSize(), delta);
 
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, base + "G");
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, base + "G");
         assertEquals(base * (long) Math.pow(1024, 3), instance.getTargetByteSize(), delta);
 
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, base + "GB");
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, base + "GB");
         assertEquals(base * (long) Math.pow(1024, 3), instance.getTargetByteSize(), delta);
 
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, base + "T");
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, base + "T");
         assertEquals(base * (long) Math.pow(1024, 4), instance.getTargetByteSize(), delta);
 
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, base + "TB");
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, base + "TB");
         assertEquals(base * (long) Math.pow(1024, 4), instance.getTargetByteSize(), delta);
 
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, base + "P");
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, base + "P");
         assertEquals(base * (long) Math.pow(1024, 5), instance.getTargetByteSize(), delta);
 
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, base + "PB");
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, base + "PB");
         assertEquals(base * (long) Math.pow(1024, 5), instance.getTargetByteSize(), delta);
     }
 
@@ -207,13 +207,12 @@ public class HeapCacheTest extends BaseTest {
     @Test
     public void testLoadFromPersistentStore() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(HeapCache.PERSIST_CONFIG_KEY, true);
+        config.setProperty(Key.HEAPCACHE_PERSIST, true);
 
         Path cacheFile = Files.createTempFile("cantaloupe", "tmp");
         try {
             Files.delete(cacheFile);
-            config.setProperty(HeapCache.PATHNAME_CONFIG_KEY,
-                    cacheFile.toString());
+            config.setProperty(Key.HEAPCACHE_PATHNAME, cacheFile.toString());
 
             // Seed an image
             Identifier id1 = new Identifier("cats");
@@ -335,7 +334,7 @@ public class HeapCacheTest extends BaseTest {
     @Test
     public void testPurgeExcessWithExcess() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, 5000);
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, 5000);
 
         // Seed an image
         Identifier id1 = new Identifier("cats");
@@ -355,7 +354,7 @@ public class HeapCacheTest extends BaseTest {
     @Test
     public void testPurgeExcessWithNoExcess() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, 10000);
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, 10000);
 
         // Seed an image
         Identifier id1 = new Identifier("cats");
@@ -377,7 +376,7 @@ public class HeapCacheTest extends BaseTest {
     public void testPurgeExcessThrowsConfigurationExceptionWhenMaxSizeIsInvalid()
             throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, 0);
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, 0);
         try {
             instance.purgeExcess();
             fail("Expected exception");

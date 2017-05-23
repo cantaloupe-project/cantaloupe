@@ -1,11 +1,11 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.WebApplication;
-import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.cache.DerivativeFileCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -36,11 +36,6 @@ import java.util.Set;
  * Request Operations</a>
  */
 public class ImageResource extends IIIF2Resource {
-
-    public static final String CONTENT_DISPOSITION_CONFIG_KEY =
-            "endpoint.iiif.content_disposition";
-    public static final String RESTRICT_TO_SIZES_CONFIG_KEY =
-            "endpoint.iiif.2.restrict_to_sizes";
 
     /**
      * Responds to IIIF Image requests.
@@ -73,7 +68,7 @@ public class ImageResource extends IIIF2Resource {
         // cache contains an image matching the request, skip all the setup and
         // just return the cached image.
         final DerivativeCache cache = CacheFactory.getDerivativeCache();
-        if (!config.getBoolean(Cache.RESOLVE_FIRST_CONFIG_KEY, true)) {
+        if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)) {
             if (cache != null) {
                 InputStream inputStream = cache.newDerivativeImageInputStream(ops);
                 if (inputStream != null) {
@@ -91,7 +86,7 @@ public class ImageResource extends IIIF2Resource {
         try {
             format = resolver.getSourceFormat();
         } catch (FileNotFoundException e) {
-            if (config.getBoolean(Cache.PURGE_MISSING_CONFIG_KEY, false)) {
+            if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                 // if the image was not found, purge it from the cache
                 if (cache != null) {
                     cache.purge(ops.getIdentifier());
@@ -117,7 +112,7 @@ public class ImageResource extends IIIF2Resource {
         // Will throw an exception if anything is wrong.
         checkRequest(ops, fullSize);
 
-        if (config.getBoolean(RESTRICT_TO_SIZES_CONFIG_KEY, false)) {
+        if (config.getBoolean(Key.IIIF_2_RESTRICT_TO_SIZES, false)) {
             final ImageInfo imageInfo = ImageInfoFactory.newImageInfo(
                     identifier, null, processor,
                     getOrReadInfo(identifier, processor));

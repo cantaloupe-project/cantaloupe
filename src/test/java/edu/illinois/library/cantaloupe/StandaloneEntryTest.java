@@ -1,15 +1,14 @@
 package edu.illinois.library.cantaloupe;
 
-import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
-import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -99,13 +98,11 @@ public class StandaloneEntryTest extends BaseTest {
         ConfigurationFactory.clearInstance();
         final Configuration config = ConfigurationFactory.getInstance();
 
-        config.setProperty(WebServer.HTTP_ENABLED_CONFIG_KEY, true);
-        config.setProperty(WebServer.HTTP_PORT_CONFIG_KEY, HTTP_PORT);
-        config.setProperty(WebServer.HTTPS_ENABLED_CONFIG_KEY, false);
-        config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
-                "FilesystemResolver");
-        config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
-                "Java2dProcessor");
+        config.setProperty(Key.HTTP_ENABLED, true);
+        config.setProperty(Key.HTTP_PORT, HTTP_PORT);
+        config.setProperty(Key.HTTPS_ENABLED, false);
+        config.setProperty(Key.RESOLVER_STATIC, "FilesystemResolver");
+        config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
 
         httpClient = new Client(new Context(), Protocol.HTTP);
         httpClient.start();
@@ -237,13 +234,11 @@ public class StandaloneEntryTest extends BaseTest {
         infoDir.mkdirs();
 
         Configuration config = Configuration.getInstance();
-        config.setProperty(CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY,
-                true);
-        config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
-                "FilesystemCache");
-        config.setProperty("FilesystemCache.pathname",
+        config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
+        config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
+        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                 getCacheDir().getAbsolutePath());
-        config.setProperty(Cache.TTL_CONFIG_KEY, "1");
+        config.setProperty(Key.CACHE_SERVER_TTL, "1");
 
         // TODO: write this
 
@@ -275,13 +270,11 @@ public class StandaloneEntryTest extends BaseTest {
 
         // set up the cache
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY,
-                true);
-        config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
-                "FilesystemCache");
-        config.setProperty("FilesystemCache.pathname",
+        config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
+        config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
+        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                 getCacheDir().getAbsolutePath());
-        config.setProperty(Cache.TTL_CONFIG_KEY, "10");
+        config.setProperty(Key.CACHE_SERVER_TTL, "10");
 
         // cache a dimension
         DerivativeCache cache = CacheFactory.getDerivativeCache();
@@ -334,13 +327,11 @@ public class StandaloneEntryTest extends BaseTest {
 
         // set up the cache
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY,
-                true);
-        config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
-                "FilesystemCache");
-        config.setProperty("FilesystemCache.pathname",
+        config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
+        config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
+        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                 getCacheDir().getAbsolutePath());
-        config.setProperty(Cache.TTL_CONFIG_KEY, "10");
+        config.setProperty(Key.CACHE_SERVER_TTL, "10");
 
         // cache a couple of dimensions
         DerivativeCache cache = CacheFactory.getDerivativeCache();
@@ -401,13 +392,11 @@ public class StandaloneEntryTest extends BaseTest {
         infoDir.mkdirs();
 
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY,
-                true);
-        config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
-                "FilesystemCache");
-        config.setProperty("FilesystemCache.pathname",
+        config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
+        config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
+        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                 getCacheDir().getAbsolutePath());
-        config.setProperty(Cache.TTL_CONFIG_KEY, "1");
+        config.setProperty(Key.CACHE_SERVER_TTL, "1");
 
         File.createTempFile("bla1", "tmp", imageDir);
         File.createTempFile("bla1", "tmp", infoDir);

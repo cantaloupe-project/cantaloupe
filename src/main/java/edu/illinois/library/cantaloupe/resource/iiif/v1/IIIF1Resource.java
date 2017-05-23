@@ -1,14 +1,12 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.iiif.IIIFResource;
 import org.restlet.resource.ResourceException;
 
 abstract class IIIF1Resource extends IIIFResource {
-
-    public static final String ENDPOINT_ENABLED_CONFIG_KEY =
-            "endpoint.iiif.1.enabled";
 
     @Override
     protected void doInit() throws ResourceException {
@@ -20,7 +18,7 @@ abstract class IIIF1Resource extends IIIFResource {
         }
 
         if (!ConfigurationFactory.getInstance().
-                getBoolean(ENDPOINT_ENABLED_CONFIG_KEY, true)) {
+                getBoolean(Key.IIIF_1_ENDPOINT_ENABLED, true)) {
             throw new EndpointDisabledException();
         }
     }

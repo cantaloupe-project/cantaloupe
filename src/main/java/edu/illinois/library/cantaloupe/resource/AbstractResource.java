@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -50,35 +51,6 @@ public abstract class AbstractResource extends ServerResource {
             getLogger(AbstractResource.class);
 
     public static final String AUTHORIZATION_DELEGATE_METHOD = "authorized?";
-    public static final String BASE_URI_CONFIG_KEY =
-            "base_uri";
-    public static final String CLIENT_CACHE_ENABLED_CONFIG_KEY =
-            "cache.client.enabled";
-    public static final String CLIENT_CACHE_MAX_AGE_CONFIG_KEY =
-            "cache.client.max_age";
-    public static final String CLIENT_CACHE_MUST_REVALIDATE_CONFIG_KEY =
-            "cache.client.must_revalidate";
-    public static final String CLIENT_CACHE_NO_CACHE_CONFIG_KEY =
-            "cache.client.no_cache";
-    public static final String CLIENT_CACHE_NO_STORE_CONFIG_KEY =
-            "cache.client.no_store";
-    public static final String CLIENT_CACHE_NO_TRANSFORM_CONFIG_KEY =
-            "cache.client.no_transform";
-    public static final String CLIENT_CACHE_PRIVATE_CONFIG_KEY =
-            "cache.client.private";
-    public static final String CLIENT_CACHE_PROXY_REVALIDATE_CONFIG_KEY =
-            "cache.client.proxy_revalidate";
-    public static final String CLIENT_CACHE_PUBLIC_CONFIG_KEY =
-            "cache.client.public";
-    public static final String CLIENT_CACHE_SHARED_MAX_AGE_CONFIG_KEY =
-            "cache.client.shared_max_age";
-    public static final String CONTENT_DISPOSITION_CONFIG_KEY =
-            "endpoint.iiif.content_disposition";
-    public static final String MAX_PIXELS_CONFIG_KEY =
-            "max_pixels";
-    public static final String SLASH_SUBSTITUTE_CONFIG_KEY =
-            "slash_substitute";
-
     private static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
 
     private static final TemplateCache templateCache = new TemplateCache();
@@ -110,7 +82,7 @@ public abstract class AbstractResource extends ServerResource {
             rootRef = new Reference(request.getRootRef());
 
             final String baseUri = Configuration.getInstance().
-                    getString(BASE_URI_CONFIG_KEY);
+                    getString(Key.BASE_URI);
             if (baseUri != null && baseUri.length() > 0) {
                 final Reference baseRef = new Reference(baseUri);
                 rootRef.setScheme(baseRef.getScheme());
@@ -162,16 +134,16 @@ public abstract class AbstractResource extends ServerResource {
      * @param identifier
      * @param outputFormat
      * @return Content disposition based on the setting of
-     *         {@link #CONTENT_DISPOSITION_CONFIG_KEY} in the application
+     *         {@link Key#IIIF_CONTENT_DISPOSITION} in the application
      *         configuration. If it is set to <code>attachment</code>, the
-     *         disposition will have a filename set to a reasonable value based
-     *         on the given identifier and output format.
+     *         disposition will have a filename set to a reasonable value
+     *         based on the given identifier and output format.
      */
     public static Disposition getRepresentationDisposition(
             Identifier identifier, Format outputFormat) {
         Disposition disposition = new Disposition();
         switch (Configuration.getInstance().
-                getString(CONTENT_DISPOSITION_CONFIG_KEY, "none")) {
+                getString(Key.IIIF_CONTENT_DISPOSITION, "none")) {
             case "inline":
                 disposition.setType(Disposition.TYPE_INLINE);
                 break;
@@ -325,7 +297,7 @@ public abstract class AbstractResource extends ServerResource {
     /**
      * Some web servers have issues dealing with encoded slashes (%2F) in URLs.
      * This method enables the use of an alternate string to represent a slash
-     * via {@link #SLASH_SUBSTITUTE_CONFIG_KEY}.
+     * via {@link Key#SLASH_SUBSTITUTE}.
      *
      * @param uriPathComponent Path component (a part of the path before,
      *                         after, or between slashes)
@@ -333,7 +305,7 @@ public abstract class AbstractResource extends ServerResource {
      */
     protected final String decodeSlashes(final String uriPathComponent) {
         final String substitute = Configuration.getInstance().
-                getString(SLASH_SUBSTITUTE_CONFIG_KEY, "");
+                getString(Key.SLASH_SUBSTITUTE, "");
         if (substitute.length() > 0) {
             return StringUtils.replace(uriPathComponent, substitute, "/");
         }
@@ -356,38 +328,36 @@ public abstract class AbstractResource extends ServerResource {
         }
         try {
             final Configuration config = Configuration.getInstance();
-            final boolean enabled = config.getBoolean(
-                    CLIENT_CACHE_ENABLED_CONFIG_KEY, false);
+            final boolean enabled =
+                    config.getBoolean(Key.CLIENT_CACHE_ENABLED, false);
             if (enabled) {
-                final String maxAge = config.getString(
-                        CLIENT_CACHE_MAX_AGE_CONFIG_KEY);
+                final String maxAge = config.getString(Key.CLIENT_CACHE_MAX_AGE);
                 if (maxAge != null && maxAge.length() > 0) {
                     directives.add(CacheDirective.maxAge(Integer.parseInt(maxAge)));
                 }
-                String sMaxAge = config.getString(
-                        CLIENT_CACHE_SHARED_MAX_AGE_CONFIG_KEY);
+                String sMaxAge = config.getString(Key.CLIENT_CACHE_SHARED_MAX_AGE);
                 if (sMaxAge != null && sMaxAge.length() > 0) {
                     directives.add(CacheDirective.
                             sharedMaxAge(Integer.parseInt(sMaxAge)));
                 }
-                if (config.getBoolean(CLIENT_CACHE_PUBLIC_CONFIG_KEY, true)) {
+                if (config.getBoolean(Key.CLIENT_CACHE_PUBLIC, true)) {
                     directives.add(CacheDirective.publicInfo());
-                } else if (config.getBoolean(CLIENT_CACHE_PRIVATE_CONFIG_KEY, false)) {
+                } else if (config.getBoolean(Key.CLIENT_CACHE_PRIVATE, false)) {
                     directives.add(CacheDirective.privateInfo());
                 }
-                if (config.getBoolean(CLIENT_CACHE_NO_CACHE_CONFIG_KEY, false)) {
+                if (config.getBoolean(Key.CLIENT_CACHE_NO_CACHE, false)) {
                     directives.add(CacheDirective.noCache());
                 }
-                if (config.getBoolean(CLIENT_CACHE_NO_STORE_CONFIG_KEY, false)) {
+                if (config.getBoolean(Key.CLIENT_CACHE_NO_STORE, false)) {
                     directives.add(CacheDirective.noStore());
                 }
-                if (config.getBoolean(CLIENT_CACHE_MUST_REVALIDATE_CONFIG_KEY, false)) {
+                if (config.getBoolean(Key.CLIENT_CACHE_MUST_REVALIDATE, false)) {
                     directives.add(CacheDirective.mustRevalidate());
                 }
-                if (config.getBoolean(CLIENT_CACHE_PROXY_REVALIDATE_CONFIG_KEY, false)) {
+                if (config.getBoolean(Key.CLIENT_CACHE_PROXY_REVALIDATE, false)) {
                     directives.add(CacheDirective.proxyMustRevalidate());
                 }
-                if (config.getBoolean(CLIENT_CACHE_NO_TRANSFORM_CONFIG_KEY, false)) {
+                if (config.getBoolean(Key.CLIENT_CACHE_NO_TRANSFORM, false)) {
                     directives.add(CacheDirective.noTransform());
                 }
             }
@@ -418,7 +388,7 @@ public abstract class AbstractResource extends ServerResource {
             throws IOException, ProcessorException, CacheException {
         // Max allowed size is ignored when the processing is a no-op.
         final long maxAllowedSize = (ops.hasEffect(format)) ?
-                Configuration.getInstance().getLong(MAX_PIXELS_CONFIG_KEY, 0) : 0;
+                Configuration.getInstance().getLong(Key.MAX_PIXELS, 0) : 0;
 
         final Info imageInfo = getOrReadInfo(ops.getIdentifier(), proc);
         final Dimension effectiveSize = ops.getResultingSize(imageInfo.getSize());

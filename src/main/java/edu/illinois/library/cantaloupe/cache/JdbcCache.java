@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.zaxxer.hikari.HikariDataSource;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -71,7 +72,7 @@ class JdbcCache implements DerivativeCache {
             final Configuration config = ConfigurationFactory.getInstance();
             final String sql = String.format(
                     "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
-                    config.getString(DERIVATIVE_IMAGE_TABLE_CONFIG_KEY),
+                    config.getString(Key.JDBCCACHE_DERIVATIVE_IMAGE_TABLE),
                     DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
                     DERIVATIVE_IMAGE_TABLE_IMAGE_COLUMN,
                     DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
@@ -131,15 +132,6 @@ class JdbcCache implements DerivativeCache {
     static final String INFO_TABLE_INFO_COLUMN = "info";
     static final String INFO_TABLE_LAST_ACCESSED_COLUMN = "last_accessed";
 
-    static final String CONNECTION_TIMEOUT_CONFIG_KEY =
-            "JdbcCache.connection_timeout";
-    static final String DERIVATIVE_IMAGE_TABLE_CONFIG_KEY =
-            "JdbcCache.derivative_image_table";
-    static final String JDBC_URL_CONFIG_KEY = "JdbcCache.url";
-    static final String PASSWORD_CONFIG_KEY = "JdbcCache.password";
-    static final String INFO_TABLE_CONFIG_KEY = "JdbcCache.info_table";
-    static final String USER_CONFIG_KEY = "JdbcCache.user";
-
     private static HikariDataSource dataSource;
 
     /**
@@ -151,13 +143,13 @@ class JdbcCache implements DerivativeCache {
         if (dataSource == null) {
             final Configuration config = ConfigurationFactory.getInstance();
             final String connectionString = config.
-                    getString(JDBC_URL_CONFIG_KEY, "");
+                    getString(Key.JDBCCACHE_JDBC_URL, "");
             final int connectionTimeout = 1000 *
-                    config.getInt(CONNECTION_TIMEOUT_CONFIG_KEY, 10);
+                    config.getInt(Key.JDBCCACHE_CONNECTION_TIMEOUT, 10);
             final int maxPoolSize =
                     Runtime.getRuntime().availableProcessors() * 2 + 1;
-            final String user = config.getString(USER_CONFIG_KEY, "");
-            final String password = config.getString(PASSWORD_CONFIG_KEY, "");
+            final String user = config.getString(Key.JDBCCACHE_USER, "");
+            final String password = config.getString(Key.JDBCCACHE_PASSWORD, "");
 
             dataSource = new HikariDataSource();
             dataSource.setJdbcUrl(connectionString);
@@ -172,7 +164,7 @@ class JdbcCache implements DerivativeCache {
                 logger.info("Using {} {}", metadata.getDriverName(),
                         metadata.getDriverVersion());
                 logger.info("Connection URL: {}",
-                        config.getString(JDBC_URL_CONFIG_KEY));
+                        config.getString(Key.JDBCCACHE_JDBC_URL));
 
                 final String[] tableNames = { getDerivativeImageTableName(),
                         getInfoTableName() };
@@ -194,9 +186,9 @@ class JdbcCache implements DerivativeCache {
      */
     static String getDerivativeImageTableName() throws CacheException {
         final String name = ConfigurationFactory.getInstance().
-                getString(DERIVATIVE_IMAGE_TABLE_CONFIG_KEY);
+                getString(Key.JDBCCACHE_DERIVATIVE_IMAGE_TABLE);
         if (name == null) {
-            throw new CacheException(DERIVATIVE_IMAGE_TABLE_CONFIG_KEY +
+            throw new CacheException(Key.JDBCCACHE_DERIVATIVE_IMAGE_TABLE +
                     " is not set");
         }
         return name;
@@ -208,9 +200,9 @@ class JdbcCache implements DerivativeCache {
      */
     static String getInfoTableName() throws CacheException {
         final String name = ConfigurationFactory.getInstance().
-                getString(INFO_TABLE_CONFIG_KEY);
+                getString(Key.JDBCCACHE_INFO_TABLE);
         if (name == null) {
-            throw new CacheException(INFO_TABLE_CONFIG_KEY + " is not set");
+            throw new CacheException(Key.JDBCCACHE_INFO_TABLE + " is not set");
         }
         return name;
     }
@@ -358,7 +350,7 @@ class JdbcCache implements DerivativeCache {
 
     Timestamp oldestValidDate() {
         final long ttl = ConfigurationFactory.getInstance().
-                getLong(TTL_CONFIG_KEY, 0);
+                getLong(Key.CACHE_SERVER_TTL, 0);
         if (ttl > 0) {
             return new Timestamp(System.currentTimeMillis() - ttl * 1000);
         } else {

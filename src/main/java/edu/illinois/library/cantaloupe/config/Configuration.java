@@ -17,13 +17,25 @@ public interface Configuration {
 
     /**
      * Clears the key-value pairs from the instance (but not its persistent
-     * store).
+     * store, if available).
      */
     void clear();
 
+    /**
+     * Removes a single key-value pair from the instance (but not its
+     * persistent store, if available).
+     *
+     * @param key Key to remove.
+     */
+    void clearProperty(Key key);
+
     void clearProperty(String key);
 
+    boolean getBoolean(Key key);
+
     boolean getBoolean(String key);
+
+    boolean getBoolean(Key key, boolean defaultValue);
 
     /**
      * @param key
@@ -34,7 +46,11 @@ public interface Configuration {
      */
     boolean getBoolean(String key, boolean defaultValue);
 
+    double getDouble(Key key);
+
     double getDouble(String key);
+
+    double getDouble(Key key, double defaultValue);
 
     /**
      * @param key
@@ -51,7 +67,11 @@ public interface Configuration {
      */
     File getFile();
 
+    float getFloat(Key key);
+
     float getFloat(String key);
+
+    float getFloat(Key key, float defaultValue);
 
     /**
      * @param key
@@ -62,7 +82,11 @@ public interface Configuration {
      */
     float getFloat(String key, float defaultValue);
 
+    int getInt(Key key);
+
     int getInt(String key);
+
+    int getInt(Key key, int defaultValue);
 
     /**
      * @param key
@@ -78,7 +102,11 @@ public interface Configuration {
      */
     Iterator<String> getKeys();
 
+    long getLong(Key key);
+
     long getLong(String key);
+
+    long getLong(Key key, long defaultValue);
 
     /**
      * @param key
@@ -89,9 +117,15 @@ public interface Configuration {
      */
     long getLong(String key, long defaultValue);
 
+    Object getProperty(Key key);
+
     Object getProperty(String key);
 
+    String getString(Key key);
+
     String getString(String key);
+
+    String getString(Key key, String defaultValue);
 
     /**
      * @param key
@@ -118,6 +152,8 @@ public interface Configuration {
      * @throws IOException If there is a problem saving the file.
      */
     void save() throws IOException;
+
+    void setProperty(Key key, Object value);
 
     void setProperty(String key, Object value);
 

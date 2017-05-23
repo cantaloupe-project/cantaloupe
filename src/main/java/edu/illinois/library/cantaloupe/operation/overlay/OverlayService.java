@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 
@@ -28,9 +28,6 @@ public class OverlayService {
         DELEGATE_METHOD
     }
 
-    static final String ENABLED_CONFIG_KEY = "overlays.enabled";
-    static final String STRATEGY_CONFIG_KEY = "overlays.strategy";
-
     private boolean isEnabled = false;
     private Strategy strategy;
 
@@ -42,7 +39,7 @@ public class OverlayService {
     /**
      * Factory method that returns a new {@link Overlay} based on either the
      * configuration, or the delegate method return value, depending on the
-     * setting of {@link #STRATEGY_CONFIG_KEY}.
+     * setting of {@link Key#OVERLAY_STRATEGY}.
      *
      * @param opList Required for ScriptStrategy.
      * @param fullSize Required for ScriptStrategy.
@@ -67,8 +64,8 @@ public class OverlayService {
             DelegateScriptDisabledException, ConfigurationException {
         switch (getStrategy()) {
             case BASIC:
-                switch (ConfigurationFactory.getInstance().
-                        getString(BasicOverlayService.TYPE_CONFIG_KEY, "")) {
+                switch (Configuration.getInstance().
+                        getString(Key.OVERLAY_TYPE, "")) {
                     case "image":
                         return new BasicImageOverlayService().getOverlay();
                     case "string":
@@ -95,14 +92,14 @@ public class OverlayService {
     }
 
     private void readEnabled() {
-        setEnabled(ConfigurationFactory.getInstance().
-                getBoolean(ENABLED_CONFIG_KEY, false));
+        setEnabled(Configuration.getInstance().
+                getBoolean(Key.OVERLAY_ENABLED, false));
     }
 
     private void readStrategy() throws ConfigurationException {
-        final Configuration config = ConfigurationFactory.getInstance();
-        final String configValue = config.
-                getString(STRATEGY_CONFIG_KEY, "BasicStrategy");
+        final Configuration config = Configuration.getInstance();
+        final String configValue = config.getString(
+                Key.OVERLAY_STRATEGY, "BasicStrategy");
         switch (configValue) {
             case "ScriptStrategy":
                 setStrategy(Strategy.DELEGATE_METHOD);
@@ -112,7 +109,7 @@ public class OverlayService {
                 break;
             default:
                 throw new ConfigurationException("Unsupported value for " +
-                        STRATEGY_CONFIG_KEY);
+                        Key.OVERLAY_STRATEGY);
         }
     }
 

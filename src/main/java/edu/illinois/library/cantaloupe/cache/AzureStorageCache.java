@@ -10,6 +10,7 @@ import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.blob.ListBlobItem;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -89,15 +90,6 @@ class AzureStorageCache implements DerivativeCache {
     private static Logger logger = LoggerFactory.
             getLogger(AzureStorageCache.class);
 
-    static final String ACCOUNT_KEY_CONFIG_KEY =
-            "AzureStorageCache.account_key";
-    static final String ACCOUNT_NAME_CONFIG_KEY =
-            "AzureStorageCache.account_name";
-    static final String CONTAINER_NAME_CONFIG_KEY =
-            "AzureStorageCache.container_name";
-    static final String OBJECT_KEY_PREFIX_CONFIG_KEY =
-            "AzureStorageCache.object_key_prefix";
-
     private static CloudBlobClient client;
 
     /**
@@ -111,8 +103,10 @@ class AzureStorageCache implements DerivativeCache {
         if (client == null) {
             try {
                 final Configuration config = ConfigurationFactory.getInstance();
-                final String accountName = config.getString(ACCOUNT_NAME_CONFIG_KEY);
-                final String accountKey = config.getString(ACCOUNT_KEY_CONFIG_KEY);
+                final String accountName =
+                        config.getString(Key.AZURESTORAGECACHE_ACCOUNT_NAME);
+                final String accountKey =
+                        config.getString(Key.AZURESTORAGECACHE_ACCOUNT_KEY);
 
                 final String connectionString = String.format(
                         "DefaultEndpointsProtocol=https;" +
@@ -137,7 +131,7 @@ class AzureStorageCache implements DerivativeCache {
     static String getContainerName() {
         // All letters in a container name must be lowercase.
         return ConfigurationFactory.getInstance().
-                getString(CONTAINER_NAME_CONFIG_KEY).toLowerCase();
+                getString(Key.AZURESTORAGECACHE_CONTAINER_NAME).toLowerCase();
     }
 
     @Override
@@ -241,12 +235,12 @@ class AzureStorageCache implements DerivativeCache {
     }
 
     /**
-     * @return Value of {@link #OBJECT_KEY_PREFIX_CONFIG_KEY} with trailing
-     * slash.
+     * @return Value of {@link Key#AZURESTORAGECACHE_OBJECT_KEY_PREFIX}
+     *         with trailing slash.
      */
     String getObjectKeyPrefix() {
         String prefix = ConfigurationFactory.getInstance().
-                getString(OBJECT_KEY_PREFIX_CONFIG_KEY);
+                getString(Key.AZURESTORAGECACHE_OBJECT_KEY_PREFIX);
         if (prefix.length() < 1 || prefix.equals("/")) {
             return "";
         }
@@ -302,7 +296,7 @@ class AzureStorageCache implements DerivativeCache {
 
         final Calendar c = Calendar.getInstance();
         c.add(Calendar.SECOND, 0 - ConfigurationFactory.getInstance().
-                getInt(Cache.TTL_CONFIG_KEY));
+                getInt(Key.CACHE_SERVER_TTL));
         final Date cutoffDate = c.getTime();
 
         try {

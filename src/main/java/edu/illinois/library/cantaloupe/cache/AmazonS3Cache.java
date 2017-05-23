@@ -11,6 +11,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.image.Info;
@@ -130,15 +131,6 @@ class AmazonS3Cache implements DerivativeCache {
 
     private static Logger logger = LoggerFactory.getLogger(AmazonS3Cache.class);
 
-    static final String ACCESS_KEY_ID_CONFIG_KEY =
-            "AmazonS3Cache.access_key_id";
-    static final String BUCKET_NAME_CONFIG_KEY = "AmazonS3Cache.bucket.name";
-    static final String BUCKET_REGION_CONFIG_KEY =
-            "AmazonS3Cache.bucket.region";
-    static final String OBJECT_KEY_PREFIX_CONFIG_KEY =
-            "AmazonS3Cache.object_key_prefix";
-    static final String SECRET_KEY_CONFIG_KEY = "AmazonS3Cache.secret_key";
-
     /** Lazy-initialized by {@link #getClientInstance} */
     private static AmazonS3 client;
 
@@ -149,16 +141,17 @@ class AmazonS3Cache implements DerivativeCache {
         if (client == null) {
             final Configuration config = Configuration.getInstance();
             final AWSClientFactory factory = new AWSClientFactory(
-                    config.getString(ACCESS_KEY_ID_CONFIG_KEY),
-                    config.getString(SECRET_KEY_CONFIG_KEY),
-                    config.getString(BUCKET_REGION_CONFIG_KEY));
+                    config.getString(Key.AMAZONS3CACHE_ACCESS_KEY_ID),
+                    config.getString(Key.AMAZONS3CACHE_SECRET_KEY),
+                    config.getString(Key.AMAZONS3CACHE_BUCKET_REGION));
             client = factory.newClient();
         }
         return client;
     }
 
     String getBucketName() {
-        return Configuration.getInstance().getString(BUCKET_NAME_CONFIG_KEY);
+        return Configuration.getInstance().
+                getString(Key.AMAZONS3CACHE_BUCKET_NAME);
     }
 
     @Override
@@ -239,12 +232,12 @@ class AmazonS3Cache implements DerivativeCache {
     }
 
     /**
-     * @return Value of {@link #OBJECT_KEY_PREFIX_CONFIG_KEY} with trailing
-     *         slash.
+     * @return Value of {@link Key#AMAZONS3CACHE_OBJECT_KEY_PREFIX}
+     *         with trailing slash.
      */
     String getObjectKeyPrefix() {
         String prefix = Configuration.getInstance().
-                getString(OBJECT_KEY_PREFIX_CONFIG_KEY);
+                getString(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX);
         if (prefix.length() < 1 || prefix.equals("/")) {
             return "";
         }
@@ -281,7 +274,7 @@ class AmazonS3Cache implements DerivativeCache {
         final String bucketName = getBucketName();
 
         Calendar c = Calendar.getInstance();
-        c.add(Calendar.SECOND, 0 - config.getInt(Cache.TTL_CONFIG_KEY));
+        c.add(Calendar.SECOND, 0 - config.getInt(Key.CACHE_SERVER_TTL));
         Date cutoffDate = c.getTime();
 
         final S3Objects objects = S3Objects.withPrefix(s3, bucketName,

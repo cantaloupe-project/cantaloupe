@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -121,7 +122,7 @@ class RubyScriptEngine extends AbstractScriptEngine
 
         Object returnValue;
         final Configuration config = ConfigurationFactory.getInstance();
-        if (config.getBoolean(METHOD_INVOCATION_CACHE_ENABLED_CONFIG_KEY, false)) {
+        if (config.getBoolean(Key.DELEGATE_METHOD_INVOCATION_CACHE_ENABLED, false)) {
             returnValue = retrieveFromCacheOrInvoke(methodName, args);
         } else {
             returnValue = doInvoke(methodName, args);

@@ -6,9 +6,9 @@ import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -96,13 +96,13 @@ public class AzureStorageResolverTest extends BaseTest {
         super.setUp();
 
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(AzureStorageResolver.CONTAINER_NAME_CONFIG_KEY,
+        config.setProperty(Key.AZURESTORAGERESOLVER_CONTAINER_NAME,
                 getContainer());
-        config.setProperty(AzureStorageResolver.ACCOUNT_NAME_CONFIG_KEY,
+        config.setProperty(Key.AZURESTORAGECACHE_ACCOUNT_NAME,
                 getAccountName());
-        config.setProperty(AzureStorageResolver.ACCOUNT_KEY_CONFIG_KEY,
+        config.setProperty(Key.AZURESTORAGECACHE_ACCOUNT_KEY,
                 getAccountKey());
-        config.setProperty(AzureStorageResolver.LOOKUP_STRATEGY_CONFIG_KEY,
+        config.setProperty(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
 
         instance = new AzureStorageResolver();
@@ -132,11 +132,10 @@ public class AzureStorageResolverTest extends BaseTest {
     @Test
     public void testNewStreamSourceWithScriptLookupStrategy() throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(AzureStorageResolver.LOOKUP_STRATEGY_CONFIG_KEY,
+        config.setProperty(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY,
                 "ScriptLookupStrategy");
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
-                "true");
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         // present image
         try {
@@ -179,11 +178,10 @@ public class AzureStorageResolverTest extends BaseTest {
     @Test
     public void testGetSourceFormatWithScriptLookupStrategy() throws IOException {
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(AzureStorageResolver.LOOKUP_STRATEGY_CONFIG_KEY,
+        config.setProperty(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY,
                 "ScriptLookupStrategy");
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
-                "true");
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         // present image
         assertEquals(Format.JPG, instance.getSourceFormat());

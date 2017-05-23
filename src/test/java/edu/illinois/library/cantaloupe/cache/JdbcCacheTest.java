@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -40,12 +41,12 @@ public class JdbcCacheTest extends BaseTest {
 
         Configuration config = ConfigurationFactory.getInstance();
         // use an in-memory H2 database
-        config.setProperty(JdbcCache.JDBC_URL_CONFIG_KEY, "jdbc:h2:mem:test");
-        config.setProperty(JdbcCache.USER_CONFIG_KEY, "sa");
-        config.setProperty(JdbcCache.PASSWORD_CONFIG_KEY, "");
-        config.setProperty(JdbcCache.DERIVATIVE_IMAGE_TABLE_CONFIG_KEY, "deriv");
-        config.setProperty(JdbcCache.INFO_TABLE_CONFIG_KEY, "info");
-        config.setProperty(Cache.TTL_CONFIG_KEY, 0);
+        config.setProperty(Key.JDBCCACHE_JDBC_URL, "jdbc:h2:mem:test");
+        config.setProperty(Key.JDBCCACHE_USER, "sa");
+        config.setProperty(Key.JDBCCACHE_PASSWORD, "");
+        config.setProperty(Key.JDBCCACHE_DERIVATIVE_IMAGE_TABLE, "deriv");
+        config.setProperty(Key.JDBCCACHE_INFO_TABLE, "info");
+        config.setProperty(Key.CACHE_SERVER_TTL, 0);
 
         try (Connection connection = JdbcCache.getConnection()) {
             createTables(connection);
@@ -145,7 +146,7 @@ public class JdbcCacheTest extends BaseTest {
         // assert that the data has been seeded
         String sql = String.format("SELECT COUNT(%s) AS count FROM %s;",
                 JdbcCache.DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
-                config.getString(JdbcCache.DERIVATIVE_IMAGE_TABLE_CONFIG_KEY));
+                config.getString(Key.JDBCCACHE_DERIVATIVE_IMAGE_TABLE));
         PreparedStatement statement = connection.prepareStatement(sql);
         ResultSet resultSet = statement.executeQuery();
         if (resultSet.next()) {
@@ -156,7 +157,7 @@ public class JdbcCacheTest extends BaseTest {
 
         sql = String.format("SELECT COUNT(%s) AS count FROM %s;",
                 JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
-                config.getString(JdbcCache.INFO_TABLE_CONFIG_KEY));
+                config.getString(Key.JDBCCACHE_INFO_TABLE));
         statement = connection.prepareStatement(sql);
         resultSet = statement.executeQuery();
         if (resultSet.next()) {
@@ -183,7 +184,7 @@ public class JdbcCacheTest extends BaseTest {
 
     @Test
     public void testGetImageInfoWithNonZeroTtl() throws Exception {
-        ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 1);
+        ConfigurationFactory.getInstance().setProperty(Key.CACHE_SERVER_TTL, 1);
 
         // wait for the seed data to invalidate
         Thread.sleep(1500);
@@ -219,7 +220,7 @@ public class JdbcCacheTest extends BaseTest {
             // get the initial last-accessed time
             String sql = String.format("SELECT %s FROM %s WHERE %s = ?;",
                     JdbcCache.INFO_TABLE_LAST_ACCESSED_COLUMN,
-                    config.getString(JdbcCache.INFO_TABLE_CONFIG_KEY),
+                    config.getString(Key.JDBCCACHE_INFO_TABLE),
                     JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN);
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, identifier.toString());
@@ -256,7 +257,7 @@ public class JdbcCacheTest extends BaseTest {
     @Test
     public void testNewDerivativeImageInputStreamWithOpListWithNonzeroTtl()
             throws Exception {
-        ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 1);
+        ConfigurationFactory.getInstance().setProperty(Key.CACHE_SERVER_TTL, 1);
 
         // wait for the seed data to invalidate
         Thread.sleep(1500);
@@ -295,7 +296,7 @@ public class JdbcCacheTest extends BaseTest {
             // get the initial last-accessed time
             String sql = String.format("SELECT %s FROM %s WHERE %s = ?;",
                     JdbcCache.DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN,
-                    config.getString(JdbcCache.DERIVATIVE_IMAGE_TABLE_CONFIG_KEY),
+                    config.getString(Key.JDBCCACHE_DERIVATIVE_IMAGE_TABLE),
                     JdbcCache.DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN);
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, opList.toString());
@@ -336,7 +337,7 @@ public class JdbcCacheTest extends BaseTest {
         // ttl = 0
         assertEquals(new Date(Long.MIN_VALUE), instance.oldestValidDate());
         // ttl = 50
-        ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 50);
+        ConfigurationFactory.getInstance().setProperty(Key.CACHE_SERVER_TTL, 50);
         long expectedTime = Date.from(Instant.now().minus(Duration.ofSeconds(50))).getTime();
         long actualTime = instance.oldestValidDate().getTime();
         assertTrue(Math.abs(actualTime - expectedTime) < 100);
@@ -354,7 +355,7 @@ public class JdbcCacheTest extends BaseTest {
             // assert that the derivative images were purged
             String sql = String.format("SELECT COUNT(%s) AS count FROM %s",
                     JdbcCache.DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
-                    config.getString(JdbcCache.DERIVATIVE_IMAGE_TABLE_CONFIG_KEY));
+                    config.getString(Key.JDBCCACHE_DERIVATIVE_IMAGE_TABLE));
             PreparedStatement statement = connection.prepareStatement(sql);
             ResultSet resultSet = statement.executeQuery();
             resultSet.next();
@@ -363,7 +364,7 @@ public class JdbcCacheTest extends BaseTest {
             // assert that the infos were purged
             sql = String.format("SELECT COUNT(%s) AS count FROM %s",
                     JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
-                    config.getString(JdbcCache.INFO_TABLE_CONFIG_KEY));
+                    config.getString(Key.JDBCCACHE_INFO_TABLE));
             statement = connection.prepareStatement(sql);
             resultSet = statement.executeQuery();
             resultSet.next();
@@ -385,7 +386,7 @@ public class JdbcCacheTest extends BaseTest {
             // assert that the derivative image was purged
             String sql = String.format("SELECT COUNT(%s) AS count FROM %s",
                     JdbcCache.DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
-                    config.getString(JdbcCache.DERIVATIVE_IMAGE_TABLE_CONFIG_KEY));
+                    config.getString(Key.JDBCCACHE_DERIVATIVE_IMAGE_TABLE));
             PreparedStatement statement = connection.prepareStatement(sql);
             ResultSet resultSet = statement.executeQuery();
             resultSet.next();
@@ -394,7 +395,7 @@ public class JdbcCacheTest extends BaseTest {
             // assert that the info was NOT purged
             sql = String.format("SELECT COUNT(%s) AS count FROM %s",
                     JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
-                    config.getString(JdbcCache.INFO_TABLE_CONFIG_KEY));
+                    config.getString(Key.JDBCCACHE_INFO_TABLE));
             statement = connection.prepareStatement(sql);
             resultSet = statement.executeQuery();
             resultSet.next();
@@ -407,7 +408,7 @@ public class JdbcCacheTest extends BaseTest {
     @Test
     public void testPurgeExpired() throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Cache.TTL_CONFIG_KEY, 1);
+        config.setProperty(Key.CACHE_SERVER_TTL, 1);
 
         // wait for the seed data to invalidate
         Thread.sleep(1500);
@@ -428,7 +429,7 @@ public class JdbcCacheTest extends BaseTest {
             // assert that only the expired derivative images were purged
             String sql = String.format("SELECT COUNT(%s) AS count FROM %s",
                     JdbcCache.DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
-                    config.getString(JdbcCache.DERIVATIVE_IMAGE_TABLE_CONFIG_KEY));
+                    config.getString(Key.JDBCCACHE_DERIVATIVE_IMAGE_TABLE));
             PreparedStatement statement = connection.prepareStatement(sql);
             ResultSet resultSet = statement.executeQuery();
             resultSet.next();
@@ -437,7 +438,7 @@ public class JdbcCacheTest extends BaseTest {
             // assert that only the expired infos were purged
             sql = String.format("SELECT COUNT(%s) AS count FROM %s",
                     JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
-                    config.getString(JdbcCache.INFO_TABLE_CONFIG_KEY));
+                    config.getString(Key.JDBCCACHE_INFO_TABLE));
             statement = connection.prepareStatement(sql);
             resultSet = statement.executeQuery();
             resultSet.next();
@@ -458,7 +459,7 @@ public class JdbcCacheTest extends BaseTest {
             // assert that the derivative images were purged
             String sql = String.format("SELECT COUNT(%s) AS count FROM %s",
                     JdbcCache.DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
-                    config.getString(JdbcCache.DERIVATIVE_IMAGE_TABLE_CONFIG_KEY));
+                    config.getString(Key.JDBCCACHE_DERIVATIVE_IMAGE_TABLE));
             PreparedStatement statement = connection.prepareStatement(sql);
             ResultSet resultSet = statement.executeQuery();
             resultSet.next();
@@ -466,7 +467,7 @@ public class JdbcCacheTest extends BaseTest {
 
             sql = String.format("SELECT COUNT(%s) AS count FROM %s",
                     JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
-                    config.getString(JdbcCache.INFO_TABLE_CONFIG_KEY));
+                    config.getString(Key.JDBCCACHE_INFO_TABLE));
             statement = connection.prepareStatement(sql);
             resultSet = statement.executeQuery();
             resultSet.next();
@@ -496,7 +497,7 @@ public class JdbcCacheTest extends BaseTest {
             // get the initial last-accessed time
             String sql = String.format("SELECT %s FROM %s WHERE %s = ?;",
                     JdbcCache.INFO_TABLE_LAST_ACCESSED_COLUMN,
-                    config.getString(JdbcCache.INFO_TABLE_CONFIG_KEY),
+                    config.getString(Key.JDBCCACHE_INFO_TABLE),
                     JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN);
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, identifier.toString());

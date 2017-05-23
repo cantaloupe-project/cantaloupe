@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeFileCache;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -71,7 +72,7 @@ public class InformationResource extends IIIF1Resource {
             format = resolver.getSourceFormat();
         } catch (FileNotFoundException e) {
             if (ConfigurationFactory.getInstance().
-                    getBoolean(Cache.PURGE_MISSING_CONFIG_KEY, false)) {
+                    getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                 // if the image was not found, purge it from the cache
                 final Cache cache = CacheFactory.getDerivativeCache();
                 if (cache != null) {

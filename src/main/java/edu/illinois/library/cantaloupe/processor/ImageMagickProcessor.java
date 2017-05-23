@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Color;
@@ -48,12 +49,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *     <li>{@link FileProcessor} is not implemented because testing indicates
  *     that reading from streams is significantly faster.</li>
  *     <li>This processor does not respect the
- *     {@link Processor#PRESERVE_METADATA_CONFIG_KEY} setting because telling
- *     IM not to preserve metadata means telling it not to preserve an ICC
- *     profile. Therefore, metadata always passes through.</li>
+ *     {@link Key#PROCESSOR_PRESERVE_METADATA} setting because telling IM not
+ *     to preserve metadata means telling it not to preserve an ICC profile.
+ *     Therefore, metadata always passes through.</li>
  *     <li>This processor does not respect the
- *     {@link Processor#RESPECT_ORIENTATION_CONFIG_KEY} setting. The
- *     orientation is always respected.</li>
+ *     {@link Key#PROCESSOR_RESPECT_ORIENTATION} setting. The orientation is
+ *     always respected.</li>
  * </ul>
  */
 class ImageMagickProcessor extends AbstractMagickProcessor
@@ -61,9 +62,6 @@ class ImageMagickProcessor extends AbstractMagickProcessor
 
     private static Logger logger = LoggerFactory.
             getLogger(ImageMagickProcessor.class);
-
-    static final String PATH_TO_BINARIES_CONFIG_KEY =
-            "ImageMagickProcessor.path_to_binaries";
 
     // ImageMagick 7 uses a `magick` command. Earlier versions use `convert`
     // and `identify`.
@@ -173,7 +171,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
      */
     private static String getPath(final String binaryName) {
         String path = Configuration.getInstance().
-                getString(PATH_TO_BINARIES_CONFIG_KEY);
+                getString(Key.IMAGEMAGICKPROCESSOR_PATH_TO_BINARIES);
         if (path != null && path.length() > 0) {
             path = StringUtils.stripEnd(path, File.separator) + File.separator +
                     binaryName;
@@ -243,7 +241,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         // Normalization needs to happen before cropping to maintain the
         // intensity of cropped regions relative to the full image.
         final boolean normalize = (boolean) ops.getOptions().
-                getOrDefault(NORMALIZE_CONFIG_KEY, false);
+                getOrDefault(Key.PROCESSOR_NORMALIZE, false);
         if (normalize) {
             args.add("-normalize");
         }

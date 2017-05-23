@@ -7,7 +7,7 @@ import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
@@ -32,9 +32,9 @@ import java.security.InvalidKeyException;
  * <h3>Lookup Strategies</h3>
  *
  * <p>Two distinct lookup strategies are supported, defined by
- * {@link #LOOKUP_STRATEGY_CONFIG_KEY}. BasicLookupStrategy maps identifiers
- * directly to blob keys. ScriptLookupStrategy invokes a delegate method to
- * retrieve blob keys dynamically.</p>
+ * {@link Key#AZURESTORAGERESOLVER_LOOKUP_STRATEGY}. BasicLookupStrategy maps
+ * identifiers directly to blob keys. ScriptLookupStrategy invokes a delegate
+ * method to retrieve blob keys dynamically.</p>
  *
  * @see <a href="https://github.com/azure/azure-storage-java">
  *     Microsoft Azure Storage DSK for Java</a>
@@ -68,15 +68,6 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     private static Logger logger = LoggerFactory.
             getLogger(AzureStorageResolver.class);
 
-    static final String ACCOUNT_KEY_CONFIG_KEY =
-            "AzureStorageResolver.account_key";
-    static final String ACCOUNT_NAME_CONFIG_KEY =
-            "AzureStorageResolver.account_name";
-    static final String CONTAINER_NAME_CONFIG_KEY =
-            "AzureStorageResolver.container_name";
-    static final String LOOKUP_STRATEGY_CONFIG_KEY =
-            "AzureStorageResolver.lookup_strategy";
-
     static final String GET_KEY_DELEGATE_METHOD =
             "AzureStorageResolver::get_blob_key";
 
@@ -89,15 +80,18 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
         if (client == null) {
             synchronized (lock) {
                 try {
-                    final Configuration config = ConfigurationFactory.getInstance();
-                    final String accountName = config.getString(ACCOUNT_NAME_CONFIG_KEY);
-                    final String accountKey = config.getString(ACCOUNT_KEY_CONFIG_KEY);
+                    final Configuration config = Configuration.getInstance();
+                    final String accountName =
+                            config.getString(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME);
+                    final String accountKey =
+                            config.getString(Key.AZURESTORAGERESOLVER_ACCOUNT_KEY);
 
                     final String connectionString = String.format(
                             "DefaultEndpointsProtocol=https;" +
                                     "AccountName=%s;" +
                                     "AccountKey=%s", accountName, accountKey);
-                    final CloudStorageAccount account = CloudStorageAccount.parse(connectionString);
+                    final CloudStorageAccount account =
+                            CloudStorageAccount.parse(connectionString);
 
                     logger.info("Using account: {}", accountName);
 
@@ -116,8 +110,9 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     }
 
     private CloudBlockBlob getObject() throws IOException {
-        final Configuration config = ConfigurationFactory.getInstance();
-        final String containerName = config.getString(CONTAINER_NAME_CONFIG_KEY);
+        final Configuration config = Configuration.getInstance();
+        final String containerName =
+                config.getString(Key.AZURESTORAGERESOLVER_CONTAINER_NAME);
         logger.info("Using container: {}", containerName);
 
         final CloudBlobClient client = getClientInstance();
@@ -138,8 +133,8 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     }
 
     private String getObjectKey() throws IOException {
-        final Configuration config = ConfigurationFactory.getInstance();
-        switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
+        final Configuration config = Configuration.getInstance();
+        switch (config.getString(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY)) {
             case "BasicLookupStrategy":
                 return identifier.toString();
             case "ScriptLookupStrategy":
@@ -150,7 +145,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
                     throw new IOException(e);
                 }
             default:
-                throw new IOException(LOOKUP_STRATEGY_CONFIG_KEY +
+                throw new IOException(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY +
                         " is invalid or not set");
         }
     }

@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
@@ -76,7 +77,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
     public void testProcessPreservesMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
         config.clear();
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         assertXmpPresent(true);
     }
 
@@ -84,7 +85,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
     public void testProcessStripsMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
         config.clear();
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, false);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, false);
         // Metadata shouldn't be stripped, because it would also strip the ICC
         // profile.
         assertXmpPresent(true);
@@ -93,7 +94,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
     private void assertXmpPresent(boolean yesOrNo) throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
         config.clear();
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, yesOrNo);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, yesOrNo);
 
         OperationList ops = new OperationList();
         ops.setIdentifier(new Identifier("bla"));
@@ -143,7 +144,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
             throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
-        config.setProperty(Processor.BACKGROUND_COLOR_CONFIG_KEY, "blue");
+        config.setProperty(Key.PROCESSOR_BACKGROUND_COLOR, "blue");
 
         OperationList ops = new OperationList();
         ops.setIdentifier(new Identifier("bla"));

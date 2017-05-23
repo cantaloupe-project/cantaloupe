@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
@@ -59,7 +60,7 @@ public class WebApplication extends Application {
                 }
                 message = throwable.getMessage();
                 Configuration config = ConfigurationFactory.getInstance();
-                if (config.getBoolean("print_stack_trace_on_error_pages", false)) {
+                if (config.getBoolean(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES, false)) {
                     StringWriter sw = new StringWriter();
                     throwable.printStackTrace(new PrintWriter(sw));
                     stackTrace = sw.toString();
@@ -107,16 +108,6 @@ public class WebApplication extends Application {
 
     }
 
-    public static final String ADMIN_SECRET_CONFIG_KEY = "admin.password";
-    public static final String API_SECRET_CONFIG_KEY = "endpoint.api.secret";
-    public static final String API_USERNAME_CONFIG_KEY = "endpoint.api.username";
-    public static final String BASIC_AUTH_ENABLED_CONFIG_KEY =
-            "auth.basic.enabled";
-    public static final String BASIC_AUTH_SECRET_CONFIG_KEY =
-            "auth.basic.secret";
-    public static final String BASIC_AUTH_USERNAME_CONFIG_KEY =
-            "auth.basic.username";
-
     public static final String ADMIN_PATH = "/admin";
     public static final String CACHE_PATH = "/cache";
     public static final String CONFIGURATION_PATH = "/configuration";
@@ -148,11 +139,10 @@ public class WebApplication extends Application {
     private ChallengeAuthenticator createAdminAuthenticator()
             throws ConfigurationException {
         final Configuration config = ConfigurationFactory.getInstance();
-        final String secret = config.getString(ADMIN_SECRET_CONFIG_KEY);
+        final String secret = config.getString(Key.ADMIN_SECRET);
         if (secret == null || secret.length() < 1) {
-            throw new ConfigurationException(
-                    ADMIN_SECRET_CONFIG_KEY + " is not set. The control " +
-                            "panel will be unavailable.");
+            throw new ConfigurationException(Key.ADMIN_SECRET +
+                    " is not set. The control panel will be unavailable.");
         }
 
         final MapVerifier verifier = new MapVerifier();
@@ -167,14 +157,14 @@ public class WebApplication extends Application {
     private ChallengeAuthenticator createApiAuthenticator()
             throws ConfigurationException {
         final Configuration config = ConfigurationFactory.getInstance();
-        final String secret = config.getString(API_SECRET_CONFIG_KEY);
+        final String secret = config.getString(Key.API_SECRET);
         if (secret == null || secret.length() < 1) {
-            throw new ConfigurationException(API_SECRET_CONFIG_KEY +
+            throw new ConfigurationException(Key.API_SECRET +
                     " is not set. The API will be unavailable.");
         }
 
         final MapVerifier verifier = new MapVerifier();
-        verifier.getLocalSecrets().put(config.getString(API_USERNAME_CONFIG_KEY),
+        verifier.getLocalSecrets().put(config.getString(Key.API_USERNAME),
                 secret.toCharArray());
         final ChallengeAuthenticator auth = new ChallengeAuthenticator(
                 getContext(), ChallengeScheme.HTTP_BASIC,
@@ -185,8 +175,8 @@ public class WebApplication extends Application {
 
     private ChallengeAuthenticator createEndpointAuthenticator() {
         final Configuration config = ConfigurationFactory.getInstance();
-        final String username = config.getString(BASIC_AUTH_USERNAME_CONFIG_KEY);
-        final String secret = config.getString(BASIC_AUTH_SECRET_CONFIG_KEY);
+        final String username = config.getString(Key.BASIC_AUTH_USERNAME);
+        final String secret = config.getString(Key.BASIC_AUTH_SECRET);
 
         if (username != null && username.length() > 0 && secret != null &&
                 secret.length() > 0) {
@@ -198,7 +188,7 @@ public class WebApplication extends Application {
                     getContext(), ChallengeScheme.HTTP_BASIC, "Image Realm") {
                 @Override
                 protected int beforeHandle(Request request, Response response) {
-                    if (config.getBoolean(BASIC_AUTH_ENABLED_CONFIG_KEY, false)) {
+                    if (config.getBoolean(Key.BASIC_AUTH_ENABLED, false)) {
                         if (!request.getResourceRef().getPath().startsWith(ADMIN_PATH) &&
                                 !request.getResourceRef().getPath().startsWith(STATIC_ROOT_PATH)) {
                             return super.beforeHandle(request, response);
@@ -212,8 +202,8 @@ public class WebApplication extends Application {
             return auth;
         }
         getLogger().log(Level.INFO, "Endpoint authentication is disabled. (" +
-                BASIC_AUTH_USERNAME_CONFIG_KEY + " or " +
-                BASIC_AUTH_SECRET_CONFIG_KEY + " are null)");
+                Key.BASIC_AUTH_USERNAME + " or " + Key.BASIC_AUTH_SECRET +
+                " are null)");
         return null;
     }
 

@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
@@ -78,7 +79,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
         String cwd = directory.getCanonicalPath();
         Path path = Paths.get(cwd, "src", "test", "resources");
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",
+        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX,
                 path + File.separator);
 
         // image endpoint

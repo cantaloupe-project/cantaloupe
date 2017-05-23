@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.operation.Color;
 
 import java.awt.Font;
@@ -11,27 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 class BasicStringOverlayService extends BasicOverlayService {
-
-    static final String BACKGROUND_COLOR_CONFIG_KEY =
-            "overlays.BasicStrategy.string.background.color";
-    static final String COLOR_CONFIG_KEY =
-            "overlays.BasicStrategy.string.color";
-    static final String FONT_CONFIG_KEY =
-            "overlays.BasicStrategy.string.font";
-    static final String FONT_MIN_SIZE_CONFIG_KEY =
-            "overlays.BasicStrategy.string.font.min_size";
-    static final String FONT_SIZE_CONFIG_KEY =
-            "overlays.BasicStrategy.string.font.size";
-    static final String FONT_WEIGHT_CONFIG_KEY =
-            "overlays.BasicStrategy.string.font.weight";
-    static final String GLYPH_SPACING_CONFIG_KEY =
-            "overlays.BasicStrategy.string.glyph_spacing";
-    static final String STRING_CONFIG_KEY =
-            "overlays.BasicStrategy.string";
-    static final String STROKE_COLOR_CONFIG_KEY =
-            "overlays.BasicStrategy.string.stroke.color";
-    static final String STROKE_WIDTH_CONFIG_KEY =
-            "overlays.BasicStrategy.string.stroke.width";
 
     private Color backgroundColor;
     private Color color;
@@ -56,35 +36,35 @@ class BasicStringOverlayService extends BasicOverlayService {
 
         // Background color
         backgroundColor = Color.fromString(
-                config.getString(BACKGROUND_COLOR_CONFIG_KEY));
+                config.getString(Key.OVERLAY_STRING_BACKGROUND_COLOR));
 
         // Fill color
-        color = Color.fromString(config.getString(COLOR_CONFIG_KEY));
+        color = Color.fromString(config.getString(Key.OVERLAY_STRING_COLOR));
 
         // Font
         final Map<TextAttribute, Object> attributes = new HashMap<>();
         attributes.put(TextAttribute.FAMILY,
-                config.getString(FONT_CONFIG_KEY, "Helvetica"));
+                config.getString(Key.OVERLAY_STRING_FONT, "Helvetica"));
         attributes.put(TextAttribute.SIZE,
-                config.getInt(FONT_SIZE_CONFIG_KEY, 18));
+                config.getInt(Key.OVERLAY_STRING_FONT_SIZE, 18));
         attributes.put(TextAttribute.WEIGHT,
-                config.getFloat(FONT_WEIGHT_CONFIG_KEY, 1f));
+                config.getFloat(Key.OVERLAY_STRING_FONT_WEIGHT, 1f));
         attributes.put(TextAttribute.TRACKING,
-                config.getFloat(GLYPH_SPACING_CONFIG_KEY, 0f));
+                config.getFloat(Key.OVERLAY_STRING_GLYPH_SPACING, 0f));
         font = Font.getFont(attributes);
 
         // Min size
-        minSize = config.getInt(FONT_MIN_SIZE_CONFIG_KEY, 14);
+        minSize = config.getInt(Key.OVERLAY_STRING_FONT_MIN_SIZE, 14);
 
         // String
-        string = config.getString(STRING_CONFIG_KEY, "");
+        string = config.getString(Key.OVERLAY_STRING_STRING, "");
 
         // Stroke color
         strokeColor = Color.fromString(
-                config.getString(STROKE_COLOR_CONFIG_KEY, "black"));
+                config.getString(Key.OVERLAY_STRING_COLOR, "black"));
 
         // Stroke width
-        strokeWidth = config.getFloat(STROKE_WIDTH_CONFIG_KEY, 2f);
+        strokeWidth = config.getFloat(Key.OVERLAY_STRING_STROKE_WIDTH, 2f);
     }
 
 }

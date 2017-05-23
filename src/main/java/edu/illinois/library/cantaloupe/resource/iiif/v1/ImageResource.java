@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.cache.DerivativeFileCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MediaType;
@@ -66,7 +67,7 @@ public class ImageResource extends IIIF1Resource {
         try {
             format = resolver.getSourceFormat();
         } catch (FileNotFoundException e) {
-            if (config.getBoolean(Cache.PURGE_MISSING_CONFIG_KEY, false)) {
+            if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                 // if the image was not found, purge it from the cache
                 final Cache cache = CacheFactory.getDerivativeCache();
                 if (cache != null) {
@@ -122,7 +123,7 @@ public class ImageResource extends IIIF1Resource {
         // cache contains an image matching the request, skip all the setup and
         // just return the cached image.
         final DerivativeCache cache = CacheFactory.getDerivativeCache();
-        if (!config.getBoolean(Cache.RESOLVE_FIRST_CONFIG_KEY, true)) {
+        if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)) {
             if (cache != null) {
                 InputStream inputStream = cache.newDerivativeImageInputStream(ops);
                 if (inputStream != null) {

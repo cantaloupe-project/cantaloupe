@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.operation;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -8,7 +9,6 @@ import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.overlay.OverlayService;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.redaction.RedactionService;
-import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
@@ -28,9 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static edu.illinois.library.cantaloupe.processor.Processor.DOWNSCALE_FILTER_CONFIG_KEY;
-import static edu.illinois.library.cantaloupe.processor.Processor.UPSCALE_FILTER_CONFIG_KEY;
 
 /**
  * <p>Normalized list of {@link Operation image transform operations}
@@ -142,8 +139,9 @@ public final class OperationList implements Comparable<OperationList>,
         if (scale != null) {
             final Float scalePct = scale.getResultingScale(sourceImageSize);
             if (scalePct != null) {
-                final String filterKey = (scalePct > 1) ?
-                        UPSCALE_FILTER_CONFIG_KEY : DOWNSCALE_FILTER_CONFIG_KEY;
+                final Key filterKey = (scalePct > 1) ?
+                        Key.PROCESSOR_UPSCALE_FILTER :
+                        Key.PROCESSOR_DOWNSCALE_FILTER;
                 try {
                     final String filterStr = config.getString(filterKey);
                     final Scale.Filter filter =
@@ -157,7 +155,7 @@ public final class OperationList implements Comparable<OperationList>,
         }
 
         // Sharpening
-        float sharpen = config.getFloat(Processor.SHARPEN_CONFIG_KEY, 0f);
+        float sharpen = config.getFloat(Key.PROCESSOR_SHARPEN, 0f);
         if (sharpen > 0.001f) {
             add(new Sharpen(sharpen));
         }
@@ -183,7 +181,7 @@ public final class OperationList implements Comparable<OperationList>,
 
         // Metadata copies
         // TODO: consider making these a property of Encode
-        if (config.getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
+        if (config.getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
             add(new MetadataCopy());
         }
 
@@ -194,17 +192,17 @@ public final class OperationList implements Comparable<OperationList>,
             case JPG:
                 // Interlacing
                 final boolean progressive =
-                        config.getBoolean(Processor.JPG_PROGRESSIVE_CONFIG_KEY, false);
+                        config.getBoolean(Key.PROCESSOR_JPG_PROGRESSIVE, false);
                 encode.setInterlacing(progressive);
                 // Quality
                 final int quality =
-                        config.getInt(Processor.JPG_QUALITY_CONFIG_KEY, 80);
+                        config.getInt(Key.PROCESSOR_JPG_QUALITY, 80);
                 encode.setQuality(quality);
                 break;
             case TIF:
                 // Compression
                 final String compressionStr =
-                        config.getString(Processor.TIF_COMPRESSION_CONFIG_KEY, "LZW");
+                        config.getString(Key.PROCESSOR_TIF_COMPRESSION, "LZW");
                 final Compression compression =
                         Compression.valueOf(compressionStr.toUpperCase());
                 encode.setCompression(compression);
@@ -214,7 +212,7 @@ public final class OperationList implements Comparable<OperationList>,
         // Set the Encode operation's background color
         if (!encode.getFormat().supportsTransparency()) {
             final String bgColor =
-                    config.getString(Processor.BACKGROUND_COLOR_CONFIG_KEY);
+                    config.getString(Key.PROCESSOR_BACKGROUND_COLOR);
             if (bgColor != null) {
                 encode.setBackgroundColor(Color.fromString(bgColor));
             }

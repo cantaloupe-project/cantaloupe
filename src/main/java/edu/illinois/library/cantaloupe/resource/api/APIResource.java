@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
@@ -28,12 +28,9 @@ public class APIResource extends AbstractResource {
     private static org.slf4j.Logger logger = LoggerFactory.
             getLogger(APIResource.class);
 
-    static final String ENABLED_CONFIG_KEY = "endpoint.api.enabled";
-
     @Override
     protected void doInit() throws ResourceException {
-        if (!ConfigurationFactory.getInstance().
-                getBoolean(ENABLED_CONFIG_KEY, true)) {
+        if (!Configuration.getInstance().getBoolean(Key.API_ENABLED, true)) {
             throw new EndpointDisabledException();
         }
         super.doInit();
@@ -61,7 +58,7 @@ public class APIResource extends AbstractResource {
      */
     @Get("json")
     public Representation getConfiguration() throws Exception {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
 
         final Map<String,Object> map = new LinkedHashMap<>();
         final Iterator<String> keys = config.getKeys();
@@ -78,7 +75,7 @@ public class APIResource extends AbstractResource {
      */
     @Put("json")
     public Representation putConfiguration(Representation rep) throws Exception {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         final Map submittedConfig = new ObjectMapper().readValue(
                 rep.getStream(), HashMap.class);
 

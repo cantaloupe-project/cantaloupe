@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -45,9 +46,6 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
     private static Logger logger = LoggerFactory.
             getLogger(FfmpegProcessor.class);
 
-    private static final String PATH_TO_BINARIES_CONFIG_KEY =
-            "FfmpegProcessor.path_to_binaries";
-
     private static final Pattern timePattern =
             Pattern.compile("[0-9][0-9]:[0-5][0-9]:[0-5][0-9]");
 
@@ -61,7 +59,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
      */
     private static String getPath(String binaryName) {
         String path = Configuration.getInstance().
-                getString(PATH_TO_BINARIES_CONFIG_KEY);
+                getString(Key.FFMPEGPROCESSOR_PATH_TO_BINARIES);
         if (path != null && path.length() > 0) {
             path = StringUtils.stripEnd(path, File.separator) + File.separator +
                     binaryName;
