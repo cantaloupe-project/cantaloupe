@@ -61,7 +61,7 @@ class BasicStringOverlayService extends BasicOverlayService {
 
         // Stroke color
         strokeColor = Color.fromString(
-                config.getString(Key.OVERLAY_STRING_COLOR, "black"));
+                config.getString(Key.OVERLAY_STRING_STROKE_COLOR, "black"));
 
         // Stroke width
         strokeWidth = config.getFloat(Key.OVERLAY_STRING_STROKE_WIDTH, 2f);

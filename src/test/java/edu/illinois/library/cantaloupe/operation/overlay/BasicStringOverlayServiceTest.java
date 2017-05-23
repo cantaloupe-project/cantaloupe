@@ -3,11 +3,11 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.font.TextAttribute;
 
@@ -32,7 +32,7 @@ public class BasicStringOverlayServiceTest extends BaseTest {
         config.setProperty(Key.OVERLAY_STRING_FONT_WEIGHT, 2f);
         config.setProperty(Key.OVERLAY_STRING_GLYPH_SPACING, 0.2f);
         config.setProperty(Key.OVERLAY_STRING_STRING, "cats");
-        config.setProperty(Key.OVERLAY_STRING_STROKE_COLOR, "blue");
+        config.setProperty(Key.OVERLAY_STRING_STROKE_COLOR, "orange");
         config.setProperty(Key.OVERLAY_STRING_STROKE_WIDTH, 3);
     }
 
@@ -58,7 +58,7 @@ public class BasicStringOverlayServiceTest extends BaseTest {
         assertEquals(11, overlay.getMinSize());
         assertEquals(2f, overlay.getFont().getAttributes().get(TextAttribute.WEIGHT));
         assertEquals(0.2f, overlay.getFont().getAttributes().get(TextAttribute.TRACKING));
-        assertEquals(Color.blue, overlay.getStrokeColor());
+        assertEquals(Color.ORANGE, overlay.getStrokeColor());
         assertEquals(3, overlay.getStrokeWidth(), 0.00001f);
     }
 
