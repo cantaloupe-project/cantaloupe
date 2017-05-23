@@ -48,17 +48,6 @@ public class EntryServlet extends ServerServlet {
         // to be performed before Restlet has been initialized.
         System.setProperty("org.restlet.engine.loggerFacadeClass",
                 "org.restlet.ext.slf4j.Slf4jLoggerFacade");
-
-        final int mb = 1024 * 1024;
-        final Runtime runtime = Runtime.getRuntime();
-        logger.info(System.getProperty("java.vm.name") + " / " +
-                System.getProperty("java.vm.info"));
-        logger.info("{} available processor cores",
-                runtime.availableProcessors());
-        logger.info("Heap total: {}MB; max: {}MB", runtime.totalMemory() / mb,
-                runtime.maxMemory() / mb);
-        logger.info("\uD83C\uDF48 Starting Cantaloupe {}",
-                Application.getVersion());
     }
 
     private void handleVmArguments() {
@@ -163,6 +152,18 @@ public class EntryServlet extends ServerServlet {
         Velocity.setProperty("runtime.log.logsystem.class",
                 Slf4jLogChute.class.getCanonicalName());
         Velocity.init();
+
+        final int mb = 1024 * 1024;
+        final Runtime runtime = Runtime.getRuntime();
+        logger.info(System.getProperty("java.vm.name") + " / " +
+                System.getProperty("java.vm.info"));
+        logger.info("{} available processor cores",
+                runtime.availableProcessors());
+        logger.info("Heap total: {}MB; max: {}MB", runtime.totalMemory() / mb,
+                runtime.maxMemory() / mb);
+        logger.info("\uD83C\uDF48 Starting Cantaloupe {}",
+                Application.getVersion());
+
         getComponent().getClients().add(Protocol.CLAP);
 
         handleVmArguments();
