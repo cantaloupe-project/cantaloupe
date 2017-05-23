@@ -4,16 +4,12 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
 import edu.illinois.library.cantaloupe.resource.api.APIResource;
-import org.apache.velocity.app.Velocity;
-import org.apache.velocity.runtime.RuntimeConstants;
-import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.restlet.Application;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -115,16 +111,6 @@ public class WebApplication extends Application {
     public static final String IIIF_1_PATH = "/iiif/1";
     public static final String IIIF_2_PATH = "/iiif/2";
     public static final String STATIC_ROOT_PATH = "/static";
-
-    static {
-        Velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
-        Velocity.setProperty("classpath.resource.loader.class",
-                ClasspathResourceLoader.class.getName());
-        Velocity.setProperty("class.resource.loader.cache", true);
-        Velocity.setProperty("runtime.log.logsystem.class",
-                Slf4jLogChute.class.getCanonicalName());
-        Velocity.init();
-    }
 
     public WebApplication() {
         super();

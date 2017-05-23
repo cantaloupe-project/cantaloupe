@@ -7,8 +7,12 @@ import edu.illinois.library.cantaloupe.cache.CacheWorkerRunner;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.logging.LoggerUtil;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import org.apache.velocity.app.Velocity;
+import org.apache.velocity.runtime.RuntimeConstants;
+import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.restlet.data.Protocol;
 import org.restlet.ext.servlet.ServerServlet;
 import org.slf4j.Logger;
@@ -151,6 +155,14 @@ public class EntryServlet extends ServerServlet {
     @Override
     public void init() throws ServletException {
         super.init();
+
+        Velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
+        Velocity.setProperty("classpath.resource.loader.class",
+                ClasspathResourceLoader.class.getName());
+        Velocity.setProperty("class.resource.loader.cache", true);
+        Velocity.setProperty("runtime.log.logsystem.class",
+                Slf4jLogChute.class.getCanonicalName());
+        Velocity.init();
         getComponent().getClients().add(Protocol.CLAP);
 
         handleVmArguments();
