@@ -2627,19 +2627,6 @@
                                         </div>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td>Max Size
-                                        <a tabindex="0" class="btn btn-sm cl-help"
-                                           role="button" data-toggle="popover"
-                                           data-trigger="focus"
-                                           data-content="Maximum size of the invocation cache.">?</a>
-                                    </td>
-                                    <td>
-                                        <input class="form-control" type="number"
-                                               name="delegate_script.cache.max_size"
-                                               data-requires-restart="true">
-                                    </td>
-                                </tr>
                             </table>
                         </section>
 
