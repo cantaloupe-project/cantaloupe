@@ -49,11 +49,6 @@ public class EntryServlet extends ServerServlet {
         System.setProperty("org.restlet.engine.loggerFacadeClass",
                 "org.restlet.ext.slf4j.Slf4jLoggerFacade");
 
-        // Logback has already initialized itself, which is a problem because
-        // logback.xml depends on the application configuration, which at the
-        // time, had not been initialized yet. So, reload it.
-        LoggerUtil.reloadConfiguration();
-
         final int mb = 1024 * 1024;
         final Runtime runtime = Runtime.getRuntime();
         logger.info(System.getProperty("java.vm.name") + " / " +
@@ -155,6 +150,11 @@ public class EntryServlet extends ServerServlet {
     @Override
     public void init() throws ServletException {
         super.init();
+
+        // Logback has already initialized itself, which is a problem because
+        // logback.xml depends on the application configuration, which at the
+        // time, had not been initialized yet. So, reload it.
+        LoggerUtil.reloadConfiguration();
 
         Velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
         Velocity.setProperty("classpath.resource.loader.class",
