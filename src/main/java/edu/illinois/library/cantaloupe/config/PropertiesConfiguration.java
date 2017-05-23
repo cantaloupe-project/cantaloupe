@@ -1,12 +1,13 @@
 package edu.illinois.library.cantaloupe.config;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.configuration.ConversionException;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 
 /**
@@ -17,7 +18,7 @@ class PropertiesConfiguration extends FileConfiguration implements Configuration
 
     private org.apache.commons.configuration.PropertiesConfiguration commonsConfig =
             new org.apache.commons.configuration.PropertiesConfiguration();
-    private String contentsChecksum = "";
+    private byte[] contentsChecksum = new byte[] {};
 
     public PropertiesConfiguration() {
         // Prevent commas in values from being interpreted as list item
@@ -136,15 +137,18 @@ class PropertiesConfiguration extends FileConfiguration implements Configuration
             // Calculate the checksum of the file contents and compare it to
             // what has already been loaded. If the checksums match, skip the
             // reload.
-            try (FileInputStream is = new FileInputStream(configFile)) {
-                final String newChecksum = DigestUtils.md5Hex(is);
-                if (newChecksum.equals(contentsChecksum)) {
+            try {
+                byte[] fileBytes = Files.readAllBytes(configFile.toPath());
+                final MessageDigest md = MessageDigest.getInstance("MD5");
+                byte[] digestBytes = md.digest(fileBytes);
+
+                if (digestBytes == contentsChecksum) {
                     return;
                 }
-                contentsChecksum = newChecksum;
+                contentsChecksum = digestBytes;
             } catch (FileNotFoundException e) {
                 System.err.println("File not found: " + e.getMessage());
-            } catch (IOException e) {
+            } catch (IOException | NoSuchAlgorithmException e) {
                 System.err.println(e.getMessage());
             }
 
