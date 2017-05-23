@@ -537,7 +537,6 @@ public class ControlPanelTest extends ResourceTest {
         css("[name=\"delegate_script.enabled\"]").click();
         css("[name=\"delegate_script.pathname\"]").sendKeys("file");
         css("[name=\"delegate_script.cache.enabled\"]").click();
-        css("[name=\"delegate_script.cache.max_size\"]").sendKeys("12345");
 
         // Submit the form
         css("#cl-delegate-script input[type=\"submit\"]").click();
@@ -549,7 +548,6 @@ public class ControlPanelTest extends ResourceTest {
         assertTrue(config.getBoolean("delegate_script.enabled"));
         assertEquals("file", config.getString("delegate_script.pathname"));
         assertTrue(config.getBoolean("delegate_script.cache.enabled"));
-        assertEquals("12345", config.getString("delegate_script.cache.max_size"));
     }
 
     @Test
