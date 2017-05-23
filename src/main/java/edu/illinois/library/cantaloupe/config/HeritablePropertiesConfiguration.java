@@ -1,12 +1,13 @@
 package edu.illinois.library.cantaloupe.config;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.configuration.ConversionException;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -30,7 +31,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
      */
     private Map<File, org.apache.commons.configuration.PropertiesConfiguration>
             commonsConfigs = new LinkedHashMap<>();
-    private String mainContentsChecksum = "";
+    private byte[] mainContentsChecksum = new byte[] {};
 
     /**
      * @return Wrapped configurations in order from main to most distant
@@ -56,7 +57,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
                 commonsConfigs.values()) {
             commonsConfig.clear();
         }
-        mainContentsChecksum = "";
+        mainContentsChecksum = new byte[] {};
     }
 
     @Override
@@ -253,15 +254,18 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
             // Calculate the checksum of the file contents and compare it to
             // what has already been loaded. If the checksums match, skip the
             // reload.
-            try (FileInputStream is = new FileInputStream(mainConfigFile)) {
-                final String newChecksum = DigestUtils.md5Hex(is);
-                if (newChecksum.equals(mainContentsChecksum)) {
+            try {
+                byte[] fileBytes = Files.readAllBytes(mainConfigFile.toPath());
+                final MessageDigest md = MessageDigest.getInstance("MD5");
+                byte[] digestBytes = md.digest(fileBytes);
+
+                if (digestBytes == mainContentsChecksum) {
                     return;
                 }
-                mainContentsChecksum = newChecksum;
+                mainContentsChecksum = digestBytes;
             } catch (FileNotFoundException e) {
                 System.err.println("File not found: " + e.getMessage());
-            } catch (IOException e) {
+            } catch (IOException | NoSuchAlgorithmException e) {
                 System.err.println(e.getMessage());
             }
 

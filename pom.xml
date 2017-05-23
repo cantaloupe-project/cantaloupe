@@ -375,11 +375,15 @@
               <tasks>
                 <copy todir="${project.build.directory}/${project.artifactId}-${project.version}/">
                   <fileset dir="${project.build.directory}/classes/">
+                    <include name="edu/illinois/library/cantaloupe/config/AbstractConfiguration.class" />
                     <include name="edu/illinois/library/cantaloupe/config/Configuration.class" />
                     <include name="edu/illinois/library/cantaloupe/config/ConfigurationException.class" />
                     <include name="edu/illinois/library/cantaloupe/config/ConfigurationFactory.class" />
                     <include name="edu/illinois/library/cantaloupe/config/ConfigurationWatcher.class" />
                     <include name="edu/illinois/library/cantaloupe/config/FileConfiguration.class" />
+                    <include name="edu/illinois/library/cantaloupe/config/HeritableFileConfiguration.class" />
+                    <include name="edu/illinois/library/cantaloupe/config/HeritablePropertiesConfiguration.class" />
+                    <include name="edu/illinois/library/cantaloupe/config/Key.class" />
                     <include name="edu/illinois/library/cantaloupe/config/PropertiesConfiguration.class" />
                     <include name="edu/illinois/library/cantaloupe/util/FilesystemWatcher.class" />
                     <include name="edu/illinois/library/cantaloupe/util/FilesystemWatcher$Callback.class" />
