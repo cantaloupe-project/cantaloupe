@@ -18,9 +18,11 @@ import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import org.restlet.data.Disposition;
+import org.restlet.data.Header;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
+import org.restlet.util.Series;
 
 import java.awt.Dimension;
 import java.io.FileNotFoundException;
@@ -173,15 +175,16 @@ public class ImageResource extends IIIF2Resource {
     }
 
     private void addLinkHeader(Parameters params) {
+        final Series<Header> headers = getRequest().getHeaders();
         final Identifier identifier = params.getIdentifier();
-        final String canonicalIdentifierStr = getRequest().getHeaders().
-                getFirstValue("X-IIIF-ID", true, identifier.toString());
+        final String canonicalIdentifierStr = headers.getFirstValue(
+                "X-IIIF-ID", true, identifier.toString());
         final String paramsStr = params.toString().replaceFirst(
                 identifier.toString(), canonicalIdentifierStr);
 
         getResponse().getHeaders().add("Link",
                 String.format("<%s%s/%s>;rel=\"canonical\"",
-                getPublicRootRef(getRequest()).toString(),
+                getPublicRootRef(getRequest().getRootRef(), headers),
                 WebApplication.IIIF_2_PATH, paramsStr));
     }
 

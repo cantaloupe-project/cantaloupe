@@ -18,12 +18,15 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.JSONRepresentation;
 import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
+import org.restlet.Request;
+import org.restlet.data.Header;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
 import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
+import org.restlet.util.Series;
 
 /**
  * Handles IIIF Image API 2.x information requests.
@@ -40,10 +43,11 @@ public class InformationResource extends IIIF2Resource {
     public static class RedirectingResource extends IIIF2Resource {
         @Get
         public Representation doGet() {
-            final String identifier = (String) this.getRequest().
-                    getAttributes().get("identifier");
+            final Request request = getRequest();
+            final String identifier =
+                    (String) request.getAttributes().get("identifier");
             final Reference newRef = new Reference(
-                    getPublicRootRef(getRequest()) +
+                    getPublicRootRef(request.getRootRef(), request.getHeaders()) +
                             WebApplication.IIIF_2_PATH + "/" + identifier +
                             "/info.json");
             redirectSeeOther(newRef);
@@ -132,10 +136,12 @@ public class InformationResource extends IIIF2Resource {
      *         the X-Forwarded-* and X-IIIF-ID reverse proxy headers.
      */
     private String getImageUri(Identifier identifier) {
-        final String identifierStr = getRequest().getHeaders().
-                getFirstValue("X-IIIF-ID", true, identifier.toString());
-        return getPublicRootRef(getRequest()) + WebApplication.IIIF_2_PATH +
-                "/" + Reference.encode(identifierStr);
+        final Series<Header> headers = getRequest().getHeaders();
+        final String identifierStr = headers.getFirstValue(
+                "X-IIIF-ID", true, identifier.toString());
+        return getPublicRootRef(getRequest().getRootRef(), headers) +
+                WebApplication.IIIF_2_PATH + "/" +
+                Reference.encode(identifierStr);
     }
 
 }
