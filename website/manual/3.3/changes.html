@@ -18,6 +18,7 @@ title: What's New
     <li>Fixed caches failing to take URL query arguments into account.</li>
     <li>Fixed a potentially incorrect <code>Cache-Control</code> header being sent in HTTP &gte; 400 responses.</li>
     <li>Fixed parsing of comma-separated <code>X-Forwarded-*</code> header values.</li>
+    <li>Improved the reliability of the value of the <code>client_ip</code> argument to the <code>authorized?()</code> delegate method when behind a reverse proxy.</li>
     <li>Fixed a connection leak in AmazonS3Resolver.</li>
     <li>Prevented the configuration file and/or delegate script from being reloaded twice on some platforms.</li>
 </ul>

@@ -391,16 +391,21 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * @return The client IP address, respecting the X-Forwarded-For header,
-     *         if present.
+     * @return Best guess at the user agent's IP address, respecting the
+     *         <code>X-Forwarded-For</code> request header, if present.
      */
     protected String getCanonicalClientIpAddress() {
-        final List<String> forwardedIps = getRequest().getClientInfo().
-                getForwardedAddresses();
-        if (forwardedIps.size() > 0) {
-            return forwardedIps.get(forwardedIps.size() - 1);
+        String addr;
+        // The value is supposed to be in the format: "client, proxy1, proxy2"
+        final String forwardedFor =
+                getRequest().getHeaders().getFirstValue("X-Forwarded-For", true);
+        if (forwardedFor != null) {
+            addr = forwardedFor.split(",")[0].trim();
+        } else {
+            // Fall back to the client IP address.
+            addr = getRequest().getClientInfo().getAddress();
         }
-        return getRequest().getClientInfo().getAddress();
+        return addr;
     }
 
     protected ImageRepresentation getRepresentation(OperationList ops,
