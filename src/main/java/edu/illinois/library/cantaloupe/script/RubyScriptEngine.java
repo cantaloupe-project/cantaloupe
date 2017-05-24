@@ -36,7 +36,7 @@ class RubyScriptEngine extends AbstractScriptEngine implements ScriptEngine {
 
     RubyScriptEngine() {
         final long maxSize = getMaxCacheSize();
-        logger.info("Initializing invocation cache with a limit of {}", maxSize);
+        logger.info("Invocation cache limit: {}", maxSize);
         invocationCache = Caffeine.newBuilder().maximumSize(maxSize).build();
     }
 
@@ -64,8 +64,7 @@ class RubyScriptEngine extends AbstractScriptEngine implements ScriptEngine {
     private long getMaxCacheSize() {
         // TODO: this is very crude and needs tuning.
         final Runtime runtime = Runtime.getRuntime();
-        final int mb = 1024 * 1024;
-        return runtime.maxMemory() / mb / 10;
+        return Math.round(runtime.maxMemory() / 1024f / 2f);
     }
 
     /**
