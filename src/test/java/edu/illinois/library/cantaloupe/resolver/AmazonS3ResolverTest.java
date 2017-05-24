@@ -1,8 +1,6 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -10,10 +8,10 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import edu.illinois.library.cantaloupe.util.AWSClientFactory;
 import org.apache.commons.io.IOUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -64,19 +62,7 @@ public class AmazonS3ResolverTest extends BaseTest {
     }
 
     private static AmazonS3 client() {
-        class ConfigFileCredentials implements AWSCredentials {
-            @Override
-            public String getAWSAccessKeyId() {
-                return getAccessKeyId();
-            }
-
-            @Override
-            public String getAWSSecretKey() {
-                return getSecretKey();
-            }
-        }
-        AWSCredentials credentials = new ConfigFileCredentials();
-        return new AmazonS3Client(credentials);
+        return new AWSClientFactory(getAccessKeyId(), getSecretKey(), getRegion()).newClient();
     }
 
     private static String getAccessKeyId() {
@@ -89,6 +75,12 @@ public class AmazonS3ResolverTest extends BaseTest {
         org.apache.commons.configuration.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_BUCKET.getKey());
+    }
+
+    private static String getRegion() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.S3_REGION.getKey());
     }
 
     private static String getSecretKey() {
