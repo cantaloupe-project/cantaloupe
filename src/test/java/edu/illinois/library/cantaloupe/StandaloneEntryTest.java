@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
-import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.FileUtils;
@@ -84,7 +83,7 @@ public class StandaloneEntryTest extends BaseTest {
 
     private void resetOutput() {
         System.setOut(CONSOLE_OUTPUT);
-        System.setOut(CONSOLE_ERROR);
+        System.setErr(CONSOLE_ERROR);
     }
 
     @Before
@@ -139,7 +138,8 @@ public class StandaloneEntryTest extends BaseTest {
         redirectOutput();
         System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
         StandaloneEntry.main(new String[] {});
-        assertEquals(StandaloneEntry.usage(), redirectedOutput.toString().trim());
+        assertEquals(StandaloneEntry.usage().trim(),
+                redirectedOutput.toString().trim());
     }
 
     @Test
@@ -175,7 +175,7 @@ public class StandaloneEntryTest extends BaseTest {
         String path = "/bla/bla/bla";
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, path);
         StandaloneEntry.main(new String[] {});
-        assertEquals("Does not exist: " + path + "\n\n" + StandaloneEntry.usage(),
+        assertEquals("Does not exist: " + path + "\n\n" + StandaloneEntry.usage().trim(),
                 redirectedOutput.toString().trim());
     }
 
@@ -195,7 +195,7 @@ public class StandaloneEntryTest extends BaseTest {
         String path = TestUtil.getFixture("bla").getParentFile().getAbsolutePath();
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, path);
         StandaloneEntry.main(new String[] {});
-        assertEquals("Not a file: " + path + "\n\n" + StandaloneEntry.usage(),
+        assertEquals("Not a file: " + path + "\n\n" + StandaloneEntry.usage().trim(),
                 redirectedOutput.toString().trim());
     }
 
