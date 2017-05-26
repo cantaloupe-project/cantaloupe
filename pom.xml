@@ -208,6 +208,20 @@
       <artifactId>janino</artifactId>
       <version>2.7.8</version>
     </dependency>
+    <!-- Provides HTTP/2 support for Jetty (see org.eclipse.jetty.jetty-server) -->
+    <dependency>
+      <groupId>org.eclipse.jetty.http2</groupId>
+      <artifactId>http2-server</artifactId>
+      <version>9.4.5.v20170502</version>
+    </dependency>
+    <!-- Provides ALPN support for Jetty (see org.eclipse.jetty.jetty-server)
+    N.B. This doesn't include ALPN support for Java 8, which requires a JAR
+    on the boot classpath. -->
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-alpn-server</artifactId>
+      <version>9.4.5.v20170502</version>
+    </dependency>
     <!-- Provides the standalone servlet container -->
     <dependency>
       <groupId>org.eclipse.jetty</groupId>

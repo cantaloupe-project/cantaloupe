@@ -58,6 +58,18 @@ title: Getting Started
   <li><a href="http://localhost:8182/iiif/2/image.tif/0,0,200,200/full/0/default.jpg">http://localhost:8182/iiif/2/image.tif/0,0,200,200/full/0/default.jpg</a></li>
 </ul>
 
+<h5 id="HTTP2">HTTP/2</h5>
+
+<p>HTTP/2 is available in standalone mode, but if you are on Java 8, it requires a some extra steps. First, find your specific Java release:</p>
+
+<pre>java -version</pre>
+
+<p>Then, find the version of the ALPN JAR that is <a href="https://www.eclipse.org/jetty/documentation/9.4.x/alpn-chapter.html#alpn-versions">compatible with that version</a>, and <a href="http://repo1.maven.org/maven2/org/mortbay/jetty/alpn/alpn-boot/">download it</a>.</p>
+
+<p>Finally, add the following argument to your launch command:</p>
+
+<pre>-Xbootclasspath/p:/path/to/alpn-boot-xxx.jar</pre>
+
 <h3 id="Servlet Container">Servlet Container</h3>
 
 <p>Copy the <span class="filename">Cantaloupe-x.x.x.war</span> file to your container's web application folder. (In Tomcat, this is <span class="filename">/webapps</span> inside the main Tomcat folder.)</p>

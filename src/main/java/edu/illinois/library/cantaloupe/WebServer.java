@@ -2,8 +2,14 @@ package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.util.SystemUtils;
+import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
+import org.eclipse.jetty.http2.HTTP2Cipher;
+import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
+import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.NegotiatingServerConnectionFactory;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -88,6 +94,22 @@ public class WebServer {
         return httpsPort;
     }
 
+    /**
+     * ALPN is built into Java 9. In earlier versions, it has to be provided by
+     * a JAR on the boot classpath.
+     */
+    private boolean isALPNAvailable() {
+        if (SystemUtils.getJavaVersion() < 1.9) {
+            try {
+                NegotiatingServerConnectionFactory.
+                        checkProtocolNegotiationAvailable();
+            } catch (IllegalStateException e) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public boolean isHttpEnabled() {
         return httpEnabled;
     }
@@ -165,29 +187,75 @@ public class WebServer {
                 context.setWar("src/main/webapp");
             }
 
-            // Initialize the HTTP server
+            // Initialize the HTTP server, handling both HTTP/1.1 and plaintext
+            // HTTP/2.
             if (isHttpEnabled()) {
-                ServerConnector connector = new ServerConnector(server);
+                HttpConfiguration config = new HttpConfiguration();
+                HttpConnectionFactory http1 =
+                        new HttpConnectionFactory(config);
+                HTTP2CServerConnectionFactory http2 =
+                        new HTTP2CServerConnectionFactory(config);
+
+                ServerConnector connector = new ServerConnector(server,
+                        http1, http2);
                 connector.setHost(getHttpHost());
                 connector.setPort(getHttpPort());
                 connector.setIdleTimeout(IDLE_TIMEOUT);
                 server.addConnector(connector);
             }
-            // Initialize the HTTPS server
+            // Initialize the HTTPS server.
+            // N.B. HTTP/2 support requires an ALPN JAR on the boot classpath,
+            // e.g.: -Xbootclasspath/p:/path/to/alpn-boot-8.1.5.v20150921.jar
+            // https://www.eclipse.org/jetty/documentation/9.3.x/alpn-chapter.html
             if (isHttpsEnabled()) {
-                HttpConfiguration httpsConfig = new HttpConfiguration();
-                httpsConfig.addCustomizer(new SecureRequestCustomizer());
-                SslContextFactory sslContextFactory = new SslContextFactory();
+                HttpConfiguration config = new HttpConfiguration();
+                config.setSecureScheme("https");
+                config.setSecurePort(getHttpsPort());
+                config.addCustomizer(new SecureRequestCustomizer());
 
-                sslContextFactory.setKeyStorePath(getHttpsKeyStorePath());
-                sslContextFactory.setKeyStorePassword(getHttpsKeyStorePassword());
-                sslContextFactory.setKeyManagerPassword(getHttpsKeyPassword());
-                ServerConnector sslConnector = new ServerConnector(server,
-                        new SslConnectionFactory(sslContextFactory, "HTTP/1.1"),
-                        new HttpConnectionFactory(httpsConfig));
-                sslConnector.setHost(getHttpsHost());
-                sslConnector.setPort(getHttpsPort());
-                server.addConnector(sslConnector);
+                final SslContextFactory contextFactory = new SslContextFactory();
+                contextFactory.setKeyStorePath(getHttpsKeyStorePath());
+                contextFactory.setKeyStorePassword(getHttpsKeyStorePassword());
+                contextFactory.setKeyManagerPassword(getHttpsKeyPassword());
+
+                if (isALPNAvailable()) {
+                    System.out.println("WebServer.start(): ALPN is " +
+                            "available; configuring HTTP/2");
+
+                    HttpConnectionFactory http1 =
+                            new HttpConnectionFactory(config);
+                    HTTP2ServerConnectionFactory http2 =
+                            new HTTP2ServerConnectionFactory(config);
+
+                    ALPNServerConnectionFactory alpn =
+                            new ALPNServerConnectionFactory();
+                    alpn.setDefaultProtocol(http1.getProtocol());
+
+                    contextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
+                    contextFactory.setUseCipherSuitesOrder(true);
+
+                    SslConnectionFactory connectionFactory =
+                            new SslConnectionFactory(contextFactory,
+                                    alpn.getProtocol());
+
+                    ServerConnector connector = new ServerConnector(server,
+                            connectionFactory, alpn, http2, http1);
+                    connector.setHost(getHttpsHost());
+                    connector.setPort(getHttpsPort());
+                    connector.setIdleTimeout(IDLE_TIMEOUT);
+                    server.addConnector(connector);
+                } else {
+                    System.err.println("WebServer.start(): ALPN is not " +
+                            "available; falling back to HTTP/1.1");
+
+                    ServerConnector connector = new ServerConnector(server,
+                            new SslConnectionFactory(contextFactory, "HTTP/1.1"),
+                            new HttpConnectionFactory(config));
+                    connector.setHost(getHttpsHost());
+                    connector.setPort(getHttpsPort());
+                    connector.setIdleTimeout(IDLE_TIMEOUT);
+                    server.addConnector(connector);
+                }
             }
         }
         isInitialized = true;
