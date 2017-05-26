@@ -105,7 +105,7 @@ public class RubyScriptEngineTest extends BaseTest {
             assertEquals(String.valueOf(i), result);
         }
 
-        assertEquals(3, instance.getInvocationCache().estimatedSize());
+        assertEquals(3, instance.getInvocationCache().size());
     }
 
 }

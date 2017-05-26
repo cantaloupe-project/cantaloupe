@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.script;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -31,16 +29,10 @@ class RubyScriptEngine extends AbstractScriptEngine
     /** Top-level Ruby module containing methods to invoke. */
     static final String TOP_MODULE = "Cantaloupe";
 
-    private Cache<Object, Object> invocationCache;
+    private InvocationCache invocationCache = new CaffeineInvocationCache();
     private final Object lock = new Object();
     private javax.script.ScriptEngine scriptEngine;
     private final AtomicBoolean scriptIsLoading = new AtomicBoolean(false);
-
-    RubyScriptEngine() {
-        final long maxSize = getMaxCacheSize();
-        logger.info("Invocation cache limit: {}", maxSize);
-        invocationCache = Caffeine.newBuilder().maximumSize(maxSize).build();
-    }
 
     /**
      * @param methodName Name of the method being invoked.
@@ -59,14 +51,9 @@ class RubyScriptEngine extends AbstractScriptEngine
     /**
      * @return The method invocation cache.
      */
-    Cache<Object, Object> getInvocationCache() {
+    @Override
+    public InvocationCache getInvocationCache() {
         return invocationCache;
-    }
-
-    private long getMaxCacheSize() {
-        // TODO: this is very crude and needs tuning.
-        final Runtime runtime = Runtime.getRuntime();
-        return Math.round(runtime.maxMemory() / 1024f / 2f);
     }
 
     /**
@@ -146,7 +133,7 @@ class RubyScriptEngine extends AbstractScriptEngine
     private Object retrieveFromCacheOrInvoke(String methodName, Object... args)
             throws ScriptException {
         final Object cacheKey = getCacheKey(methodName, args);
-        Object returnValue = invocationCache.getIfPresent(cacheKey);
+        Object returnValue = invocationCache.get(cacheKey);
         if (returnValue != null) {
             logger.debug("invoke({}::{}): cache hit (skipping invocation)",
                     TOP_MODULE, methodName);

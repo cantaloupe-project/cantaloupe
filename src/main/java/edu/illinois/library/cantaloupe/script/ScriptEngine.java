@@ -10,6 +10,12 @@ import javax.script.ScriptException;
 public interface ScriptEngine {
 
     /**
+     * @return Invocation cache used by the instance, or <code>null</code> if
+     *         one is not being used.
+     */
+    InvocationCache getInvocationCache();
+
+    /**
      * Invokes a method. Implementations should employ a cache respecting the
      * settings of the cache configuration constants.
      *
