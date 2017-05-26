@@ -5,8 +5,6 @@ import edu.illinois.library.cantaloupe.WebServer;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
@@ -48,8 +46,8 @@ public abstract class ResourceTest extends BaseTest {
         client.start();
 
         webServer = StandaloneEntry.getWebServer();
-        webServer.setHttpEnabled(true);
-        webServer.setHttpPort(PORT);
+        webServer.setHTTPEnabled(true);
+        webServer.setHTTPPort(PORT);
         webServer.start();
     }
 

@@ -36,7 +36,7 @@ public class ControlPanelTest extends ResourceTest {
     private String getAdminUri() {
         return String.format("http://%s:%s@localhost:%d%s",
                 USERNAME, SECRET,
-                webServer.getHttpPort(),
+                webServer.getHTTPPort(),
                 WebApplication.ADMIN_PATH);
     }
 

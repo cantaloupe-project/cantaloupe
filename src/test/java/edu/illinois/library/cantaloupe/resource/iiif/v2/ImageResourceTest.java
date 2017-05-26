@@ -528,7 +528,7 @@ public class ImageResourceTest extends ResourceTest {
         config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
         config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
-                webServer.getHttpHost() + ":" + webServer.getHttpPort() + "/");
+                webServer.getHTTPHost() + ":" + webServer.getHTTPPort() + "/");
         config.setProperty("processor.jp2", "KakaduProcessor");
         config.setProperty(Key.PROCESSOR_FALLBACK, "KakaduProcessor");
 

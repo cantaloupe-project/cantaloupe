@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.*;
-import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
@@ -466,7 +465,7 @@ public class ImageResourceTest extends ResourceTest {
         config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
         config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
-                webServer.getHttpHost() + ":" + webServer.getHttpPort() + "/");
+                webServer.getHTTPHost() + ":" + webServer.getHTTPPort() + "/");
         config.setProperty("processor.jp2", "KakaduProcessor");
         config.setProperty(Key.PROCESSOR_FALLBACK, "KakaduProcessor");
 

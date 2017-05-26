@@ -19,91 +19,91 @@ public class WebServerTest extends BaseTest {
     @Test
     public void testGetHttpHost() {
         // default
-        assertEquals("0.0.0.0", instance.getHttpHost());
+        assertEquals("0.0.0.0", instance.getHTTPHost());
         // explicitly set
-        instance.setHttpHost("127.0.0.1");
-        assertEquals("127.0.0.1", instance.getHttpHost());
+        instance.setHTTPHost("127.0.0.1");
+        assertEquals("127.0.0.1", instance.getHTTPHost());
     }
 
     @Test
     public void testGetHttpPort() {
         // default
-        assertEquals(8182, instance.getHttpPort());
+        assertEquals(8182, instance.getHTTPPort());
         // explicitly set
-        instance.setHttpPort(5000);
-        assertEquals(5000, instance.getHttpPort());
+        instance.setHTTPPort(5000);
+        assertEquals(5000, instance.getHTTPPort());
     }
 
     @Test
     public void testGetHttpsHost() {
         // default
-        assertEquals("0.0.0.0", instance.getHttpsHost());
+        assertEquals("0.0.0.0", instance.getHTTPSHost());
         // explicitly set
-        instance.setHttpsHost("127.0.0.1");
-        assertEquals("127.0.0.1", instance.getHttpsHost());
+        instance.setHTTPSHost("127.0.0.1");
+        assertEquals("127.0.0.1", instance.getHTTPSHost());
     }
 
     @Test
     public void testGetHttpsKeyPassword() {
         // default
-        assertNull(instance.getHttpsKeyPassword());
+        assertNull(instance.getHTTPSKeyPassword());
         // explicitly set
-        instance.setHttpsKeyPassword("cats");
-        assertEquals("cats", instance.getHttpsKeyPassword());
+        instance.setHTTPSKeyPassword("cats");
+        assertEquals("cats", instance.getHTTPSKeyPassword());
     }
 
     @Test
     public void testGetHttpsKeyStorePassword() {
         // default
-        assertNull(instance.getHttpsKeyStorePassword());
+        assertNull(instance.getHTTPSKeyStorePassword());
         // explicitly set
-        instance.setHttpsKeyStorePassword("cats");
-        assertEquals("cats", instance.getHttpsKeyStorePassword());
+        instance.setHTTPSKeyStorePassword("cats");
+        assertEquals("cats", instance.getHTTPSKeyStorePassword());
     }
 
     @Test
     public void testGetHttpsKeyStorePath() {
         // default
-        assertNull(instance.getHttpsKeyStorePath());
+        assertNull(instance.getHTTPSKeyStorePath());
         // explicitly set
-        instance.setHttpsKeyStorePath("/cats");
-        assertEquals("/cats", instance.getHttpsKeyStorePath());
+        instance.setHTTPSKeyStorePath("/cats");
+        assertEquals("/cats", instance.getHTTPSKeyStorePath());
     }
 
     @Test
     public void testGetHttpsKeyStoreType() {
         // default
-        assertNull(instance.getHttpsKeyStoreType());
+        assertNull(instance.getHTTPSKeyStoreType());
         // explicitly set
-        instance.setHttpsKeyStoreType("cats");
-        assertEquals("cats", instance.getHttpsKeyStoreType());
+        instance.setHTTPSKeyStoreType("cats");
+        assertEquals("cats", instance.getHTTPSKeyStoreType());
     }
 
     @Test
     public void testGetHttpsPort() {
         // default
-        assertEquals(8183, instance.getHttpsPort());
+        assertEquals(8183, instance.getHTTPSPort());
         // explicitly set
-        instance.setHttpsPort(5000);
-        assertEquals(5000, instance.getHttpsPort());
+        instance.setHTTPSPort(5000);
+        assertEquals(5000, instance.getHTTPSPort());
     }
 
     @Test
     public void testIsHttpEnabled() {
         // default
-        assertFalse(instance.isHttpEnabled());
+        assertFalse(instance.isHTTPEnabled());
         // explicitly set
-        instance.setHttpEnabled(true);
-        assertTrue(instance.isHttpEnabled());
+        instance.setHTTPEnabled(true);
+        assertTrue(instance.isHTTPEnabled());
     }
 
     @Test
     public void testIsHttpsEnabled() {
         // default
-        assertFalse(instance.isHttpsEnabled());
+        assertFalse(instance.isHTTPSEnabled());
         // explicitly set
-        instance.setHttpsEnabled(true);
-        assertTrue(instance.isHttpsEnabled());
+        instance.setHTTPSEnabled(true);
+        assertTrue(instance.isHTTPSEnabled());
     }
 
     @Test

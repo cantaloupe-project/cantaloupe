@@ -36,7 +36,7 @@ public class WebServer {
     private String httpsKeyStorePath;
     private String httpsKeyStoreType;
     private int httpsPort;
-    private boolean isInitialized = false;
+    private boolean isStarted = false;
     private Server server = new Server();
 
     /**
@@ -46,51 +46,51 @@ public class WebServer {
     public WebServer() {
         final Configuration config = Configuration.getInstance();
         if (config != null) {
-            setHttpEnabled(config.getBoolean(Key.HTTP_ENABLED, false));
-            setHttpHost(config.getString(Key.HTTP_HOST, "0.0.0.0"));
-            setHttpPort(config.getInt(Key.HTTP_PORT, 8182));
-            setHttpsEnabled(config.getBoolean(Key.HTTPS_ENABLED, false));
-            setHttpsHost(config.getString(Key.HTTPS_HOST, "0.0.0.0"));
-            setHttpsKeyPassword(config.getString(Key.HTTPS_KEY_PASSWORD));
-            setHttpsKeyStorePassword(
+            setHTTPEnabled(config.getBoolean(Key.HTTP_ENABLED, false));
+            setHTTPHost(config.getString(Key.HTTP_HOST, "0.0.0.0"));
+            setHTTPPort(config.getInt(Key.HTTP_PORT, 8182));
+            setHTTPSEnabled(config.getBoolean(Key.HTTPS_ENABLED, false));
+            setHTTPSHost(config.getString(Key.HTTPS_HOST, "0.0.0.0"));
+            setHTTPSKeyPassword(config.getString(Key.HTTPS_KEY_PASSWORD));
+            setHTTPSKeyStorePassword(
                     config.getString(Key.HTTPS_KEY_STORE_PASSWORD));
-            setHttpsKeyStorePath(
+            setHTTPSKeyStorePath(
                     config.getString(Key.HTTPS_KEY_STORE_PATH));
-            setHttpsKeyStoreType(
+            setHTTPSKeyStoreType(
                     config.getString(Key.HTTPS_KEY_STORE_TYPE));
-            setHttpsPort(config.getInt(Key.HTTPS_PORT, 8183));
+            setHTTPSPort(config.getInt(Key.HTTPS_PORT, 8183));
         }
     }
 
-    public String getHttpHost() {
+    public String getHTTPHost() {
         return httpHost;
     }
 
-    public int getHttpPort() {
+    public int getHTTPPort() {
         return httpPort;
     }
 
-    public String getHttpsHost() {
+    public String getHTTPSHost() {
         return httpsHost;
     }
 
-    public String getHttpsKeyPassword() {
+    public String getHTTPSKeyPassword() {
         return httpsKeyPassword;
     }
 
-    public String getHttpsKeyStorePassword() {
+    public String getHTTPSKeyStorePassword() {
         return httpsKeyStorePassword;
     }
 
-    public String getHttpsKeyStorePath() {
+    public String getHTTPSKeyStorePath() {
         return httpsKeyStorePath;
     }
 
-    public String getHttpsKeyStoreType() {
+    public String getHTTPSKeyStoreType() {
         return httpsKeyStoreType;
     }
 
-    public int getHttpsPort() {
+    public int getHTTPSPort() {
         return httpsPort;
     }
 
@@ -110,11 +110,11 @@ public class WebServer {
         return true;
     }
 
-    public boolean isHttpEnabled() {
+    public boolean isHTTPEnabled() {
         return httpEnabled;
     }
 
-    public boolean isHttpsEnabled() {
+    public boolean isHTTPSEnabled() {
         return httpsEnabled;
     }
 
@@ -126,43 +126,43 @@ public class WebServer {
         return server.isStopped();
     }
 
-    public void setHttpEnabled(boolean enabled) {
+    public void setHTTPEnabled(boolean enabled) {
         this.httpEnabled = enabled;
     }
 
-    public void setHttpHost(String host) {
+    public void setHTTPHost(String host) {
         this.httpHost = host;
     }
 
-    public void setHttpPort(int port) {
+    public void setHTTPPort(int port) {
         this.httpPort = port;
     }
 
-    public void setHttpsEnabled(boolean enabled) {
+    public void setHTTPSEnabled(boolean enabled) {
         this.httpsEnabled = enabled;
     }
 
-    public void setHttpsHost(String host) {
+    public void setHTTPSHost(String host) {
         this.httpsHost = host;
     }
 
-    public void setHttpsKeyPassword(String password) {
+    public void setHTTPSKeyPassword(String password) {
         this.httpsKeyPassword = password;
     }
 
-    public void setHttpsKeyStorePassword(String password) {
+    public void setHTTPSKeyStorePassword(String password) {
         this.httpsKeyStorePassword = password;
     }
 
-    public void setHttpsKeyStorePath(String path) {
+    public void setHTTPSKeyStorePath(String path) {
         this.httpsKeyStorePath = path;
     }
 
-    public void setHttpsKeyStoreType(String type) {
+    public void setHTTPSKeyStoreType(String type) {
         this.httpsKeyStoreType = type;
     }
 
-    public void setHttpsPort(int port) {
+    public void setHTTPSPort(int port) {
         this.httpsPort = port;
     }
 
@@ -172,7 +172,7 @@ public class WebServer {
      * @throws Exception
      */
     public void start() throws Exception {
-        if (!isInitialized) {
+        if (!isStarted) {
             final WebAppContext context = new WebAppContext();
             context.setContextPath("/");
             context.setServer(server);
@@ -189,7 +189,7 @@ public class WebServer {
 
             // Initialize the HTTP server, handling both HTTP/1.1 and plaintext
             // HTTP/2.
-            if (isHttpEnabled()) {
+            if (isHTTPEnabled()) {
                 HttpConfiguration config = new HttpConfiguration();
                 HttpConnectionFactory http1 =
                         new HttpConnectionFactory(config);
@@ -198,8 +198,8 @@ public class WebServer {
 
                 ServerConnector connector = new ServerConnector(server,
                         http1, http2);
-                connector.setHost(getHttpHost());
-                connector.setPort(getHttpPort());
+                connector.setHost(getHTTPHost());
+                connector.setPort(getHTTPPort());
                 connector.setIdleTimeout(IDLE_TIMEOUT);
                 server.addConnector(connector);
             }
@@ -207,16 +207,16 @@ public class WebServer {
             // N.B. HTTP/2 support requires an ALPN JAR on the boot classpath,
             // e.g.: -Xbootclasspath/p:/path/to/alpn-boot-8.1.5.v20150921.jar
             // https://www.eclipse.org/jetty/documentation/9.3.x/alpn-chapter.html
-            if (isHttpsEnabled()) {
+            if (isHTTPSEnabled()) {
                 HttpConfiguration config = new HttpConfiguration();
                 config.setSecureScheme("https");
-                config.setSecurePort(getHttpsPort());
+                config.setSecurePort(getHTTPSPort());
                 config.addCustomizer(new SecureRequestCustomizer());
 
                 final SslContextFactory contextFactory = new SslContextFactory();
-                contextFactory.setKeyStorePath(getHttpsKeyStorePath());
-                contextFactory.setKeyStorePassword(getHttpsKeyStorePassword());
-                contextFactory.setKeyManagerPassword(getHttpsKeyPassword());
+                contextFactory.setKeyStorePath(getHTTPSKeyStorePath());
+                contextFactory.setKeyStorePassword(getHTTPSKeyStorePassword());
+                contextFactory.setKeyManagerPassword(getHTTPSKeyPassword());
 
                 if (isALPNAvailable()) {
                     System.out.println("WebServer.start(): ALPN is " +
@@ -240,8 +240,8 @@ public class WebServer {
 
                     ServerConnector connector = new ServerConnector(server,
                             connectionFactory, alpn, http2, http1);
-                    connector.setHost(getHttpsHost());
-                    connector.setPort(getHttpsPort());
+                    connector.setHost(getHTTPSHost());
+                    connector.setPort(getHTTPSPort());
                     connector.setIdleTimeout(IDLE_TIMEOUT);
                     server.addConnector(connector);
                 } else {
@@ -251,15 +251,15 @@ public class WebServer {
                     ServerConnector connector = new ServerConnector(server,
                             new SslConnectionFactory(contextFactory, "HTTP/1.1"),
                             new HttpConnectionFactory(config));
-                    connector.setHost(getHttpsHost());
-                    connector.setPort(getHttpsPort());
+                    connector.setHost(getHTTPSHost());
+                    connector.setPort(getHTTPSPort());
                     connector.setIdleTimeout(IDLE_TIMEOUT);
                     server.addConnector(connector);
                 }
             }
         }
-        isInitialized = true;
         server.start();
+        isStarted = true;
     }
 
     public void stop() throws Exception {
