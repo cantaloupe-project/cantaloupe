@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * @see <a href="https://github.com/jruby/jruby/wiki/Embedding-with-JSR-223">
  *     Embedding JRuby with JSR223 - Code Examples</a>
+ * @see <a href="https://github.com/jruby/jruby/wiki/RedBridge">RedBridge</a>
  */
 class RubyScriptEngine extends AbstractScriptEngine
         implements ScriptEngine {
@@ -33,6 +34,18 @@ class RubyScriptEngine extends AbstractScriptEngine
     private final Object lock = new Object();
     private javax.script.ScriptEngine scriptEngine;
     private final AtomicBoolean scriptIsLoading = new AtomicBoolean(false);
+
+    static {
+        // Available values are singleton, singlethread, threadsafe and
+        // concurrent (JSR-223 default). See
+        // https://github.com/jruby/jruby/wiki/RedBridge#Context_Instance_Type
+        System.setProperty("org.jruby.embed.localcontext.scope", "concurrent");
+
+        // Available values are transient, persistent, global (JSR-223 default)
+        // and bsf. See
+        // https://github.com/jruby/jruby/wiki/RedBridge#Local_Variable_Behavior_Options
+        System.setProperty("org.jruby.embed.localvariable.behavior", "transient");
+    }
 
     /**
      * @param methodName Name of the method being invoked.
