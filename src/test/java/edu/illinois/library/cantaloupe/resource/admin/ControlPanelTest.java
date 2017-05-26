@@ -107,6 +107,7 @@ public class ControlPanelTest extends ResourceTest {
         inputNamed(Key.BASIC_AUTH_ENABLED).click();
         inputNamed(Key.BASIC_AUTH_USERNAME).sendKeys("dogs");
         inputNamed(Key.BASIC_AUTH_SECRET).sendKeys("foxes");
+        inputNamed(Key.HTTP_ACCEPT_QUEUE_LIMIT).sendKeys("50");
         inputNamed(Key.BASE_URI).sendKeys("http://bla/bla/");
         inputNamed(Key.SLASH_SUBSTITUTE).sendKeys("^");
         inputNamed(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES).click();
@@ -130,6 +131,7 @@ public class ControlPanelTest extends ResourceTest {
         assertTrue(config.getBoolean(Key.BASIC_AUTH_ENABLED));
         assertEquals("dogs", config.getString(Key.BASIC_AUTH_USERNAME));
         assertEquals("foxes", config.getString(Key.BASIC_AUTH_SECRET));
+        assertEquals("50", config.getString(Key.HTTP_ACCEPT_QUEUE_LIMIT));
         assertEquals("http://bla/bla/", config.getString(Key.BASE_URI));
         assertEquals("^", config.getString(Key.SLASH_SUBSTITUTE));
         assertTrue(config.getBoolean(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES));

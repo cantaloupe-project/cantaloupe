@@ -26,6 +26,7 @@ public class WebServer {
 
     private static final int IDLE_TIMEOUT = 30000;
 
+    private int acceptQueueLimit = 0;
     private boolean httpEnabled;
     private String httpHost;
     private int httpPort;
@@ -46,6 +47,7 @@ public class WebServer {
     public WebServer() {
         final Configuration config = Configuration.getInstance();
         if (config != null) {
+            setAcceptQueueLimit(config.getInt(Key.HTTP_ACCEPT_QUEUE_LIMIT, 0));
             setHTTPEnabled(config.getBoolean(Key.HTTP_ENABLED, false));
             setHTTPHost(config.getString(Key.HTTP_HOST, "0.0.0.0"));
             setHTTPPort(config.getInt(Key.HTTP_PORT, 8182));
@@ -60,6 +62,10 @@ public class WebServer {
                     config.getString(Key.HTTPS_KEY_STORE_TYPE));
             setHTTPSPort(config.getInt(Key.HTTPS_PORT, 8183));
         }
+    }
+
+    public int getAcceptQueueLimit() {
+        return acceptQueueLimit;
     }
 
     public String getHTTPHost() {
@@ -124,6 +130,10 @@ public class WebServer {
 
     public boolean isStopped() {
         return server.isStopped();
+    }
+
+    public void setAcceptQueueLimit(int size) {
+        this.acceptQueueLimit = size;
     }
 
     public void setHTTPEnabled(boolean enabled) {
@@ -201,6 +211,7 @@ public class WebServer {
                 connector.setHost(getHTTPHost());
                 connector.setPort(getHTTPPort());
                 connector.setIdleTimeout(IDLE_TIMEOUT);
+                connector.setAcceptQueueSize(getAcceptQueueLimit());
                 server.addConnector(connector);
             }
             // Initialize the HTTPS server.
@@ -243,6 +254,7 @@ public class WebServer {
                     connector.setHost(getHTTPSHost());
                     connector.setPort(getHTTPSPort());
                     connector.setIdleTimeout(IDLE_TIMEOUT);
+                    connector.setAcceptQueueSize(getAcceptQueueLimit());
                     server.addConnector(connector);
                 } else {
                     System.err.println("WebServer.start(): ALPN is not " +
@@ -254,6 +266,7 @@ public class WebServer {
                     connector.setHost(getHTTPSHost());
                     connector.setPort(getHTTPSPort());
                     connector.setIdleTimeout(IDLE_TIMEOUT);
+                    connector.setAcceptQueueSize(getAcceptQueueLimit());
                     server.addConnector(connector);
                 }
             }

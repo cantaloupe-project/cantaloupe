@@ -25,6 +25,10 @@ https.key_store_password = myPassword
 https.key_store_path = /path/to/keystore.jks
 https.key_password = myPassword
 
+# !! Maximum size of the HTTP(S) request queue. Set to 0 to use the OS
+# default.
+http.accept_queue_limit = 0
+
 # !! Configures HTTP Basic authentication.
 auth.basic.enabled = false
 auth.basic.username = myself

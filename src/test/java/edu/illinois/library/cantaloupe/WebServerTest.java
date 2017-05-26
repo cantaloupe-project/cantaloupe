@@ -17,6 +17,15 @@ public class WebServerTest extends BaseTest {
     }
 
     @Test
+    public void testGetAcceptQueueLimit() {
+        // default
+        assertEquals(0, instance.getAcceptQueueLimit());
+        // explicitly set
+        instance.setAcceptQueueLimit(0);
+        assertEquals(0, instance.getAcceptQueueLimit());
+    }
+
+    @Test
     public void testGetHttpHost() {
         // default
         assertEquals("0.0.0.0", instance.getHTTPHost());
