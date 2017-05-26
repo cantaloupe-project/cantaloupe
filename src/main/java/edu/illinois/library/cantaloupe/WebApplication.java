@@ -9,7 +9,8 @@ import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatExceptio
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
-import edu.illinois.library.cantaloupe.resource.api.APIResource;
+import edu.illinois.library.cantaloupe.resource.api.CacheResource;
+import edu.illinois.library.cantaloupe.resource.api.ConfigurationResource;
 import org.restlet.Application;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -260,12 +261,15 @@ public class WebApplication extends Application {
             getLogger().log(Level.WARNING, e.getMessage());
         }
 
-        /****************** API route ********************/
+        /****************** API routes ********************/
 
         try {
             ChallengeAuthenticator apiAuth = createApiAuthenticator();
-            apiAuth.setNext(APIResource.class);
+            apiAuth.setNext(ConfigurationResource.class);
             router.attach(CONFIGURATION_PATH, apiAuth);
+
+            apiAuth = createApiAuthenticator();
+            apiAuth.setNext(CacheResource.class);
             router.attach(CACHE_PATH + "/{identifier}", apiAuth);
         } catch (ConfigurationException e) {
             getLogger().log(Level.INFO, e.getMessage());
