@@ -109,7 +109,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                                 formats.add(Format.PNG);
                                 outputFormats.add(Format.PNG);
                             } else if (s.startsWith("Ghostscript") && s.endsWith(" yes")) {
-                                outputFormats.add(Format.PDF);
+                                formats.add(Format.PDF);
                             } else if (s.startsWith("TIFF ") && s.endsWith(" yes")) {
                                 formats.add(Format.TIF);
                                 outputFormats.add(Format.TIF);
