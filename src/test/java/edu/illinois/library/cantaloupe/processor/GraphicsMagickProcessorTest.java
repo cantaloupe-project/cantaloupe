@@ -54,7 +54,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
                         outputFormats.add(Format.PNG);
                     }
                     if (s.startsWith("Ghostscript") && s.endsWith(" yes")) {
-                        outputFormats.add(Format.PDF);
+                        formats.add(Format.PDF);
                     }
                     if (s.startsWith("TIFF  ") && s.endsWith(" yes")) {
                         formats.add(Format.TIF);
