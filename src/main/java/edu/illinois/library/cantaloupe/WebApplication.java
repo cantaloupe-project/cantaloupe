@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.resource.LandingResource;
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
 import edu.illinois.library.cantaloupe.resource.api.CacheResource;
 import edu.illinois.library.cantaloupe.resource.api.ConfigurationResource;
+import edu.illinois.library.cantaloupe.resource.api.DMICResource;
 import org.restlet.Application;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -108,6 +109,7 @@ public class WebApplication extends Application {
     public static final String ADMIN_PATH = "/admin";
     public static final String CACHE_PATH = "/cache";
     public static final String CONFIGURATION_PATH = "/configuration";
+    public static final String DELEGATE_METHOD_INVOCATION_CACHE_PATH = "/dmic";
     public static final String IIIF_PATH = "/iiif";
     public static final String IIIF_1_PATH = "/iiif/1";
     public static final String IIIF_2_PATH = "/iiif/2";
@@ -271,6 +273,10 @@ public class WebApplication extends Application {
             apiAuth = createApiAuthenticator();
             apiAuth.setNext(CacheResource.class);
             router.attach(CACHE_PATH + "/{identifier}", apiAuth);
+
+            apiAuth = createApiAuthenticator();
+            apiAuth.setNext(DMICResource.class);
+            router.attach(DELEGATE_METHOD_INVOCATION_CACHE_PATH, apiAuth);
         } catch (ConfigurationException e) {
             getLogger().log(Level.INFO, e.getMessage());
         }
