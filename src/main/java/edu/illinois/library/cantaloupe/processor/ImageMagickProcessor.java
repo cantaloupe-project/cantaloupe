@@ -98,12 +98,11 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             try {
                 logger.info("getFormats(): invoking {}", commandString);
                 final Process process = pb.start();
-
-                try (final InputStream processInputStream = process.getInputStream()) {
-                    BufferedReader stdInput = new BufferedReader(
-                            new InputStreamReader(processInputStream));
+                final InputStream pis = process.getInputStream();
+                final InputStreamReader reader = new InputStreamReader(pis);
+                try (final BufferedReader buffReader = new BufferedReader(reader)) {
                     String s;
-                    while ((s = stdInput.readLine()) != null) {
+                    while ((s = buffReader.readLine()) != null) {
                         s = s.trim();
                         if (s.startsWith("BMP")) {
                             formats.add(Format.BMP);
