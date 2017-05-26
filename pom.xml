@@ -212,17 +212,17 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
-      <version>9.3.10.v20160621</version>
+      <version>9.4.5.v20170502</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>9.3.10.v20160621</version>
+      <version>9.4.5.v20170502</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-webapp</artifactId>
-      <version>9.3.10.v20160621</version>
+      <version>9.4.5.v20170502</version>
     </dependency>
     <!-- Enables colorized Logback console output in Windows -->
     <dependency>
