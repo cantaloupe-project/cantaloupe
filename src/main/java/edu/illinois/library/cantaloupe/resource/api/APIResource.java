@@ -30,7 +30,7 @@ public class APIResource extends AbstractResource {
 
     @Override
     protected void doInit() throws ResourceException {
-        if (!Configuration.getInstance().getBoolean(Key.API_ENABLED, true)) {
+        if (!Configuration.getInstance().getBoolean(Key.API_ENABLED, false)) {
             throw new EndpointDisabledException();
         }
         super.doInit();
