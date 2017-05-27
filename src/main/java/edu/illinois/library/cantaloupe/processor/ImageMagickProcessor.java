@@ -141,6 +141,8 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                             if (s.contains(" rw")) {
                                 outputFormats.add(Format.TIF);
                             }
+                        } else if (s.startsWith("SGI") && s.contains("  r")) {
+                            formats.add(Format.SGI);
                         } else if (s.startsWith("WEBP")) {
                             formats.add(Format.WEBP);
                             if (s.contains(" rw")) {

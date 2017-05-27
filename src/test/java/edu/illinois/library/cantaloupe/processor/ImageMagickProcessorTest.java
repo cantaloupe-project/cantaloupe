@@ -82,6 +82,8 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
                         }
                     } else if (s.startsWith("PDF") && s.contains(" rw")) {
                         sourceFormats.add(Format.PDF);
+                    } else if (s.startsWith("SGI") && s.contains("  r")) {
+                        sourceFormats.add(Format.SGI);
                     } else if (s.startsWith("TIFF")) {
                         sourceFormats.add(Format.TIF);
                         if (s.contains(" rw")) {
