@@ -636,8 +636,9 @@ public class Version2_0ConformanceTest extends ResourceTest {
     public void testInformationRequestContentType() throws IOException {
         ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/info.json");
         client.get();
-        assertEquals("application/json; charset=UTF-8",
-                client.getResponse().getHeaders().getFirst("Content-Type").getValue());
+        assertEquals("application/json;charset=utf-8",
+                client.getResponse().getHeaders().getFirst("Content-Type").
+                        getValue().replace(" ", "").toLowerCase());
     }
 
     /**
@@ -658,8 +659,9 @@ public class Version2_0ConformanceTest extends ResourceTest {
         client = getClientForUriPath("/iiif/2/" + IMAGE + "/info.json");
         client.accept(new MediaType("application/json"));
         client.get();
-        assertEquals("application/json; charset=UTF-8",
-                client.getResponse().getHeaders().getFirst("Content-Type").getValue());
+        assertEquals("application/json;charset=utf-8",
+                client.getResponse().getHeaders().getFirst("Content-Type").
+                        getValue().replace(" ", "").toLowerCase());
     }
 
     /**

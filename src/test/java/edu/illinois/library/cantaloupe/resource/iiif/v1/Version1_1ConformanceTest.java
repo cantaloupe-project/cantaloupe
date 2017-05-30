@@ -632,8 +632,9 @@ public class Version1_1ConformanceTest extends ResourceTest {
     public void testInformationRequestContentType() throws IOException {
         ClientResource client = getClientForUriPath("/iiif/1/" + IMAGE + "/info.json");
         client.get();
-        assertEquals("application/json; charset=UTF-8",
-                client.getResponse().getHeaders().getFirst("Content-Type").getValue());
+        assertEquals("application/json;charset=utf-8",
+                client.getResponse().getHeaders().getFirst("Content-Type").
+                        getValue().replace(" ", "").toLowerCase());
     }
 
     /**
