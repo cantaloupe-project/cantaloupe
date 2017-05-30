@@ -124,7 +124,7 @@ public class StandaloneEntry {
      */
     public static synchronized WebServer getWebServer() {
         if (webServer == null) {
-            webServer = new WebServer();
+            webServer = new WebServer(Configuration.getInstance());
         }
         return webServer;
     }

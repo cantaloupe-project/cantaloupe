@@ -28,46 +28,54 @@ public class WebServer {
 
     private int acceptQueueLimit = 0;
     private boolean isHTTPEnabled;
-    private String httpHost;
-    private int httpPort;
+    private String httpHost = "0.0.0.0";
+    private int httpPort = 8182;
     private boolean isHTTPSEnabled;
-    private String httpsHost;
+    private String httpsHost = "0.0.0.0";
     private String httpsKeyPassword;
     private String httpsKeyStorePassword;
     private String httpsKeyStorePath;
     private String httpsKeyStoreType;
-    private int httpsPort;
+    private int httpsPort = 8183;
     private boolean isInsecureHTTP2Enabled = true;
     private boolean isSecureHTTP2Enabled = true;
     private boolean isStarted = false;
-    private Server server = new Server();
+    private Server server;
 
     /**
-     * Initializes the instance with defaults from the application
-     * configuration.
+     * Initializes the instance with arbitrary defaults.
      */
     public WebServer() {
-        final Configuration config = Configuration.getInstance();
-        if (config != null) {
-            setAcceptQueueLimit(config.getInt(Key.HTTP_ACCEPT_QUEUE_LIMIT, 0));
-            setHTTPEnabled(config.getBoolean(Key.HTTP_ENABLED, false));
-            setHTTPHost(config.getString(Key.HTTP_HOST, "0.0.0.0"));
-            setHTTPPort(config.getInt(Key.HTTP_PORT, 8182));
-            setInsecureHTTP2Enabled(
-                    config.getBoolean(Key.HTTP_HTTP2_ENABLED, true));
-            setHTTPSEnabled(config.getBoolean(Key.HTTPS_ENABLED, false));
-            setHTTPSHost(config.getString(Key.HTTPS_HOST, "0.0.0.0"));
-            setHTTPSKeyPassword(config.getString(Key.HTTPS_KEY_PASSWORD));
-            setHTTPSKeyStorePassword(
-                    config.getString(Key.HTTPS_KEY_STORE_PASSWORD));
-            setHTTPSKeyStorePath(
-                    config.getString(Key.HTTPS_KEY_STORE_PATH));
-            setHTTPSKeyStoreType(
-                    config.getString(Key.HTTPS_KEY_STORE_TYPE));
-            setHTTPSPort(config.getInt(Key.HTTPS_PORT, 8183));
-            setSecureHTTP2Enabled(
-                    config.getBoolean(Key.HTTPS_HTTP2_ENABLED, true));
-        }
+    }
+
+    /**
+     * Initializes the instance with defaults from a Configuration object.
+     */
+    public WebServer(Configuration config) {
+        this();
+
+        setAcceptQueueLimit(config.getInt(Key.HTTP_ACCEPT_QUEUE_LIMIT, 0));
+        setHTTPEnabled(config.getBoolean(Key.HTTP_ENABLED, false));
+        setHTTPHost(config.getString(Key.HTTP_HOST, "0.0.0.0"));
+        setHTTPPort(config.getInt(Key.HTTP_PORT, 8182));
+        setInsecureHTTP2Enabled(
+                config.getBoolean(Key.HTTP_HTTP2_ENABLED, true));
+        setHTTPSEnabled(config.getBoolean(Key.HTTPS_ENABLED, false));
+        setHTTPSHost(config.getString(Key.HTTPS_HOST, "0.0.0.0"));
+        setHTTPSKeyPassword(config.getString(Key.HTTPS_KEY_PASSWORD));
+        setHTTPSKeyStorePassword(
+                config.getString(Key.HTTPS_KEY_STORE_PASSWORD));
+        setHTTPSKeyStorePath(
+                config.getString(Key.HTTPS_KEY_STORE_PATH));
+        setHTTPSKeyStoreType(
+                config.getString(Key.HTTPS_KEY_STORE_TYPE));
+        setHTTPSPort(config.getInt(Key.HTTPS_PORT, 8183));
+        setSecureHTTP2Enabled(
+                config.getBoolean(Key.HTTPS_HTTP2_ENABLED, true));
+    }
+
+    private void createServer() {
+        server = new Server();
 
         final WebAppContext context = new WebAppContext();
         context.setContextPath("/");
@@ -153,11 +161,11 @@ public class WebServer {
     }
 
     public boolean isStarted() {
-        return server.isStarted();
+        return (server != null && server.isStarted());
     }
 
     public boolean isStopped() {
-        return server.isStopped();
+        return (server == null || server.isStopped());
     }
 
     public void setAcceptQueueLimit(int size) {
@@ -219,6 +227,8 @@ public class WebServer {
      */
     public void start() throws Exception {
         if (!isStarted) {
+            createServer();
+
             // Initialize the HTTP server, handling both HTTP/1.1 and plaintext
             // HTTP/2.
             if (isHTTPEnabled()) {
@@ -290,13 +300,16 @@ public class WebServer {
                 connector.setAcceptQueueSize(getAcceptQueueLimit());
                 server.addConnector(connector);
             }
+            server.start();
+            isStarted = true;
         }
-        server.start();
-        isStarted = true;
     }
 
     public void stop() throws Exception {
-        server.stop();
+        if (server != null) {
+            server.stop();
+        }
+        server = null;
         isStarted = false;
     }
 
