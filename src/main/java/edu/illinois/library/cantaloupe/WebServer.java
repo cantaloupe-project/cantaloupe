@@ -27,16 +27,18 @@ public class WebServer {
     private static final int IDLE_TIMEOUT = 30000;
 
     private int acceptQueueLimit = 0;
-    private boolean httpEnabled;
+    private boolean isHTTPEnabled;
     private String httpHost;
     private int httpPort;
-    private boolean httpsEnabled;
+    private boolean isHTTPSEnabled;
     private String httpsHost;
     private String httpsKeyPassword;
     private String httpsKeyStorePassword;
     private String httpsKeyStorePath;
     private String httpsKeyStoreType;
     private int httpsPort;
+    private boolean isInsecureHTTP2Enabled = true;
+    private boolean isSecureHTTP2Enabled = true;
     private boolean isStarted = false;
     private Server server = new Server();
 
@@ -51,6 +53,8 @@ public class WebServer {
             setHTTPEnabled(config.getBoolean(Key.HTTP_ENABLED, false));
             setHTTPHost(config.getString(Key.HTTP_HOST, "0.0.0.0"));
             setHTTPPort(config.getInt(Key.HTTP_PORT, 8182));
+            setInsecureHTTP2Enabled(
+                    config.getBoolean(Key.HTTP_HTTP2_ENABLED, true));
             setHTTPSEnabled(config.getBoolean(Key.HTTPS_ENABLED, false));
             setHTTPSHost(config.getString(Key.HTTPS_HOST, "0.0.0.0"));
             setHTTPSKeyPassword(config.getString(Key.HTTPS_KEY_PASSWORD));
@@ -61,6 +65,22 @@ public class WebServer {
             setHTTPSKeyStoreType(
                     config.getString(Key.HTTPS_KEY_STORE_TYPE));
             setHTTPSPort(config.getInt(Key.HTTPS_PORT, 8183));
+            setSecureHTTP2Enabled(
+                    config.getBoolean(Key.HTTPS_HTTP2_ENABLED, true));
+        }
+
+        final WebAppContext context = new WebAppContext();
+        context.setContextPath("/");
+        context.setServer(server);
+        server.setHandler(context);
+
+        // Give the WebAppContext a different WAR to use depending on
+        // whether we are running standalone or from a WAR file.
+        final String warPath = StandaloneEntry.getWarFile().getAbsolutePath();
+        if (warPath.endsWith(".war")) {
+            context.setWar(warPath);
+        } else {
+            context.setWar("src/main/webapp");
         }
     }
 
@@ -117,11 +137,19 @@ public class WebServer {
     }
 
     public boolean isHTTPEnabled() {
-        return httpEnabled;
+        return isHTTPEnabled;
     }
 
     public boolean isHTTPSEnabled() {
-        return httpsEnabled;
+        return isHTTPSEnabled;
+    }
+
+    public boolean isInsecureHTTP2Enabled() {
+        return isInsecureHTTP2Enabled;
+    }
+
+    public boolean isSecureHTTP2Enabled() {
+        return isSecureHTTP2Enabled;
     }
 
     public boolean isStarted() {
@@ -137,7 +165,7 @@ public class WebServer {
     }
 
     public void setHTTPEnabled(boolean enabled) {
-        this.httpEnabled = enabled;
+        this.isHTTPEnabled = enabled;
     }
 
     public void setHTTPHost(String host) {
@@ -149,7 +177,7 @@ public class WebServer {
     }
 
     public void setHTTPSEnabled(boolean enabled) {
-        this.httpsEnabled = enabled;
+        this.isHTTPSEnabled = enabled;
     }
 
     public void setHTTPSHost(String host) {
@@ -176,6 +204,14 @@ public class WebServer {
         this.httpsPort = port;
     }
 
+    public void setInsecureHTTP2Enabled(boolean enabled) {
+        this.isInsecureHTTP2Enabled = enabled;
+    }
+
+    public void setSecureHTTP2Enabled(boolean enabled) {
+        this.isSecureHTTP2Enabled = enabled;
+    }
+
     /**
      * Starts the HTTP and/or HTTPS servers.
      *
@@ -183,37 +219,29 @@ public class WebServer {
      */
     public void start() throws Exception {
         if (!isStarted) {
-            final WebAppContext context = new WebAppContext();
-            context.setContextPath("/");
-            context.setServer(server);
-            server.setHandler(context);
-
-            // Give the WebAppContext a different WAR to use depending on whether
-            // we are running standalone or from a WAR file.
-            final String warPath = StandaloneEntry.getWarFile().getAbsolutePath();
-            if (warPath.endsWith(".war")) {
-                context.setWar(warPath);
-            } else {
-                context.setWar("src/main/webapp");
-            }
-
             // Initialize the HTTP server, handling both HTTP/1.1 and plaintext
             // HTTP/2.
             if (isHTTPEnabled()) {
+                ServerConnector connector;
                 HttpConfiguration config = new HttpConfiguration();
                 HttpConnectionFactory http1 =
                         new HttpConnectionFactory(config);
-                HTTP2CServerConnectionFactory http2 =
-                        new HTTP2CServerConnectionFactory(config);
 
-                ServerConnector connector = new ServerConnector(server,
-                        http1, http2);
+                if (isInsecureHTTP2Enabled()) {
+                    HTTP2CServerConnectionFactory http2 =
+                            new HTTP2CServerConnectionFactory(config);
+                    connector = new ServerConnector(server, http1, http2);
+                } else {
+                    connector = new ServerConnector(server, http1);
+                }
+
                 connector.setHost(getHTTPHost());
                 connector.setPort(getHTTPPort());
                 connector.setIdleTimeout(IDLE_TIMEOUT);
                 connector.setAcceptQueueSize(getAcceptQueueLimit());
                 server.addConnector(connector);
             }
+
             // Initialize the HTTPS server.
             // N.B. HTTP/2 support requires an ALPN JAR on the boot classpath,
             // e.g.: -Xbootclasspath/p:/path/to/alpn-boot-8.1.5.v20150921.jar
@@ -229,10 +257,9 @@ public class WebServer {
                 contextFactory.setKeyStorePassword(getHTTPSKeyStorePassword());
                 contextFactory.setKeyManagerPassword(getHTTPSKeyPassword());
 
-                if (isALPNAvailable()) {
-                    System.out.println("WebServer.start(): ALPN is " +
-                            "available; configuring HTTP/2");
+                ServerConnector connector;
 
+                if (isSecureHTTP2Enabled() && isALPNAvailable()) {
                     HttpConnectionFactory http1 =
                             new HttpConnectionFactory(config);
                     HTTP2ServerConnectionFactory http2 =
@@ -249,26 +276,19 @@ public class WebServer {
                             new SslConnectionFactory(contextFactory,
                                     alpn.getProtocol());
 
-                    ServerConnector connector = new ServerConnector(server,
-                            connectionFactory, alpn, http2, http1);
-                    connector.setHost(getHTTPSHost());
-                    connector.setPort(getHTTPSPort());
-                    connector.setIdleTimeout(IDLE_TIMEOUT);
-                    connector.setAcceptQueueSize(getAcceptQueueLimit());
-                    server.addConnector(connector);
+                    connector = new ServerConnector(server, connectionFactory,
+                            alpn, http2, http1);
                 } else {
-                    System.err.println("WebServer.start(): ALPN is not " +
-                            "available; falling back to HTTP/1.1");
-
-                    ServerConnector connector = new ServerConnector(server,
+                    connector = new ServerConnector(server,
                             new SslConnectionFactory(contextFactory, "HTTP/1.1"),
                             new HttpConnectionFactory(config));
-                    connector.setHost(getHTTPSHost());
-                    connector.setPort(getHTTPSPort());
-                    connector.setIdleTimeout(IDLE_TIMEOUT);
-                    connector.setAcceptQueueSize(getAcceptQueueLimit());
-                    server.addConnector(connector);
                 }
+
+                connector.setHost(getHTTPSHost());
+                connector.setPort(getHTTPSPort());
+                connector.setIdleTimeout(IDLE_TIMEOUT);
+                connector.setAcceptQueueSize(getAcceptQueueLimit());
+                server.addConnector(connector);
             }
         }
         server.start();
@@ -277,6 +297,7 @@ public class WebServer {
 
     public void stop() throws Exception {
         server.stop();
+        isStarted = false;
     }
 
 }
