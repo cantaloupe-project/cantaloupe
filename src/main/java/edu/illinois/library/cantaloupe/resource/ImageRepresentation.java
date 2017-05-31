@@ -21,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 
 /**
  * Restlet representation for images.
@@ -145,9 +146,7 @@ public class ImageRepresentation extends OutputRepresentation {
                     ((FileProcessor) processor).getSourceFile() != null) {
                 final File sourceFile =
                         ((FileProcessor) processor).getSourceFile();
-                try (InputStream inputStream = new FileInputStream(sourceFile)) {
-                    IOUtils.copy(inputStream, outputStream);
-                }
+                Files.copy(sourceFile.toPath(), outputStream);
             } else {
                 final StreamSource streamSource =
                         ((StreamProcessor) processor).getStreamSource();

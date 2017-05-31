@@ -12,13 +12,12 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.FileInputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -94,9 +93,9 @@ public class JdbcCacheTest extends BaseTest {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
 
-        OutputStream os = instance.newDerivativeImageOutputStream(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
-        os.close();
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+        }
 
         Identifier identifier = new Identifier("dogs");
         Crop crop = new Crop();
@@ -114,9 +113,9 @@ public class JdbcCacheTest extends BaseTest {
         ops.add(rotate);
         ops.setOutputFormat(format);
 
-        os = instance.newDerivativeImageOutputStream(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
-        os.close();
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+        }
 
         identifier = new Identifier("bunnies");
         crop = new Crop();
@@ -134,9 +133,9 @@ public class JdbcCacheTest extends BaseTest {
         ops.add(rotate);
         ops.setOutputFormat(format);
 
-        os = instance.newDerivativeImageOutputStream(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
-        os.close();
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+        }
 
         // persist some infos corresponding to the above images
         instance.put(new Identifier("cats"), new Info(50, 40));
@@ -193,8 +192,9 @@ public class JdbcCacheTest extends BaseTest {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("bees"));
 
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)),
-                instance.newDerivativeImageOutputStream(ops));
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+        }
         instance.put(new Identifier("bees"), new Info(50, 40));
 
         // existing, non-expired image
@@ -266,9 +266,9 @@ public class JdbcCacheTest extends BaseTest {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("bees"));
 
-        OutputStream bc = instance.newDerivativeImageOutputStream(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), bc);
-        bc.close();
+        try (OutputStream bc = instance.newDerivativeImageOutputStream(ops)) {
+            Files.copy(TestUtil.getImage(IMAGE).toPath(), bc);
+        }
 
         // existing, non-expired image
         assertNotNull(instance.newDerivativeImageInputStream(ops));
@@ -417,9 +417,9 @@ public class JdbcCacheTest extends BaseTest {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
         // ...derivative image
-        OutputStream os = instance.newDerivativeImageOutputStream(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
-        os.close();
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+        }
         // ...info
         instance.put(new Identifier("bees"), new Info(50, 40));
 

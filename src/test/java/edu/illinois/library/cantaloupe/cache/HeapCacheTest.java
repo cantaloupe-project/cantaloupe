@@ -9,12 +9,9 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -95,9 +92,9 @@ public class HeapCacheTest extends BaseTest {
             // Seed an image
             Identifier id1 = new Identifier("cats");
             OperationList ops1 = new OperationList(id1, Format.JPG);
-            OutputStream os = instance.newDerivativeImageOutputStream(ops1);
-            IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
-            os.close();
+            try (OutputStream os = instance.newDerivativeImageOutputStream(ops1)) {
+                Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+            }
 
             instance.dumpToPersistentStore();
 
@@ -122,9 +119,9 @@ public class HeapCacheTest extends BaseTest {
         // Seed an image
         Identifier id1 = new Identifier("cats");
         OperationList ops1 = new OperationList(id1, Format.JPG);
-        OutputStream os = instance.newDerivativeImageOutputStream(ops1);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
-        os.close();
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops1)) {
+            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+        }
 
         assertEquals(5439, instance.getByteSize());
 
@@ -217,9 +214,9 @@ public class HeapCacheTest extends BaseTest {
             // Seed an image
             Identifier id1 = new Identifier("cats");
             OperationList ops1 = new OperationList(id1, Format.JPG);
-            OutputStream os = instance.newDerivativeImageOutputStream(ops1);
-            IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
-            os.close();
+            try (OutputStream os = instance.newDerivativeImageOutputStream(ops1)) {
+                Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+            }
 
             instance.dumpToPersistentStore();
 
@@ -242,11 +239,8 @@ public class HeapCacheTest extends BaseTest {
         // Doesn't exist yet
         assertNull(instance.newDerivativeImageInputStream(ops));
 
-        File image = TestUtil.getImage(IMAGE);
-
-        try (FileInputStream is = new FileInputStream(image);
-             OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
-            IOUtils.copy(is, os);
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
         }
 
         // Now it should.
@@ -278,9 +272,9 @@ public class HeapCacheTest extends BaseTest {
         // Seed a derivative image
         Identifier id1 = new Identifier("cats");
         OperationList ops1 = new OperationList(id1, Format.JPG);
-        OutputStream os = instance.newDerivativeImageOutputStream(ops1);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
-        os.close();
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops1)) {
+            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+        }
         // Seed an info
         instance.put(id1, new Info(50, 40));
 
@@ -298,9 +292,9 @@ public class HeapCacheTest extends BaseTest {
         // Seed a derivative image
         Identifier id1 = new Identifier("cats");
         OperationList ops = new OperationList(id1, Format.JPG);
-        OutputStream os = instance.newDerivativeImageOutputStream(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
-        os.close();
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+        }
 
         instance.purge(ops);
 
@@ -315,9 +309,8 @@ public class HeapCacheTest extends BaseTest {
         Identifier id1 = new Identifier("cats");
         OperationList ops = new OperationList(id1, Format.JPG);
 
-        try (FileInputStream is = new FileInputStream(TestUtil.getImage(IMAGE));
-             OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
-            IOUtils.copy(is, os);
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
         }
 
         // Seed an info
@@ -339,9 +332,9 @@ public class HeapCacheTest extends BaseTest {
         // Seed an image
         Identifier id1 = new Identifier("cats");
         OperationList ops1 = new OperationList(id1, Format.JPG);
-        OutputStream os = instance.newDerivativeImageOutputStream(ops1);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
-        os.close();
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops1)) {
+            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+        }
 
         assertEquals(5439, instance.getByteSize());
 
@@ -359,9 +352,9 @@ public class HeapCacheTest extends BaseTest {
         // Seed an image
         Identifier id1 = new Identifier("cats");
         OperationList ops1 = new OperationList(id1, Format.JPG);
-        OutputStream os = instance.newDerivativeImageOutputStream(ops1);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
-        os.close();
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops1)) {
+            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+        }
 
         long size = instance.getByteSize();
 

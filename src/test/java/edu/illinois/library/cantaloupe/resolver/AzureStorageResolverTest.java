@@ -12,16 +12,16 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.io.IOUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
 
 import static org.junit.Assert.*;
 
@@ -37,15 +37,14 @@ public class AzureStorageResolverTest extends BaseTest {
     @BeforeClass
     public static void uploadFixtures() throws Exception {
         final CloudBlobClient client = client();
-        try (FileInputStream fis = new FileInputStream(TestUtil.getImage("jpg-rgb-64x56x8-line.jpg"))) {
-            final CloudBlobContainer container =
-                    client.getContainerReference(getContainer());
-            final CloudBlockBlob blob = container.getBlockBlobReference(OBJECT_KEY);
-            blob.getProperties().setContentType("image/jpeg");
+        final CloudBlobContainer container =
+                client.getContainerReference(getContainer());
+        final CloudBlockBlob blob = container.getBlockBlobReference(OBJECT_KEY);
+        blob.getProperties().setContentType("image/jpeg");
 
-            try (OutputStream os = blob.openOutputStream()) {
-                IOUtils.copy(fis, os);
-            }
+        final File fixture = TestUtil.getImage("jpg-rgb-64x56x8-line.jpg");
+        try (OutputStream os = blob.openOutputStream()) {
+            Files.copy(fixture.toPath(), os);
         }
     }
 

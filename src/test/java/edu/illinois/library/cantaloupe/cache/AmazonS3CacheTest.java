@@ -19,9 +19,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 
 import static org.junit.Assert.*;
 
@@ -119,11 +119,10 @@ public class AmazonS3CacheTest extends BaseTest {
         File fixture = TestUtil.getImage(identifier.toString());
 
         // add an image
-        InputStream fileInputStream = new FileInputStream(fixture);
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(fileInputStream, outputStream);
-        fileInputStream.close();
-        outputStream.close();
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(fixture.toPath(), outputStream);
+        }
 
         // wait for it to upload
         Thread.sleep(S3_UPLOAD_WAIT);
@@ -152,12 +151,11 @@ public class AmazonS3CacheTest extends BaseTest {
         assertObjectCount(0);
 
         // add an image
-        InputStream inputStream = new FileInputStream(
-                TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+        File imageFile = TestUtil.getImage(identifier.toString());
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(imageFile.toPath(), outputStream);
+        }
 
         Thread.sleep(S3_UPLOAD_WAIT);
 
@@ -206,12 +204,11 @@ public class AmazonS3CacheTest extends BaseTest {
     @Test
     public void testPurge() throws Exception {
         // add an image
-        InputStream inputStream = new FileInputStream(
-                TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+        File imageFile = TestUtil.getImage(identifier.toString());
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(imageFile.toPath(), outputStream);
+        }
 
         // add an Info
         instance.put(identifier, imageInfo);
@@ -229,22 +226,21 @@ public class AmazonS3CacheTest extends BaseTest {
     @Test
     public void testPurgeWithOperationList() throws Exception {
         // add an image
-        InputStream inputStream = new FileInputStream(
-                TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+        File fixture1 = TestUtil.getImage(identifier.toString());
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(fixture1.toPath(), outputStream);
+        }
 
         // add another image
-        File fixture = TestUtil.getImage("gif-rgb-64x56x8.gif");
+        File fixture2 = TestUtil.getImage("gif-rgb-64x56x8.gif");
         OperationList otherOpList = new OperationList(
-                new Identifier(fixture.getName()), Format.GIF);
-        inputStream = new FileInputStream(fixture);
-        outputStream = instance.newDerivativeImageOutputStream(otherOpList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+                new Identifier(fixture2.getName()), Format.GIF);
+
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(otherOpList)) {
+            Files.copy(fixture2.toPath(), outputStream);
+        }
 
         Thread.sleep(S3_UPLOAD_WAIT);
 
@@ -266,12 +262,11 @@ public class AmazonS3CacheTest extends BaseTest {
         ConfigurationFactory.getInstance().setProperty(Key.CACHE_SERVER_TTL, 4);
 
         // add an image
-        InputStream inputStream = new FileInputStream(
-                TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+        File fixture1 = TestUtil.getImage(identifier.toString());
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(fixture1.toPath(), outputStream);
+        }
 
         // add an Info
         instance.put(identifier, imageInfo);
@@ -279,14 +274,14 @@ public class AmazonS3CacheTest extends BaseTest {
         Thread.sleep(2000);
 
         // add another image
-        File fixture = TestUtil.getImage("gif-rgb-64x56x8.gif");
+        File fixture2 = TestUtil.getImage("gif-rgb-64x56x8.gif");
         OperationList otherOpList = new OperationList(
-                new Identifier(fixture.getName()), Format.GIF);
-        inputStream = new FileInputStream(fixture);
-        outputStream = instance.newDerivativeImageOutputStream(otherOpList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+                new Identifier(fixture2.getName()), Format.GIF);
+
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(otherOpList)) {
+            Files.copy(fixture2.toPath(), outputStream);
+        }
 
         // add another Info
         Identifier otherId = new Identifier("cats");
@@ -308,12 +303,11 @@ public class AmazonS3CacheTest extends BaseTest {
     @Test
     public void testPurgeWithIdentifier() throws Exception {
         // add an image
-        InputStream inputStream = new FileInputStream(
-                TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+        File imageFile = TestUtil.getImage(identifier.toString());
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(imageFile.toPath(), outputStream);
+        }
 
         // add an Info
         instance.put(identifier, imageInfo);

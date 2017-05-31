@@ -12,7 +12,6 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.AWSClientFactory;
-import org.apache.commons.io.IOUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -20,9 +19,10 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import static org.junit.Assert.*;
 
@@ -38,10 +38,11 @@ public class AmazonS3ResolverTest extends BaseTest {
     @BeforeClass
     public static void uploadFixtures() throws IOException {
         final AmazonS3 s3 = client();
-        try (FileInputStream fis = new FileInputStream(TestUtil.getImage("jpg-rgb-64x56x8-line.jpg"));
-             ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            IOUtils.copy(fis, baos);
-            byte[] imageBytes = baos.toByteArray();
+        File fixture = TestUtil.getImage("jpg-rgb-64x56x8-line.jpg");
+
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            Files.copy(fixture.toPath(), os);
+            byte[] imageBytes = os.toByteArray();
 
             final ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType("image/jpeg");

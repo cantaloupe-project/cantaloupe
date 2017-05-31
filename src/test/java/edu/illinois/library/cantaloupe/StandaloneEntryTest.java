@@ -12,7 +12,6 @@ import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,11 +27,10 @@ import org.restlet.resource.ResourceException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -284,10 +282,8 @@ public class StandaloneEntryTest extends BaseTest {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("dogs"));
         ops.add(new Rotate(15));
-        try (OutputStream wbc = cache.newDerivativeImageOutputStream(ops);
-             InputStream rbc = new FileInputStream(
-                     TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"))) {
-            IOUtils.copy(rbc, wbc);
+        try (OutputStream wbc = cache.newDerivativeImageOutputStream(ops)) {
+            Files.copy(TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg").toPath(), wbc);
         }
 
         // assert that they've been cached
@@ -342,15 +338,13 @@ public class StandaloneEntryTest extends BaseTest {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
         ops.add(new Rotate(15));
-        try (OutputStream wbc = cache.newDerivativeImageOutputStream(ops);
-             InputStream rbc = new FileInputStream(TestUtil.getImage("jpg"))) {
-            IOUtils.copy(rbc, wbc);
+        try (OutputStream wbc = cache.newDerivativeImageOutputStream(ops)) {
+            Files.copy(TestUtil.getImage("jpg").toPath(), wbc);
         }
 
         ops.setIdentifier(new Identifier("dogs"));
-        try (OutputStream wbc = cache.newDerivativeImageOutputStream(ops);
-             InputStream rbc = new FileInputStream(TestUtil.getImage("jpg"))) {
-            IOUtils.copy(rbc, wbc);
+        try (OutputStream wbc = cache.newDerivativeImageOutputStream(ops)) {
+            Files.copy(TestUtil.getImage("jpg").toPath(), wbc);
         }
 
         // assert that they've been cached

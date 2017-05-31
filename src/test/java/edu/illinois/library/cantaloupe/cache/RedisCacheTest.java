@@ -19,9 +19,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 
 import static org.junit.Assert.*;
 
@@ -104,11 +104,10 @@ public class RedisCacheTest extends BaseTest {
         File imageFile = TestUtil.getImage(IMAGE);
 
         // Write an image to the cache
-        FileInputStream fis = new FileInputStream(imageFile);
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(fis, outputStream);
-        fis.close();
-        outputStream.close();
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(imageFile.toPath(), outputStream);
+        }
 
         // Read it back in
         InputStream inputStream = instance.newDerivativeImageInputStream(opList);

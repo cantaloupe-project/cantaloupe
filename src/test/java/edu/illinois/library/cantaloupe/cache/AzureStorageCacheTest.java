@@ -21,10 +21,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 
 import static org.junit.Assert.*;
 
@@ -113,11 +113,10 @@ public class AzureStorageCacheTest extends BaseTest {
         File fixture = TestUtil.getImage(identifier.toString());
 
         // add an image
-        InputStream fileInputStream = new FileInputStream(fixture);
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(fileInputStream, outputStream);
-        fileInputStream.close();
-        outputStream.close();
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(fixture.toPath(), outputStream);
+        }
 
         // download the image
         InputStream s3InputStream = instance.newDerivativeImageInputStream(opList);
@@ -143,12 +142,11 @@ public class AzureStorageCacheTest extends BaseTest {
         assertObjectCount(0);
 
         // add an image
-        InputStream inputStream = new FileInputStream(
-                TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+        File fixture = TestUtil.getImage(identifier.toString());
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(fixture.toPath(), outputStream);
+        }
 
         assertObjectCount(1);
     }
@@ -195,12 +193,11 @@ public class AzureStorageCacheTest extends BaseTest {
     @Test
     public void testPurge() throws Exception {
         // add an image
-        InputStream inputStream = new FileInputStream(
-                TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+        File fixture = TestUtil.getImage(identifier.toString());
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(fixture.toPath(), outputStream);
+        }
 
         // add an Info
         instance.put(identifier, imageInfo);
@@ -218,22 +215,20 @@ public class AzureStorageCacheTest extends BaseTest {
     @Test
     public void testPurgeWithOperationList() throws Exception {
         // add an image
-        InputStream inputStream = new FileInputStream(
-                TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+        File fixture = TestUtil.getImage(identifier.toString());
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(fixture.toPath(), outputStream);
+        }
 
         // add another image
-        File fixture = TestUtil.getImage("gif-rgb-64x56x8.gif");
+        File fixture2 = TestUtil.getImage("gif-rgb-64x56x8.gif");
         OperationList otherOpList = new OperationList(
-                new Identifier(fixture.getName()), Format.GIF);
-        inputStream = new FileInputStream(fixture);
-        outputStream = instance.newDerivativeImageOutputStream(otherOpList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+                new Identifier(fixture2.getName()), Format.GIF);
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(otherOpList)) {
+            Files.copy(fixture2.toPath(), outputStream);
+        }
 
         // add an Info
         instance.put(identifier, imageInfo);
@@ -251,12 +246,11 @@ public class AzureStorageCacheTest extends BaseTest {
     @Test
     public void testPurgeExpired() throws Exception {
         // add an image
-        InputStream inputStream = new FileInputStream(
-                TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+        File fixture = TestUtil.getImage(identifier.toString());
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(fixture.toPath(), outputStream);
+        }
 
         // add an Info
         instance.put(identifier, imageInfo);
@@ -264,14 +258,13 @@ public class AzureStorageCacheTest extends BaseTest {
         Thread.sleep(2000);
 
         // add another image
-        File fixture = TestUtil.getImage("gif-rgb-64x56x8.gif");
+        File fixture2 = TestUtil.getImage("gif-rgb-64x56x8.gif");
         OperationList otherOpList = new OperationList(
-                new Identifier(fixture.getName()), Format.GIF);
-        inputStream = new FileInputStream(fixture);
-        outputStream = instance.newDerivativeImageOutputStream(otherOpList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+                new Identifier(fixture2.getName()), Format.GIF);
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(otherOpList)) {
+             Files.copy(fixture2.toPath(), outputStream);
+        }
 
         // add another Info
         Identifier otherId = new Identifier("cats");
@@ -291,12 +284,11 @@ public class AzureStorageCacheTest extends BaseTest {
     @Test
     public void testPurgeWithIdentifier() throws Exception {
         // add an image
-        InputStream inputStream = new FileInputStream(
-                TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+        File fixture = TestUtil.getImage(identifier.toString());
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(fixture.toPath(), outputStream);
+        }
 
         // add an Info
         instance.put(identifier, imageInfo);
