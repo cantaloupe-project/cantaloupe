@@ -2,11 +2,17 @@
 .DS_Store
 Thumbs.db
 
-# IDE/Maven junk
+# Eclipse stuff
+.classpath
+.project
+.settings/*
+
+# IntelliJ stuff
 .idea/*
 *.iml
+
+# NetBeans stuff
 nbactions.xml
-dependency-reduced-pom.xml
 
 # App config
 /cantaloupe.properties
