@@ -14,8 +14,6 @@ import java.io.IOException;
  */
 public abstract class ScriptEngineFactory {
 
-    private static final Object lock = new Object();
-
     private static ScriptEngine scriptEngine;
 
     /**
@@ -36,17 +34,16 @@ public abstract class ScriptEngineFactory {
      * @throws IOException
      * @throws ScriptException
      */
-    public static ScriptEngine getScriptEngine() throws IOException,
-            DelegateScriptDisabledException, ScriptException {
+    public static synchronized ScriptEngine getScriptEngine()
+            throws IOException, DelegateScriptDisabledException,
+            ScriptException {
         if (scriptEngine == null) {
-            synchronized (lock) {
-                final Configuration config = Configuration.getInstance();
-                if (config.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false)) {
-                    scriptEngine = new RubyScriptEngine();
-                    scriptEngine.load(FileUtils.readFileToString(getScriptFile()));
-                } else {
-                    throw new DelegateScriptDisabledException();
-                }
+            final Configuration config = Configuration.getInstance();
+            if (config.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false)) {
+                scriptEngine = new RubyScriptEngine();
+                scriptEngine.load(FileUtils.readFileToString(getScriptFile()));
+            } else {
+                throw new DelegateScriptDisabledException();
             }
         }
         return scriptEngine;
