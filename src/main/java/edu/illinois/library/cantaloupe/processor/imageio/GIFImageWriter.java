@@ -83,17 +83,15 @@ class GIFImageWriter extends AbstractImageWriter {
         final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
                 Format.GIF.getPreferredMediaType().toString());
         final ImageWriter writer = writers.next();
-        try {
-            final ImageWriteParam writeParam =
-                    writer.getDefaultWriteParam();
-            final IIOMetadata metadata = getMetadata(writer, writeParam,
-                    image);
-            final IIOImage iioImage = new IIOImage(image, null, metadata);
-            final ImageOutputStream ios =
-                    ImageIO.createImageOutputStream(outputStream);
-            writer.setOutput(ios);
+        final ImageWriteParam writeParam = writer.getDefaultWriteParam();
+        final IIOMetadata metadata = getMetadata(writer, writeParam, image);
+        final IIOImage iioImage = new IIOImage(image, null, metadata);
+
+        try (ImageOutputStream os =
+                     ImageIO.createImageOutputStream(outputStream)) {
+            writer.setOutput(os);
             writer.write(iioImage);
-            ios.flush();
+            os.flush();
         } finally {
             writer.dispose();
         }
@@ -111,22 +109,21 @@ class GIFImageWriter extends AbstractImageWriter {
         final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
                 Format.GIF.getPreferredMediaType().toString());
         final ImageWriter writer = writers.next();
-        try {
-            // GIFWriter can't deal with a non-0,0 origin ("coordinate
-            // out of bounds!")
-            final ParameterBlock pb = new ParameterBlock();
-            pb.addSource(image);
-            pb.add((float) -image.getMinX());
-            pb.add((float) -image.getMinY());
-            image = JAI.create("translate", pb);
 
-            final ImageWriteParam writeParam =
-                    writer.getDefaultWriteParam();
-            final IIOMetadata metadata = getMetadata(writer, writeParam,
-                    image);
-            final IIOImage iioImage = new IIOImage(image, null, metadata);
-            final ImageOutputStream os = ImageIO.
-                    createImageOutputStream(outputStream);
+        // GIFWriter can't deal with a non-0,0 origin ("coordinate
+        // out of bounds!")
+        final ParameterBlock pb = new ParameterBlock();
+        pb.addSource(image);
+        pb.add((float) -image.getMinX());
+        pb.add((float) -image.getMinY());
+        image = JAI.create("translate", pb);
+
+        final ImageWriteParam writeParam = writer.getDefaultWriteParam();
+        final IIOMetadata metadata = getMetadata(writer, writeParam, image);
+        final IIOImage iioImage = new IIOImage(image, null, metadata);
+
+        try (ImageOutputStream os = ImageIO.
+                createImageOutputStream(outputStream)) {
             writer.setOutput(os);
             writer.write(iioImage);
             os.flush(); // http://stackoverflow.com/a/14489406

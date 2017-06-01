@@ -20,9 +20,10 @@ title: What's New
     <li>Fixed parsing of comma-separated <code>X-Forwarded-*</code> header values.</li>
     <li>Improved the reliability of the value of the <code>client_ip</code> argument to the <code>authorized?()</code> delegate method when behind a reverse proxy.</li>
     <li>Fixed a connection leak in AmazonS3Resolver.</li>
+    <li>Fixed potential malformed concurrent image responses when using a processor other than ImageMagickProcessor or GraphicsMagickProcessor.</li>
     <li>Fixed a potential NullPointerException (HTTP 500) involving concurrent requests when using the delegate script.</li>
     <li>Prevented the configuration file and/or delegate script from being reloaded twice on some platforms.</li>
-    <li>Fixed PDF source format support in GraphicsMagickProcessor and ImageMagickProcessor.</li> 
+    <li>Fixed PDF source format support in GraphicsMagickProcessor and ImageMagickProcessor.</li>
     <li>Upgraded JRuby to 9.1.10.0.</li>
 </ul>
 
