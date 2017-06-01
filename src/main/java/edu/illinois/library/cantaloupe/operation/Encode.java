@@ -181,7 +181,7 @@ public class Encode implements Operation {
         if (getBackgroundColor() != null) {
             parts.add(getBackgroundColor().toRGBHex());
         }
-        return StringUtils.join(parts, "_");
+        return String.join("_", parts);
     }
 
 }

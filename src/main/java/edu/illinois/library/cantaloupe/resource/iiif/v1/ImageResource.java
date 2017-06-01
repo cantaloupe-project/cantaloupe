@@ -17,7 +17,6 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
-import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Disposition;
 import org.restlet.data.Reference;
 import org.restlet.representation.Representation;
@@ -88,8 +87,8 @@ public class ImageResource extends IIIF1Resource {
                 processor.getAvailableOutputFormats();
 
         // Extract the quality and format from the URI
-        String[] qualityAndFormat = StringUtils.
-                split((String) attrs.get("quality_format"), ".");
+        String[] qualityAndFormat =
+                ((String) attrs.get("quality_format")).split(".");
         // If a format is present, try to use that. Otherwise, guess it based
         // on the Accept header per Image API 1.1 spec section 4.5.
         String outputFormat;

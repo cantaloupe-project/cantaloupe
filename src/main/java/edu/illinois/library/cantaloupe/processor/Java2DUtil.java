@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.processor;
 import com.mortennobel.imagescaling.ResampleFilter;
 import com.mortennobel.imagescaling.ResampleOp;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
@@ -25,7 +24,6 @@ import edu.illinois.library.cantaloupe.operation.overlay.OverlayService;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -324,7 +322,7 @@ public abstract class Java2DUtil {
             Font font = overlay.getFont();
             float fontSize = font.getSize();
             final int inset = overlay.getInset();
-            final String[] lines = StringUtils.split(overlay.getString(), "\n");
+            final String[] lines = overlay.getString().split("\n");
             final int padding = getBoxPadding(overlay);
             int lineHeight;
             int totalHeight;

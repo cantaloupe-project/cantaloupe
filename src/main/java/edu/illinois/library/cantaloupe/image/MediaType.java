@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.image;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
@@ -49,7 +48,7 @@ public final class MediaType {
      * @throws IllegalArgumentException
      */
     public MediaType(String mediaType) {
-        String[] parts = StringUtils.split(mediaType, "/");
+        String[] parts = mediaType.split("/");
         if (parts.length == 2) {
             type = parts[0];
             subtype = parts[1];

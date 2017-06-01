@@ -403,7 +403,7 @@ public final class OperationList implements Comparable<OperationList>,
             opStrings.add(key + ":" + this.getOptions().get(key));
         }
 
-        String opsString = StringUtils.join(opStrings, "_");
+        String opsString = String.join("_", opStrings);
 
         try {
             final MessageDigest digest = MessageDigest.getInstance("MD5");
@@ -465,7 +465,7 @@ public final class OperationList implements Comparable<OperationList>,
         for (String key : this.getOptions().keySet()) {
             parts.add(key + ":" + this.getOptions().get(key));
         }
-        return StringUtils.join(parts, "_") + "." +
+        return String.join("_", parts) + "." +
                 getOutputFormat().getPreferredExtension();
     }
 

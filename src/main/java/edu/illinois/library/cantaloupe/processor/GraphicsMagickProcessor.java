@@ -80,7 +80,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             command.add(getPath("gm"));
             command.add("version");
             pb.command(command);
-            final String commandString = StringUtils.join(pb.command(), " ");
+            final String commandString = String.join(" ", pb.command());
 
             try {
                 logger.info("getFormats(): invoking {}", commandString);
@@ -392,7 +392,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             final ProcessStarter cmd = new ProcessStarter();
             cmd.setInputProvider(new Pipe(inputStream, null));
             cmd.setOutputConsumer(new Pipe(null, outputStream));
-            logger.info("process(): invoking {}", StringUtils.join(args, " "));
+            logger.info("process(): invoking {}", String.join(" ", args));
             cmd.run(args);
         } catch (Exception e) {
             throw new ProcessorException(e.getMessage(), e);
@@ -419,7 +419,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             cmd.setInputProvider(new Pipe(inputStream, null));
             cmd.setOutputConsumer(consumer);
             logger.info("readImageInfo(): invoking {}",
-                    StringUtils.join(args, " ").replace("\n", ""));
+                    String.join(" ", args).replace("\n", ""));
             cmd.run(args);
 
             final List<String> output = consumer.getOutput();
