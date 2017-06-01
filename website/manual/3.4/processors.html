@@ -486,107 +486,102 @@ landing page, as well as in one of the tables below. A list of output formats su
 <table class="table table-bordered">
   <tr>
     <th></th>
-    <th>BMP</th>
-    <th>DICOM</th>
-    <th>GIF</th>
-    <th>JPEG</th>
-    <th>JPEG2000</th>
-    <th>PDF</th>
-    <th>PNG</th>
-    <th>SGI</th>
-    <th>TIFF</th>
-    <th>WebP</th>
+    <th><a href="#GraphicsMagickProcessor">GraphicsMagick</a></th>
+    <th><a href="#ImageMagickProcessor">ImageMagick</a></th>
+    <th><a href="#Java2dProcessor">Java2D</a> &amp; <a href="#JaiProcessor">JAI</a></th>
+    <th><a href="#KakaduProcessor">Kakadu</a></th>
+    <th><a href="#OpenJpegProcessor">OpenJPEG</a></th>
+    <th><a href="#PdfBoxProcessor">PDFBox</a></th>
   </tr>
   <tr>
-    <td><a href="#GraphicsMagickProcessor">GraphicsMagickProcessor</a></td>
+    <td>BMP</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
-    <td class="bg-success">&check;</td>
-    <td class="bg-warning">Uses JasPer (requires plugin). No level-reduction or region decoding.</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
+  </tr>
+  <tr>
+    <td>DICOM</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="bg-warning">Not extensively tested</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
+  </tr>
+  <tr>
+    <td>GIF</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
+  </tr>
+  <tr>
+    <td>JPEG</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
+  </tr>
+  <tr>
+    <td>JPEG2000</td>
+    <td class="bg-warning">Uses JasPer (requires plugin); no level-reduction or ROI decoding</td>
+    <td class="bg-warning">Uses OpenJPEG (requires delegate); no level-reduction or ROI decoding</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-danger">&times;</td>
+  </tr>
+  <tr>
+    <td>PDF</td>
     <td class="bg-warning">Requires plugin; no source DPI control</td>
-    <td class="bg-success">&check;</td>
-    <td class="bg-danger"></td>
-    <td class="bg-warning">All aspects, but no multi-resolution or ROI decoding</td>
-    <td class="bg-success">Requires plugin</td>
-  </tr>
-  <tr>
-    <td><a href="#ImageMagickProcessor">ImageMagickProcessor</a></td>
-    <td class="text-center bg-success">&check;</td>
-    <td class="text-center bg-success">&check;</td>
-    <td class="text-center bg-success">&check;</td>
-    <td class="bg-success">&check;</td>
-    <td class="bg-warning">Uses OpenJPEG (requires delegate). No level-reduction or region decoding.</td>
     <td class="bg-warning">Requires delegate; no source DPI control</td>
-    <td class="bg-success">&check;</td>
-    <td class="bg-success">&check;</td>
-    <td class="bg-warning">All aspects, but no multi-resolution or ROI decoding</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>PNG</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
+  </tr>
+  <tr>
+    <td>SGI</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
+  </tr>
+  <tr>
+    <td>TIFF</td>
+    <td class="bg-warning">No multi-resolution or ROI decoding</td>
+    <td class="bg-warning">No multi-resolution or ROI decoding</td>
+    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
+  </tr>
+  <tr>
+    <td>WebP</td>
+    <td class="bg-success">Requires plugin</td>
     <td class="bg-success">Requires delegate</td>
-  </tr>
-  <tr>
-    <td><a href="#JaiProcessor">JaiProcessor</a></td>
-    <td class="text-center bg-success">&check;</td>
-    <td class="text-center bg-success">Generally supported, but not extensively tested</td>
-    <td class="text-center bg-success">&check;</td>
-    <td class="bg-success">RGB, 8-bit, baseline, line-interlaced, plane-interlaced</td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-    <td class="bg-success">RGB, RGBA, 8-bit</td>
-    <td class="bg-danger"></td>
-    <td class="bg-success">RGB, RGBA; 8-bit, 16-bit; uncompressed, PackBits, LZW, ZIP, JPEG (8-bit only); striped, tiled, and multi-resolution reading; BigTIFF</td>
-    <td class="bg-danger"></td>
-  </tr>
-  <tr>
-    <td><a href="#Java2dProcessor">Java2dProcessor</a></td>
-    <td class="text-center bg-success">&check;</td>
-    <td class="text-center bg-success">Generally supported, but not extensively tested</td>
-    <td class="text-center bg-success">&check;</td>
-    <td class="bg-success">RGB, 8-bit, baseline, line-interlaced, plane-interlaced</td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-    <td class="bg-success">RGB, RGBA, 8-bit</td>
-    <td class="bg-danger"></td>
-    <td class="bg-success">RGB, RGBA; 8-bit, 16-bit; uncompressed, PackBits, LZW, ZIP, JPEG (8-bit only); striped, tiled, and multi-resolution reading; BigTIFF</td>
-    <td class="bg-danger"></td>
-  </tr>
-  <tr>
-    <td><a href="#KakaduProcessor">KakaduProcessor</a></td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-    <td class="text-center bg-success">&check;</td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-  </tr>
-  <tr>
-    <td><a href="#OpenJpegProcessor">OpenJpegProcessor</a></td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-    <td class="text-center bg-success">&check;</td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-  </tr>
-  <tr>
-    <td><a href="#PdfBoxProcessor">PdfBoxProcessor</a></td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-    <td class="text-center bg-success">&check;</td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
-    <td class="bg-danger"></td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
   </tr>
 </table>
 
