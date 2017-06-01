@@ -73,32 +73,27 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
 
     private static CloudBlobClient client;
 
-    /** Lock object for synchronization */
-    private static final Object lock = new Object();
-
-    private static CloudBlobClient getClientInstance() {
+    private static synchronized CloudBlobClient getClientInstance() {
         if (client == null) {
-            synchronized (lock) {
-                try {
-                    final Configuration config = Configuration.getInstance();
-                    final String accountName =
-                            config.getString(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME);
-                    final String accountKey =
-                            config.getString(Key.AZURESTORAGERESOLVER_ACCOUNT_KEY);
+            try {
+                final Configuration config = Configuration.getInstance();
+                final String accountName =
+                        config.getString(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME);
+                final String accountKey =
+                        config.getString(Key.AZURESTORAGERESOLVER_ACCOUNT_KEY);
 
-                    final String connectionString = String.format(
-                            "DefaultEndpointsProtocol=https;" +
-                                    "AccountName=%s;" +
-                                    "AccountKey=%s", accountName, accountKey);
-                    final CloudStorageAccount account =
-                            CloudStorageAccount.parse(connectionString);
+                final String connectionString = String.format(
+                        "DefaultEndpointsProtocol=https;" +
+                                "AccountName=%s;" +
+                                "AccountKey=%s", accountName, accountKey);
+                final CloudStorageAccount account =
+                        CloudStorageAccount.parse(connectionString);
 
-                    logger.info("Using account: {}", accountName);
+                logger.info("Using account: {}", accountName);
 
-                    client = account.createCloudBlobClient();
-                } catch (URISyntaxException | InvalidKeyException e) {
-                    logger.error(e.getMessage());
-                }
+                client = account.createCloudBlobClient();
+            } catch (URISyntaxException | InvalidKeyException e) {
+                logger.error(e.getMessage());
             }
         }
         return client;
