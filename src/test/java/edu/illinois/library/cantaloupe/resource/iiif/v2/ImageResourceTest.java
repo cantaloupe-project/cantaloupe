@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import edu.illinois.library.cantaloupe.WebApplication;
+import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -34,7 +34,7 @@ public class ImageResourceTest extends ResourceTest {
 
     @Override
     protected ClientResource getClientForUriPath(String path) {
-        return super.getClientForUriPath(WebApplication.IIIF_2_PATH + path);
+        return super.getClientForUriPath(RestletApplication.IIIF_2_PATH + path);
     }
 
     @Test

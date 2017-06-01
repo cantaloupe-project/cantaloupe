@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.illinois.library.cantaloupe.WebApplication;
+import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.cache.DerivativeFileCache;
@@ -34,7 +34,7 @@ public class InformationResourceTest extends ResourceTest {
 
     @Override
     protected ClientResource getClientForUriPath(String path) {
-        return super.getClientForUriPath(WebApplication.IIIF_2_PATH + path);
+        return super.getClientForUriPath(RestletApplication.IIIF_2_PATH + path);
     }
 
     @Test
@@ -366,7 +366,7 @@ public class InformationResourceTest extends ResourceTest {
         Map<String,Object> info =
                 (Map<String,Object>) mapper.readValue(json, TreeMap.class);
         assertEquals("http://localhost:" + PORT +
-                WebApplication.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
+                RestletApplication.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
     }
 
     @Test
@@ -382,7 +382,7 @@ public class InformationResourceTest extends ResourceTest {
         Map<String,Object> info =
                 (Map<String,Object>) mapper.readValue(json, TreeMap.class);
         assertEquals("http://example.org" +
-                WebApplication.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
+                RestletApplication.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
     }
 
     @Test
@@ -400,7 +400,7 @@ public class InformationResourceTest extends ResourceTest {
         Map<String,Object> info =
                 (Map<String,Object>) mapper.readValue(json, TreeMap.class);
         assertEquals("http://example.org:8080/cats" +
-                WebApplication.IIIF_2_PATH + "/originalID", info.get("@id"));
+                RestletApplication.IIIF_2_PATH + "/originalID", info.get("@id"));
     }
 
     @Test
@@ -420,7 +420,7 @@ public class InformationResourceTest extends ResourceTest {
         Map<String,Object> info =
                 (Map<String,Object>) mapper.readValue(json, TreeMap.class);
         assertEquals("https://example.net" +
-                WebApplication.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
+                RestletApplication.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
     }
 
     /**

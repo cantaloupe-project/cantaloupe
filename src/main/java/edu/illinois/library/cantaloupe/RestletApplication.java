@@ -43,7 +43,7 @@ import java.util.logging.Level;
  * Restlet Application implementation. Creates endpoint routes and connects
  * them to Resources.
  */
-public class WebApplication extends Application {
+public class RestletApplication extends Application {
 
     private class CustomStatusService extends StatusService {
 
@@ -115,7 +115,7 @@ public class WebApplication extends Application {
     public static final String IIIF_2_PATH = "/iiif/2";
     public static final String STATIC_ROOT_PATH = "/static";
 
-    public WebApplication() {
+    public RestletApplication() {
         super();
         this.setStatusService(new CustomStatusService());
         // http://restlet.com/blog/2015/12/15/understanding-and-using-cors/

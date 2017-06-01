@@ -1,11 +1,10 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.illinois.library.cantaloupe.WebApplication;
+import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +55,7 @@ public class AdminResourceTest extends ResourceTest {
         Map<String, String> expectedDirectives = new HashMap<>();
         expectedDirectives.put("no-cache", null);
 
-        ClientResource client = getClientForUriPath(WebApplication.ADMIN_PATH,
+        ClientResource client = getClientForUriPath(RestletApplication.ADMIN_PATH,
                 USERNAME, SECRET);
         client.get();
         List<CacheDirective> actualDirectives = client.getResponse().getCacheDirectives();
@@ -75,7 +74,7 @@ public class AdminResourceTest extends ResourceTest {
     @Test
     public void testDoGetAsHtml() throws Exception {
         // no credentials
-        ClientResource client = getClientForUriPath(WebApplication.ADMIN_PATH);
+        ClientResource client = getClientForUriPath(RestletApplication.ADMIN_PATH);
         try {
             client.get();
             fail("Expected exception");
@@ -106,7 +105,7 @@ public class AdminResourceTest extends ResourceTest {
     public void testDoGetAsJson() {
         ConfigurationFactory.getInstance().setProperty("test", "cats");
 
-        ClientResource client = getClientForUriPath(WebApplication.ADMIN_PATH,
+        ClientResource client = getClientForUriPath(RestletApplication.ADMIN_PATH,
                 USERNAME, SECRET);
 
         client.get(MediaType.APPLICATION_JSON);
@@ -120,7 +119,7 @@ public class AdminResourceTest extends ResourceTest {
         entityMap.put("test", "cats");
         String entity = new ObjectMapper().writer().writeValueAsString(entityMap);
 
-        ClientResource client = getClientForUriPath(WebApplication.ADMIN_PATH,
+        ClientResource client = getClientForUriPath(RestletApplication.ADMIN_PATH,
                 USERNAME, SECRET);
         client.post(entity, MediaType.APPLICATION_JSON);
 
@@ -138,7 +137,7 @@ public class AdminResourceTest extends ResourceTest {
         // enabled
         config.setProperty(Key.ADMIN_ENABLED, true);
 
-        ClientResource client = getClientForUriPath(WebApplication.ADMIN_PATH,
+        ClientResource client = getClientForUriPath(RestletApplication.ADMIN_PATH,
                 USERNAME, SECRET);
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());

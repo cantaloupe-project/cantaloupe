@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.illinois.library.cantaloupe.WebApplication;
+import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -42,7 +42,7 @@ public class Version2_0ConformanceTest extends ResourceTest {
             new Identifier("jpg-rgb-64x56x8-baseline.jpg");
 
     private String getBaseUri() {
-        return "http://localhost:" + PORT + WebApplication.IIIF_2_PATH;
+        return "http://localhost:" + PORT + RestletApplication.IIIF_2_PATH;
     }
 
     /**

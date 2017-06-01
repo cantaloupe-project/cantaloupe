@@ -4,7 +4,7 @@ import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Map;
 
-import edu.illinois.library.cantaloupe.WebApplication;
+import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeFileCache;
@@ -48,7 +48,7 @@ public class InformationResource extends IIIF1Resource {
                     get("identifier");
             final Reference newRef = new Reference(
                     getPublicRootRef(request.getRootRef(), request.getHeaders()) +
-                            WebApplication.IIIF_1_PATH + "/" + identifier +
+                            RestletApplication.IIIF_1_PATH + "/" + identifier +
                             "/info.json");
             redirectSeeOther(newRef);
             return new EmptyRepresentation();
@@ -142,7 +142,7 @@ public class InformationResource extends IIIF1Resource {
         final String identifierStr = headers.getFirstValue(
                 "X-IIIF-ID", true, identifier.toString());
         return getPublicRootRef(getRequest().getRootRef(), headers) +
-                WebApplication.IIIF_1_PATH + "/" +
+                RestletApplication.IIIF_1_PATH + "/" +
                 Reference.encode(identifierStr);
     }
 

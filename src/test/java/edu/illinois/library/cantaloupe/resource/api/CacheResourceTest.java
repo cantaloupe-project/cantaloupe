@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
-import edu.illinois.library.cantaloupe.WebApplication;
+import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import org.junit.Test;
@@ -24,7 +24,7 @@ public class CacheResourceTest extends APIResourceTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.API_ENABLED, false);
         ClientResource client = getClientForUriPath(
-                WebApplication.CACHE_PATH + "/" + IDENTIFIER, USERNAME, SECRET);
+                RestletApplication.CACHE_PATH + "/" + IDENTIFIER, USERNAME, SECRET);
         try {
             client.delete();
             fail("Expected exception");
@@ -35,7 +35,7 @@ public class CacheResourceTest extends APIResourceTest {
 
     @Test
     public void testDoPurgeWithNoCredentials() throws Exception {
-        ClientResource client = getClientForUriPath(WebApplication.CACHE_PATH + "/" + IDENTIFIER);
+        ClientResource client = getClientForUriPath(RestletApplication.CACHE_PATH + "/" + IDENTIFIER);
         try {
             client.delete();
             fail("Expected exception");
@@ -47,7 +47,7 @@ public class CacheResourceTest extends APIResourceTest {
     @Test
     public void testDoPurgeWithInvalidCredentials() throws Exception {
         ClientResource client = getClientForUriPath(
-                WebApplication.CACHE_PATH + "/" + IDENTIFIER, "invalid", "invalid");
+                RestletApplication.CACHE_PATH + "/" + IDENTIFIER, "invalid", "invalid");
         try {
             client.delete();
             fail("Expected exception");
@@ -59,7 +59,7 @@ public class CacheResourceTest extends APIResourceTest {
     @Test
     public void testDoPurgeWithValidCredentials() throws Exception {
         ClientResource client = getClientForUriPath(
-                WebApplication.CACHE_PATH + "/" + IDENTIFIER, USERNAME, SECRET);
+                RestletApplication.CACHE_PATH + "/" + IDENTIFIER, USERNAME, SECRET);
         client.delete();
         assertEquals(Status.SUCCESS_NO_CONTENT, client.getStatus());
 

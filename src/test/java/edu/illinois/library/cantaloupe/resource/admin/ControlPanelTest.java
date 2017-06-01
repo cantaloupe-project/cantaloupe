@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
-import edu.illinois.library.cantaloupe.WebApplication;
+import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -37,7 +37,7 @@ public class ControlPanelTest extends ResourceTest {
         return String.format("http://%s:%s@localhost:%d%s",
                 USERNAME, SECRET,
                 webServer.getHTTPPort(),
-                WebApplication.ADMIN_PATH);
+                RestletApplication.ADMIN_PATH);
     }
 
     @BeforeClass

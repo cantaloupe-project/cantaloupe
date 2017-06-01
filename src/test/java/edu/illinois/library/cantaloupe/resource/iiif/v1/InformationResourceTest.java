@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.illinois.library.cantaloupe.WebApplication;
+import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.cache.DerivativeFileCache;
@@ -33,7 +33,7 @@ public class InformationResourceTest extends ResourceTest {
 
     @Override
     protected ClientResource getClientForUriPath(String path) {
-        return super.getClientForUriPath(WebApplication.IIIF_1_PATH + path);
+        return super.getClientForUriPath(RestletApplication.IIIF_1_PATH + path);
     }
 
     @Test
@@ -361,7 +361,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("http://localhost:" + PORT +
-                WebApplication.IIIF_1_PATH + "/" + IMAGE, info.id);
+                RestletApplication.IIIF_1_PATH + "/" + IMAGE, info.id);
     }
 
     @Test
@@ -375,7 +375,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("http://example.org" +
-                WebApplication.IIIF_1_PATH + "/" + IMAGE, info.id);
+                RestletApplication.IIIF_1_PATH + "/" + IMAGE, info.id);
     }
 
     @Test
@@ -391,7 +391,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("http://example.org:8080/cats" +
-                WebApplication.IIIF_1_PATH + "/originalID", info.id);
+                RestletApplication.IIIF_1_PATH + "/originalID", info.id);
     }
 
     @Test
@@ -409,7 +409,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("https://example.net" +
-                WebApplication.IIIF_1_PATH + "/" + IMAGE, info.id);
+                RestletApplication.IIIF_1_PATH + "/" + IMAGE, info.id);
     }
 
     /**

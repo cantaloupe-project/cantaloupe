@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
-import edu.illinois.library.cantaloupe.WebApplication;
+import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import org.junit.Test;
@@ -22,7 +22,7 @@ public class DMICResourceTest extends APIResourceTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.API_ENABLED, false);
         ClientResource client = getClientForUriPath(
-                WebApplication.DELEGATE_METHOD_INVOCATION_CACHE_PATH,
+                RestletApplication.DELEGATE_METHOD_INVOCATION_CACHE_PATH,
                 USERNAME, SECRET);
         try {
             client.delete();
@@ -35,7 +35,7 @@ public class DMICResourceTest extends APIResourceTest {
     @Test
     public void testDoPurgeWithNoCredentials() throws Exception {
         ClientResource client = getClientForUriPath(
-                WebApplication.DELEGATE_METHOD_INVOCATION_CACHE_PATH);
+                RestletApplication.DELEGATE_METHOD_INVOCATION_CACHE_PATH);
         try {
             client.delete();
             fail("Expected exception");
@@ -47,7 +47,7 @@ public class DMICResourceTest extends APIResourceTest {
     @Test
     public void testDoPurgeWithInvalidCredentials() throws Exception {
         ClientResource client = getClientForUriPath(
-                WebApplication.DELEGATE_METHOD_INVOCATION_CACHE_PATH,
+                RestletApplication.DELEGATE_METHOD_INVOCATION_CACHE_PATH,
                 "invalid", "invalid");
         try {
             client.delete();
@@ -60,7 +60,7 @@ public class DMICResourceTest extends APIResourceTest {
     @Test
     public void testDoPurgeWithValidCredentials() throws Exception {
         ClientResource client = getClientForUriPath(
-                WebApplication.DELEGATE_METHOD_INVOCATION_CACHE_PATH,
+                RestletApplication.DELEGATE_METHOD_INVOCATION_CACHE_PATH,
                 USERNAME, SECRET);
         client.delete();
         assertEquals(Status.SUCCESS_NO_CONTENT, client.getStatus());

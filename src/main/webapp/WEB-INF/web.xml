@@ -8,7 +8,7 @@
 
     <context-param>
         <param-name>org.restlet.application</param-name>
-        <param-value>edu.illinois.library.cantaloupe.WebApplication</param-value>
+        <param-value>edu.illinois.library.cantaloupe.RestletApplication</param-value>
     </context-param>
 
     <servlet>

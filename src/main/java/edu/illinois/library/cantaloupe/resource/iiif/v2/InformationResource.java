@@ -10,7 +10,7 @@ import edu.illinois.library.cantaloupe.cache.DerivativeFileCache;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.WebApplication;
+import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
@@ -48,7 +48,7 @@ public class InformationResource extends IIIF2Resource {
                     (String) request.getAttributes().get("identifier");
             final Reference newRef = new Reference(
                     getPublicRootRef(request.getRootRef(), request.getHeaders()) +
-                            WebApplication.IIIF_2_PATH + "/" + identifier +
+                            RestletApplication.IIIF_2_PATH + "/" + identifier +
                             "/info.json");
             redirectSeeOther(newRef);
             return new EmptyRepresentation();
@@ -140,7 +140,7 @@ public class InformationResource extends IIIF2Resource {
         final String identifierStr = headers.getFirstValue(
                 "X-IIIF-ID", true, identifier.toString());
         return getPublicRootRef(getRequest().getRootRef(), headers) +
-                WebApplication.IIIF_2_PATH + "/" +
+                RestletApplication.IIIF_2_PATH + "/" +
                 Reference.encode(identifierStr);
     }
 

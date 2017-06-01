@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import edu.illinois.library.cantaloupe.WebApplication;
+import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.cache.DerivativeFileCache;
@@ -185,7 +185,7 @@ public class ImageResource extends IIIF2Resource {
         getResponse().getHeaders().add("Link",
                 String.format("<%s%s/%s>;rel=\"canonical\"",
                 getPublicRootRef(getRequest().getRootRef(), headers),
-                WebApplication.IIIF_2_PATH, paramsStr));
+                RestletApplication.IIIF_2_PATH, paramsStr));
     }
 
 }

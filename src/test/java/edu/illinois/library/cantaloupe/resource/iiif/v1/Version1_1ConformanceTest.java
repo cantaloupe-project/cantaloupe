@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.WebApplication;
+import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -42,7 +42,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
             new Identifier("jpg-rgb-64x56x8-baseline.jpg");
 
     private String getBaseUri() {
-        return "http://localhost:" + PORT + WebApplication.IIIF_1_PATH;
+        return "http://localhost:" + PORT + RestletApplication.IIIF_1_PATH;
     }
 
     /**

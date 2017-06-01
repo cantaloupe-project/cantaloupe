@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.WebApplication;
+import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
@@ -20,7 +20,7 @@ public class LandingResourceTest extends ResourceTest {
     public void testEndpointDisabled() throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
         ClientResource client = getClientForUriPath(
-                WebApplication.IIIF_1_PATH);
+                RestletApplication.IIIF_1_PATH);
 
         config.setProperty("endpoint.iiif.1.enabled", true);
         client.get();
@@ -38,7 +38,7 @@ public class LandingResourceTest extends ResourceTest {
     @Test
     public void testGet() throws Exception {
         ClientResource client = getClientForUriPath(
-                WebApplication.IIIF_1_PATH);
+                RestletApplication.IIIF_1_PATH);
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
         assertTrue(client.get().getText().contains("Cantaloupe Image"));
