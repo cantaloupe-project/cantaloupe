@@ -26,7 +26,8 @@ import java.nio.file.Files;
 import static org.junit.Assert.*;
 
 /**
- * Tests AzureStorageResolver against Azure Storage. Requires an AWS account).
+ * Tests AzureStorageResolver against Azure Storage. (Requires an Azure Storage
+ * account.)
  */
 public class AzureStorageResolverTest extends BaseTest {
 
@@ -97,9 +98,9 @@ public class AzureStorageResolverTest extends BaseTest {
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(Key.AZURESTORAGERESOLVER_CONTAINER_NAME,
                 getContainer());
-        config.setProperty(Key.AZURESTORAGECACHE_ACCOUNT_NAME,
+        config.setProperty(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME,
                 getAccountName());
-        config.setProperty(Key.AZURESTORAGECACHE_ACCOUNT_KEY,
+        config.setProperty(Key.AZURESTORAGERESOLVER_ACCOUNT_KEY,
                 getAccountKey());
         config.setProperty(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
