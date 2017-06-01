@@ -19,8 +19,6 @@ public abstract class ScriptEngineFactory {
     public static final String DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY =
             "delegate_script.pathname";
 
-    private static final Object lock = new Object();
-
     private static ScriptEngine scriptEngine;
 
     /**
@@ -41,17 +39,16 @@ public abstract class ScriptEngineFactory {
      * @throws IOException
      * @throws ScriptException
      */
-    public static ScriptEngine getScriptEngine() throws IOException,
-            DelegateScriptDisabledException, ScriptException {
+    public static synchronized ScriptEngine getScriptEngine()
+            throws IOException, DelegateScriptDisabledException,
+            ScriptException {
         if (scriptEngine == null) {
-            synchronized (lock) {
-                final Configuration config = ConfigurationFactory.getInstance();
-                if (config.getBoolean(DELEGATE_SCRIPT_ENABLED_CONFIG_KEY, false)) {
-                    scriptEngine = new RubyScriptEngine();
-                    scriptEngine.load(FileUtils.readFileToString(getScriptFile()));
-                } else {
-                    throw new DelegateScriptDisabledException();
-                }
+            final Configuration config = ConfigurationFactory.getInstance();
+            if (config.getBoolean(DELEGATE_SCRIPT_ENABLED_CONFIG_KEY, false)) {
+                scriptEngine = new RubyScriptEngine();
+                scriptEngine.load(FileUtils.readFileToString(getScriptFile()));
+            } else {
+                throw new DelegateScriptDisabledException();
             }
         }
         return scriptEngine;
