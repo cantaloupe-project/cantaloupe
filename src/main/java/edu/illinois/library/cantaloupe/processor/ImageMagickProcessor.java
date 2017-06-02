@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.Encode;
+import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Orientation;
@@ -239,14 +240,6 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         }
         args.add(format.getPreferredExtension() + ":-"); // read from stdin
 
-        // Normalization needs to happen before cropping to maintain the
-        // intensity of cropped regions relative to the full image.
-        final boolean normalize = (boolean) ops.getOptions().
-                getOrDefault(Key.PROCESSOR_NORMALIZE.key(), false);
-        if (normalize) {
-            args.add("-normalize");
-        }
-
         Encode encode = (Encode) ops.getFirst(Encode.class);
 
         // If the output format supports transparency, make the background
@@ -267,7 +260,9 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         final Dimension fullSize = imageInfo.getSize();
 
         for (Operation op : ops) {
-            if (op instanceof Crop) {
+            if (op instanceof Normalize) {
+                args.add("-normalize");
+            } else if (op instanceof Crop) {
                 Crop crop = (Crop) op;
                 crop.applyOrientation(imageInfo.getOrientation(), fullSize);
                 if (crop.hasEffect(fullSize, ops)) {

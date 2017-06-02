@@ -131,7 +131,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
             page = Math.max(page, 1);
 
             final BufferedImage image = readImage(page - 1, reductionFactor.factor);
-            postProcess(image, null, opList, imageInfo, reductionFactor, false,
+            postProcess(image, null, opList, imageInfo, reductionFactor,
                     outputStream);
         } catch (IOException | IndexOutOfBoundsException e) {
             throw new ProcessorException(e.getMessage(), e);

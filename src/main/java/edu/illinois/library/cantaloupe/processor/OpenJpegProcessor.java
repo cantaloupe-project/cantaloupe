@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -242,8 +243,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
             final ReductionFactor reductionFactor = new ReductionFactor();
 
             // If we are normalizing, we need to read the entire image region.
-            final boolean normalize = (boolean) opList.getOptions().
-                    getOrDefault(Key.PROCESSOR_NORMALIZE.key(), false);
+            final boolean normalize = (opList.getFirst(Normalize.class) != null);
 
             final ProcessBuilder pb = getProcessBuilder(
                     opList, imageInfo.getSize(), reductionFactor, normalize);
@@ -266,7 +266,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                         hints.add(ImageReader.Hint.ALREADY_CROPPED);
                     }
                     postProcess(image, hints, opList, imageInfo,
-                            reductionFactor, normalize, outputStream);
+                            reductionFactor, outputStream);
                     final int code = process.waitFor();
                     if (code != 0) {
                         logger.warn("opj_decompress returned with code {}", code);

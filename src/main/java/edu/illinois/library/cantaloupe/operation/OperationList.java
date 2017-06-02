@@ -75,14 +75,16 @@ public final class OperationList implements Comparable<OperationList>,
     /**
      * Adds an operation to the end of the list.
      *
-     * @param op Operation to add.
+     * @param op Operation to add. Null values are silently discarded.
      * @throws UnsupportedOperationException If the instance is frozen.
      */
     public void add(Operation op) {
         if (frozen) {
             throw new UnsupportedOperationException();
         }
-        operations.add(op);
+        if (op != null) {
+            operations.add(op);
+        }
     }
 
     /**
@@ -163,7 +165,29 @@ public final class OperationList implements Comparable<OperationList>,
         // Normalization
         final boolean normalize =
                 config.getBoolean(Key.PROCESSOR_NORMALIZE, false);
-        getOptions().put(Key.PROCESSOR_NORMALIZE.key(), normalize);
+        if (normalize) {
+            // 1. If a Crop is present, normalization has to happen before it,
+            //    in order to sample the entire image.
+            // 2. Otherwise, if a Scale is present, normalization should happen
+            //    before an upscale, or after a downscale.
+            // 3. Otherwise, it should be added before a Rotate, as this could
+            //    introduce edge color that would throw it off.
+            Normalize normalizeOp = new Normalize();
+            if (getFirst(Crop.class) != null) {
+                addBefore(normalizeOp, Crop.class);
+            } else {
+                Scale scale = (Scale) getFirst(Scale.class);
+                if (scale != null) {
+                    if (scale.isUp(sourceImageSize)) {
+                        addBefore(normalizeOp, Scale.class);
+                    } else {
+                        addAfter(normalizeOp, Scale.class);
+                    }
+                } else {
+                    addBefore(normalizeOp, Rotate.class);
+                }
+            }
+        }
 
         // Redactions
         try {

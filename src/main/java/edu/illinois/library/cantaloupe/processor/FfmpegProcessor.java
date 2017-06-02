@@ -168,7 +168,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
                 final BufferedImage image = reader.read();
                 try {
                     postProcess(image, null, opList, imageInfo, null,
-                            false, outputStream);
+                            outputStream);
                     final int code = process.waitFor();
                     if (code != 0) {
                         logger.error("ffmpeg returned with code {}", code);
