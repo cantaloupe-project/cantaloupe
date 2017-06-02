@@ -89,7 +89,7 @@ public class InformationResource extends IIIF2Resource {
 
         // Obtain an instance of the processor assigned to that format in
         // the config file
-        Processor processor = ProcessorFactory.getProcessor(format);
+        final Processor processor = new ProcessorFactory().getProcessor(format);
 
         new SourceImageWrangler(resolver, processor, identifier).wrangle();
 

@@ -91,7 +91,7 @@ public class SourceImageWranglerTest extends BaseTest {
     @Test
     public void testWrangleWithFileResolverAndFileProcessor() throws Exception {
         final Resolver resolver = ResolverFactory.getResolver(identifier);
-        final Processor processor = ProcessorFactory.getProcessor(Format.JPG);
+        final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
         new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
@@ -107,7 +107,7 @@ public class SourceImageWranglerTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_FALLBACK, "ImageMagickProcessor");
 
         final Resolver resolver = ResolverFactory.getResolver(identifier);
-        final Processor processor = ProcessorFactory.getProcessor(Format.JPG);
+        final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
         new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
@@ -126,7 +126,7 @@ public class SourceImageWranglerTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
 
         final Resolver resolver = ResolverFactory.getResolver(identifier);
-        final Processor processor = ProcessorFactory.getProcessor(Format.JP2);
+        final Processor processor = new ProcessorFactory().getProcessor(Format.JP2);
 
         try {
             new SourceImageWrangler(resolver, processor, identifier).wrangle();
@@ -159,7 +159,7 @@ public class SourceImageWranglerTest extends BaseTest {
             config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
 
             final Resolver resolver = ResolverFactory.getResolver(identifier);
-            final Processor processor = ProcessorFactory.getProcessor(Format.JP2);
+            final Processor processor = new ProcessorFactory().getProcessor(Format.JP2);
 
             new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
@@ -192,7 +192,7 @@ public class SourceImageWranglerTest extends BaseTest {
             config.setProperty(Key.PROCESSOR_FALLBACK, "ImageMagickProcessor");
 
             final Resolver resolver = ResolverFactory.getResolver(identifier);
-            final Processor processor = ProcessorFactory.getProcessor(Format.JPG);
+            final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
             new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
@@ -228,7 +228,7 @@ public class SourceImageWranglerTest extends BaseTest {
                     cacheFolder.getAbsolutePath());
 
             final Resolver resolver = ResolverFactory.getResolver(identifier);
-            final Processor processor = ProcessorFactory.getProcessor(Format.JPG);
+            final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
             new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
@@ -266,7 +266,7 @@ public class SourceImageWranglerTest extends BaseTest {
                     cacheFolder.getAbsolutePath());
 
             final Resolver resolver = ResolverFactory.getResolver(identifier);
-            final Processor processor = ProcessorFactory.getProcessor(Format.JPG);
+            final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
             try {
                 new SourceImageWrangler(resolver, processor, identifier).wrangle();

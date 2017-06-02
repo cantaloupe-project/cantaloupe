@@ -242,7 +242,7 @@ public class AdminResource extends AbstractResource {
         for (Format format : Format.values()) {
             try {
                 assignments.put(format,
-                        new ProcessorProxy(ProcessorFactory.getProcessor(format)));
+                        new ProcessorProxy(new ProcessorFactory().getProcessor(format)));
             } catch (UnsupportedSourceFormatException e) {
                 // noop
             }

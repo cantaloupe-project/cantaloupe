@@ -79,7 +79,7 @@ public class ImageResource extends IIIF1Resource {
         // Obtain an instance of the processor assigned to that format in
         // the config file. This will throw a variety of exceptions if there
         // are any issues.
-        final Processor processor = ProcessorFactory.getProcessor(format);
+        final Processor processor = new ProcessorFactory().getProcessor(format);
 
         new SourceImageWrangler(resolver, processor, identifier).wrangle();
 

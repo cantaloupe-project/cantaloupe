@@ -13,7 +13,7 @@ import java.util.Set;
  * Used to obtain an instance of a {@link Processor} for a given source format,
  * as defined in the configuration.
  */
-public abstract class ProcessorFactory {
+public class ProcessorFactory {
 
     public static Set<Processor> getAllProcessors() {
         return new HashSet<>(Arrays.asList(
@@ -38,7 +38,7 @@ public abstract class ProcessorFactory {
      * @throws ReflectiveOperationException
      * @throws IOException
      */
-    public static Processor getProcessor(final Format sourceFormat)
+    public Processor getProcessor(final Format sourceFormat)
             throws UnsupportedSourceFormatException,
             ReflectiveOperationException,
             IOException {
@@ -64,13 +64,13 @@ public abstract class ProcessorFactory {
      * @return Name of the processor assigned to the given format, or null if
      *         one is not set.
      */
-    private static String getAssignedProcessorName(Format format) {
+    private String getAssignedProcessorName(Format format) {
         final String value = Configuration.getInstance().
                 getString("processor." + format.getPreferredExtension());
         return (value != null && value.length() > 0) ? value : null;
     }
 
-    private static String getFallbackProcessorName() {
+    private String getFallbackProcessorName() {
         return Configuration.getInstance().getString(Key.PROCESSOR_FALLBACK);
     }
 

@@ -28,7 +28,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
 
         imageUri = "http://example.org/bla";
-        processor = ProcessorFactory.getProcessor(Format.JPG);
+        processor = new ProcessorFactory().getProcessor(Format.JPG);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
 
@@ -40,7 +40,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty("metadata.respect_orientation", true);
 
-        processor = ProcessorFactory.getProcessor(Format.JPG);
+        processor = new ProcessorFactory().getProcessor(Format.JPG);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rotated.jpg"));
 

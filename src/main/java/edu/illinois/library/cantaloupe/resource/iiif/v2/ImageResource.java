@@ -97,7 +97,7 @@ public class ImageResource extends IIIF2Resource {
             throw e;
         }
 
-        final Processor processor = ProcessorFactory.getProcessor(format);
+        final Processor processor = new ProcessorFactory().getProcessor(format);
 
         new SourceImageWrangler(resolver, processor, identifier).wrangle();
 

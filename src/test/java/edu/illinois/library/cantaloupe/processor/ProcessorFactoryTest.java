@@ -11,12 +11,16 @@ import static org.junit.Assert.*;
 
 public class ProcessorFactoryTest extends BaseTest {
 
+    private ProcessorFactory instance;
+
     @Before
     public void setUp() throws Exception {
         super.setUp();
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty("GraphicsMagickProcessor.path_to_binaries", "/usr/local/bin");
         config.setProperty("ImageMagickProcessor.path_to_binaries", "/usr/local/bin");
+
+        instance = new ProcessorFactory();
     }
 
     @Test
@@ -26,15 +30,13 @@ public class ProcessorFactoryTest extends BaseTest {
 
     /**
      * Assert that we can get Java2dProcessor for JPEGs when
-     * <code>processor.jpg = Java2dProcessor</code>
-     *
-     * @throws Exception
+     * <code>processor.jpg = Java2dProcessor</code>.
      */
     @Test
     public void testGetProcessorWithSupportedAssignedFormat() throws Exception {
         ConfigurationFactory.getInstance().
                 setProperty("processor.jpg", "Java2dProcessor");
-        assertTrue(ProcessorFactory.getProcessor(Format.JPG) instanceof Java2dProcessor);
+        assertTrue(instance.getProcessor(Format.JPG) instanceof Java2dProcessor);
     }
 
     /**
@@ -44,8 +46,6 @@ public class ProcessorFactoryTest extends BaseTest {
      * processor.webp = Java2dProcessor
      * processor.fallback = GraphicsMagickProcessor
      * </code>
-     *
-     * @throws Exception
      */
     @Test
     public void testGetProcessorWithUnsupportedAssignedFormat() throws Exception {
@@ -54,7 +54,7 @@ public class ProcessorFactoryTest extends BaseTest {
         ConfigurationFactory.getInstance().
                 setProperty("processor.fallback", "GraphicsMagickProcessor");
         try {
-            ProcessorFactory.getProcessor(Format.WEBP);
+            instance.getProcessor(Format.WEBP);
             fail("Expected exception");
         } catch (UnsupportedSourceFormatException e) {
             assertEquals(e.getMessage(),
@@ -64,30 +64,26 @@ public class ProcessorFactoryTest extends BaseTest {
 
     /**
      * Assert that we get Java2dProcessor for JPEGs when
-     * <code>processor.fallback = Java2dProcessor</code>
-     *
-     * @throws Exception
+     * <code>processor.fallback = Java2dProcessor</code>.
      */
     @Test
     public void testGetProcessorWithFormatSupportedByFallback() throws Exception {
         ConfigurationFactory.getInstance().
                 setProperty("processor.fallback", "Java2dProcessor");
-        assertTrue(ProcessorFactory.getProcessor(Format.JPG) instanceof Java2dProcessor);
+        assertTrue(instance.getProcessor(Format.JPG) instanceof Java2dProcessor);
     }
 
     /**
      * Assert that an UnsupportedFormatException is thrown when we try to get
      * an unsupported format when
-     * <code>processor.fallback = GraphicsMagickProcessor</code>
-     *
-     * @throws Exception
+     * <code>processor.fallback = GraphicsMagickProcessor</code>.
      */
     @Test
     public void testGetProcessorWithFormatUnsupportedByFallback() throws Exception {
         ConfigurationFactory.getInstance().
                 setProperty("processor.fallback", "Java2dProcessor");
         try {
-            ProcessorFactory.getProcessor(Format.WEBP);
+            instance.getProcessor(Format.WEBP);
             fail("Expected exception");
         } catch (UnsupportedSourceFormatException e) {
             assertEquals("Java2dProcessor does not support the WebP source format",
@@ -97,14 +93,12 @@ public class ProcessorFactoryTest extends BaseTest {
 
     /**
      * Assert that a ClassNotFoundException is thrown when there is no processor
-     * assigned to the requested format and no fallback processor defined
-     *
-     * @throws Exception
+     * assigned to the requested format and no fallback processor defined.
      */
     @Test
     public void testGetProcessorWithFormatUnsupportedByFallbackAndNoFallback() throws Exception {
         try {
-            ProcessorFactory.getProcessor(Format.WEBP);
+            instance.getProcessor(Format.WEBP);
             fail("Expected exception");
         } catch (ClassNotFoundException e) {
             assertEquals(e.getMessage(), "A fallback processor is not defined.");
@@ -113,16 +107,14 @@ public class ProcessorFactoryTest extends BaseTest {
 
     /**
      * Assert that a ClassNotFoundException is thrown when the processor
-     * assigned to the requested format does not exist
-     *
-     * @throws Exception
+     * assigned to the requested format does not exist.
      */
     @Test
     public void testGetProcessorWithUnknownProcessor() throws Exception {
         ConfigurationFactory.getInstance().
                 setProperty("processor.jpg", "AmazingFakeProcessor");
         try {
-            ProcessorFactory.getProcessor(Format.JPG);
+            instance.getProcessor(Format.JPG);
             fail("Expected exception");
         } catch (ClassNotFoundException e) {
             assertEquals(e.getMessage(),
@@ -132,16 +124,14 @@ public class ProcessorFactoryTest extends BaseTest {
 
     /**
      * Assert that a ClassNotFoundException is thrown when the processor
-     * assigned to the requested format does not exist
-     *
-     * @throws Exception
+     * assigned to the requested format does not exist.
      */
     @Test
     public void testGetProcessorWithUnknownFallbackProcessor() throws Exception {
         ConfigurationFactory.getInstance().
                 setProperty("processor.fallback", "AmazingFakeProcessor");
         try {
-            ProcessorFactory.getProcessor(Format.JPG);
+            instance.getProcessor(Format.JPG);
             fail("Expected exception");
         } catch (ClassNotFoundException e) {
             assertEquals(e.getMessage(),
