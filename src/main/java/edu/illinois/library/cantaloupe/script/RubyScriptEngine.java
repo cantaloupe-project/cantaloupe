@@ -75,13 +75,13 @@ class RubyScriptEngine extends AbstractScriptEngine
      * @throws ScriptException
      */
     String getModuleName(String methodName) {
-        final String[] parts = methodName.split("::");
+        final String[] parts = StringUtils.split(methodName, "::");
         if (parts.length == 1) {
             return TOP_MODULE;
         }
         final List<String> partsArr = Arrays.asList(parts);
         return TOP_MODULE + "::" +
-                String.join("::", partsArr.subList(0, partsArr.size() - 1));
+                StringUtils.join(partsArr.subList(0, partsArr.size() - 1), "::");
     }
 
     /**
@@ -89,7 +89,7 @@ class RubyScriptEngine extends AbstractScriptEngine
      * @return Method name excluding module names.
      */
     String getUnqualifiedMethodName(String methodName) {
-        String[] parts = methodName.split("::");
+        String[] parts = StringUtils.split(methodName, "::");
         return parts[parts.length - 1];
     }
 

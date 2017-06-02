@@ -202,7 +202,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
                 while (scan.hasNextLine()) {
                     String line = scan.nextLine().trim();
                     if (line.startsWith("Stiles=")) {
-                        String[] parts = line.split(",");
+                        String[] parts = StringUtils.split(line, ",");
                         if (parts.length == 2) {
                             final int dim1 = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
                             final int dim2 = Integer.parseInt(parts[1].replaceAll("[^0-9]", ""));
@@ -244,7 +244,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
         final ProcessBuilder pb = new ProcessBuilder(command);
         pb.redirectErrorStream(true);
-        logger.info("Invoking {}", String.join(" ", pb.command()));
+        logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
         Process process = pb.start();
         ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
 
@@ -291,7 +291,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
             final ProcessBuilder pb = getProcessBuilder(
                     opList, imageInfo.getSize(), reductionFactor, normalize);
-            logger.info("Invoking {}", String.join(" ", pb.command()));
+            logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
             try (final InputStream processInputStream =

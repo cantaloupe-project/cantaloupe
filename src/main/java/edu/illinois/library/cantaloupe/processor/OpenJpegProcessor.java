@@ -171,9 +171,9 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                 while (scan.hasNextLine()) {
                     String line = scan.nextLine().trim();
                     if (line.startsWith("x1=")) {
-                        String[] parts = line.split(",");
+                        String[] parts = StringUtils.split(line, ",");
                         for (int i = 0; i < 2; i++) {
-                            String[] kv = parts[i].split("=");
+                            String[] kv = StringUtils.split(parts[i], "=");
                             if (kv.length == 2) {
                                 if (i == 0) {
                                     image.width = Integer.parseInt(kv[1].trim());
@@ -183,7 +183,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                             }
                         }
                     } else if (line.startsWith("tdx=")) {
-                        String[] parts = line.split(",");
+                        String[] parts = StringUtils.split(line, ",");
                         if (parts.length == 2) {
                             image.tileWidth = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
                             image.tileHeight = Integer.parseInt(parts[1].replaceAll("[^0-9]", ""));
@@ -208,7 +208,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.redirectErrorStream(true);
-        logger.info("Invoking {}", String.join(" ", pb.command()));
+        logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
         Process process = pb.start();
 
         try (InputStream processInputStream = process.getInputStream()) {
@@ -247,7 +247,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
             final ProcessBuilder pb = getProcessBuilder(
                     opList, imageInfo.getSize(), reductionFactor, normalize);
-            logger.info("Invoking {}", String.join(" ", pb.command()));
+            logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
             try (final InputStream processInputStream =

@@ -4,12 +4,16 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.ParameterList;
+import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Reference;
 import org.restlet.data.Form;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Dimension;
 import java.io.IOException;
+import java.net.URL;
+import java.util.Map;
 
 /**
  * Encapsulates the parameters of an IIIF request.
@@ -37,13 +41,13 @@ class Parameters implements ParameterList, Comparable<Parameters> {
     public static Parameters fromUri(String paramsStr)
             throws IllegalArgumentException {
         Parameters params = new Parameters();
-        String[] parts = paramsStr.split("/");
+        String[] parts = StringUtils.split(paramsStr, "/");
         if (parts.length == 5) {
             params.setIdentifier(new Identifier(Reference.decode(parts[0])));
             params.setRegion(Region.fromUri(parts[1]));
             params.setSize(Size.fromUri(parts[2]));
             params.setRotation(Rotation.fromUri(parts[3]));
-            String[] subparts = parts[4].split(".");
+            String[] subparts = StringUtils.split(parts[4], ".");
             if (subparts.length == 2) {
                 params.setQuality(Quality.valueOf(subparts[0].toUpperCase()));
                 params.setOutputFormat(Format.valueOf(subparts[1].toUpperCase()));
