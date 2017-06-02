@@ -199,8 +199,7 @@ public class InformationResourceTest extends ResourceTest {
     @Test
     public void testEndpointDisabled() throws Exception {
         Configuration config = Configuration.getInstance();
-        ClientResource client = getClientForUriPath(
-                "/" + IMAGE + "/full/full/0/default.jpg");
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
 
         config.setProperty(Key.IIIF_2_ENDPOINT_ENABLED, true);
         client.get();
