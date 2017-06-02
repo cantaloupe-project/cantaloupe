@@ -209,8 +209,7 @@ public class InformationResourceTest extends ResourceTest {
     @Test
     public void testEndpointDisabled() throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
-        ClientResource client = getClientForUriPath(
-                "/" + IMAGE + "/full/full/0/default.jpg");
+        ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
 
         config.setProperty("endpoint.iiif.2.enabled", true);
         client.get();
