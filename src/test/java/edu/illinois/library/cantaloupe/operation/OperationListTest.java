@@ -25,6 +25,16 @@ import java.util.Map;
 
 public class OperationListTest extends BaseTest {
 
+    class DummyOverlay extends Overlay {
+        DummyOverlay() {
+            super(Position.TOP_LEFT, 0);
+        }
+        @Override
+        public Map<String, Object> toMap(Dimension fullSize) {
+            return new HashMap<>();
+        }
+    }
+
     private OperationList instance;
 
     private static OperationList newOperationList() {
@@ -83,6 +93,19 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
+    public void testAddAfterWithExistingSuperclass() {
+        instance = new OperationList();
+        instance.add(new DummyOverlay());
+
+        class SubDummyOverlay extends DummyOverlay {}
+
+        instance.addAfter(new SubDummyOverlay(), Overlay.class);
+        Iterator it = instance.iterator();
+        assertTrue(it.next() instanceof DummyOverlay);
+        assertTrue(it.next() instanceof SubDummyOverlay);
+    }
+
+    @Test
     public void testAddAfterWithoutExistingClass() {
         instance = new OperationList();
         instance.add(new Rotate());
@@ -112,6 +135,16 @@ public class OperationListTest extends BaseTest {
         instance.add(new Rotate());
         instance.addBefore(new Scale(), Rotate.class);
         assertTrue(instance.iterator().next() instanceof Scale);
+    }
+
+    @Test
+    public void testAddBeforeWithExistingSuperclass() {
+        class SubDummyOverlay extends DummyOverlay {}
+
+        instance = new OperationList();
+        instance.add(new DummyOverlay());
+        instance.addBefore(new SubDummyOverlay(), DummyOverlay.class);
+        assertTrue(instance.iterator().next() instanceof SubDummyOverlay);
     }
 
     @Test
@@ -330,6 +363,24 @@ public class OperationListTest extends BaseTest {
     public void testGetFirst() {
         assertNull(instance.getFirst(MetadataCopy.class));
         assertNotNull(instance.getFirst(Scale.class));
+    }
+
+    @Test
+    public void testGetFirstWithSubclass() {
+        class DummyOverlay extends Overlay {
+            DummyOverlay() {
+                super(Position.TOP_LEFT, 0);
+            }
+            @Override
+            public Map<String, Object> toMap(Dimension fullSize) {
+                return new HashMap<>();
+            }
+        }
+        instance.add(new DummyOverlay());
+
+        Overlay overlay = (Overlay) instance.getFirst(Overlay.class);
+        assertNotNull(overlay);
+        assertTrue(overlay instanceof DummyOverlay);
     }
 
     /* getOptions() */

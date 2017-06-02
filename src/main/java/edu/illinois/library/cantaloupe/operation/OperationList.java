@@ -302,7 +302,7 @@ public final class OperationList implements Comparable<OperationList>,
         int index = 0;
         boolean found = false;
         for (int i = 0, count = operations.size(); i < count; i++) {
-            if (clazz.equals(operations.get(i).getClass())) {
+            if (clazz.isAssignableFrom(operations.get(i).getClass())) {
                 found = true;
                 break;
             }
@@ -326,7 +326,7 @@ public final class OperationList implements Comparable<OperationList>,
      */
     public Operation getFirst(Class<? extends Operation> opClass) {
         for (Operation op : operations) {
-            if (op.getClass().equals(opClass)) {
+            if (opClass.isAssignableFrom(op.getClass())) {
                 return op;
             }
         }
@@ -433,7 +433,7 @@ public final class OperationList implements Comparable<OperationList>,
      */
     private int lastIndexOf(Class<? extends Operation> clazz) {
         for (int i = operations.size() - 1; i >= 0; i--) {
-            if (clazz.equals(operations.get(i).getClass())) {
+            if (clazz.isAssignableFrom(operations.get(i).getClass())) {
                 return i;
             }
         }
