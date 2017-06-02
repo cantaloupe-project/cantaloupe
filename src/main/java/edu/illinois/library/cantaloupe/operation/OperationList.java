@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.overlay.OverlayService;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.redaction.RedactionService;
-import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
@@ -74,15 +73,61 @@ public final class OperationList implements Comparable<OperationList>,
     }
 
     /**
-     * @param op Operation to add. Null values will be discarded.
+     * Adds an operation to the end of the list.
+     *
+     * @param op Operation to add.
      * @throws UnsupportedOperationException If the instance is frozen.
      */
     public void add(Operation op) {
         if (frozen) {
             throw new UnsupportedOperationException();
         }
-        if (op != null) {
-            operations.add(op);
+        operations.add(op);
+    }
+
+    /**
+     * Adds an operation immediately after the last instance of the given
+     * class in the list. If there are no such instances in the list, the
+     * operation will be added to the end of the list.
+     *
+     * @param op Operation to add.
+     * @param afterClass The operation will be added after the last
+     *                   instance of this class in the list.
+     * @throws UnsupportedOperationException If the instance is frozen.
+     */
+    public void addAfter(Operation op,
+                         Class<? extends Operation> afterClass) {
+        if (frozen) {
+            throw new UnsupportedOperationException();
+        }
+        final int index = lastIndexOf(afterClass);
+        if (index >= 0) {
+            operations.add(index + 1, op);
+        } else {
+            add(op);
+        }
+    }
+
+    /**
+     * Adds an operation immediately before the first instance of the given
+     * class in the list. If there are no such instances in the list, the
+     * operation will be added to the end of the list.
+     *
+     * @param op Operation to add.
+     * @param beforeClass The operation will be added before the first
+     *                    instance of this class in the list.
+     * @throws UnsupportedOperationException If the instance is frozen.
+     */
+    public void addBefore(Operation op,
+                          Class<? extends Operation> beforeClass) {
+        if (frozen) {
+            throw new UnsupportedOperationException();
+        }
+        int index = firstIndexOf(beforeClass);
+        if (index >= 0) {
+            operations.add(index, op);
+        } else {
+            add(op);
         }
     }
 
@@ -249,6 +294,24 @@ public final class OperationList implements Comparable<OperationList>,
     }
 
     /**
+     * @param clazz Operation class.
+     * @return Index of the first instance of the given class in the list, or
+     *         -1 if no instance of the given class is present in the list.
+     */
+    private int firstIndexOf(Class<? extends Operation> clazz) {
+        int index = 0;
+        boolean found = false;
+        for (int i = 0, count = operations.size(); i < count; i++) {
+            if (clazz.equals(operations.get(i).getClass())) {
+                found = true;
+                break;
+            }
+            index++;
+        }
+        return (found) ? index : -1;
+    }
+
+    /**
      * "Freezes" the instance so that operations cannot be added or removed.
      */
     public void freeze() {
@@ -361,6 +424,20 @@ public final class OperationList implements Comparable<OperationList>,
             return Collections.unmodifiableList(operations).iterator();
         }
         return operations.iterator();
+    }
+
+    /**
+     * @param clazz Operation class.
+     * @return Index of the last instance of the given class in the list, or -1
+     *         if no instance of the given class is present in the list.
+     */
+    private int lastIndexOf(Class<? extends Operation> clazz) {
+        for (int i = operations.size() - 1; i >= 0; i--) {
+            if (clazz.equals(operations.get(i).getClass())) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**

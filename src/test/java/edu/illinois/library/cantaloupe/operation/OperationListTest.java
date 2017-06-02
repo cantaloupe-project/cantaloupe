@@ -70,6 +70,72 @@ public class OperationListTest extends BaseTest {
         }
     }
 
+    /* addAfter(Class, Operation) */
+
+    @Test
+    public void testAddAfterWithExistingClass() {
+        instance = new OperationList();
+        instance.add(new Rotate());
+        instance.addAfter(new Scale(), Rotate.class);
+        Iterator it = instance.iterator();
+        assertTrue(it.next() instanceof Rotate);
+        assertTrue(it.next() instanceof Scale);
+    }
+
+    @Test
+    public void testAddAfterWithoutExistingClass() {
+        instance = new OperationList();
+        instance.add(new Rotate());
+        instance.addAfter(new Scale(), Crop.class);
+        Iterator it = instance.iterator();
+        assertTrue(it.next() instanceof Rotate);
+        assertTrue(it.next() instanceof Scale);
+    }
+
+    @Test
+    public void testAddAfterWhileFrozen() {
+        instance = new OperationList();
+        instance.freeze();
+        try {
+            instance.addAfter(new Rotate(), Crop.class);
+            fail("Expected exception");
+        } catch (UnsupportedOperationException e) {
+            // pass
+        }
+    }
+
+    /* addBefore(Class, Operation) */
+
+    @Test
+    public void testAddBeforeWithExistingClass() {
+        instance = new OperationList();
+        instance.add(new Rotate());
+        instance.addBefore(new Scale(), Rotate.class);
+        assertTrue(instance.iterator().next() instanceof Scale);
+    }
+
+    @Test
+    public void testAddBeforeWithoutExistingClass() {
+        instance = new OperationList();
+        instance.add(new Rotate());
+        instance.addBefore(new Scale(), Crop.class);
+        Iterator it = instance.iterator();
+        assertTrue(it.next() instanceof Rotate);
+        assertTrue(it.next() instanceof Scale);
+    }
+
+    @Test
+    public void testAddBeforeWhileFrozen() {
+        instance = new OperationList();
+        instance.freeze();
+        try {
+            instance.addBefore(new Rotate(), Crop.class);
+            fail("Expected exception");
+        } catch (UnsupportedOperationException e) {
+            // pass
+        }
+    }
+
     /* applyNonEndpointMutations() */
 
     @Test
