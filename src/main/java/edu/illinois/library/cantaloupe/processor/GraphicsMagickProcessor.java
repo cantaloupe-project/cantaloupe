@@ -180,7 +180,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
         // Normalization needs to happen before cropping to maintain the
         // intensity of cropped regions relative to the full image.
         final boolean normalize = (boolean) ops.getOptions().
-                getOrDefault(Key.PROCESSOR_NORMALIZE, false);
+                getOrDefault(Key.PROCESSOR_NORMALIZE.key(), false);
         if (normalize) {
             args.add("-normalize");
         }

@@ -94,6 +94,8 @@ public class OperationListTest extends BaseTest {
 
         //////////////////////////// Setup ////////////////////////////////
 
+        // normalization
+        config.setProperty(Key.PROCESSOR_NORMALIZE, true);
         // redactions
         RedactionServiceTest.setUpConfiguration();
         // overlay
@@ -136,6 +138,8 @@ public class OperationListTest extends BaseTest {
         assertEquals(50, encode.getQuality());
         assertTrue(encode.isInterlacing());
         assertEquals(Color.fromString("#FFFFFF"), encode.getBackgroundColor());
+
+        assertTrue((boolean) opList.getOptions().get(Key.PROCESSOR_NORMALIZE.key()));
     }
 
     @Test
@@ -145,6 +149,8 @@ public class OperationListTest extends BaseTest {
 
         //////////////////////////// Setup ////////////////////////////////
 
+        // normalization
+        config.setProperty(Key.PROCESSOR_NORMALIZE, true);
         // redactions
         RedactionServiceTest.setUpConfiguration();
         // overlay
@@ -181,6 +187,8 @@ public class OperationListTest extends BaseTest {
 
         Encode encode = (Encode) opList.getFirst(Encode.class);
         assertEquals(Compression.LZW, encode.getCompression());
+
+        assertTrue((boolean) opList.getOptions().get(Key.PROCESSOR_NORMALIZE.key()));
     }
 
     /* clear() */

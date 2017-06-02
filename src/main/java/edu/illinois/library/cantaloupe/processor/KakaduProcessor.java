@@ -287,7 +287,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
             // If we are normalizing, we need to read the entire image region.
             final boolean normalize = (boolean) opList.getOptions().
-                    getOrDefault(Key.PROCESSOR_NORMALIZE, false);
+                    getOrDefault(Key.PROCESSOR_NORMALIZE.key(), false);
 
             final ProcessBuilder pb = getProcessBuilder(
                     opList, imageInfo.getSize(), reductionFactor, normalize);

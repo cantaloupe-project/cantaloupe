@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.overlay.OverlayService;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.redaction.RedactionService;
+import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
@@ -113,6 +114,11 @@ public final class OperationList implements Comparable<OperationList>,
         }
 
         final Configuration config = Configuration.getInstance();
+
+        // Normalization
+        final boolean normalize =
+                config.getBoolean(Key.PROCESSOR_NORMALIZE, false);
+        getOptions().put(Key.PROCESSOR_NORMALIZE.key(), normalize);
 
         // Redactions
         try {
