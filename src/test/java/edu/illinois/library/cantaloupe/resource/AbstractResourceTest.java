@@ -39,6 +39,8 @@ public class AbstractResourceTest extends BaseTest {
 
         //////////////////////////// Setup ////////////////////////////////
 
+        // normalization
+        config.setProperty(Processor.NORMALIZE_CONFIG_KEY, true);
         // redactions
         RedactionServiceTest.setUpConfiguration();
         // overlay
@@ -72,6 +74,7 @@ public class AbstractResourceTest extends BaseTest {
         assertTrue(it.next() instanceof Sharpen);
         assertTrue(it.next() instanceof MetadataCopy);
 
+        assertTrue((boolean) opList.getOptions().get(Processor.NORMALIZE_CONFIG_KEY));
         assertEquals(Color.fromString("#FFFFFF"),
                 ((Rotate) opList.getFirst(Rotate.class)).getFillColor());
         assertEquals(50, opList.getOutputQuality());
@@ -84,6 +87,8 @@ public class AbstractResourceTest extends BaseTest {
 
         //////////////////////////// Setup ////////////////////////////////
 
+        // normalization
+        config.setProperty(Processor.NORMALIZE_CONFIG_KEY, true);
         // redactions
         RedactionServiceTest.setUpConfiguration();
         // overlay
@@ -115,6 +120,7 @@ public class AbstractResourceTest extends BaseTest {
         assertTrue(it.next() instanceof MetadataCopy);
 
         assertEquals(Compression.LZW, opList.getOutputCompression());
+        assertTrue((boolean) opList.getOptions().get(Processor.NORMALIZE_CONFIG_KEY));
     }
 
     @Test

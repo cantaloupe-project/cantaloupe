@@ -246,6 +246,16 @@ public abstract class AbstractResource extends ServerResource {
                                          final Dimension fullSize) {
         final Configuration config = Configuration.getInstance();
 
+        // Normalization
+        final boolean normalize =
+                config.getBoolean(Processor.NORMALIZE_CONFIG_KEY, false);
+        // This condition is only here in 3.3.x in order to avoid affecting
+        // cache identifier hashes from 3.3. It can be removed in a future
+        // minor version.
+        if (normalize) {
+            opList.getOptions().put(Processor.NORMALIZE_CONFIG_KEY, normalize);
+        }
+
         // Redactions
         try {
             final RedactionService service = new RedactionService();
