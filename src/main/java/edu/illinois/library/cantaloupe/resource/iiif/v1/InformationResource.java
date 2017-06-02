@@ -69,7 +69,8 @@ public class InformationResource extends IIIF1Resource {
         identifier = decodeSlashes(identifier);
 
         // Get the resolver
-        Resolver resolver = ResolverFactory.getResolver(identifier);
+        Resolver resolver = new ResolverFactory().getResolver(identifier);
+        // Determine the format of the source image
         Format format = Format.UNKNOWN;
         try {
             // Determine the format of the source image

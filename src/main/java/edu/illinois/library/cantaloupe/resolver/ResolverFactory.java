@@ -21,7 +21,7 @@ import java.util.Set;
  * Used to obtain an instance of a {@link Resolver} defined in the
  * configuration, or returned by a delegate method.
  */
-public abstract class ResolverFactory {
+public class ResolverFactory {
 
     /**
      * How resolvers are chosen by {@link #getResolver(Identifier)}.
@@ -33,7 +33,7 @@ public abstract class ResolverFactory {
     private static Logger logger = LoggerFactory.
             getLogger(ResolverFactory.class);
 
-    public static final String RESOLVER_CHOOSER_DELEGATE_METHOD =
+    private static final String RESOLVER_CHOOSER_DELEGATE_METHOD =
             "get_resolver";
 
     /**
@@ -60,7 +60,7 @@ public abstract class ResolverFactory {
      * @throws FileNotFoundException If the specified chooser script is not
      * found.
      */
-    public static Resolver getResolver(Identifier identifier) throws Exception {
+    public Resolver getResolver(Identifier identifier) throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
         if (getSelectionStrategy().equals(SelectionStrategy.DELEGATE_SCRIPT)) {
             Resolver resolver = newDynamicResolver(identifier);
@@ -82,7 +82,7 @@ public abstract class ResolverFactory {
     /**
      * @return How resolvers are chosen by {@link #getResolver(Identifier)}.
      */
-    public static SelectionStrategy getSelectionStrategy() {
+    public SelectionStrategy getSelectionStrategy() {
         final Configuration config = ConfigurationFactory.getInstance();
         return config.getBoolean(Key.RESOLVER_DELEGATE, false) ?
                 SelectionStrategy.DELEGATE_SCRIPT : SelectionStrategy.STATIC;
@@ -97,13 +97,12 @@ public abstract class ResolverFactory {
      * @throws ConfigurationException If there is no resolver specified in the
      * configuration.
      */
-    private static Resolver newStaticResolver(String resolverName,
-                                              Identifier identifier)
-            throws Exception {
+    private Resolver newStaticResolver(String resolverName,
+                                       Identifier identifier) throws Exception {
         return newResolver(resolverName, identifier);
     }
 
-    private static Resolver newResolver(String name, Identifier identifier)
+    private Resolver newResolver(String name, Identifier identifier)
             throws Exception {
         Class class_ = Class.forName(ResolverFactory.class.getPackage().getName() +
                 "." + name);
@@ -122,7 +121,7 @@ public abstract class ResolverFactory {
      * @throws ScriptException If the script failed to execute
      * @throws ScriptException If the script is of an unsupported type
      */
-    private static Resolver newDynamicResolver(final Identifier identifier)
+    private Resolver newDynamicResolver(final Identifier identifier)
             throws Exception {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final Object result = engine.invoke(RESOLVER_CHOOSER_DELEGATE_METHOD,

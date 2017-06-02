@@ -82,7 +82,8 @@ public class ImageResource extends IIIF2Resource {
             }
         }
 
-        Resolver resolver = ResolverFactory.getResolver(ops.getIdentifier());
+        Resolver resolver =
+                new ResolverFactory().getResolver(ops.getIdentifier());
         // Determine the format of the source image
         Format format = Format.UNKNOWN;
         try {

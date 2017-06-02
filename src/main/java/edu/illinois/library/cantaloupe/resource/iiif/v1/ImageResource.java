@@ -60,7 +60,7 @@ public class ImageResource extends IIIF1Resource {
                 new Identifier(Reference.decode((String) attrs.get("identifier")));
         identifier = decodeSlashes(identifier);
 
-        final Resolver resolver = ResolverFactory.getResolver(identifier);
+        final Resolver resolver = new ResolverFactory().getResolver(identifier);
 
         // Determine the format of the source image
         Format format = Format.UNKNOWN;
