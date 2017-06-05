@@ -208,10 +208,6 @@ class AmazonS3Cache implements DerivativeCache {
         return client;
     }
 
-    AmazonS3Cache() {
-        uploader.start();
-    }
-
     String getBucketName() {
         return Configuration.getInstance().
                 getString(Key.AMAZONS3CACHE_BUCKET_NAME);
@@ -238,6 +234,11 @@ class AmazonS3Cache implements DerivativeCache {
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void initialize() {
+        uploader.start();
     }
 
     @Override
