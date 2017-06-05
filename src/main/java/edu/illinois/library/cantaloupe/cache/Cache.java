@@ -28,6 +28,7 @@ public interface Cache {
      * <p>The default implementation does nothing.</p>
      *
      * @throws CacheException
+     * @see #shutdown()
      */
     default void cleanUp() throws CacheException {}
 
@@ -73,6 +74,8 @@ public interface Cache {
      * worker threads, etc.</p>
      *
      * <p>The default implementation does nothing.</p>
+     *
+     * @see #cleanUp()
      */
     default void shutdown() {}
 
