@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
 
 public class AmazonS3CacheTest extends BaseTest {
 
-    private final int S3_UPLOAD_WAIT = 3000;
+    private final int UPLOAD_WAIT = 3000;
 
     private Identifier identifier = new Identifier("jpg-rgb-64x56x8-baseline.jpg");
     private Info imageInfo = new Info(64, 56, Format.JPG);
@@ -103,6 +103,7 @@ public class AmazonS3CacheTest extends BaseTest {
     @Test
     public void testGetImageInfo() throws Exception {
         instance.put(identifier, imageInfo);
+        Thread.sleep(UPLOAD_WAIT);
         Info actualInfo = instance.getImageInfo(identifier);
         assertEquals(imageInfo.toString(), actualInfo.toString());
     }
@@ -125,7 +126,7 @@ public class AmazonS3CacheTest extends BaseTest {
         }
 
         // wait for it to upload
-        Thread.sleep(S3_UPLOAD_WAIT);
+        Thread.sleep(UPLOAD_WAIT);
 
         // download the image
         InputStream s3InputStream = instance.newDerivativeImageInputStream(opList);
@@ -157,7 +158,7 @@ public class AmazonS3CacheTest extends BaseTest {
             Files.copy(imageFile.toPath(), outputStream);
         }
 
-        Thread.sleep(S3_UPLOAD_WAIT);
+        Thread.sleep(UPLOAD_WAIT);
 
         assertObjectCount(1);
     }
@@ -213,6 +214,8 @@ public class AmazonS3CacheTest extends BaseTest {
         // add an Info
         instance.put(identifier, imageInfo);
 
+        Thread.sleep(UPLOAD_WAIT);
+
         assertObjectCount(2);
 
         // purge it
@@ -242,10 +245,10 @@ public class AmazonS3CacheTest extends BaseTest {
             Files.copy(fixture2.toPath(), outputStream);
         }
 
-        Thread.sleep(S3_UPLOAD_WAIT);
-
         // add an Info
         instance.put(identifier, imageInfo);
+
+        Thread.sleep(UPLOAD_WAIT);
 
         assertObjectCount(3);
 
@@ -288,7 +291,7 @@ public class AmazonS3CacheTest extends BaseTest {
         Info otherInfo = new Info(64, 56, Format.GIF);
         instance.put(otherId, otherInfo);
 
-        Thread.sleep(S3_UPLOAD_WAIT);
+        Thread.sleep(UPLOAD_WAIT);
 
         assertObjectCount(4);
 
@@ -317,6 +320,8 @@ public class AmazonS3CacheTest extends BaseTest {
         Info otherInfo = new Info(64, 56, Format.GIF);
         instance.put(otherId, otherInfo);
 
+        Thread.sleep(UPLOAD_WAIT);
+
         assertObjectCount(3);
 
         // purge
@@ -328,8 +333,11 @@ public class AmazonS3CacheTest extends BaseTest {
     /* put(Info) */
 
     @Test
-    public void testPutWithImageInfo() throws Exception {
+    public void testPut() throws Exception {
         instance.put(identifier, imageInfo);
+
+        Thread.sleep(UPLOAD_WAIT); // TODO: should put() return a Future?
+
         Info actualInfo = instance.getImageInfo(identifier);
         assertEquals(imageInfo.toString(), actualInfo.toString());
     }
