@@ -212,17 +212,6 @@ class AmazonS3Cache implements DerivativeCache {
         uploader.start();
     }
 
-    @Override
-    public void cleanUp() throws CacheException {
-        uploader.interrupt();
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        cleanUp();
-    }
-
     String getBucketName() {
         return Configuration.getInstance().
                 getString(Key.AMAZONS3CACHE_BUCKET_NAME);
@@ -406,6 +395,11 @@ class AmazonS3Cache implements DerivativeCache {
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void shutdown() {
+        uploader.interrupt();
     }
 
 }
