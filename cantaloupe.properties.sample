@@ -273,6 +273,14 @@ processor.upscale_filter = bicubic
 # Intensity of an unsharp mask from 0 to 1.
 processor.sharpen = 0
 
+# Attempts to copy source image metadata (EXIF, IPTC, XMP) into derivative
+# images. (This is not foolproof; see the user manual.)
+processor.metadata.preserve = false
+
+# Whether to auto-rotate images using the EXIF "Orientation" field.
+# The check for this field can impair performance slightly.
+processor.metadata.respect_orientation = false
+
 # Progressive JPEGs are generally more space-efficient.
 processor.jpg.progressive = true
 
@@ -578,18 +586,6 @@ overlays.BasicStrategy.output_height_threshold = 300
 # Whether to enable redactions. See the user manual for information about
 # how these work.
 redaction.enabled = false
-
-###########################################################################
-# METADATA
-###########################################################################
-
-# Whether to attempt to copy source image metadata (EXIF, IPTC, XMP) into
-# derivative images. (This is not foolproof; see the user manual.)
-metadata.preserve = false
-
-# Whether to respect the EXIF "Orientation" field to auto-rotate images.
-# The check for this field can impair performance slightly.
-metadata.respect_orientation = false
 
 ###########################################################################
 # LOGGING

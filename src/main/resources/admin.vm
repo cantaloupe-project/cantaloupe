@@ -2603,7 +2603,7 @@
                                         <div class="checkbox">
                                             <label>
                                                 <input type="checkbox"
-                                                       name="metadata.preserve"
+                                                       name="processor.metadata.preserve"
                                                        value="true"
                                                        data-requires-restart="false">
                                                 Preserve

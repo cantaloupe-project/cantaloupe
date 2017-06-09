@@ -38,7 +38,7 @@ public class ImageInfoFactoryTest extends BaseTest {
 
     private void setUpForRotatedImage() throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty("metadata.respect_orientation", true);
+        config.setProperty(Key.PROCESSOR_RESPECT_ORIENTATION, true);
 
         processor = new ProcessorFactory().getProcessor(Format.JPG);
         ((FileProcessor) processor).setSourceFile(
