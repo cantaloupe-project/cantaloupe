@@ -19,6 +19,7 @@ import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import org.restlet.data.Disposition;
 import org.restlet.data.Header;
+import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
@@ -27,6 +28,7 @@ import org.restlet.util.Series;
 import java.awt.Dimension;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -142,15 +144,18 @@ public class ImageResource extends IIIF2Resource {
                 getRequest().getHeaders().getValuesMap(),
                 getCookies().getValuesMap());
 
+        addLinkHeader(params);
+
         // If the cache is enabled, and is file-based, and the file exists, add
         // an X-Sendfile header. This has to be done *after*
         // OperationList.applyNonEndpointMutations() has been called.
         if (cache != null && cache instanceof DerivativeFileCache) {
             DerivativeFileCache fileCache = (DerivativeFileCache) cache;
             if (fileCache.derivativeImageExists(ops)) {
-                final String relativePathname =
-                        fileCache.getRelativePathname(ops);
-                addXSendfileHeader(relativePathname);
+                final Path path = fileCache.getPath(ops);
+                addXSendfileHeader(path);
+                // The proxy server will take it from here.
+                return new EmptyRepresentation();
             }
         }
 
@@ -164,8 +169,6 @@ public class ImageResource extends IIIF2Resource {
             getLogger().warning(msg + ": " + this.getReference());
             throw new UnsupportedOutputFormatException(msg);
         }
-
-        this.addLinkHeader(params);
 
         // Add client cache header(s) if configured to do so. We do this later
         // rather than sooner to prevent them from being sent along with an

@@ -539,21 +539,23 @@ class FilesystemCache implements SourceCache, DerivativeFileCache {
     }
 
     @Override
-    public String getRelativePathname(Identifier identifier) {
-        final String subfolderPath = StringUtils.stripEnd(
-                getHashedStringBasedSubdirectory(identifier.toString()),
-                File.separator);
-        return File.separator + INFO_FOLDER + subfolderPath + File.separator +
-                identifier.toFilename() + INFO_EXTENSION;
+    public Path getPath(Identifier identifier) {
+        try {
+            return infoFile(identifier).toPath();
+        } catch (CacheException e) {
+            logger.error("getPath(Identifier): ", e.getMessage());
+        }
+        return null;
     }
 
     @Override
-    public String getRelativePathname(OperationList opList) {
-        final String subfolderPath = StringUtils.stripEnd(
-                getHashedStringBasedSubdirectory(opList.getIdentifier().toString()),
-                File.separator);
-        return File.separator + DERIVATIVE_IMAGE_FOLDER + subfolderPath +
-                File.separator + opList.toFilename();
+    public Path getPath(OperationList opList) {
+        try {
+            return derivativeImageFile(opList).toPath();
+        } catch (CacheException e) {
+            logger.error("getPath(OperationList): ", e.getMessage());
+        }
+        return null;
     }
 
     @Override

@@ -552,8 +552,8 @@ public class ImageResourceTest extends ResourceTest {
         resource.get();
         header = resource.getResponse().getHeaders().getFirst("X-Sendfile");
 
-        // /image/08/34/25/083425bc68eece64753ec83a25f87230_540586ed73955b63fd3c8d510a32fcac.png
-        assertTrue(header.getValue().matches("^\\/image\\/[0-9a-f_/]*\\.png"));
+        assertTrue(header.getValue().startsWith(config.getString(Key.FILESYSTEMCACHE_PATHNAME)));
+        assertTrue(header.getValue().endsWith(".png"));
     }
 
     @Test

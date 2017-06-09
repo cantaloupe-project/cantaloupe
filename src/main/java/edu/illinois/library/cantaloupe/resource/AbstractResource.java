@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import javax.script.ScriptException;
 import java.awt.Dimension;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -189,16 +190,16 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * Adds an X-Sendfile (or equivalent) header to the response, if the
-     * <code>X-Sendfile-Type</code> request header is set.
+     * Adds an <code>X-Sendfile</code> (or equivalent) header to the response
+     * if the <code>X-Sendfile-Type</code> request header is set.
      *
-     * @param relativePathname Relative pathname of the file.
+     * @param path Path of the file relative to the proxy server.
      */
-    protected void addXSendfileHeader(String relativePathname) {
+    protected void addXSendfileHeader(Path path) {
         // Check the input.
-        if (relativePathname == null || relativePathname.length() < 1) {
-            logger.error("addXSendfileHeader(): relative pathname not " +
-                    "provided (this may be a bug)");
+        if (path == null) {
+            logger.error("addXSendfileHeader(): pathname not provided " +
+                    "(this may be a bug)");
             return;
         }
 
@@ -207,11 +208,13 @@ public abstract class AbstractResource extends ServerResource {
         final Header typeHeader =
                 getRequest().getHeaders().getFirst("X-Sendfile-Type");
         if (typeHeader != null) {
+            logger.debug("Setting {} header: {}",
+                    typeHeader.getValue(), path.toString());
             getResponse().getHeaders().add(typeHeader.getValue(),
-                    relativePathname);
+                    path.toString());
         } else {
             logger.debug("No X-Sendfile-Type request header. " +
-                    "X-Sendfile will be disabled.");
+                    "X-Sendfile header won't be sent.");
         }
     }
 

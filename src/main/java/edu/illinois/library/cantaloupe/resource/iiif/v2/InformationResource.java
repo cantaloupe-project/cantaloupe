@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import java.io.FileNotFoundException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -98,9 +99,10 @@ public class InformationResource extends IIIF2Resource {
         if (cache instanceof DerivativeFileCache) {
             DerivativeFileCache fileCache = (DerivativeFileCache) cache;
             if (fileCache.infoExists(identifier)) {
-                final String relativePathname =
-                        ((DerivativeFileCache) cache).getRelativePathname(identifier);
-                addXSendfileHeader(relativePathname);
+                final Path path = fileCache.getPath(identifier);
+                addXSendfileHeader(path);
+                // The proxy server will take it from here.
+                return new EmptyRepresentation();
             }
         }
 

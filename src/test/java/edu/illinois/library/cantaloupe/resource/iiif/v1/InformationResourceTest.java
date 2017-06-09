@@ -451,7 +451,7 @@ public class InformationResourceTest extends ResourceTest {
 
         DerivativeFileCache cache =
                 (DerivativeFileCache) CacheFactory.getDerivativeCache();
-        assertEquals(cache.getRelativePathname(new Identifier(IMAGE)),
+        assertEquals(cache.getPath(new Identifier(IMAGE)),
                 header.getValue());
     }
 

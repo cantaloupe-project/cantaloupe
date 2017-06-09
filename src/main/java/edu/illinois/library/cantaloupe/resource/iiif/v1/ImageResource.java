@@ -20,6 +20,7 @@ import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Disposition;
 import org.restlet.data.Reference;
+import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Variant;
@@ -28,6 +29,7 @@ import org.restlet.resource.Get;
 import java.awt.Dimension;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -161,9 +163,10 @@ public class ImageResource extends IIIF1Resource {
         if (cache != null && cache instanceof DerivativeFileCache) {
             DerivativeFileCache fileCache = (DerivativeFileCache) cache;
             if (fileCache.derivativeImageExists(ops)) {
-                final String relativePathname =
-                        fileCache.getRelativePathname(ops);
-                addXSendfileHeader(relativePathname);
+                final Path path = fileCache.getPath(ops);
+                addXSendfileHeader(path);
+                // The proxy server will take it from here.
+                return new EmptyRepresentation();
             }
         }
 

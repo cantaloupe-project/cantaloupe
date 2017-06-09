@@ -15,6 +15,7 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -357,24 +358,24 @@ public class FilesystemCacheTest extends BaseTest {
         assertNull(instance.getImageInfo(identifier));
     }
 
-    /* getRelativePathname(Identifier) */
+    /* getPath(Identifier) */
 
     @Test
-    public void testGetRelativePathnameWithIdentifier() {
+    public void testGetPathWithIdentifier() throws Exception {
         Identifier identifier = new Identifier("cats_~!@#$%^&*()");
 
-        final String expected = String.format("%sinfo%s%s%s.json",
-                File.separator,
+        final String expected = String.format("%s%s%s%s.json",
+                StringUtils.stripEnd(rootInfoPathname(), File.separator),
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator,
                 identifier.toFilename());
-        assertEquals(expected, instance.getRelativePathname(identifier));
+        assertEquals(expected, instance.getPath(identifier).toString());
     }
 
-    /* getRelativePathname(OperationList) */
+    /* getPath(OperationList) */
 
     @Test
-    public void testGetRelativePathnameWithOperationList() {
+    public void testGetPathWithOperationList() throws Exception {
         Identifier identifier = new Identifier("cats_~!@#$%^&*()");
         Crop crop = new Crop();
         crop.setWidth(50f);
@@ -394,12 +395,12 @@ public class FilesystemCacheTest extends BaseTest {
         ops.add(transform);
         ops.setOutputFormat(format);
 
-        final String expected = String.format("%simage%s%s%s",
-                File.separator,
+        final String expected = String.format("%s%s%s%s",
+                StringUtils.stripEnd(rootDerivativeImagePathname(), File.separator),
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator,
                 ops.toFilename());
-        assertEquals(expected, instance.getRelativePathname(ops));
+        assertEquals(expected, instance.getPath(ops).toString());
     }
 
     /* getSourceImageFile(Identifier) */
