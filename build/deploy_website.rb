@@ -36,13 +36,13 @@ Dir.mktmpdir('stash') do |stash_dir|
       result = system('git checkout --orphan gh-pages')
     end
 
+    puts 'Stashing untracked files'
+    `mv #{STASH_FILES} #{stash_dir}`
+
     # wipe it clean and copy the new website into the place of the old one
     puts 'Removing current website'
     `git rm -rf .`
     `rm -rf src target`
-
-    puts 'Stashing untracked files'
-    `mv #{STASH_FILES} #{stash_dir}`
 
     puts 'Copying new website into place'
     `cp -r #{File.join(tmp_dir, '*')} .`
