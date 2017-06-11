@@ -1,11 +1,13 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -38,13 +40,15 @@ public class JPEGImageWriterTest extends BaseTest {
         getWriter(metadata).write(image, os);
         ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
     }
-/* TODO: JPEGImageWriter is writing JPEGs that JPEGImageReader thinks are
-invalid, even though other readers have no problems. They probably are invalid
-and other readers are more lenient.
+
     @Test
+    @Ignore
+    // TODO: JPEGImageWriter is writing JPEGs that JPEGImageReader thinks are
+    // invalid, even though other readers have no problems. Maybe they are
+    // invalid and other readers are more lenient.
     public void testWriteWithBufferedImageAndExifMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("jpg-exif.jpg");
         final JPEGImageReader reader = new JPEGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -56,9 +60,13 @@ and other readers are more lenient.
     }
 
     @Test
+    @Ignore
+    // TODO: JPEGImageWriter is writing JPEGs that JPEGImageReader thinks are
+    // invalid, even though other readers have no problems. Maybe they are
+    // invalid and other readers are more lenient.
     public void testWriteWithBufferedImageAndIptcMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("jpg-iptc.jpg");
         final JPEGImageReader reader = new JPEGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -70,9 +78,13 @@ and other readers are more lenient.
     }
 
     @Test
+    @Ignore
+    // TODO: JPEGImageWriter is writing JPEGs that JPEGImageReader thinks are
+    // invalid, even though other readers have no problems. Maybe they are
+    // invalid and other readers are more lenient.
     public void testWriteWithBufferedImageAndXmpMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("jpg-xmp.jpg");
         final JPEGImageReader reader = new JPEGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -82,7 +94,7 @@ and other readers are more lenient.
         getWriter(metadata).write(image, os);
         checkForXmpMetadata(os.toByteArray());
     }
-*/
+
     @Test
     public void testWriteWithPlanarImage() throws Exception {
         final File fixture = TestUtil.getImage("jpg-xmp.jpg");
@@ -95,13 +107,15 @@ and other readers are more lenient.
         getWriter(metadata).write(image, os);
         ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
     }
-/* TODO: JPEGImageWriter is writing JPEGs that JPEGImageReader thinks are
-invalid, even though other readers have no problems. They probably are invalid
-and other readers are more lenient.
+
     @Test
+    @Ignore
+    // TODO: JPEGImageWriter is writing JPEGs that JPEGImageReader thinks are
+    // invalid, even though other readers have no problems. Maybe they are
+    // invalid and other readers are more lenient.
     public void testWriteWithPlanarImageAndExifMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("jpg-exif.jpg");
         final JPEGImageReader reader = new JPEGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -114,9 +128,13 @@ and other readers are more lenient.
     }
 
     @Test
+    @Ignore
+    // TODO: JPEGImageWriter is writing JPEGs that JPEGImageReader thinks are
+    // invalid, even though other readers have no problems. Maybe they are
+    // invalid and other readers are more lenient.
     public void testWriteWithPlanarImageAndIptcMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("jpg-iptc.jpg");
         final JPEGImageReader reader = new JPEGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -129,9 +147,13 @@ and other readers are more lenient.
     }
 
     @Test
+    @Ignore
+    // TODO: JPEGImageWriter is writing JPEGs that JPEGImageReader thinks are
+    // invalid, even though other readers have no problems. Maybe they are
+    // invalid and other readers are more lenient.
     public void testWriteWithPlanarImageAndXmpMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("jpg-xmp.jpg");
         final JPEGImageReader reader = new JPEGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -142,7 +164,7 @@ and other readers are more lenient.
         getWriter(metadata).write(image, os);
         checkForXmpMetadata(os.toByteArray());
     }
-*/
+
     private void checkForIccProfile(byte[] imageData) throws Exception {
         final Iterator<ImageReader> readers =
                 ImageIO.getImageReadersByFormatName("JPEG");
@@ -233,7 +255,7 @@ and other readers are more lenient.
     private JPEGImageWriter getWriter(Metadata metadata) throws IOException {
         OperationList opList = new OperationList();
         if (ConfigurationFactory.getInstance().
-                getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
+                getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
             opList.add(new MetadataCopy());
         }
         return new JPEGImageWriter(opList, metadata);

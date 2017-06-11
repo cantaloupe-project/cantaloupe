@@ -1,19 +1,17 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.io.IOUtils;
+import edu.illinois.library.cantaloupe.util.AWSClientFactory;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -21,9 +19,10 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import static org.junit.Assert.*;
 
@@ -39,10 +38,11 @@ public class AmazonS3ResolverTest extends BaseTest {
     @BeforeClass
     public static void uploadFixtures() throws IOException {
         final AmazonS3 s3 = client();
-        try (FileInputStream fis = new FileInputStream(TestUtil.getImage("jpg-rgb-64x56x8-line.jpg"));
-             ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            IOUtils.copy(fis, baos);
-            byte[] imageBytes = baos.toByteArray();
+        File fixture = TestUtil.getImage("jpg-rgb-64x56x8-line.jpg");
+
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            Files.copy(fixture.toPath(), os);
+            byte[] imageBytes = os.toByteArray();
 
             final ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType("image/jpeg");
@@ -63,19 +63,7 @@ public class AmazonS3ResolverTest extends BaseTest {
     }
 
     private static AmazonS3 client() {
-        class ConfigFileCredentials implements AWSCredentials {
-            @Override
-            public String getAWSAccessKeyId() {
-                return getAccessKeyId();
-            }
-
-            @Override
-            public String getAWSSecretKey() {
-                return getSecretKey();
-            }
-        }
-        AWSCredentials credentials = new ConfigFileCredentials();
-        return new AmazonS3Client(credentials);
+        return new AWSClientFactory(getAccessKeyId(), getSecretKey(), getRegion()).newClient();
     }
 
     private static String getAccessKeyId() {
@@ -90,6 +78,12 @@ public class AmazonS3ResolverTest extends BaseTest {
         return testConfig.getString(ConfigurationConstants.S3_BUCKET.getKey());
     }
 
+    private static String getRegion() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.S3_REGION.getKey());
+    }
+
     private static String getSecretKey() {
         org.apache.commons.configuration.Configuration testConfig =
                 TestUtil.getTestConfig();
@@ -101,10 +95,10 @@ public class AmazonS3ResolverTest extends BaseTest {
         super.setUp();
 
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(AmazonS3Resolver.BUCKET_NAME_CONFIG_KEY, getBucket());
-        config.setProperty(AmazonS3Resolver.ACCESS_KEY_ID_CONFIG_KEY, getAccessKeyId());
-        config.setProperty(AmazonS3Resolver.SECRET_KEY_CONFIG_KEY, getSecretKey());
-        config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
+        config.setProperty(Key.AMAZONS3RESOLVER_BUCKET_NAME, getBucket());
+        config.setProperty(Key.AMAZONS3RESOLVER_ACCESS_KEY_ID, getAccessKeyId());
+        config.setProperty(Key.AMAZONS3RESOLVER_SECRET_KEY, getSecretKey());
+        config.setProperty(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
 
         instance = new AmazonS3Resolver();
@@ -134,11 +128,10 @@ public class AmazonS3ResolverTest extends BaseTest {
     @Test
     public void testNewStreamSourceWithScriptLookupStrategy() throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
+        config.setProperty(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY,
                 "ScriptLookupStrategy");
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
-                "true");
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         // present image
         try {
@@ -181,11 +174,10 @@ public class AmazonS3ResolverTest extends BaseTest {
     @Test
     public void testGetSourceFormatWithScriptLookupStrategy() throws IOException {
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
+        config.setProperty(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY,
                 "ScriptLookupStrategy");
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
-                "true");
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         // present image
         assertEquals(Format.JPG, instance.getSourceFormat());

@@ -203,6 +203,24 @@
                                                data-requires-restart="true">
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td>HTTP/2
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Whether to enable HTTP/2.">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="http.http2.enabled"
+                                                       data-requires-restart="true">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
                             </table>
                         </section>
 
@@ -282,6 +300,24 @@
                                                data-requires-restart="true">
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td>HTTP/2
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Whether to enable HTTP/2.">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="https.http2.enabled"
+                                                       data-requires-restart="true">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
                             </table>
                         </section>
 
@@ -323,6 +359,20 @@
                         <section>
                             <h2>Other Settings</h2>
                             <table class="table table-striped">
+                                <tr>
+                                    <td>Accept Queue Limit
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Maximum size of the HTTP(S) request queue.
+                                           Set to 0 to use the OS default.">?</a>
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="number"
+                                               name="http.accept_queue_limit" min="0"
+                                               data-requires-restart="true">
+                                    </td>
+                                </tr>
                                 <tr>
                                     <td>Base URI
                                         <a tabindex="0" class="btn btn-sm cl-help"
@@ -2625,19 +2675,6 @@
                                                 Enabled
                                             </label>
                                         </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Max Size
-                                        <a tabindex="0" class="btn btn-sm cl-help"
-                                           role="button" data-toggle="popover"
-                                           data-trigger="focus"
-                                           data-content="Maximum size of the invocation cache.">?</a>
-                                    </td>
-                                    <td>
-                                        <input class="form-control" type="number"
-                                               name="delegate_script.cache.max_size"
-                                               data-requires-restart="true">
                                     </td>
                                 </tr>
                             </table>

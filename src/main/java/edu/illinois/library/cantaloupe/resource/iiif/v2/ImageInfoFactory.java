@@ -1,12 +1,12 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
-import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.iiif.Feature;
 import edu.illinois.library.cantaloupe.resource.iiif.ImageInfoUtil;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
@@ -29,9 +29,6 @@ abstract class ImageInfoFactory {
 
     private static Logger logger = LoggerFactory.
             getLogger(ImageInfoFactory.class);
-
-    static final String MIN_TILE_SIZE_CONFIG_KEY =
-            "endpoint.iiif.min_tile_size";
 
     /** Minimum size that will be used in info.json "sizes" keys. */
     private static final int MIN_SIZE = 64;
@@ -63,6 +60,8 @@ abstract class ImageInfoFactory {
             final Processor processor,
             final Info cacheInfo)
             throws ProcessorException {
+        final Configuration config = Configuration.getInstance();
+
         // We want to use the orientation-aware full size, which takes the
         // embedded orientation into account.
         final Dimension virtualSize = cacheInfo.getOrientationSize();
@@ -98,11 +97,10 @@ abstract class ImageInfoFactory {
         // to what can be delivered efficiently.
         final Set<Dimension> uniqueTileSizes = new HashSet<>();
 
-        final int minTileSize = ConfigurationFactory.getInstance().
-                getInt(MIN_TILE_SIZE_CONFIG_KEY, 1024);
+        final int minTileSize = config.getInt(Key.IIIF_MIN_TILE_SIZE, 1024);
 
         // Find a tile width and height. If the image is not tiled,
-        // calculate a tile size close to MIN_TILE_SIZE_CONFIG_KEY pixels.
+        // calculate a tile size close to IIIF_MIN_TILE_SIZE pixels.
         // Otherwise, use the smallest multiple of the tile size above that
         // of image resolution 0.
         final List<ImageInfo.Tile> tiles = new ArrayList<>();
@@ -156,8 +154,7 @@ abstract class ImageInfoFactory {
         profile.add(profileMap);
 
         // maxArea (maxWidth and maxHeight are currently not supported)
-        final int maxPixels = ConfigurationFactory.getInstance().
-                getInt(AbstractResource.MAX_PIXELS_CONFIG_KEY, 0);
+        final int maxPixels = config.getInt(Key.MAX_PIXELS, 0);
         if (maxPixels > 0) {
             profileMap.put("maxArea", maxPixels);
         }

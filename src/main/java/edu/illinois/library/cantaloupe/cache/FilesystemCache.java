@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -50,7 +51,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * <p>The tree structure looks like:</p>
  *
  * <ul>
- *     <li>{@link #PATHNAME_CONFIG_KEY}/
+ *     <li>{@link Key#FILESYSTEMCACHE_PATHNAME}/
  *         <ul>
  *             <li>source/
  *                 <ul>
@@ -88,8 +89,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *
  * <ol>
  *     <li>Subdirectories are based on identifier MD5 hash, configurable by
- *     {@link #DIRECTORY_DEPTH_CONFIG_KEY} and
- *     {@link #DIRECTORY_NAME_LENGTH_CONFIG_KEY}</li>
+ *     {@link Key#FILESYSTEMCACHE_DIRECTORY_DEPTH} and
+ *     {@link Key#FILESYSTEMCACHE_DIRECTORY_NAME_LENGTH}</li>
  *     <li>The hash algorithm is specified by {@link #HASH_ALGORITHM}.</li>
  *     <li>Identifiers in filenames are hashed in order to allow for identifiers
  *     longer than the filesystem's filename length limit.</li>
@@ -97,7 +98,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *     when closed for writing.</li>
  * </ol>
  */
-class FilesystemCache implements SourceCache, DerivativeCache {
+class FilesystemCache implements SourceCache, DerivativeFileCache {
 
     /**
      * Used by {@link Files#walkFileTree} to delete all temporary (*.tmp) and
@@ -269,12 +270,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     private static final Logger logger = LoggerFactory.
             getLogger(FilesystemCache.class);
 
-    static final String DIRECTORY_DEPTH_CONFIG_KEY =
-            "FilesystemCache.dir.depth";
-    static final String DIRECTORY_NAME_LENGTH_CONFIG_KEY =
-            "FilesystemCache.dir.name_length";
-    static final String PATHNAME_CONFIG_KEY = "FilesystemCache.pathname";
-
     // Algorithm used for hashing identifiers to create filenames & pathnames.
     // Will be passed to MessageDigest.getInstance(). MD5 is chosen for its
     // practical combination of efficiency and collision resistance.
@@ -339,9 +334,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             final String sum = Hex.encodeHexString(digest.digest());
 
             final Configuration config = ConfigurationFactory.getInstance();
-            final int depth = config.getInt(DIRECTORY_DEPTH_CONFIG_KEY, 3);
+            final int depth = config.getInt(Key.FILESYSTEMCACHE_DIRECTORY_DEPTH, 3);
             final int nameLength =
-                    config.getInt(DIRECTORY_NAME_LENGTH_CONFIG_KEY, 2);
+                    config.getInt(Key.FILESYSTEMCACHE_DIRECTORY_NAME_LENGTH, 2);
 
             for (int i = 0; i < depth; i++) {
                 final int offset = i * nameLength;
@@ -367,33 +362,35 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     /**
      * @param file File to check.
      * @return Whether the given file is expired based on
-     *         {@link #TTL_CONFIG_KEY} and its last-accessed time. If
-     *         {@link #TTL_CONFIG_KEY} is 0, <code>false</code> will be
+     *         {@link Key#CACHE_SERVER_TTL} and its last-accessed time. If
+     *         {@link Key#CACHE_SERVER_TTL} is 0, <code>false</code> will be
      *         returned.
      */
     private static boolean isExpired(File file) {
         final long ttlMsec = 1000 * ConfigurationFactory.getInstance().
-                getLong(TTL_CONFIG_KEY, 0);
+                getLong(Key.CACHE_SERVER_TTL, 0);
         final long age = System.currentTimeMillis() - getLastAccessTime(file);
         return ttlMsec > 0 && file.isFile() && age > ttlMsec;
     }
 
     /**
      * @return Pathname of the root cache folder.
-     * @throws CacheException if {@link #PATHNAME_CONFIG_KEY} is undefined.
+     * @throws CacheException if {@link Key#FILESYSTEMCACHE_PATHNAME} is
+     *         undefined.
      */
     private static String rootPathname() throws CacheException {
-        final String pathname = ConfigurationFactory.getInstance().
-                getString(PATHNAME_CONFIG_KEY);
+        final String pathname = Configuration.getInstance().
+                getString(Key.FILESYSTEMCACHE_PATHNAME);
         if (pathname == null) {
-            throw new CacheException(PATHNAME_CONFIG_KEY + " is undefined.");
+            throw new CacheException(Key.FILESYSTEMCACHE_PATHNAME +
+                    " is undefined.");
         }
         return pathname;
     }
 
     /**
      * @return Pathname of the derivative image cache folder, or null if
-     * {@link #PATHNAME_CONFIG_KEY} is not set.
+     *         {@link Key#FILESYSTEMCACHE_PATHNAME} is not set.
      * @throws CacheException
      */
     static String rootDerivativeImagePathname() throws CacheException {
@@ -402,7 +399,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
     /**
      * @return Pathname of the image info cache folder, or null if
-     * {@link #PATHNAME_CONFIG_KEY} is not set.
+     *         {@link Key#FILESYSTEMCACHE_PATHNAME} is not set.
      * @throws CacheException
      */
     static String rootInfoPathname() throws CacheException {
@@ -411,7 +408,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
     /**
      * @return Pathname of the source image cache folder, or null if
-     * {@link #PATHNAME_CONFIG_KEY} is not set.
+     *         {@link Key#FILESYSTEMCACHE_PATHNAME}
+     *         is not set.
      * @throws CacheException
      */
     static String rootSourceImagePathname() throws CacheException {
@@ -448,6 +446,13 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public boolean derivativeImageExists(OperationList opList)
+            throws CacheException {
+        final File cacheFile = derivativeImageFile(opList);
+        return (cacheFile != null && cacheFile.exists() && !isExpired(cacheFile));
     }
 
     /**
@@ -494,7 +499,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     /**
      * @param ops Operation list identifying the file.
      * @return Temp file corresponding to the given operation list. Clients
-     * should delete it when they are done with it.
+     *         should delete it when they are done with it.
      */
     File derivativeImageTempFile(OperationList ops) throws CacheException {
         return new File(derivativeImageFile(ops).getAbsolutePath() + "_" +
@@ -534,6 +539,24 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     @Override
+    public String getRelativePathname(Identifier identifier) {
+        final String subfolderPath = StringUtils.stripEnd(
+                getHashedStringBasedSubdirectory(identifier.toString()),
+                File.separator);
+        return File.separator + INFO_FOLDER + subfolderPath + File.separator +
+                identifier.toFilename() + INFO_EXTENSION;
+    }
+
+    @Override
+    public String getRelativePathname(OperationList opList) {
+        final String subfolderPath = StringUtils.stripEnd(
+                getHashedStringBasedSubdirectory(opList.getIdentifier().toString()),
+                File.separator);
+        return File.separator + DERIVATIVE_IMAGE_FOLDER + subfolderPath +
+                File.separator + opList.toFilename();
+    }
+
+    @Override
     public File getSourceImageFile(Identifier identifier) throws CacheException {
         synchronized (sourceImageWriteLock) {
             while (sourceImagesBeingWritten.contains(identifier)) {
@@ -561,6 +584,11 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             }
         }
         return file;
+    }
+
+    @Override
+    public boolean infoExists(Identifier identifier) throws CacheException {
+        return infoFile(identifier).exists();
     }
 
     /**

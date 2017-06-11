@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Color;
@@ -8,6 +9,7 @@ import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.Encode;
+import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Orientation;
@@ -48,12 +50,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *     <li>{@link FileProcessor} is not implemented because testing indicates
  *     that reading from streams is significantly faster.</li>
  *     <li>This processor does not respect the
- *     {@link Processor#PRESERVE_METADATA_CONFIG_KEY} setting because telling
- *     IM not to preserve metadata means telling it not to preserve an ICC
- *     profile. Therefore, metadata always passes through.</li>
+ *     {@link Key#PROCESSOR_PRESERVE_METADATA} setting because telling IM not
+ *     to preserve metadata means telling it not to preserve an ICC profile.
+ *     Therefore, metadata always passes through.</li>
  *     <li>This processor does not respect the
- *     {@link Processor#RESPECT_ORIENTATION_CONFIG_KEY} setting. The
- *     orientation is always respected.</li>
+ *     {@link Key#PROCESSOR_RESPECT_ORIENTATION} setting. The orientation is
+ *     always respected.</li>
  * </ul>
  */
 class ImageMagickProcessor extends AbstractMagickProcessor
@@ -61,9 +63,6 @@ class ImageMagickProcessor extends AbstractMagickProcessor
 
     private static Logger logger = LoggerFactory.
             getLogger(ImageMagickProcessor.class);
-
-    static final String PATH_TO_BINARIES_CONFIG_KEY =
-            "ImageMagickProcessor.path_to_binaries";
 
     // ImageMagick 7 uses a `magick` command. Earlier versions use `convert`
     // and `identify`.
@@ -100,12 +99,11 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             try {
                 logger.info("getFormats(): invoking {}", commandString);
                 final Process process = pb.start();
-
-                try (final InputStream processInputStream = process.getInputStream()) {
-                    BufferedReader stdInput = new BufferedReader(
-                            new InputStreamReader(processInputStream));
+                final InputStream pis = process.getInputStream();
+                final InputStreamReader reader = new InputStreamReader(pis);
+                try (final BufferedReader buffReader = new BufferedReader(reader)) {
                     String s;
-                    while ((s = stdInput.readLine()) != null) {
+                    while ((s = buffReader.readLine()) != null) {
                         s = s.trim();
                         if (s.startsWith("BMP")) {
                             formats.add(Format.BMP);
@@ -138,12 +136,14 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                                 outputFormats.add(Format.PNG);
                             }
                         } else if (s.startsWith("PDF") && s.contains(" rw")) {
-                            outputFormats.add(Format.PDF);
+                            formats.add(Format.PDF);
                         } else if (s.startsWith("TIFF")) {
                             formats.add(Format.TIF);
                             if (s.contains(" rw")) {
                                 outputFormats.add(Format.TIF);
                             }
+                        } else if (s.startsWith("SGI") && s.contains("  r")) {
+                            formats.add(Format.SGI);
                         } else if (s.startsWith("WEBP")) {
                             formats.add(Format.WEBP);
                             if (s.contains(" rw")) {
@@ -173,7 +173,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
      */
     private static String getPath(final String binaryName) {
         String path = Configuration.getInstance().
-                getString(PATH_TO_BINARIES_CONFIG_KEY);
+                getString(Key.IMAGEMAGICKPROCESSOR_PATH_TO_BINARIES);
         if (path != null && path.length() > 0) {
             path = StringUtils.stripEnd(path, File.separator) + File.separator +
                     binaryName;
@@ -240,14 +240,6 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         }
         args.add(format.getPreferredExtension() + ":-"); // read from stdin
 
-        // Normalization needs to happen before cropping to maintain the
-        // intensity of cropped regions relative to the full image.
-        final boolean normalize = (boolean) ops.getOptions().
-                getOrDefault(NORMALIZE_CONFIG_KEY, false);
-        if (normalize) {
-            args.add("-normalize");
-        }
-
         Encode encode = (Encode) ops.getFirst(Encode.class);
 
         // If the output format supports transparency, make the background
@@ -268,7 +260,9 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         final Dimension fullSize = imageInfo.getSize();
 
         for (Operation op : ops) {
-            if (op instanceof Crop) {
+            if (op instanceof Normalize) {
+                args.add("-normalize");
+            } else if (op instanceof Crop) {
                 Crop crop = (Crop) op;
                 crop.applyOrientation(imageInfo.getOrientation(), fullSize);
                 if (crop.hasEffect(fullSize, ops)) {

@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.cache;
 
 import com.amazonaws.services.s3.iterable.S3Objects;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
@@ -18,15 +19,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 
 import static org.junit.Assert.*;
 
 public class AmazonS3CacheTest extends BaseTest {
 
-    private final int S3_UPLOAD_WAIT = 3000;
+    private final int UPLOAD_WAIT = 3000;
 
     private Identifier identifier = new Identifier("jpg-rgb-64x56x8-baseline.jpg");
     private Info imageInfo = new Info(64, 56, Format.JPG);
@@ -62,12 +63,12 @@ public class AmazonS3CacheTest extends BaseTest {
         super.setUp();
 
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Cache.TTL_CONFIG_KEY, 2);
-        config.setProperty(AmazonS3Cache.OBJECT_KEY_PREFIX_CONFIG_KEY, "test/");
-        config.setProperty(AmazonS3Cache.ACCESS_KEY_ID_CONFIG_KEY, getAccessKeyId());
-        config.setProperty(AmazonS3Cache.BUCKET_NAME_CONFIG_KEY, getBucket());
-        config.setProperty(AmazonS3Cache.SECRET_KEY_CONFIG_KEY, getSecretKey());
-        config.setProperty(AmazonS3Cache.BUCKET_REGION_CONFIG_KEY, getRegion());
+        config.setProperty(Key.CACHE_SERVER_TTL, 2);
+        config.setProperty(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX, "test/");
+        config.setProperty(Key.AMAZONS3CACHE_ACCESS_KEY_ID, getAccessKeyId());
+        config.setProperty(Key.AMAZONS3CACHE_BUCKET_NAME, getBucket());
+        config.setProperty(Key.AMAZONS3CACHE_SECRET_KEY, getSecretKey());
+        config.setProperty(Key.AMAZONS3CACHE_BUCKET_REGION, getRegion());
 
         instance = new AmazonS3Cache();
     }
@@ -93,7 +94,7 @@ public class AmazonS3CacheTest extends BaseTest {
     @Test
     public void testGetBucketName() {
         assertEquals(
-                ConfigurationFactory.getInstance().getString(AmazonS3Cache.BUCKET_NAME_CONFIG_KEY),
+                ConfigurationFactory.getInstance().getString(Key.AMAZONS3CACHE_BUCKET_NAME),
                 instance.getBucketName());
     }
 
@@ -102,6 +103,7 @@ public class AmazonS3CacheTest extends BaseTest {
     @Test
     public void testGetImageInfo() throws Exception {
         instance.put(identifier, imageInfo);
+        Thread.sleep(UPLOAD_WAIT);
         Info actualInfo = instance.getImageInfo(identifier);
         assertEquals(imageInfo.toString(), actualInfo.toString());
     }
@@ -118,14 +120,13 @@ public class AmazonS3CacheTest extends BaseTest {
         File fixture = TestUtil.getImage(identifier.toString());
 
         // add an image
-        InputStream fileInputStream = new FileInputStream(fixture);
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(fileInputStream, outputStream);
-        fileInputStream.close();
-        outputStream.close();
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(fixture.toPath(), outputStream);
+        }
 
         // wait for it to upload
-        Thread.sleep(S3_UPLOAD_WAIT);
+        Thread.sleep(UPLOAD_WAIT);
 
         // download the image
         InputStream s3InputStream = instance.newDerivativeImageInputStream(opList);
@@ -151,14 +152,13 @@ public class AmazonS3CacheTest extends BaseTest {
         assertObjectCount(0);
 
         // add an image
-        InputStream inputStream = new FileInputStream(
-                TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+        File imageFile = TestUtil.getImage(identifier.toString());
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(imageFile.toPath(), outputStream);
+        }
 
-        Thread.sleep(S3_UPLOAD_WAIT);
+        Thread.sleep(UPLOAD_WAIT);
 
         assertObjectCount(1);
     }
@@ -187,16 +187,16 @@ public class AmazonS3CacheTest extends BaseTest {
     public void testGetObjectKeyPrefix() {
         Configuration config = ConfigurationFactory.getInstance();
 
-        config.setProperty(AmazonS3Cache.OBJECT_KEY_PREFIX_CONFIG_KEY, "");
+        config.setProperty(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX, "");
         assertEquals("", instance.getObjectKeyPrefix());
 
-        config.setProperty(AmazonS3Cache.OBJECT_KEY_PREFIX_CONFIG_KEY, "/");
+        config.setProperty(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX, "/");
         assertEquals("", instance.getObjectKeyPrefix());
 
-        config.setProperty(AmazonS3Cache.OBJECT_KEY_PREFIX_CONFIG_KEY, "cats");
+        config.setProperty(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX, "cats");
         assertEquals("cats/", instance.getObjectKeyPrefix());
 
-        config.setProperty(AmazonS3Cache.OBJECT_KEY_PREFIX_CONFIG_KEY, "cats/");
+        config.setProperty(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX, "cats/");
         assertEquals("cats/", instance.getObjectKeyPrefix());
     }
 
@@ -205,15 +205,16 @@ public class AmazonS3CacheTest extends BaseTest {
     @Test
     public void testPurge() throws Exception {
         // add an image
-        InputStream inputStream = new FileInputStream(
-                TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+        File imageFile = TestUtil.getImage(identifier.toString());
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(imageFile.toPath(), outputStream);
+        }
 
         // add an Info
         instance.put(identifier, imageInfo);
+
+        Thread.sleep(UPLOAD_WAIT);
 
         assertObjectCount(2);
 
@@ -228,27 +229,26 @@ public class AmazonS3CacheTest extends BaseTest {
     @Test
     public void testPurgeWithOperationList() throws Exception {
         // add an image
-        InputStream inputStream = new FileInputStream(
-                TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+        File fixture1 = TestUtil.getImage(identifier.toString());
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(fixture1.toPath(), outputStream);
+        }
 
         // add another image
-        File fixture = TestUtil.getImage("gif-rgb-64x56x8.gif");
+        File fixture2 = TestUtil.getImage("gif-rgb-64x56x8.gif");
         OperationList otherOpList = new OperationList(
-                new Identifier(fixture.getName()), Format.GIF);
-        inputStream = new FileInputStream(fixture);
-        outputStream = instance.newDerivativeImageOutputStream(otherOpList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+                new Identifier(fixture2.getName()), Format.GIF);
 
-        Thread.sleep(S3_UPLOAD_WAIT);
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(otherOpList)) {
+            Files.copy(fixture2.toPath(), outputStream);
+        }
 
         // add an Info
         instance.put(identifier, imageInfo);
+
+        Thread.sleep(UPLOAD_WAIT);
 
         assertObjectCount(3);
 
@@ -262,15 +262,14 @@ public class AmazonS3CacheTest extends BaseTest {
 
     @Test
     public void testPurgeExpired() throws Exception {
-        ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 4);
+        ConfigurationFactory.getInstance().setProperty(Key.CACHE_SERVER_TTL, 4);
 
         // add an image
-        InputStream inputStream = new FileInputStream(
-                TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+        File fixture1 = TestUtil.getImage(identifier.toString());
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(fixture1.toPath(), outputStream);
+        }
 
         // add an Info
         instance.put(identifier, imageInfo);
@@ -278,21 +277,21 @@ public class AmazonS3CacheTest extends BaseTest {
         Thread.sleep(2000);
 
         // add another image
-        File fixture = TestUtil.getImage("gif-rgb-64x56x8.gif");
+        File fixture2 = TestUtil.getImage("gif-rgb-64x56x8.gif");
         OperationList otherOpList = new OperationList(
-                new Identifier(fixture.getName()), Format.GIF);
-        inputStream = new FileInputStream(fixture);
-        outputStream = instance.newDerivativeImageOutputStream(otherOpList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+                new Identifier(fixture2.getName()), Format.GIF);
+
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(otherOpList)) {
+            Files.copy(fixture2.toPath(), outputStream);
+        }
 
         // add another Info
         Identifier otherId = new Identifier("cats");
         Info otherInfo = new Info(64, 56, Format.GIF);
         instance.put(otherId, otherInfo);
 
-        Thread.sleep(S3_UPLOAD_WAIT);
+        Thread.sleep(UPLOAD_WAIT);
 
         assertObjectCount(4);
 
@@ -307,12 +306,11 @@ public class AmazonS3CacheTest extends BaseTest {
     @Test
     public void testPurgeWithIdentifier() throws Exception {
         // add an image
-        InputStream inputStream = new FileInputStream(
-                TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+        File imageFile = TestUtil.getImage(identifier.toString());
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(imageFile.toPath(), outputStream);
+        }
 
         // add an Info
         instance.put(identifier, imageInfo);
@@ -321,6 +319,8 @@ public class AmazonS3CacheTest extends BaseTest {
         Identifier otherId = new Identifier("cats");
         Info otherInfo = new Info(64, 56, Format.GIF);
         instance.put(otherId, otherInfo);
+
+        Thread.sleep(UPLOAD_WAIT);
 
         assertObjectCount(3);
 
@@ -333,8 +333,11 @@ public class AmazonS3CacheTest extends BaseTest {
     /* put(Info) */
 
     @Test
-    public void testPutWithImageInfo() throws Exception {
+    public void testPut() throws Exception {
         instance.put(identifier, imageInfo);
+
+        Thread.sleep(UPLOAD_WAIT); // TODO: should put() return a Future?
+
         Info actualInfo = instance.getImageInfo(identifier);
         assertEquals(imageInfo.toString(), actualInfo.toString());
     }

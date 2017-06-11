@@ -3,16 +3,15 @@ package edu.illinois.library.cantaloupe;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
-import edu.illinois.library.cantaloupe.resource.api.APIResource;
-import org.apache.velocity.app.Velocity;
-import org.apache.velocity.runtime.RuntimeConstants;
-import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
+import edu.illinois.library.cantaloupe.resource.api.CacheResource;
+import edu.illinois.library.cantaloupe.resource.api.ConfigurationResource;
+import edu.illinois.library.cantaloupe.resource.api.DMICResource;
 import org.restlet.Application;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -44,7 +43,7 @@ import java.util.logging.Level;
  * Restlet Application implementation. Creates endpoint routes and connects
  * them to Resources.
  */
-public class WebApplication extends Application {
+public class RestletApplication extends Application {
 
     private class CustomStatusService extends StatusService {
 
@@ -59,7 +58,7 @@ public class WebApplication extends Application {
                 }
                 message = throwable.getMessage();
                 Configuration config = ConfigurationFactory.getInstance();
-                if (config.getBoolean("print_stack_trace_on_error_pages", false)) {
+                if (config.getBoolean(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES, false)) {
                     StringWriter sw = new StringWriter();
                     throwable.printStackTrace(new PrintWriter(sw));
                     stackTrace = sw.toString();
@@ -107,35 +106,16 @@ public class WebApplication extends Application {
 
     }
 
-    public static final String ADMIN_SECRET_CONFIG_KEY = "admin.password";
-    public static final String API_SECRET_CONFIG_KEY = "endpoint.api.secret";
-    public static final String API_USERNAME_CONFIG_KEY = "endpoint.api.username";
-    public static final String BASIC_AUTH_ENABLED_CONFIG_KEY =
-            "auth.basic.enabled";
-    public static final String BASIC_AUTH_SECRET_CONFIG_KEY =
-            "auth.basic.secret";
-    public static final String BASIC_AUTH_USERNAME_CONFIG_KEY =
-            "auth.basic.username";
-
     public static final String ADMIN_PATH = "/admin";
     public static final String CACHE_PATH = "/cache";
     public static final String CONFIGURATION_PATH = "/configuration";
+    public static final String DELEGATE_METHOD_INVOCATION_CACHE_PATH = "/dmic";
     public static final String IIIF_PATH = "/iiif";
     public static final String IIIF_1_PATH = "/iiif/1";
     public static final String IIIF_2_PATH = "/iiif/2";
     public static final String STATIC_ROOT_PATH = "/static";
 
-    static {
-        Velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
-        Velocity.setProperty("classpath.resource.loader.class",
-                ClasspathResourceLoader.class.getName());
-        Velocity.setProperty("class.resource.loader.cache", true);
-        Velocity.setProperty("runtime.log.logsystem.class",
-                Slf4jLogChute.class.getCanonicalName());
-        Velocity.init();
-    }
-
-    public WebApplication() {
+    public RestletApplication() {
         super();
         this.setStatusService(new CustomStatusService());
         // http://restlet.com/blog/2015/12/15/understanding-and-using-cors/
@@ -148,11 +128,10 @@ public class WebApplication extends Application {
     private ChallengeAuthenticator createAdminAuthenticator()
             throws ConfigurationException {
         final Configuration config = ConfigurationFactory.getInstance();
-        final String secret = config.getString(ADMIN_SECRET_CONFIG_KEY);
+        final String secret = config.getString(Key.ADMIN_SECRET);
         if (secret == null || secret.length() < 1) {
-            throw new ConfigurationException(
-                    ADMIN_SECRET_CONFIG_KEY + " is not set. The control " +
-                            "panel will be unavailable.");
+            throw new ConfigurationException(Key.ADMIN_SECRET +
+                    " is not set. The control panel will be unavailable.");
         }
 
         final MapVerifier verifier = new MapVerifier();
@@ -167,14 +146,14 @@ public class WebApplication extends Application {
     private ChallengeAuthenticator createApiAuthenticator()
             throws ConfigurationException {
         final Configuration config = ConfigurationFactory.getInstance();
-        final String secret = config.getString(API_SECRET_CONFIG_KEY);
+        final String secret = config.getString(Key.API_SECRET);
         if (secret == null || secret.length() < 1) {
-            throw new ConfigurationException(API_SECRET_CONFIG_KEY +
+            throw new ConfigurationException(Key.API_SECRET +
                     " is not set. The API will be unavailable.");
         }
 
         final MapVerifier verifier = new MapVerifier();
-        verifier.getLocalSecrets().put(config.getString(API_USERNAME_CONFIG_KEY),
+        verifier.getLocalSecrets().put(config.getString(Key.API_USERNAME),
                 secret.toCharArray());
         final ChallengeAuthenticator auth = new ChallengeAuthenticator(
                 getContext(), ChallengeScheme.HTTP_BASIC,
@@ -185,8 +164,8 @@ public class WebApplication extends Application {
 
     private ChallengeAuthenticator createEndpointAuthenticator() {
         final Configuration config = ConfigurationFactory.getInstance();
-        final String username = config.getString(BASIC_AUTH_USERNAME_CONFIG_KEY);
-        final String secret = config.getString(BASIC_AUTH_SECRET_CONFIG_KEY);
+        final String username = config.getString(Key.BASIC_AUTH_USERNAME);
+        final String secret = config.getString(Key.BASIC_AUTH_SECRET);
 
         if (username != null && username.length() > 0 && secret != null &&
                 secret.length() > 0) {
@@ -198,7 +177,7 @@ public class WebApplication extends Application {
                     getContext(), ChallengeScheme.HTTP_BASIC, "Image Realm") {
                 @Override
                 protected int beforeHandle(Request request, Response response) {
-                    if (config.getBoolean(BASIC_AUTH_ENABLED_CONFIG_KEY, false)) {
+                    if (config.getBoolean(Key.BASIC_AUTH_ENABLED, false)) {
                         if (!request.getResourceRef().getPath().startsWith(ADMIN_PATH) &&
                                 !request.getResourceRef().getPath().startsWith(STATIC_ROOT_PATH)) {
                             return super.beforeHandle(request, response);
@@ -212,8 +191,8 @@ public class WebApplication extends Application {
             return auth;
         }
         getLogger().log(Level.INFO, "Endpoint authentication is disabled. (" +
-                BASIC_AUTH_USERNAME_CONFIG_KEY + " or " +
-                BASIC_AUTH_SECRET_CONFIG_KEY + " are null)");
+                Key.BASIC_AUTH_USERNAME + " or " + Key.BASIC_AUTH_SECRET +
+                " are null)");
         return null;
     }
 
@@ -284,13 +263,20 @@ public class WebApplication extends Application {
             getLogger().log(Level.WARNING, e.getMessage());
         }
 
-        /****************** API route ********************/
+        /****************** API routes ********************/
 
         try {
             ChallengeAuthenticator apiAuth = createApiAuthenticator();
-            apiAuth.setNext(APIResource.class);
+            apiAuth.setNext(ConfigurationResource.class);
             router.attach(CONFIGURATION_PATH, apiAuth);
+
+            apiAuth = createApiAuthenticator();
+            apiAuth.setNext(CacheResource.class);
             router.attach(CACHE_PATH + "/{identifier}", apiAuth);
+
+            apiAuth = createApiAuthenticator();
+            apiAuth.setNext(DMICResource.class);
+            router.attach(DELEGATE_METHOD_INVOCATION_CACHE_PATH, apiAuth);
         } catch (ConfigurationException e) {
             getLogger().log(Level.INFO, e.getMessage());
         }

@@ -174,15 +174,15 @@ class TIFFImageWriter extends AbstractImageWriter {
         while (it.hasNext()) {
             final ImageWriter writer = it.next();
             if (writer instanceof it.geosolutions.imageioimpl.plugins.tiff.TIFFImageWriter) {
-                try {
-                    final ImageWriteParam writeParam = getWriteParam(writer);
-                    final IIOMetadata metadata = getMetadata(writer, writeParam, image);
-                    final IIOImage iioImage = new IIOImage(image, null, metadata);
-                    final ImageOutputStream ios =
-                            ImageIO.createImageOutputStream(outputStream);
-                    writer.setOutput(ios);
+                final ImageWriteParam writeParam = getWriteParam(writer);
+                final IIOMetadata metadata = getMetadata(writer, writeParam, image);
+                final IIOImage iioImage = new IIOImage(image, null, metadata);
+
+                try (ImageOutputStream os =
+                             ImageIO.createImageOutputStream(outputStream)) {
+                    writer.setOutput(os);
                     writer.write(metadata, iioImage, writeParam);
-                    ios.flush(); // http://stackoverflow.com/a/14489406
+                    os.flush(); // http://stackoverflow.com/a/14489406
                 } finally {
                     writer.dispose();
                 }
@@ -205,15 +205,15 @@ class TIFFImageWriter extends AbstractImageWriter {
         while (it.hasNext()) {
             final ImageWriter writer = it.next();
             if (writer instanceof it.geosolutions.imageioimpl.plugins.tiff.TIFFImageWriter) {
-                try {
-                    final ImageWriteParam writeParam = getWriteParam(writer);
-                    final IIOMetadata metadata = getMetadata(writer, writeParam, image);
-                    final IIOImage iioImage = new IIOImage(image, null, metadata);
-                    final ImageOutputStream ios =
-                            ImageIO.createImageOutputStream(outputStream);
-                    writer.setOutput(ios);
+                final ImageWriteParam writeParam = getWriteParam(writer);
+                final IIOMetadata metadata = getMetadata(writer, writeParam, image);
+                final IIOImage iioImage = new IIOImage(image, null, metadata);
+
+                try (ImageOutputStream os =
+                             ImageIO.createImageOutputStream(outputStream)) {
+                    writer.setOutput(os);
                     writer.write(null, iioImage, writeParam);
-                    ios.flush(); // http://stackoverflow.com/a/14489406
+                    os.flush(); // http://stackoverflow.com/a/14489406
                 } finally {
                     writer.dispose();
                 }

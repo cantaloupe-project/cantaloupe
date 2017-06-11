@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.script;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import org.apache.commons.io.FileUtils;
 
 import javax.script.ScriptException;
@@ -13,13 +13,6 @@ import java.io.IOException;
  * Provides access to a shared {@link ScriptEngine} instance.
  */
 public abstract class ScriptEngineFactory {
-
-    public static final String DELEGATE_SCRIPT_ENABLED_CONFIG_KEY =
-            "delegate_script.enabled";
-    public static final String DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY =
-            "delegate_script.pathname";
-
-    private static final Object lock = new Object();
 
     private static ScriptEngine scriptEngine;
 
@@ -41,17 +34,16 @@ public abstract class ScriptEngineFactory {
      * @throws IOException
      * @throws ScriptException
      */
-    public static ScriptEngine getScriptEngine() throws IOException,
-            DelegateScriptDisabledException, ScriptException {
+    public static synchronized ScriptEngine getScriptEngine()
+            throws IOException, DelegateScriptDisabledException,
+            ScriptException {
         if (scriptEngine == null) {
-            synchronized (lock) {
-                final Configuration config = ConfigurationFactory.getInstance();
-                if (config.getBoolean(DELEGATE_SCRIPT_ENABLED_CONFIG_KEY, false)) {
-                    scriptEngine = new RubyScriptEngine();
-                    scriptEngine.load(FileUtils.readFileToString(getScriptFile()));
-                } else {
-                    throw new DelegateScriptDisabledException();
-                }
+            final Configuration config = Configuration.getInstance();
+            if (config.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false)) {
+                scriptEngine = new RubyScriptEngine();
+                scriptEngine.load(FileUtils.readFileToString(getScriptFile()));
+            } else {
+                throw new DelegateScriptDisabledException();
             }
         }
         return scriptEngine;
@@ -61,14 +53,14 @@ public abstract class ScriptEngineFactory {
      * @return File representing the delegate script, whether or not the
      *         delegate script system is enabled.
      * @throws FileNotFoundException If the script specified in
-     *         {@link #DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY} does not exist, or
-     *         if no script is specified.
+     *         {@link Key#DELEGATE_SCRIPT_PATHNAME} does not exist, or if no
+     *         script is specified.
      */
     static File getScriptFile() throws FileNotFoundException {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         // The script name may be an absolute path or a filename.
         final String scriptValue =
-                config.getString(DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY, "");
+                config.getString(Key.DELEGATE_SCRIPT_PATHNAME, "");
         if (scriptValue != null && scriptValue.length() > 0) {
             File script = findScript(scriptValue);
             if (!script.exists()) {
@@ -89,8 +81,7 @@ public abstract class ScriptEngineFactory {
         if (!script.isAbsolute()) {
             // Search for it in the same folder as the application config
             // (if available), or the current working directory if not.
-            final File configFile =
-                    ConfigurationFactory.getInstance().getFile();
+            final File configFile = Configuration.getInstance().getFile();
             if (configFile != null) {
                 script = new File(configFile.getParent() + "/" +
                         script.getName());

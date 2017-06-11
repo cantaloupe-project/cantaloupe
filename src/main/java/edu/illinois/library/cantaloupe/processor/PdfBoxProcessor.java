@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -36,8 +37,6 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     private static Logger logger = LoggerFactory.
             getLogger(PdfBoxProcessor.class);
 
-    static final String DPI_CONFIG_KEY = "PdfBoxProcessor.dpi";
-
     private PDDocument doc;
     private InputStream docInputStream;
     private Dimension imageSize;
@@ -62,7 +61,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
 
     private float getDPI(int reductionFactor) {
         float dpi = ConfigurationFactory.getInstance().
-                getFloat(DPI_CONFIG_KEY, 150);
+                getFloat(Key.PDFBOXPROCESSOR_DPI, 150);
         // Decrease the DPI if the reduction factor is positive.
         for (int i = 0; i < reductionFactor; i++) {
             dpi /= 2f;
@@ -132,7 +131,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
             page = Math.max(page, 1);
 
             final BufferedImage image = readImage(page - 1, reductionFactor.factor);
-            postProcess(image, null, opList, imageInfo, reductionFactor, false,
+            postProcess(image, null, opList, imageInfo, reductionFactor,
                     outputStream);
         } catch (IOException | IndexOutOfBoundsException e) {
             throw new ProcessorException(e.getMessage(), e);

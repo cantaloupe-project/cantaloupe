@@ -12,16 +12,14 @@ title: Upgrading
 <ul>
   <li>Add the following keys from the sample configuration:
     <ul>
+      <li><code>http.http2.enabled</code></li>
+      <li><code>https.http2.enabled</code></li>
+      <li><code>http.accept_queue_limit</code></li>
+      <li><code>processor.sgi</code></li>
       <li><code>cache.server.source.enabled</code></li>
       <li><code>cache.server.derivative.enabled</code></li>
-      <li><code>HeapCache.target_size</code></li>
-      <li><code>HeapCache.persist</code></li>
-      <li><code>HeapCache.persist.filesystem.pathname</code></li>
-      <li><code>RedisCache.host</code></li>
-      <li><code>RedisCache.port</code></li>
-      <li><code>RedisCache.ssl</code></li>
-      <li><code>RedisCache.password</code></li>
-      <li><code>RedisCache.database</code></li>
+      <li><code>HeapCache.*</code></li>
+      <li><code>RedisCache.*</code></li>
       <li><code>log.error.*</code></li>
     </ul>
   </li>

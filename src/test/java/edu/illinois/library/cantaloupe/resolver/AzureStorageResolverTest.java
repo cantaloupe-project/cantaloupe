@@ -6,27 +6,28 @@ import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.io.IOUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
 
 import static org.junit.Assert.*;
 
 /**
- * Tests AzureStorageResolver against Azure Storage. Requires an AWS account).
+ * Tests AzureStorageResolver against Azure Storage. (Requires an Azure Storage
+ * account.)
  */
 public class AzureStorageResolverTest extends BaseTest {
 
@@ -37,15 +38,14 @@ public class AzureStorageResolverTest extends BaseTest {
     @BeforeClass
     public static void uploadFixtures() throws Exception {
         final CloudBlobClient client = client();
-        try (FileInputStream fis = new FileInputStream(TestUtil.getImage("jpg-rgb-64x56x8-line.jpg"))) {
-            final CloudBlobContainer container =
-                    client.getContainerReference(getContainer());
-            final CloudBlockBlob blob = container.getBlockBlobReference(OBJECT_KEY);
-            blob.getProperties().setContentType("image/jpeg");
+        final CloudBlobContainer container =
+                client.getContainerReference(getContainer());
+        final CloudBlockBlob blob = container.getBlockBlobReference(OBJECT_KEY);
+        blob.getProperties().setContentType("image/jpeg");
 
-            try (OutputStream os = blob.openOutputStream()) {
-                IOUtils.copy(fis, os);
-            }
+        final File fixture = TestUtil.getImage("jpg-rgb-64x56x8-line.jpg");
+        try (OutputStream os = blob.openOutputStream()) {
+            Files.copy(fixture.toPath(), os);
         }
     }
 
@@ -96,13 +96,13 @@ public class AzureStorageResolverTest extends BaseTest {
         super.setUp();
 
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(AzureStorageResolver.CONTAINER_NAME_CONFIG_KEY,
+        config.setProperty(Key.AZURESTORAGERESOLVER_CONTAINER_NAME,
                 getContainer());
-        config.setProperty(AzureStorageResolver.ACCOUNT_NAME_CONFIG_KEY,
+        config.setProperty(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME,
                 getAccountName());
-        config.setProperty(AzureStorageResolver.ACCOUNT_KEY_CONFIG_KEY,
+        config.setProperty(Key.AZURESTORAGERESOLVER_ACCOUNT_KEY,
                 getAccountKey());
-        config.setProperty(AzureStorageResolver.LOOKUP_STRATEGY_CONFIG_KEY,
+        config.setProperty(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
 
         instance = new AzureStorageResolver();
@@ -132,11 +132,10 @@ public class AzureStorageResolverTest extends BaseTest {
     @Test
     public void testNewStreamSourceWithScriptLookupStrategy() throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
+        config.setProperty(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY,
                 "ScriptLookupStrategy");
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
-                "true");
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         // present image
         try {
@@ -179,11 +178,10 @@ public class AzureStorageResolverTest extends BaseTest {
     @Test
     public void testGetSourceFormatWithScriptLookupStrategy() throws IOException {
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(AmazonS3Resolver.LOOKUP_STRATEGY_CONFIG_KEY,
+        config.setProperty(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY,
                 "ScriptLookupStrategy");
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
-                "true");
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         // present image
         assertEquals(Format.JPG, instance.getSourceFormat());

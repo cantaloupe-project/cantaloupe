@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -58,11 +59,11 @@ public class FilesystemCacheTest extends BaseTest {
         }
 
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(FilesystemCache.DIRECTORY_DEPTH_CONFIG_KEY, 3);
-        config.setProperty(FilesystemCache.DIRECTORY_NAME_LENGTH_CONFIG_KEY, 2);
-        config.setProperty(FilesystemCache.PATHNAME_CONFIG_KEY,
+        config.setProperty(Key.FILESYSTEMCACHE_DIRECTORY_DEPTH, 3);
+        config.setProperty(Key.FILESYSTEMCACHE_DIRECTORY_NAME_LENGTH, 2);
+        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                 fixturePath.toString());
-        config.setProperty(Cache.TTL_CONFIG_KEY, 0);
+        config.setProperty(Key.CACHE_SERVER_TTL, 0);
 
         instance = new FilesystemCache();
     }
@@ -81,13 +82,13 @@ public class FilesystemCacheTest extends BaseTest {
                 getHashedStringBasedSubdirectory("cats"));
 
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(FilesystemCache.DIRECTORY_DEPTH_CONFIG_KEY, 2);
-        config.setProperty(FilesystemCache.DIRECTORY_NAME_LENGTH_CONFIG_KEY, 3);
+        config.setProperty(Key.FILESYSTEMCACHE_DIRECTORY_DEPTH, 2);
+        config.setProperty(Key.FILESYSTEMCACHE_DIRECTORY_NAME_LENGTH, 3);
         assertEquals(
                 String.format("/083%s2c1", File.separator, File.separator),
                 getHashedStringBasedSubdirectory("cats"));
 
-        config.setProperty(FilesystemCache.DIRECTORY_DEPTH_CONFIG_KEY, 0);
+        config.setProperty(Key.FILESYSTEMCACHE_DIRECTORY_DEPTH, 0);
         assertEquals("", getHashedStringBasedSubdirectory("cats"));
     }
 
@@ -206,12 +207,35 @@ public class FilesystemCacheTest extends BaseTest {
         assertEquals(3, count);
     }
 
+    /* derivativeImageExists(OperationList) */
+
+    @Test
+    public void testDerivativeImageExists() throws Exception {
+        Identifier identifier = new Identifier("cats_~!@#$%^&*()");
+        Crop crop = new Crop();
+        crop.setWidth(50f);
+        crop.setHeight(50f);
+        Format format = Format.TIF;
+
+        OperationList ops = new OperationList();
+        ops.setIdentifier(identifier);
+        ops.add(crop);
+        ops.setOutputFormat(format);
+
+        assertFalse(instance.derivativeImageExists(ops));
+
+        File file = instance.derivativeImageFile(ops);
+        FileUtils.touch(file);
+
+        assertTrue(instance.derivativeImageExists(ops));
+    }
+
     /* derivativeImageFile(OperationList) */
 
     @Test
     public void testDerivativeImageFileWithOperationList() throws Exception {
         String pathname = ConfigurationFactory.getInstance().
-                getString(FilesystemCache.PATHNAME_CONFIG_KEY);
+                getString(Key.FILESYSTEMCACHE_PATHNAME);
 
         Identifier identifier = new Identifier("cats_~!@#$%^&*()");
         Crop crop = new Crop();
@@ -244,7 +268,7 @@ public class FilesystemCacheTest extends BaseTest {
     @Test
     public void testDerivativeImageFileWithNoOpOperations() throws Exception {
         String pathname = ConfigurationFactory.getInstance().
-                getString(FilesystemCache.PATHNAME_CONFIG_KEY);
+                getString(Key.FILESYSTEMCACHE_PATHNAME);
 
         final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
         Crop crop = new Crop();
@@ -318,7 +342,7 @@ public class FilesystemCacheTest extends BaseTest {
 
     @Test
     public void testGetImageInfoWithNonZeroTtl() throws Exception {
-        ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 1);
+        ConfigurationFactory.getInstance().setProperty(Key.CACHE_SERVER_TTL, 1);
 
         Identifier identifier = new Identifier("test");
         File file = instance.infoFile(identifier);
@@ -331,6 +355,51 @@ public class FilesystemCacheTest extends BaseTest {
 
         Thread.sleep(1100);
         assertNull(instance.getImageInfo(identifier));
+    }
+
+    /* getRelativePathname(Identifier) */
+
+    @Test
+    public void testGetRelativePathnameWithIdentifier() {
+        Identifier identifier = new Identifier("cats_~!@#$%^&*()");
+
+        final String expected = String.format("%sinfo%s%s%s.json",
+                File.separator,
+                getHashedStringBasedSubdirectory(identifier.toString()),
+                File.separator,
+                identifier.toFilename());
+        assertEquals(expected, instance.getRelativePathname(identifier));
+    }
+
+    /* getRelativePathname(OperationList) */
+
+    @Test
+    public void testGetRelativePathnameWithOperationList() {
+        Identifier identifier = new Identifier("cats_~!@#$%^&*()");
+        Crop crop = new Crop();
+        crop.setWidth(50f);
+        crop.setHeight(50f);
+        Scale scale = new Scale();
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale.setPercent(0.905f);
+        Rotate rotate = new Rotate(10);
+        ColorTransform transform = ColorTransform.BITONAL;
+        Format format = Format.TIF;
+
+        OperationList ops = new OperationList();
+        ops.setIdentifier(identifier);
+        ops.add(crop);
+        ops.add(scale);
+        ops.add(rotate);
+        ops.add(transform);
+        ops.setOutputFormat(format);
+
+        final String expected = String.format("%simage%s%s%s",
+                File.separator,
+                getHashedStringBasedSubdirectory(identifier.toString()),
+                File.separator,
+                ops.toFilename());
+        assertEquals(expected, instance.getRelativePathname(ops));
     }
 
     /* getSourceImageFile(Identifier) */
@@ -350,7 +419,7 @@ public class FilesystemCacheTest extends BaseTest {
     @Test
     public void testGetSourceImageFileWithIdentifierWithNonzeroTtl()
             throws Exception {
-        ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 1);
+        ConfigurationFactory.getInstance().setProperty(Key.CACHE_SERVER_TTL, 1);
 
         Identifier identifier = new Identifier("cats");
         File cacheFile = instance.sourceImageFile(identifier);
@@ -364,12 +433,26 @@ public class FilesystemCacheTest extends BaseTest {
         assertFalse(cacheFile.exists());
     }
 
+    /* infoExists(Identifier) */
+
+    @Test
+    public void testInfoExists() throws Exception {
+        Identifier identifier = new Identifier("cats_~!@#$%^&*()");
+
+        assertFalse(instance.infoExists(identifier));
+
+        File file = instance.infoFile(identifier);
+        FileUtils.touch(file);
+
+        assertTrue(instance.infoExists(identifier));
+    }
+
     /* infoFile(Identifier) */
 
     @Test
     public void testInfoFile() throws CacheException {
         final String pathname = ConfigurationFactory.getInstance().
-                getString(FilesystemCache.PATHNAME_CONFIG_KEY);
+                getString(Key.FILESYSTEMCACHE_PATHNAME);
 
         final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
 
@@ -404,7 +487,7 @@ public class FilesystemCacheTest extends BaseTest {
     @Test
     public void testNewDerivativeImageInputStreamWithOpListWithNonzeroTtl()
             throws Exception {
-        ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 1);
+        ConfigurationFactory.getInstance().setProperty(Key.CACHE_SERVER_TTL, 1);
 
         OperationList ops = TestUtil.newOperationList();
         File cacheFile = instance.derivativeImageFile(ops);
@@ -460,7 +543,7 @@ public class FilesystemCacheTest extends BaseTest {
         final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
 
         final String pathname = ConfigurationFactory.getInstance().
-                getString(FilesystemCache.PATHNAME_CONFIG_KEY);
+                getString(Key.FILESYSTEMCACHE_PATHNAME);
         final String expected = String.format("%s%ssource%s%s%s",
                 pathname,
                 File.separator,
@@ -534,7 +617,7 @@ public class FilesystemCacheTest extends BaseTest {
 
     @Test
     public void testPurgeExpired() throws Exception {
-        ConfigurationFactory.getInstance().setProperty(Cache.TTL_CONFIG_KEY, 1);
+        ConfigurationFactory.getInstance().setProperty(Key.CACHE_SERVER_TTL, 1);
 
         Crop crop = new Crop();
         crop.setFull(true);

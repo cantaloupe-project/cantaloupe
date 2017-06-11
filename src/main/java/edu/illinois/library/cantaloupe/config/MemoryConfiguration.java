@@ -11,9 +11,11 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * In-memory configuration that cannot be persisted.
  */
-class MemoryConfiguration implements Configuration {
+class MemoryConfiguration extends AbstractConfiguration
+        implements Configuration {
 
-    private ConcurrentMap<String,Object> configuration = new ConcurrentHashMap<>();
+    private ConcurrentMap<String,Object> configuration =
+            new ConcurrentHashMap<>();
 
     @Override
     public void clear() {

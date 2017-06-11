@@ -96,15 +96,15 @@ public class StandaloneEntry {
                 printUsage();
                 exitUnlessTesting(-1);
             } else if (!configFile.exists()) {
-                System.out.println("Does not exist: " + configFile + "\n");
+                System.out.println("Does not exist: " + configFile);
                 printUsage();
                 exitUnlessTesting(-1);
             } else if (!configFile.isFile()) {
-                System.out.println("Not a file: " + configFile + "\n");
+                System.out.println("Not a file: " + configFile);
                 printUsage();
                 exitUnlessTesting(-1);
             } else if (!configFile.canRead()) {
-                System.out.println("Not readable: " + configFile + "\n");
+                System.out.println("Not readable: " + configFile);
                 printUsage();
                 exitUnlessTesting(-1);
             }
@@ -124,7 +124,7 @@ public class StandaloneEntry {
      */
     public static synchronized WebServer getWebServer() {
         if (webServer == null) {
-            webServer = new WebServer();
+            webServer = new WebServer(Configuration.getInstance());
         }
         return webServer;
     }
@@ -133,28 +133,28 @@ public class StandaloneEntry {
      * Prints program usage.
      */
     private static void printUsage() {
-        System.out.println(usage());
+        System.out.println("\n" + usage());
     }
 
     /**
      * @return Program usage.
      */
     static String usage() {
-        return "Usage: java <VM options> -jar " + getWarFile().getName() + "\n" +
-                "\n" +
-                "Options:\n" +
+        return "Usage: java <VM options> -jar " + getWarFile().getName() +
+                "\n\n" +
+                "VM options:\n" +
                 "-D" + ConfigurationFactory.CONFIG_VM_ARGUMENT + "=<config>" +
                 "           Configuration file (REQUIRED)\n" +
                 "-D" + EntryServlet.PURGE_CACHE_VM_ARGUMENT +
-                "               Purge the cache (optional)\n" +
+                "               Purge the cache\n" +
                 "-D" + EntryServlet.PURGE_CACHE_VM_ARGUMENT + "=<identifier>" +
-                "  Purge items related to an identifier from the cache (optional)\n" +
+                "  Purge items related to an identifier from the cache\n" +
                 "-D" + EntryServlet.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT +
-                "       Purge expired items from the cache (optional)\n" +
+                "       Purge expired items from the cache\n" +
                 "-D" + EntryServlet.CLEAN_CACHE_VM_ARGUMENT +
-                "               Clean the cache (optional)\n" +
+                "               Clean the cache\n" +
                 "-D" + StandaloneEntry.LIST_FONTS_VM_OPTION +
-                "                List fonts (optional)";
+                "                List fonts\n";
     }
 
 }

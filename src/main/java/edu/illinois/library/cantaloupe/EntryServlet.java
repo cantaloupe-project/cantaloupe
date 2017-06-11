@@ -7,8 +7,12 @@ import edu.illinois.library.cantaloupe.cache.CacheWorkerRunner;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.logging.LoggerUtil;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import org.apache.velocity.app.Velocity;
+import org.apache.velocity.runtime.RuntimeConstants;
+import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.restlet.data.Protocol;
 import org.restlet.ext.servlet.ServerServlet;
 import org.slf4j.Logger;
@@ -44,22 +48,6 @@ public class EntryServlet extends ServerServlet {
         // to be performed before Restlet has been initialized.
         System.setProperty("org.restlet.engine.loggerFacadeClass",
                 "org.restlet.ext.slf4j.Slf4jLoggerFacade");
-
-        // Logback has already initialized itself, which is a problem because
-        // logback.xml depends on the application configuration, which at the
-        // time, had not been initialized yet. So, reload it.
-        LoggerUtil.reloadConfiguration();
-
-        final int mb = 1024 * 1024;
-        final Runtime runtime = Runtime.getRuntime();
-        logger.info(System.getProperty("java.vm.name") + " / " +
-                System.getProperty("java.vm.info"));
-        logger.info("{} available processor cores",
-                runtime.availableProcessors());
-        logger.info("Heap total: {}MB; max: {}MB", runtime.totalMemory() / mb,
-                runtime.maxMemory() / mb);
-        logger.info("\uD83C\uDF48 Starting Cantaloupe {}",
-                Application.getVersion());
     }
 
     private void handleVmArguments() {
@@ -151,6 +139,31 @@ public class EntryServlet extends ServerServlet {
     @Override
     public void init() throws ServletException {
         super.init();
+
+        // Logback has already initialized itself, which is a problem because
+        // logback.xml depends on the application configuration, which at the
+        // time, had not been initialized yet. So, reload it.
+        LoggerUtil.reloadConfiguration();
+
+        Velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
+        Velocity.setProperty("classpath.resource.loader.class",
+                ClasspathResourceLoader.class.getName());
+        Velocity.setProperty("class.resource.loader.cache", true);
+        Velocity.setProperty("runtime.log.logsystem.class",
+                Slf4jLogChute.class.getCanonicalName());
+        Velocity.init();
+
+        final int mb = 1024 * 1024;
+        final Runtime runtime = Runtime.getRuntime();
+        logger.info(System.getProperty("java.vm.name") + " / " +
+                System.getProperty("java.vm.info"));
+        logger.info("{} available processor cores",
+                runtime.availableProcessors());
+        logger.info("Heap total: {}MB; max: {}MB", runtime.totalMemory() / mb,
+                runtime.maxMemory() / mb);
+        logger.info("\uD83C\uDF48 Starting Cantaloupe {}",
+                Application.getVersion());
+
         getComponent().getClients().add(Protocol.CLAP);
 
         handleVmArguments();

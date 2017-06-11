@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.image;
 
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -114,6 +113,15 @@ public enum Format {
     PNG("PNG",
             Arrays.asList("image/png"),
             Arrays.asList("png"),
+            Type.IMAGE,
+            true),
+
+    /**
+     * Silicon Graphics Image format.
+     */
+    SGI("SGI",
+            Arrays.asList("image/sgi"),
+            Arrays.asList("sgi", "rgb", "rgba", "bw", "int", "inta"),
             Type.IMAGE,
             true),
 

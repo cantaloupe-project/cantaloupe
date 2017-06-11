@@ -109,7 +109,7 @@
     <dependency>
       <groupId>com.microsoft.azure</groupId>
       <artifactId>azure-storage</artifactId>
-      <version>4.3.0</version>
+      <version>5.2.0</version>
     </dependency>
     <!-- Provides a JDBC connection pool for JdbcResolver and JdbcCache -->
     <dependency>
@@ -208,21 +208,35 @@
       <artifactId>janino</artifactId>
       <version>2.7.8</version>
     </dependency>
+    <!-- Provides HTTP/2 support for Jetty (see org.eclipse.jetty.jetty-server) -->
+    <dependency>
+      <groupId>org.eclipse.jetty.http2</groupId>
+      <artifactId>http2-server</artifactId>
+      <version>9.4.5.v20170502</version>
+    </dependency>
+    <!-- Provides ALPN support for Jetty (see org.eclipse.jetty.jetty-server)
+    N.B. This doesn't include ALPN support for Java 8, which requires a JAR
+    on the boot classpath. -->
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-alpn-server</artifactId>
+      <version>9.4.5.v20170502</version>
+    </dependency>
     <!-- Provides the standalone servlet container -->
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
-      <version>9.3.10.v20160621</version>
+      <version>9.4.5.v20170502</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>9.3.10.v20160621</version>
+      <version>9.4.5.v20170502</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-webapp</artifactId>
-      <version>9.3.10.v20160621</version>
+      <version>9.4.5.v20170502</version>
     </dependency>
     <!-- Enables colorized Logback console output in Windows -->
     <dependency>
@@ -234,7 +248,7 @@
     <dependency>
       <groupId>org.jruby</groupId>
       <artifactId>jruby</artifactId>
-      <version>9.1.2.0</version>
+      <version>9.1.10.0</version>
       <type>pom</type>
     </dependency>
     <!-- Restlet is our REST framework. -->
@@ -375,11 +389,15 @@
               <tasks>
                 <copy todir="${project.build.directory}/${project.artifactId}-${project.version}/">
                   <fileset dir="${project.build.directory}/classes/">
+                    <include name="edu/illinois/library/cantaloupe/config/AbstractConfiguration.class" />
                     <include name="edu/illinois/library/cantaloupe/config/Configuration.class" />
                     <include name="edu/illinois/library/cantaloupe/config/ConfigurationException.class" />
                     <include name="edu/illinois/library/cantaloupe/config/ConfigurationFactory.class" />
                     <include name="edu/illinois/library/cantaloupe/config/ConfigurationWatcher.class" />
                     <include name="edu/illinois/library/cantaloupe/config/FileConfiguration.class" />
+                    <include name="edu/illinois/library/cantaloupe/config/HeritableFileConfiguration.class" />
+                    <include name="edu/illinois/library/cantaloupe/config/HeritablePropertiesConfiguration.class" />
+                    <include name="edu/illinois/library/cantaloupe/config/Key.class" />
                     <include name="edu/illinois/library/cantaloupe/config/PropertiesConfiguration.class" />
                     <include name="edu/illinois/library/cantaloupe/util/FilesystemWatcher.class" />
                     <include name="edu/illinois/library/cantaloupe/util/FilesystemWatcher$Callback.class" />

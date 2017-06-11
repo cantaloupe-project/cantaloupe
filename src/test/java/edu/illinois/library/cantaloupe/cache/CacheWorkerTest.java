@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
@@ -14,8 +15,8 @@ public class CacheWorkerTest extends BaseTest {
         super.setUp();
 
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(CacheWorker.ENABLED_CONFIG_KEY, true);
-        config.setProperty(CacheWorker.INTERVAL_CONFIG_KEY, 1);
+        config.setProperty(Key.CACHE_WORKER_ENABLED, true);
+        config.setProperty(Key.CACHE_WORKER_INTERVAL, 1);
 
         worker = new CacheWorker();
     }

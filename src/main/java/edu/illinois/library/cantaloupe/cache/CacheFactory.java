@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,15 +17,6 @@ import java.util.Set;
 public abstract class CacheFactory {
 
     private static Logger logger = LoggerFactory.getLogger(CacheFactory.class);
-
-    public static final String DERIVATIVE_CACHE_CONFIG_KEY =
-            "cache.server.derivative";
-    public static final String DERIVATIVE_CACHE_ENABLED_CONFIG_KEY =
-            "cache.server.derivative.enabled";
-    public static final String SOURCE_CACHE_CONFIG_KEY =
-            "cache.server.source";
-    public static final String SOURCE_CACHE_ENABLED_CONFIG_KEY =
-            "cache.server.source.enabled";
 
     /** Lazy-initialized by {@link #getDerivativeCache()}. */
     private static volatile DerivativeCache derivativeCache;
@@ -71,9 +63,9 @@ public abstract class CacheFactory {
         // http://www.cs.umd.edu/~pugh/java/memoryModel/DoubleCheckedLocking.html
         DerivativeCache cache = null;
         final Configuration config = Configuration.getInstance();
-        if (config.getBoolean(DERIVATIVE_CACHE_ENABLED_CONFIG_KEY, false)) {
+        if (config.getBoolean(Key.DERIVATIVE_CACHE_ENABLED, false)) {
             final String unqualifiedName =
-                    config.getString(DERIVATIVE_CACHE_CONFIG_KEY);
+                    config.getString(Key.DERIVATIVE_CACHE);
             if (unqualifiedName != null && unqualifiedName.length() > 0) {
                 final String qualifiedName =
                         CacheFactory.class.getPackage().getName() + "." +
@@ -120,9 +112,8 @@ public abstract class CacheFactory {
         // http://www.cs.umd.edu/~pugh/java/memoryModel/DoubleCheckedLocking.html
         SourceCache cache = null;
         final Configuration config = Configuration.getInstance();
-        if (config.getBoolean(SOURCE_CACHE_ENABLED_CONFIG_KEY, false)) {
-            final String unqualifiedName =
-                    config.getString(SOURCE_CACHE_CONFIG_KEY);
+        if (config.getBoolean(Key.SOURCE_CACHE_ENABLED, false)) {
+            final String unqualifiedName = config.getString(Key.SOURCE_CACHE);
             if (unqualifiedName != null && unqualifiedName.length() > 0) {
                 final String qualifiedName =
                         CacheFactory.class.getPackage().getName() + "." +

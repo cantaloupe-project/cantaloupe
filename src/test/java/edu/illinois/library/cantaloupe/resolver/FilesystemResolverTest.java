@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
@@ -29,13 +30,12 @@ public class FilesystemResolverTest extends BaseTest {
         super.setUp();
 
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
-                "true");
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
-        config.setProperty(FilesystemResolver.LOOKUP_STRATEGY_CONFIG_KEY,
+        config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
-        config.setProperty(FilesystemResolver.PATH_PREFIX_CONFIG_KEY,
+        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX,
                 TestUtil.getFixturePath() + "/images" + File.separator);
 
         instance = new FilesystemResolver();
@@ -103,22 +103,22 @@ public class FilesystemResolverTest extends BaseTest {
     public void testGetPathnameWithBasicLookupStrategy() throws IOException {
         Configuration config = ConfigurationFactory.getInstance();
 
-        config.setProperty(FilesystemResolver.LOOKUP_STRATEGY_CONFIG_KEY,
+        config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
         // with prefix
-        config.setProperty(FilesystemResolver.PATH_PREFIX_CONFIG_KEY, "/prefix/");
+        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX, "/prefix/");
         instance.setIdentifier(new Identifier("id"));
         assertEquals("/prefix/id", instance.getPathname(File.separator));
         // with suffix
-        config.setProperty(FilesystemResolver.PATH_SUFFIX_CONFIG_KEY, "/suffix");
+        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_SUFFIX, "/suffix");
         assertEquals("/prefix/id/suffix", instance.getPathname(File.separator));
         // without prefix or suffix
-        config.setProperty(FilesystemResolver.PATH_PREFIX_CONFIG_KEY, "");
-        config.setProperty(FilesystemResolver.PATH_SUFFIX_CONFIG_KEY, "");
+        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX, "");
+        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_SUFFIX, "");
         assertEquals("id", instance.getPathname(File.separator));
         // test sanitization
-        config.setProperty(FilesystemResolver.PATH_PREFIX_CONFIG_KEY, "");
-        config.setProperty(FilesystemResolver.PATH_SUFFIX_CONFIG_KEY, "");
+        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX, "");
+        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_SUFFIX, "");
         instance.setIdentifier(new Identifier("id/../"));
         assertEquals("id/", instance.getPathname("/"));
         instance.setIdentifier(new Identifier("/../id"));
@@ -133,11 +133,10 @@ public class FilesystemResolverTest extends BaseTest {
     public void testGetPathnameWithScriptLookupStrategy()
             throws IOException {
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(FilesystemResolver.LOOKUP_STRATEGY_CONFIG_KEY,
+        config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
                 "ScriptLookupStrategy");
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
-                "true");
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         assertEquals("/bla/" + IDENTIFIER,
                 instance.getPathname(File.separator));

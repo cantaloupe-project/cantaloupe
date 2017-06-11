@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.operation;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -8,7 +9,6 @@ import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.overlay.OverlayService;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.redaction.RedactionService;
-import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
@@ -28,9 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static edu.illinois.library.cantaloupe.processor.Processor.DOWNSCALE_FILTER_CONFIG_KEY;
-import static edu.illinois.library.cantaloupe.processor.Processor.UPSCALE_FILTER_CONFIG_KEY;
 
 /**
  * <p>Normalized list of {@link Operation image transform operations}
@@ -76,7 +73,9 @@ public final class OperationList implements Comparable<OperationList>,
     }
 
     /**
-     * @param op Operation to add. Null values will be discarded.
+     * Adds an operation to the end of the list.
+     *
+     * @param op Operation to add. Null values are silently discarded.
      * @throws UnsupportedOperationException If the instance is frozen.
      */
     public void add(Operation op) {
@@ -85,6 +84,52 @@ public final class OperationList implements Comparable<OperationList>,
         }
         if (op != null) {
             operations.add(op);
+        }
+    }
+
+    /**
+     * Adds an operation immediately after the last instance of the given
+     * class in the list. If there are no such instances in the list, the
+     * operation will be added to the end of the list.
+     *
+     * @param op Operation to add.
+     * @param afterClass The operation will be added after the last
+     *                   instance of this class in the list.
+     * @throws UnsupportedOperationException If the instance is frozen.
+     */
+    public void addAfter(Operation op,
+                         Class<? extends Operation> afterClass) {
+        if (frozen) {
+            throw new UnsupportedOperationException();
+        }
+        final int index = lastIndexOf(afterClass);
+        if (index >= 0) {
+            operations.add(index + 1, op);
+        } else {
+            add(op);
+        }
+    }
+
+    /**
+     * Adds an operation immediately before the first instance of the given
+     * class in the list. If there are no such instances in the list, the
+     * operation will be added to the end of the list.
+     *
+     * @param op Operation to add.
+     * @param beforeClass The operation will be added before the first
+     *                    instance of this class in the list.
+     * @throws UnsupportedOperationException If the instance is frozen.
+     */
+    public void addBefore(Operation op,
+                          Class<? extends Operation> beforeClass) {
+        if (frozen) {
+            throw new UnsupportedOperationException();
+        }
+        int index = firstIndexOf(beforeClass);
+        if (index >= 0) {
+            operations.add(index, op);
+        } else {
+            add(op);
         }
     }
 
@@ -117,6 +162,33 @@ public final class OperationList implements Comparable<OperationList>,
 
         final Configuration config = Configuration.getInstance();
 
+        // Normalization
+        final boolean normalize =
+                config.getBoolean(Key.PROCESSOR_NORMALIZE, false);
+        if (normalize) {
+            // 1. If a Crop is present, normalization has to happen before it,
+            //    in order to sample the entire image.
+            // 2. Otherwise, if a Scale is present, normalization should happen
+            //    before an upscale, or after a downscale.
+            // 3. Otherwise, it should be added before a Rotate, as this could
+            //    introduce edge color that would throw it off.
+            Normalize normalizeOp = new Normalize();
+            if (getFirst(Crop.class) != null) {
+                addBefore(normalizeOp, Crop.class);
+            } else {
+                Scale scale = (Scale) getFirst(Scale.class);
+                if (scale != null) {
+                    if (scale.isUp(sourceImageSize)) {
+                        addBefore(normalizeOp, Scale.class);
+                    } else {
+                        addAfter(normalizeOp, Scale.class);
+                    }
+                } else {
+                    addBefore(normalizeOp, Rotate.class);
+                }
+            }
+        }
+
         // Redactions
         try {
             final RedactionService service = new RedactionService();
@@ -142,8 +214,9 @@ public final class OperationList implements Comparable<OperationList>,
         if (scale != null) {
             final Float scalePct = scale.getResultingScale(sourceImageSize);
             if (scalePct != null) {
-                final String filterKey = (scalePct > 1) ?
-                        UPSCALE_FILTER_CONFIG_KEY : DOWNSCALE_FILTER_CONFIG_KEY;
+                final Key filterKey = (scalePct > 1) ?
+                        Key.PROCESSOR_UPSCALE_FILTER :
+                        Key.PROCESSOR_DOWNSCALE_FILTER;
                 try {
                     final String filterStr = config.getString(filterKey);
                     final Scale.Filter filter =
@@ -157,7 +230,7 @@ public final class OperationList implements Comparable<OperationList>,
         }
 
         // Sharpening
-        float sharpen = config.getFloat(Processor.SHARPEN_CONFIG_KEY, 0f);
+        float sharpen = config.getFloat(Key.PROCESSOR_SHARPEN, 0f);
         if (sharpen > 0.001f) {
             add(new Sharpen(sharpen));
         }
@@ -183,7 +256,7 @@ public final class OperationList implements Comparable<OperationList>,
 
         // Metadata copies
         // TODO: consider making these a property of Encode
-        if (config.getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
+        if (config.getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
             add(new MetadataCopy());
         }
 
@@ -194,17 +267,17 @@ public final class OperationList implements Comparable<OperationList>,
             case JPG:
                 // Interlacing
                 final boolean progressive =
-                        config.getBoolean(Processor.JPG_PROGRESSIVE_CONFIG_KEY, false);
+                        config.getBoolean(Key.PROCESSOR_JPG_PROGRESSIVE, false);
                 encode.setInterlacing(progressive);
                 // Quality
                 final int quality =
-                        config.getInt(Processor.JPG_QUALITY_CONFIG_KEY, 80);
+                        config.getInt(Key.PROCESSOR_JPG_QUALITY, 80);
                 encode.setQuality(quality);
                 break;
             case TIF:
                 // Compression
                 final String compressionStr =
-                        config.getString(Processor.TIF_COMPRESSION_CONFIG_KEY, "LZW");
+                        config.getString(Key.PROCESSOR_TIF_COMPRESSION, "LZW");
                 final Compression compression =
                         Compression.valueOf(compressionStr.toUpperCase());
                 encode.setCompression(compression);
@@ -214,7 +287,7 @@ public final class OperationList implements Comparable<OperationList>,
         // Set the Encode operation's background color
         if (!encode.getFormat().supportsTransparency()) {
             final String bgColor =
-                    config.getString(Processor.BACKGROUND_COLOR_CONFIG_KEY);
+                    config.getString(Key.PROCESSOR_BACKGROUND_COLOR);
             if (bgColor != null) {
                 encode.setBackgroundColor(Color.fromString(bgColor));
             }
@@ -245,6 +318,24 @@ public final class OperationList implements Comparable<OperationList>,
     }
 
     /**
+     * @param clazz Operation class.
+     * @return Index of the first instance of the given class in the list, or
+     *         -1 if no instance of the given class is present in the list.
+     */
+    private int firstIndexOf(Class<? extends Operation> clazz) {
+        int index = 0;
+        boolean found = false;
+        for (int i = 0, count = operations.size(); i < count; i++) {
+            if (clazz.isAssignableFrom(operations.get(i).getClass())) {
+                found = true;
+                break;
+            }
+            index++;
+        }
+        return (found) ? index : -1;
+    }
+
+    /**
      * "Freezes" the instance so that operations cannot be added or removed.
      */
     public void freeze() {
@@ -259,7 +350,7 @@ public final class OperationList implements Comparable<OperationList>,
      */
     public Operation getFirst(Class<? extends Operation> opClass) {
         for (Operation op : operations) {
-            if (op.getClass().equals(opClass)) {
+            if (opClass.isAssignableFrom(op.getClass())) {
                 return op;
             }
         }
@@ -323,13 +414,22 @@ public final class OperationList implements Comparable<OperationList>,
         }
         for (Operation op : this) {
             if (op.hasEffect()) {
-                // 1. Ignore overlays when the output format is PDF.
-                // 2. Ignore MetadataCopies. If the instance would otherwise
-                //    be a no-op, metadata will get passed through anyway, and
-                //    if it isn't, then this method will return false anyway.
-                if (!(op instanceof Overlay &&                   // (1)
-                        getOutputFormat().equals(Format.PDF)) && // (1)
-                        !(op instanceof MetadataCopy)) {         // (2)
+                // 1. Ignore MetadataCopies. If the instance would otherwise be
+                //    a no-op, metadata will get passed through anyway, and if
+                //    it isn't, then this method will return false anyway.
+                // 2. Ignore overlays when the output format is PDF.
+                // 3. Ignore Encodes when the given output format is the same
+                //    as the instance's output format. (This helps enable
+                //    streaming source images without re-encoding them.)
+                if (op instanceof MetadataCopy) { // (1)
+                    continue;
+                } else if (op instanceof Overlay &&
+                        getOutputFormat().equals(Format.PDF)) { // (2)
+                    continue;
+                } else if (op instanceof Encode &&
+                        getOutputFormat().equals(format)) { // (3)
+                    continue;
+                } else {
                     return true;
                 }
             }
@@ -348,6 +448,20 @@ public final class OperationList implements Comparable<OperationList>,
             return Collections.unmodifiableList(operations).iterator();
         }
         return operations.iterator();
+    }
+
+    /**
+     * @param clazz Operation class.
+     * @return Index of the last instance of the given class in the list, or -1
+     *         if no instance of the given class is present in the list.
+     */
+    private int lastIndexOf(Class<? extends Operation> clazz) {
+        for (int i = operations.size() - 1; i >= 0; i--) {
+            if (clazz.isAssignableFrom(operations.get(i).getClass())) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**

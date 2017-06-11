@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.CacheDisabledException;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
@@ -63,29 +64,25 @@ public class SourceImageWranglerTest extends BaseTest {
         super.setUp();
 
         Configuration config = Configuration.getInstance();
-        config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
-                "FilesystemResolver");
-        config.setProperty("FilesystemResolver.lookup_strategy",
+        config.setProperty(Key.RESOLVER_STATIC, "FilesystemResolver");
+        config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
-        config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",
+        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX,
                 TestUtil.getImage("jpg").getParentFile().getAbsolutePath() + "/");
-        config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
-                "Java2dProcessor");
+        config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
     }
 
     @Test
     public void testGetStreamProcessorRetrievalStrategy() {
         final Configuration config = Configuration.getInstance();
         // stream
-        config.setProperty(
-                SourceImageWrangler.STREAMPROCESSOR_RETRIEVAL_STRATEGY_CONFIG_KEY,
+        config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
                 "StreamStrategy");
         assertEquals(SourceImageWrangler.StreamProcessorRetrievalStrategy.STREAM,
                 SourceImageWrangler.getStreamProcessorRetrievalStrategy());
 
         // cache
-        config.setProperty(
-                SourceImageWrangler.STREAMPROCESSOR_RETRIEVAL_STRATEGY_CONFIG_KEY,
+        config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
                 "CacheStrategy");
         assertEquals(SourceImageWrangler.StreamProcessorRetrievalStrategy.CACHE,
                 SourceImageWrangler.getStreamProcessorRetrievalStrategy());
@@ -93,8 +90,8 @@ public class SourceImageWranglerTest extends BaseTest {
 
     @Test
     public void testWrangleWithFileResolverAndFileProcessor() throws Exception {
-        final Resolver resolver = ResolverFactory.getResolver(identifier);
-        final Processor processor = ProcessorFactory.getProcessor(Format.JPG);
+        final Resolver resolver = new ResolverFactory().getResolver(identifier);
+        final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
         new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
@@ -107,11 +104,10 @@ public class SourceImageWranglerTest extends BaseTest {
     public void testWrangleWithFileResolverAndStreamProcessor()
             throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
-                "ImageMagickProcessor");
+        config.setProperty(Key.PROCESSOR_FALLBACK, "ImageMagickProcessor");
 
-        final Resolver resolver = ResolverFactory.getResolver(identifier);
-        final Processor processor = ProcessorFactory.getProcessor(Format.JPG);
+        final Resolver resolver = new ResolverFactory().getResolver(identifier);
+        final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
         new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
@@ -126,13 +122,11 @@ public class SourceImageWranglerTest extends BaseTest {
             throws Exception {
         identifier = new Identifier("jp2");
         Configuration config = Configuration.getInstance();
-        config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
-                "HttpResolver");
-        config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
-                "OpenJpegProcessor");
+        config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
+        config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
 
-        final Resolver resolver = ResolverFactory.getResolver(identifier);
-        final Processor processor = ProcessorFactory.getProcessor(Format.JP2);
+        final Resolver resolver = new ResolverFactory().getResolver(identifier);
+        final Processor processor = new ProcessorFactory().getProcessor(Format.JP2);
 
         try {
             new SourceImageWrangler(resolver, processor, identifier).wrangle();
@@ -153,23 +147,19 @@ public class SourceImageWranglerTest extends BaseTest {
             server.start();
 
             Configuration config = Configuration.getInstance();
-            config.setProperty(CacheFactory.SOURCE_CACHE_ENABLED_CONFIG_KEY,
-                    true);
-            config.setProperty(CacheFactory.SOURCE_CACHE_CONFIG_KEY,
-                    "FilesystemCache");
-            config.setProperty("FilesystemCache.pathname",
+            config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
+            config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
+            config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     cacheFolder.getAbsolutePath());
-            config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
-                    "HttpResolver");
-            config.setProperty("HttpResolver.lookup_strategy",
+            config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
+            config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
                     "BasicLookupStrategy");
-            config.setProperty("HttpResolver.BasicLookupStrategy.url_prefix",
+            config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                     server.getUri() + "/");
-            config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
-                    "OpenJpegProcessor");
+            config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
 
-            final Resolver resolver = ResolverFactory.getResolver(identifier);
-            final Processor processor = ProcessorFactory.getProcessor(Format.JP2);
+            final Resolver resolver = new ResolverFactory().getResolver(identifier);
+            final Processor processor = new ProcessorFactory().getProcessor(Format.JP2);
 
             new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
@@ -194,17 +184,15 @@ public class SourceImageWranglerTest extends BaseTest {
             server.start();
 
             Configuration config = Configuration.getInstance();
-            config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
-                    "HttpResolver");
-            config.setProperty("HttpResolver.lookup_strategy",
+            config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
+            config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
                     "BasicLookupStrategy");
-            config.setProperty("HttpResolver.BasicLookupStrategy.url_prefix",
+            config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                     server.getUri() + "/");
-            config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
-                    "ImageMagickProcessor");
+            config.setProperty(Key.PROCESSOR_FALLBACK, "ImageMagickProcessor");
 
-            final Resolver resolver = ResolverFactory.getResolver(identifier);
-            final Processor processor = ProcessorFactory.getProcessor(Format.JPG);
+            final Resolver resolver = new ResolverFactory().getResolver(identifier);
+            final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
             new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
@@ -226,25 +214,21 @@ public class SourceImageWranglerTest extends BaseTest {
             server.start();
 
             Configuration config = Configuration.getInstance();
-            config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
-                    "HttpResolver");
-            config.setProperty("HttpResolver.lookup_strategy",
+            config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
+            config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
                     "BasicLookupStrategy");
-            config.setProperty("HttpResolver.BasicLookupStrategy.url_prefix",
+            config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                     server.getUri() + "/");
-            config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
-                    "ImageMagickProcessor");
-            config.setProperty(CacheFactory.SOURCE_CACHE_ENABLED_CONFIG_KEY,
-                    true);
-            config.setProperty(CacheFactory.SOURCE_CACHE_CONFIG_KEY,
-                    "FilesystemCache");
-            config.setProperty(SourceImageWrangler.STREAMPROCESSOR_RETRIEVAL_STRATEGY_CONFIG_KEY,
+            config.setProperty(Key.PROCESSOR_FALLBACK, "ImageMagickProcessor");
+            config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
+            config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
+            config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
                     "CacheStrategy");
-            config.setProperty("FilesystemCache.pathname",
+            config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     cacheFolder.getAbsolutePath());
 
-            final Resolver resolver = ResolverFactory.getResolver(identifier);
-            final Processor processor = ProcessorFactory.getProcessor(Format.JPG);
+            final Resolver resolver = new ResolverFactory().getResolver(identifier);
+            final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
             new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
@@ -270,21 +254,19 @@ public class SourceImageWranglerTest extends BaseTest {
             server.start();
 
             Configuration config = Configuration.getInstance();
-            config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
-                    "HttpResolver");
-            config.setProperty("HttpResolver.lookup_strategy",
+            config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
+            config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
                     "BasicLookupStrategy");
-            config.setProperty("HttpResolver.BasicLookupStrategy.url_prefix",
+            config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                     server.getUri() + "/");
-            config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
-                    "ImageMagickProcessor");
-            config.setProperty(SourceImageWrangler.STREAMPROCESSOR_RETRIEVAL_STRATEGY_CONFIG_KEY,
+            config.setProperty(Key.PROCESSOR_FALLBACK, "ImageMagickProcessor");
+            config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
                     "CacheStrategy");
-            config.setProperty("FilesystemCache.pathname",
+            config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     cacheFolder.getAbsolutePath());
 
-            final Resolver resolver = ResolverFactory.getResolver(identifier);
-            final Processor processor = ProcessorFactory.getProcessor(Format.JPG);
+            final Resolver resolver = new ResolverFactory().getResolver(identifier);
+            final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
             try {
                 new SourceImageWrangler(resolver, processor, identifier).wrangle();

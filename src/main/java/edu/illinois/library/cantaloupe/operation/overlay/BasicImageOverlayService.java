@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -12,8 +13,6 @@ import java.net.URL;
  * Used to acquire overlay images when using BasicStrategy for overlays.
  */
 class BasicImageOverlayService extends BasicOverlayService {
-
-    static final String IMAGE_CONFIG_KEY = "overlays.BasicStrategy.image";
 
     private String location;
 
@@ -36,9 +35,9 @@ class BasicImageOverlayService extends BasicOverlayService {
 
     private void readLocation() throws ConfigurationException {
         final Configuration config = ConfigurationFactory.getInstance();
-        location = config.getString(IMAGE_CONFIG_KEY, "");
+        location = config.getString(Key.OVERLAY_IMAGE, "");
         if (location.length() < 1) {
-            throw new ConfigurationException(IMAGE_CONFIG_KEY + " is not set.");
+            throw new ConfigurationException(Key.OVERLAY_IMAGE + " is not set.");
         }
     }
 

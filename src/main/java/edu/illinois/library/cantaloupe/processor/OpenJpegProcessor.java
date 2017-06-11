@@ -2,8 +2,10 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -65,9 +67,6 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
     private static Logger logger = LoggerFactory.
             getLogger(OpenJpegProcessor.class);
 
-    private static final String PATH_TO_BINARIES_CONFIG_KEY =
-            "OpenJpegProcessor.path_to_binaries";
-
     private static final short MAX_REDUCTION_FACTOR = 5;
 
     private static Path stdoutSymlink;
@@ -117,7 +116,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
      */
     private static String getPath(String binaryName) {
         String path = Configuration.getInstance().
-                getString(PATH_TO_BINARIES_CONFIG_KEY);
+                getString(Key.OPENJPEGPROCESSOR_PATH_TO_BINARIES);
         if (path != null && path.length() > 0) {
             path = StringUtils.stripEnd(path, File.separator) +
                     File.separator + binaryName;
@@ -244,8 +243,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
             final ReductionFactor reductionFactor = new ReductionFactor();
 
             // If we are normalizing, we need to read the entire image region.
-            final boolean normalize = (boolean) opList.getOptions().
-                    getOrDefault(NORMALIZE_CONFIG_KEY, false);
+            final boolean normalize = (opList.getFirst(Normalize.class) != null);
 
             final ProcessBuilder pb = getProcessBuilder(
                     opList, imageInfo.getSize(), reductionFactor, normalize);
@@ -268,7 +266,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                         hints.add(ImageReader.Hint.ALREADY_CROPPED);
                     }
                     postProcess(image, hints, opList, imageInfo,
-                            reductionFactor, normalize, outputStream);
+                            reductionFactor, outputStream);
                     final int code = process.waitFor();
                     if (code != 0) {
                         logger.warn("opj_decompress returned with code {}", code);

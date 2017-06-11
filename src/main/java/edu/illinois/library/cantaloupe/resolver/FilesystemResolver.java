@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MediaType;
@@ -37,9 +38,10 @@ import java.util.List;
  * <h3>Lookup Strategies</h3>
  *
  * <p>Two distinct lookup strategies are supported, defined by
- * {@link #LOOKUP_STRATEGY_CONFIG_KEY}. BasicLookupStrategy locates images by
- * concatenating a pre-defined path prefix and/or suffix. ScriptLookupStrategy
- * invokes a delegate method to retrieve a pathname dynamically.</p>
+ * {@link Key#FILESYSTEMRESOLVER_LOOKUP_STRATEGY}. BasicLookupStrategy locates
+ * images by concatenating a pre-defined path prefix and/or suffix.
+ * ScriptLookupStrategy invokes a delegate method to retrieve a pathname
+ * dynamically.</p>
  */
 class FilesystemResolver extends AbstractResolver
         implements StreamResolver, FileResolver {
@@ -69,12 +71,6 @@ class FilesystemResolver extends AbstractResolver
 
     static final String GET_PATHNAME_DELEGATE_METHOD =
             "FilesystemResolver::get_pathname";
-    static final String LOOKUP_STRATEGY_CONFIG_KEY =
-            "FilesystemResolver.lookup_strategy";
-    static final String PATH_PREFIX_CONFIG_KEY =
-            "FilesystemResolver.BasicLookupStrategy.path_prefix";
-    static final String PATH_SUFFIX_CONFIG_KEY =
-            "FilesystemResolver.BasicLookupStrategy.path_suffix";
 
     @Override
     public StreamSource newStreamSource() throws IOException {
@@ -97,8 +93,9 @@ class FilesystemResolver extends AbstractResolver
 
     /**
      * Gets the pathname corresponding to the given identifier according to the
-     * current lookup strategy ({@link #LOOKUP_STRATEGY_CONFIG_KEY}) in the
-     * application configuration.
+     * current lookup strategy
+     * ({@link edu.illinois.library.cantaloupe.config.Key#FILESYSTEMRESOLVER_LOOKUP_STRATEGY})
+     * in the application configuration.
      *
      * @param fileSeparator Return value of {@link File#separator}
      * @return
@@ -106,7 +103,7 @@ class FilesystemResolver extends AbstractResolver
      */
     String getPathname(String fileSeparator) throws IOException {
         final Configuration config = ConfigurationFactory.getInstance();
-        switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
+        switch (config.getString(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY)) {
             case "BasicLookupStrategy":
                 return getPathnameWithBasicStrategy(fileSeparator);
             case "ScriptLookupStrategy":
@@ -120,15 +117,17 @@ class FilesystemResolver extends AbstractResolver
                     throw new IOException(e);
                 }
             default:
-                throw new IOException(LOOKUP_STRATEGY_CONFIG_KEY +
+                throw new IOException(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY +
                         " is invalid or not set");
         }
     }
 
     private String getPathnameWithBasicStrategy(final String fileSeparator) {
         final Configuration config = ConfigurationFactory.getInstance();
-        final String prefix = config.getString(PATH_PREFIX_CONFIG_KEY, "");
-        final String suffix = config.getString(PATH_SUFFIX_CONFIG_KEY, "");
+        final String prefix =
+                config.getString(Key.FILESYSTEMRESOLVER_PATH_PREFIX, "");
+        final String suffix =
+                config.getString(Key.FILESYSTEMRESOLVER_PATH_SUFFIX, "");
         final Identifier sanitizedId = sanitizedIdentifier(fileSeparator);
         return prefix + sanitizedId.toString() + suffix;
     }
@@ -151,9 +150,8 @@ class FilesystemResolver extends AbstractResolver
         final Object result = engine.invoke(GET_PATHNAME_DELEGATE_METHOD,
                 identifier.toString());
         if (result == null) {
-            throw new FileNotFoundException(
-                    GET_PATHNAME_DELEGATE_METHOD + " returned nil for " +
-                    identifier);
+            throw new FileNotFoundException(GET_PATHNAME_DELEGATE_METHOD +
+                    " returned nil for " + identifier);
         }
         return (String) result;
     }

@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Orientation;
@@ -126,8 +127,7 @@ class JaiProcessor extends AbstractImageIOProcessor
             final ReductionFactor rf = new ReductionFactor();
             final Set<ImageReader.Hint> hints = new HashSet<>();
 
-            final boolean normalize = (boolean) opList.getOptions().
-                    getOrDefault(NORMALIZE_CONFIG_KEY, false);
+            final boolean normalize = (opList.getFirst(Normalize.class) != null);
             if (normalize) {
                 // When normalizing, the reader needs to read the entire image
                 // so that its histogram can be sampled accurately. This will

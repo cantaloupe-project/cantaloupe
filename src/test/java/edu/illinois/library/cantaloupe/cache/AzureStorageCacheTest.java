@@ -4,6 +4,7 @@ import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.ListBlobItem;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -20,10 +21,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 
 import static org.junit.Assert.*;
 
@@ -57,11 +58,11 @@ public class AzureStorageCacheTest extends BaseTest {
         super.setUp();
 
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Cache.TTL_CONFIG_KEY, 1);
-        config.setProperty(AzureStorageCache.OBJECT_KEY_PREFIX_CONFIG_KEY, "test/");
-        config.setProperty(AzureStorageCache.ACCOUNT_NAME_CONFIG_KEY, getAccountName());
-        config.setProperty(AzureStorageCache.ACCOUNT_KEY_CONFIG_KEY, getAccountKey());
-        config.setProperty(AzureStorageCache.CONTAINER_NAME_CONFIG_KEY, getContainer());
+        config.setProperty(Key.CACHE_SERVER_TTL, 1);
+        config.setProperty(Key.AZURESTORAGECACHE_OBJECT_KEY_PREFIX, "test/");
+        config.setProperty(Key.AZURESTORAGECACHE_ACCOUNT_NAME, getAccountName());
+        config.setProperty(Key.AZURESTORAGECACHE_ACCOUNT_KEY, getAccountKey());
+        config.setProperty(Key.AZURESTORAGECACHE_CONTAINER_NAME, getContainer());
 
         instance = new AzureStorageCache();
     }
@@ -89,7 +90,7 @@ public class AzureStorageCacheTest extends BaseTest {
     public void testGetContainerName() {
         assertEquals(
                 ConfigurationFactory.getInstance().
-                        getString(AzureStorageCache.CONTAINER_NAME_CONFIG_KEY),
+                        getString(Key.AZURESTORAGECACHE_CONTAINER_NAME),
                 AzureStorageCache.getContainerName());
     }
 
@@ -112,11 +113,10 @@ public class AzureStorageCacheTest extends BaseTest {
         File fixture = TestUtil.getImage(identifier.toString());
 
         // add an image
-        InputStream fileInputStream = new FileInputStream(fixture);
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(fileInputStream, outputStream);
-        fileInputStream.close();
-        outputStream.close();
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(fixture.toPath(), outputStream);
+        }
 
         // download the image
         InputStream s3InputStream = instance.newDerivativeImageInputStream(opList);
@@ -142,12 +142,11 @@ public class AzureStorageCacheTest extends BaseTest {
         assertObjectCount(0);
 
         // add an image
-        InputStream inputStream = new FileInputStream(
-                TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+        File fixture = TestUtil.getImage(identifier.toString());
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(fixture.toPath(), outputStream);
+        }
 
         assertObjectCount(1);
     }
@@ -176,16 +175,16 @@ public class AzureStorageCacheTest extends BaseTest {
     public void testGetObjectKeyPrefix() {
         Configuration config = ConfigurationFactory.getInstance();
 
-        config.setProperty(AzureStorageCache.OBJECT_KEY_PREFIX_CONFIG_KEY, "");
+        config.setProperty(Key.AZURESTORAGECACHE_OBJECT_KEY_PREFIX, "");
         assertEquals("", instance.getObjectKeyPrefix());
 
-        config.setProperty(AzureStorageCache.OBJECT_KEY_PREFIX_CONFIG_KEY, "/");
+        config.setProperty(Key.AZURESTORAGECACHE_OBJECT_KEY_PREFIX, "/");
         assertEquals("", instance.getObjectKeyPrefix());
 
-        config.setProperty(AzureStorageCache.OBJECT_KEY_PREFIX_CONFIG_KEY, "cats");
+        config.setProperty(Key.AZURESTORAGECACHE_OBJECT_KEY_PREFIX, "cats");
         assertEquals("cats/", instance.getObjectKeyPrefix());
 
-        config.setProperty(AzureStorageCache.OBJECT_KEY_PREFIX_CONFIG_KEY, "cats/");
+        config.setProperty(Key.AZURESTORAGECACHE_OBJECT_KEY_PREFIX, "cats/");
         assertEquals("cats/", instance.getObjectKeyPrefix());
     }
 
@@ -194,12 +193,11 @@ public class AzureStorageCacheTest extends BaseTest {
     @Test
     public void testPurge() throws Exception {
         // add an image
-        InputStream inputStream = new FileInputStream(
-                TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+        File fixture = TestUtil.getImage(identifier.toString());
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(fixture.toPath(), outputStream);
+        }
 
         // add an Info
         instance.put(identifier, imageInfo);
@@ -217,22 +215,20 @@ public class AzureStorageCacheTest extends BaseTest {
     @Test
     public void testPurgeWithOperationList() throws Exception {
         // add an image
-        InputStream inputStream = new FileInputStream(
-                TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+        File fixture = TestUtil.getImage(identifier.toString());
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(fixture.toPath(), outputStream);
+        }
 
         // add another image
-        File fixture = TestUtil.getImage("gif-rgb-64x56x8.gif");
+        File fixture2 = TestUtil.getImage("gif-rgb-64x56x8.gif");
         OperationList otherOpList = new OperationList(
-                new Identifier(fixture.getName()), Format.GIF);
-        inputStream = new FileInputStream(fixture);
-        outputStream = instance.newDerivativeImageOutputStream(otherOpList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+                new Identifier(fixture2.getName()), Format.GIF);
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(otherOpList)) {
+            Files.copy(fixture2.toPath(), outputStream);
+        }
 
         // add an Info
         instance.put(identifier, imageInfo);
@@ -250,12 +246,11 @@ public class AzureStorageCacheTest extends BaseTest {
     @Test
     public void testPurgeExpired() throws Exception {
         // add an image
-        InputStream inputStream = new FileInputStream(
-                TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+        File fixture = TestUtil.getImage(identifier.toString());
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(fixture.toPath(), outputStream);
+        }
 
         // add an Info
         instance.put(identifier, imageInfo);
@@ -263,14 +258,13 @@ public class AzureStorageCacheTest extends BaseTest {
         Thread.sleep(2000);
 
         // add another image
-        File fixture = TestUtil.getImage("gif-rgb-64x56x8.gif");
+        File fixture2 = TestUtil.getImage("gif-rgb-64x56x8.gif");
         OperationList otherOpList = new OperationList(
-                new Identifier(fixture.getName()), Format.GIF);
-        inputStream = new FileInputStream(fixture);
-        outputStream = instance.newDerivativeImageOutputStream(otherOpList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+                new Identifier(fixture2.getName()), Format.GIF);
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(otherOpList)) {
+             Files.copy(fixture2.toPath(), outputStream);
+        }
 
         // add another Info
         Identifier otherId = new Identifier("cats");
@@ -290,12 +284,11 @@ public class AzureStorageCacheTest extends BaseTest {
     @Test
     public void testPurgeWithIdentifier() throws Exception {
         // add an image
-        InputStream inputStream = new FileInputStream(
-                TestUtil.getImage(identifier.toString()));
-        OutputStream outputStream = instance.newDerivativeImageOutputStream(opList);
-        IOUtils.copy(inputStream, outputStream);
-        inputStream.close();
-        outputStream.close();
+        File fixture = TestUtil.getImage(identifier.toString());
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(fixture.toPath(), outputStream);
+        }
 
         // add an Info
         instance.put(identifier, imageInfo);

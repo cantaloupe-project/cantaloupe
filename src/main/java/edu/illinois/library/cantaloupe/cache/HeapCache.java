@@ -29,26 +29,32 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+
+import static edu.illinois.library.cantaloupe.config.Key.*;
 
 /**
  * <p>Heap-based LRU cache.</p>
  *
  * <p>This implementation is size-limited rather than time-limited. When the
- * target size ({@link #TARGET_SIZE_CONFIG_KEY}) has been exceeded, the
- * minimum number of least-recently-accessed items are purged that will reduce
- * it back down to this size. (The configured target size may be safely
- * changed while the application is running.)</p>
+ * target size
+ * ({@link edu.illinois.library.cantaloupe.config.Key#HEAPCACHE_TARGET_SIZE})
+ * has been exceeded, the minimum number of least-recently-accessed items are
+ * purged that will reduce it back down to this size. (The configured target
+ * size may be safely changed while the application is running.)</p>
  *
- * <p>Because this cache is not time-limited, {@link #TTL_CONFIG_KEY} does not
+ * <p>Because this cache is not time-limited,
+ * {@link edu.illinois.library.cantaloupe.config.Key#CACHE_SERVER_TTL} does not
  * apply.</p>
  *
  * <p>The cache supports startup/shutdown persistence, using
- * {@link #PERSIST_CONFIG_KEY}. When enabled, its contents will be serialized
- * to a file on application shutdown, and read back in at startup. The file
- * is coded using <a href="https://developers.google.com/protocol-buffers/">
- *     Google Protocol Buffers</a>.</p>
+ * {@link edu.illinois.library.cantaloupe.config.Key#HEAPCACHE_PERSIST}. When
+ * enabled, its contents will be serialized to a file on application shutdown,
+ * and read back in at startup. The file is coded using
+ * <a href="https://developers.google.com/protocol-buffers/">Google Protocol
+ * Buffers</a>.</p>
  *
  * @see <a href="https://github.com/google/protobuf">Protocol Buffers</a>
  * @see <a href="https://developers.google.com/protocol-buffers/docs/javatutorial">
@@ -238,24 +244,21 @@ class HeapCache implements DerivativeCache {
     private static final Logger logger = LoggerFactory.
             getLogger(HeapCache.class);
 
-    static final String PATHNAME_CONFIG_KEY = "HeapCache.persist.filesystem.pathname";
-    static final String PERSIST_CONFIG_KEY = "HeapCache.persist";
-    static final String TARGET_SIZE_CONFIG_KEY = "HeapCache.target_size";
-
     private final ConcurrentMap<Key, Item> cache = new ConcurrentHashMap<>();
     private final AtomicBoolean isDirty = new AtomicBoolean(false);
     private final AtomicBoolean workerShouldWork = new AtomicBoolean(true);
 
     /**
      * <p>Dumps the cache contents to the file specified by
-     * {@link #PATHNAME_CONFIG_KEY}, first deleting the file that already
-     * exists at that path, if any.</p>
+     * {@link edu.illinois.library.cantaloupe.config.Key#HEAPCACHE_PATHNAME},
+     * first deleting the file that already exists at that path, if any.</p>
      *
-     * <p>{@link #PERSIST_CONFIG_KEY} is <strong>not</strong> respected.</p>
+     * <p>{@link edu.illinois.library.cantaloupe.config.Key#HEAPCACHE_PERSIST}
+     * is <strong>not</strong> respected.</p>
      */
     synchronized void dumpToPersistentStore() throws IOException {
         final Configuration config = Configuration.getInstance();
-        final String pathname = config.getString(PATHNAME_CONFIG_KEY);
+        final String pathname = config.getString(HEAPCACHE_PATHNAME);
         if (pathname != null && pathname.length() > 0) {
             final Path path = Paths.get(pathname);
             // Delete any existing file that is in the way.
@@ -307,7 +310,7 @@ class HeapCache implements DerivativeCache {
                     size, byteSize);
         } else {
             throw new IOException("dumpToPersistentStore(): " +
-                    PATHNAME_CONFIG_KEY + " is not set");
+                    HEAPCACHE_PATHNAME + " is not set");
         }
     }
 
@@ -369,7 +372,7 @@ class HeapCache implements DerivativeCache {
      */
     long getTargetByteSize() throws ConfigurationException {
         final Configuration config = Configuration.getInstance();
-        String humanSize = config.getString(TARGET_SIZE_CONFIG_KEY);
+        String humanSize = config.getString(HEAPCACHE_TARGET_SIZE);
         if (humanSize != null && humanSize.length() > 0) {
             final String numberStr = humanSize.replaceAll("[^\\d.]", "");
             final double number = Double.parseDouble(numberStr);
@@ -389,23 +392,27 @@ class HeapCache implements DerivativeCache {
             }
             size = Math.round(number * Math.pow(1024, exponent));
             if (size <= 0) {
-                throw new ConfigurationException(TARGET_SIZE_CONFIG_KEY +
+                throw new ConfigurationException(HEAPCACHE_TARGET_SIZE +
                         " must be greater than zero.");
             }
             return size;
         }
-        throw new ConfigurationException(TARGET_SIZE_CONFIG_KEY + " is null");
+        throw new ConfigurationException(HEAPCACHE_TARGET_SIZE + " is null");
     }
 
     @Override
     public void initialize() {
         final Configuration config = Configuration.getInstance();
-        if (config.getBoolean(PERSIST_CONFIG_KEY, false)) {
+        if (config.getBoolean(HEAPCACHE_PERSIST, false)) {
             loadFromPersistentStore();
         }
 
         // Start a worker thread to manage the size.
-        ThreadPool.getInstance().submit(new Worker());
+        try {
+            ThreadPool.getInstance().submit(new Worker());
+        } catch (RejectedExecutionException e) {
+            logger.error("initialize(): {}", e.getMessage());
+        }
     }
 
     boolean isDirty() {
@@ -433,7 +440,7 @@ class HeapCache implements DerivativeCache {
     @SuppressWarnings("unchecked")
     synchronized void loadFromPersistentStore() {
         final Configuration config = Configuration.getInstance();
-        final String pathname = config.getString(PATHNAME_CONFIG_KEY);
+        final String pathname = config.getString(HEAPCACHE_PATHNAME);
         final Path path = Paths.get(pathname);
 
         if (Files.exists(path)) {
@@ -589,7 +596,7 @@ class HeapCache implements DerivativeCache {
         // Dump the cache contents to disk, if the cache is dirty, and if
         // PERSIST_CONFIG_KEY is set to true.
         final Configuration config = Configuration.getInstance();
-        if (isDirty() && config.getBoolean(PERSIST_CONFIG_KEY, false)) {
+        if (isDirty() && config.getBoolean(HEAPCACHE_PERSIST, false)) {
             try {
                 dumpToPersistentStore();
             } catch (IOException e) {

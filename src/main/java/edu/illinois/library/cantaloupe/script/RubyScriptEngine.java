@@ -1,9 +1,8 @@
 package edu.illinois.library.cantaloupe.script;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -20,6 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * @see <a href="https://github.com/jruby/jruby/wiki/Embedding-with-JSR-223">
  *     Embedding JRuby with JSR223 - Code Examples</a>
+ * @see <a href="https://github.com/jruby/jruby/wiki/RedBridge">RedBridge</a>
  */
 class RubyScriptEngine extends AbstractScriptEngine
         implements ScriptEngine {
@@ -30,15 +30,21 @@ class RubyScriptEngine extends AbstractScriptEngine
     /** Top-level Ruby module containing methods to invoke. */
     static final String TOP_MODULE = "Cantaloupe";
 
-    private Cache<Object, Object> invocationCache;
+    private InvocationCache invocationCache = new CaffeineInvocationCache();
     private final Object lock = new Object();
     private javax.script.ScriptEngine scriptEngine;
     private final AtomicBoolean scriptIsLoading = new AtomicBoolean(false);
 
-    RubyScriptEngine() {
-        final long maxSize = getMaxCacheSize();
-        logger.info("Initializing invocation cache with a limit of {}", maxSize);
-        invocationCache = Caffeine.newBuilder().maximumSize(maxSize).build();
+    static {
+        // Available values are singleton, singlethread, threadsafe and
+        // concurrent (JSR-223 default). See
+        // https://github.com/jruby/jruby/wiki/RedBridge#Context_Instance_Type
+        System.setProperty("org.jruby.embed.localcontext.scope", "concurrent");
+
+        // Available values are transient, persistent, global (JSR-223 default)
+        // and bsf. See
+        // https://github.com/jruby/jruby/wiki/RedBridge#Local_Variable_Behavior_Options
+        System.setProperty("org.jruby.embed.localvariable.behavior", "transient");
     }
 
     /**
@@ -58,15 +64,9 @@ class RubyScriptEngine extends AbstractScriptEngine
     /**
      * @return The method invocation cache.
      */
-    Cache<Object, Object> getInvocationCache() {
+    @Override
+    public InvocationCache getInvocationCache() {
         return invocationCache;
-    }
-
-    private long getMaxCacheSize() {
-        // TODO: this is very crude and needs tuning.
-        final Runtime runtime = Runtime.getRuntime();
-        final int mb = 1024 * 1024;
-        return runtime.maxMemory() / mb / 10;
     }
 
     /**
@@ -121,7 +121,7 @@ class RubyScriptEngine extends AbstractScriptEngine
 
         Object returnValue;
         final Configuration config = ConfigurationFactory.getInstance();
-        if (config.getBoolean(METHOD_INVOCATION_CACHE_ENABLED_CONFIG_KEY, false)) {
+        if (config.getBoolean(Key.DELEGATE_METHOD_INVOCATION_CACHE_ENABLED, false)) {
             returnValue = retrieveFromCacheOrInvoke(methodName, args);
         } else {
             returnValue = doInvoke(methodName, args);
@@ -146,7 +146,7 @@ class RubyScriptEngine extends AbstractScriptEngine
     private Object retrieveFromCacheOrInvoke(String methodName, Object... args)
             throws ScriptException {
         final Object cacheKey = getCacheKey(methodName, args);
-        Object returnValue = invocationCache.getIfPresent(cacheKey);
+        Object returnValue = invocationCache.get(cacheKey);
         if (returnValue != null) {
             logger.debug("invoke({}::{}): cache hit (skipping invocation)",
                     TOP_MODULE, methodName);

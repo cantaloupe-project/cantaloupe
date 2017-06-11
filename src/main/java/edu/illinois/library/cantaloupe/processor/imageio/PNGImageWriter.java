@@ -118,12 +118,13 @@ class PNGImageWriter extends AbstractImageWriter {
         final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
                 Format.PNG.getPreferredMediaType().toString());
         final ImageWriter writer = writers.next();
-        try {
-            final IIOMetadata metadata = getMetadata(
-                    writer, writer.getDefaultWriteParam(), image);
-            final IIOImage iioImage = new IIOImage(image, null, metadata);
-            final ImageOutputStream os =
-                    ImageIO.createImageOutputStream(outputStream);
+
+        final IIOMetadata metadata = getMetadata(
+                writer, writer.getDefaultWriteParam(), image);
+        final IIOImage iioImage = new IIOImage(image, null, metadata);
+
+        try (ImageOutputStream os =
+                     ImageIO.createImageOutputStream(outputStream)) {
             writer.setOutput(os);
             writer.write(iioImage);
         } finally {
@@ -143,12 +144,13 @@ class PNGImageWriter extends AbstractImageWriter {
         final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
                 Format.PNG.getPreferredMediaType().toString());
         final ImageWriter writer = writers.next();
-        try {
-            final IIOMetadata metadata = getMetadata(
-                    writer, writer.getDefaultWriteParam(), image);
-            final IIOImage iioImage = new IIOImage(image, null, metadata);
-            final ImageOutputStream os =
-                    ImageIO.createImageOutputStream(outputStream);
+
+        final IIOMetadata metadata = getMetadata(
+                writer, writer.getDefaultWriteParam(), image);
+        final IIOImage iioImage = new IIOImage(image, null, metadata);
+
+        try (ImageOutputStream os =
+                     ImageIO.createImageOutputStream(outputStream)) {
             writer.setOutput(os);
             writer.write(iioImage);
         } finally {

@@ -3,7 +3,11 @@ package edu.illinois.library.cantaloupe.config;
 import org.apache.commons.configuration.ConversionException;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 
 /**
@@ -14,6 +18,7 @@ class PropertiesConfiguration extends FileConfiguration implements Configuration
 
     private org.apache.commons.configuration.PropertiesConfiguration commonsConfig =
             new org.apache.commons.configuration.PropertiesConfiguration();
+    private byte[] contentsChecksum = new byte[] {};
 
     public PropertiesConfiguration() {
         // Prevent commas in values from being interpreted as list item
@@ -129,6 +134,24 @@ class PropertiesConfiguration extends FileConfiguration implements Configuration
     public synchronized void reload() {
         final File configFile = getFile();
         if (configFile != null) {
+            // Calculate the checksum of the file contents and compare it to
+            // what has already been loaded. If the checksums match, skip the
+            // reload.
+            try {
+                byte[] fileBytes = Files.readAllBytes(configFile.toPath());
+                final MessageDigest md = MessageDigest.getInstance("MD5");
+                byte[] digestBytes = md.digest(fileBytes);
+
+                if (digestBytes == contentsChecksum) {
+                    return;
+                }
+                contentsChecksum = digestBytes;
+            } catch (FileNotFoundException e) {
+                System.err.println("File not found: " + e.getMessage());
+            } catch (IOException | NoSuchAlgorithmException e) {
+                System.err.println(e.getMessage());
+            }
+
             if (commonsConfig != null) {
                 System.out.println("Reloading config file: " + configFile);
             } else {

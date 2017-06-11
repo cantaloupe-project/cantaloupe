@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,11 +21,11 @@ public abstract class CacheWorkerRunner {
 
     public static synchronized void start() {
         final Configuration config = ConfigurationFactory.getInstance();
-        if (config.getBoolean(CacheWorker.ENABLED_CONFIG_KEY, false)) {
+        if (config.getBoolean(Key.CACHE_WORKER_ENABLED, false)) {
             executorService = Executors.newSingleThreadScheduledExecutor();
             future = executorService.scheduleAtFixedRate(
                     new CacheWorker(), 5,
-                    config.getInt(CacheWorker.INTERVAL_CONFIG_KEY, -1),
+                    config.getInt(Key.CACHE_WORKER_INTERVAL, -1),
                     TimeUnit.SECONDS);
         }
     }

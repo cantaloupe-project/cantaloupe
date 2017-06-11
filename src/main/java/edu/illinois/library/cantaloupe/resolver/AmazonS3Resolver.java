@@ -7,6 +7,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
@@ -30,9 +31,9 @@ import java.io.IOException;
  * <h3>Lookup Strategies</h3>
  *
  * <p>Two distinct lookup strategies are supported, defined by
- * {@link #LOOKUP_STRATEGY_CONFIG_KEY}. BasicLookupStrategy maps identifiers
- * directly to S3 object keys. ScriptLookupStrategy invokes a delegate method
- * to retrieve object keys dynamically.</p>
+ * {@link Key#AMAZONS3RESOLVER_LOOKUP_STRATEGY}. BasicLookupStrategy maps
+ * identifiers directly to S3 object keys. ScriptLookupStrategy invokes a
+ * delegate method to retrieve object keys dynamically.</p>
  *
  * @see <a href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/welcome.html">
  *     AWS SDK for Java</a>
@@ -62,17 +63,6 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     private static Logger logger = LoggerFactory.
             getLogger(AmazonS3Resolver.class);
 
-    static final String ACCESS_KEY_ID_CONFIG_KEY =
-            "AmazonS3Resolver.access_key_id";
-    static final String BUCKET_NAME_CONFIG_KEY =
-            "AmazonS3Resolver.bucket.name";
-    static final String BUCKET_REGION_CONFIG_KEY =
-            "AmazonS3Resolver.bucket.region";
-    static final String ENDPOINT_CONFIG_KEY = "AmazonS3Resolver.endpoint";
-    static final String LOOKUP_STRATEGY_CONFIG_KEY =
-            "AmazonS3Resolver.lookup_strategy";
-    static final String SECRET_KEY_CONFIG_KEY = "AmazonS3Resolver.secret_key";
-
     static final String GET_KEY_DELEGATE_METHOD =
             "AmazonS3Resolver::get_object_key";
 
@@ -82,9 +72,9 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
         if (client == null) {
             final Configuration config = Configuration.getInstance();
             final AWSClientFactory factory = new AWSClientFactory(
-                    config.getString(ACCESS_KEY_ID_CONFIG_KEY),
-                    config.getString(SECRET_KEY_CONFIG_KEY),
-                    config.getString(BUCKET_REGION_CONFIG_KEY));
+                    config.getString(Key.AMAZONS3RESOLVER_ACCESS_KEY_ID),
+                    config.getString(Key.AMAZONS3RESOLVER_SECRET_KEY),
+                    config.getString(Key.AMAZONS3RESOLVER_BUCKET_REGION));
             client = factory.newClient();
         }
         return client;
@@ -99,8 +89,9 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     private S3Object getObject() throws IOException {
         AmazonS3 s3 = getClientInstance();
 
-        Configuration config = ConfigurationFactory.getInstance();
-        final String bucketName = config.getString(BUCKET_NAME_CONFIG_KEY);
+        final Configuration config = ConfigurationFactory.getInstance();
+        final String bucketName =
+                config.getString(Key.AMAZONS3RESOLVER_BUCKET_NAME);
         final String objectKey = getObjectKey();
         try {
             logger.info("Requesting {} from bucket {}", objectKey, bucketName);
@@ -116,7 +107,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
     private String getObjectKey() throws IOException {
         final Configuration config = ConfigurationFactory.getInstance();
-        switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
+        switch (config.getString(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY)) {
             case "BasicLookupStrategy":
                 return identifier.toString();
             case "ScriptLookupStrategy":
@@ -127,7 +118,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
                     throw new IOException(e);
                 }
             default:
-                throw new IOException(LOOKUP_STRATEGY_CONFIG_KEY +
+                throw new IOException(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY +
                         " is invalid or not set");
         }
     }

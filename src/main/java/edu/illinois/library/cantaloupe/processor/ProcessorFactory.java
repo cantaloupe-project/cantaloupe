@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 
 import java.io.IOException;
@@ -12,13 +13,10 @@ import java.util.Set;
  * Used to obtain an instance of a {@link Processor} for a given source format,
  * as defined in the configuration.
  */
-public abstract class ProcessorFactory {
-
-    public static final String FALLBACK_PROCESSOR_CONFIG_KEY =
-            "processor.fallback";
+public class ProcessorFactory {
 
     public static Set<Processor> getAllProcessors() {
-        return new HashSet<Processor>(Arrays.asList(
+        return new HashSet<>(Arrays.asList(
                 new FfmpegProcessor(),
                 new GraphicsMagickProcessor(),
                 new ImageMagickProcessor(),
@@ -40,7 +38,7 @@ public abstract class ProcessorFactory {
      * @throws ReflectiveOperationException
      * @throws IOException
      */
-    public static Processor getProcessor(final Format sourceFormat)
+    public Processor getProcessor(final Format sourceFormat)
             throws UnsupportedSourceFormatException,
             ReflectiveOperationException,
             IOException {
@@ -66,15 +64,14 @@ public abstract class ProcessorFactory {
      * @return Name of the processor assigned to the given format, or null if
      *         one is not set.
      */
-    private static String getAssignedProcessorName(Format format) {
-        final String value = ConfigurationFactory.getInstance().
+    private String getAssignedProcessorName(Format format) {
+        final String value = Configuration.getInstance().
                 getString("processor." + format.getPreferredExtension());
         return (value != null && value.length() > 0) ? value : null;
     }
 
-    private static String getFallbackProcessorName() {
-        return ConfigurationFactory.getInstance().
-                getString(FALLBACK_PROCESSOR_CONFIG_KEY);
+    private String getFallbackProcessorName() {
+        return Configuration.getInstance().getString(Key.PROCESSOR_FALLBACK);
     }
 
 }

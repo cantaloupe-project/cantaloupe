@@ -1,10 +1,10 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import edu.illinois.library.cantaloupe.WebApplication;
+import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
-import org.junit.Before;
 import org.junit.Test;
 import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
@@ -23,13 +23,13 @@ public class LandingResourceTest extends ResourceTest {
     public void testEndpointDisabled() {
         Configuration config = ConfigurationFactory.getInstance();
         ClientResource client = getClientForUriPath(
-                WebApplication.IIIF_2_PATH);
+                RestletApplication.IIIF_2_PATH);
 
-        config.setProperty(IIIF2Resource.ENDPOINT_ENABLED_CONFIG_KEY, true);
+        config.setProperty(Key.IIIF_2_ENDPOINT_ENABLED, true);
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
-        config.setProperty(IIIF2Resource.ENDPOINT_ENABLED_CONFIG_KEY, false);
+        config.setProperty(Key.IIIF_2_ENDPOINT_ENABLED, false);
         try {
             client.get();
             fail("Expected exception");
@@ -40,8 +40,7 @@ public class LandingResourceTest extends ResourceTest {
 
     @Test
     public void testGet() throws IOException {
-        ClientResource client = getClientForUriPath(
-                WebApplication.IIIF_2_PATH);
+        ClientResource client = getClientForUriPath(RestletApplication.IIIF_2_PATH);
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
         assertTrue(client.get().getText().contains("Cantaloupe Image"));

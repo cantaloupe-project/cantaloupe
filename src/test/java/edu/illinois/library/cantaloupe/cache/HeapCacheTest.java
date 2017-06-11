@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -8,12 +9,9 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,14 +41,14 @@ public class HeapCacheTest extends BaseTest {
             HeapCache.Key k2 = new HeapCache.Key("cats", "birds");
             assertTrue(k1.equals(k2));
 
-            // Unequal identifiers
-            k1 = new HeapCache.Key("cats", "birds");
-            k2 = new HeapCache.Key("dogs", "birds");
-            assertFalse(k1.equals(k2));
-
             // Unequal op lists
             k1 = new HeapCache.Key("cats", "birds");
             k2 = new HeapCache.Key("cats", "goats");
+            assertFalse(k1.equals(k2));
+
+            // Unequal identifiers and op lists
+            k1 = new HeapCache.Key("cats", "birds");
+            k2 = new HeapCache.Key("dogs", "goats");
             assertFalse(k1.equals(k2));
         }
 
@@ -72,8 +70,8 @@ public class HeapCacheTest extends BaseTest {
         super.setUp();
 
         Configuration config = Configuration.getInstance();
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, Math.pow(1024, 2));
-        config.setProperty(Cache.TTL_CONFIG_KEY, 0);
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, Math.pow(1024, 2));
+        config.setProperty(Key.CACHE_SERVER_TTL, 0);
 
         instance = new HeapCache();
         assertFalse(instance.isDirty());
@@ -84,20 +82,19 @@ public class HeapCacheTest extends BaseTest {
     @Test
     public void testDumpToPersistentStore() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(HeapCache.PERSIST_CONFIG_KEY, true);
+        config.setProperty(Key.HEAPCACHE_PERSIST, true);
 
         Path cacheFile = Files.createTempFile("cantaloupe", "tmp");
         try {
             Files.delete(cacheFile);
-            config.setProperty(HeapCache.PATHNAME_CONFIG_KEY,
-                    cacheFile.toString());
+            config.setProperty(Key.HEAPCACHE_PATHNAME, cacheFile.toString());
 
             // Seed an image
             Identifier id1 = new Identifier("cats");
             OperationList ops1 = new OperationList(id1, Format.JPG);
-            OutputStream os = instance.newDerivativeImageOutputStream(ops1);
-            IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
-            os.close();
+            try (OutputStream os = instance.newDerivativeImageOutputStream(ops1)) {
+                Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+            }
 
             instance.dumpToPersistentStore();
 
@@ -117,14 +114,14 @@ public class HeapCacheTest extends BaseTest {
         assertEquals(0, instance.getByteSize());
 
         Configuration config = Configuration.getInstance();
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, 10000);
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, 10000);
 
         // Seed an image
         Identifier id1 = new Identifier("cats");
         OperationList ops1 = new OperationList(id1, Format.JPG);
-        OutputStream os = instance.newDerivativeImageOutputStream(ops1);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
-        os.close();
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops1)) {
+            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+        }
 
         assertEquals(5439, instance.getByteSize());
 
@@ -155,7 +152,7 @@ public class HeapCacheTest extends BaseTest {
     @Test
     public void testGetTargetByteSizeWithInvalidValue() throws Exception {
         final Configuration config = Configuration.getInstance();
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, "");
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, "");
         try {
             instance.getTargetByteSize();
             fail("Expected exception");
@@ -167,7 +164,7 @@ public class HeapCacheTest extends BaseTest {
     @Test
     public void testGetTargetByteSizeWithNumber() throws Exception {
         final Configuration config = Configuration.getInstance();
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, 1000);
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, 1000);
         assertEquals(1000, instance.getTargetByteSize());
     }
 
@@ -177,28 +174,28 @@ public class HeapCacheTest extends BaseTest {
         final float base = 500.5f;
         final float delta = 0.0001f;
 
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, base + "M");
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, base + "M");
         assertEquals(base * (long) Math.pow(1024, 2), instance.getTargetByteSize(), delta);
 
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, base + "MB");
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, base + "MB");
         assertEquals(base * (long) Math.pow(1024, 2), instance.getTargetByteSize(), delta);
 
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, base + "G");
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, base + "G");
         assertEquals(base * (long) Math.pow(1024, 3), instance.getTargetByteSize(), delta);
 
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, base + "GB");
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, base + "GB");
         assertEquals(base * (long) Math.pow(1024, 3), instance.getTargetByteSize(), delta);
 
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, base + "T");
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, base + "T");
         assertEquals(base * (long) Math.pow(1024, 4), instance.getTargetByteSize(), delta);
 
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, base + "TB");
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, base + "TB");
         assertEquals(base * (long) Math.pow(1024, 4), instance.getTargetByteSize(), delta);
 
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, base + "P");
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, base + "P");
         assertEquals(base * (long) Math.pow(1024, 5), instance.getTargetByteSize(), delta);
 
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, base + "PB");
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, base + "PB");
         assertEquals(base * (long) Math.pow(1024, 5), instance.getTargetByteSize(), delta);
     }
 
@@ -207,20 +204,19 @@ public class HeapCacheTest extends BaseTest {
     @Test
     public void testLoadFromPersistentStore() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(HeapCache.PERSIST_CONFIG_KEY, true);
+        config.setProperty(Key.HEAPCACHE_PERSIST, true);
 
         Path cacheFile = Files.createTempFile("cantaloupe", "tmp");
         try {
             Files.delete(cacheFile);
-            config.setProperty(HeapCache.PATHNAME_CONFIG_KEY,
-                    cacheFile.toString());
+            config.setProperty(Key.HEAPCACHE_PATHNAME, cacheFile.toString());
 
             // Seed an image
             Identifier id1 = new Identifier("cats");
             OperationList ops1 = new OperationList(id1, Format.JPG);
-            OutputStream os = instance.newDerivativeImageOutputStream(ops1);
-            IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
-            os.close();
+            try (OutputStream os = instance.newDerivativeImageOutputStream(ops1)) {
+                Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+            }
 
             instance.dumpToPersistentStore();
 
@@ -243,11 +239,8 @@ public class HeapCacheTest extends BaseTest {
         // Doesn't exist yet
         assertNull(instance.newDerivativeImageInputStream(ops));
 
-        File image = TestUtil.getImage(IMAGE);
-
-        try (FileInputStream is = new FileInputStream(image);
-             OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
-            IOUtils.copy(is, os);
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
         }
 
         // Now it should.
@@ -279,9 +272,9 @@ public class HeapCacheTest extends BaseTest {
         // Seed a derivative image
         Identifier id1 = new Identifier("cats");
         OperationList ops1 = new OperationList(id1, Format.JPG);
-        OutputStream os = instance.newDerivativeImageOutputStream(ops1);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
-        os.close();
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops1)) {
+            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+        }
         // Seed an info
         instance.put(id1, new Info(50, 40));
 
@@ -299,9 +292,9 @@ public class HeapCacheTest extends BaseTest {
         // Seed a derivative image
         Identifier id1 = new Identifier("cats");
         OperationList ops = new OperationList(id1, Format.JPG);
-        OutputStream os = instance.newDerivativeImageOutputStream(ops);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
-        os.close();
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+        }
 
         instance.purge(ops);
 
@@ -316,9 +309,8 @@ public class HeapCacheTest extends BaseTest {
         Identifier id1 = new Identifier("cats");
         OperationList ops = new OperationList(id1, Format.JPG);
 
-        try (FileInputStream is = new FileInputStream(TestUtil.getImage(IMAGE));
-             OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
-            IOUtils.copy(is, os);
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
         }
 
         // Seed an info
@@ -335,14 +327,14 @@ public class HeapCacheTest extends BaseTest {
     @Test
     public void testPurgeExcessWithExcess() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, 5000);
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, 5000);
 
         // Seed an image
         Identifier id1 = new Identifier("cats");
         OperationList ops1 = new OperationList(id1, Format.JPG);
-        OutputStream os = instance.newDerivativeImageOutputStream(ops1);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
-        os.close();
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops1)) {
+            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+        }
 
         assertEquals(5439, instance.getByteSize());
 
@@ -355,14 +347,14 @@ public class HeapCacheTest extends BaseTest {
     @Test
     public void testPurgeExcessWithNoExcess() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, 10000);
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, 10000);
 
         // Seed an image
         Identifier id1 = new Identifier("cats");
         OperationList ops1 = new OperationList(id1, Format.JPG);
-        OutputStream os = instance.newDerivativeImageOutputStream(ops1);
-        IOUtils.copy(new FileInputStream(TestUtil.getImage(IMAGE)), os);
-        os.close();
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops1)) {
+            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+        }
 
         long size = instance.getByteSize();
 
@@ -377,7 +369,7 @@ public class HeapCacheTest extends BaseTest {
     public void testPurgeExcessThrowsConfigurationExceptionWhenMaxSizeIsInvalid()
             throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(HeapCache.TARGET_SIZE_CONFIG_KEY, 0);
+        config.setProperty(Key.HEAPCACHE_TARGET_SIZE, 0);
         try {
             instance.purgeExcess();
             fail("Expected exception");

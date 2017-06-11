@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
@@ -29,9 +30,7 @@ class Java2dProcessor extends AbstractJava2DProcessor
             final ReductionFactor rf = new ReductionFactor();
             final Set<ImageReader.Hint> hints = new HashSet<>();
 
-            final boolean normalize = (boolean) ops.getOptions().
-                    getOrDefault(NORMALIZE_CONFIG_KEY, false);
-            if (normalize) {
+            if (ops.getFirst(Normalize.class) != null) {
                 // When normalizing, the reader needs to read the entire image
                 // so that its histogram can be sampled accurately. This will
                 // preserve the luminance across tiles.
@@ -40,8 +39,7 @@ class Java2dProcessor extends AbstractJava2DProcessor
 
             BufferedImage image = reader.read(ops, imageInfo.getOrientation(),
                     rf, hints);
-            postProcess(image, hints, ops, imageInfo, rf, normalize,
-                    outputStream);
+            postProcess(image, hints, ops, imageInfo, rf, outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         } finally {

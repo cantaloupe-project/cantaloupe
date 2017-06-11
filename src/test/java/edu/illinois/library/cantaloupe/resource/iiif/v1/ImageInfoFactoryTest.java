@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -24,11 +25,10 @@ public class ImageInfoFactoryTest extends BaseTest {
         super.setUp();
 
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(ProcessorFactory.FALLBACK_PROCESSOR_CONFIG_KEY,
-                "Java2dProcessor");
+        config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
 
         imageUri = "http://example.org/bla";
-        processor = ProcessorFactory.getProcessor(Format.JPG);
+        processor = new ProcessorFactory().getProcessor(Format.JPG);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
 
@@ -40,7 +40,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty("metadata.respect_orientation", true);
 
-        processor = ProcessorFactory.getProcessor(Format.JPG);
+        processor = new ProcessorFactory().getProcessor(Format.JPG);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rotated.jpg"));
 

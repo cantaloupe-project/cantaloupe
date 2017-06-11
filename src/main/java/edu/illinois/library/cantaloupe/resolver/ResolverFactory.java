@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resolver;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
@@ -20,7 +21,7 @@ import java.util.Set;
  * Used to obtain an instance of a {@link Resolver} defined in the
  * configuration, or returned by a delegate method.
  */
-public abstract class ResolverFactory {
+public class ResolverFactory {
 
     /**
      * How resolvers are chosen by {@link #getResolver(Identifier)}.
@@ -32,11 +33,8 @@ public abstract class ResolverFactory {
     private static Logger logger = LoggerFactory.
             getLogger(ResolverFactory.class);
 
-    public static final String DELEGATE_RESOLVER_CONFIG_KEY =
-            "resolver.delegate";
-    public static final String RESOLVER_CHOOSER_DELEGATE_METHOD =
+    private static final String RESOLVER_CHOOSER_DELEGATE_METHOD =
             "get_resolver";
-    public static final String STATIC_RESOLVER_CONFIG_KEY = "resolver.static";
 
     /**
      * @return Set of instances of each unique resolver.
@@ -51,10 +49,10 @@ public abstract class ResolverFactory {
     }
 
     /**
-     * If {@link #STATIC_RESOLVER_CONFIG_KEY} is null or undefined, uses a
-     * delegate script method to return an instance of the appropriate
-     * resolver for the given identifier. Otherwise, returns an instance of
-     * the resolver specified in {@link #STATIC_RESOLVER_CONFIG_KEY}.
+     * If {@link Key#RESOLVER_STATIC} is null or undefined, uses a delegate
+     * script method to return an instance of the appropriate resolver for the
+     * given identifier. Otherwise, returns an instance of the resolver
+     * specified in {@link Key#RESOLVER_STATIC}.
      *
      * @return Instance of the appropriate resolver for the given identifier,
      *         with identifier already set.
@@ -62,7 +60,7 @@ public abstract class ResolverFactory {
      * @throws FileNotFoundException If the specified chooser script is not
      * found.
      */
-    public static Resolver getResolver(Identifier identifier) throws Exception {
+    public Resolver getResolver(Identifier identifier) throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
         if (getSelectionStrategy().equals(SelectionStrategy.DELEGATE_SCRIPT)) {
             Resolver resolver = newDynamicResolver(identifier);
@@ -71,12 +69,11 @@ public abstract class ResolverFactory {
                     resolver.getClass().getSimpleName(), identifier);
             return resolver;
         } else {
-            final String resolverName = config.
-                    getString(STATIC_RESOLVER_CONFIG_KEY);
+            final String resolverName = config.getString(Key.RESOLVER_STATIC);
             if (resolverName != null) {
                 return newStaticResolver(resolverName, identifier);
             } else {
-                throw new ConfigurationException(STATIC_RESOLVER_CONFIG_KEY +
+                throw new ConfigurationException(Key.RESOLVER_STATIC +
                         " is not set to a valid resolver.");
             }
         }
@@ -85,9 +82,9 @@ public abstract class ResolverFactory {
     /**
      * @return How resolvers are chosen by {@link #getResolver(Identifier)}.
      */
-    public static SelectionStrategy getSelectionStrategy() {
+    public SelectionStrategy getSelectionStrategy() {
         final Configuration config = ConfigurationFactory.getInstance();
-        return config.getBoolean(DELEGATE_RESOLVER_CONFIG_KEY, false) ?
+        return config.getBoolean(Key.RESOLVER_DELEGATE, false) ?
                 SelectionStrategy.DELEGATE_SCRIPT : SelectionStrategy.STATIC;
     }
 
@@ -100,13 +97,12 @@ public abstract class ResolverFactory {
      * @throws ConfigurationException If there is no resolver specified in the
      * configuration.
      */
-    private static Resolver newStaticResolver(String resolverName,
-                                              Identifier identifier)
-            throws Exception {
+    private Resolver newStaticResolver(String resolverName,
+                                       Identifier identifier) throws Exception {
         return newResolver(resolverName, identifier);
     }
 
-    private static Resolver newResolver(String name, Identifier identifier)
+    private Resolver newResolver(String name, Identifier identifier)
             throws Exception {
         Class class_ = Class.forName(ResolverFactory.class.getPackage().getName() +
                 "." + name);
@@ -125,7 +121,7 @@ public abstract class ResolverFactory {
      * @throws ScriptException If the script failed to execute
      * @throws ScriptException If the script is of an unsupported type
      */
-    private static Resolver newDynamicResolver(final Identifier identifier)
+    private Resolver newDynamicResolver(final Identifier identifier)
             throws Exception {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final Object result = engine.invoke(RESOLVER_CHOOSER_DELEGATE_METHOD,

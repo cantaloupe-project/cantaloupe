@@ -2,9 +2,9 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
@@ -44,7 +44,7 @@ public class TIFFImageWriterTest extends BaseTest {
     @Test
     public void testWriteWithBufferedImageAndExifMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("tif-exif.tif");
         final TIFFImageReader reader = new TIFFImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -58,7 +58,7 @@ public class TIFFImageWriterTest extends BaseTest {
     @Test
     public void testWriteWithBufferedImageAndIptcMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("tif-iptc.tif");
         final TIFFImageReader reader = new TIFFImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -72,7 +72,7 @@ public class TIFFImageWriterTest extends BaseTest {
     @Test
     public void testWriteWithBufferedImageAndXmpMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("tif-xmp.tif");
         final TIFFImageReader reader = new TIFFImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -99,7 +99,7 @@ public class TIFFImageWriterTest extends BaseTest {
     @Test
     public void testWriteWithPlanarImageAndExifMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("tif-exif.tif");
         final TIFFImageReader reader = new TIFFImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -114,7 +114,7 @@ public class TIFFImageWriterTest extends BaseTest {
     @Test
     public void testWriteWithPlanarImageAndIptcMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("tif-iptc.tif");
         final TIFFImageReader reader = new TIFFImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -129,7 +129,7 @@ public class TIFFImageWriterTest extends BaseTest {
     @Test
     public void testWriteWithPlanarImageAndXmpMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("tif-xmp.tif");
         final TIFFImageReader reader = new TIFFImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
@@ -202,7 +202,7 @@ public class TIFFImageWriterTest extends BaseTest {
     private TIFFImageWriter newWriter(Metadata metadata) throws IOException {
         OperationList opList = new OperationList();
         if (ConfigurationFactory.getInstance().
-                getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
+                getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
             opList.add(new MetadataCopy());
         }
         return new TIFFImageWriter(opList, metadata);

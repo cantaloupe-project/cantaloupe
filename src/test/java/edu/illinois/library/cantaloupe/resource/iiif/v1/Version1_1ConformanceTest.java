@@ -1,8 +1,9 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.WebApplication;
+import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
@@ -41,7 +42,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
             new Identifier("jpg-rgb-64x56x8-baseline.jpg");
 
     private String getBaseUri() {
-        return "http://localhost:" + PORT + WebApplication.IIIF_1_PATH;
+        return "http://localhost:" + PORT + RestletApplication.IIIF_1_PATH;
     }
 
     /**
@@ -78,7 +79,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
         String cwd = directory.getCanonicalPath();
         Path path = Paths.get(cwd, "src", "test", "resources");
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty("FilesystemResolver.BasicLookupStrategy.path_prefix",
+        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX,
                 path + File.separator);
 
         // image endpoint
@@ -191,11 +192,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
             assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
         }
 
-        // We are not going to assert a 400 for "region entirely outside the
-        // bounds of the reported dimensions" because it would require
-        // ImageResource.doGet() to get the dimensions of the source image
-        // (before any processing), which is unnecessarily expensive.
-        /*
         // x/y out of bounds
         client = getClientForUriPath("/iiif/1/" + IMAGE + "/99999,99999,50,50/full/0/native.jpg");
         try {
@@ -204,7 +200,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
         } catch (ResourceException e) {
             assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
         }
-        */
     }
 
     /**
@@ -545,7 +540,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
 
         // does the current processor support this output format?
         Format sourceFormat = Format.inferFormat(IMAGE);
-        Processor processor = ProcessorFactory.getProcessor(sourceFormat);
+        Processor processor = new ProcessorFactory().getProcessor(sourceFormat);
         if (processor.getAvailableOutputFormats().contains(format)) {
             client.get();
             assertEquals(Status.SUCCESS_OK, client.getStatus());
@@ -637,8 +632,9 @@ public class Version1_1ConformanceTest extends ResourceTest {
     public void testInformationRequestContentType() throws IOException {
         ClientResource client = getClientForUriPath("/iiif/1/" + IMAGE + "/info.json");
         client.get();
-        assertEquals("application/json; charset=UTF-8",
-                client.getResponse().getHeaders().getFirst("Content-Type").getValue());
+        assertEquals("application/json;charset=utf-8",
+                client.getResponse().getHeaders().getFirst("Content-Type").
+                        getValue().replace(" ", "").toLowerCase());
     }
 
     /**

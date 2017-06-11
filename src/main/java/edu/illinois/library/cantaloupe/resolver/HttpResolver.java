@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MediaType;
@@ -43,9 +44,10 @@ import java.util.Arrays;
  * <h3>Lookup Strategies</h3>
  *
  * <p>Two distinct lookup strategies are supported, defined by
- * {@link #LOOKUP_STRATEGY_CONFIG_KEY}. BasicLookupStrategy locates images by
- * concatenating a pre-defined URL prefix and/or suffix. ScriptLookupStrategy
- * invokes a delegate method to retrieve a URL dynamically.</p>
+ * {@link Key#HTTPRESOLVER_LOOKUP_STRATEGY}. BasicLookupStrategy locates
+ * images by concatenating a pre-defined URL prefix and/or suffix.
+ * ScriptLookupStrategy invokes a delegate method to retrieve a URL
+ * dynamically.</p>
  */
 class HttpResolver extends AbstractResolver implements StreamResolver {
 
@@ -81,17 +83,6 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
     private static Logger logger = LoggerFactory.getLogger(HttpResolver.class);
 
-    static final String BASIC_AUTH_SECRET_CONFIG_KEY =
-            "HttpResolver.auth.basic.secret";
-    static final String BASIC_AUTH_USERNAME_CONFIG_KEY =
-            "HttpResolver.auth.basic.username";
-    static final String LOOKUP_STRATEGY_CONFIG_KEY =
-            "HttpResolver.lookup_strategy";
-    static final String URL_PREFIX_CONFIG_KEY =
-            "HttpResolver.BasicLookupStrategy.url_prefix";
-    static final String URL_SUFFIX_CONFIG_KEY =
-            "HttpResolver.BasicLookupStrategy.url_suffix";
-
     static final String GET_URL_DELEGATE_METHOD = "HttpResolver::get_url";
 
     private final Client client = new Client(
@@ -108,8 +99,10 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     private static ClientResource newClientResource(final Reference url) {
         final ClientResource resource = new ClientResource(url);
         final Configuration config = ConfigurationFactory.getInstance();
-        final String username = config.getString(BASIC_AUTH_USERNAME_CONFIG_KEY, "");
-        final String secret = config.getString(BASIC_AUTH_SECRET_CONFIG_KEY, "");
+        final String username =
+                config.getString(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME, "");
+        final String secret =
+                config.getString(Key.HTTPRESOLVER_BASIC_AUTH_SECRET, "");
         if (username.length() > 0 && secret.length() > 0) {
             resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC,
                     username, secret);
@@ -156,7 +149,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
     public Reference getUrl() throws IOException {
         final Configuration config = ConfigurationFactory.getInstance();
-        switch (config.getString(LOOKUP_STRATEGY_CONFIG_KEY)) {
+        switch (config.getString(Key.HTTPRESOLVER_LOOKUP_STRATEGY)) {
             case "BasicLookupStrategy":
                 return getUrlWithBasicStrategy();
             case "ScriptLookupStrategy":
@@ -167,7 +160,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                     throw new IOException(e);
                 }
             default:
-                throw new IOException(LOOKUP_STRATEGY_CONFIG_KEY +
+                throw new IOException(Key.HTTPRESOLVER_LOOKUP_STRATEGY +
                         " is invalid or not set");
         }
     }
@@ -212,8 +205,8 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
     private Reference getUrlWithBasicStrategy() {
         final Configuration config = ConfigurationFactory.getInstance();
-        final String prefix = config.getString(URL_PREFIX_CONFIG_KEY, "");
-        final String suffix = config.getString(URL_SUFFIX_CONFIG_KEY, "");
+        final String prefix = config.getString(Key.HTTPRESOLVER_URL_PREFIX, "");
+        final String suffix = config.getString(Key.HTTPRESOLVER_URL_SUFFIX, "");
         return new Reference(prefix + identifier.toString() + suffix);
     }
 

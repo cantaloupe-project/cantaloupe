@@ -12,18 +12,24 @@
 http.enabled = true
 http.host = 0.0.0.0
 http.port = 8182
+http.http2.enabled = true
 
 # !! Whether to enable HTTPS access (https://), and on what host interface
 # and TCP port. (Applies in standalone mode only.)
 https.enabled = false
 https.host = 0.0.0.0
 https.port = 8183
+https.http2.enabled = true
 
 # !! Available values are `JKS` and `PKCS12`. (Standalone mode only.)
 https.key_store_type = JKS
 https.key_store_password = myPassword
 https.key_store_path = /path/to/keystore.jks
 https.key_password = myPassword
+
+# !! Maximum size of the HTTP(S) request queue. Set to 0 to use the OS
+# default.
+http.accept_queue_limit = 0
 
 # !! Configures HTTP Basic authentication.
 auth.basic.enabled = false
@@ -237,6 +243,7 @@ processor.mp4 = FfmpegProcessor
 processor.mpg = FfmpegProcessor
 processor.pdf = PdfBoxProcessor
 processor.png =
+processor.sgi = ImageMagickProcessor
 processor.tif =
 processor.webm = FfmpegProcessor
 processor.webp = ImageMagickProcessor

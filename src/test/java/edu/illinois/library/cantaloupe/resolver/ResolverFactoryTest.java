@@ -2,15 +2,23 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 public class ResolverFactoryTest extends BaseTest {
+
+    private ResolverFactory instance;
+
+    @Before
+    public void setUp() {
+        instance = new ResolverFactory();
+    }
 
     @Test
     public void testGetAllResolvers() {
@@ -24,19 +32,16 @@ public class ResolverFactoryTest extends BaseTest {
 
         Identifier identifier = new Identifier("jdbc");
 
-        config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
-                "FilesystemResolver");
-        assertTrue(ResolverFactory.getResolver(identifier) instanceof FilesystemResolver);
+        config.setProperty(Key.RESOLVER_STATIC, "FilesystemResolver");
+        assertTrue(instance.getResolver(identifier) instanceof FilesystemResolver);
 
-        config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
-                "HttpResolver");
-        assertTrue(ResolverFactory.getResolver(identifier) instanceof HttpResolver);
+        config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
+        assertTrue(instance.getResolver(identifier) instanceof HttpResolver);
 
         // invalid resolver
         try {
-            config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
-                    "bogus");
-            ResolverFactory.getResolver(identifier);
+            config.setProperty(Key.RESOLVER_STATIC, "BogusResolver");
+            instance.getResolver(identifier);
             fail("Expected exception");
         } catch (ClassNotFoundException e) {
             // pass
@@ -47,19 +52,16 @@ public class ResolverFactoryTest extends BaseTest {
     public void testGetResolverUsingDelegateScript() throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
-                "true");
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
-        config.setProperty(ResolverFactory.DELEGATE_RESOLVER_CONFIG_KEY, true);
+        config.setProperty(Key.RESOLVER_DELEGATE, true);
 
         Identifier identifier = new Identifier("http");
-        assertTrue(ResolverFactory.getResolver(identifier)
-                instanceof HttpResolver);
+        assertTrue(instance.getResolver(identifier) instanceof HttpResolver);
 
         identifier = new Identifier("anythingelse");
-        assertTrue(ResolverFactory.getResolver(identifier)
-                instanceof FilesystemResolver);
+        assertTrue(instance.getResolver(identifier) instanceof FilesystemResolver);
     }
 
     @Test
@@ -67,13 +69,13 @@ public class ResolverFactoryTest extends BaseTest {
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
 
-        config.setProperty(ResolverFactory.DELEGATE_RESOLVER_CONFIG_KEY, "false");
+        config.setProperty(Key.RESOLVER_DELEGATE, "false");
         assertEquals(ResolverFactory.SelectionStrategy.STATIC,
-                ResolverFactory.getSelectionStrategy());
+                instance.getSelectionStrategy());
 
-        config.setProperty(ResolverFactory.DELEGATE_RESOLVER_CONFIG_KEY, "true");
+        config.setProperty(Key.RESOLVER_DELEGATE, "true");
         assertEquals(ResolverFactory.SelectionStrategy.DELEGATE_SCRIPT,
-                ResolverFactory.getSelectionStrategy());
+                instance.getSelectionStrategy());
     }
 
 }

@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -106,8 +107,6 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
      * @param opList Operations to apply to the image.
      * @param imageInfo Information about the source image.
      * @param reductionFactor May be <code>null</code>.
-     * @param normalize Whether to normalize the dynamic range of the resulting
-     *                  image.
      * @param outputStream Output stream to write the resulting image to.
      * @throws IOException
      * @throws ProcessorException
@@ -117,7 +116,6 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
                      final OperationList opList,
                      final Info imageInfo,
                      ReductionFactor reductionFactor,
-                     final boolean normalize,
                      final OutputStream outputStream)
             throws IOException, ProcessorException {
         if (reductionFactor == null) {
@@ -127,7 +125,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
             readerHints = new HashSet<>();
         }
 
-        if (normalize) {
+        if (opList.getFirst(Normalize.class) != null) {
             image = Java2DUtil.stretchContrast(image);
         }
         image = Java2DUtil.reduceTo8Bits(image);

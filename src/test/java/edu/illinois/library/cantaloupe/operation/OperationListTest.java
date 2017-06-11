@@ -3,19 +3,22 @@ package edu.illinois.library.cantaloupe.operation;
 import static org.junit.Assert.*;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.overlay.BasicStringOverlayServiceTest;
-import edu.illinois.library.cantaloupe.operation.overlay.StringOverlay;
+import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
+import edu.illinois.library.cantaloupe.operation.overlay.Position;
+import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.redaction.RedactionServiceTest;
-import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
@@ -24,6 +27,16 @@ import java.util.List;
 import java.util.Map;
 
 public class OperationListTest extends BaseTest {
+
+    class DummyOverlay extends Overlay {
+        DummyOverlay() {
+            super(Position.TOP_LEFT, 0);
+        }
+        @Override
+        public Map<String, Object> toMap(Dimension fullSize) {
+            return new HashMap<>();
+        }
+    }
 
     private OperationList instance;
 
@@ -70,6 +83,95 @@ public class OperationListTest extends BaseTest {
         }
     }
 
+    /* addAfter(Class, Operation) */
+
+    @Test
+    public void testAddAfterWithExistingClass() {
+        instance = new OperationList();
+        instance.add(new Rotate());
+        instance.addAfter(new Scale(), Rotate.class);
+        Iterator it = instance.iterator();
+        assertTrue(it.next() instanceof Rotate);
+        assertTrue(it.next() instanceof Scale);
+    }
+
+    @Test
+    public void testAddAfterWithExistingSuperclass() {
+        instance = new OperationList();
+        instance.add(new DummyOverlay());
+
+        class SubDummyOverlay extends DummyOverlay {}
+
+        instance.addAfter(new SubDummyOverlay(), Overlay.class);
+        Iterator it = instance.iterator();
+        assertTrue(it.next() instanceof DummyOverlay);
+        assertTrue(it.next() instanceof SubDummyOverlay);
+    }
+
+    @Test
+    public void testAddAfterWithoutExistingClass() {
+        instance = new OperationList();
+        instance.add(new Rotate());
+        instance.addAfter(new Scale(), Crop.class);
+        Iterator it = instance.iterator();
+        assertTrue(it.next() instanceof Rotate);
+        assertTrue(it.next() instanceof Scale);
+    }
+
+    @Test
+    public void testAddAfterWhileFrozen() {
+        instance = new OperationList();
+        instance.freeze();
+        try {
+            instance.addAfter(new Rotate(), Crop.class);
+            fail("Expected exception");
+        } catch (UnsupportedOperationException e) {
+            // pass
+        }
+    }
+
+    /* addBefore(Class, Operation) */
+
+    @Test
+    public void testAddBeforeWithExistingClass() {
+        instance = new OperationList();
+        instance.add(new Rotate());
+        instance.addBefore(new Scale(), Rotate.class);
+        assertTrue(instance.iterator().next() instanceof Scale);
+    }
+
+    @Test
+    public void testAddBeforeWithExistingSuperclass() {
+        class SubDummyOverlay extends DummyOverlay {}
+
+        instance = new OperationList();
+        instance.add(new DummyOverlay());
+        instance.addBefore(new SubDummyOverlay(), DummyOverlay.class);
+        assertTrue(instance.iterator().next() instanceof SubDummyOverlay);
+    }
+
+    @Test
+    public void testAddBeforeWithoutExistingClass() {
+        instance = new OperationList();
+        instance.add(new Rotate());
+        instance.addBefore(new Scale(), Crop.class);
+        Iterator it = instance.iterator();
+        assertTrue(it.next() instanceof Rotate);
+        assertTrue(it.next() instanceof Scale);
+    }
+
+    @Test
+    public void testAddBeforeWhileFrozen() {
+        instance = new OperationList();
+        instance.freeze();
+        try {
+            instance.addBefore(new Rotate(), Crop.class);
+            fail("Expected exception");
+        } catch (UnsupportedOperationException e) {
+            // pass
+        }
+    }
+
     /* applyNonEndpointMutations() */
 
     @Test
@@ -88,95 +190,206 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
+    public void testApplyNonEndpointMutationsWithBackgroundColor()
+            throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.PROCESSOR_BACKGROUND_COLOR, "white");
+
+        final OperationList opList = new OperationList();
+        opList.setOutputFormat(Format.JPG);
+        opList.add(new Rotate(45));
+
+        opList.applyNonEndpointMutations(
+                new Dimension(2000,1000), "127.0.0.1",
+                new URL("http://example.org/"), new HashMap<>(),
+                new HashMap<>());
+
+        Encode encode = (Encode) opList.getFirst(Encode.class);
+        assertEquals(Color.fromString("#FFFFFF"), encode.getBackgroundColor());
+    }
+
+    @Test
     public void testApplyNonEndpointMutationsWithJPEGOutputFormat()
             throws Exception {
         final Configuration config = Configuration.getInstance();
-
-        //////////////////////////// Setup ////////////////////////////////
-
-        // redactions
-        RedactionServiceTest.setUpConfiguration();
-        // overlay
-        BasicStringOverlayServiceTest.setUpConfiguration();
-        // scale filters
-        config.setProperty(Processor.DOWNSCALE_FILTER_CONFIG_KEY, "bicubic");
-        config.setProperty(Processor.UPSCALE_FILTER_CONFIG_KEY, "triangle");
-        // sharpening
-        config.setProperty(Processor.SHARPEN_CONFIG_KEY, 0.2f);
-        // metadata copies
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
-        // background color
-        config.setProperty(Processor.BACKGROUND_COLOR_CONFIG_KEY, "white");
-        // JPEG quality
-        config.setProperty(Processor.JPG_QUALITY_CONFIG_KEY, 50);
-        // JPEG progressive
-        config.setProperty(Processor.JPG_PROGRESSIVE_CONFIG_KEY, true);
-
-        ///////////////////////////// Test ////////////////////////////////
+        config.setProperty(Key.PROCESSOR_JPG_QUALITY, 50);
+        config.setProperty(Key.PROCESSOR_JPG_PROGRESSIVE, true);
 
         final OperationList opList = new OperationList();
-        opList.add(new Scale(0.5f));
-        opList.add(new Rotate(45));
         opList.setOutputFormat(Format.JPG);
-        final Dimension fullSize = new Dimension(2000,1000);
-
         opList.applyNonEndpointMutations(
-                fullSize, "127.0.0.1", new URL("http://example.org/"),
-                new HashMap<>(), new HashMap<>());
+                new Dimension(2000,1000), "127.0.0.1",
+                new URL("http://example.org/"), new HashMap<>(),
+                new HashMap<>());
 
         Iterator<Operation> it = opList.iterator();
-        assertEquals(Scale.Filter.BICUBIC, ((Scale) it.next()).getFilter());
-        assertTrue(it.next() instanceof Rotate);
-        assertTrue(it.next() instanceof Sharpen);
-        assertTrue(it.next() instanceof StringOverlay);
-        assertTrue(it.next() instanceof MetadataCopy);
         assertTrue(it.next() instanceof Encode);
 
         Encode encode = (Encode) opList.getFirst(Encode.class);
         assertEquals(50, encode.getQuality());
         assertTrue(encode.isInterlacing());
-        assertEquals(Color.fromString("#FFFFFF"), encode.getBackgroundColor());
+    }
+
+    @Test
+    public void testApplyNonEndpointMutationsWithMetadataCopies()
+            throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
+
+        final OperationList opList = new OperationList();
+        opList.setOutputFormat(Format.JPG);
+        opList.applyNonEndpointMutations(
+                new Dimension(2000,1000), "127.0.0.1",
+                new URL("http://example.org/"), new HashMap<>(),
+                new HashMap<>());
+
+        Iterator<Operation> it = opList.iterator();
+        assertTrue(it.next() instanceof MetadataCopy);
+    }
+
+    @Test
+    public void testApplyNonEndpointMutationsWithNormalization()
+            throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.PROCESSOR_NORMALIZE, true);
+
+        // Assert that Normalizations are inserted before Crops.
+        OperationList opList = new OperationList();
+        opList.add(new Crop());
+        opList.setOutputFormat(Format.TIF);
+        opList.applyNonEndpointMutations(
+                new Dimension(2000,1000), "127.0.0.1",
+                new URL("http://example.org/"), new HashMap<>(),
+                new HashMap<>());
+
+        Iterator<Operation> it = opList.iterator();
+        assertTrue(it.next() instanceof Normalize);
+
+        // Assert that Normalizations are inserted before upscales when no
+        // Crop is present.
+        opList = new OperationList();
+        opList.add(new Scale(1.5f));
+        opList.setOutputFormat(Format.TIF);
+        opList.applyNonEndpointMutations(
+                new Dimension(2000,1000), "127.0.0.1",
+                new URL("http://example.org/"), new HashMap<>(),
+                new HashMap<>());
+
+        it = opList.iterator();
+        assertTrue(it.next() instanceof Normalize);
+
+        // Assert that Normalizations are inserted after downscales when no
+        // Crop is present.
+        opList = new OperationList();
+        opList.add(new Scale(0.5f));
+        opList.setOutputFormat(Format.TIF);
+        opList.applyNonEndpointMutations(
+                new Dimension(2000,1000), "127.0.0.1",
+                new URL("http://example.org/"), new HashMap<>(),
+                new HashMap<>());
+
+        it = opList.iterator();
+        assertTrue(it.next() instanceof Scale);
+        assertTrue(it.next() instanceof Normalize);
+    }
+
+    @Test
+    public void testApplyNonEndpointMutationsWithOverlay() throws Exception {
+        BasicStringOverlayServiceTest.setUpConfiguration();
+
+        final OperationList opList = new OperationList();
+        opList.setOutputFormat(Format.TIF);
+        opList.applyNonEndpointMutations(
+                new Dimension(2000,1000), "127.0.0.1",
+                new URL("http://example.org/"), new HashMap<>(),
+                new HashMap<>());
+
+        Overlay overlay = (Overlay) opList.getFirst(Overlay.class);
+        assertEquals(10, overlay.getInset());
+    }
+
+    @Test
+    public void testApplyNonEndpointMutationsWithRedactions()
+            throws Exception {
+        RedactionServiceTest.setUpConfiguration();
+
+        final OperationList opList = new OperationList(
+                new Identifier("cats"), Format.TIF);
+        opList.applyNonEndpointMutations(
+                new Dimension(2000,1000), "127.0.0.1",
+                new URL("http://example.org/"), new HashMap<>(),
+                new HashMap<>());
+
+        Redaction redaction = (Redaction) opList.getFirst(Redaction.class);
+        assertEquals(new Rectangle(0, 10, 50, 70), redaction.getRegion());
+    }
+
+    @Test
+    public void testApplyNonEndpointMutationsWithScaleFilters()
+            throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.PROCESSOR_DOWNSCALE_FILTER, "bicubic");
+        config.setProperty(Key.PROCESSOR_UPSCALE_FILTER, "triangle");
+
+        // Downscale
+        OperationList opList = new OperationList();
+        opList.setOutputFormat(Format.TIF);
+        opList.add(new Scale(0.5f));
+        opList.applyNonEndpointMutations(
+                new Dimension(2000,1000), "127.0.0.1",
+                new URL("http://example.org/"), new HashMap<>(),
+                new HashMap<>());
+
+        Iterator<Operation> it = opList.iterator();
+        assertEquals(Scale.Filter.BICUBIC, ((Scale) it.next()).getFilter());
+
+        // Upscale
+        opList = new OperationList();
+        opList.setOutputFormat(Format.TIF);
+        opList.add(new Scale(1.5f));
+        opList.applyNonEndpointMutations(
+                new Dimension(2000,1000), "127.0.0.1",
+                new URL("http://example.org/"), new HashMap<>(),
+                new HashMap<>());
+
+        it = opList.iterator();
+        assertEquals(Scale.Filter.TRIANGLE, ((Scale) it.next()).getFilter());
+    }
+
+    @Test
+    public void testApplyNonEndpointMutationsWithSharpening()
+            throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.PROCESSOR_SHARPEN, 0.2f);
+
+        final OperationList opList = new OperationList();
+        opList.setOutputFormat(Format.TIF);
+        opList.applyNonEndpointMutations(
+                new Dimension(2000,1000), "127.0.0.1",
+                new URL("http://example.org/"), new HashMap<>(),
+                new HashMap<>());
+
+        Iterator<Operation> it = opList.iterator();
+        assertTrue(it.next() instanceof Sharpen);
+
+        Sharpen sharpen = (Sharpen) opList.getFirst(Sharpen.class);
+        assertEquals(0.2f, sharpen.getAmount(), 0.00001f);
     }
 
     @Test
     public void testAddNonEndpointMutationsWithTIFFOutputFormat()
             throws IOException {
         final Configuration config = Configuration.getInstance();
-
-        //////////////////////////// Setup ////////////////////////////////
-
-        // redactions
-        RedactionServiceTest.setUpConfiguration();
-        // overlay
-        BasicStringOverlayServiceTest.setUpConfiguration();
-        // scale filters
-        config.setProperty(Processor.DOWNSCALE_FILTER_CONFIG_KEY, "bicubic");
-        config.setProperty(Processor.UPSCALE_FILTER_CONFIG_KEY, "triangle");
-        // sharpening
-        config.setProperty(Processor.SHARPEN_CONFIG_KEY, 0.2f);
-        // metadata copies
-        config.setProperty(Processor.PRESERVE_METADATA_CONFIG_KEY, true);
-        // TIFF compression
-        config.setProperty(Processor.TIF_COMPRESSION_CONFIG_KEY, "LZW");
-
-        ///////////////////////////// Test ////////////////////////////////
+;       config.setProperty(Key.PROCESSOR_TIF_COMPRESSION, "LZW");
 
         final OperationList opList = new OperationList();
-        opList.add(new Scale(0.5f));
-        opList.add(new Rotate(45));
         opList.setOutputFormat(Format.TIF);
-        final Dimension fullSize = new Dimension(2000,1000);
-
         opList.applyNonEndpointMutations(
-                fullSize, "127.0.0.1", new URL("http://example.org/"),
-                new HashMap<>(), new HashMap<>());
+                new Dimension(2000,1000), "127.0.0.1",
+                new URL("http://example.org/"), new HashMap<>(),
+                new HashMap<>());
 
         Iterator<Operation> it = opList.iterator();
-        assertEquals(Scale.Filter.BICUBIC, ((Scale) it.next()).getFilter());
-        assertTrue(it.next() instanceof Rotate);
-        assertTrue(it.next() instanceof Sharpen);
-        assertTrue(it.next() instanceof StringOverlay);
-        assertTrue(it.next() instanceof MetadataCopy);
         assertTrue(it.next() instanceof Encode);
 
         Encode encode = (Encode) opList.getFirst(Encode.class);
@@ -258,6 +471,15 @@ public class OperationListTest extends BaseTest {
         assertNotNull(instance.getFirst(Scale.class));
     }
 
+    @Test
+    public void testGetFirstWithSuperclass() {
+        instance.add(new DummyOverlay());
+
+        Overlay overlay = (Overlay) instance.getFirst(Overlay.class);
+        assertNotNull(overlay);
+        assertTrue(overlay instanceof DummyOverlay);
+    }
+
     /* getOptions() */
 
     @Test
@@ -321,11 +543,19 @@ public class OperationListTest extends BaseTest {
 
     @Test
     public void testHasEffectWithPdfSourceAndPdfOutputAndOverlay() {
-        // same format
         instance = new OperationList();
         instance.setIdentifier(new Identifier("identifier.pdf"));
         instance.setOutputFormat(Format.PDF);
         assertFalse(instance.hasEffect(Format.PDF));
+    }
+
+    @Test
+    public void testHasEffectWithEncodeAndSameOutputFormat() {
+        instance = new OperationList();
+        instance.setIdentifier(new Identifier("identifier.jpg"));
+        instance.setOutputFormat(Format.JPG);
+        instance.add(new Encode(Format.JPG));
+        assertFalse(instance.hasEffect(Format.JPG));
     }
 
     /* iterator() */

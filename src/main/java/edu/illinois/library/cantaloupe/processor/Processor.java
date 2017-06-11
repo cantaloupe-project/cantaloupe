@@ -23,17 +23,6 @@ import java.util.Set;
  */
 public interface Processor {
 
-    String BACKGROUND_COLOR_CONFIG_KEY = "processor.background_color";
-    String DOWNSCALE_FILTER_CONFIG_KEY = "processor.downscale_filter";
-    String JPG_PROGRESSIVE_CONFIG_KEY = "processor.jpg.progressive";
-    String JPG_QUALITY_CONFIG_KEY = "processor.jpg.quality";
-    String NORMALIZE_CONFIG_KEY = "processor.normalize";
-    String PRESERVE_METADATA_CONFIG_KEY = "metadata.preserve";
-    String RESPECT_ORIENTATION_CONFIG_KEY = "metadata.respect_orientation";
-    String SHARPEN_CONFIG_KEY = "processor.sharpen";
-    String TIF_COMPRESSION_CONFIG_KEY = "processor.tif.compression";
-    String UPSCALE_FILTER_CONFIG_KEY = "processor.upscale_filter";
-
     /**
      * @return Output formats available for the set source format, or an
      *         empty set if none.

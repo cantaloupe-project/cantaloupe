@@ -1,7 +1,13 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
+import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.RIOT;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -10,7 +16,10 @@ import javax.imageio.stream.ImageInputStream;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.Iterator;
+
+import static org.junit.Assert.*;
 
 public class GIFMetadataTest extends BaseTest {
 
@@ -29,20 +38,21 @@ public class GIFMetadataTest extends BaseTest {
         }
     }
 
-    /* These tests are disabled because GIFMetadata.getXMP() and getXMPRDF()
-    are disabled.
     @Test
+    @Ignore // Disabled because GIFMetadata.getXMP() and getXMPRDF() are disabled.
     public void testGetOrientation() throws IOException {
-        assertEquals(Metadata.Orientation.ROTATE_90,
+        assertEquals(Orientation.ROTATE_90,
                 newInstance("gif-rotated.gif").getOrientation());
     }
 
     @Test
+    @Ignore // Disabled because GIFMetadata.getXMP() and getXMPRDF() are disabled.
     public void testGetXmp() throws IOException {
         assertNotNull(newInstance("gif-xmp.gif").getXMP());
     }
 
     @Test
+    @Ignore // Disabled because GIFMetadata.getXMP() and getXMPRDF() are disabled.
     public void testGetXmpRdf() throws IOException {
         RIOT.init();
         final String rdf = newInstance("gif-xmp.gif").getXMPRDF();
@@ -50,5 +60,5 @@ public class GIFMetadataTest extends BaseTest {
         final Model model = ModelFactory.createDefaultModel();
         model.read(new StringReader(rdf), null, "RDF/XML");
     }
-    */
+
 }

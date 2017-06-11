@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -29,16 +30,15 @@ public class OverlayServiceTest extends BaseTest {
         super.setUp();
 
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
-                "true");
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
-        config.setProperty(OverlayService.ENABLED_CONFIG_KEY, true);
-        config.setProperty(OverlayService.STRATEGY_CONFIG_KEY, "BasicStrategy");
-        config.setProperty(BasicOverlayService.TYPE_CONFIG_KEY, "image");
-        config.setProperty(BasicOverlayService.INSET_CONFIG_KEY, 10);
-        config.setProperty(BasicOverlayService.POSITION_CONFIG_KEY, "top left");
-        config.setProperty(BasicImageOverlayService.IMAGE_CONFIG_KEY, "/dev/null");
+        config.setProperty(Key.OVERLAY_ENABLED, true);
+        config.setProperty(Key.OVERLAY_STRATEGY, "BasicStrategy");
+        config.setProperty(Key.OVERLAY_TYPE, "image");
+        config.setProperty(Key.OVERLAY_INSET, 10);
+        config.setProperty(Key.OVERLAY_POSITION, "top left");
+        config.setProperty(Key.OVERLAY_IMAGE, "/dev/null");
 
         instance = new OverlayService();
     }
@@ -68,9 +68,9 @@ public class OverlayServiceTest extends BaseTest {
     @Test
     public void testNewOverlayWithBasicStringStrategy() throws Exception {
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(BasicOverlayService.TYPE_CONFIG_KEY, "string");
-        config.setProperty(BasicStringOverlayService.STRING_CONFIG_KEY, "cats");
-        config.setProperty(BasicStringOverlayService.COLOR_CONFIG_KEY, "green");
+        config.setProperty(Key.OVERLAY_TYPE, "string");
+        config.setProperty(Key.OVERLAY_STRING_STRING, "cats");
+        config.setProperty(Key.OVERLAY_STRING_COLOR, "green");
         instance = new OverlayService();
 
         final OperationList opList = new OperationList();

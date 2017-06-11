@@ -13,10 +13,6 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
  */
 public interface Cache {
 
-    String PURGE_MISSING_CONFIG_KEY = "cache.server.purge_missing";
-    String RESOLVE_FIRST_CONFIG_KEY = "cache.server.resolve_first";
-    String TTL_CONFIG_KEY = "cache.server.ttl_seconds";
-
     /**
      * <p>Cleans up the cache.</p>
      *
@@ -32,6 +28,7 @@ public interface Cache {
      * <p>The default implementation does nothing.</p>
      *
      * @throws CacheException
+     * @see #shutdown()
      */
     default void cleanUp() throws CacheException {}
 
@@ -77,6 +74,8 @@ public interface Cache {
      * worker threads, etc.</p>
      *
      * <p>The default implementation does nothing.</p>
+     *
+     * @see #cleanUp()
      */
     default void shutdown() {}
 

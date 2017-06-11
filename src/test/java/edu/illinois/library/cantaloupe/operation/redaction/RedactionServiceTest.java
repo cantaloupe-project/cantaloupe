@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.operation.redaction;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -22,11 +23,10 @@ public class RedactionServiceTest extends BaseTest {
 
     public static void setUpConfiguration() throws IOException {
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_ENABLED_CONFIG_KEY,
-                true);
-        config.setProperty(ScriptEngineFactory.DELEGATE_SCRIPT_PATHNAME_CONFIG_KEY,
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
-        config.setProperty(RedactionService.REDACTION_ENABLED_CONFIG_KEY, true);
+        config.setProperty(Key.REDACTION_ENABLED, true);
     }
 
     @Before
@@ -57,10 +57,10 @@ public class RedactionServiceTest extends BaseTest {
         Configuration config = ConfigurationFactory.getInstance();
         config.clear();
         // false
-        config.setProperty(RedactionService.REDACTION_ENABLED_CONFIG_KEY, false);
+        config.setProperty(Key.REDACTION_ENABLED, false);
         assertFalse(instance.isEnabled());
         // true
-        config.setProperty(RedactionService.REDACTION_ENABLED_CONFIG_KEY, true);
+        config.setProperty(Key.REDACTION_ENABLED, true);
         assertTrue(instance.isEnabled());
     }
 

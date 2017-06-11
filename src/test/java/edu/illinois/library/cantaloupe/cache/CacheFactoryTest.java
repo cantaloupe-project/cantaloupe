@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import org.junit.Test;
@@ -27,9 +28,9 @@ public class CacheFactoryTest extends BaseTest {
     @Test
     public void testGetDerivativeCache() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY, true);
+        config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
 
-        final String key = CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY;
+        final Key key = Key.DERIVATIVE_CACHE;
 
         config.setProperty(key, "FilesystemCache");
         assertTrue(CacheFactory.getDerivativeCache() instanceof FilesystemCache);
@@ -44,9 +45,9 @@ public class CacheFactoryTest extends BaseTest {
     @Test
     public void testGetDerivativeCacheInitializesNewInstance() {
         Configuration config = Configuration.getInstance();
-        config.setProperty(CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY, true);
+        config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
 
-        final String key = CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY;
+        final Key key = Key.DERIVATIVE_CACHE;
 
         config.setProperty(key, "MockCache");
         MockCache cache = (MockCache) CacheFactory.getDerivativeCache();
@@ -57,9 +58,9 @@ public class CacheFactoryTest extends BaseTest {
     @Test
     public void testGetDerivativeCacheShutsDownPreviousInstance() {
         Configuration config = Configuration.getInstance();
-        config.setProperty(CacheFactory.DERIVATIVE_CACHE_ENABLED_CONFIG_KEY, true);
+        config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
 
-        final String key = CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY;
+        final Key key = Key.DERIVATIVE_CACHE;
 
         config.setProperty(key, "MockCache");
         MockCache cache1 = (MockCache) CacheFactory.getDerivativeCache();
@@ -75,9 +76,9 @@ public class CacheFactoryTest extends BaseTest {
     @Test
     public void testGetSourceCache() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(CacheFactory.SOURCE_CACHE_ENABLED_CONFIG_KEY, true);
+        config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
 
-        final String key = CacheFactory.SOURCE_CACHE_CONFIG_KEY;
+        final Key key = Key.SOURCE_CACHE;
 
         config.setProperty(key, "FilesystemCache");
         assertTrue(CacheFactory.getSourceCache() instanceof FilesystemCache);
@@ -92,9 +93,9 @@ public class CacheFactoryTest extends BaseTest {
     @Test
     public void testGetSourceCacheInitializesNewInstance() {
         Configuration config = Configuration.getInstance();
-        config.setProperty(CacheFactory.SOURCE_CACHE_ENABLED_CONFIG_KEY, true);
+        config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
 
-        final String key = CacheFactory.SOURCE_CACHE_CONFIG_KEY;
+        final Key key = Key.SOURCE_CACHE;
 
         config.setProperty(key, "MockCache");
         MockCache cache = (MockCache) CacheFactory.getSourceCache();

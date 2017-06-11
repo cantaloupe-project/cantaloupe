@@ -10,13 +10,15 @@ import java.util.concurrent.Future;
 public final class ThreadPool {
 
     private static ThreadPool instance;
+
+    private boolean isShutdown = false;
     private ExecutorService pool = Executors.newCachedThreadPool();
 
     /**
      * @return Shared ThreadPool instance.
      */
     public static synchronized ThreadPool getInstance() {
-        if (instance == null) {
+        if (instance == null || instance.isShutdown()) {
             instance = new ThreadPool();
         }
         return instance;
@@ -25,8 +27,13 @@ public final class ThreadPool {
     private ThreadPool() {
     }
 
+    public boolean isShutdown() {
+        return isShutdown;
+    }
+
     public void shutdown() {
         pool.shutdown();
+        isShutdown = true;
     }
 
     public Future<?> submit(Runnable task) {

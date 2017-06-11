@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Orientation;
@@ -17,7 +18,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import static edu.illinois.library.cantaloupe.processor.Processor.RESPECT_ORIENTATION_CONFIG_KEY;
 import static org.junit.Assert.*;
 
 public class JaiProcessorTest extends ProcessorTest {
@@ -87,11 +87,11 @@ public class JaiProcessorTest extends ProcessorTest {
     @Test
     public void testReadImageInfoWithOrientation() throws Exception {
         ConfigurationFactory.getInstance().
-                setProperty(RESPECT_ORIENTATION_CONFIG_KEY, true);
+                setProperty(Key.PROCESSOR_RESPECT_ORIENTATION, true);
 
         final File fixture = TestUtil.getImage("jpg-rotated.jpg");
 
-        final FileProcessor fproc = (FileProcessor) newInstance();
+        final FileProcessor fproc = newInstance();
         fproc.setSourceFile(fixture);
         fproc.setSourceFormat(Format.JPG);
 
