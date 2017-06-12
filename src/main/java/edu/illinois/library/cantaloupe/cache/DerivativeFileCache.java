@@ -35,6 +35,11 @@ public interface DerivativeFileCache extends DerivativeCache {
     Path getPath(OperationList opList);
 
     /**
+     * @return Absolute path of the cache root directory.
+     */
+    Path getRootPath();
+
+    /**
      * @return Whether a non-expired info corresponding to the given
      *         identifier exists in the cache.
      * @throws CacheException

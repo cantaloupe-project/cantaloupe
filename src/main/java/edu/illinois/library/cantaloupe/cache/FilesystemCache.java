@@ -378,7 +378,7 @@ class FilesystemCache implements SourceCache, DerivativeFileCache {
      * @throws CacheException if {@link Key#FILESYSTEMCACHE_PATHNAME} is
      *         undefined.
      */
-    private static String rootPathname() throws CacheException {
+    static String rootPathname() throws CacheException {
         final String pathname = Configuration.getInstance().
                 getString(Key.FILESYSTEMCACHE_PATHNAME);
         if (pathname == null) {
@@ -554,6 +554,16 @@ class FilesystemCache implements SourceCache, DerivativeFileCache {
             return derivativeImageFile(opList).toPath();
         } catch (CacheException e) {
             logger.error("getPath(OperationList): ", e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public Path getRootPath() {
+        try {
+            return Paths.get(rootPathname());
+        } catch (CacheException e) {
+            logger.error("getRootPath(): {}", e.getMessage());
         }
         return null;
     }

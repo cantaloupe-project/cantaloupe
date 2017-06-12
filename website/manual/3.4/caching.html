@@ -31,7 +31,11 @@ title: Caches
       <li><a href="#Limiting">Limiting</a></li>
       <li><a href="#Implementations">Implementations</a>
         <ul>
-          <li><a href="#FilesystemCache">FilesystemCache</a></li>
+          <li><a href="#FilesystemCache">FilesystemCache</a>
+            <ul>
+              <li><a href="#X-Sendfile">X-Sendfile</li>
+            </ul>
+          </li>
           <li><a href="#HeapCache">HeapCache</a></li>
           <li><a href="#JdbcCache">JdbcCache</a></li>
           <li><a href="#AmazonS3Cache">AmazonS3Cache</a></li>
@@ -252,11 +256,20 @@ cache.client.no_transform = true
 
 <p>This cache is process-safe: it is safe to point multiple server instances at the same cache directory.</p>
 
-<h5>X-Sendfile</h5>
+<h5 id="X-Sendfile">X-Sendfile</h5>
 
 <p>When FilesystemCache is being used as a derivative cache, image and information responses may include an <code>X-Sendfile</code> (or equivalent) header. This can enable more efficient delivery of cache files when the image server is deployed behind a reverse proxy, if the proxy can access the cache contents.</p>
 
-<p>To take advantage of X-Sendfile, the proxy must be configured to support it, and it must send an <code>X-Sendfile-Type</code> header to the image server with a value of either <code>X-Sendfile</code> or <code>X-Accel-Redirect</code>. When this is set, the image server will send an <code>X-Sendfile</code> header in all responses drawn from the cache.</p>
+<p>To take advantage of X-Sendfile, the proxy must be configured to support it, and it must send an <code>X-Sendfile-Type</code> header to the image server with a value of either <code>X-Sendfile</code> or <code>X-Accel-Redirect</code>. The image server will send this header in all responses drawn from the cache.</p>
+
+<p><code>X-Sendfile</code> and <code>X-Accel-Redirect</code> headers work a little differently: for the <code>X-Sendfile</code> header, the value is the absolute pathname of the cached file, and for <code>X-Accel-Redirect</code>, it is the pathname of the file relative to <code>FilesystemCache.pathname</code>, prefixed by <code>/cantaloupe_sendfile</code>.</p>
+
+<p>Example proxy configurations:</p>
+
+<ul>
+  <li><a href="deployment.html#Reverse-ProxyingApache">Apache</a></li>
+  <li><a href="deployment.html#Reverse-ProxyingNginx">nginx</a></li>
+</ul>
 
 <hr>
 

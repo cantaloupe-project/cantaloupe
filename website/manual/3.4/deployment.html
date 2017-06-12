@@ -129,6 +129,12 @@ title: Deployment
   ErrorLog logs/image-error.log
   CustomLog logs/image-access.log combined
 
+  # These are optional; they enable more efficient delivery of
+  # FilesystemCache content.
+  #RequestHeader set X-Sendfile-Type X-Sendfile
+  #XSendFile on
+  #XSendFilePath /path/to/cache/
+
   ProxyPass / http://image-server:8182/ nocanon
   ProxyPassReverse / http://image-server:8182/
   ProxyPassReverseCookieDomain image-server:8182 apache-server
@@ -142,14 +148,22 @@ title: Deployment
 
 <pre>location / {
     if ($request_uri ~* "/(.*)") {
-        proxy_pass http://127.0.0.1:8182/$1;
+        proxy_pass http://image-server:8182/$1;
     }
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header X-Forwarded-Host $host;
     proxy_set_header X-Forwarded-Port $server_port;
     proxy_set_header X-Forwarded-Path /;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_redirect http://127.0.0.1:8182/ /;
+    proxy_redirect http://image-server:8182/ /;
+
+    # This is optional; it enables more efficient delivery of
+    # FilesystemCache content.
+    #proxy_set_header X-Sendfile-Type X-Accel-Redirect;
+    #location /cantaloupe_sendfile/ {
+    #    internal;
+    #    alias /path/to/cache/;
+    #}
 }</pre>
 
 <hr>

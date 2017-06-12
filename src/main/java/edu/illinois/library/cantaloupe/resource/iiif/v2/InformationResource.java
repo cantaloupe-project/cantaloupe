@@ -95,7 +95,7 @@ public class InformationResource extends IIIF2Resource {
             DerivativeFileCache fileCache = (DerivativeFileCache) cache;
             if (fileCache.infoExists(identifier)) {
                 final Path path = fileCache.getPath(identifier);
-                addXSendfileHeader(path);
+                addXSendfileHeader(path, fileCache.getRootPath());
                 // The proxy server will take it from here.
                 return new EmptyRepresentation();
             }

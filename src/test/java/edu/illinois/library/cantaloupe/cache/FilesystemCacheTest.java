@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static edu.illinois.library.cantaloupe.cache.FilesystemCache.getHashedStringBasedSubdirectory;
 import static edu.illinois.library.cantaloupe.cache.FilesystemCache.rootDerivativeImagePathname;
 import static edu.illinois.library.cantaloupe.cache.FilesystemCache.rootInfoPathname;
+import static edu.illinois.library.cantaloupe.cache.FilesystemCache.rootPathname;
 import static edu.illinois.library.cantaloupe.cache.FilesystemCache.rootSourceImagePathname;
 import static org.junit.Assert.*;
 
@@ -401,6 +402,14 @@ public class FilesystemCacheTest extends BaseTest {
                 File.separator,
                 ops.toFilename());
         assertEquals(expected, instance.getPath(ops).toString());
+    }
+
+    /* getRootPath() */
+
+    @Test
+    public void testGetRootPath() throws Exception {
+        final String expected = rootPathname();
+        assertEquals(expected, instance.getRootPath().toString());
     }
 
     /* getSourceImageFile(Identifier) */

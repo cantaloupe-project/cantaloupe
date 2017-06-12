@@ -51,6 +51,8 @@ public abstract class AbstractResource extends ServerResource {
     private static Logger logger = LoggerFactory.
             getLogger(AbstractResource.class);
 
+    private static final String ACCEL_REDIRECT_URI_PREFIX =
+            "/cantaloupe_sendfile";
     private static final String AUTHORIZATION_DELEGATE_METHOD = "authorized?";
     private static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
 
@@ -190,12 +192,16 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * Adds an <code>X-Sendfile</code> (or equivalent) header to the response
-     * if the <code>X-Sendfile-Type</code> request header is set.
+     * <p>Adds an <code>X-Sendfile</code> (or equivalent) header to the
+     * response if the <code>X-Sendfile-Type</code> request header is set.</p>
+     *
+     * <p>N.B. You probably want to return an EmptyRepresentation soon after
+     * calling this. (Don't forget to set its media type.)</p>
      *
      * @param path Path of the file relative to the proxy server.
+     * @param root Root path required for <code>X-Accel-Redirect</code>.
      */
-    protected void addXSendfileHeader(Path path) {
+    protected void addXSendfileHeader(Path path, Path root) {
         // Check the input.
         if (path == null) {
             logger.error("addXSendfileHeader(): pathname not provided " +
@@ -206,12 +212,30 @@ public abstract class AbstractResource extends ServerResource {
         // If there is an X-Sendfile-Type request header, set the X-Sendfile
         // (or equivalent) response header.
         final Header typeHeader =
-                getRequest().getHeaders().getFirst("X-Sendfile-Type");
+                getRequest().getHeaders().getFirst("X-Sendfile-Type", true);
         if (typeHeader != null) {
             logger.debug("Setting {} header: {}",
                     typeHeader.getValue(), path.toString());
             getResponse().getHeaders().add(typeHeader.getValue(),
                     path.toString());
+            final String headerName = typeHeader.getValue();
+            // If we are sending an X-Sendfile header, the value will be the
+            // absolute path of the file. For X-Accel-Redirect, it will be the
+            // pathname of the file relative to the given root, prefixed by
+            // ACCEL_REDIRECT_URI_PREFIX.
+            String headerValue;
+            switch (headerName.toLowerCase()) {
+                case "x-accel-redirect":
+                    headerValue = ACCEL_REDIRECT_URI_PREFIX + "/" +
+                            StringUtils.stripStart(path.toString(),
+                                    root.toString());
+                    break;
+                default:
+                    headerValue = path.toString();
+                    break;
+            }
+            logger.debug("{} header: {}", headerName, headerValue);
+            getResponse().getHeaders().add(headerName, headerValue);
         } else {
             logger.debug("No X-Sendfile-Type request header. " +
                     "X-Sendfile header won't be sent.");

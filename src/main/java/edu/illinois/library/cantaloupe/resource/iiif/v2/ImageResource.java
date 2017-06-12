@@ -152,7 +152,7 @@ public class ImageResource extends IIIF2Resource {
             DerivativeFileCache fileCache = (DerivativeFileCache) cache;
             if (fileCache.derivativeImageExists(ops)) {
                 final Path path = fileCache.getPath(ops);
-                addXSendfileHeader(path);
+                addXSendfileHeader(path, fileCache.getRootPath());
                 // The proxy server will take it from here.
                 return new EmptyRepresentation();
             }
