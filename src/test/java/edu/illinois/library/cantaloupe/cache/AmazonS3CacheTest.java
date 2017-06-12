@@ -71,11 +71,13 @@ public class AmazonS3CacheTest extends BaseTest {
         config.setProperty(Key.AMAZONS3CACHE_BUCKET_REGION, getRegion());
 
         instance = new AmazonS3Cache();
+        instance.initialize();
     }
 
     @After
     public void tearDown() throws Exception {
         instance.purge();
+        instance.shutdown();
     }
 
     private void assertObjectCount(int count) {
