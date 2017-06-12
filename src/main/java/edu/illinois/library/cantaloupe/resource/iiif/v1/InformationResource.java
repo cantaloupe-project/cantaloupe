@@ -15,7 +15,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.JSONRepresentation;
-import edu.illinois.library.cantaloupe.resource.ProcessorConnector;
+import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import org.restlet.Request;
 import org.restlet.data.Header;
 import org.restlet.data.MediaType;

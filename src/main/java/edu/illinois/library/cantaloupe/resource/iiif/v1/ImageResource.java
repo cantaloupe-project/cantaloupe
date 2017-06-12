@@ -16,7 +16,7 @@ import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatExceptio
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
-import edu.illinois.library.cantaloupe.resource.ProcessorConnector;
+import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Disposition;
 import org.restlet.representation.EmptyRepresentation;
