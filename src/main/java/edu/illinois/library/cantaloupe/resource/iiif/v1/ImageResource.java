@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -105,7 +106,8 @@ public class ImageResource extends IIIF1Resource {
         ops.getOptions().putAll(
                 getReference().getQueryAsForm(true).getValuesMap());
 
-        final Dimension fullSize = getOrReadInfo(identifier, processor).getSize();
+        final Info info = getOrReadInfo(identifier, processor);
+        final Dimension fullSize = info.getSize();
 
         processor.validate(ops, fullSize);
 
@@ -177,7 +179,7 @@ public class ImageResource extends IIIF1Resource {
 
         commitCustomResponseHeaders();
 
-        return getRepresentation(ops, format, disposition, processor);
+        return getRepresentation(ops, format, info, disposition, processor);
     }
 
     /**

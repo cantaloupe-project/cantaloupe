@@ -414,6 +414,7 @@ public abstract class AbstractResource extends ServerResource {
 
     protected ImageRepresentation getRepresentation(OperationList ops,
                                                     Format format,
+                                                    Info info,
                                                     Disposition disposition,
                                                     Processor proc)
             throws IOException, ProcessorException, CacheException {
@@ -421,14 +422,13 @@ public abstract class AbstractResource extends ServerResource {
         final long maxAllowedSize = (ops.hasEffect(format)) ?
                 Configuration.getInstance().getLong(Key.MAX_PIXELS, 0) : 0;
 
-        final Info imageInfo = getOrReadInfo(ops.getIdentifier(), proc);
-        final Dimension effectiveSize = ops.getResultingSize(imageInfo.getSize());
+        final Dimension effectiveSize = ops.getResultingSize(info.getSize());
         if (maxAllowedSize > 0 &&
                 effectiveSize.width * effectiveSize.height > maxAllowedSize) {
             throw new PayloadTooLargeException();
         }
 
-        return new ImageRepresentation(imageInfo, proc, ops, disposition,
+        return new ImageRepresentation(info, proc, ops, disposition,
                 isBypassingCache());
     }
 
