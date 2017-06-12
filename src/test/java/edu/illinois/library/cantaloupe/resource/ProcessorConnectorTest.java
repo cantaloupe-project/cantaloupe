@@ -37,7 +37,7 @@ import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
-public class SourceImageWranglerTest extends BaseTest {
+public class ProcessorConnectorTest extends BaseTest {
 
     private Identifier identifier = new Identifier("jpg-rgb-64x56x8-baseline.jpg");
 
@@ -78,14 +78,14 @@ public class SourceImageWranglerTest extends BaseTest {
         // stream
         config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
                 "StreamStrategy");
-        assertEquals(SourceImageWrangler.StreamProcessorRetrievalStrategy.STREAM,
-                SourceImageWrangler.getStreamProcessorRetrievalStrategy());
+        assertEquals(ProcessorConnector.StreamProcessorRetrievalStrategy.STREAM,
+                ProcessorConnector.getStreamProcessorRetrievalStrategy());
 
         // cache
         config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
                 "CacheStrategy");
-        assertEquals(SourceImageWrangler.StreamProcessorRetrievalStrategy.CACHE,
-                SourceImageWrangler.getStreamProcessorRetrievalStrategy());
+        assertEquals(ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE,
+                ProcessorConnector.getStreamProcessorRetrievalStrategy());
     }
 
     @Test
@@ -93,7 +93,7 @@ public class SourceImageWranglerTest extends BaseTest {
         final Resolver resolver = new ResolverFactory().getResolver(identifier);
         final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
-        new SourceImageWrangler(resolver, processor, identifier).wrangle();
+        new ProcessorConnector(resolver, processor, identifier).wrangle();
 
         assertEquals(
                 ((FileResolver) resolver).getFile(),
@@ -109,7 +109,7 @@ public class SourceImageWranglerTest extends BaseTest {
         final Resolver resolver = new ResolverFactory().getResolver(identifier);
         final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
-        new SourceImageWrangler(resolver, processor, identifier).wrangle();
+        new ProcessorConnector(resolver, processor, identifier).wrangle();
 
         StreamSource ss1 = ((StreamResolver) resolver).newStreamSource();
         StreamSource ss2 = ((StreamProcessor) processor).getStreamSource();
@@ -129,7 +129,7 @@ public class SourceImageWranglerTest extends BaseTest {
         final Processor processor = new ProcessorFactory().getProcessor(Format.JP2);
 
         try {
-            new SourceImageWrangler(resolver, processor, identifier).wrangle();
+            new ProcessorConnector(resolver, processor, identifier).wrangle();
             fail("Expected exception");
         } catch (IncompatibleResolverException e) {
             // pass
@@ -161,7 +161,7 @@ public class SourceImageWranglerTest extends BaseTest {
             final Resolver resolver = new ResolverFactory().getResolver(identifier);
             final Processor processor = new ProcessorFactory().getProcessor(Format.JP2);
 
-            new SourceImageWrangler(resolver, processor, identifier).wrangle();
+            new ProcessorConnector(resolver, processor, identifier).wrangle();
 
             assertEquals(
                     CacheFactory.getSourceCache().getSourceImageFile(identifier),
@@ -194,7 +194,7 @@ public class SourceImageWranglerTest extends BaseTest {
             final Resolver resolver = new ResolverFactory().getResolver(identifier);
             final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
-            new SourceImageWrangler(resolver, processor, identifier).wrangle();
+            new ProcessorConnector(resolver, processor, identifier).wrangle();
 
             StreamSource ss1 = ((StreamResolver) resolver).newStreamSource();
             StreamSource ss2 = ((StreamProcessor) processor).getStreamSource();
@@ -230,7 +230,7 @@ public class SourceImageWranglerTest extends BaseTest {
             final Resolver resolver = new ResolverFactory().getResolver(identifier);
             final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
-            new SourceImageWrangler(resolver, processor, identifier).wrangle();
+            new ProcessorConnector(resolver, processor, identifier).wrangle();
 
             assertEqualSources(
                     CacheFactory.getSourceCache().getSourceImageFile(identifier),
@@ -269,7 +269,7 @@ public class SourceImageWranglerTest extends BaseTest {
             final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
             try {
-                new SourceImageWrangler(resolver, processor, identifier).wrangle();
+                new ProcessorConnector(resolver, processor, identifier).wrangle();
                 fail("Expected exception");
             } catch (CacheDisabledException e) {
                 // pass

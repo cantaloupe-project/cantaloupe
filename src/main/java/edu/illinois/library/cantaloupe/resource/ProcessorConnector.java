@@ -29,14 +29,14 @@ import java.io.OutputStream;
 /**
  * Establishes the best connection between a processor and a resolver.
  */
-public class SourceImageWrangler {
+public class ProcessorConnector {
 
     enum StreamProcessorRetrievalStrategy {
         STREAM, CACHE
     }
 
     private static final Logger logger = LoggerFactory.
-            getLogger(SourceImageWrangler.class);
+            getLogger(ProcessorConnector.class);
 
     private Identifier identifier;
     private Processor processor;
@@ -51,9 +51,9 @@ public class SourceImageWrangler {
                 StreamProcessorRetrievalStrategy.CACHE;
     }
 
-    public SourceImageWrangler(Resolver resolver,
-                               Processor processor,
-                               Identifier identifier) {
+    public ProcessorConnector(Resolver resolver,
+                              Processor processor,
+                              Identifier identifier) {
         this.resolver = resolver;
         this.processor = processor;
         this.identifier = identifier;

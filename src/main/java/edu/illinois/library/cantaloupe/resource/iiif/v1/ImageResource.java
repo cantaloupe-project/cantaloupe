@@ -16,7 +16,7 @@ import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatExceptio
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
-import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
+import edu.illinois.library.cantaloupe.resource.ProcessorConnector;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Disposition;
 import org.restlet.representation.EmptyRepresentation;
@@ -76,7 +76,7 @@ public class ImageResource extends IIIF1Resource {
         final Processor processor = new ProcessorFactory().getProcessor(format);
 
         // Connect it to the resolver.
-        new SourceImageWrangler(resolver, processor, identifier).wrangle();
+        new ProcessorConnector(resolver, processor, identifier).wrangle();
 
         final Set<Format> availableOutputFormats =
                 processor.getAvailableOutputFormats();

@@ -16,7 +16,7 @@ import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.JSONRepresentation;
-import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
+import edu.illinois.library.cantaloupe.resource.ProcessorConnector;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.Header;
 import org.restlet.representation.EmptyRepresentation;
@@ -289,7 +289,7 @@ public class AdminResource extends AbstractResource {
         vars.put("processors", sortedProcessorProxies);
 
         vars.put("streamProcessorRetrievalStrategy",
-                SourceImageWrangler.getStreamProcessorRetrievalStrategy());
+                ProcessorConnector.getStreamProcessorRetrievalStrategy());
 
         // source formats
         vars.put("scaleFilters", Scale.Filter.values());

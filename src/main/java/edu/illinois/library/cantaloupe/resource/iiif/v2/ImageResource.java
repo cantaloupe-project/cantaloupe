@@ -15,7 +15,7 @@ import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatExceptio
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
-import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
+import edu.illinois.library.cantaloupe.resource.ProcessorConnector;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import org.restlet.data.Disposition;
 import org.restlet.data.Header;
@@ -101,7 +101,7 @@ public class ImageResource extends IIIF2Resource {
         final Processor processor = new ProcessorFactory().getProcessor(format);
 
         // Connect it to the resolver.
-        new SourceImageWrangler(resolver, processor, identifier).wrangle();
+        new ProcessorConnector(resolver, processor, identifier).wrangle();
 
         final Dimension fullSize =
                 getOrReadInfo(ops.getIdentifier(), processor).getSize();

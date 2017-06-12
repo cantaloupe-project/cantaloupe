@@ -15,7 +15,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.JSONRepresentation;
-import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
+import edu.illinois.library.cantaloupe.resource.ProcessorConnector;
 import org.restlet.Request;
 import org.restlet.data.Header;
 import org.restlet.data.MediaType;
@@ -87,7 +87,7 @@ public class InformationResource extends IIIF1Resource {
         final Processor processor = new ProcessorFactory().getProcessor(format);
 
         // Connect it to the resolver.
-        new SourceImageWrangler(resolver, processor, identifier).wrangle();
+        new ProcessorConnector(resolver, processor, identifier).wrangle();
 
         final ImageInfo imageInfo = ImageInfoFactory.newImageInfo(
                 getImageUri(identifier), processor,
