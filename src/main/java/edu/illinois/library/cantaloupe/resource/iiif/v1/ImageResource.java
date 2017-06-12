@@ -100,15 +100,14 @@ public class ImageResource extends IIIF1Resource {
 
         // Assemble the URI parameters into an OperationList instance
         final OperationList ops = new Parameters(
-                (String) attrs.get("identifier"),
+                identifier,
                 (String) attrs.get("region"),
                 (String) attrs.get("size"),
                 (String) attrs.get("rotation"),
                 qualityAndFormat[0],
                 outputFormat).toOperationList();
-        ops.setIdentifier(identifier);
         ops.getOptions().putAll(
-                this.getReference().getQueryAsForm(true).getValuesMap());
+                getReference().getQueryAsForm(true).getValuesMap());
 
         final Dimension fullSize = getOrReadInfo(identifier, processor).getSize();
 

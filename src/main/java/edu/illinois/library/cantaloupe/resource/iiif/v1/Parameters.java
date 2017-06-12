@@ -7,10 +7,6 @@ import edu.illinois.library.cantaloupe.resource.ParameterList;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Reference;
 
-import java.awt.Dimension;
-import java.net.URL;
-import java.util.Map;
-
 /**
  * Encapsulates the parameters of an IIIF request.
  *
@@ -59,16 +55,16 @@ class Parameters implements ParameterList, Comparable<Parameters> {
     public Parameters() {}
 
     /**
-     * @param identifier Encoded URI value
+     * @param identifier Identifier
      * @param region From URI
      * @param size From URI
      * @param rotation From URI
      * @param quality From URI
      * @param format From URI
      */
-    public Parameters(String identifier, String region, String size,
+    public Parameters(Identifier identifier, String region, String size,
                       String rotation, String quality, String format) {
-        this.setIdentifier(new Identifier(Reference.decode(identifier)));
+        this.setIdentifier(identifier);
         this.setRegion(Region.fromUri(region));
         this.setSize(Size.fromUri(size));
         this.setRotation(Rotation.fromUri(rotation));

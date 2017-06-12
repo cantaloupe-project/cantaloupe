@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -23,8 +24,8 @@ public class ParametersTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new Parameters("identifier", "0,0,200,200", "pct:50", "5",
-                "default", "jpg");
+        instance = new Parameters(new Identifier("identifier"), "0,0,200,200",
+                "pct:50", "5", "default", "jpg");
     }
 
     @Test

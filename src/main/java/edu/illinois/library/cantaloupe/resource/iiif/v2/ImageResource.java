@@ -54,7 +54,7 @@ public class ImageResource extends IIIF2Resource {
         final Identifier identifier = getIdentifier();
         // Assemble the URI parameters into a Parameters object
         final Parameters params = new Parameters(
-                identifier.toString(),
+                identifier,
                 (String) attrs.get("region"),
                 (String) attrs.get("size"),
                 (String) attrs.get("rotation"),
