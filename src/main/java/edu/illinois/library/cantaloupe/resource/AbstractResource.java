@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.auth.AuthInfo;
+import edu.illinois.library.cantaloupe.auth.Authorizer;
 import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
@@ -12,9 +14,6 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
-import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
-import edu.illinois.library.cantaloupe.script.ScriptEngine;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.Request;
@@ -39,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import javax.script.ScriptException;
 import java.awt.Dimension;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,7 +57,6 @@ public abstract class AbstractResource extends ServerResource {
 
     private static final String ACCEL_REDIRECT_URI_PREFIX =
             "/cantaloupe_sendfile";
-    private static final String AUTHORIZATION_DELEGATE_METHOD = "authorized?";
     private static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
 
     private static final TemplateCache templateCache = new TemplateCache();
@@ -249,21 +248,8 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * <p>Invokes the {@link #AUTHORIZATION_DELEGATE_METHOD} delegate method to
-     * determine whether the request is authorized.</p>
-     *
-     * <p>The delegate method may return a boolean or a hash. If it returns
-     * <code>true</code>, the request is authorized. If it returns
-     * <code>false</code>, an {@link AccessDeniedException} will be thrown.</p>
-     *
-     * <p>If it returns a hash, the hash must contain <code>location</code>,
-     * <code>status_code</code>, and <code>status_line</code> keys.</p>
-     *
-     * <p>N.B. The reason there aren't separate delegate methods to perform
-     * authorization and redirecting is because these will often require
-     * similar or identical service requests on the part of the client. Having
-     * one method handle both scenarios simplifies implementation and reduces
-     * cost.</p>
+     * Uses an {@link Authorizer} to determine whether the request is
+     * authorized.
      *
      * @param opList Operations requested on the image.
      * @param fullSize Full size of the requested image.
@@ -277,58 +263,25 @@ public abstract class AbstractResource extends ServerResource {
     protected final StringRepresentation checkAuthorization(
             final OperationList opList, final Dimension fullSize)
             throws IOException, ScriptException, AccessDeniedException {
-        final Map<String,Integer> fullSizeArg = new HashMap<>();
-        fullSizeArg.put("width", fullSize.width);
-        fullSizeArg.put("height", fullSize.height);
+        final Authorizer authorizer = new Authorizer(getReference().toString(),
+                getCanonicalClientIpAddress(),
+                getRequest().getHeaders().getValuesMap(),
+                getRequest().getCookies().getValuesMap());
+        final AuthInfo info = authorizer.authorize(opList, fullSize);
 
-        final Dimension resultingSize = opList.getResultingSize(fullSize);
-        final Map<String,Integer> resultingSizeArg = new HashMap<>();
-        resultingSizeArg.put("width", resultingSize.width);
-        resultingSizeArg.put("height", resultingSize.height);
-
-        final Map opListMap = opList.toMap(fullSize);
-
-        try {
-            final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-            Object result = engine.invoke(AUTHORIZATION_DELEGATE_METHOD,
-                    opList.getIdentifier().toString(),         // identifier
-                    fullSizeArg,                               // full_size
-                    opListMap.get("operations"),               // operations
-                    resultingSizeArg,                          // resulting_size
-                    opListMap.get("output_format"),            // output_format
-                    getReference().toString(),                 // request_uri
-                    getRequest().getHeaders().getValuesMap(),  // request_headers
-                    getCanonicalClientIpAddress(),             // client_ip
-                    getRequest().getCookies().getValuesMap()); // cookies
-            if (result instanceof Boolean) {
-                if (!((boolean) result)) {
-                    throw new AccessDeniedException();
-                }
-            } else {
-                final Map redirectInfo = (Map) result;
-                final String location = redirectInfo.get("location").toString();
-                // Prevent circular redirects
-                if (!getReference().toString().equals(location)) {
-                    final int statusCode =
-                            Integer.parseInt(redirectInfo.get("status_code").toString());
-                    if (statusCode < 300 || statusCode > 399) {
-                        throw new IllegalArgumentException(
-                                "Status code must be in the range of 300-399.");
-                    }
-
-                    logger.info("checkAuthorization(): redirecting to {} via HTTP {}",
-                            location, statusCode);
-                    final Status status = Status.valueOf(statusCode);
-                    final StringRepresentation rep =
-                            new StringRepresentation("Redirect: " + status.getUri());
-                    getResponse().setLocationRef(location);
-                    getResponse().setStatus(status);
-                    return rep;
-                }
-            }
-        } catch (DelegateScriptDisabledException e) {
-            logger.debug("checkAuthorization(): delegate script is disabled; allowing.");
-            return null;
+        if (info.getRedirectURI() != null) {
+            final URL location = info.getRedirectURI();
+            final int code = info.getRedirectStatus();
+            logger.info("checkAuthorization(): redirecting to {} via HTTP {}",
+                    location, code);
+            final Status status = Status.valueOf(code);
+            final StringRepresentation rep =
+                    new StringRepresentation("Redirect: " + location);
+            getResponse().setLocationRef(location.toString());
+            getResponse().setStatus(status);
+            return rep;
+        } else if (!info.isAuthorized()) {
+            throw new AccessDeniedException();
         }
         return null;
     }
@@ -338,7 +291,6 @@ public abstract class AbstractResource extends ServerResource {
      *
      * @param opList
      * @param fullSize
-     * @throws EmptyPayloadException
      */
     protected final void checkRequest(final OperationList opList,
                                       final Dimension fullSize)

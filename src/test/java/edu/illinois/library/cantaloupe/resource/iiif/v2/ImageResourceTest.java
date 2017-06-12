@@ -38,7 +38,7 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testAuthorizationDelegateWithBooleanReturnValue() throws Exception {
+    public void testAuthorizationWhenAuthorized() throws Exception {
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.jpg");
         client.get();
@@ -54,7 +54,18 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testAuthorizationDelegateWithHashReturnValue() throws Exception {
+    public void testAuthorizationWhenNotAuthorized() throws Exception {
+        ClientResource client = getClientForUriPath("/forbidden.jpg/full/full/0/default.jpg");
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_FORBIDDEN, client.getStatus());
+        }
+    }
+
+    @Test
+    public void testAuthorizationWhenRedirecting() throws Exception {
         ClientResource client = getClientForUriPath("/redirect.jpg/full/full/0/default.jpg");
         client.setFollowingRedirects(false);
         client.get();
