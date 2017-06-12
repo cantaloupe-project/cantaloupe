@@ -19,7 +19,6 @@ import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Disposition;
-import org.restlet.data.Reference;
 import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
@@ -137,7 +136,7 @@ public class ImageResource extends IIIF1Resource {
                 processor.getSupportedFeatures(),
                 processor.getSupportedIiif1_1Qualities(),
                 processor.getAvailableOutputFormats());
-        getResponse().getHeaders().add("Link",
+        getBufferedResponseHeaders().add("Link",
                 String.format("<%s>;rel=\"profile\";", complianceLevel.getUri()));
 
         StringRepresentation redirectingRep = checkAuthorization(ops, fullSize);
@@ -177,10 +176,7 @@ public class ImageResource extends IIIF1Resource {
             throw new UnsupportedSourceFormatException(msg);
         }
 
-        // Add client cache header(s) if configured to do so. We do this later
-        // rather than sooner to prevent them from being sent along with an
-        // error response.
-        getResponseCacheDirectives().addAll(getCacheDirectives());
+        commitCustomResponseHeaders();
 
         return getRepresentation(ops, format, disposition, processor);
     }

@@ -42,6 +42,9 @@ import java.util.logging.Level;
 /**
  * Restlet Application implementation. Creates endpoint routes and connects
  * them to Resources.
+ *
+ * @see <a href="https://restlet.com/open-source/documentation/jdocs/2.3/jse">
+ *     Restlet JSE Javadoc</a>
  */
 public class RestletApplication extends Application {
 

@@ -169,10 +169,7 @@ public class ImageResource extends IIIF2Resource {
             throw new UnsupportedOutputFormatException(msg);
         }
 
-        // Add client cache header(s) if configured to do so. We do this later
-        // rather than sooner to prevent them from being sent along with an
-        // error response.
-        getResponseCacheDirectives().addAll(getCacheDirectives());
+        commitCustomResponseHeaders();
 
         return getRepresentation(ops, format, disposition, processor);
     }
@@ -185,7 +182,7 @@ public class ImageResource extends IIIF2Resource {
         final String paramsStr = params.toString().replaceFirst(
                 identifier.toString(), canonicalIdentifierStr);
 
-        getResponse().getHeaders().add("Link",
+        getBufferedResponseHeaders().add("Link",
                 String.format("<%s%s/%s>;rel=\"canonical\"",
                 getPublicRootRef(getRequest().getRootRef(), headers),
                 RestletApplication.IIIF_2_PATH, paramsStr));

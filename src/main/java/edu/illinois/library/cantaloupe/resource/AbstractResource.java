@@ -46,6 +46,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+/**
+ * N.B. Subclasses should add custom response headers to the Series returned by
+ * {@link #getBufferedResponseHeaders()}.
+ */
 public abstract class AbstractResource extends ServerResource {
 
     private static Logger logger = LoggerFactory.
@@ -57,6 +61,8 @@ public abstract class AbstractResource extends ServerResource {
     private static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
 
     private static final TemplateCache templateCache = new TemplateCache();
+
+    private Series<Header> bufferedResponseHeaders = new Series<>(Header.class);
 
     /**
      * @return Map of template variables common to most or all views, such as
@@ -343,6 +349,11 @@ public abstract class AbstractResource extends ServerResource {
         }
     }
 
+    protected void commitCustomResponseHeaders() {
+        getResponse().getHeaders().addAll(getBufferedResponseHeaders());
+        getResponseCacheDirectives().addAll(getCacheDirectives());
+    }
+
     /**
      * Some web servers have issues dealing with encoded slashes (%2F) in URLs.
      * This method enables the use of an alternate string to represent a slash
@@ -350,9 +361,9 @@ public abstract class AbstractResource extends ServerResource {
      *
      * @param uriPathComponent Path component (a part of the path before,
      *                         after, or between slashes)
-     * @return Path component with slashes decoded
+     * @return Path component with slashes decoded.
      */
-    protected final String decodeSlashes(final String uriPathComponent) {
+    private String decodeSlashes(final String uriPathComponent) {
         final String substitute = Configuration.getInstance().
                 getString(Key.SLASH_SUBSTITUTE, "");
         if (substitute.length() > 0) {
@@ -361,8 +372,8 @@ public abstract class AbstractResource extends ServerResource {
         return uriPathComponent;
     }
 
-    protected final Identifier decodeSlashes(final Identifier identifier) {
-        return new Identifier(decodeSlashes(identifier.toString()));
+    protected Series<Header> getBufferedResponseHeaders() {
+        return bufferedResponseHeaders;
     }
 
     /**
@@ -370,7 +381,7 @@ public abstract class AbstractResource extends ServerResource {
      *         empty list if {@link #isBypassingCache()} returns
      *         <code>false</code>.
      */
-    protected final List<CacheDirective> getCacheDirectives() {
+    private List<CacheDirective> getCacheDirectives() {
         final List<CacheDirective> directives = new ArrayList<>();
         if (isBypassingCache()) {
             return directives;

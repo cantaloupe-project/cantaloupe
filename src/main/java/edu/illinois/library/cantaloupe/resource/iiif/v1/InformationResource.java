@@ -107,13 +107,8 @@ public class InformationResource extends IIIF1Resource {
                 getImageUri(identifier), processor,
                 getOrReadInfo(identifier, processor));
 
-        getResponse().getHeaders().add("Link",
+        getBufferedResponseHeaders().add("Link",
                 String.format("<%s>;rel=\"profile\";", imageInfo.profile));
-
-        // Add client cache directives if configured to do so. We do this later
-        // rather than sooner to prevent them from being sent along with an
-        // error response.
-        getResponseCacheDirectives().addAll(getCacheDirectives());
 
         JSONRepresentation rep = new JSONRepresentation(imageInfo);
 
@@ -127,6 +122,8 @@ public class InformationResource extends IIIF1Resource {
         } else {
             rep.setMediaType(new MediaType("application/json"));
         }
+
+        commitCustomResponseHeaders();
 
         return rep;
     }

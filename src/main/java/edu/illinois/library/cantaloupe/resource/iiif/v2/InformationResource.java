@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
@@ -106,11 +105,6 @@ public class InformationResource extends IIIF2Resource {
                 identifier, getImageUri(identifier), processor,
                 getOrReadInfo(identifier, processor));
 
-        // Add client cache header(s) if configured to do so. We do this later
-        // rather than sooner to prevent them from being sent along with an
-        // error response.
-        getResponseCacheDirectives().addAll(getCacheDirectives());
-
         JSONRepresentation rep = new JSONRepresentation(imageInfo);
 
         // 7. If the client has requested JSON-LD, set the content type to
@@ -123,6 +117,8 @@ public class InformationResource extends IIIF2Resource {
         } else {
             rep.setMediaType(new MediaType("application/json"));
         }
+
+        commitCustomResponseHeaders();
 
         return rep;
     }
