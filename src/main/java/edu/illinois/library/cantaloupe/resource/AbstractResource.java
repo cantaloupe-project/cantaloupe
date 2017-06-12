@@ -286,21 +286,6 @@ public abstract class AbstractResource extends ServerResource {
         return null;
     }
 
-    /**
-     * Checks the given operation list against the given image size.
-     *
-     * @param opList
-     * @param fullSize
-     */
-    protected final void checkRequest(final OperationList opList,
-                                      final Dimension fullSize)
-            throws EmptyPayloadException {
-        final Dimension resultingSize = opList.getResultingSize(fullSize);
-        if (resultingSize.width < 1 || resultingSize.height < 1) {
-            throw new EmptyPayloadException();
-        }
-    }
-
     protected void commitCustomResponseHeaders() {
         getResponse().getHeaders().addAll(getBufferedResponseHeaders());
         getResponseCacheDirectives().addAll(getCacheDirectives());
@@ -412,26 +397,6 @@ public abstract class AbstractResource extends ServerResource {
         return new Identifier(identifierStr);
     }
 
-    protected ImageRepresentation getRepresentation(OperationList ops,
-                                                    Format format,
-                                                    Info info,
-                                                    Disposition disposition,
-                                                    Processor proc)
-            throws IOException, ProcessorException, CacheException {
-        // Max allowed size is ignored when the processing is a no-op.
-        final long maxAllowedSize = (ops.hasEffect(format)) ?
-                Configuration.getInstance().getLong(Key.MAX_PIXELS, 0) : 0;
-
-        final Dimension effectiveSize = ops.getResultingSize(info.getSize());
-        if (maxAllowedSize > 0 &&
-                effectiveSize.width * effectiveSize.height > maxAllowedSize) {
-            throw new PayloadTooLargeException();
-        }
-
-        return new ImageRepresentation(info, proc, ops, disposition,
-                isBypassingCache());
-    }
-
     /**
      * Gets the image info corresponding to the given identifier, first by
      * checking the cache and then, if necessary, by reading it from the image
@@ -474,7 +439,7 @@ public abstract class AbstractResource extends ServerResource {
      * @return Whether there is a <var>cache</var> query parameter set to
      *         <code>false</code> in the URI.
      */
-    private boolean isBypassingCache() {
+    protected boolean isBypassingCache() {
         boolean bypassingCache = false;
         Parameter cacheParam = getReference().getQueryAsForm().getFirst("cache");
         if (cacheParam != null) {
@@ -537,6 +502,38 @@ public abstract class AbstractResource extends ServerResource {
             }
         }
         return new EmptyRepresentation();
+    }
+
+    /**
+     * <p>Checks that the requested area is greater than zero and less than or
+     * equal to {@link Key#MAX_PIXELS}.</p>
+     *
+     * <p>This does not check that any requested crop lies entirely within the
+     * bounds of the source image.</p>
+     *
+     * @param opList
+     * @param sourceFormat
+     * @param info
+     */
+    protected final void validateRequestedArea(final OperationList opList,
+                                               final Format sourceFormat,
+                                               final Info info)
+            throws EmptyPayloadException, PayloadTooLargeException {
+        final Dimension resultingSize = opList.getResultingSize(info.getSize());
+
+        if (resultingSize.width < 1 || resultingSize.height < 1) {
+            throw new EmptyPayloadException();
+        }
+
+        // Max allowed size is ignored when the processing is a no-op.
+        if (opList.hasEffect(sourceFormat)) {
+            final long maxAllowedSize =
+                    Configuration.getInstance().getLong(Key.MAX_PIXELS, 0);
+            if (maxAllowedSize > 0 &&
+                    resultingSize.width * resultingSize.height > maxAllowedSize) {
+                throw new PayloadTooLargeException();
+            }
+        }
     }
 
 }

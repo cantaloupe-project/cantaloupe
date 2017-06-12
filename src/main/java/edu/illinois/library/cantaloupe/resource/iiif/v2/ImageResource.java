@@ -17,6 +17,7 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
+import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import org.restlet.data.Disposition;
 import org.restlet.data.Header;
@@ -85,9 +86,9 @@ public class ImageResource extends IIIF2Resource {
 
         Resolver resolver = new ResolverFactory().getResolver(identifier);
         // Determine the format of the source image.
-        Format format = Format.UNKNOWN;
+        Format sourceFormat = Format.UNKNOWN;
         try {
-            format = resolver.getSourceFormat();
+            sourceFormat = resolver.getSourceFormat();
         } catch (FileNotFoundException e) { // this needs to be rethrown
             if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                 // if the image was not found, purge it from the cache
@@ -99,7 +100,8 @@ public class ImageResource extends IIIF2Resource {
         }
 
         // Obtain an instance of the processor assigned to that format.
-        final Processor processor = new ProcessorFactory().getProcessor(format);
+        final Processor processor = new ProcessorFactory().
+                getProcessor(sourceFormat);
 
         // Connect it to the resolver.
         new ProcessorConnector(resolver, processor, identifier).connect();
@@ -107,15 +109,14 @@ public class ImageResource extends IIIF2Resource {
         final Info info = getOrReadInfo(ops.getIdentifier(), processor);
         final Dimension fullSize = info.getSize();
 
+        validateRequestedArea(ops, sourceFormat, info);
+
         processor.validate(ops, fullSize);
 
         StringRepresentation redirectingRep = checkAuthorization(ops, fullSize);
         if (redirectingRep != null) {
             return redirectingRep;
         }
-
-        // Will throw an exception if anything is wrong.
-        checkRequest(ops, fullSize);
 
         if (config.getBoolean(Key.IIIF_2_RESTRICT_TO_SIZES, false)) {
             final ImageInfo imageInfo = ImageInfoFactory.newImageInfo(
@@ -173,7 +174,8 @@ public class ImageResource extends IIIF2Resource {
 
         commitCustomResponseHeaders();
 
-        return getRepresentation(ops, format, info, disposition, processor);
+        return new ImageRepresentation(info, processor, ops, disposition,
+                isBypassingCache());
     }
 
     private void addLinkHeader(Parameters params) {

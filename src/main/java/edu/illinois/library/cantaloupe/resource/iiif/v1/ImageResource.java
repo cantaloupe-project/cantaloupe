@@ -18,6 +18,7 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
+import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Disposition;
 import org.restlet.representation.EmptyRepresentation;
@@ -54,14 +55,13 @@ public class ImageResource extends IIIF1Resource {
     @Get
     public Representation doGet() throws Exception {
         final Configuration config = Configuration.getInstance();
-        final Map<String,Object> attrs = this.getRequest().getAttributes();
         final Identifier identifier = getIdentifier();
         final Resolver resolver = new ResolverFactory().getResolver(identifier);
 
         // Determine the format of the source image.
-        Format format = Format.UNKNOWN;
+        Format sourceFormat = Format.UNKNOWN;
         try {
-            format = resolver.getSourceFormat();
+            sourceFormat = resolver.getSourceFormat();
         } catch (FileNotFoundException e) { // this needs to be rethrown
             if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                 // if the image was not found, purge it from the cache
@@ -74,7 +74,8 @@ public class ImageResource extends IIIF1Resource {
         }
 
         // Obtain an instance of the processor assigned to that format.
-        final Processor processor = new ProcessorFactory().getProcessor(format);
+        final Processor processor = new ProcessorFactory().
+                getProcessor(sourceFormat);
 
         // Connect it to the resolver.
         new ProcessorConnector(resolver, processor, identifier).connect();
@@ -83,6 +84,7 @@ public class ImageResource extends IIIF1Resource {
                 processor.getAvailableOutputFormats();
 
         // Extract the quality and format from the URI.
+        final Map<String,Object> attrs = getRequest().getAttributes();
         String[] qualityAndFormat = StringUtils.
                 split((String) attrs.get("quality_format"), ".");
         // If a format is present, try to use that. Otherwise, guess it based
@@ -108,6 +110,8 @@ public class ImageResource extends IIIF1Resource {
 
         final Info info = getOrReadInfo(identifier, processor);
         final Dimension fullSize = info.getSize();
+
+        validateRequestedArea(ops, sourceFormat, info);
 
         processor.validate(ops, fullSize);
 
@@ -140,9 +144,6 @@ public class ImageResource extends IIIF1Resource {
                 processor.getAvailableOutputFormats());
         getBufferedResponseHeaders().add("Link",
                 String.format("<%s>;rel=\"profile\";", complianceLevel.getUri()));
-
-        // Will throw an exception if anything is wrong.
-        checkRequest(ops, fullSize);
 
         ops.applyNonEndpointMutations(fullSize,
                 getCanonicalClientIpAddress(),
@@ -179,7 +180,8 @@ public class ImageResource extends IIIF1Resource {
 
         commitCustomResponseHeaders();
 
-        return getRepresentation(ops, format, info, disposition, processor);
+        return new ImageRepresentation(info, processor, ops, disposition,
+                isBypassingCache());
     }
 
     /**
