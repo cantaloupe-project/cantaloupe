@@ -43,16 +43,13 @@ public class ImageResource extends IIIF2Resource {
 
     /**
      * Responds to IIIF Image requests.
-     *
-     * @return OutputRepresentation
-     * @throws Exception
      */
     @Get
     public Representation doGet() throws Exception {
         final Configuration config = Configuration.getInstance();
         final Map<String,Object> attrs = getRequest().getAttributes();
         final Identifier identifier = getIdentifier();
-        // Assemble the URI parameters into a Parameters object
+        // Assemble the URI parameters into a Parameters object.
         final Parameters params = new Parameters(
                 identifier,
                 (String) attrs.get("region"),
@@ -63,6 +60,8 @@ public class ImageResource extends IIIF2Resource {
         final OperationList ops = params.toOperationList();
         ops.getOptions().putAll(
                 getReference().getQueryAsForm(true).getValuesMap());
+
+        addLinkHeader(params);
 
         final Disposition disposition = getRepresentationDisposition(
                 ops.getIdentifier(), ops.getOutputFormat());
@@ -75,7 +74,7 @@ public class ImageResource extends IIIF2Resource {
             if (cache != null) {
                 InputStream inputStream = cache.newDerivativeImageInputStream(ops);
                 if (inputStream != null) {
-                    addLinkHeader(params);
+                    commitCustomResponseHeaders();
                     return new CachedImageRepresentation(
                             params.getOutputFormat().getPreferredMediaType(),
                             disposition, inputStream);
@@ -83,13 +82,12 @@ public class ImageResource extends IIIF2Resource {
             }
         }
 
-        Resolver resolver =
-                new ResolverFactory().getResolver(ops.getIdentifier());
-        // Determine the format of the source image
+        Resolver resolver = new ResolverFactory().getResolver(identifier);
+        // Determine the format of the source image.
         Format format = Format.UNKNOWN;
         try {
             format = resolver.getSourceFormat();
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) { // this needs to be rethrown
             if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                 // if the image was not found, purge it from the cache
                 if (cache != null) {
@@ -99,8 +97,10 @@ public class ImageResource extends IIIF2Resource {
             throw e;
         }
 
+        // Obtain an instance of the processor assigned to that format.
         final Processor processor = new ProcessorFactory().getProcessor(format);
 
+        // Connect it to the resolver.
         new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
         final Dimension fullSize =
@@ -143,18 +143,20 @@ public class ImageResource extends IIIF2Resource {
                 getRequest().getHeaders().getValuesMap(),
                 getCookies().getValuesMap());
 
-        addLinkHeader(params);
-
-        // If the cache is enabled, and is file-based, and the file exists, add
-        // an X-Sendfile header. This has to be done *after*
+        // If the reverse proxy supports X-Sendfile, and a file-based
+        // derivative cache is enabled, and it contains the info, add an
+        // X-Sendfile header. This has to be done *after*
         // OperationList.applyNonEndpointMutations() has been called.
-        if (cache != null && cache instanceof DerivativeFileCache) {
+        if (isXSendfileSupported() && cache != null &&
+                cache instanceof DerivativeFileCache) {
             DerivativeFileCache fileCache = (DerivativeFileCache) cache;
             if (fileCache.derivativeImageExists(ops)) {
                 final Path path = fileCache.getPath(ops);
                 addXSendfileHeader(path, fileCache.getRootPath());
                 // The proxy server will take it from here.
-                return new EmptyRepresentation();
+                Representation rep = new EmptyRepresentation();
+                rep.setMediaType(new org.restlet.data.MediaType(ops.getOutputFormat().getPreferredMediaType().toString()));
+                return rep;
             }
         }
 

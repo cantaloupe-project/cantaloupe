@@ -20,6 +20,12 @@ public class JSONRepresentation extends OutputRepresentation {
         this.toWrite = toWrite;
     }
 
+    public JSONRepresentation(Object toWrite, MediaType mediaType) {
+        super(mediaType);
+        setCharacterSet(CharacterSet.UTF_8);
+        this.toWrite = toWrite;
+    }
+
     @Override
     public void write(OutputStream outputStream) throws IOException {
         ObjectMapper mapper = new ObjectMapper();

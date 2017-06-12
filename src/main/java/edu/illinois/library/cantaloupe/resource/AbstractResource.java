@@ -531,6 +531,16 @@ public abstract class AbstractResource extends ServerResource {
         return bypassingCache;
     }
 
+    protected boolean isXSendfileSupported() {
+        final Header typeHeader =
+                getRequest().getHeaders().getFirst("X-Sendfile-Type", true);
+        if (typeHeader != null) {
+            return "x-sendfile".equals(typeHeader.getValue().toLowerCase()) ||
+                    "x-accel-redirect".equals(typeHeader.getValue().toLowerCase());
+        }
+        return false;
+    }
+
     /**
      * Reads the information of the source image.
      *

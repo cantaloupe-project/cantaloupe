@@ -7,7 +7,7 @@ import java.util.List;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeFileCache;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.RestletApplication;
@@ -59,19 +59,19 @@ public class InformationResource extends IIIF2Resource {
      * Responds to information requests.
      *
      * @return {@link ImageInfo} instance serializedto JSON.
-     * @throws Exception
      */
     @Get
     public Representation doGet() throws Exception {
         final Identifier identifier = getIdentifier();
         final Resolver resolver = new ResolverFactory().getResolver(identifier);
+        final MediaType mediaType = getNegotiatedMediaType();
 
         // Determine the format of the source image.
         Format format = Format.UNKNOWN;
         try {
             format = resolver.getSourceFormat();
-        } catch (FileNotFoundException e) {
-            if (ConfigurationFactory.getInstance().
+        } catch (FileNotFoundException e) { // this needs to be rethrown
+            if (Configuration.getInstance().
                     getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                 // if the image was not found, purge it from the cache
                 final Cache cache = CacheFactory.getDerivativeCache();
@@ -82,45 +82,37 @@ public class InformationResource extends IIIF2Resource {
             throw e;
         }
 
-        // Obtain an instance of the processor assigned to that format in
-        // the config file
-        final Processor processor = new ProcessorFactory().getProcessor(format);
-
-        new SourceImageWrangler(resolver, processor, identifier).wrangle();
-
-        // If the cache is enabled and is file-based, add an X-Sendfile header.
-        final Cache cache = CacheFactory.getDerivativeCache();
-        if (cache instanceof DerivativeFileCache) {
-            DerivativeFileCache fileCache = (DerivativeFileCache) cache;
-            if (fileCache.infoExists(identifier)) {
-                final Path path = fileCache.getPath(identifier);
-                addXSendfileHeader(path, fileCache.getRootPath());
-                // The proxy server will take it from here.
-                return new EmptyRepresentation();
+        // If the reverse proxy supports X-Sendfile, and a file-based
+        // derivative cache is enabled, and it contains the info, add an
+        // X-Sendfile header.
+        if (isXSendfileSupported()) {
+            final Cache cache = CacheFactory.getDerivativeCache();
+            if (cache instanceof DerivativeFileCache) {
+                DerivativeFileCache fileCache = (DerivativeFileCache) cache;
+                if (fileCache.infoExists(identifier)) {
+                    final Path file = fileCache.getPath(identifier);
+                    addXSendfileHeader(file, fileCache.getRootPath());
+                    // The proxy server will take it from here.
+                    Representation rep = new EmptyRepresentation();
+                    rep.setMediaType(mediaType);
+                    return rep;
+                }
             }
         }
 
-        // Get an Info instance corresponding to the source image
-        ImageInfo imageInfo = ImageInfoFactory.newImageInfo(
+        // Obtain an instance of the processor assigned to that format.
+        final Processor processor = new ProcessorFactory().getProcessor(format);
+
+        // Connect it to the resolver.
+        new SourceImageWrangler(resolver, processor, identifier).wrangle();
+
+        final ImageInfo imageInfo = ImageInfoFactory.newImageInfo(
                 identifier, getImageUri(identifier), processor,
                 getOrReadInfo(identifier, processor));
 
-        JSONRepresentation rep = new JSONRepresentation(imageInfo);
-
-        // 7. If the client has requested JSON-LD, set the content type to
-        // that; otherwise set it to JSON
-        List<Preference<MediaType>> preferences = this.getRequest().
-                getClientInfo().getAcceptedMediaTypes();
-        if (preferences.get(0) != null && preferences.get(0).toString().
-                startsWith("application/ld+json")) {
-            rep.setMediaType(new MediaType("application/ld+json"));
-        } else {
-            rep.setMediaType(new MediaType("application/json"));
-        }
-
         commitCustomResponseHeaders();
 
-        return rep;
+        return new JSONRepresentation(imageInfo, mediaType);
     }
 
     /**
@@ -135,6 +127,21 @@ public class InformationResource extends IIIF2Resource {
         return getPublicRootRef(getRequest().getRootRef(), headers) +
                 RestletApplication.IIIF_2_PATH + "/" +
                 Reference.encode(identifierStr);
+    }
+
+    private MediaType getNegotiatedMediaType() {
+        MediaType mediaType;
+        // If the client has requested JSON-LD, set the content type to
+        // that; otherwise set it to JSON.
+        List<Preference<MediaType>> preferences = getRequest().getClientInfo().
+                getAcceptedMediaTypes();
+        if (preferences.get(0) != null && preferences.get(0).toString().
+                startsWith("application/ld+json")) {
+            mediaType = new MediaType("application/ld+json");
+        } else {
+            mediaType = new MediaType("application/json");
+        }
+        return mediaType;
     }
 
 }

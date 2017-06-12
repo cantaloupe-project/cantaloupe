@@ -49,9 +49,6 @@ public class ImageResource extends IIIF1Resource {
 
     /**
      * Responds to image requests.
-     *
-     * @return ImageRepresentation
-     * @throws Exception
      */
     @Get
     public Representation doGet() throws Exception {
@@ -64,7 +61,7 @@ public class ImageResource extends IIIF1Resource {
         Format format = Format.UNKNOWN;
         try {
             format = resolver.getSourceFormat();
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) { // this needs to be rethrown
             if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                 // if the image was not found, purge it from the cache
                 final Cache cache = CacheFactory.getDerivativeCache();
@@ -75,17 +72,16 @@ public class ImageResource extends IIIF1Resource {
             throw e;
         }
 
-        // Obtain an instance of the processor assigned to that format in
-        // the config file. This will throw a variety of exceptions if there
-        // are any issues.
+        // Obtain an instance of the processor assigned to that format.
         final Processor processor = new ProcessorFactory().getProcessor(format);
 
+        // Connect it to the resolver.
         new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
         final Set<Format> availableOutputFormats =
                 processor.getAvailableOutputFormats();
 
-        // Extract the quality and format from the URI
+        // Extract the quality and format from the URI.
         String[] qualityAndFormat = StringUtils.
                 split((String) attrs.get("quality_format"), ".");
         // If a format is present, try to use that. Otherwise, guess it based
@@ -98,7 +94,7 @@ public class ImageResource extends IIIF1Resource {
                     getPreferredExtension();
         }
 
-        // Assemble the URI parameters into an OperationList instance
+        // Assemble the URI parameters into an OperationList instance.
         final OperationList ops = new Parameters(
                 identifier,
                 (String) attrs.get("region"),
@@ -131,17 +127,17 @@ public class ImageResource extends IIIF1Resource {
             }
         }
 
+        StringRepresentation redirectingRep = checkAuthorization(ops, fullSize);
+        if (redirectingRep != null) {
+            return redirectingRep;
+        }
+
         final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
                 processor.getSupportedFeatures(),
                 processor.getSupportedIiif1_1Qualities(),
                 processor.getAvailableOutputFormats());
         getBufferedResponseHeaders().add("Link",
                 String.format("<%s>;rel=\"profile\";", complianceLevel.getUri()));
-
-        StringRepresentation redirectingRep = checkAuthorization(ops, fullSize);
-        if (redirectingRep != null) {
-            return redirectingRep;
-        }
 
         // Will throw an exception if anything is wrong.
         checkRequest(ops, fullSize);
@@ -152,21 +148,25 @@ public class ImageResource extends IIIF1Resource {
                 getRequest().getHeaders().getValuesMap(),
                 getCookies().getValuesMap());
 
-        // If the cache is enabled, and is file-based, and the file exists, add
-        // an X-Sendfile header. This has to be done *after*
+        // If the reverse proxy supports X-Sendfile, and a file-based
+        // derivative cache is enabled, and it contains the info, add an
+        // X-Sendfile header. This has to be done *after*
         // OperationList.applyNonEndpointMutations() has been called.
-        if (cache != null && cache instanceof DerivativeFileCache) {
+        if (isXSendfileSupported() && cache != null &&
+                cache instanceof DerivativeFileCache) {
             DerivativeFileCache fileCache = (DerivativeFileCache) cache;
             if (fileCache.derivativeImageExists(ops)) {
                 final Path path = fileCache.getPath(ops);
                 addXSendfileHeader(path, fileCache.getRootPath());
                 // The proxy server will take it from here.
-                return new EmptyRepresentation();
+                Representation rep = new EmptyRepresentation();
+                rep.setMediaType(new org.restlet.data.MediaType(ops.getOutputFormat().getPreferredMediaType().toString()));
+                return rep;
             }
         }
 
-        // Find out whether the processor supports that source format by
-        // asking it whether it offers any output formats for it
+        // Find out whether the processor supports the source format by asking
+        // it whether it offers any output formats for it.
         if (!availableOutputFormats.contains(ops.getOutputFormat())) {
             String msg = String.format("%s does not support the \"%s\" output format",
                     processor.getClass().getSimpleName(),
