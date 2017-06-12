@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
@@ -107,8 +108,8 @@ public class ImageResource extends IIIF2Resource {
 
         new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
-        final Dimension fullSize =
-                getOrReadInfo(ops.getIdentifier(), processor).getSize();
+        final Info info = getOrReadInfo(ops.getIdentifier(), processor);
+        final Dimension fullSize = info.getSize();
 
         processor.validate(ops, fullSize);
 
@@ -123,8 +124,7 @@ public class ImageResource extends IIIF2Resource {
         if (ConfigurationFactory.getInstance().
                 getBoolean(RESTRICT_TO_SIZES_CONFIG_KEY, false)) {
             final ImageInfo imageInfo = ImageInfoFactory.newImageInfo(
-                    identifier, null, processor,
-                    getOrReadInfo(identifier, processor));
+                    identifier, null, processor, info);
             final Dimension resultingSize = ops.getResultingSize(fullSize);
             boolean ok = false;
             @SuppressWarnings("unchecked")
@@ -162,7 +162,7 @@ public class ImageResource extends IIIF2Resource {
         // error response.
         getResponseCacheDirectives().addAll(getCacheDirectives());
 
-        return getRepresentation(ops, format, disposition, processor);
+        return getRepresentation(ops, format, info, disposition, processor);
     }
 
     private void addLinkHeader(Parameters params) {
