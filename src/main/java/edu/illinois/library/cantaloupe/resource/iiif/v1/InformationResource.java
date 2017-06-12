@@ -65,16 +65,12 @@ public class InformationResource extends IIIF1Resource {
     @Get
     public Representation doGet() throws Exception {
         Map<String,Object> attrs = this.getRequest().getAttributes();
-        Identifier identifier = new Identifier(
-                Reference.decode((String) attrs.get("identifier")));
-        identifier = decodeSlashes(identifier);
+        final Identifier identifier = getIdentifier();
+        final Resolver resolver = new ResolverFactory().getResolver(identifier);
 
-        // Get the resolver
-        Resolver resolver = new ResolverFactory().getResolver(identifier);
-        // Determine the format of the source image
+        // Determine the format of the source image.
         Format format = Format.UNKNOWN;
         try {
-            // Determine the format of the source image
             format = resolver.getSourceFormat();
         } catch (FileNotFoundException e) {
             if (ConfigurationFactory.getInstance().

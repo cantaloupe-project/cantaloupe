@@ -51,17 +51,16 @@ public class ImageResource extends IIIF2Resource {
     public Representation doGet() throws Exception {
         final Configuration config = Configuration.getInstance();
         final Map<String,Object> attrs = getRequest().getAttributes();
+        final Identifier identifier = getIdentifier();
         // Assemble the URI parameters into a Parameters object
         final Parameters params = new Parameters(
-                (String) attrs.get("identifier"),
+                identifier.toString(),
                 (String) attrs.get("region"),
                 (String) attrs.get("size"),
                 (String) attrs.get("rotation"),
                 (String) attrs.get("quality"),
                 (String) attrs.get("format"));
         final OperationList ops = params.toOperationList();
-        final Identifier identifier = decodeSlashes(ops.getIdentifier());
-        ops.setIdentifier(identifier);
         ops.getOptions().putAll(
                 getReference().getQueryAsForm(true).getValuesMap());
 

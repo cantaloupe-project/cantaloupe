@@ -411,6 +411,20 @@ public abstract class AbstractResource extends ServerResource {
         return addr;
     }
 
+    /**
+     * @return Identifier component of the URI, decoded and ready for use.
+     */
+    protected Identifier getIdentifier() {
+        final Map<String,Object> attrs = getRequest().getAttributes();
+        // Get the raw identifier from the URI.
+        String identifierStr = (String) attrs.get("identifier");
+        // Decode entities.
+        identifierStr = Reference.decode(identifierStr);
+        // Decode slash substitutes.
+        identifierStr = decodeSlashes(identifierStr);
+        return new Identifier(identifierStr);
+    }
+
     protected ImageRepresentation getRepresentation(OperationList ops,
                                                     Format format,
                                                     Disposition disposition,

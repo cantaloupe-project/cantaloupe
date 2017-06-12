@@ -58,13 +58,10 @@ public class ImageResource extends IIIF1Resource {
     public Representation doGet() throws Exception {
         final Configuration config = Configuration.getInstance();
         final Map<String,Object> attrs = this.getRequest().getAttributes();
-        Identifier identifier =
-                new Identifier(Reference.decode((String) attrs.get("identifier")));
-        identifier = decodeSlashes(identifier);
-
+        final Identifier identifier = getIdentifier();
         final Resolver resolver = new ResolverFactory().getResolver(identifier);
 
-        // Determine the format of the source image
+        // Determine the format of the source image.
         Format format = Format.UNKNOWN;
         try {
             format = resolver.getSourceFormat();
