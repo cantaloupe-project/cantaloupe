@@ -89,11 +89,11 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void testWrangleWithFileResolverAndFileProcessor() throws Exception {
+    public void testConnectWithFileResolverAndFileProcessor() throws Exception {
         final Resolver resolver = new ResolverFactory().getResolver(identifier);
         final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
-        new ProcessorConnector(resolver, processor, identifier).wrangle();
+        new ProcessorConnector(resolver, processor, identifier).connect();
 
         assertEquals(
                 ((FileResolver) resolver).getFile(),
@@ -101,7 +101,7 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void testWrangleWithFileResolverAndStreamProcessor()
+    public void testConnectWithFileResolverAndStreamProcessor()
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_FALLBACK, "ImageMagickProcessor");
@@ -109,7 +109,7 @@ public class ProcessorConnectorTest extends BaseTest {
         final Resolver resolver = new ResolverFactory().getResolver(identifier);
         final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
-        new ProcessorConnector(resolver, processor, identifier).wrangle();
+        new ProcessorConnector(resolver, processor, identifier).connect();
 
         StreamSource ss1 = ((StreamResolver) resolver).newStreamSource();
         StreamSource ss2 = ((StreamProcessor) processor).getStreamSource();
@@ -118,7 +118,7 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void testWrangleWithStreamResolverAndFileProcessorWithSourceCacheDisabled()
+    public void testConnectWithStreamResolverAndFileProcessorWithSourceCacheDisabled()
             throws Exception {
         identifier = new Identifier("jp2");
         Configuration config = Configuration.getInstance();
@@ -129,7 +129,7 @@ public class ProcessorConnectorTest extends BaseTest {
         final Processor processor = new ProcessorFactory().getProcessor(Format.JP2);
 
         try {
-            new ProcessorConnector(resolver, processor, identifier).wrangle();
+            new ProcessorConnector(resolver, processor, identifier).connect();
             fail("Expected exception");
         } catch (IncompatibleResolverException e) {
             // pass
@@ -137,7 +137,7 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void testWrangleWithStreamResolverAndFileProcessor()
+    public void testConnectWithStreamResolverAndFileProcessor()
             throws Exception {
         final WebServer server = new WebServer();
         final File cacheFolder = TestUtil.getTempFolder();
@@ -161,7 +161,7 @@ public class ProcessorConnectorTest extends BaseTest {
             final Resolver resolver = new ResolverFactory().getResolver(identifier);
             final Processor processor = new ProcessorFactory().getProcessor(Format.JP2);
 
-            new ProcessorConnector(resolver, processor, identifier).wrangle();
+            new ProcessorConnector(resolver, processor, identifier).connect();
 
             assertEquals(
                     CacheFactory.getSourceCache().getSourceImageFile(identifier),
@@ -177,7 +177,7 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void testWrangleWithStreamResolverAndStreamProcessorWithStreamStrategy()
+    public void testConnectWithStreamResolverAndStreamProcessorWithStreamStrategy()
             throws Exception {
         final WebServer server = new WebServer();
         try {
@@ -194,7 +194,7 @@ public class ProcessorConnectorTest extends BaseTest {
             final Resolver resolver = new ResolverFactory().getResolver(identifier);
             final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
-            new ProcessorConnector(resolver, processor, identifier).wrangle();
+            new ProcessorConnector(resolver, processor, identifier).connect();
 
             StreamSource ss1 = ((StreamResolver) resolver).newStreamSource();
             StreamSource ss2 = ((StreamProcessor) processor).getStreamSource();
@@ -206,7 +206,7 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void testWrangleWithStreamResolverAndStreamProcessorWithCacheStrategy()
+    public void testConnectWithStreamResolverAndStreamProcessorWithCacheStrategy()
             throws Exception {
         final WebServer server = new WebServer();
         final File cacheFolder = TestUtil.getTempFolder();
@@ -230,7 +230,7 @@ public class ProcessorConnectorTest extends BaseTest {
             final Resolver resolver = new ResolverFactory().getResolver(identifier);
             final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
-            new ProcessorConnector(resolver, processor, identifier).wrangle();
+            new ProcessorConnector(resolver, processor, identifier).connect();
 
             assertEqualSources(
                     CacheFactory.getSourceCache().getSourceImageFile(identifier),
@@ -246,7 +246,7 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void testWrangleWithStreamResolverAndStreamProcessorWithCacheStrategyAndSourceCacheDisabled()
+    public void testConnectWithStreamResolverAndStreamProcessorWithCacheStrategyAndSourceCacheDisabled()
             throws Exception {
         final WebServer server = new WebServer();
         final File cacheFolder = TestUtil.getTempFolder();
@@ -269,7 +269,7 @@ public class ProcessorConnectorTest extends BaseTest {
             final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
             try {
-                new ProcessorConnector(resolver, processor, identifier).wrangle();
+                new ProcessorConnector(resolver, processor, identifier).connect();
                 fail("Expected exception");
             } catch (CacheDisabledException e) {
                 // pass

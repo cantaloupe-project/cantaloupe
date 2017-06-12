@@ -106,7 +106,7 @@ public class ProcessorConnector {
      * @throws CacheDisabledException
      * @throws IncompatibleResolverException
      */
-    public void wrangle() throws IOException, CacheException,
+    public void connect() throws IOException, CacheException,
             IncompatibleResolverException {
         final String resolverName = resolver.getClass().getSimpleName();
         final String processorName = processor.getClass().getSimpleName();
