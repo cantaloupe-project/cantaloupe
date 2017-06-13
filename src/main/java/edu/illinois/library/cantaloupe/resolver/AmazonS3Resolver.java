@@ -1,6 +1,9 @@
 package edu.illinois.library.cantaloupe.resolver;
 
+import com.amazonaws.auth.*;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
@@ -13,7 +16,7 @@ import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import edu.illinois.library.cantaloupe.util.AWSClientFactory;
+import org.jruby.RubyHash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +25,10 @@ import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>Maps an identifier to an <a href="https://aws.amazon.com/s3/">Amazon
@@ -71,11 +78,31 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
             final Configuration config = Configuration.getInstance();
-            final AWSClientFactory factory = new AWSClientFactory(
-                    config.getString(Key.AMAZONS3RESOLVER_ACCESS_KEY_ID),
-                    config.getString(Key.AMAZONS3RESOLVER_SECRET_KEY),
-                    config.getString(Key.AMAZONS3RESOLVER_BUCKET_REGION));
-            client = factory.newClient();
+            final String awsKey = config.getString(Key.AMAZONS3RESOLVER_ACCESS_KEY_ID);
+            final String awsSecret = config.getString(Key.AMAZONS3RESOLVER_SECRET_KEY);
+            final String awsRegion = config.getString(Key.AMAZONS3RESOLVER_BUCKET_REGION);
+            
+        	ArrayList<AWSCredentialsProvider> creds = new ArrayList<AWSCredentialsProvider>();
+        	creds.addAll(Arrays.asList(new EnvironmentVariableCredentialsProvider(),
+                    new SystemPropertiesCredentialsProvider(),
+                    new ProfileCredentialsProvider(),
+                    new InstanceProfileCredentialsProvider(false)
+                    )
+        	);
+        	
+        	if (!awsKey.isEmpty()) {
+        		creds.add(0, new AWSStaticCredentialsProvider(
+        				new BasicAWSCredentials(awsKey, awsSecret)));
+            }
+        	
+        	final AWSCredentialsProviderChain chain = new AWSCredentialsProviderChain(creds);
+        	AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard()
+        			.withCredentials(chain);
+        	
+        	if (!awsRegion.isEmpty()) {
+        		builder.setRegion(awsRegion);
+        	}
+        	client = builder.build();
         }
         return client;
     }
@@ -90,9 +117,23 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
         AmazonS3 s3 = getClientInstance();
 
         final Configuration config = ConfigurationFactory.getInstance();
-        final String bucketName =
-                config.getString(Key.AMAZONS3RESOLVER_BUCKET_NAME);
-        final String objectKey = getObjectKey();
+        final Object object = getObjectKey();
+        final String bucketName;
+        final String objectKey;
+        if (object instanceof RubyHash) {
+        	Map<String, Object> map = convertToHashMap((RubyHash)object);
+        	if (map.containsKey("bucket") && map.containsKey("key")) {
+	        	bucketName = map.get("bucket").toString();
+	        	objectKey = map.get("key").toString();
+        	} else {
+        		logger.error("Hash does not include bucket and key");
+        		throw new IOException();
+        	}
+        } else {
+        	bucketName =
+                    config.getString(Key.AMAZONS3RESOLVER_BUCKET_NAME);
+        	objectKey = (String)object;
+        }
         try {
             logger.info("Requesting {} from bucket {}", objectKey, bucketName);
             return s3.getObject(new GetObjectRequest(bucketName, objectKey));
@@ -104,8 +145,16 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
             }
         }
     }
+    
+    private Map<String, Object> convertToHashMap(final RubyHash rubyMap) {
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        for (Object key : rubyMap.keySet()) {
+            map.put(key.toString(), rubyMap.get(key));
+        }
+        return map;
+    }
 
-    private String getObjectKey() throws IOException {
+    private Object getObjectKey() throws IOException {
         final Configuration config = ConfigurationFactory.getInstance();
         switch (config.getString(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY)) {
             case "BasicLookupStrategy":
@@ -129,7 +178,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
      * @throws IOException
      * @throws ScriptException If the script fails to execute
      */
-    private String getObjectKeyWithDelegateStrategy()
+    private Object getObjectKeyWithDelegateStrategy()
             throws IOException, ScriptException,
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
@@ -139,7 +188,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
             throw new FileNotFoundException(GET_KEY_DELEGATE_METHOD +
                     " returned nil for " + identifier);
         }
-        return (String) result;
+        return result;
     }
 
     @Override
