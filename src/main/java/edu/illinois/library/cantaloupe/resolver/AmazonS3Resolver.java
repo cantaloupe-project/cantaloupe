@@ -12,6 +12,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
@@ -74,6 +75,8 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
             "AmazonS3Resolver::get_object_key";
 
     private static AmazonS3 client;
+    
+    private String bucketName;
 
     static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
@@ -117,22 +120,9 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
         AmazonS3 s3 = getClientInstance();
 
         final Configuration config = ConfigurationFactory.getInstance();
-        final Object object = getObjectKey();
-        final String bucketName;
-        final String objectKey;
-        if (object instanceof RubyHash) {
-        	Map<String, Object> map = convertToHashMap((RubyHash)object);
-        	if (map.containsKey("bucket") && map.containsKey("key")) {
-	        	bucketName = map.get("bucket").toString();
-	        	objectKey = map.get("key").toString();
-        	} else {
-        		logger.error("Hash does not include bucket and key");
-        		throw new IOException();
-        	}
-        } else {
-        	bucketName =
-                    config.getString(Key.AMAZONS3RESOLVER_BUCKET_NAME);
-        	objectKey = (String)object;
+        final String objectKey = getObjectKey();
+        if (bucketName == null) {
+        	bucketName = config.getString(Key.AMAZONS3RESOLVER_BUCKET_NAME);
         }
         try {
             logger.info("Requesting {} from bucket {}", objectKey, bucketName);
@@ -154,14 +144,28 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
         return map;
     }
 
-    private Object getObjectKey() throws IOException {
+    private String getObjectKey() throws IOException {
         final Configuration config = ConfigurationFactory.getInstance();
         switch (config.getString(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY)) {
             case "BasicLookupStrategy":
                 return identifier.toString();
             case "ScriptLookupStrategy":
                 try {
-                    return getObjectKeyWithDelegateStrategy();
+                	String objectKey;
+                	Object object = getObjectKeyWithDelegateStrategy();
+                    if (object instanceof RubyHash) {
+                    	Map<String, Object> map = convertToHashMap((RubyHash)object);
+                    	if (map.containsKey("bucket") && map.containsKey("key")) {
+            	        	bucketName = map.get("bucket").toString();
+            	        	objectKey = map.get("key").toString();
+                    	} else {
+                    		logger.error("Hash does not include bucket and key");
+                    		throw new IOException();
+                    	}
+                    } else {
+                    	objectKey = (String)object;
+                    }
+                    return objectKey;
                 } catch (ScriptException | DelegateScriptDisabledException e) {
                     logger.error(e.getMessage(), e);
                     throw new IOException(e);
@@ -197,13 +201,17 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
             try (S3Object object = getObject()) {
                 String contentType = object.getObjectMetadata().getContentType();
                 // See if we can determine the format from the Content-Type header.
-                if (contentType != null) {
+                if (contentType != null && !contentType.isEmpty()) {
                     sourceFormat = new MediaType(contentType).toFormat();
                 }
                 if (sourceFormat == null || Format.UNKNOWN.equals(sourceFormat)) {
                     // Try to infer a format based on the identifier.
                     sourceFormat = Format.inferFormat(identifier);
                 }
+                if (Format.UNKNOWN.equals(sourceFormat)) {
+                    // Try to infer a format based on the objectKey.
+                    sourceFormat = Format.inferFormat(new Identifier(getObjectKey()));
+                }                
             }
         }
         return sourceFormat;
