@@ -14,6 +14,7 @@ title: Delegate Script
 
 <ul>
   <li><a href="#Rules">Rules</a></li>
+  <li><a href="#Gems">Gems</a></li>
   <li><a href="#Caching">Caching</a></li>
   <li><a href="#Example">Example</a></li>
   <li><a href="#Testing%20Script%20Methods">Testing Script Methods</a></li>
@@ -37,13 +38,21 @@ title: Delegate Script
 
 <h2 id="Rules">Rules</h2>
 
-<p>While the arguments and return types of each method will vary, all delegate methods must be contained within a <code>Cantaloupe</code> module. Inside a method, anything goes, and you can use any (non-platform-native) gems that you have installed with <code>gem install</code>.</p>
+<p>While the arguments and return types of each method will vary, all delegate methods must be contained within a <code>Cantaloupe</code> module. Inside a method, anything goes, and you can use any (non-platform-native) <a href="#Gems">gems</a> that you have installed with <code>gem install</code>.</p>
 
 <p>Starting in version 3.3, the delegate script is reloaded whenever the script file changes. (Previously, it was reloaded on each request.) Be aware, though, that code that has already been loaded into the JRuby runtime cannot be unloaded. For example, when a method is changed, the new version will overwrite the old version; but constants cannot be redefined.</p>
 
 <p>Because delegate methods will be called frequently, they should be written with efficiency in mind.</p>
 
 <div class="alert alert-danger">Note: generally, neither method arguments nor return values are sanitized or validated. <strong>Be very careful to write defensive, injection-aware code.</strong></div>
+
+<h2 id="Gems">Gems</h2>
+
+<p>JRuby can load most Ruby gems, except those that have been built with native extensions. To import a gem, use the <code>require</code> statement:</p>
+
+<pre>require 'mygem'</pre>
+
+<p><code>require</code> searches for gems based on the <code>$GEM_PATH</code> environment variable, falling back to <code>$GEM_HOME</code> if that is not defined. If JRuby fails to find your gem, check your <code>$GEM_PATH</code>. If you installed the gem using <code>gem install</code>, check the output of <code>gem env</code> (particularly the "gem paths" section) to see where it might have been installed, and ensure that those locations are present in <code>$GEM_PATH</code>.</p>
 
 <h2 id="Caching">Caching</h2>
 
