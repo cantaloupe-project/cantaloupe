@@ -74,7 +74,8 @@ title: Delegate Script
 {% highlight ruby %}
 require 'java'
 
-logger = Java::edu.illinois.library.cantaloupe.script.Helper.logger
+logger = Java::edu.illinois.library.cantaloupe.script.Logger
+logger.trace('Trace-level message')
 logger.debug('Debug-level message')
 logger.info('Info-level message')
 logger.warn('Warning-level message')
