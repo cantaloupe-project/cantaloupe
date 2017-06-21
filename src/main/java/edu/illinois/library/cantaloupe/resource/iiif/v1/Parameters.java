@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.resource.ParameterList;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Reference;
 
@@ -13,7 +12,7 @@ import org.restlet.data.Reference;
  * @see <a href="http://iiif.io/api/image/1.1/#parameters">IIIF Image API
  * 1.1</a>
  */
-class Parameters implements ParameterList, Comparable<Parameters> {
+class Parameters implements Comparable<Parameters> {
 
     private Format outputFormat;
     private Identifier identifier;
@@ -127,10 +126,11 @@ class Parameters implements ParameterList, Comparable<Parameters> {
     }
 
     /**
-     * {@inheritDoc}
+     * @return Analog of the request parameters for processing, excluding any
+     *         additional operations that may need to be performed, such as
+     *         overlays, etc.
      */
-    @Override
-    public OperationList toOperationList() {
+    OperationList toOperationList() {
         OperationList ops = new OperationList();
         ops.setIdentifier(getIdentifier());
         ops.setOutputFormat(getOutputFormat());
