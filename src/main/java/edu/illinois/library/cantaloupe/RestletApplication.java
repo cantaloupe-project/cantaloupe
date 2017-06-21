@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
@@ -62,7 +61,7 @@ public class RestletApplication extends Application {
                     throwable = throwable.getCause();
                 }
                 message = throwable.getMessage();
-                Configuration config = ConfigurationFactory.getInstance();
+                Configuration config = Configuration.getInstance();
                 if (config.getBoolean(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES, false)) {
                     StringWriter sw = new StringWriter();
                     throwable.printStackTrace(new PrintWriter(sw));
@@ -132,7 +131,7 @@ public class RestletApplication extends Application {
 
     private ChallengeAuthenticator createAdminAuthenticator()
             throws ConfigurationException {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         final String secret = config.getString(Key.ADMIN_SECRET);
         if (secret == null || secret.length() < 1) {
             throw new ConfigurationException(Key.ADMIN_SECRET +
@@ -150,7 +149,7 @@ public class RestletApplication extends Application {
 
     private ChallengeAuthenticator createApiAuthenticator()
             throws ConfigurationException {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         final String secret = config.getString(Key.API_SECRET);
         if (secret == null || secret.length() < 1) {
             throw new ConfigurationException(Key.API_SECRET +
@@ -167,39 +166,47 @@ public class RestletApplication extends Application {
         return auth;
     }
 
-    private ChallengeAuthenticator createEndpointAuthenticator() {
-        final Configuration config = ConfigurationFactory.getInstance();
-        final String username = config.getString(Key.BASIC_AUTH_USERNAME);
-        final String secret = config.getString(Key.BASIC_AUTH_SECRET);
+    private ChallengeAuthenticator createEndpointAuthenticator()
+            throws ConfigurationException {
+        final Configuration config = Configuration.getInstance();
 
-        if (username != null && username.length() > 0 && secret != null &&
-                secret.length() > 0) {
-            getLogger().log(Level.INFO,
-                    "Enabling HTTP Basic authentication for all endpoints");
-            final MapVerifier verifier = new MapVerifier();
-            verifier.getLocalSecrets().put(username, secret.toCharArray());
-            final ChallengeAuthenticator auth = new ChallengeAuthenticator(
-                    getContext(), ChallengeScheme.HTTP_BASIC, "Image Realm") {
-                @Override
-                protected int beforeHandle(Request request, Response response) {
-                    if (config.getBoolean(Key.BASIC_AUTH_ENABLED, false)) {
+        if (config.getBoolean(Key.BASIC_AUTH_ENABLED, false)) {
+            final String username = config.getString(Key.BASIC_AUTH_USERNAME, "");
+            final String secret = config.getString(Key.BASIC_AUTH_SECRET, "");
+
+            if (username != null && !username.isEmpty() && secret != null
+                    && !secret.isEmpty()) {
+                getLogger().log(Level.INFO,
+                        "Enabling HTTP Basic authentication for all endpoints");
+                final MapVerifier verifier = new MapVerifier();
+                verifier.getLocalSecrets().put(username, secret.toCharArray());
+
+                final ChallengeAuthenticator auth = new ChallengeAuthenticator(
+                        getContext(), ChallengeScheme.HTTP_BASIC, "Image Realm") {
+                    @Override
+                    protected int beforeHandle(Request request, Response response) {
                         final String path = request.getResourceRef().getPath();
                         if (path.startsWith(IIIF_PATH)
                                 || path.startsWith(IIIF_1_PATH)
                                 || path.startsWith(IIIF_2_PATH)) {
                             return super.beforeHandle(request, response);
                         }
+                        response.setStatus(Status.SUCCESS_OK);
+                        return CONTINUE;
                     }
-                    response.setStatus(Status.SUCCESS_OK);
-                    return CONTINUE;
-                }
-            };
-            auth.setVerifier(verifier);
-            return auth;
+                };
+                auth.setVerifier(verifier);
+                return auth;
+            } else {
+                throw new ConfigurationException("Endpoint authentication is " +
+                        "enabled in the configuration, but " +
+                        Key.BASIC_AUTH_USERNAME + " and/or " +
+                        Key.BASIC_AUTH_SECRET + " are empty");
+            }
+        } else {
+            getLogger().info("Endpoint authentication is disabled (" +
+                    Key.BASIC_AUTH_ENABLED + " = false)");
         }
-        getLogger().log(Level.INFO, "Endpoint authentication is disabled. (" +
-                Key.BASIC_AUTH_USERNAME + " or " + Key.BASIC_AUTH_SECRET +
-                " are null)");
         return null;
     }
 
@@ -302,10 +309,14 @@ public class RestletApplication extends Application {
         router.attach(STATIC_ROOT_PATH, dir);
 
         // Hook up endpoint authentication
-        ChallengeAuthenticator endpointAuth = createEndpointAuthenticator();
-        if (endpointAuth != null) {
-            endpointAuth.setNext(router);
-            return endpointAuth;
+        try {
+            ChallengeAuthenticator endpointAuth = createEndpointAuthenticator();
+            if (endpointAuth != null) {
+                endpointAuth.setNext(router);
+                return endpointAuth;
+            }
+        } catch (ConfigurationException e) {
+            getLogger().log(Level.WARNING, e.getMessage());
         }
         return router;
     }
