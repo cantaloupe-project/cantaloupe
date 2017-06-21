@@ -99,8 +99,8 @@ module Cantaloupe
 
     ##
     # @param identifier [String] Image identifier
-    # @return [String,nil] S3 object key of the image corresponding to the
-    #                      given identifier, or nil if not found.
+    # @return [String,Hash<String,Object>,nil] S3 object key of the image corresponding to the
+    #                      given identifier, or Hash including bucket and key, or nil if not found.
     #
     def self.get_object_key(identifier)
     end
