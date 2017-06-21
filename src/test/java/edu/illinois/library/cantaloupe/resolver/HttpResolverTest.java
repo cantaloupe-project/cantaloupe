@@ -110,41 +110,45 @@ public class HttpResolverTest extends BaseTest {
         }
     }
 
-    /* getURI() */
+    /* getResourceInfo() */
 
     @Test
-    public void testGetURIWithBasicLookupStrategyWithPrefix() throws Exception {
+    public void testGetResourceInfoUsingBasicLookupStrategyWithPrefix()
+            throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                 "http://example.org/prefix/");
         instance.setIdentifier(new Identifier("id"));
         assertEquals("http://example.org/prefix/id",
-                instance.getURI().toString());
+                instance.getResourceInfo().getURI().toString());
     }
 
     @Test
-    public void testGetURIWithBasicLookupStrategyWithPrefixAndSuffix() throws Exception {
+    public void testGetResourceInfoUsingBasicLookupStrategyWithPrefixAndSuffix()
+            throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                 "http://example.org/prefix/");
         config.setProperty(Key.HTTPRESOLVER_URL_SUFFIX, "/suffix");
         instance.setIdentifier(new Identifier("id"));
         assertEquals("http://example.org/prefix/id/suffix",
-                instance.getURI().toString());
+                instance.getResourceInfo().toString());
     }
 
     @Test
-    public void testGetURIWithBasicLookupStrategyWithoutPrefixOrSuffix() throws Exception {
+    public void testGetResourceInfoUsingBasicLookupStrategyWithoutPrefixOrSuffix()
+            throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_URL_PREFIX, "");
         config.setProperty(Key.HTTPRESOLVER_URL_SUFFIX, "");
         instance.setIdentifier(new Identifier("http://example.org/images/image.jpg"));
         assertEquals("http://example.org/images/image.jpg",
-                instance.getURI().toString());
+                instance.getResourceInfo().toString());
     }
 
     @Test
-    public void testGetURIWithScriptLookupStrategy() throws Exception {
+    public void testGetResourceInfoUsingScriptLookupStrategyReturningString()
+            throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
                 "ScriptLookupStrategy");
@@ -152,7 +156,46 @@ public class HttpResolverTest extends BaseTest {
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         assertEquals(new URI("http://example.org/bla/" + IDENTIFIER),
-                instance.getURI());
+                instance.getResourceInfo().getURI());
+    }
+
+    @Test
+    public void testGetResourceInfoUsingScriptLookupStrategyReturningHash()
+            throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
+                "ScriptLookupStrategy");
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
+                TestUtil.getFixture("delegates.rb").getAbsolutePath());
+
+        Identifier identifier = new Identifier("jpg-rgb-64x56x8-plane.jpg");
+        instance.setIdentifier(identifier);
+        HttpResolver.ResourceInfo actual = instance.getResourceInfo();
+        assertEquals(new URI("http://example.org/bla/" + identifier),
+                actual.getURI());
+        assertEquals("username", actual.getUsername());
+        assertEquals("secret", actual.getSecret());
+    }
+
+    @Test
+    public void testGetResourceInfoUsingScriptLookupStrategyReturningNil()
+            throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
+                "ScriptLookupStrategy");
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
+                TestUtil.getFixture("delegates.rb").getAbsolutePath());
+
+        Identifier identifier = new Identifier("bogus");
+        instance.setIdentifier(identifier);
+        try {
+            instance.getResourceInfo();
+            fail("Expected exception");
+        } catch (FileNotFoundException e) {
+            // pass
+        }
     }
 
 }

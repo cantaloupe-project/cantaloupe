@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -87,7 +88,8 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                         send(listener);
 
                 // Wait for the response headers to arrive.
-                Response response = listener.get(5, TimeUnit.SECONDS);
+                Response response = listener.get(REQUEST_TIMEOUT,
+                        TimeUnit.SECONDS);
 
                 if (response.getStatus() == HttpStatus.OK_200) {
                     return listener.getInputStream();
@@ -100,6 +102,41 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
     }
 
+    class ResourceInfo {
+
+        private URI uri;
+        private String username;
+        private String secret;
+
+        ResourceInfo(URI uri) {
+            this.uri = uri;
+        }
+
+        ResourceInfo(URI uri, String username, String secret) {
+            this(uri);
+            this.username = username;
+            this.secret = secret;
+        }
+
+        String getSecret() {
+            return secret;
+        }
+
+        URI getURI() {
+            return uri;
+        }
+
+        String getUsername() {
+            return username;
+        }
+
+        @Override
+        public String toString() {
+            return getURI() + "";
+        }
+
+    }
+
     private static Logger logger = LoggerFactory.getLogger(HttpResolver.class);
 
     private static final String GET_URL_DELEGATE_METHOD =
@@ -108,24 +145,11 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
     private static HttpClient client; // TODO: stop this at app shutdown
 
-    private static synchronized HttpClient getHTTPClient(URI uri) {
+    private static synchronized HttpClient getHTTPClient(ResourceInfo info) {
         if (client == null) {
             SslContextFactory sslContextFactory = new SslContextFactory();
             client = new HttpClient(sslContextFactory);
             client.setFollowRedirects(true);
-
-            // Configure Basic auth.
-            // https://www.eclipse.org/jetty/documentation/9.4.x/http-client-authentication.html
-            final Configuration config = Configuration.getInstance();
-            final String username =
-                    config.getString(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME, "");
-            final String secret =
-                    config.getString(Key.HTTPRESOLVER_BASIC_AUTH_SECRET, "");
-            if (username.length() > 0 && secret.length() > 0) {
-                AuthenticationStore auth = client.getAuthenticationStore();
-                auth.addAuthenticationResult(new BasicAuthentication.BasicResult(
-                        uri, username, secret));
-            }
 
             try {
                 client.start();
@@ -133,40 +157,52 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                 logger.error("getHTTPClient(): {}", e.getMessage());
             }
         }
+
+        // Configure Basic auth.
+        // https://www.eclipse.org/jetty/documentation/9.4.x/http-client-authentication.html
+        if (info.getUsername() != null && info.getSecret() != null) {
+            AuthenticationStore auth = client.getAuthenticationStore();
+            auth.addAuthenticationResult(new BasicAuthentication.BasicResult(
+                    info.getURI(), info.getUsername(), info.getSecret()));
+        }
+
         return client;
     }
 
     @Override
     public StreamSource newStreamSource() throws IOException {
-        URI uri = null;
+        ResourceInfo info = null;
         try {
-            uri = getURI();
-            logger.info("Resolved {} to {}", identifier, uri);
+            info = getResourceInfo();
         } catch (Exception e) {
             logger.error("newStreamSource(): {}", e.getMessage());
-        }
-
-        try {
-            // Issue an HTTP HEAD request to check whether the underlying
-            // resource is accessible.
-            Response response = getHTTPClient(uri).newRequest(uri).
-                    timeout(REQUEST_TIMEOUT, TimeUnit.SECONDS).
-                    method(HttpMethod.HEAD).send();
-
-            if (response.getStatus() == 401 || response.getStatus() == 403) {
-                throw new AccessDeniedException(response.getReason());
-            } else if (response.getStatus() == 404 || response.getStatus() == 410) {
-                throw new FileNotFoundException(response.getReason());
-            } else if (response.getStatus() >= 400) {
-                throw new IOException(response.getReason());
-            }
-        } catch (EofException e) {
-            logger.debug("newStreamSource(): {}", e.getMessage());
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            logger.error(e.getMessage(), e);
             throw new IOException(e.getMessage(), e);
         }
-        return new HTTPStreamSource(client, uri);
+
+        if (info != null) {
+            logger.info("Resolved {} to {}", identifier, info.getURI());
+            try {
+                // Issue an HTTP HEAD request to check whether the underlying
+                // resource is accessible.
+                Response response = getHTTPClient(info).newRequest(info.getURI()).
+                        timeout(REQUEST_TIMEOUT, TimeUnit.SECONDS).
+                        method(HttpMethod.HEAD).send();
+
+                if (response.getStatus() == 401 || response.getStatus() == 403) {
+                    throw new AccessDeniedException(response.getReason());
+                } else if (response.getStatus() == 404 || response.getStatus() == 410) {
+                    throw new FileNotFoundException(response.getReason());
+                } else if (response.getStatus() >= 400) {
+                    throw new IOException(response.getReason());
+                }
+                return new HTTPStreamSource(client, info.getURI());
+            } catch (EofException e) {
+                logger.debug("newStreamSource(): {}", e.getMessage());
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+        return null;
     }
 
     @Override
@@ -185,25 +221,29 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         return sourceFormat;
     }
 
-    URI getURI() throws Exception {
+    ResourceInfo getResourceInfo() throws Exception {
         final Configuration config = Configuration.getInstance();
         switch (config.getString(Key.HTTPRESOLVER_LOOKUP_STRATEGY)) {
             case "BasicLookupStrategy":
-                return getURIWithBasicStrategy();
+                return getResourceInfoUsingBasicStrategy();
             case "ScriptLookupStrategy":
-                return getURIWithScriptStrategy();
+                return getResourceInfoUsingScriptStrategy();
             default:
                 throw new ConfigurationException(Key.HTTPRESOLVER_LOOKUP_STRATEGY +
                         " is invalid or not set");
         }
     }
 
-    private URI getURIWithBasicStrategy() throws ConfigurationException {
+    private ResourceInfo getResourceInfoUsingBasicStrategy()
+            throws ConfigurationException {
         final Configuration config = Configuration.getInstance();
         final String prefix = config.getString(Key.HTTPRESOLVER_URL_PREFIX, "");
         final String suffix = config.getString(Key.HTTPRESOLVER_URL_SUFFIX, "");
         try {
-            return new URI(prefix + identifier.toString() + suffix);
+            return new ResourceInfo(
+                    new URI(prefix + identifier.toString() + suffix),
+                    config.getString(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME),
+                    config.getString(Key.HTTPRESOLVER_BASIC_AUTH_SECRET));
         } catch (URISyntaxException e) {
             throw new ConfigurationException(e.getMessage());
         }
@@ -216,8 +256,9 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
      * @throws ScriptException If the script fails to execute.
      * @throws DelegateScriptDisabledException
      */
-    private URI getURIWithScriptStrategy() throws URISyntaxException,
-            IOException, ScriptException, DelegateScriptDisabledException {
+    private ResourceInfo getResourceInfoUsingScriptStrategy()
+            throws URISyntaxException, IOException, ScriptException,
+            DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final Object result = engine.invoke(GET_URL_DELEGATE_METHOD,
                 identifier.toString());
@@ -225,7 +266,18 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
             throw new FileNotFoundException(GET_URL_DELEGATE_METHOD +
                     " returned nil for " + identifier);
         }
-        return new URI((String) result);
+        // The return value may be a string URI, or a hash with "uri",
+        // "username", and "secret" keys.
+        if (result instanceof String) {
+            return new ResourceInfo(new URI((String) result));
+        } else {
+            @SuppressWarnings("unchecked")
+            final Map<String,String> info = (Map<String,String>) result;
+            final String uri = info.get("uri");
+            final String username = info.get("username");
+            final String secret = info.get("secret");
+            return new ResourceInfo(new URI(uri), username, secret);
+        }
     }
 
     /**
@@ -237,8 +289,9 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     private Format inferSourceFormatFromContentTypeHeader() {
         Format format = Format.UNKNOWN;
         try {
-            final URI uri = getURI();
-            Request request = getHTTPClient(uri).newRequest(uri).
+            final ResourceInfo info = getResourceInfo();
+            Request request = getHTTPClient(info).
+                    newRequest(info.getURI()).
                     timeout(REQUEST_TIMEOUT, TimeUnit.SECONDS).
                     method(HttpMethod.HEAD);
             Response response = request.send();
@@ -248,11 +301,12 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                 if (field != null && field.getValue() != null) {
                     format = new MediaType(field.getValue()).toFormat();
                 } else {
-                    logger.warn("No Content-Type header for HEAD {}", uri);
+                    logger.warn("No Content-Type header for HEAD {}",
+                            info.getURI());
                 }
             } else {
                 logger.warn("HEAD returned status {} for {}",
-                        response.getStatus(), uri);
+                        response.getStatus(), info.getURI());
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);

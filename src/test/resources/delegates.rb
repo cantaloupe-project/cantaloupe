@@ -29,16 +29,6 @@ module Cantaloupe
     }
   end
 
-  def self.icc_profile(identifier, output_format, request_headers, client_ip)
-    if identifier == 'cats'
-      return {
-          'name' => 'AdobeRGB1998',
-          'pathname' => '/bogus/AdobeRGB1998.icc' # __FILE__ doesn't work with ScriptEngine
-      }
-    end
-    nil
-  end
-
   def self.get_resolver(identifier)
     if identifier == 'http'
       return 'HttpResolver'
@@ -69,7 +59,17 @@ module Cantaloupe
 
   module HttpResolver
     def self.get_url(identifier)
-      'http://example.org/bla/' + URI.escape(identifier)
+      case identifier
+        when 'jpg-rgb-64x56x8-baseline.jpg'
+          return 'http://example.org/bla/' + URI.escape(identifier)
+        when 'jpg-rgb-64x56x8-plane.jpg'
+          return {
+              'uri' => 'http://example.org/bla/' + URI.escape(identifier),
+              'username' => 'username',
+              'secret' => 'secret'
+          }
+      end
+      nil
     end
   end
 
