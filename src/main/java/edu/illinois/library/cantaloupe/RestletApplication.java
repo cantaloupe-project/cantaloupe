@@ -45,6 +45,8 @@ import java.util.logging.Level;
  *
  * @see <a href="https://restlet.com/open-source/documentation/jdocs/2.3/jse">
  *     Restlet JSE Javadoc</a>
+ * @see <a href="https://restlet.com/open-source/documentation/2.3/changelog">
+ *     Restlet Change Log</a>
  */
 public class RestletApplication extends Application {
 
