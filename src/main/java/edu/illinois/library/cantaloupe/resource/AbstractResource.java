@@ -219,8 +219,6 @@ public abstract class AbstractResource extends ServerResource {
         final Header typeHeader =
                 getRequest().getHeaders().getFirst("X-Sendfile-Type", true);
         if (typeHeader != null) {
-            logger.debug("Setting {} header: {}",
-                    typeHeader.getValue(), path.toString());
             getResponse().getHeaders().add(typeHeader.getValue(),
                     path.toString());
             final String headerName = typeHeader.getValue();
@@ -239,7 +237,7 @@ public abstract class AbstractResource extends ServerResource {
                     headerValue = path.toString();
                     break;
             }
-            logger.debug("{} header: {}", headerName, headerValue);
+            logger.debug("Setting {}: {}", headerName, headerValue);
             getResponse().getHeaders().add(headerName, headerValue);
         } else {
             logger.debug("No X-Sendfile-Type request header. " +
