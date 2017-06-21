@@ -14,6 +14,7 @@ title: Delegate Script
 
 <ul>
   <li><a href="#Rules">Rules</a></li>
+  <li><a href="#Gems">Gems</a></li>
   <li><a href="#Caching">Caching</a></li>
   <li><a href="#Logging">Logging</a></li>
   <li><a href="#Example">Example</a></li>
@@ -45,6 +46,14 @@ title: Delegate Script
 <p>Because delegate methods will be called frequently, they should be written with efficiency in mind.</p>
 
 <div class="alert alert-danger">Note: generally, neither method arguments nor return values are sanitized or validated. <strong>Be very careful to write defensive, injection-aware code.</strong></div>
+
+<h2 id="Gems">Gems</h2>
+
+<p>JRuby can load most Ruby gems, except those that have been built with native extensions. To import a gem, use the <code>require</code> statement:</p>
+
+<pre>require 'mygem'</pre>
+
+<p><code>require</code> searches for gems based on the <code>$GEM_PATH</code> environment variable, falling back to <code>$GEM_HOME</code> if that is not defined. If JRuby fails to find your gem, check your <code>$GEM_PATH</code>. If you installed the gem using <code>gem install</code>, check the output of <code>gem env</code> (particularly the "gem paths" section) to see where it might have been installed, and ensure that those locations are present in <code>$GEM_PATH</code>.</p>
 
 <h2 id="Caching">Caching</h2>
 
