@@ -308,8 +308,16 @@ public class ImageResourceTest extends ResourceTest {
         }
     }
 
-    public void testIsAuthorized() {
-        // will be tested in the v2 endpoint counterpart
+    @Test
+    public void testMinPixels() throws Exception {
+        ClientResource client = getClientForUriPath(
+                "/" + IMAGE + "/0,0,0,0/full/0/native.png"); // zero area
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        }
     }
 
     @Test
@@ -514,6 +522,16 @@ public class ImageResourceTest extends ResourceTest {
         } catch (ResourceException e) {
             assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
         }
+    }
+
+    @Test
+    public void testXPoweredByHeader() throws Exception {
+        ClientResource resource = getClientForUriPath(
+                "/" + IMAGE + "/full/full/0/native.jpg");
+        resource.get();
+        Header header = resource.getResponse().getHeaders().
+                getFirst("X-Powered-By");
+        assertEquals("Cantaloupe/Unknown", header.getValue());
     }
 
     /**

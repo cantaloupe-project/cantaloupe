@@ -96,6 +96,7 @@ public class AmazonS3ResolverTest extends BaseTest {
 
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(Key.AMAZONS3RESOLVER_BUCKET_NAME, getBucket());
+        config.setProperty(Key.AMAZONS3RESOLVER_BUCKET_REGION, getRegion());
         config.setProperty(Key.AMAZONS3RESOLVER_ACCESS_KEY_ID, getAccessKeyId());
         config.setProperty(Key.AMAZONS3RESOLVER_SECRET_KEY, getSecretKey());
         config.setProperty(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY,

@@ -422,6 +422,16 @@ public class InformationResourceTest extends ResourceTest {
                 RestletApplication.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
     }
 
+    @Test
+    public void testXPoweredByHeader() throws Exception {
+        ClientResource resource = getClientForUriPath(
+                "/" + IMAGE + "/info.json");
+        resource.get();
+        Header header = resource.getResponse().getHeaders().
+                getFirst("X-Powered-By");
+        assertEquals("Cantaloupe/Unknown", header.getValue());
+    }
+
     /**
      * Tests that an X-Sendfile header is added to the response when
      * FilesystemCache registers a hit, and not added otherwise.

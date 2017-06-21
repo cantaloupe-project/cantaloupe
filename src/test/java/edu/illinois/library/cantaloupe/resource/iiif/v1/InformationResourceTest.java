@@ -13,6 +13,7 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.restlet.data.CacheDirective;
+import org.restlet.data.Header;
 import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
@@ -407,6 +408,16 @@ public class InformationResourceTest extends ResourceTest {
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("https://example.net" +
                 RestletApplication.IIIF_1_PATH + "/" + IMAGE, info.id);
+    }
+
+    @Test
+    public void testXPoweredByHeader() throws Exception {
+        ClientResource resource = getClientForUriPath(
+                "/" + IMAGE + "/info.json");
+        resource.get();
+        Header header = resource.getResponse().getHeaders().
+                getFirst("X-Powered-By");
+        assertEquals("Cantaloupe/Unknown", header.getValue());
     }
 
 }

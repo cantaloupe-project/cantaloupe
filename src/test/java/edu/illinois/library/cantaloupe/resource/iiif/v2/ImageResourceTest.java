@@ -320,11 +320,6 @@ public class ImageResourceTest extends ResourceTest {
         }
     }
 
-    @Test
-    public void testIsAuthorized() {
-        // TODO: write this
-    }
-
     /**
      * Tests that the Link header respects the <code>base_uri</code>
      * key in the configuration.
@@ -349,6 +344,18 @@ public class ImageResourceTest extends ResourceTest {
         client.get();
         header = client.getResponse().getHeaders().getFirst("Link");
         assertTrue(header.getValue().contains("/originalID/"));
+    }
+
+    @Test
+    public void testMinPixels() throws Exception {
+        ClientResource client = getClientForUriPath(
+                "/" + IMAGE + "/0,0,0,0/full/0/default.png"); // zero area
+        try {
+            client.get();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_BAD_REQUEST, client.getStatus());
+        }
     }
 
     @Test
@@ -618,6 +625,16 @@ public class ImageResourceTest extends ResourceTest {
             assertEquals(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE,
                     client.getStatus());
         }
+    }
+
+    @Test
+    public void testXPoweredByHeader() throws Exception {
+        ClientResource resource = getClientForUriPath(
+                "/" + IMAGE + "/full/full/0/default.jpg");
+        resource.get();
+        Header header = resource.getResponse().getHeaders().
+                getFirst("X-Powered-By");
+        assertEquals("Cantaloupe/Unknown", header.getValue());
     }
 
     /**
