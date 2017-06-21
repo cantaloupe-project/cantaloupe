@@ -211,6 +211,11 @@
     <!-- Provides HTTP/2 support for Jetty (see org.eclipse.jetty.jetty-server) -->
     <dependency>
       <groupId>org.eclipse.jetty.http2</groupId>
+      <artifactId>http2-client</artifactId>
+      <version>9.4.5.v20170502</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty.http2</groupId>
       <artifactId>http2-server</artifactId>
       <version>9.4.5.v20170502</version>
     </dependency>
@@ -220,6 +225,12 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-alpn-server</artifactId>
+      <version>9.4.5.v20170502</version>
+    </dependency>
+    <!-- Used by HttpResolver -->
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-client</artifactId>
       <version>9.4.5.v20170502</version>
     </dependency>
     <!-- Provides the standalone servlet container -->
