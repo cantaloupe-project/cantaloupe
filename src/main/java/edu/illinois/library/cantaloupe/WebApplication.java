@@ -199,8 +199,10 @@ public class WebApplication extends Application {
                 @Override
                 protected int beforeHandle(Request request, Response response) {
                     if (config.getBoolean(BASIC_AUTH_ENABLED_CONFIG_KEY, false)) {
-                        if (!request.getResourceRef().getPath().startsWith(ADMIN_PATH) &&
-                                !request.getResourceRef().getPath().startsWith(STATIC_ROOT_PATH)) {
+                        final String path = request.getResourceRef().getPath();
+                        if (path.startsWith(IIIF_PATH)
+                                || path.startsWith(IIIF_1_PATH)
+                                || path.startsWith(IIIF_2_PATH)) {
                             return super.beforeHandle(request, response);
                         }
                     }
