@@ -117,9 +117,13 @@ FilesystemResolver.BasicLookupStrategy.path_suffix =
 <p>An identifier of <code>image.jpg</code> in the URL will resolve to
 <span class="filename">/usr/local/images/image.jpg</span>.</p>
 
+<p>It's also possible to include a partial path in the identifier using URL-encoded slashes (<code>%2F</code>) as path separators. <code>subdirectory%2Fimage.jpg</code> in the URL would then resolve to <span class="filename">/usr/local/images/subdirectory/image.jpg</span>.</p>
+
+<div class="alert alert-info">If you are operating behind a reverse proxy that is not capable of passing encoded URL characters through without decoding them, see the <code>slash_substitude</code> configuration key.</div>
+
 <p>To prevent arbitrary directory traversal, BasicLookupStrategy will strip out <code>..{path separator}</code> and <code>{path separator}..</code> from identifiers before resolving the path.</p>
 
-<div class="alert alert-danger">Note: it is dangerous to <strong>not</strong> use <code>path_prefix</code>. The shallower the path, the more of the filesystem that will be exposed.</div>
+<div class="alert alert-danger">Note: it may be dangerous to <strong>not</strong> use <code>path_prefix</code>. The shallower the path, the more of the filesystem that will be exposed.</div>
 
 <h4 id="FilesystemResolverScriptLookupStrategy">ScriptLookupStrategy</h4>
 
@@ -242,7 +246,11 @@ HttpResolver.url_suffix =
 {% endhighlight %}
 
 <p>An identifier of <code>image.jpg</code> in the URL will resolve to
-<span class="filename">http://example.org/images/image.jpg</span>.
+<span class="filename">http://example.org/images/image.jpg</span>.</p>
+
+<p>It's also possible to include a partial path in the identifier using URL-encoded slashes (<code>%2F</code>) as path separators. <code>subdirectory%2Fimage.jpg</code> in the URL would then resolve to <span class="filename">http://example.org/images/subdirectory/image.jpg</span>.</p>
+
+<div class="alert alert-info">If you are operating behind a reverse proxy that is not capable of passing encoded URL characters through without decoding them, see the <code>slash_substitude</code> configuration key.</div>
 
 <h4 id="HttpResolverScriptLookupStrategy">ScriptLookupStrategy</h4>
 
