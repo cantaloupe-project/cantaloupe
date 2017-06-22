@@ -39,12 +39,6 @@ public final class MediaType {
     }
 
     /**
-     * No-op constructor.
-     */
-    public MediaType() {
-    }
-
-    /**
      * @param mediaType
      * @throws IllegalArgumentException
      */
