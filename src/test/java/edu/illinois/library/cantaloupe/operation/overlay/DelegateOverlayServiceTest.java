@@ -40,9 +40,8 @@ public class DelegateOverlayServiceTest extends BaseTest {
 
     @Test
     public void testGetOverlayReturningImageOverlay() throws Exception {
-        final OperationList opList = new OperationList();
-        opList.setIdentifier(new Identifier("image"));
-        opList.setOutputFormat(Format.JPG);
+        final OperationList opList = new OperationList(new Identifier("image"),
+                Format.JPG);
         final Dimension fullSize = new Dimension(100, 100);
         final URL requestUrl = new URL("http://example.org/");
         final Map<String,String> requestHeaders = new HashMap<>();
@@ -59,9 +58,8 @@ public class DelegateOverlayServiceTest extends BaseTest {
 
     @Test
     public void testGetOverlayReturningStringOverlay() throws Exception {
-        final OperationList opList = new OperationList();
-        opList.setIdentifier(new Identifier("string"));
-        opList.setOutputFormat(Format.JPG);
+        final OperationList opList = new OperationList(
+                new Identifier("string"), Format.JPG);
         final Dimension fullSize = new Dimension(100, 100);
         final URL requestUrl = new URL("http://example.org/");
         final Map<String,String> requestHeaders = new HashMap<>();
@@ -87,9 +85,8 @@ public class DelegateOverlayServiceTest extends BaseTest {
 
     @Test
     public void testGetOverlayReturningFalse() throws Exception {
-        final OperationList opList = new OperationList();
-        opList.setIdentifier(new Identifier("bogus"));
-        opList.setOutputFormat(Format.JPG);
+        final OperationList opList = new OperationList(new Identifier("bogus"),
+                Format.JPG);
         final Dimension fullSize = new Dimension(100, 100);
         final URL requestUrl = new URL("http://example.org/");
         final Map<String,String> requestHeaders = new HashMap<>();

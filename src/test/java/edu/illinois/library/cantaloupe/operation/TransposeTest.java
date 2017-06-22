@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,8 +36,8 @@ public class TransposeTest extends BaseTest {
     @Test
     public void testHasEffectWithArguments() {
         Dimension fullSize = new Dimension(600, 400);
-        OperationList opList = new OperationList();
-        opList.add(new Crop(0, 0, 300, 200));
+        OperationList opList = new OperationList(new Identifier("cats"),
+                Format.JPG, new Crop(0, 0, 300, 200));
         assertTrue(transpose.hasEffect(fullSize, opList));
     }
 

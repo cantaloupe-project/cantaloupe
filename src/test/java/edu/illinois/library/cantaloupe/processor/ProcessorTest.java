@@ -92,12 +92,10 @@ public abstract class ProcessorTest extends BaseTest {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        OperationList ops = new OperationList();
-        ops.setIdentifier(new Identifier("bla"));
+        OperationList ops = new OperationList(new Identifier("bla"), Format.JPG);
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotate(0));
-        ops.setOutputFormat(Format.JPG);
         doProcessTest(ops);
     }
 
@@ -109,12 +107,10 @@ public abstract class ProcessorTest extends BaseTest {
         crop.setWidth(50f);
         crop.setHeight(50f);
         Scale scale = new Scale(0.8f);
-        OperationList ops = new OperationList();
-        ops.setIdentifier(new Identifier("bla"));
+        OperationList ops = new OperationList(new Identifier("bla"), Format.JPG);
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotate(15));
-        ops.setOutputFormat(Format.JPG);
 
         for (Format format : Format.values()) {
             try {

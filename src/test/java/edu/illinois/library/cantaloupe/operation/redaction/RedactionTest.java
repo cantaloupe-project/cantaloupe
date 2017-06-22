@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.operation.redaction;
 
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -67,7 +69,8 @@ public class RedactionTest extends BaseTest {
     @Test
     public void testIsNoOpWithArguments() {
         final Dimension fullSize = new Dimension(600, 400);
-        final OperationList opList = new OperationList();
+        final OperationList opList = new OperationList(
+                new Identifier("cats"), Format.JPG);
         opList.add(new Crop(0, 0, 400, 300));
 
         // in bounds

@@ -88,10 +88,7 @@ public abstract class TestUtil {
      * @return Dummy OperationList object with no operations added.
      */
     public static OperationList newOperationList() {
-        OperationList ops = new OperationList();
-        ops.setIdentifier(new Identifier("dummy"));
-        ops.setOutputFormat(Format.JPG);
-        return ops;
+        return new OperationList(new Identifier("dummy"), Format.JPG);
     }
 
 }

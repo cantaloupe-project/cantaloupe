@@ -219,10 +219,7 @@ public class FilesystemCacheTest extends BaseTest {
         crop.setHeight(50f);
         Format format = Format.TIF;
 
-        OperationList ops = new OperationList();
-        ops.setIdentifier(identifier);
-        ops.add(crop);
-        ops.setOutputFormat(format);
+        OperationList ops = new OperationList(identifier, format, crop);
 
         assertFalse(instance.derivativeImageExists(ops));
 
@@ -250,13 +247,8 @@ public class FilesystemCacheTest extends BaseTest {
         ColorTransform transform = ColorTransform.BITONAL;
         Format format = Format.TIF;
 
-        OperationList ops = new OperationList();
-        ops.setIdentifier(identifier);
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(rotate);
-        ops.add(transform);
-        ops.setOutputFormat(format);
+        OperationList ops = new OperationList(identifier, format,
+                crop, scale, rotate, transform);
 
         final String expected = String.format("%s%simage%s%s%s",
                 pathname,
@@ -279,12 +271,8 @@ public class FilesystemCacheTest extends BaseTest {
         Rotate rotate = new Rotate(0);
         Format format = Format.TIF;
 
-        final OperationList ops = new OperationList();
-        ops.setIdentifier(identifier);
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(rotate);
-        ops.setOutputFormat(format);
+        final OperationList ops = new OperationList(identifier, format,
+                crop, scale, rotate);
 
         final String expected = String.format("%s%simage%s%s%s",
                 pathname,
@@ -388,13 +376,8 @@ public class FilesystemCacheTest extends BaseTest {
         ColorTransform transform = ColorTransform.BITONAL;
         Format format = Format.TIF;
 
-        OperationList ops = new OperationList();
-        ops.setIdentifier(identifier);
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(rotate);
-        ops.add(transform);
-        ops.setOutputFormat(format);
+        OperationList ops = new OperationList(identifier, format,
+                crop, scale, rotate, transform);
 
         final String expected = String.format("%s%s%s%s",
                 StringUtils.stripEnd(rootDerivativeImagePathname(), File.separator),

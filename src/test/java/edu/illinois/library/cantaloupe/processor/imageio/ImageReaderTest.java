@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -108,7 +109,8 @@ public class ImageReaderTest extends BaseTest {
 
     @Test
     public void testReadWithMonoResolutionImageAndNoScaleFactor() throws Exception {
-        OperationList ops = new OperationList();
+        OperationList ops = new OperationList(new Identifier("cats"),
+                Format.JPG);
         Crop crop = new Crop();
         crop.setX(10f);
         crop.setY(10f);

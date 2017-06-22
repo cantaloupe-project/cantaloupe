@@ -106,12 +106,7 @@ public class JdbcCacheTest extends BaseTest {
         Scale scale = new Scale(0.9f);
         Rotate rotate = new Rotate();
         Format format = Format.JPG;
-        ops = new OperationList();
-        ops.setIdentifier(identifier);
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(rotate);
-        ops.setOutputFormat(format);
+        ops = new OperationList(identifier, format, crop, scale, rotate);
 
         try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
@@ -126,12 +121,7 @@ public class JdbcCacheTest extends BaseTest {
         scale = new Scale(40, null, Scale.Mode.ASPECT_FIT_WIDTH);
         rotate = new Rotate(15);
         format = Format.PNG;
-        ops = new OperationList();
-        ops.setIdentifier(identifier);
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(rotate);
-        ops.setOutputFormat(format);
+        ops = new OperationList(identifier, format, crop, scale, rotate);
 
         try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE).toPath(), os);

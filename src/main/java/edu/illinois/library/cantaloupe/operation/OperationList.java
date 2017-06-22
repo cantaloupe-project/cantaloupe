@@ -58,18 +58,22 @@ public final class OperationList implements Comparable<OperationList>,
     private Format outputFormat;
 
     /**
-     * No-op constructor.
+     * Constructs a minimal valid instance.
+     *
+     * @param identifier
+     * @param outputFormat
      */
-    public OperationList() {}
-
-    public OperationList(Identifier identifier) {
-        this();
+    public OperationList(Identifier identifier, Format outputFormat) {
         setIdentifier(identifier);
+        setOutputFormat(outputFormat);
     }
 
-    public OperationList(Identifier identifier, Format outputFormat) {
-        this(identifier);
-        setOutputFormat(outputFormat);
+    public OperationList(Identifier identifier, Format outputFormat,
+                         Operation... operations) {
+        this(identifier, outputFormat);
+        for (Operation op : operations) {
+            add(op);
+        }
     }
 
     /**
@@ -155,9 +159,10 @@ public final class OperationList implements Comparable<OperationList>,
                                           final URL requestUrl,
                                           final Map<String,String> requestHeaders,
                                           final Map<String,String> cookies) {
-        if (getOutputFormat() == null) {
+        if (getOutputFormat() == null
+                || Format.UNKNOWN.equals(getOutputFormat())) {
             throw new IllegalArgumentException(
-                    "Output format is null. This is probably a bug.");
+                    "Output format is null or unknown. This is probably a bug.");
         }
 
         final Configuration config = Configuration.getInstance();

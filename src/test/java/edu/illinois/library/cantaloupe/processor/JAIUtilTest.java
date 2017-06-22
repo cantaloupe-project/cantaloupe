@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -82,7 +83,8 @@ public class JAIUtilTest extends BaseTest {
 
     @Test
     public void testReformatImage() throws Exception {
-        final OperationList ops = new OperationList();
+        final OperationList ops = new OperationList(new Identifier("cats"),
+                Format.JPG);
         ImageReader reader = new ImageReader(
                 TestUtil.getFixture(IMAGE), Format.JPG);
         RenderedImage image = reader.readRendered(ops, Orientation.ROTATE_0,
@@ -419,7 +421,8 @@ public class JAIUtilTest extends BaseTest {
     }
 
     private RenderedOp getFixture(final String name) throws Exception {
-        final OperationList ops = new OperationList();
+        final OperationList ops = new OperationList(new Identifier("cats"),
+                Format.JPG);
         ImageReader reader = new ImageReader(
                 TestUtil.getFixture(name), Format.JPG);
         RenderedImage image = reader.readRendered(ops, Orientation.ROTATE_0,

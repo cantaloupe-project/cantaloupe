@@ -152,9 +152,8 @@ class Parameters implements Comparable<Parameters> {
      *         overlays, etc.
      */
     OperationList toOperationList() {
-        OperationList ops = new OperationList();
-        ops.setIdentifier(getIdentifier());
-        ops.setOutputFormat(getOutputFormat());
+        OperationList ops = new OperationList(getIdentifier(),
+                getOutputFormat());
         if (!Region.Type.FULL.equals(getRegion().getType())) {
             ops.add(getRegion().toCrop());
         }

@@ -3,6 +3,8 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -253,7 +255,8 @@ public class JPEGImageWriterTest extends BaseTest {
     }
 
     private JPEGImageWriter getWriter(Metadata metadata) throws IOException {
-        OperationList opList = new OperationList();
+        OperationList opList = new OperationList(new Identifier("cats"),
+                Format.JPG);
         if (ConfigurationFactory.getInstance().
                 getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
             opList.add(new MetadataCopy());

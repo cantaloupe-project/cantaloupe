@@ -51,7 +51,8 @@ public class OverlayServiceTest extends BaseTest {
 
     @Test
     public void testNewOverlayWithBasicImageStrategy() throws Exception {
-        final OperationList opList = new OperationList();
+        final OperationList opList = new OperationList(
+                new Identifier("cats"), Format.JPG);
         final Dimension fullSize = new Dimension(0, 0);
         final URL requestUrl = new URL("http://example.org/");
         final Map<String,String> requestHeaders = new HashMap<>();
@@ -73,7 +74,8 @@ public class OverlayServiceTest extends BaseTest {
         config.setProperty(Key.OVERLAY_STRING_COLOR, "green");
         instance = new OverlayService();
 
-        final OperationList opList = new OperationList();
+        final OperationList opList = new OperationList(
+                new Identifier("cats"), Format.JPG);
         final Dimension fullSize = new Dimension(0, 0);
         final URL requestUrl = new URL("http://example.org/");
         final Map<String,String> requestHeaders = new HashMap<>();
@@ -93,9 +95,8 @@ public class OverlayServiceTest extends BaseTest {
             throws Exception {
         instance.setStrategy(OverlayService.Strategy.DELEGATE_METHOD);
 
-        final OperationList opList = new OperationList();
-        opList.setIdentifier(new Identifier("image"));
-        opList.setOutputFormat(Format.JPG);
+        final OperationList opList = new OperationList(new Identifier("image"),
+                Format.JPG);
         final Dimension fullSize = new Dimension(100, 100);
         final URL requestUrl = new URL("http://example.org/");
         final Map<String,String> requestHeaders = new HashMap<>();
@@ -114,9 +115,8 @@ public class OverlayServiceTest extends BaseTest {
             throws Exception {
         instance.setStrategy(OverlayService.Strategy.DELEGATE_METHOD);
 
-        final OperationList opList = new OperationList();
-        opList.setIdentifier(new Identifier("string"));
-        opList.setOutputFormat(Format.JPG);
+        final OperationList opList = new OperationList(
+                new Identifier("string"), Format.JPG);
         final Dimension fullSize = new Dimension(100, 100);
         final URL requestUrl = new URL("http://example.org/");
         final Map<String,String> requestHeaders = new HashMap<>();
@@ -134,9 +134,8 @@ public class OverlayServiceTest extends BaseTest {
     public void testNewOverlayWithScriptStrategyReturningFalse() throws Exception {
         instance.setStrategy(OverlayService.Strategy.DELEGATE_METHOD);
 
-        final OperationList opList = new OperationList();
-        opList.setIdentifier(new Identifier("bogus"));
-        opList.setOutputFormat(Format.JPG);
+        final OperationList opList = new OperationList(new Identifier("bogus"),
+                Format.JPG);
         final Dimension fullSize = new Dimension(100, 100);
         final URL requestUrl = new URL("http://example.org/");
         final Map<String,String> requestHeaders = new HashMap<>();

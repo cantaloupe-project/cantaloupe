@@ -96,11 +96,9 @@ abstract class MagickProcessorTest extends ProcessorTest {
         config.clear();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, yesOrNo);
 
-        OperationList ops = new OperationList();
-        ops.setIdentifier(new Identifier("bla"));
+        OperationList ops = new OperationList(new Identifier("bla"), Format.JPG);
         Rotate rotation = new Rotate(15);
         ops.add(rotation);
-        ops.setOutputFormat(Format.JPG);
         ops.add(new Encode(ops.getOutputFormat()));
 
         Info imageInfo = new Info(64, 58);
@@ -146,11 +144,9 @@ abstract class MagickProcessorTest extends ProcessorTest {
         config.clear();
         config.setProperty(Key.PROCESSOR_BACKGROUND_COLOR, "blue");
 
-        OperationList ops = new OperationList();
-        ops.setIdentifier(new Identifier("bla"));
+        OperationList ops = new OperationList(new Identifier("bla"), Format.PNG);
         Rotate rotation = new Rotate(15);
         ops.add(rotation);
-        ops.setOutputFormat(Format.PNG);
         ops.add(new Encode(ops.getOutputFormat()));
 
         Info imageInfo = new Info(64, 58);
@@ -180,11 +176,9 @@ abstract class MagickProcessorTest extends ProcessorTest {
     @Test
     public void testProcessWithRotationAndCustomBackgroundColorAndNonTransparentOutputFormat()
             throws Exception {
-        OperationList ops = new OperationList();
-        ops.setIdentifier(new Identifier("bla"));
+        OperationList ops = new OperationList(new Identifier("bla"), Format.JPG);
         Rotate rotation = new Rotate(15);
         ops.add(rotation);
-        ops.setOutputFormat(Format.JPG);
 
         Encode encode = new Encode(ops.getOutputFormat());
         encode.setBackgroundColor(Color.fromString("#0000FF"));
