@@ -125,7 +125,7 @@ class RedisCache implements DerivativeCache {
             if (bufferStream == null) {
                 bufferValue();
             }
-            return super.read(b, off, len);
+            return bufferStream.read(b, off, len);
         }
 
     }
