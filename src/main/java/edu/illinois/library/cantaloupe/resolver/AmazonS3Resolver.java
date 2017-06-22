@@ -40,13 +40,7 @@ import java.io.IOException;
  */
 class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
-    private static class AmazonS3StreamSource implements StreamSource {
-
-        private final S3Object object;
-
-        AmazonS3StreamSource(S3Object object) {
-            this.object = object;
-        }
+    private class AmazonS3StreamSource implements StreamSource {
 
         @Override
         public ImageInputStream newImageInputStream() throws IOException {
@@ -55,7 +49,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
         @Override
         public S3ObjectInputStream newInputStream() throws IOException {
-            return object.getObjectContent();
+            return getObject().getObjectContent();
         }
 
     }
@@ -81,9 +75,9 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public StreamSource newStreamSource()
-            throws IOException {
-        return new AmazonS3StreamSource(getObject());
+    public StreamSource newStreamSource() throws IOException {
+        getObject(); // This may throw a FileNotFoundException etc.
+        return new AmazonS3StreamSource();
     }
 
     private S3Object getObject() throws IOException {
