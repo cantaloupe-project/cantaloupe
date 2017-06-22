@@ -4,7 +4,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -17,8 +16,6 @@ import edu.illinois.library.cantaloupe.util.AWSClientFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -39,20 +36,6 @@ import java.io.IOException;
  *     AWS SDK for Java</a>
  */
 class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
-
-    private class AmazonS3StreamSource implements StreamSource {
-
-        @Override
-        public ImageInputStream newImageInputStream() throws IOException {
-            return ImageIO.createImageInputStream(newInputStream());
-        }
-
-        @Override
-        public S3ObjectInputStream newInputStream() throws IOException {
-            return getObject().getObjectContent();
-        }
-
-    }
 
     private static Logger logger = LoggerFactory.
             getLogger(AmazonS3Resolver.class);
@@ -76,8 +59,8 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
     @Override
     public StreamSource newStreamSource() throws IOException {
-        getObject(); // This may throw a FileNotFoundException etc.
-        return new AmazonS3StreamSource();
+        S3Object object = getObject();
+        return new InputStreamStreamSource(object.getObjectContent());
     }
 
     private S3Object getObject() throws IOException {
