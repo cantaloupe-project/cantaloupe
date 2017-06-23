@@ -79,7 +79,7 @@ public class ImageOverlayCacheTest extends BaseTest {
 
     @Test
     public void testPutAndGetWithPresentURL() throws IOException {
-        URL url = new URL(webServer.getUri() + "/jpg");
+        URL url = new URL(webServer.getHTTPURI() + "/jpg");
         byte[] bytes = instance.putAndGet(url.toString());
         assertEquals(5439, bytes.length);
     }
@@ -87,7 +87,7 @@ public class ImageOverlayCacheTest extends BaseTest {
     @Test
     public void testPutAndGetWithMissingURL() {
         try {
-            URL url = new URL(webServer.getUri() + "/blablabla");
+            URL url = new URL(webServer.getHTTPURI() + "/blablabla");
             instance.putAndGet(url.toString());
             fail("Expected exception");
         } catch (IOException e) {

@@ -6,12 +6,6 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.processor.FileProcessor;
-import edu.illinois.library.cantaloupe.processor.IncompatibleResolverException;
-import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
-import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import edu.illinois.library.cantaloupe.resolver.FileResolver;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
@@ -156,7 +150,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
                     "BasicLookupStrategy");
             config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
-                    server.getUri() + "/");
+                    server.getHTTPURI() + "/");
             config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
 
             final Resolver resolver = new ResolverFactory().getResolver(identifier);
@@ -189,7 +183,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
                     "BasicLookupStrategy");
             config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
-                    server.getUri() + "/");
+                    server.getHTTPURI() + "/");
             config.setProperty(Key.PROCESSOR_FALLBACK, "ImageMagickProcessor");
 
             final Resolver resolver = new ResolverFactory().getResolver(identifier);
@@ -219,7 +213,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
                     "BasicLookupStrategy");
             config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
-                    server.getUri() + "/");
+                    server.getHTTPURI() + "/");
             config.setProperty(Key.PROCESSOR_FALLBACK, "ImageMagickProcessor");
             config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
             config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
@@ -259,7 +253,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
                     "BasicLookupStrategy");
             config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
-                    server.getUri() + "/");
+                    server.getHTTPURI() + "/");
             config.setProperty(Key.PROCESSOR_FALLBACK, "ImageMagickProcessor");
             config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
                     "CacheStrategy");
