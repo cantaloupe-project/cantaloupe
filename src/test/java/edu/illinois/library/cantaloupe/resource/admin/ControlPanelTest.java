@@ -208,6 +208,7 @@ public class ControlPanelTest extends ResourceTest {
         css("#cl-resolver li > a[href=\"#HttpResolver\"]").click();
         selectNamed(Key.HTTPRESOLVER_LOOKUP_STRATEGY).
                 selectByValue("BasicLookupStrategy");
+        inputNamed(Key.HTTPRESOLVER_TRUST_INVALID_CERTS).click();
         inputNamed(Key.HTTPRESOLVER_URL_PREFIX).sendKeys("http://prefix/");
         inputNamed(Key.HTTPRESOLVER_URL_SUFFIX).sendKeys("/suffix");
         inputNamed(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME).sendKeys("username");
@@ -257,6 +258,8 @@ public class ControlPanelTest extends ResourceTest {
         assertEquals("/suffix",
                 config.getString(Key.FILESYSTEMRESOLVER_PATH_SUFFIX));
         // HttpResolver
+        assertTrue(
+                config.getBoolean(Key.HTTPRESOLVER_TRUST_INVALID_CERTS));
         assertEquals("BasicLookupStrategy",
                 config.getString(Key.HTTPRESOLVER_LOOKUP_STRATEGY));
         assertEquals("http://prefix/",

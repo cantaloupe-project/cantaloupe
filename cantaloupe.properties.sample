@@ -142,6 +142,9 @@ FilesystemResolver.BasicLookupStrategy.path_suffix =
 # HttpResolver
 #----------------------------------------
 
+# Whether to trust invalid certificates when making HTTPS connections.
+HttpResolver.trust_invalid_certs = false
+
 # Tells HttpResolver how to look up resources. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
 # uses the delegate script for dynamic lookups; see the user manual for

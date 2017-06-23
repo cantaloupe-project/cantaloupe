@@ -27,6 +27,7 @@ public class HttpResolverHTTPSTest extends HttpResolverTest {
 
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_URL_PREFIX, server.getHTTPSURI());
+        config.setProperty(Key.HTTPRESOLVER_TRUST_INVALID_CERTS, true);
     }
 
 }

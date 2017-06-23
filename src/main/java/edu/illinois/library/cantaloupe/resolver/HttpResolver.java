@@ -158,8 +158,12 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                     HTTP2Client h2Client = new HTTP2Client();
                     HttpClientTransportOverHTTP2 transport =
                             new HttpClientTransportOverHTTP2(h2Client);
+
+                    Configuration config = Configuration.getInstance();
+                    final boolean trustInvalidCerts = config.getBoolean(
+                            Key.HTTPRESOLVER_TRUST_INVALID_CERTS, false);
                     SslContextFactory sslContextFactory =
-                            new SslContextFactory(true); // trust all certs TODO: make this configurable
+                            new SslContextFactory(trustInvalidCerts);
 
                     httpsClient = new HttpClient(transport, sslContextFactory);
                     httpsClient.setFollowRedirects(true);

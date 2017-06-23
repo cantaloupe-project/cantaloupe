@@ -1,5 +1,16 @@
 package edu.illinois.library.cantaloupe.config;
 
+/**
+ * <p>To add a key:</p>
+ *
+ * <ol>
+ *     <li>Add a value for it here.</li>
+ *     <li>Add it to the sample config file.</li>
+ *     <li>Document the addition in the upgrade guide.</li>
+ *     <li>Add a form element to the Control Panel to set its value.</li>
+ *     <li>Test the above.</li>
+ * </ol>
+ */
 public enum Key {
 
     ACCESS_LOG_CONSOLEAPPENDER_ENABLED("log.access.ConsoleAppender.enabled"),
@@ -101,6 +112,7 @@ public enum Key {
     HTTPRESOLVER_BASIC_AUTH_SECRET("HttpResolver.auth.basic.secret"),
     HTTPRESOLVER_BASIC_AUTH_USERNAME("HttpResolver.auth.basic.username"),
     HTTPRESOLVER_LOOKUP_STRATEGY("HttpResolver.lookup_strategy"),
+    HTTPRESOLVER_TRUST_INVALID_CERTS("HttpResolver.trust_invalid_certs"),
     HTTPRESOLVER_URL_PREFIX("HttpResolver.BasicLookupStrategy.url_prefix"),
     HTTPRESOLVER_URL_SUFFIX("HttpResolver.BasicLookupStrategy.url_suffix"),
     HTTPS_ENABLED("https.enabled"),

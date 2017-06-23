@@ -909,6 +909,26 @@
                                 <div role="tabpanel" class="tab-pane" id="HttpResolver">
                                     <table class="table table-striped">
                                         <tr>
+                                            <td>
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Whether to trust invalid certificates when
+                                                   making HTTPS connections.">?</a>
+                                            </td>
+                                            <td>
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox"
+                                                               name="HttpResolver.trust_invalid_certs"
+                                                               value="true"
+                                                               data-requires-restart="false">
+                                                        Trust Invalid Certificates
+                                                    </label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
                                             <td>Lookup Strategy
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
