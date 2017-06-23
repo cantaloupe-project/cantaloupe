@@ -13,6 +13,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <jetty.version>9.4.6.v20170531</jetty.version>
     <restlet.version>2.3.10</restlet.version>
   </properties>
 
@@ -212,42 +213,52 @@
     <dependency>
       <groupId>org.eclipse.jetty.http2</groupId>
       <artifactId>http2-client</artifactId>
-      <version>9.4.5.v20170502</version>
+      <version>${jetty.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty.http2</groupId>
+      <artifactId>http2-http-client-transport</artifactId>
+      <version>${jetty.version}</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty.http2</groupId>
       <artifactId>http2-server</artifactId>
-      <version>9.4.5.v20170502</version>
+      <version>${jetty.version}</version>
     </dependency>
-    <!-- Provides ALPN support for Jetty (see org.eclipse.jetty.jetty-server)
+    <!-- Provides ALPN support for Jetty.
     N.B. This doesn't include ALPN support for Java 8, which requires a JAR
     on the boot classpath. -->
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-alpn-client</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-alpn-server</artifactId>
-      <version>9.4.5.v20170502</version>
+      <version>${jetty.version}</version>
     </dependency>
     <!-- Used by HttpResolver -->
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-client</artifactId>
-      <version>9.4.5.v20170502</version>
+      <version>${jetty.version}</version>
     </dependency>
     <!-- Provides the standalone servlet container -->
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
-      <version>9.4.5.v20170502</version>
+      <version>${jetty.version}</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>9.4.5.v20170502</version>
+      <version>${jetty.version}</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-webapp</artifactId>
-      <version>9.4.5.v20170502</version>
+      <version>${jetty.version}</version>
     </dependency>
     <!-- Enables colorized Logback console output in Windows -->
     <dependency>

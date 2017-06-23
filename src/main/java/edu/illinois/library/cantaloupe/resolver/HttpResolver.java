@@ -18,6 +18,8 @@ import org.eclipse.jetty.client.util.InputStreamResponseListener;
 import org.eclipse.jetty.http.HttpField;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpStatus;
+import org.eclipse.jetty.http2.client.HTTP2Client;
+import org.eclipse.jetty.http2.client.http.HttpClientTransportOverHTTP2;
 import org.eclipse.jetty.io.EofException;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
@@ -143,30 +145,61 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
             "HttpResolver::get_url";
     private static final int REQUEST_TIMEOUT = 10;
 
-    private static HttpClient client; // TODO: stop this at app shutdown
+    private static HttpClient httpClient; // TODO: stop this at app shutdown
+    private static HttpClient httpsClient; // TODO: stop this at app shutdown
 
     private static synchronized HttpClient getHTTPClient(ResourceInfo info) {
-        if (client == null) {
-            SslContextFactory sslContextFactory = new SslContextFactory();
-            client = new HttpClient(sslContextFactory);
-            client.setFollowRedirects(true);
+        // We use separate Jetty clients for HTTP and HTTPS because an
+        // HTTPS/1.1 client can connect to HTTP/1.1 servers, but an HTTPS/2
+        // client can't.
+        switch (info.getURI().getScheme().toUpperCase()) {
+            case "HTTPS":
+                if (httpsClient == null) {
+                    HTTP2Client h2Client = new HTTP2Client();
+                    HttpClientTransportOverHTTP2 transport =
+                            new HttpClientTransportOverHTTP2(h2Client);
+                    SslContextFactory sslContextFactory =
+                            new SslContextFactory(true); // trust all certs TODO: make this configurable
 
-            try {
-                client.start();
-            } catch (Exception e) {
-                logger.error("getHTTPClient(): {}", e.getMessage());
-            }
+                    httpsClient = new HttpClient(transport, sslContextFactory);
+                    httpsClient.setFollowRedirects(true);
+
+                    try {
+                        httpsClient.start();
+                    } catch (Exception e) {
+                        logger.error("getHTTPClient(): {}", e.getMessage());
+                    }
+                }
+
+                // Add Basic auth credentials to the authentication store.
+                // https://www.eclipse.org/jetty/documentation/9.4.x/http-client-authentication.html
+                if (info.getUsername() != null && info.getSecret() != null) {
+                    AuthenticationStore auth = httpsClient.getAuthenticationStore();
+                    auth.addAuthenticationResult(new BasicAuthentication.BasicResult(
+                            info.getURI(), info.getUsername(), info.getSecret()));
+                }
+                return httpsClient;
+            default:
+                if (httpClient == null) {
+                    httpClient = new HttpClient();
+                    httpClient.setFollowRedirects(true);
+
+                    try {
+                        httpClient.start();
+                    } catch (Exception e) {
+                        logger.error("getHTTPClient(): {}", e.getMessage());
+                    }
+                }
+
+                // Add Basic auth credentials to the authentication store.
+                // https://www.eclipse.org/jetty/documentation/9.4.x/http-client-authentication.html
+                if (info.getUsername() != null && info.getSecret() != null) {
+                    AuthenticationStore auth = httpClient.getAuthenticationStore();
+                    auth.addAuthenticationResult(new BasicAuthentication.BasicResult(
+                            info.getURI(), info.getUsername(), info.getSecret()));
+                }
+                return httpClient;
         }
-
-        // Configure Basic auth.
-        // https://www.eclipse.org/jetty/documentation/9.4.x/http-client-authentication.html
-        if (info.getUsername() != null && info.getSecret() != null) {
-            AuthenticationStore auth = client.getAuthenticationStore();
-            auth.addAuthenticationResult(new BasicAuthentication.BasicResult(
-                    info.getURI(), info.getUsername(), info.getSecret()));
-        }
-
-        return client;
     }
 
     @Override
@@ -182,24 +215,29 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         if (info != null) {
             logger.info("Resolved {} to {}", identifier, info.getURI());
             try {
-                // Issue an HTTP HEAD request to check whether the underlying
+                // Send an HTTP HEAD request to check whether the underlying
                 // resource is accessible.
-                Response response = getHTTPClient(info).newRequest(info.getURI()).
+                final HttpClient client = getHTTPClient(info);
+                final Response response = client.newRequest(info.getURI()).
                         timeout(REQUEST_TIMEOUT, TimeUnit.SECONDS).
                         method(HttpMethod.HEAD).send();
 
-                if (response.getStatus() == 401 || response.getStatus() == 403) {
-                    throw new AccessDeniedException(response.getReason());
-                } else if (response.getStatus() == 404 || response.getStatus() == 410) {
-                    throw new FileNotFoundException(response.getReason());
-                } else if (response.getStatus() >= 400) {
-                    throw new IOException(response.getReason());
+                if (response.getStatus() >= 400) {
+                    final String statusLine = "HTTP " + response.getStatus() +
+                            ": " + response.getReason();
+                    if (response.getStatus() == 401 || response.getStatus() == 403) {
+                        throw new AccessDeniedException(statusLine);
+                    } else if (response.getStatus() == 404 || response.getStatus() == 410) {
+                        throw new FileNotFoundException(statusLine);
+                    } else if (response.getStatus() >= 400) {
+                        throw new IOException(statusLine);
+                    }
                 }
                 return new HTTPStreamSource(client, info.getURI());
-            } catch (EofException e) {
-                logger.debug("newStreamSource(): {}", e.getMessage());
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            } catch (EofException | InterruptedException | ExecutionException
+                    | TimeoutException e) {
                 logger.error(e.getMessage(), e);
+                throw new IOException(e.getMessage(), e);
             }
         }
         return null;
