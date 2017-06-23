@@ -1,18 +1,14 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import static org.junit.Assert.*;
-
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.AccessDeniedException;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import edu.illinois.library.cantaloupe.test.WebServer;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.AfterClass;
+import edu.illinois.library.cantaloupe.test.WebServer;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -21,26 +17,24 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 
-public class HttpResolverTest extends BaseTest {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
+abstract class HttpResolverTest extends BaseTest {
 
     private static final Identifier IDENTIFIER =
             new Identifier("jpg-rgb-64x56x8-baseline.jpg");
 
-    private static WebServer server;
+    static WebServer server;
 
     private HttpResolver instance;
 
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        server = new WebServer();
-        server.start();
-    }
-
-    @AfterClass
-    public static void afterClass() throws Exception {
-        server.stop();
-    }
-
+    /**
+     * Subclasses need to override, call super, and set
+     * {@link Key#HTTPRESOLVER_URL_PREFIX} to the web server URI using the
+     * appropriate scheme.
+     */
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -48,8 +42,6 @@ public class HttpResolverTest extends BaseTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
-        config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
-                "http://localhost:" + server.getPort() + "/");
 
         instance = new HttpResolver();
         instance.setIdentifier(IDENTIFIER);
@@ -80,9 +72,9 @@ public class HttpResolverTest extends BaseTest {
     }
 
     @Test
-    @Ignore // TODO: restlet bug: https://github.com/restlet/restlet-framework-java/issues/1179
+    @Ignore // TODO: Jetty server returns HTTP 200 for unreadable files
     public void testNewStreamSourceWithPresentUnreadableImage()
-            throws IOException {
+            throws Exception {
         File image = TestUtil.getFixture("gif");
         try {
             image.setReadable(false);
