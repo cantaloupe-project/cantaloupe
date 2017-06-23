@@ -171,9 +171,13 @@ public class AdminResource extends AbstractResource {
         //////////////////////// status section ////////////////////////////
         ////////////////////////////////////////////////////////////////////
 
-        // VM arguments
+        // VM info
         RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
         vars.put("vmArguments", runtimeMxBean.getInputArguments());
+        vars.put("vmName", runtimeMxBean.getVmName());
+        vars.put("vmVendor", runtimeMxBean.getVmVendor());
+        vars.put("vmVersion", runtimeMxBean.getVmVersion());
+        vars.put("uptime", TimeUtils.millisecondsToHumanTime(runtimeMxBean.getUptime()));
 
         // memory
         final int mb = 1024 * 1024;

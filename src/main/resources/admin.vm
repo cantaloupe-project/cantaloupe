@@ -139,6 +139,28 @@
                         </div>
                     </div>
 
+                    <section id="cl-status-vm">
+                        <h2>VM Info</h2>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>Vendor</td>
+                                <td>$vmVendor</td>
+                            </tr>
+                            <tr>
+                                <td>Name</td>
+                                <td>$vmName</td>
+                            </tr>
+                            <tr>
+                                <td>Version</td>
+                                <td>$vmVersion</td>
+                            </tr>
+                            <tr>
+                                <td>Uptime</td>
+                                <td>$uptime</td>
+                            </tr>
+                        </table>
+                    </section>
+
                     <section>
                         <h2>VM Arguments</h2>
                         <pre>#foreach ($arg in $vmArguments)$arg<br>#end</pre>

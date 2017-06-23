@@ -63,18 +63,7 @@ textarea.form-control {
 }
 
 #cl-status td:first-child {
-    width: 40%;
-}
-
-#cl-status ul {
-    margin-left: 0px;
-    padding-left: 0px;
-}
-
-#cl-status li {
-    list-style-type: none;
-    margin-left: 2em;
-    text-indent: -2em;
+    white-space: nowrap;
 }
 
 .nav > li.list-group-item > a {
