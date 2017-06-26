@@ -267,9 +267,7 @@ processor.normalize = false
 processor.background_color = black
 
 # Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
-# `lanczos3`, `mitchell`, `triangle`.
-# These are used only by FfmpegProcessor, Java2dProcessor, OpenJpegProcessor,
-# and PdfBoxProcessor.
+# `lanczos3`, `mitchell`, `triangle`. (These are not used by JaiProcessor.)
 processor.downscale_filter = bicubic
 processor.upscale_filter = bicubic
 

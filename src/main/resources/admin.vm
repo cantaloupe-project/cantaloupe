@@ -1274,8 +1274,7 @@
                                                role="button" data-toggle="popover"
                                                data-trigger="focus"
                                                data-content="Selectable downscale filters are supported
-                                               only by FfmpegProcessor, Java2dProcessor, OpenJpegProcessor,
-                                               and PdfBoxProcessor.">?</a>
+                                               by all processors except JaiProcessor.">?</a>
                                         </td>
                                         <td>
                                             <select class="form-control"
@@ -1293,8 +1292,7 @@
                                                role="button" data-toggle="popover"
                                                data-trigger="focus"
                                                data-content="Selectable upscale filters are supported
-                                               only by FfmpegProcessor, Java2dProcessor, OpenJpegProcessor,
-                                               and PdfBoxProcessor.">?</a>
+                                               by all processors except JaiProcessor.">?</a>
                                         </td>
                                         <td>
                                             <select class="form-control"
