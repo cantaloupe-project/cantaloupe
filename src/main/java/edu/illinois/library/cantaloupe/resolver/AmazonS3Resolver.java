@@ -1,9 +1,6 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import com.amazonaws.auth.*;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
@@ -17,6 +14,8 @@ import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.util.AWSClientFactory;
+
 import org.jruby.RubyHash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +25,6 @@ import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -81,31 +78,11 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
             final Configuration config = Configuration.getInstance();
-            final String awsKey = config.getString(Key.AMAZONS3RESOLVER_ACCESS_KEY_ID);
-            final String awsSecret = config.getString(Key.AMAZONS3RESOLVER_SECRET_KEY);
-            final String awsRegion = config.getString(Key.AMAZONS3RESOLVER_BUCKET_REGION);
-            
-        	ArrayList<AWSCredentialsProvider> creds = new ArrayList<AWSCredentialsProvider>();
-        	creds.addAll(Arrays.asList(new EnvironmentVariableCredentialsProvider(),
-                    new SystemPropertiesCredentialsProvider(),
-                    new ProfileCredentialsProvider(),
-                    new InstanceProfileCredentialsProvider(false)
-                    )
-        	);
-        	
-        	if (!awsKey.isEmpty()) {
-        		creds.add(0, new AWSStaticCredentialsProvider(
-        				new BasicAWSCredentials(awsKey, awsSecret)));
-            }
-        	
-        	final AWSCredentialsProviderChain chain = new AWSCredentialsProviderChain(creds);
-        	AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard()
-        			.withCredentials(chain);
-        	
-        	if (!awsRegion.isEmpty()) {
-        		builder.setRegion(awsRegion);
-        	}
-        	client = builder.build();
+            final AWSClientFactory factory = new AWSClientFactory(
+            		config.getString(Key.AMAZONS3RESOLVER_ACCESS_KEY_ID),
+            		config.getString(Key.AMAZONS3RESOLVER_SECRET_KEY),
+            		config.getString(Key.AMAZONS3RESOLVER_BUCKET_REGION));
+            client = factory.newClient();
         }
         return client;
     }
@@ -152,7 +129,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
             case "ScriptLookupStrategy":
                 try {
                 	String objectKey;
-                	Object object = getObjectKeyWithDelegateStrategy();
+                	Object object = getObjectInfoWithDelegateStrategy();
                     if (object instanceof RubyHash) {
                     	Map<String, Object> map = convertToHashMap((RubyHash)object);
                     	if (map.containsKey("bucket") && map.containsKey("key")) {
@@ -182,7 +159,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
      * @throws IOException
      * @throws ScriptException If the script fails to execute
      */
-    private Object getObjectKeyWithDelegateStrategy()
+    private Object getObjectInfoWithDelegateStrategy()
             throws IOException, ScriptException,
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
