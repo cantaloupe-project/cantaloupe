@@ -387,12 +387,17 @@ public abstract class AbstractResource extends ServerResource {
     protected Identifier getIdentifier() {
         final Map<String,Object> attrs = getRequest().getAttributes();
         // Get the raw identifier from the URI.
-        String identifierStr = (String) attrs.get("identifier");
+        final String urlIdentifier = (String) attrs.get("identifier");
         // Decode entities.
-        identifierStr = Reference.decode(identifierStr);
+        final String decodedIdentifier = Reference.decode(urlIdentifier);
         // Decode slash substitutes.
-        identifierStr = decodeSlashes(identifierStr);
-        return new Identifier(identifierStr);
+        final String identifier = decodeSlashes(decodedIdentifier);
+
+        logger.debug("getIdentifier(): requested: {} / decoded: {} / " +
+                        "slashes substituted: {}",
+                urlIdentifier, decodedIdentifier, identifier);
+
+        return new Identifier(identifier);
     }
 
     /**
