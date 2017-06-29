@@ -23,6 +23,8 @@ import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Variant;
 import org.restlet.resource.Get;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.io.FileNotFoundException;
@@ -40,6 +42,9 @@ import java.util.Set;
  */
 public class ImageResource extends IIIF1Resource {
 
+    private static final Logger logger = LoggerFactory.
+            getLogger(ImageResource.class);
+
     /**
      * Format to assume when no extension is present in the URI.
      */
@@ -49,14 +54,18 @@ public class ImageResource extends IIIF1Resource {
      * Responds to image requests.
      *
      * @return ImageRepresentation
-     * @throws Exception
      */
     @Get
     public Representation doGet() throws Exception {
-        final Map<String,Object> attrs = this.getRequest().getAttributes();
-        Identifier identifier =
-                new Identifier(Reference.decode((String) attrs.get("identifier")));
-        identifier = decodeSlashes(identifier);
+        final Map<String,Object> attrs = getRequest().getAttributes();
+        final String urlIdentifier = (String) attrs.get("identifier");
+        final String decodedIdentifier = Reference.decode(urlIdentifier);
+        final String reSlashedIdentifier = decodeSlashes(decodedIdentifier);
+        final Identifier identifier = new Identifier(reSlashedIdentifier);
+
+        logger.debug("Identifier requested: {} / decoded: {} / " +
+                        "slashes substituted: {}",
+                urlIdentifier, decodedIdentifier, identifier);
 
         final Resolver resolver = ResolverFactory.getResolver(identifier);
 
@@ -101,7 +110,7 @@ public class ImageResource extends IIIF1Resource {
 
         // Assemble the URI parameters into an OperationList instance
         final OperationList ops = new Parameters(
-                (String) attrs.get("identifier"),
+                "replace this",
                 (String) attrs.get("region"),
                 (String) attrs.get("size"),
                 (String) attrs.get("rotation"),
@@ -109,7 +118,7 @@ public class ImageResource extends IIIF1Resource {
                 outputFormat).toOperationList();
         ops.setIdentifier(identifier);
         ops.getOptions().putAll(
-                this.getReference().getQueryAsForm(true).getValuesMap());
+                getReference().getQueryAsForm(true).getValuesMap());
 
         final Info info = getOrReadInfo(identifier, processor);
         final Dimension fullSize = info.getSize();

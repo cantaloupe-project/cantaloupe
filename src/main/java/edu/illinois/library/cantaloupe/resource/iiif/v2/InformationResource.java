@@ -27,6 +27,8 @@ import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.util.Series;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handles IIIF Image API 2.x information requests.
@@ -35,6 +37,9 @@ import org.restlet.util.Series;
  * Requests</a>
  */
 public class InformationResource extends IIIF2Resource {
+
+    private static final Logger logger = LoggerFactory.
+            getLogger(InformationResource.class);
 
     /**
      * Redirects /{identifier} to /{identifier}/info.json, respecting the
@@ -60,18 +65,21 @@ public class InformationResource extends IIIF2Resource {
      *
      * @return JacksonRepresentation that will write an {@link ImageInfo}
      *         instance to JSON.
-     * @throws Exception
      */
     @Get
     public Representation doGet() throws Exception {
-        Map<String,Object> attrs = this.getRequest().getAttributes();
-        Identifier identifier = new Identifier(
-                Reference.decode((String) attrs.get("identifier")));
-        identifier = decodeSlashes(identifier);
+        final Map<String,Object> attrs = getRequest().getAttributes();
+        final String urlIdentifier = (String) attrs.get("identifier");
+        final String decodedIdentifier = Reference.decode(urlIdentifier);
+        final String reSlashedIdentifier = decodeSlashes(decodedIdentifier);
+        final Identifier identifier = new Identifier(reSlashedIdentifier);
+
+        logger.debug("Identifier requested: {} / decoded: {} / " +
+                        "slashes substituted: {}",
+                urlIdentifier, decodedIdentifier, identifier);
 
         // Get the resolver
         Resolver resolver = ResolverFactory.getResolver(identifier);
-        // Determine the format of the source image
         Format format = Format.UNKNOWN;
         try {
             // Determine the format of the source image
@@ -90,7 +98,7 @@ public class InformationResource extends IIIF2Resource {
 
         // Obtain an instance of the processor assigned to that format in
         // the config file
-        Processor processor = ProcessorFactory.getProcessor(format);
+        final Processor processor = ProcessorFactory.getProcessor(format);
 
         new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
@@ -101,7 +109,7 @@ public class InformationResource extends IIIF2Resource {
 
         JacksonRepresentation rep = new JacksonRepresentation<>(imageInfo);
 
-        // 7. If the client has requested JSON-LD, set the content type to
+        // If the client has requested JSON-LD, set the content type to
         // that; otherwise set it to JSON
         List<Preference<MediaType>> preferences = this.getRequest().
                 getClientInfo().getAcceptedMediaTypes();

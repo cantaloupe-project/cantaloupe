@@ -27,6 +27,8 @@ import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.util.Series;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handles IIIF Image API 1.x information requests.
@@ -35,6 +37,9 @@ import org.restlet.util.Series;
  * Requests</a>
  */
 public class InformationResource extends IIIF1Resource {
+
+    private static final Logger logger = LoggerFactory.
+            getLogger(InformationResource.class);
 
     /**
      * Redirects /{identifier} to /{identifier}/info.json, respecting the
@@ -60,14 +65,18 @@ public class InformationResource extends IIIF1Resource {
      *
      * @return JacksonRepresentation that will write an {@link ImageInfo}
      *         instance to JSON.
-     * @throws Exception
      */
     @Get
     public Representation doGet() throws Exception {
-        Map<String,Object> attrs = this.getRequest().getAttributes();
-        Identifier identifier = new Identifier(
-                Reference.decode((String) attrs.get("identifier")));
-        identifier = decodeSlashes(identifier);
+        final Map<String,Object> attrs = getRequest().getAttributes();
+        final String urlIdentifier = (String) attrs.get("identifier");
+        final String decodedIdentifier = Reference.decode(urlIdentifier);
+        final String reSlashedIdentifier = decodeSlashes(decodedIdentifier);
+        final Identifier identifier = new Identifier(reSlashedIdentifier);
+
+        logger.debug("Identifier requested: {} / decoded: {} / " +
+                        "slashes substituted: {}",
+                urlIdentifier, decodedIdentifier, identifier);
 
         // Get the resolver
         Resolver resolver = ResolverFactory.getResolver(identifier);

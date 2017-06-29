@@ -19,10 +19,13 @@ import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import org.restlet.data.Disposition;
 import org.restlet.data.Header;
+import org.restlet.data.Reference;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.util.Series;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.io.FileNotFoundException;
@@ -39,33 +42,43 @@ import java.util.Set;
  */
 public class ImageResource extends IIIF2Resource {
 
+    private static final Logger logger = LoggerFactory.
+            getLogger(ImageResource.class);
+
     public static final String CONTENT_DISPOSITION_CONFIG_KEY =
             "endpoint.iiif.content_disposition";
     public static final String RESTRICT_TO_SIZES_CONFIG_KEY =
             "endpoint.iiif.2.restrict_to_sizes";
 
     /**
-     * Responds to IIIF Image requests.
+     * Responds to image requests.
      *
-     * @return OutputRepresentation
-     * @throws Exception
+     * @return ImageRepresentation
      */
     @Get
     public Representation doGet() throws Exception {
-        final Map<String,Object> attrs = this.getRequest().getAttributes();
+        final Map<String,Object> attrs = getRequest().getAttributes();
+        final String urlIdentifier = (String) attrs.get("identifier");
+        final String decodedIdentifier = Reference.decode(urlIdentifier);
+        final String reSlashedIdentifier = decodeSlashes(decodedIdentifier);
+        final Identifier identifier = new Identifier(reSlashedIdentifier);
+
+        logger.debug("Identifier requested: {} / decoded: {} / " +
+                        "slashes substituted: {}",
+                urlIdentifier, decodedIdentifier, identifier);
+
         // Assemble the URI parameters into a Parameters object
         final Parameters params = new Parameters(
-                (String) attrs.get("identifier"),
+                "replace this",
                 (String) attrs.get("region"),
                 (String) attrs.get("size"),
                 (String) attrs.get("rotation"),
                 (String) attrs.get("quality"),
                 (String) attrs.get("format"));
         final OperationList ops = params.toOperationList();
-        final Identifier identifier = decodeSlashes(ops.getIdentifier());
         ops.setIdentifier(identifier);
         ops.getOptions().putAll(
-                this.getReference().getQueryAsForm(true).getValuesMap());
+                getReference().getQueryAsForm(true).getValuesMap());
 
         final Disposition disposition = getRepresentationDisposition(
                 ops.getIdentifier(), ops.getOutputFormat());
