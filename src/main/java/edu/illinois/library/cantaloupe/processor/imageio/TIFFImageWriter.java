@@ -36,11 +36,8 @@ import java.util.Iterator;
  */
 class TIFFImageWriter extends AbstractImageWriter {
 
-    private static Logger logger = LoggerFactory.getLogger(TIFFImageWriter.class);
-
-    TIFFImageWriter(OperationList opList) {
-        super(opList);
-    }
+    private static final Logger logger = LoggerFactory.
+            getLogger(TIFFImageWriter.class);
 
     TIFFImageWriter(OperationList opList,
                     Metadata sourceMetadata) {

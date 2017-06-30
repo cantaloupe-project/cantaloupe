@@ -32,11 +32,8 @@ import java.util.Iterator;
  */
 class JPEGImageWriter extends AbstractImageWriter {
 
-    private static Logger logger = LoggerFactory.getLogger(JPEGImageWriter.class);
-
-    JPEGImageWriter(OperationList opList) {
-        super(opList);
-    }
+    private static final Logger logger = LoggerFactory.
+            getLogger(JPEGImageWriter.class);
 
     JPEGImageWriter(OperationList opList,
                     Metadata sourceMetadata) {

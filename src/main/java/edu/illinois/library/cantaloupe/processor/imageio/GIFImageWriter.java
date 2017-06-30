@@ -31,10 +31,6 @@ import java.util.Iterator;
  */
 class GIFImageWriter extends AbstractImageWriter {
 
-    GIFImageWriter(OperationList opList) {
-        super(opList);
-    }
-
     GIFImageWriter(OperationList opList,
                    Metadata sourceMetadata) {
         super(opList, sourceMetadata);

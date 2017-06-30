@@ -30,10 +30,6 @@ import java.util.zip.DeflaterOutputStream;
  */
 class PNGImageWriter extends AbstractImageWriter {
 
-    PNGImageWriter(OperationList opList) {
-        super(opList);
-    }
-
     PNGImageWriter(OperationList opList,
                    Metadata sourceMetadata) {
         super(opList, sourceMetadata);
