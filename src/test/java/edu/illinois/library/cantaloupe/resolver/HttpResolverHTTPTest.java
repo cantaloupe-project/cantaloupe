@@ -26,7 +26,7 @@ public class HttpResolverHTTPTest extends HttpResolverTest {
         super.setUp();
 
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.HTTPRESOLVER_URL_PREFIX, server.getHTTPURI());
+        config.setProperty(Key.HTTPRESOLVER_URL_PREFIX, server.getHTTPURI() + "/");
     }
 
 }

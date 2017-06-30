@@ -118,11 +118,11 @@ public class WebServer {
     }
 
     public String getHTTPURI() {
-        return "http://localhost:" + getHTTPPort() + "/";
+        return "http://localhost:" + getHTTPPort();
     }
 
     public String getHTTPSURI() {
-        return "https://localhost:" + getHTTPSPort() + "/";
+        return "https://localhost:" + getHTTPSPort();
     }
 
     public void start() throws Exception {
