@@ -163,7 +163,7 @@ class JPEGImageWriter extends AbstractImageWriter {
 
         // JPEG doesn't support alpha, so convert to RGB or else the
         // client will interpret as CMYK
-        image = Java2DUtil.removeAlpha(image);
+        image = removeAlpha(image);
         final ImageWriteParam writeParam = getWriteParam(writer);
         final IIOMetadata metadata = getMetadata(writer, writeParam, image);
         final IIOImage iioImage = new IIOImage(image, null, metadata);
