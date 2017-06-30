@@ -12,6 +12,7 @@ import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.PlanarImage;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -95,7 +96,6 @@ class PNGImageWriter extends AbstractImageWriter {
      *
      * @param data Data to compress.
      * @return Deflate-compressed data.
-     * @throws IOException
      */
     private byte[] deflate(final byte[] data) throws IOException {
         ByteArrayOutputStream deflated = new ByteArrayOutputStream();
@@ -107,39 +107,12 @@ class PNGImageWriter extends AbstractImageWriter {
     }
 
     /**
-     * Writes a Java 2D {@link BufferedImage} to the given output stream.
+     * Writes the given image to the given output stream.
      *
-     * @param image Image to write
-     * @param outputStream Stream to write the image to
-     * @throws IOException
+     * @param image Image to write.
+     * @param outputStream Stream to write the image to.
      */
-    void write(BufferedImage image,
-               final OutputStream outputStream) throws IOException {
-        final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
-                Format.PNG.getPreferredMediaType().toString());
-        final ImageWriter writer = writers.next();
-
-        final IIOMetadata metadata = getMetadata(
-                writer, writer.getDefaultWriteParam(), image);
-        final IIOImage iioImage = new IIOImage(image, null, metadata);
-
-        try (ImageOutputStream os =
-                     ImageIO.createImageOutputStream(outputStream)) {
-            writer.setOutput(os);
-            writer.write(iioImage);
-        } finally {
-            writer.dispose();
-        }
-    }
-
-    /**
-     * Writes a JAI {@link PlanarImage} to the given output stream.
-     *
-     * @param image Image to write
-     * @param outputStream Stream to write the image to
-     * @throws IOException
-     */
-    void write(PlanarImage image,
+    void write(RenderedImage image,
                OutputStream outputStream) throws IOException {
         final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
                 Format.PNG.getPreferredMediaType().toString());

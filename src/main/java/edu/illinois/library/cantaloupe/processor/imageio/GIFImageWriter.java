@@ -14,6 +14,7 @@ import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -72,51 +73,27 @@ class GIFImageWriter extends AbstractImageWriter {
     }
 
     /**
-     * Writes a Java 2D {@link BufferedImage} to the given output stream.
+     * Writes the given image to the given output stream.
      *
      * @param image Image to write
      * @param outputStream Stream to write the image to
      * @throws IOException
      */
-    void write(BufferedImage image, final OutputStream outputStream)
-            throws IOException {
+    void write(RenderedImage image,
+               OutputStream outputStream) throws IOException {
         final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
                 Format.GIF.getPreferredMediaType().toString());
         final ImageWriter writer = writers.next();
-        final ImageWriteParam writeParam = writer.getDefaultWriteParam();
-        final IIOMetadata metadata = getMetadata(writer, writeParam, image);
-        final IIOImage iioImage = new IIOImage(image, null, metadata);
 
-        try (ImageOutputStream os =
-                     ImageIO.createImageOutputStream(outputStream)) {
-            writer.setOutput(os);
-            writer.write(iioImage);
-            os.flush();
-        } finally {
-            writer.dispose();
+        if (image instanceof PlanarImage) {
+            // GIFWriter can't deal with a non-0,0 origin ("coordinate
+            // out of bounds!")
+            final ParameterBlock pb = new ParameterBlock();
+            pb.addSource(image);
+            pb.add((float) -image.getMinX());
+            pb.add((float) -image.getMinY());
+            image = JAI.create("translate", pb);
         }
-    }
-
-    /**
-     * Writes a JAI {@link PlanarImage} to the given output stream.
-     *
-     * @param image Image to write
-     * @param outputStream Stream to write the image to
-     * @throws IOException
-     */
-    void write(PlanarImage image, OutputStream outputStream)
-            throws IOException {
-        final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
-                Format.GIF.getPreferredMediaType().toString());
-        final ImageWriter writer = writers.next();
-
-        // GIFWriter can't deal with a non-0,0 origin ("coordinate
-        // out of bounds!")
-        final ParameterBlock pb = new ParameterBlock();
-        pb.addSource(image);
-        pb.add((float) -image.getMinX());
-        pb.add((float) -image.getMinY());
-        image = JAI.create("translate", pb);
 
         final ImageWriteParam writeParam = writer.getDefaultWriteParam();
         final IIOMetadata metadata = getMetadata(writer, writeParam, image);

@@ -20,6 +20,7 @@ import javax.media.jai.JAI;
 import javax.media.jai.OpImage;
 import javax.media.jai.PlanarImage;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -134,14 +135,31 @@ class JPEGImageWriter extends AbstractImageWriter {
     }
 
     /**
+     * Writes the given image to the given output stream.
+     *
+     * @param image Image to write.
+     * @param outputStream Stream to write the image to.
+     */
+    void write(RenderedImage image,
+               OutputStream outputStream) throws IOException {
+        if (image instanceof BufferedImage) {
+            write((BufferedImage) image, outputStream);
+        } else if (image instanceof PlanarImage) {
+            write((PlanarImage) image, outputStream);
+        } else {
+            throw new IllegalArgumentException(
+                    "image must be either a BufferedImage or PlanarImage.");
+        }
+    }
+
+    /**
      * Writes a Java 2D {@link BufferedImage} to the given output stream.
      *
      * @param image Image to write
      * @param outputStream Stream to write the image to
-     * @throws IOException
      */
-    void write(BufferedImage image, final OutputStream outputStream)
-            throws IOException {
+    private void write(BufferedImage image,
+                       OutputStream outputStream) throws IOException {
         final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
                 Format.JPG.getPreferredMediaType().toString());
         final ImageWriter writer = writers.next();
@@ -170,8 +188,8 @@ class JPEGImageWriter extends AbstractImageWriter {
      * @throws IOException
      */
     @SuppressWarnings({"deprecation"})
-    void write(PlanarImage image, OutputStream outputStream)
-            throws IOException {
+    private void write(PlanarImage image,
+                       OutputStream outputStream) throws IOException {
         final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
                 Format.JPG.getPreferredMediaType().toString());
         final ImageWriter writer = writers.next();

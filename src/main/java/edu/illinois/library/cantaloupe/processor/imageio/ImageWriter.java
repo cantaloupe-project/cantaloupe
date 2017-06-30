@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 
 import javax.media.jai.PlanarImage;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
@@ -39,45 +40,14 @@ public class ImageWriter {
     }
 
     /**
-     * Writes a Java 2D {@link BufferedImage} to the given output stream.
+     * Writes the given image to the given output stream.
      *
      * @param image Image to write
      * @param outputFormat Format of the output image
      * @param outputStream Stream to write the image to
      * @throws IOException
      */
-    public void write(final BufferedImage image,
-                      final Format outputFormat,
-                      final OutputStream outputStream) throws IOException {
-        switch (outputFormat) {
-            case GIF:
-                new GIFImageWriter(opList, sourceMetadata).
-                        write(image, outputStream);
-                break;
-            case JPG:
-                new JPEGImageWriter(opList, sourceMetadata).
-                        write(image, outputStream);
-                break;
-            case PNG:
-                new PNGImageWriter(opList, sourceMetadata).
-                        write(image, outputStream);
-                break;
-            case TIF:
-                new TIFFImageWriter(opList, sourceMetadata).
-                        write(image, outputStream);
-                break;
-        }
-    }
-
-    /**
-     * Writes a JAI {@link PlanarImage} to the given output stream.
-     *
-     * @param image Image to write
-     * @param outputFormat Format of the output image
-     * @param outputStream Stream to write the image to
-     * @throws IOException
-     */
-    public void write(final PlanarImage image,
+    public void write(final RenderedImage image,
                       final Format outputFormat,
                       final OutputStream outputStream) throws IOException {
         switch (outputFormat) {

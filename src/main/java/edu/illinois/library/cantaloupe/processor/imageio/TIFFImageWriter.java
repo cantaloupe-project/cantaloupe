@@ -124,8 +124,8 @@ class TIFFImageWriter extends AbstractImageWriter {
      */
     @Override
     protected IIOMetadata getMetadata(final ImageWriter writer,
-                            final ImageWriteParam writeParam,
-                            final RenderedImage image) throws IOException {
+                                      final ImageWriteParam writeParam,
+                                      final RenderedImage image) throws IOException {
         IIOMetadata derivativeMetadata = writer.getDefaultImageMetadata(
                 ImageTypeSpecifier.createFromRenderedImage(image),
                 writeParam);
@@ -161,14 +161,14 @@ class TIFFImageWriter extends AbstractImageWriter {
     }
 
     /**
-     * Writes a Java 2D {@link BufferedImage} to the given output stream.
+     * Writes the given image to the given output stream.
      *
      * @param image Image to write
      * @param outputStream Stream to write the image to
      * @throws IOException
      */
-    void write(BufferedImage image, final OutputStream outputStream)
-            throws IOException {
+    void write(RenderedImage image,
+               OutputStream outputStream) throws IOException {
         final Iterator<ImageWriter> it = ImageIO.getImageWritersByMIMEType(
                 Format.TIF.getPreferredMediaType().toString());
         while (it.hasNext()) {
@@ -182,37 +182,6 @@ class TIFFImageWriter extends AbstractImageWriter {
                              ImageIO.createImageOutputStream(outputStream)) {
                     writer.setOutput(os);
                     writer.write(metadata, iioImage, writeParam);
-                    os.flush(); // http://stackoverflow.com/a/14489406
-                } finally {
-                    writer.dispose();
-                }
-                break;
-            }
-        }
-    }
-
-    /**
-     * Writes a JAI {@link PlanarImage} to the given output stream.
-     *
-     * @param image Image to write
-     * @param outputStream Stream to write the image to
-     * @throws IOException
-     */
-    void write(PlanarImage image, OutputStream outputStream)
-            throws IOException {
-        final Iterator<ImageWriter> it = ImageIO.getImageWritersByMIMEType(
-                Format.TIF.getPreferredMediaType().toString());
-        while (it.hasNext()) {
-            final ImageWriter writer = it.next();
-            if (writer instanceof it.geosolutions.imageioimpl.plugins.tiff.TIFFImageWriter) {
-                final ImageWriteParam writeParam = getWriteParam(writer);
-                final IIOMetadata metadata = getMetadata(writer, writeParam, image);
-                final IIOImage iioImage = new IIOImage(image, null, metadata);
-
-                try (ImageOutputStream os =
-                             ImageIO.createImageOutputStream(outputStream)) {
-                    writer.setOutput(os);
-                    writer.write(null, iioImage, writeParam);
                     os.flush(); // http://stackoverflow.com/a/14489406
                 } finally {
                     writer.dispose();
