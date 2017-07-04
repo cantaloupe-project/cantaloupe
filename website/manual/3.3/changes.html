@@ -18,6 +18,7 @@ title: What's New
   <li>Fixed an inefficiency that caused image metadata to be read multiple times in a single image response.</li>
   <li>Fixed endpoint authentication being enabled for certain non-endpoint resources.</li>
   <li>Fixed inability to stream source images when using AmazonS3Resolver.</li>
+  <li>Fixed a potential HTTP 500 error when multiple processes try to write the same image metadata concurrently using FilesystemCache.</li>
   <li>Corrected the documentation for <code>processor.upscale_filter</code> and <code>processor.downscale_filter</code>.
 </ul>
 
