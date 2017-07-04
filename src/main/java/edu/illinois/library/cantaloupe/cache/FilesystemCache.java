@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -982,9 +983,6 @@ class FilesystemCache implements SourceCache, DerivativeFileCache {
         final File tempFile = infoTempFile(identifier);
 
         try {
-            if (destFile.exists()) {
-                FileUtils.forceDelete(destFile);
-            }
             if (!tempFile.getParentFile().exists() &&
                     !tempFile.getParentFile().mkdirs()) {
                 throw new IOException("Unable to create directory: " +
@@ -995,7 +993,12 @@ class FilesystemCache implements SourceCache, DerivativeFileCache {
 
             logger.debug("put(): moving {} to {}",
                     tempFile, destFile.getName());
-            FileUtils.moveFile(tempFile, destFile);
+            Files.move(tempFile.toPath(), destFile.toPath());
+        } catch (FileAlreadyExistsException e) {
+            // When this method is called concurrently for the same info, one
+            // invocation will complete successfully and the other(s) will
+            // produce this, which is fine.
+            logger.debug("put(): {}", e.getMessage());
         } catch (IOException e) {
             tempFile.delete();
             throw new CacheException(e.getMessage(), e);
