@@ -943,9 +943,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         final File tempFile = infoTempFile(identifier);
 
         try {
-            if (destFile.exists()) {
-                FileUtils.forceDelete(destFile);
-            }
             if (!tempFile.getParentFile().exists() &&
                     !tempFile.getParentFile().mkdirs()) {
                 throw new IOException("Unable to create directory: " +
