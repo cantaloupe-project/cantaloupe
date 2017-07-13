@@ -423,6 +423,7 @@
                     <include name="edu/illinois/library/cantaloupe/config/PropertiesConfiguration.class" />
                     <include name="edu/illinois/library/cantaloupe/util/FilesystemWatcher.class" />
                     <include name="edu/illinois/library/cantaloupe/util/FilesystemWatcher$Callback.class" />
+                    <include name="edu/illinois/library/cantaloupe/util/SystemUtils.class" />
                     <include name="edu/illinois/library/cantaloupe/StandaloneEntry.class" />
                     <include name="edu/illinois/library/cantaloupe/WebServer.class" />
                   </fileset>
