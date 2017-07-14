@@ -75,7 +75,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
     /** Lazy-set by {@link #isQuietModeSupported()} */
     private static boolean checkedForQuietMode = false;
     /** Lazy-set by {@link #isQuietModeSupported()} */
-    private static boolean isQuietModeSupported = false;
+    private static boolean isQuietModeSupported = true;
 
     private static Path stdoutSymlink;
 
@@ -153,11 +153,11 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                     // opj_decompress -h:
                     // "It has been compiled against openjp2 library vX.X.X."
                     // (Where X.X.X is 2.2.0 or later.)
-                    Pattern pattern = Pattern.compile("[ ]v[0-9].[0-9].[0-9]");
+                    Pattern pattern = Pattern.compile("[ ]v\\d+.\\d+.\\d+");
                     Matcher matcher = pattern.matcher(opjOutput);
 
                     if (matcher.find()) {
-                        String version = matcher.group(0).substring(2); // after "v"
+                        String version = matcher.group(0).substring(2); // after " v"
                         logger.info("opj_decompress reports version {}", version);
 
                         String[] parts = StringUtils.split(version, ".");
