@@ -126,24 +126,18 @@ public abstract class Java2DUtil {
      * @param overlay   Overlay to apply to the base image.
      * @return Overlaid image, or the input image if the overlay should not be
      *         applied according to the application configuration.
-     * @throws ConfigurationException
-     * @throws IOException
      */
     static BufferedImage applyOverlay(final BufferedImage baseImage,
                                       final Overlay overlay)
-            throws ConfigurationException, IOException {
+            throws IOException {
         BufferedImage markedImage = baseImage;
-        final Dimension imageSize = new Dimension(baseImage.getWidth(),
-                baseImage.getHeight());
-        if (new OverlayService().shouldApplyToImage(imageSize)) {
-            if (overlay instanceof ImageOverlay) {
-                markedImage = overlayImage(baseImage,
-                        getOverlayImage((ImageOverlay) overlay),
-                        overlay.getPosition(),
-                        overlay.getInset());
-            } else if (overlay instanceof StringOverlay) {
-                markedImage = overlayString(baseImage, (StringOverlay) overlay);
-            }
+        if (overlay instanceof ImageOverlay) {
+            markedImage = overlayImage(baseImage,
+                    getOverlayImage((ImageOverlay) overlay),
+                    overlay.getPosition(),
+                    overlay.getInset());
+        } else if (overlay instanceof StringOverlay) {
+            markedImage = overlayString(baseImage, (StringOverlay) overlay);
         }
         return markedImage;
     }

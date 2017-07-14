@@ -175,11 +175,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
                 } else if (op instanceof Sharpen) {
                     image = Java2DUtil.sharpenImage(image, (Sharpen) op);
                 } else if (op instanceof Overlay) {
-                    try {
-                        image = Java2DUtil.applyOverlay(image, (Overlay) op);
-                    } catch (ConfigurationException e) {
-                        logger.error(e.getMessage());
-                    }
+                    image = Java2DUtil.applyOverlay(image, (Overlay) op);
                 }
             }
         }

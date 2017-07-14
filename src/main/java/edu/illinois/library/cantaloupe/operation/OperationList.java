@@ -243,7 +243,7 @@ public final class OperationList implements Comparable<OperationList>,
         // Overlay
         try {
             final OverlayService service = new OverlayService();
-            if (service.isEnabled()) {
+            if (service.isEnabled() && service.shouldApplyToImage(getResultingSize(sourceImageSize))) {
                 final Overlay overlay = service.newOverlay(
                         this, sourceImageSize, requestUrl, requestHeaders,
                         clientIp, cookies);
