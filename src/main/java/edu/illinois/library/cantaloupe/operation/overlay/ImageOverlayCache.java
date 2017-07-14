@@ -80,8 +80,9 @@ class ImageOverlayCache {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         try {
             downloadingOverlays.add(pathnameOrURL);
-            if (pathnameOrURL.startsWith("http://") ||
-                    pathnameOrURL.startsWith("https://")) {
+            if (pathnameOrURL.startsWith("http://")
+                    || pathnameOrURL.startsWith("https://")
+                    || pathnameOrURL.startsWith("file:/")) {
                 final URL url = new URL(pathnameOrURL);
                 is = url.openStream();
             } else {
