@@ -67,7 +67,6 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     // ImageMagick 7 uses a `magick` command. Earlier versions use `convert`
     // and `identify`.
     private static AtomicBoolean isUsingVersion7;
-    private static final Object lock = new Object();
 
     // Lazy-initialized by getFormats()
     protected static Map<Format, Set<Format>> supportedFormats;
@@ -192,28 +191,26 @@ class ImageMagickProcessor extends AbstractMagickProcessor
      *
      * @return Whether we appear to be using ImageMagick 7.
      */
-    private static boolean isUsingVersion7() {
+    private static synchronized boolean isUsingVersion7() {
         if (isUsingVersion7 == null) {
-            synchronized (lock) {
-                final ProcessBuilder pb = new ProcessBuilder();
-                final List<String> command = new ArrayList<>();
-                command.add(getPath("magick"));
-                pb.command(command);
-                try {
-                    isUsingVersion7 = new AtomicBoolean(false);
-                    final String commandString = StringUtils.join(pb.command(), " ");
-                    logger.debug("isUsingVersion7(): trying to invoke {}",
-                            commandString);
-                    final Process process = pb.start();
-                    process.waitFor();
-                    logger.info("isUsingVersion7(): found magick command; " +
-                            "assuming ImageMagick 7+");
-                    isUsingVersion7.set(true);
-                } catch (Exception e) {
-                    logger.info("isUsingVersion7(): couldn't find magick " +
-                            "command; assuming ImageMagick <7");
-                    isUsingVersion7.set(false);
-                }
+            final ProcessBuilder pb = new ProcessBuilder();
+            final List<String> command = new ArrayList<>();
+            command.add(getPath("magick"));
+            pb.command(command);
+            try {
+                isUsingVersion7 = new AtomicBoolean(false);
+                final String commandString = StringUtils.join(pb.command(), " ");
+                logger.debug("isUsingVersion7(): trying to invoke {}",
+                        commandString);
+                final Process process = pb.start();
+                process.waitFor();
+                logger.info("isUsingVersion7(): found magick command; " +
+                        "assuming ImageMagick 7+");
+                isUsingVersion7.set(true);
+            } catch (Exception e) {
+                logger.info("isUsingVersion7(): couldn't find magick " +
+                        "command; assuming ImageMagick <7");
+                isUsingVersion7.set(false);
             }
         }
         return isUsingVersion7.get();
