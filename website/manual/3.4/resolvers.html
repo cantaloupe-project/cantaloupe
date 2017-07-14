@@ -339,26 +339,54 @@ end
 
 <h3 id="AmazonS3Resolver">AmazonS3Resolver</h3>
 
-<p>AmazonS3Resolver maps a URL identifier to an <a href="https://aws.amazon.com/s3/">Amazon Simple Storage Service (S3)</a> object, for retrieving images from Amazon S3. It can be configured with the following options:</p>
+<p>AmazonS3Resolver maps a URL identifier to an <a href="https://aws.amazon.com/s3/">Amazon Simple Storage Service (S3)</a> object, for retrieving images from Amazon S3.</p>
+
+<h4>Configuration</h4>
+
+<p>AmazonS3Resolver is configured (excepting credentials) using the following configuation keys:</p>
 
 <dl>
-  <dt><code>AmazonS3Resolver.access_key_id</code></dt>
-  <dd>An access key associated with your AWS account. (See <a href="http://aws.amazon.com/security-credentials">AWS Security Credentials</a>.)</dd>
-  <dt><code>AmazonS3Resolver.secret_key</code></dt>
-  <dd>A secret key associated with your AWS account. (See <a href="http://aws.amazon.com/security-credentials">AWS Security Credentials</a>.)</dd>
   <dt><code>AmazonS3Resolver.bucket.name</code></dt>
   <dd>Name of the bucket containing the images to be served.</dd>
   <dt><code>AmazonS3Resolver.bucket.region</code></dt>
-  <dd>Name of a region to send requests to, such as <code>us-east-1</code>. Can be commented out or left blank to use a default region. (See <a href="http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region">S3 Regions</a>.)</dd>
+  <dd>Name of a region to send requests to, such as <code>us-east-1</code>.</dd>
   <dt><code>AmazonS3Resolver.lookup_strategy</code></dt>
-  <dd>The strategy to use to look up images based on their URL identifier. See below.</dd>
+  <dd>The strategy to use to look up images based on their URL identifier. See <a href="#AmazonS3ResolverLookupStrategies">Lookup Strategies</a>.</dd>
 </dl>
 
-<h4 id="AmazonS3ResolverBasicLookupStrategy">BasicLookupStrategy</h4>
+<h4 id="AmazonS3ResolverCredentialsSources">Credentials Sources</h4>
+
+<p>AmazonS3Resolver can obtain its credentials from several different sources. It will search each one in order and use the first that it finds:</p>
+
+<dl>
+  <dt>Configuration File</dt>
+  <dd>
+    <p>Credentials can be set via the following keys in the configuration file:</p>
+
+    <dl>
+      <dt><code>AmazonS3Resolver.access_key_id</code></dt>
+      <dd>An access key associated with your AWS account. (See <a href="http://aws.amazon.com/security-credentials">AWS Security Credentials</a>.)</dd>
+      <dt><code>AmazonS3Resolver.secret_key</code></dt>
+      <dd>A secret key associated with your AWS account. (See <a href="http://aws.amazon.com/security-credentials">AWS Security Credentials</a>.)</dd>
+    </dl>
+  </dt>
+  <dt>Environment Variables</dt>
+  <dd>Credentials are read from the <code>AWS_ACCESS_KEY_ID</code> (or <code>AWS_ACCESS_KEY</code>) and <code>AWS_SECRET_KEY</code> (or <code>AWS_SECRET_ACCESS_KEY</code>) environment variables. If the <code>AWS_SESSION_TOKEN</code> environment variable is also set, then temporary credentials will be used.</dd>
+  <dt>VM Arguments</dt>
+  <dd>Credentials are provided via the <code>aws.accessKeyId</code> and <code>aws.secretKey</code> VM arguments.</dd>
+  <dt>AWS Configuration Profile</dt>
+  <dd>Credentials are provided by the profile configuration file for the default profile.</dd>
+  <dt>Instance Profile</dt>
+  <dd>Credentials are loaded from the Amazon EC2 Instance Metadata Service.</dd>
+</dl>
+
+<h4 id="AmazonS3ResolverLookupStrategies">Lookup Strategies</h4>
+
+<h5 id="AmazonS3ResolverBasicLookupStrategy">BasicLookupStrategy</h5>
 
 <p>BasicLookupStrategy locates images by passing the URL identifier as-is to S3, with no additional configuration necessary or possible.</p>
 
-<h4 id="AmazonS3ResolverScriptLookupStrategy">ScriptLookupStrategy</h4>
+<h5 id="AmazonS3ResolverScriptLookupStrategy">ScriptLookupStrategy</h5>
 
 <p>When your URL identifiers don't match your Amazon S3 object keys, ScriptLookupStrategy is available to tell AmazonS3Resolver to capture the object key returned by a method in your <a href="delegate-script.html">delegate script</a>.</p>
 
@@ -381,11 +409,13 @@ end
   <dd>The strategy to use to look up images based on their URL identifier. See below.</dd>
 </dl>
 
-<h4 id="AzureStorageResolverBasicLookupStrategy">BasicLookupStrategy</h4>
+<h4>Lookup Strategies</h4>
+
+<h5 id="AzureStorageResolverBasicLookupStrategy">BasicLookupStrategy</h5>
 
 <p>BasicLookupStrategy locates images by passing the URL identifier as-is to Azure Storage, with no additional configuration necessary or possible.</p>
 
-<h4 id="AzureStorageResolverScriptLookupStrategy">ScriptLookupStrategy</h4>
+<h5 id="AzureStorageResolverScriptLookupStrategy">ScriptLookupStrategy</h5>
 
 <p>When your URL identifiers don't match your Azure Storage blob keys, ScriptLookupStrategy is available to tell AzureStorageResolver to capture the blob key returned by a method in your <a href="delegate-script.html">delegate script</a>.</p>
 

@@ -186,6 +186,8 @@ JdbcResolver.connection_timeout = 10
 
 # !! Access key ID and secret key associated with your AWS account.
 # See: http://aws.amazon.com/security-credentials
+# Note that credentials can be obtained from elsewhere rather than setting
+# them here; see the user manual.
 AmazonS3Resolver.access_key_id =
 AmazonS3Resolver.secret_key =
 
@@ -465,6 +467,8 @@ JdbcCache.info_table = info_cache
 
 # !! Access key ID and secret key associated with your AWS account.
 # See: http://aws.amazon.com/security-credentials
+# Note that credentials can be obtained from elsewhere rather than setting
+# them here; see the user manual.
 AmazonS3Cache.access_key_id =
 AmazonS3Cache.secret_key =
 

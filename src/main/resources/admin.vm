@@ -718,7 +718,10 @@
                                                    data-trigger="focus"
                                                    data-content="Access key ID associated with your AWS
                                                    account. See: &lt;a href=&quot;http://aws.amazon.com/security-credentials&quot; target=&quot;_blank&quot;&gt;
-                                                   http://aws.amazon.com/security-credentials&lt;/a&gt;">?</a>
+                                                   http://aws.amazon.com/security-credentials&lt;/a&gt;
+                                                   &lt;br&gt;&lt;br&gt;
+                                                   Note that credentials can be obtained from elsewhere rather than setting
+                                                   them here; see the user manual.">?</a>
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
@@ -733,7 +736,10 @@
                                                    data-trigger="focus"
                                                    data-content="Secret key associated with your AWS
                                                    account. See: &lt;a href=&quot;http://aws.amazon.com/security-credentials&quot; target=&quot;_blank&quot;&gt;
-                                                   http://aws.amazon.com/security-credentials&lt;/a&gt;">?</a>
+                                                   http://aws.amazon.com/security-credentials&lt;/a&gt;
+                                                   &lt;br&gt;&lt;br&gt;
+                                                   Note that credentials can be obtained from elsewhere rather than setting
+                                                   them here; see the user manual.">?</a>
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
@@ -1912,7 +1918,10 @@
                                                    data-trigger="focus"
                                                    data-content="Access key ID associated with your AWS
                                                    account. See: &lt;a href=&quot;http://aws.amazon.com/security-credentials&quot; target=&quot;_blank&quot;&gt;
-                                                   http://aws.amazon.com/security-credentials&lt;/a&gt;">?</a>
+                                                   http://aws.amazon.com/security-credentials&lt;/a&gt;
+                                                   &lt;br&gt;&lt;br&gt;
+                                                   Note that credentials can be obtained from elsewhere rather than setting
+                                                   them here; see the user manual.">?</a>
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
@@ -1927,7 +1936,10 @@
                                                    data-trigger="focus"
                                                    data-content="Secret key associated with your AWS
                                                    account. See: &lt;a href=&quot;http://aws.amazon.com/security-credentials&quot; target=&quot;_blank&quot;&gt;
-                                                   http://aws.amazon.com/security-credentials&lt;/a&gt;">?</a>
+                                                   http://aws.amazon.com/security-credentials&lt;/a&gt;
+                                                   &lt;br&gt;&lt;br&gt;
+                                                   Note that credentials can be obtained from elsewhere rather than setting
+                                                   them here; see the user manual.">?</a>
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"

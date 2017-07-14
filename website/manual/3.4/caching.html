@@ -341,21 +341,28 @@ CREATE INDEX identifier_idx ON {JdbcCache.info_table} (identifier);
 
 <p>AmazonS3Cache caches derivative images and metadata into an Amazon Simple Storage Service (S3) bucket.</p>
 
-<p>Note that if you are running Cantaloupe within an EC2 instance, you may prefer to use <a href="https://aws.amazon.com/elasticache/">ElastiCache</a> with <a href="#RedisCache">RedisCache</a> instead.</p>
+<h5>Configuration</h5>
 
-<p>AmazonS3Cache can be configured with the following options:</p>
+<p>AmazonS3Cache is configured (excepting credentials) using the following configuration keys:</p>
 
 <dl>
-  <dt><code>AmazonS3Cache.access_key_id</code></dt>
-  <dd>An access key associated with your AWS account. (See <a href="http://aws.amazon.com/security-credentials">AWS Security Credentials</a>.)</dd>
-  <dt><code>AmazonS3Cache.secret_key</code></dt>
-  <dd>A secret key associated with your AWS account. (See <a href="http://aws.amazon.com/security-credentials">AWS Security Credentials</a>.)</dd>
   <dt><code>AmazonS3Cache.bucket.name</code></dt>
   <dd>Name of the bucket to contain cached content.</dd>
   <dt><code>AmazonS3Cache.bucket.region</code></dt>
   <dd>Name of a region to send requests to, such as <code>us-east-1</code>. Can be commented out or left blank to use a default region. (See <a href="http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region">S3 Regions</a>.)</dd>
   <dt><code>AmazonS3Cache.object_key_prefix</code></dt>
   <dd>String to prepend to object keys&mdash;for example, to achieve a virtual folder hierarchy.</dd>
+</dl>
+
+<h5>Credentials Sources</h5>
+
+<p>See the <a href="resolvers.html#AmazonS3ResolverCredentialsSources">Credentials Sources</a> information for AmazonS3Resolver. AmazonS3Cache works the same way, except that the credentials-related configuration keys, if you choose to use them, are different:</p>
+
+<dl>
+  <dt><code>AmazonS3Cache.access_key_id</code></dt>
+  <dd>An access key associated with your AWS account. (See <a href="http://aws.amazon.com/security-credentials">AWS Security Credentials</a>.)</dd>
+  <dt><code>AmazonS3Cache.secret_key</code></dt>
+  <dd>A secret key associated with your AWS account. (See <a href="http://aws.amazon.com/security-credentials">AWS Security Credentials</a>.)</dd>
 </dl>
 
 <div class="alert alert-info">
