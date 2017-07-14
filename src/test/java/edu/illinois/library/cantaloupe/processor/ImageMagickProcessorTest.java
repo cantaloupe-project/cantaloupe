@@ -3,11 +3,16 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.operation.overlay.ImageOverlay;
+import edu.illinois.library.cantaloupe.operation.overlay.Position;
+import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -111,6 +116,75 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
 
     protected ImageMagickProcessor newInstance() {
         return new ImageMagickProcessor();
+    }
+
+    @Test
+    public void testGetIMOverlayGeometry() {
+        ImageMagickProcessor instance = newInstance();
+
+        // top left
+        ImageOverlay overlay = new ImageOverlay(
+                new File("/"), Position.TOP_LEFT, 2);
+        assertEquals("+2+2", instance.getIMOverlayGeometry(overlay));
+        // top center
+        overlay = new ImageOverlay(new File("/"), Position.TOP_CENTER, 2);
+        assertEquals("+0+2", instance.getIMOverlayGeometry(overlay));
+        // top right
+        overlay = new ImageOverlay(new File("/"), Position.TOP_RIGHT, 2);
+        assertEquals("+2+2", instance.getIMOverlayGeometry(overlay));
+        // left center
+        overlay = new ImageOverlay(new File("/"), Position.LEFT_CENTER, 2);
+        assertEquals("+2+0", instance.getIMOverlayGeometry(overlay));
+        // center
+        overlay = new ImageOverlay(new File("/"), Position.CENTER, 2);
+        assertEquals("+0+0", instance.getIMOverlayGeometry(overlay));
+        // right center
+        overlay = new ImageOverlay(new File("/"), Position.RIGHT_CENTER, 2);
+        assertEquals("+2+0", instance.getIMOverlayGeometry(overlay));
+        // bottom left
+        overlay = new ImageOverlay(new File("/"), Position.BOTTOM_LEFT, 2);
+        assertEquals("+2+2", instance.getIMOverlayGeometry(overlay));
+        // bottom center
+        overlay = new ImageOverlay(new File("/"), Position.BOTTOM_CENTER, 2);
+        assertEquals("+0+2", instance.getIMOverlayGeometry(overlay));
+        // bottom right
+        overlay = new ImageOverlay(new File("/"), Position.BOTTOM_RIGHT, 2);
+        assertEquals("+2+2", instance.getIMOverlayGeometry(overlay));
+    }
+
+    @Test
+    public void testGetIMOverlayGravity() {
+        ImageMagickProcessor instance = newInstance();
+
+        assertEquals("northwest",
+                instance.getIMOverlayGravity(Position.TOP_LEFT));
+        assertEquals("north",
+                instance.getIMOverlayGravity(Position.TOP_CENTER));
+        assertEquals("northeast",
+                instance.getIMOverlayGravity(Position.TOP_RIGHT));
+        assertEquals("west",
+                instance.getIMOverlayGravity(Position.LEFT_CENTER));
+        assertEquals("center",
+                instance.getIMOverlayGravity(Position.CENTER));
+        assertEquals("east",
+                instance.getIMOverlayGravity(Position.RIGHT_CENTER));
+        assertEquals("southwest",
+                instance.getIMOverlayGravity(Position.BOTTOM_LEFT));
+        assertEquals("south",
+                instance.getIMOverlayGravity(Position.BOTTOM_CENTER));
+        assertEquals("southeast",
+                instance.getIMOverlayGravity(Position.BOTTOM_RIGHT));
+    }
+
+    @Test
+    public void testGetOverlayTempFile() throws Exception {
+        URL url = new URL("file://" + TestUtil.getImage("jpg").getAbsolutePath());
+        ImageOverlay overlay = new ImageOverlay(url, Position.TOP_LEFT, 2);
+
+        ImageMagickProcessor instance = newInstance();
+        File overlayFile = instance.getOverlayTempFile(overlay);
+        assertTrue(overlayFile.getAbsolutePath().contains(ImageMagickProcessor.OVERLAY_TEMP_FILE_PREFIX));
+        assertTrue(overlayFile.exists());
     }
 
 }

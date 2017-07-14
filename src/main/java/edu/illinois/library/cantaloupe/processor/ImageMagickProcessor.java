@@ -17,6 +17,9 @@ import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
+import edu.illinois.library.cantaloupe.operation.overlay.ImageOverlay;
+import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
+import edu.illinois.library.cantaloupe.operation.overlay.Position;
 import org.apache.commons.lang3.StringUtils;
 import org.im4java.process.ArrayListOutputConsumer;
 import org.im4java.process.Pipe;
@@ -31,12 +34,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -61,12 +69,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 class ImageMagickProcessor extends AbstractMagickProcessor
         implements StreamProcessor {
 
-    private static Logger logger = LoggerFactory.
+    private static final Logger logger = LoggerFactory.
             getLogger(ImageMagickProcessor.class);
+
+    static final String OVERLAY_TEMP_FILE_PREFIX = "cantaloupe-overlay";
 
     // ImageMagick 7 uses a `magick` command. Earlier versions use `convert`
     // and `identify`.
     private static AtomicBoolean isUsingVersion7;
+
+    // Map of overlay images downloaded from web servers. Files are temp files
+    // set to delete-on-exit.
+    private static Map<URL,File> overlays = new ConcurrentHashMap<>();
 
     // Lazy-initialized by getFormats()
     protected static Map<Format, Set<Format>> supportedFormats;
@@ -351,6 +365,39 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                     args.add("-unsharp");
                     args.add(Double.toString(((Sharpen) op).getAmount()));
                 }
+            } else if (op instanceof ImageOverlay) {
+                try {
+                    final ImageOverlay overlay = (ImageOverlay) op;
+                    // If the overlay is a file, use that.
+                    File file = overlay.getFile();
+                    // If it instead resides at a URL, use that instead.
+                    if (file == null && overlay.getURL() != null) {
+                        file = getOverlayTempFile(overlay);
+                    }
+                    if (file != null) {
+                        args.add(file.getAbsolutePath());
+                        args.add("-compose");
+                        args.add("over");
+                        args.add("-gravity");
+                        args.add(getIMOverlayGravity(overlay.getPosition()));
+                        args.add("-geometry");
+                        args.add(getIMOverlayGeometry(overlay));
+                        args.add("-composite");
+                    } else {
+                        if (overlay.getFile() != null) {
+                            logger.warn("getConvertArguments(): overlay not found: {}",
+                                    overlay.getFile());
+                        } else if (overlay.getURL() != null) {
+                            logger.warn("getConvertArguments(): overlay not found: {}",
+                                    overlay.getURL());
+                        } else {
+                            logger.error("getConvertArguments(): overlay source not set");
+                        }
+                    }
+                } catch (IOException e) {
+                    logger.error("getConvertArguments(): overlay error: {}",
+                            e.getMessage());
+                }
             } else if (op instanceof Encode) {
                 encode = (Encode) op;
                 switch (encode.getFormat()) {
@@ -412,6 +459,69 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         return null;
     }
 
+    String getIMOverlayGeometry(Overlay overlay) {
+        int x = 0, y = 0;
+        switch (overlay.getPosition()) {
+            case TOP_LEFT:
+                x += overlay.getInset();
+                y += overlay.getInset();
+                break;
+            case TOP_CENTER:
+                y += overlay.getInset();
+                break;
+            case TOP_RIGHT:
+                x += overlay.getInset();
+                y += overlay.getInset();
+                break;
+            case LEFT_CENTER:
+                x += overlay.getInset();
+                break;
+            case CENTER:
+                // noop
+                break;
+            case RIGHT_CENTER:
+                x += overlay.getInset();
+                break;
+            case BOTTOM_LEFT:
+                x += overlay.getInset();
+                y += overlay.getInset();
+                break;
+            case BOTTOM_CENTER:
+                y += overlay.getInset();
+                break;
+            case BOTTOM_RIGHT:
+                x += overlay.getInset();
+                y += overlay.getInset();
+                break;
+        }
+        String xStr = (x > -1) ? "+" + x : "" + x;
+        String yStr = (y > -1) ? "+" + y : "" + y;
+        return xStr + yStr;
+    }
+
+    String getIMOverlayGravity(Position position) {
+        switch (position) {
+            case TOP_LEFT:
+                return "northwest";
+            case TOP_CENTER:
+                return "north";
+            case TOP_RIGHT:
+                return "northeast";
+            case LEFT_CENTER:
+                return "west";
+            case RIGHT_CENTER:
+                return "east";
+            case BOTTOM_LEFT:
+                return "southwest";
+            case BOTTOM_CENTER:
+                return "south";
+            case BOTTOM_RIGHT:
+                return "southeast";
+            default:
+                return "center";
+        }
+    }
+
     /**
      * @param compression May be <code>null</code>.
      * @return String suitable for passing to convert's <code>-compress</code>
@@ -431,6 +541,30 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             }
         }
         return "None";
+    }
+
+    File getOverlayTempFile(ImageOverlay overlay) throws IOException {
+        File overlayFile = null;
+        final URL url = overlay.getURL();
+
+        if (url != null) {
+            // Try to retrieve it if it has already been downloaded.
+            overlayFile = overlays.get(url);
+            if (overlayFile == null) {
+                // It doesn't exist, so download it.
+                Path tempFile = Files.createTempFile(OVERLAY_TEMP_FILE_PREFIX, ".tmp");
+                try (InputStream is = overlay.openStream()) {
+                    Files.copy(is, tempFile, StandardCopyOption.REPLACE_EXISTING);
+                    overlayFile = tempFile.toFile();
+                    overlays.put(url, overlayFile);
+                } finally {
+                    if (overlayFile != null) {
+                        overlayFile.deleteOnExit();
+                    }
+                }
+            }
+        }
+        return overlayFile;
     }
 
     @Override
