@@ -38,17 +38,17 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * <p>Processor using the OpenJPEG opj_decompress and opj_dump command-line
- * tools. Written against version 2.1.0, but should work with other versions,
- * as long as their command-line interface is compatible. (There is also a JNI
- * binding available, but it is broken as of this writing.)</p>
+ * tools.</p>
  *
  * <p>opj_decompress is used for cropping and an initial scale reduction
  * factor. (Java 2D is used for all remaining processing steps.)
  * opj_decompress generates BMP output which is streamed to an ImageIO reader.
- * (BMP does not support embedded ICC profiles, but this is not a problem
+ * (BMP does not support embedded ICC profiles, but this is less of a problem
  * because opj_decompress converts the RGB source data itself.)</p>
  *
  * <p>opj_decompress reads and writes the files named in the <code>-i</code>
@@ -60,14 +60,22 @@ import java.util.UUID;
  * (which only exists on Unix), which will enable us to accomplish this.
  * The temporary symlink is created in the static initializer and deleted on
  * exit.</p>
+ *
+ * <p><strong>opj_decompress version 2.2.0 is highly recommended.</strong>
+ * Earlier versions echo log messages to stdout, which can cause problems .</p>
  */
 class OpenJpegProcessor extends AbstractJava2DProcessor
         implements FileProcessor {
 
-    private static Logger logger = LoggerFactory.
+    private static final Logger logger = LoggerFactory.
             getLogger(OpenJpegProcessor.class);
 
     private static final short MAX_REDUCTION_FACTOR = 5;
+
+    /** Lazy-set by {@link #isQuietModeSupported()} */
+    private static boolean checkedForQuietMode = false;
+    /** Lazy-set by {@link #isQuietModeSupported()} */
+    private static boolean isQuietModeSupported = false;
 
     private static Path stdoutSymlink;
 
@@ -124,6 +132,56 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
             path = binaryName;
         }
         return path;
+    }
+
+    private static synchronized boolean isQuietModeSupported() {
+        if (!checkedForQuietMode) {
+            final List<String> command = new ArrayList<>();
+            command.add(getPath("opj_decompress"));
+            command.add("-h");
+
+            ProcessBuilder pb = new ProcessBuilder(command);
+            pb.redirectErrorStream(true);
+            logger.debug("isQuietModeSupported(): invoking {}",
+                    StringUtils.join(pb.command(), " "));
+            try {
+                Process process = pb.start();
+                try (InputStream processInputStream = process.getInputStream()) {
+                    String opjOutput = IOUtils.toString(processInputStream, "UTF-8");
+
+                    // We are looking for the following line in the output of
+                    // opj_decompress -h:
+                    // "It has been compiled against openjp2 library vX.X.X."
+                    // (Where X.X.X is 2.2.0 or later.)
+                    Pattern pattern = Pattern.compile("[ ]v[0-9].[0-9].[0-9]");
+                    Matcher matcher = pattern.matcher(opjOutput);
+
+                    if (matcher.find()) {
+                        String version = matcher.group(0).substring(2); // after "v"
+                        logger.info("opj_decompress reports version {}", version);
+
+                        String[] parts = StringUtils.split(version, ".");
+                        if (parts.length == 3) {
+                            int major = Integer.parseInt(parts[0]);
+                            int minor = Integer.parseInt(parts[1]);
+                            isQuietModeSupported =
+                                    ((major >= 2 && minor >= 2) || major > 2);
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                logger.error("isQuietModeSupported(): {}", e.getMessage());
+            }
+
+            if (!isQuietModeSupported) {
+                logger.warn("This version of opj_decompress doesn't support " +
+                        "quiet mode. Please upgrade OpenJPEG to version 2.2.0 "+
+                        "or later.");
+            }
+
+            checkedForQuietMode = true;
+        }
+        return isQuietModeSupported;
     }
 
     @Override
@@ -287,7 +345,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
             msg = String.format("process(): %s (%s)",
                     (msg != null && msg.length() > 0) ? msg : "EOFException",
                     opList.toString());
-            logger.warn(msg, e);
+            logger.info(msg, e);
             throw new ProcessorException(msg, e);
         } catch (IOException | InterruptedException e) {
             String msg = e.getMessage();
@@ -322,6 +380,11 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                                              final boolean ignoreCrop) {
         final List<String> command = new ArrayList<>();
         command.add(getPath("opj_decompress"));
+
+        if (isQuietModeSupported()) {
+            command.add("-quiet");
+        }
+
         command.add("-i");
         command.add(sourceFile.getAbsolutePath());
 
