@@ -60,7 +60,7 @@ import java.util.Set;
 class GraphicsMagickProcessor extends AbstractMagickProcessor
         implements StreamProcessor {
 
-    private static Logger logger = LoggerFactory.
+    private static final Logger logger = LoggerFactory.
             getLogger(GraphicsMagickProcessor.class);
 
     // Lazy-initialized by getFormats()
@@ -178,11 +178,24 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
         args.add(getPath("gm"));
         args.add("convert");
 
+        // If we need to rasterize, and the op list contains a scale operation,
+        // see if we can use it to compute a scale-appropriate DPI.
+        // This needs to be done before the source argument is added.
+        if (Format.ImageType.VECTOR.equals(imageInfo.getSourceFormat().getImageType())) {
+            Scale scale = (Scale) ops.getFirst(Scale.class);
+            if (scale == null) {
+                scale = new Scale();
+            }
+            args.add("-density");
+            args.add("" + new RasterizationHelper().getDPI(scale,
+                    imageInfo.getSize()));
+        }
+
         int pageIndex = getGMImageIndex(
                 (String) ops.getOptions().get("page"),
                 imageInfo.getSourceFormat());
 
-        // read from stdin
+        // :- = read from stdin
         args.add(format.getPreferredExtension() + ":-[" + pageIndex + "]");
 
         Encode encode = (Encode) ops.getFirst(Encode.class);

@@ -244,17 +244,31 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                                              final Info imageInfo) {
         final List<String> args = new ArrayList<>();
 
-        int pageIndex = getIMImageIndex(
-                (String) ops.getOptions().get("page"),
-                imageInfo.getSourceFormat());
-
         if (isUsingVersion7()) {
             args.add(getPath("magick"));
             args.add("convert");
         } else {
             args.add(getPath("convert"));
         }
-        // read from stdin
+
+        // If we need to rasterize, and the op list contains a scale operation,
+        // see if we can use it to compute a scale-appropriate DPI.
+        // This needs to be done before the source argument is added.
+        if (Format.ImageType.VECTOR.equals(imageInfo.getSourceFormat().getImageType())) {
+            Scale scale = (Scale) ops.getFirst(Scale.class);
+            if (scale == null) {
+                scale = new Scale();
+            }
+            args.add("-density");
+            args.add("" + new RasterizationHelper().getDPI(scale,
+                    imageInfo.getSize()));
+        }
+
+        int pageIndex = getIMImageIndex(
+                (String) ops.getOptions().get("page"),
+                imageInfo.getSourceFormat());
+
+        // :- = read from stdin
         args.add(format.getPreferredExtension() + ":-[" + pageIndex + "]");
 
         Encode encode = (Encode) ops.getFirst(Encode.class);
