@@ -9,6 +9,7 @@ import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
@@ -176,6 +177,10 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
             if (sourceFormat == null || sourceFormat.equals(Format.UNKNOWN)) {
                 // Try to infer a format based on the identifier.
                 sourceFormat = Format.inferFormat(identifier);
+            }
+            if (Format.UNKNOWN.equals(sourceFormat)) {
+                // Try to infer a format based on the objectKey.
+                sourceFormat = Format.inferFormat(new Identifier(getObjectKey()));
             }
         }
         return sourceFormat;
