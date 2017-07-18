@@ -3,11 +3,22 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.ValidationException;
+import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
+import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.Before;
+import org.junit.Test;
 
+import java.awt.Dimension;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,6 +31,13 @@ import static org.junit.Assert.*;
 public class ImageMagickProcessorTest extends MagickProcessorTest {
 
     private static HashMap<Format, Set<Format>> supportedFormats;
+
+    private ImageMagickProcessor instance;
+
+    @Before
+    public void setUp() {
+        instance = newInstance();
+    }
 
     /**
      * @return Map of available output formats for all known source formats,
@@ -108,6 +126,68 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
 
     protected ImageMagickProcessor newInstance() {
         return new ImageMagickProcessor();
+    }
+
+    @Test
+    public void testProcessWithPageOption() throws Exception {
+        final File fixture = TestUtil.getImage("pdf-multipage.pdf");
+        byte[] page1, page2;
+        instance.setSourceFormat(Format.PDF);
+        Info imageInfo;
+
+        // page option missing
+        try (FileInputStream fis = new FileInputStream(fixture)) {
+            instance.setStreamSource(new InputStreamStreamSource(fis));
+            imageInfo = instance.readImageInfo();
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            OperationList ops = TestUtil.newOperationList();
+            instance.process(ops, imageInfo, outputStream);
+            page1 = outputStream.toByteArray();
+        }
+
+        // page option present
+        try (FileInputStream fis = new FileInputStream(fixture)) {
+            instance.setStreamSource(new InputStreamStreamSource(fis));
+
+            OperationList ops = TestUtil.newOperationList();
+            ops.getOptions().put("page", "2");
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            instance.process(ops, imageInfo, outputStream);
+            page2 = outputStream.toByteArray();
+        }
+
+        assertFalse(Arrays.equals(page1, page2));
+    }
+
+    @Test
+    public void testValidate() throws Exception {
+        instance.setSourceFormat(Format.PDF);
+        instance.setStreamSource(new InputStreamStreamSource(
+                new FileInputStream(TestUtil.getImage("pdf.pdf"))));
+
+        OperationList ops = TestUtil.newOperationList();
+        Dimension fullSize = new Dimension(1000, 1000);
+        instance.validate(ops, fullSize);
+
+        ops.getOptions().put("page", "1");
+        instance.validate(ops, fullSize);
+
+        ops.getOptions().put("page", "0");
+        try {
+            instance.validate(ops, fullSize);
+            fail("Expected exception");
+        } catch (ValidationException e) {
+            // pass
+        }
+
+        ops.getOptions().put("page", "-1");
+        try {
+            instance.validate(ops, fullSize);
+            fail("Expected exception");
+        } catch (ValidationException e) {
+            // pass
+        }
     }
 
 }

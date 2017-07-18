@@ -621,6 +621,14 @@ landing page, as well as in one of the tables below. A list of output formats su
 
 <p>GraphicsMagickProcessor is usually faster than <a href="#ImageMagickProcessor">ImageMagickProcessor</a>. However, like ImageMagickProcessor, it is neither tile- nor multi-resolution-aware and thus fares poorly with large images.</p>
 
+<h4>Optional Arguments</h4>
+
+<p>GraphicsMagickProcessor supports a <code>page</code> URL query argument (which is nonstandard and Cantaloupe-specific) which can be used to return a particular page of a PDF. For example:</p>
+
+<pre>http://example.org/iiif/2/document.pdf/full/full/0/default.jpg?page=2</pre>
+
+<p>If the <code>page</code> argument is missing, the first page will be returned.</p>
+
 <hr>
 
 <h3 id="ImageMagickProcessor">ImageMagickProcessor</h3>
@@ -630,6 +638,14 @@ landing page, as well as in one of the tables below. A list of output formats su
 <p>ImageMagick supports all of the IIIF transforms and all IIIF output formats, assuming the necessary delegates are installed. It also supports a wide array of source formats.</p>
 
 <p>ImageMagick offers excellent output quality at the expense of performance, which suffers increasingly as image size increases.</p>
+
+<h4>Optional Arguments</h4>
+
+<p>ImageMagickProcessor supports a <code>page</code> URL query argument (which is nonstandard and Cantaloupe-specific) which can be used to return a particular page of a PDF. For example:</p>
+
+<pre>http://example.org/iiif/2/document.pdf/full/full/0/default.jpg?page=2</pre>
+
+<p>If the <code>page</code> argument is missing, the first page will be returned.</p>
 
 <hr>
 
@@ -685,10 +701,10 @@ landing page, as well as in one of the tables below. A list of output formats su
 
 <p>The size of the default raster image, corresponding to a scale of one, is configurable with the <code>PdfBoxProcessor.dpi</code> configuration option. When a request asks for a scale of &le; 50% or &ge; 200%, a fraction or multiple of this will be used, respectively, in order to improve efficiency at small scales, and detail at large scales.</p>
 
-<h4>Optional Parameters</h4>
+<h4>Optional Arguments</h4>
 
-<p>PdfBoxProcessor supports a <code>page</code> URL query parameter (which is nonstandard and Cantaloupe-specific) which can be used to return a particular page of a PDF. For example:</p>
+<p>PdfBoxProcessor supports a <code>page</code> URL query argument (which is nonstandard and Cantaloupe-specific) which can be used to return a particular page of a PDF. For example:</p>
 
 <pre>http://example.org/iiif/2/document.pdf/full/full/0/default.jpg?page=2</pre>
 
-<p>If the <code>page</code> parameter is missing, the first page will be returned.</p>
+<p>If the <code>page</code> argument is missing, the first page will be returned.</p>
