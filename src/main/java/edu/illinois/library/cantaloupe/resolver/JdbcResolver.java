@@ -63,11 +63,11 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
 
     private static Logger logger = LoggerFactory.getLogger(JdbcResolver.class);
 
-    static final String GET_DATABASE_IDENTIFIER_DELEGATE_METHOD =
+    private static final String GET_DATABASE_IDENTIFIER_DELEGATE_METHOD =
             "JdbcResolver::get_database_identifier";
-    static final String GET_LOOKUP_SQL_DELEGATE_METHOD =
+    private static final String GET_LOOKUP_SQL_DELEGATE_METHOD =
             "JdbcResolver::get_lookup_sql";
-    static final String GET_MEDIA_TYPE_DELEGATE_METHOD =
+    private static final String GET_MEDIA_TYPE_DELEGATE_METHOD =
             "JdbcResolver::get_media_type";
 
     private static HikariDataSource dataSource;
@@ -135,19 +135,18 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     public Format getSourceFormat() throws IOException {
         if (sourceFormat == null) {
             try {
-                // JdbcResolver.function.media_type may contain a JavaScript
-                // function or null.
-                String functionResult = getMediaType();
+                // The JdbcResolver::get_media_type() delegate method may
+                // return a media type, or nil.
+                String methodResult = getMediaType();
                 MediaType mediaType = null;
-                if (functionResult != null) {
+                if (methodResult != null) {
                     // the function result may be a media type, or an SQL
                     // statement to look it up.
-                    if (functionResult.toUpperCase().contains("SELECT") &&
-                            functionResult.toUpperCase().contains("FROM")) {
-                        logger.debug(functionResult);
+                    if (methodResult.toUpperCase().startsWith("SELECT")) {
+                        logger.debug(methodResult);
                         try (Connection connection = getConnection()) {
                             PreparedStatement statement = connection.
-                                    prepareStatement(functionResult);
+                                    prepareStatement(methodResult);
                             statement.setString(1, getDatabaseIdentifier());
                             ResultSet resultSet = statement.executeQuery();
                             if (resultSet.next()) {
@@ -155,7 +154,7 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
                             }
                         }
                     } else {
-                        mediaType = new MediaType(functionResult);
+                        mediaType = new MediaType(methodResult);
                     }
                 } else {
                     mediaType = Format.inferFormat(identifier).
@@ -177,9 +176,6 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     /**
      * @return Result of the {@link #GET_DATABASE_IDENTIFIER_DELEGATE_METHOD}
      *         method.
-     * @throws ScriptException
-     * @throws DelegateScriptDisabledException
-     * @throws IOException
      */
     String getDatabaseIdentifier() throws IOException,
             ScriptException, DelegateScriptDisabledException {
@@ -191,9 +187,6 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
 
     /**
      * @return Result of the {@link #GET_LOOKUP_SQL_DELEGATE_METHOD} method.
-     * @throws ScriptException
-     * @throws DelegateScriptDisabledException
-     * @throws IOException
      */
     String getLookupSql() throws IOException, ScriptException,
             DelegateScriptDisabledException {
@@ -204,11 +197,8 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
 
     /**
      * @return Result of the {@link #GET_MEDIA_TYPE_DELEGATE_METHOD} method.
-     * @throws ScriptException
-     * @throws DelegateScriptDisabledException
-     * @throws IOException
      */
-    public String getMediaType() throws IOException, ScriptException,
+    String getMediaType() throws IOException, ScriptException,
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final Object result = engine.invoke(GET_MEDIA_TYPE_DELEGATE_METHOD);

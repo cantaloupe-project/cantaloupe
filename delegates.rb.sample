@@ -144,12 +144,11 @@ module Cantaloupe
     end
 
     ##
-    # Returns an SQL statement that can be used to retrieve the media (MIME)
-    # type of an image. If the media type is stored in the database, this can
-    # return an SQL statement to retrieve it, in which case the "SELECT" and
-    # "FROM" clauses should be in uppercase in order to be autodetected. If
-    # commented out, the media type will be inferred from the identifier
-    # extension (if present).
+    # Returns either the media (MIME) type of an image, or an SQL statement
+    # that can be used to retrieve it, if it is stored in the database. In the
+    # latter case, the "SELECT" and "FROM" clauses should be in uppercase in
+    # order to be autodetected. If nil is returned, the media type will be
+    # inferred from the extension in the identifier (if present).
     #
     def self.get_media_type
     end
