@@ -108,6 +108,27 @@ public class FormatTest extends BaseTest {
     }
 
     @Test
+    public void testGetImageType() {
+        assertEquals(Format.ImageType.RASTER, Format.AVI.getImageType());
+        assertEquals(Format.ImageType.RASTER, Format.BMP.getImageType());
+        assertEquals(Format.ImageType.RASTER, Format.DCM.getImageType());
+        assertEquals(Format.ImageType.RASTER, Format.GIF.getImageType());
+        assertEquals(Format.ImageType.RASTER, Format.JP2.getImageType());
+        assertEquals(Format.ImageType.RASTER, Format.JPG.getImageType());
+        assertEquals(Format.ImageType.RASTER, Format.MOV.getImageType());
+        assertEquals(Format.ImageType.RASTER, Format.MP4.getImageType());
+        assertEquals(Format.ImageType.RASTER, Format.MPG.getImageType());
+        assertEquals(Format.ImageType.VECTOR, Format.PDF.getImageType());
+        assertEquals(Format.ImageType.RASTER, Format.PNG.getImageType());
+        assertEquals(Format.ImageType.RASTER, Format.SGI.getImageType());
+        assertEquals(Format.ImageType.RASTER, Format.SID.getImageType());
+        assertEquals(Format.ImageType.RASTER, Format.TIF.getImageType());
+        assertEquals(Format.ImageType.RASTER, Format.WEBM.getImageType());
+        assertEquals(Format.ImageType.RASTER, Format.WEBP.getImageType());
+        assertEquals(Format.ImageType.UNKNOWN, Format.UNKNOWN.getImageType());
+    }
+
+    @Test
     public void testGetMediaTypes() {
         // AVI
         assertEquals(Arrays.asList(

@@ -21,6 +21,7 @@ public enum Format {
      * AVI video format.
      */
     AVI("AVI",
+            ImageType.RASTER,
             Arrays.asList("video/avi", "video/msvideo", "video/x-msvideo"),
             Arrays.asList("avi"),
             Type.VIDEO,
@@ -30,6 +31,7 @@ public enum Format {
      * Windows Bitmap image format.
      */
     BMP("BMP",
+            ImageType.RASTER,
             Arrays.asList("image/bmp", "image/x-bmp", "image/x-ms-bmp"),
             Arrays.asList("bmp", "dib"),
             Type.IMAGE,
@@ -39,6 +41,7 @@ public enum Format {
      * DICOM image format.
      */
     DCM("DICOM",
+            ImageType.RASTER,
             Arrays.asList("application/dicom"),
             Arrays.asList("dcm", "dic"),
             Type.IMAGE,
@@ -48,6 +51,7 @@ public enum Format {
      * CompuServe GIF image format.
      */
     GIF("GIF",
+            ImageType.RASTER,
             Arrays.asList("image/gif"),
             Arrays.asList("gif"),
             Type.IMAGE,
@@ -57,6 +61,7 @@ public enum Format {
      * JPEG2000 image format.
      */
     JP2("JPEG2000",
+            ImageType.RASTER,
             Arrays.asList("image/jp2"),
             Arrays.asList("jp2", "j2k"),
             Type.IMAGE,
@@ -66,6 +71,7 @@ public enum Format {
      * JPEG JFIF image format.
      */
     JPG("JPEG",
+            ImageType.RASTER,
             Arrays.asList("image/jpeg"),
             Arrays.asList("jpg", "jpeg"),
             Type.IMAGE,
@@ -75,6 +81,7 @@ public enum Format {
      * Apple QuickTime video format.
      */
     MOV("QuickTime",
+            ImageType.RASTER,
             Arrays.asList("video/quicktime", "video/x-quicktime"),
             Arrays.asList("mov"),
             Type.VIDEO,
@@ -84,6 +91,7 @@ public enum Format {
      * MPEG-4 video format.
      */
     MP4("MPEG-4",
+            ImageType.RASTER,
             Arrays.asList("video/mp4"),
             Arrays.asList("mp4", "m4v"),
             Type.VIDEO,
@@ -93,6 +101,7 @@ public enum Format {
      * MPEG-1 video format.
      */
     MPG("MPEG",
+            ImageType.RASTER,
             Arrays.asList("video/mpeg"),
             Arrays.asList("mpg"),
             Type.VIDEO,
@@ -102,6 +111,7 @@ public enum Format {
      * Portable Document Format.
      */
     PDF("PDF",
+            ImageType.VECTOR,
             Arrays.asList("application/pdf"),
             Arrays.asList("pdf"),
             Type.IMAGE,
@@ -111,6 +121,7 @@ public enum Format {
      * Portable Network Graphics image format.
      */
     PNG("PNG",
+            ImageType.RASTER,
             Arrays.asList("image/png"),
             Arrays.asList("png"),
             Type.IMAGE,
@@ -120,6 +131,7 @@ public enum Format {
      * Silicon Graphics Image format.
      */
     SGI("SGI",
+            ImageType.RASTER,
             Arrays.asList("image/sgi"),
             Arrays.asList("sgi", "rgb", "rgba", "bw", "int", "inta"),
             Type.IMAGE,
@@ -129,6 +141,7 @@ public enum Format {
      * LizardTech MrSID image format.
      */
     SID("MrSID",
+            ImageType.RASTER,
             Arrays.asList("image/x-mrsid", "image/x.mrsid",
                     "image/x-mrsid-image"),
             Arrays.asList("sid"),
@@ -139,6 +152,7 @@ public enum Format {
      * Tagged Image File Format.
      */
     TIF("TIFF",
+            ImageType.RASTER,
             Arrays.asList("image/tiff"),
             Arrays.asList("tif", "ptif", "tiff"),
             Type.IMAGE,
@@ -148,6 +162,7 @@ public enum Format {
      * WebM video format.
      */
     WEBM("WebM",
+            ImageType.RASTER,
             Arrays.asList("video/webm"),
             Arrays.asList("webm"),
             Type.VIDEO,
@@ -157,6 +172,7 @@ public enum Format {
      * WebP image format.
      */
     WEBP("WebP",
+            ImageType.RASTER,
             Arrays.asList("image/webp"),
             Arrays.asList("webp"),
             Type.IMAGE,
@@ -166,16 +182,22 @@ public enum Format {
      * Unknown format.
      */
     UNKNOWN("Unknown",
+            ImageType.UNKNOWN,
             Arrays.asList("unknown/unknown"),
             Arrays.asList("unknown"),
             null,
             false);
+
+    public enum ImageType {
+        RASTER, UNKNOWN, VECTOR
+    }
 
     public enum Type {
         IMAGE, VIDEO
     }
 
     private List<String> extensions;
+    private ImageType imageType;
     private List<String> mediaTypes;
     private String name;
     private boolean supportsTransparency;
@@ -210,10 +232,12 @@ public enum Format {
     }
 
     Format(final String name,
+           final ImageType imageType,
            final List<String> mediaTypes,
            final List<String> extensions,
            final Type type,
            final boolean supportsTransparency) {
+        this.imageType = imageType;
         this.mediaTypes = mediaTypes;
         this.extensions = extensions;
         this.name = name;
@@ -227,6 +251,10 @@ public enum Format {
      */
     public List<String> getExtensions() {
         return extensions;
+    }
+
+    public ImageType getImageType() {
+        return imageType;
     }
 
     /**
