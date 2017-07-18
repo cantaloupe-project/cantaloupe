@@ -93,6 +93,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
             formats.add(Format.BMP);
             formats.add(Format.DCM);
             formats.add(Format.GIF);
+            formats.add(Format.SGI);
 
             supportedFormats = new HashMap<>();
             for (Format format : Format.values()) {
