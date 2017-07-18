@@ -17,6 +17,7 @@ import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
+import edu.illinois.library.cantaloupe.operation.ValidationException;
 import org.apache.commons.lang3.StringUtils;
 import org.im4java.process.ArrayListOutputConsumer;
 import org.im4java.process.Pipe;
@@ -176,7 +177,13 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
         final List<String> args = new ArrayList<>();
         args.add(getPath("gm"));
         args.add("convert");
-        args.add(format.getPreferredExtension() + ":-"); // read from stdin
+
+        int pageIndex = getGMImageIndex(
+                (String) ops.getOptions().get("page"),
+                imageInfo.getSourceFormat());
+
+        // read from stdin
+        args.add(format.getPreferredExtension() + ":-[" + pageIndex + "]");
 
         Encode encode = (Encode) ops.getFirst(Encode.class);
 
@@ -355,6 +362,25 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     }
 
     /**
+     * @param pageStr Client-provided page number.
+     * @param sourceFormat Format of the source image.
+     * @return ImageMagick image index argument.
+     */
+    private int getGMImageIndex(String pageStr, Format sourceFormat) {
+        int index = 0;
+        if (pageStr != null && Format.PDF.equals(sourceFormat)) {
+            try {
+                index = Integer.parseInt(pageStr) - 1;
+            } catch (NumberFormatException e) {
+                logger.info("Page number from URI query string is not " +
+                        "an integer; using page 1.");
+            }
+            index = Math.max(index, 0);
+        }
+        return index;
+    }
+
+    /**
      * @param compression May be <code>null</code>.
      * @return String suitable for passing to gm convert's
      *         <code>-compress</code> argument.
@@ -438,6 +464,26 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             return info;
         } catch (Exception e) {
             throw new ProcessorException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void validate(OperationList opList, Dimension fullSize)
+            throws ValidationException, ProcessorException {
+        StreamProcessor.super.validate(opList, fullSize);
+
+        // Check the format of the "page" option, if present.
+        final String pageStr = (String) opList.getOptions().get("page");
+        if (pageStr != null) {
+            try {
+                final int page = Integer.parseInt(pageStr);
+                if (page < 1) {
+                    throw new ValidationException(
+                            "Page number is out-of-bounds.");
+                }
+            } catch (NumberFormatException e) {
+                throw new ValidationException("Invalid page number.");
+            }
         }
     }
 

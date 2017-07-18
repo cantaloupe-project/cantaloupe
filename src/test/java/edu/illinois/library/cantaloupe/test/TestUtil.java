@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.test;
 
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.image.Format;
 import org.apache.commons.configuration.BaseConfiguration;
@@ -88,7 +89,9 @@ public abstract class TestUtil {
      * @return Dummy OperationList object with no operations added.
      */
     public static OperationList newOperationList() {
-        return new OperationList(new Identifier("dummy"), Format.JPG);
+        OperationList ops = new OperationList(new Identifier("dummy"), Format.JPG);
+        ops.add(new Encode(Format.JPG));
+        return ops;
     }
 
 }
