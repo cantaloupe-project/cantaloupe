@@ -305,7 +305,7 @@ public class FormatTest extends BaseTest {
         assertEquals(Format.Type.IMAGE, Format.TIF.getType());
         assertEquals(Format.Type.VIDEO, Format.WEBM.getType());
         assertEquals(Format.Type.IMAGE, Format.WEBP.getType());
-        assertNull(Format.UNKNOWN.getType());
+        assertEquals(Format.Type.UNKNOWN, Format.UNKNOWN.getType());
     }
 
     @Test

@@ -185,7 +185,7 @@ public enum Format {
             ImageType.UNKNOWN,
             Arrays.asList("unknown/unknown"),
             Arrays.asList("unknown"),
-            null,
+            Type.UNKNOWN,
             false);
 
     public enum ImageType {
@@ -193,7 +193,7 @@ public enum Format {
     }
 
     public enum Type {
-        IMAGE, VIDEO
+        IMAGE, UNKNOWN, VIDEO
     }
 
     private List<String> extensions;
