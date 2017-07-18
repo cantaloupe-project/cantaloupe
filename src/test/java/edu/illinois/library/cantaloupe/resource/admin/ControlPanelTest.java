@@ -289,6 +289,7 @@ public class ControlPanelTest extends ResourceTest {
         css("#cl-processors li > a[href=\"#cl-image-assignments\"]").click();
         selectNamed("processor.gif").selectByVisibleText("Java2dProcessor");
         selectNamed(Key.PROCESSOR_FALLBACK).selectByVisibleText("JaiProcessor");
+        inputNamed(Key.PROCESSOR_DPI).sendKeys("300");
         inputNamed(Key.PROCESSOR_NORMALIZE).click();
         selectNamed(Key.PROCESSOR_BACKGROUND_COLOR).selectByValue("white");
         selectNamed(Key.PROCESSOR_UPSCALE_FILTER).
@@ -320,9 +321,6 @@ public class ControlPanelTest extends ResourceTest {
         // OpenJpegProcessor
         css("#cl-processors li > a[href=\"#OpenJpegProcessor\"]").click();
         inputNamed(Key.OPENJPEGPROCESSOR_PATH_TO_BINARIES).sendKeys("/ojpath");
-        // PdfBoxProcessor
-        css("#cl-processors li > a[href=\"#PdfBoxProcessor\"]").click();
-        inputNamed(Key.PDFBOXPROCESSOR_DPI).sendKeys("300");
 
         // Submit the form
         css("#cl-processors input[type=\"submit\"]").click();
@@ -333,6 +331,7 @@ public class ControlPanelTest extends ResourceTest {
         final Configuration config = ConfigurationFactory.getInstance();
         assertEquals("Java2dProcessor", config.getString("processor.gif"));
         assertEquals("JaiProcessor", config.getString(Key.PROCESSOR_FALLBACK));
+        assertEquals(300, config.getInt(Key.PROCESSOR_DPI));
         assertTrue(config.getBoolean(Key.PROCESSOR_NORMALIZE));
         assertEquals("white", config.getString(Key.PROCESSOR_BACKGROUND_COLOR));
         assertEquals("triangle",
@@ -362,8 +361,6 @@ public class ControlPanelTest extends ResourceTest {
         // OpenJpegProcessor
         assertEquals("/ojpath",
                 config.getString(Key.OPENJPEGPROCESSOR_PATH_TO_BINARIES));
-        // PdfBoxProcessor
-        assertEquals(300, config.getInt(Key.PDFBOXPROCESSOR_DPI));
     }
 
     @Test

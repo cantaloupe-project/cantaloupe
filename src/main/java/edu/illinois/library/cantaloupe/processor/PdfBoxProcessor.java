@@ -1,9 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Scale;
@@ -34,7 +31,7 @@ import java.util.Set;
 class PdfBoxProcessor extends AbstractJava2DProcessor
         implements FileProcessor, StreamProcessor {
 
-    private static Logger logger = LoggerFactory.
+    private static final Logger logger = LoggerFactory.
             getLogger(PdfBoxProcessor.class);
 
     private PDDocument doc;
@@ -57,20 +54,6 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
             outputFormats.addAll(ImageWriter.supportedFormats());
         }
         return outputFormats;
-    }
-
-    private float getDPI(int reductionFactor) {
-        float dpi = ConfigurationFactory.getInstance().
-                getFloat(Key.PDFBOXPROCESSOR_DPI, 150);
-        // Decrease the DPI if the reduction factor is positive.
-        for (int i = 0; i < reductionFactor; i++) {
-            dpi /= 2f;
-        }
-        // Increase the DPI if the reduction factor is negative.
-        for (int i = 0; i > reductionFactor; i--) {
-            dpi *= 2f;
-        }
-        return dpi;
     }
 
     @Override
@@ -104,12 +87,9 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
             // If the op list contains a scale operation, see if we can use
             // a reduction factor in order to use a scale-appropriate
             // rasterization DPI.
-            Scale scale = new Scale();
-            for (Operation op : opList) {
-                if (op instanceof Scale) {
-                    scale = (Scale) op;
-                    break;
-                }
+            Scale scale = (Scale) opList.getFirst(Scale.class);
+            if (scale == null) {
+                scale = new Scale();
             }
             ReductionFactor reductionFactor = new ReductionFactor();
             Float pct = scale.getResultingScale(imageInfo.getSize());
@@ -151,7 +131,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
      */
     private BufferedImage readImage(int pageIndex,
                                     int reductionFactor) throws IOException {
-        float dpi = getDPI(reductionFactor);
+        float dpi = new RasterizationHelper().getDPI(reductionFactor);
         logger.debug("readImage(): using a DPI of {} ({}x reduction factor)",
                 Math.round(dpi), reductionFactor);
         try {

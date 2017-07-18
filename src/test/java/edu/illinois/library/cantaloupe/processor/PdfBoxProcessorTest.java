@@ -30,7 +30,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     public void setUp() throws Exception {
         super.setUp();
         Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty(Key.PDFBOXPROCESSOR_DPI, 72);
+        config.setProperty(Key.PROCESSOR_DPI, 72);
         instance = newInstance();
     }
 
