@@ -68,6 +68,63 @@ public class FormatTest extends BaseTest {
     }
 
     @Test
+    public void testInferFormatWithString() {
+        // AVI
+        assertEquals(Format.AVI,
+                Format.inferFormat("bla.avi"));
+        assertEquals(Format.AVI,
+                Format.inferFormat("bla.AVI"));
+        // BMP
+        assertEquals(Format.BMP,
+                Format.inferFormat("bla.bmp"));
+        // DCM
+        assertEquals(Format.DCM,
+                Format.inferFormat("bla.dcm"));
+        // GIF
+        assertEquals(Format.GIF,
+                Format.inferFormat("bla.gif"));
+        // JP2
+        assertEquals(Format.JP2,
+                Format.inferFormat("bla.jp2"));
+        // JPG
+        assertEquals(Format.JPG,
+                Format.inferFormat("bla.jpg"));
+        // MOV
+        assertEquals(Format.MOV,
+                Format.inferFormat("bla.mov"));
+        // MP4
+        assertEquals(Format.MP4,
+                Format.inferFormat("bla.mp4"));
+        // MPG
+        assertEquals(Format.MPG,
+                Format.inferFormat("bla.mpg"));
+        // PDF
+        assertEquals(Format.PDF,
+                Format.inferFormat("bla.pdf"));
+        // PNG
+        assertEquals(Format.PNG,
+                Format.inferFormat("bla.png"));
+        // SGI
+        assertEquals(Format.SGI,
+                Format.inferFormat("bla.sgi"));
+        // SID
+        assertEquals(Format.SID,
+                Format.inferFormat("bla.sid"));
+        // TIF
+        assertEquals(Format.TIF,
+                Format.inferFormat("bla.tif"));
+        // WEBM
+        assertEquals(Format.WEBM,
+                Format.inferFormat("bla.webm"));
+        // WEBP
+        assertEquals(Format.WEBP,
+                Format.inferFormat("bla.webp"));
+        // UNKNOWN
+        assertEquals(Format.UNKNOWN,
+                Format.inferFormat("bla.bogus"));
+    }
+
+    @Test
     public void testGetExtensions() {
         // AVI
         assertEquals(Arrays.asList("avi"), Format.AVI.getExtensions());

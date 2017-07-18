@@ -164,7 +164,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
                 }
                 if (Format.UNKNOWN.equals(sourceFormat)) {
                     // Try to infer a format based on the objectKey.
-                    sourceFormat = Format.inferFormat(new Identifier(getObjectKey()));
+                    sourceFormat = Format.inferFormat(getObjectKey());
                 }                
             }
         }

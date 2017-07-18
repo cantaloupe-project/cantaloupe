@@ -215,10 +215,25 @@ public enum Format {
      *         extension. If not, {@link #UNKNOWN} will be returned.
      */
     public static Format inferFormat(Identifier identifier) {
+        return inferFormat(identifier.toString());
+    }
+
+    /**
+     * <p>Attempts to infer a format from the given pathname.</p>
+     *
+     * <p>It is usually more reliable (but also maybe more expensive) to get
+     * this information from {@link Resolver#getSourceFormat()}.</p>
+     *
+     * @param pathname
+     * @return The source format corresponding to the given identifier,
+     *         assuming that its value will have a recognizable filename
+     *         extension. If not, {@link #UNKNOWN} will be returned.
+     */
+    public static Format inferFormat(String pathname) {
         String extension = null;
-        int i = identifier.toString().lastIndexOf('.');
+        int i = pathname.lastIndexOf('.');
         if (i > 0) {
-            extension = identifier.toString().substring(i + 1);
+            extension = pathname.substring(i + 1);
         }
         if (extension != null) {
             extension = extension.toLowerCase();
