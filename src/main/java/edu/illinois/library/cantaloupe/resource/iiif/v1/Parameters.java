@@ -54,7 +54,7 @@ class Parameters implements Comparable<Parameters> {
     public Parameters() {}
 
     /**
-     * @param identifier Identifier
+     * @param identifier Decoded identifier.
      * @param region From URI
      * @param size From URI
      * @param rotation From URI
