@@ -683,13 +683,13 @@ landing page, as well as in one of the tables below. A list of output formats su
 
 <p>Prior to Cantaloupe 3.3, FFmpeg itself handled all post-processing steps. Now, it is used only to decode still frames, and all subsequent steps are handled by Java 2D.</p>
 
-<h4>Optional Parameters</h4>
+<h4>Optional Arguments</h4>
 
-<p>FFmpegProcessor supports a <code>time</code> URL query parameter (which is nonstandard and Cantaloupe-specific) which can be used to return a frame at a particular second in the source video. The value of this parameter should be in <code>hh:mm:ss</code> format, like:</p>
+<p>FFmpegProcessor supports a <code>time</code> URL query argument (which is nonstandard and Cantaloupe-specific) which can be used to return a frame at a particular second in the source video. The value should be in <code>hh:mm:ss</code> format, like:</p>
 
 <pre>http://example.org/iiif/2/video.mp4/full/full/0/default.jpg?time=00:02:15</pre>
 
-<p>If the <code>time</code> parameter is missing, the first frame will be returned.</p>
+<p>If the <code>time</code> argument is missing, the first frame will be returned.</p>
 
 <hr>
 
