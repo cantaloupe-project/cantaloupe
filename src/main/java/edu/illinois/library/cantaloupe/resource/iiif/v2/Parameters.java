@@ -63,16 +63,16 @@ class Parameters implements ParameterList, Comparable<Parameters> {
     public Parameters() {}
 
      /**
-     * @param identifier From URI
+     * @param identifier Decoded identifier.
      * @param region From URI
      * @param size From URI
      * @param rotation From URI
      * @param quality From URI
      * @param format From URI
      */
-    public Parameters(String identifier, String region, String size,
+    public Parameters(Identifier identifier, String region, String size,
                       String rotation, String quality, String format) {
-        this.identifier = new Identifier(Reference.decode(identifier));
+        this.identifier = identifier;
         this.outputFormat = Format.valueOf(format.toUpperCase());
         this.quality = Quality.valueOf(quality.toUpperCase());
         this.region = Region.fromUri(region);

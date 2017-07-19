@@ -110,13 +110,12 @@ public class ImageResource extends IIIF1Resource {
 
         // Assemble the URI parameters into an OperationList instance
         final OperationList ops = new Parameters(
-                "replace this",
+                identifier,
                 (String) attrs.get("region"),
                 (String) attrs.get("size"),
                 (String) attrs.get("rotation"),
                 qualityAndFormat[0],
                 outputFormat).toOperationList();
-        ops.setIdentifier(identifier);
         ops.getOptions().putAll(
                 getReference().getQueryAsForm(true).getValuesMap());
 

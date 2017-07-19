@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,8 +17,8 @@ public class ParametersTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        params = new Parameters("identifier", "full", "full", "0", "default",
-                "jpg");
+        params = new Parameters(new Identifier("identifier"), "full", "full",
+                "0", "default", "jpg");
     }
 
     @Test
