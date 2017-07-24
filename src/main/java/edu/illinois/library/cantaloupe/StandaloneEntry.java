@@ -145,13 +145,13 @@ public class StandaloneEntry {
                 "VM options:\n" +
                 "-D" + ConfigurationFactory.CONFIG_VM_ARGUMENT + "=<config>" +
                 "           Configuration file (REQUIRED)\n" +
-                "-D" + EntryServlet.PURGE_CACHE_VM_ARGUMENT +
+                "-D" + ApplicationInitializer.PURGE_CACHE_VM_ARGUMENT +
                 "               Purge the cache\n" +
-                "-D" + EntryServlet.PURGE_CACHE_VM_ARGUMENT + "=<identifier>" +
+                "-D" + ApplicationInitializer.PURGE_CACHE_VM_ARGUMENT + "=<identifier>" +
                 "  Purge items related to an identifier from the cache\n" +
-                "-D" + EntryServlet.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT +
+                "-D" + ApplicationInitializer.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT +
                 "       Purge expired items from the cache\n" +
-                "-D" + EntryServlet.CLEAN_CACHE_VM_ARGUMENT +
+                "-D" + ApplicationInitializer.CLEAN_CACHE_VM_ARGUMENT +
                 "               Clean the cache\n" +
                 "-D" + StandaloneEntry.LIST_FONTS_VM_OPTION +
                 "                List fonts\n";
