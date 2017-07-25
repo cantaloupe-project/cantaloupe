@@ -49,7 +49,7 @@ public class StringOverlayTest extends BaseTest {
         assertEquals(instance.getBackgroundColor().toRGBAHex(),
                 map.get("background_color"));
         assertEquals(instance.getColor().toRGBAHex(), map.get("color"));
-        assertEquals(instance.getFont().getFamily(), map.get("font"));
+        assertEquals(instance.getFont().getName(), map.get("font"));
         assertEquals(instance.getFont().getSize(), map.get("font_size"));
         assertEquals(instance.getFont().getAttributes().get(TextAttribute.WEIGHT),
                 map.get("font_weight"));
