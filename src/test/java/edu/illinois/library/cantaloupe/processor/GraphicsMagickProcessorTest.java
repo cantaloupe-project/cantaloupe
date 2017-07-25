@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.resolver.FileInputStreamStreamSource;
-import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -15,7 +14,6 @@ import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
@@ -94,10 +92,11 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
             formats.add(Format.DCM);
             formats.add(Format.GIF);
             formats.add(Format.SGI);
+            outputFormats.add(Format.GIF);
 
             supportedFormats = new HashMap<>();
             for (Format format : Format.values()) {
-                supportedFormats.put(format, new HashSet<Format>());
+                supportedFormats.put(format, new HashSet<>());
             }
             for (Format format : formats) {
                 supportedFormats.put(format, outputFormats);

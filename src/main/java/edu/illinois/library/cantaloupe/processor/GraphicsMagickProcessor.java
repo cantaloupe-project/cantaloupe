@@ -130,9 +130,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                     formats.add(Format.DCM);
                     formats.add(Format.GIF);
                     formats.add(Format.SGI);
-                    // GIF output is buggy in GM 1.3.21 (returned images have
-                    // improper dimensions).
-                    //outputFormats.add(Format.GIF);
+                    outputFormats.add(Format.GIF);
                 } catch (InterruptedException e) {
                     logger.error("getFormats(): ", e.getMessage());
                 }
