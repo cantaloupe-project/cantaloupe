@@ -500,6 +500,16 @@
         </configuration>
       </plugin>
 
+      <!-- Enables running with mvn exec:java -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.2.1</version>
+        <configuration>
+          <mainClass>edu.illinois.library.cantaloupe.StandaloneEntry</mainClass>
+        </configuration>
+      </plugin>
+
     </plugins>
   </build>
 </project>
