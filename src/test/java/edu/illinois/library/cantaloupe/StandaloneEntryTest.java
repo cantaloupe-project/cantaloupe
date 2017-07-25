@@ -112,9 +112,9 @@ public class StandaloneEntryTest extends BaseTest {
         httpClient.stop();
         deleteCacheDir();
         System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
-        System.clearProperty(EntryServlet.CLEAN_CACHE_VM_ARGUMENT);
-        System.clearProperty(EntryServlet.PURGE_CACHE_VM_ARGUMENT);
-        System.clearProperty(EntryServlet.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT);
+        System.clearProperty(ApplicationInitializer.CLEAN_CACHE_VM_ARGUMENT);
+        System.clearProperty(ApplicationInitializer.PURGE_CACHE_VM_ARGUMENT);
+        System.clearProperty(ApplicationInitializer.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT);
         System.clearProperty(StandaloneEntry.LIST_FONTS_VM_OPTION);
         resetOutput();
     }
@@ -240,7 +240,7 @@ public class StandaloneEntryTest extends BaseTest {
 
         // TODO: write this
 
-        System.setProperty(EntryServlet.CLEAN_CACHE_VM_ARGUMENT, "");
+        System.setProperty(ApplicationInitializer.CLEAN_CACHE_VM_ARGUMENT, "");
         StandaloneEntry.main(new String[] {});
 
         // Cause the Servlet to be loaded
@@ -291,7 +291,7 @@ public class StandaloneEntryTest extends BaseTest {
         assertEquals(1, FileUtils.listFiles(infoDir, null, true).size());
 
         // purge the cache
-        System.setProperty(EntryServlet.PURGE_CACHE_VM_ARGUMENT, "");
+        System.setProperty(ApplicationInitializer.PURGE_CACHE_VM_ARGUMENT, "");
         StandaloneEntry.main(new String[] {});
 
         // Cause the Servlet to be loaded
@@ -352,7 +352,7 @@ public class StandaloneEntryTest extends BaseTest {
         assertEquals(2, FileUtils.listFiles(infoDir, null, true).size());
 
         // purge one identifier
-        System.setProperty(EntryServlet.PURGE_CACHE_VM_ARGUMENT, "dogs");
+        System.setProperty(ApplicationInitializer.PURGE_CACHE_VM_ARGUMENT, "dogs");
         StandaloneEntry.main(new String[] {});
 
         // Cause the Servlet to be loaded
@@ -398,7 +398,7 @@ public class StandaloneEntryTest extends BaseTest {
         File.createTempFile("bla2", "tmp", imageDir);
         File.createTempFile("bla2", "tmp", infoDir);
 
-        System.setProperty(EntryServlet.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT, "");
+        System.setProperty(ApplicationInitializer.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT, "");
         StandaloneEntry.main(new String[] {});
 
         // Cause the Servlet to be loaded

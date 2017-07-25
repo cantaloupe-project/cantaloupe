@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.config;
 
-import java.io.IOException;
-
 public abstract class ConfigurationFactory {
 
     public static final String CONFIG_VM_ARGUMENT = "cantaloupe.config";
@@ -40,7 +38,7 @@ public abstract class ConfigurationFactory {
                         }
                         instance = config;
                     } else {
-                        System.err.println("ConfigurationFactory.getInstance(): " +
+                        throw new RuntimeException("ConfigurationFactory.getInstance(): " +
                                 "missing " + CONFIG_VM_ARGUMENT + " VM option.");
                     }
                 }
