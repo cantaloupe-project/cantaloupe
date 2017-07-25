@@ -157,14 +157,11 @@
       <artifactId>imageio-ext-tiff</artifactId>
       <version>1.1.17</version>
     </dependency>
-    <!--
-    This will need to be excluded from WEB-INF/lib during the package
-    phase, but an exploded version included in the root for standalone mode.
-    -->
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
       <version>3.1.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -478,7 +475,6 @@
                   <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                 </manifest>
               </archive>
-              <packagingExcludes>WEB-INF/lib/javax.servlet-api-*.jar</packagingExcludes>
             </configuration>
           </execution>
         </executions>
