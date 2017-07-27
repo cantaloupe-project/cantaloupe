@@ -116,6 +116,8 @@ public class ImageResource extends IIIF1Resource {
         processor.validate(ops, fullSize);
 
         final Disposition disposition = getRepresentationDisposition(
+                getReference().getQueryAsForm()
+                        .getFirstValue(RESPONSE_CONTENT_DISPOSITION_QUERY_ARG),
                 ops.getIdentifier(), ops.getOutputFormat());
 
         // If we don't need to resolve first, and are using a cache, and the

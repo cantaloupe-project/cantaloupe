@@ -20,6 +20,8 @@ public class AbstractResourceTest extends BaseTest {
 
     private TestResource resource = new TestResource();
 
+    /* getPublicRootRef() */
+
     @Test
     public void testGetPublicRootRefUsingConfiguration() {
         final String uri1 = "http://example.net/cats";
@@ -90,37 +92,80 @@ public class AbstractResourceTest extends BaseTest {
         assertEquals(uri, ref.toString());
     }
 
+    /* getRepresentationDisposition() */
+
     @Test
-    public void testGetRepresentationDisposition() throws Exception {
+    public void testGetRepresentationDispositionWithQueryArg()
+            throws Exception {
+        final Identifier identifier = new Identifier("cats?/\\dogs");
+        final Format outputFormat = Format.JPG;
+
+        // none
+        Disposition disposition = resource.getRepresentationDisposition(
+                null, identifier, outputFormat);
+        assertEquals(Disposition.TYPE_NONE, disposition.getType());
+
+        // inline
+        disposition = resource.getRepresentationDisposition(
+                "inline", identifier, outputFormat);
+        assertEquals(Disposition.TYPE_INLINE, disposition.getType());
+
+        // attachment
+        disposition = resource.getRepresentationDisposition(
+                "attachment", identifier, outputFormat);
+        assertEquals(Disposition.TYPE_ATTACHMENT, disposition.getType());
+        assertEquals("cats___dogs.jpg", disposition.getFilename());
+
+        // attachment; filename="dogs.jpg"
+        disposition = resource.getRepresentationDisposition(
+                "attachment; filename=\"dogs.jpg\"", identifier, outputFormat);
+        assertEquals(Disposition.TYPE_ATTACHMENT, disposition.getType());
+        assertEquals("dogs.jpg", disposition.getFilename());
+    }
+
+    @Test
+    public void testGetRepresentationDispositionUsingConfiguration()
+            throws Exception {
         Configuration config = Configuration.getInstance();
 
         final Identifier identifier = new Identifier("cats?/\\dogs");
         final Format outputFormat = Format.JPG;
 
-        // test with undefined config key
-        Disposition disposition = resource.getRepresentationDisposition(
-                identifier, outputFormat);
-        assertEquals(Disposition.TYPE_NONE, disposition.getType());
-
-        // test with empty config key
-        config.setProperty(Key.IIIF_CONTENT_DISPOSITION, "");
-        disposition = resource.getRepresentationDisposition(
-                identifier, outputFormat);
-        assertEquals(Disposition.TYPE_NONE, disposition.getType());
-
         // test with config key set to "inline"
         config.setProperty(Key.IIIF_CONTENT_DISPOSITION, "inline");
-        disposition = resource.getRepresentationDisposition(
-                identifier, outputFormat);
+        Disposition disposition = resource.getRepresentationDisposition(
+                null, identifier, outputFormat);
         assertEquals(Disposition.TYPE_INLINE, disposition.getType());
 
         // test with config key set to "attachment"
         config.setProperty(Key.IIIF_CONTENT_DISPOSITION, "attachment");
         disposition = resource.getRepresentationDisposition(
-                identifier, outputFormat);
+                null, identifier, outputFormat);
         assertEquals(Disposition.TYPE_ATTACHMENT, disposition.getType());
         assertEquals("cats___dogs.jpg", disposition.getFilename());
     }
+
+    @Test
+    public void testGetRepresentationDispositionFallsBackToNone()
+            throws Exception {
+        Configuration config = Configuration.getInstance();
+
+        final Identifier identifier = new Identifier("cats?/\\dogs");
+        final Format outputFormat = Format.JPG;
+
+        // undefined config key
+        Disposition disposition = resource.getRepresentationDisposition(
+                null, identifier, outputFormat);
+        assertEquals(Disposition.TYPE_NONE, disposition.getType());
+
+        // empty config key
+        config.setProperty(Key.IIIF_CONTENT_DISPOSITION, "");
+        disposition = resource.getRepresentationDisposition(
+                null, identifier, outputFormat);
+        assertEquals(Disposition.TYPE_NONE, disposition.getType());
+    }
+
+    /* template() */
 
     @Test
     public void testTemplateWithValidTemplate() {

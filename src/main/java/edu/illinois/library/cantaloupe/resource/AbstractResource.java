@@ -45,6 +45,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * N.B. Subclasses should add custom response headers to the Series returned by
@@ -54,6 +56,9 @@ public abstract class AbstractResource extends ServerResource {
 
     private static Logger logger = LoggerFactory.
             getLogger(AbstractResource.class);
+
+    protected static final String RESPONSE_CONTENT_DISPOSITION_QUERY_ARG =
+            "response-content-disposition";
 
     private static final String ACCEL_REDIRECT_URI_PREFIX =
             "/cantaloupe_sendfile";
@@ -411,38 +416,67 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * <p>Returns a content disposition based on:</p>
+     * <p>Returns a content disposition based on the following in order of
+     * preference:</p>
      *
      * <ol>
+     *     <li>The value of the {@link #RESPONSE_CONTENT_DISPOSITION_QUERY_ARG}
+     *     query argument</li>
      *     <li>The setting of {@link Key#IIIF_CONTENT_DISPOSITION} in the
-     *     application configuration.</li>
-     *     <li></li>
+     *     application configuration</li>
      * </ol>
+     *
+     * <p>Falls back to an empty disposition.</p>
      *
      * <p>If the disposition is <code>attachment</code> and the filename is
      * not set, it will be set to a reasonable value based on the given
      * identifier and output format.</p>
      *
+     * @param queryArg Value of the
+     *                 {@link #RESPONSE_CONTENT_DISPOSITION_QUERY_ARG} query
+     *                 argument.
      * @param identifier
      * @param outputFormat
      */
-    protected Disposition getRepresentationDisposition(Identifier identifier,
-                                                    Format outputFormat) {
-        Disposition disposition = new Disposition();
-        switch (Configuration.getInstance().
-                getString(Key.IIIF_CONTENT_DISPOSITION, "none")) {
-            case "inline":
+    protected Disposition getRepresentationDisposition(String queryArg,
+                                                       Identifier identifier,
+                                                       Format outputFormat) {
+        final Disposition disposition = new Disposition();
+        if (queryArg != null) {
+            if (queryArg.startsWith("inline")) {
                 disposition.setType(Disposition.TYPE_INLINE);
-                break;
-            case "attachment":
+            } else if (queryArg.startsWith("attachment")) {
+                Pattern pattern = Pattern.compile(".*filename=\\\"(.*)\\\".*");
+                Matcher m = pattern.matcher(queryArg);
+                String filename;
+                if (m.matches()) {
+                    filename = m.group(1);
+                } else {
+                    filename = getDispositionFilename(identifier, outputFormat);
+                }
                 disposition.setType(Disposition.TYPE_ATTACHMENT);
-                disposition.setFilename(
-                        identifier.toString().replaceAll(
-                                FILENAME_CHARACTERS, "_") +
-                                "." + outputFormat.getPreferredExtension());
-                break;
+                disposition.setFilename(filename);
+            }
+        } else {
+            switch (Configuration.getInstance()
+                    .getString(Key.IIIF_CONTENT_DISPOSITION, "none")) {
+                case "inline":
+                    disposition.setType(Disposition.TYPE_INLINE);
+                    break;
+                case "attachment":
+                    disposition.setType(Disposition.TYPE_ATTACHMENT);
+                    disposition.setFilename(
+                            getDispositionFilename(identifier, outputFormat));
+                    break;
+            }
         }
         return disposition;
+    }
+
+    private String getDispositionFilename(Identifier identifier,
+                                          Format outputFormat) {
+        return identifier.toString().replaceAll(FILENAME_CHARACTERS, "_") +
+                "." + outputFormat.getPreferredExtension();
     }
 
     /**

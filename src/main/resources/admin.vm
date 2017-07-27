@@ -491,7 +491,10 @@
                                            &lt;br&gt;&lt;br&gt;
                                            &quot;Attachment&quot; will generally
                                            cause web browsers to download images
-                                           rather than display them.">?</a>
+                                           rather than display them. This can be
+                                           overridden using the
+                                           &lt;code&gt;?response-content-disposition&lt;/&gt;
+                                           query argument.">?</a>
                                     </td>
                                     <td>
                                         <select class="form-control"
