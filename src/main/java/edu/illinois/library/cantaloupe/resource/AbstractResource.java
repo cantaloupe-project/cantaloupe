@@ -160,34 +160,6 @@ public abstract class AbstractResource extends ServerResource {
         return rootRef;
     }
 
-    /**
-     * @param identifier
-     * @param outputFormat
-     * @return Content disposition based on the setting of
-     *         {@link Key#IIIF_CONTENT_DISPOSITION} in the application
-     *         configuration. If it is set to <code>attachment</code>, the
-     *         disposition will have a filename set to a reasonable value
-     *         based on the given identifier and output format.
-     */
-    public static Disposition getRepresentationDisposition(
-            Identifier identifier, Format outputFormat) {
-        Disposition disposition = new Disposition();
-        switch (Configuration.getInstance().
-                getString(Key.IIIF_CONTENT_DISPOSITION, "none")) {
-            case "inline":
-                disposition.setType(Disposition.TYPE_INLINE);
-                break;
-            case "attachment":
-                disposition.setType(Disposition.TYPE_ATTACHMENT);
-                disposition.setFilename(
-                        identifier.toString().replaceAll(
-                                FILENAME_CHARACTERS, "_") +
-                                "." + outputFormat.getPreferredExtension());
-                break;
-        }
-        return disposition;
-    }
-
     @Override
     protected void doInit() throws ResourceException {
         super.doInit();
@@ -436,6 +408,41 @@ public abstract class AbstractResource extends ServerResource {
             info = readInfo(identifier, proc);
         }
         return info;
+    }
+
+    /**
+     * <p>Returns a content disposition based on:</p>
+     *
+     * <ol>
+     *     <li>The setting of {@link Key#IIIF_CONTENT_DISPOSITION} in the
+     *     application configuration.</li>
+     *     <li></li>
+     * </ol>
+     *
+     * <p>If the disposition is <code>attachment</code> and the filename is
+     * not set, it will be set to a reasonable value based on the given
+     * identifier and output format.</p>
+     *
+     * @param identifier
+     * @param outputFormat
+     */
+    protected Disposition getRepresentationDisposition(Identifier identifier,
+                                                    Format outputFormat) {
+        Disposition disposition = new Disposition();
+        switch (Configuration.getInstance().
+                getString(Key.IIIF_CONTENT_DISPOSITION, "none")) {
+            case "inline":
+                disposition.setType(Disposition.TYPE_INLINE);
+                break;
+            case "attachment":
+                disposition.setType(Disposition.TYPE_ATTACHMENT);
+                disposition.setFilename(
+                        identifier.toString().replaceAll(
+                                FILENAME_CHARACTERS, "_") +
+                                "." + outputFormat.getPreferredExtension());
+                break;
+        }
+        return disposition;
     }
 
     /**

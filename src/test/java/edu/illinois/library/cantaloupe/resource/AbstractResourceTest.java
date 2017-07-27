@@ -2,8 +2,11 @@ package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
+import org.restlet.data.Disposition;
 import org.restlet.data.Header;
 import org.restlet.data.Reference;
 import org.restlet.util.Series;
@@ -85,6 +88,38 @@ public class AbstractResourceTest extends BaseTest {
         Reference ref = AbstractResource.getPublicRootRef(
                 new Reference(uri), headers);
         assertEquals(uri, ref.toString());
+    }
+
+    @Test
+    public void testGetRepresentationDisposition() throws Exception {
+        Configuration config = Configuration.getInstance();
+
+        final Identifier identifier = new Identifier("cats?/\\dogs");
+        final Format outputFormat = Format.JPG;
+
+        // test with undefined config key
+        Disposition disposition = resource.getRepresentationDisposition(
+                identifier, outputFormat);
+        assertEquals(Disposition.TYPE_NONE, disposition.getType());
+
+        // test with empty config key
+        config.setProperty(Key.IIIF_CONTENT_DISPOSITION, "");
+        disposition = resource.getRepresentationDisposition(
+                identifier, outputFormat);
+        assertEquals(Disposition.TYPE_NONE, disposition.getType());
+
+        // test with config key set to "inline"
+        config.setProperty(Key.IIIF_CONTENT_DISPOSITION, "inline");
+        disposition = resource.getRepresentationDisposition(
+                identifier, outputFormat);
+        assertEquals(Disposition.TYPE_INLINE, disposition.getType());
+
+        // test with config key set to "attachment"
+        config.setProperty(Key.IIIF_CONTENT_DISPOSITION, "attachment");
+        disposition = resource.getRepresentationDisposition(
+                identifier, outputFormat);
+        assertEquals(Disposition.TYPE_ATTACHMENT, disposition.getType());
+        assertEquals("cats___dogs.jpg", disposition.getFilename());
     }
 
     @Test

@@ -4,10 +4,7 @@ import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.FileUtils;
@@ -499,38 +496,6 @@ public class ImageResourceTest extends ResourceTest {
             FileUtils.deleteDirectory(sourceDir);
             FileUtils.deleteDirectory(cacheDir);
         }
-    }
-
-    @Test
-    public void testGetRepresentationDisposition() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
-
-        final Identifier identifier = new Identifier("cats?/\\dogs");
-        final Format outputFormat = Format.JPG;
-
-        // test with undefined config key
-        Disposition disposition = AbstractResource.
-                getRepresentationDisposition(identifier, outputFormat);
-        assertEquals(Disposition.TYPE_NONE, disposition.getType());
-
-        // test with empty config key
-        config.setProperty(Key.IIIF_CONTENT_DISPOSITION, "");
-        disposition = AbstractResource.
-                getRepresentationDisposition(identifier, outputFormat);
-        assertEquals(Disposition.TYPE_NONE, disposition.getType());
-
-        // test with config key set to "inline"
-        config.setProperty(Key.IIIF_CONTENT_DISPOSITION, "inline");
-        disposition = AbstractResource.
-                getRepresentationDisposition(identifier, outputFormat);
-        assertEquals(Disposition.TYPE_INLINE, disposition.getType());
-
-        // test with config key set to "attachment"
-        config.setProperty(Key.IIIF_CONTENT_DISPOSITION, "attachment");
-        disposition = AbstractResource.
-                getRepresentationDisposition(identifier, outputFormat);
-        assertEquals(Disposition.TYPE_ATTACHMENT, disposition.getType());
-        assertEquals("cats___dogs.jpg", disposition.getFilename());
     }
 
     /**
