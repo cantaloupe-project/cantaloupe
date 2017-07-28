@@ -442,6 +442,8 @@ public abstract class AbstractResource extends ServerResource {
                                                        Identifier identifier,
                                                        Format outputFormat) {
         final Disposition disposition = new Disposition();
+        // If a query argument value is available, use that. Otherwise, consult
+        // the configuration.
         if (queryArg != null) {
             if (queryArg.startsWith("inline")) {
                 disposition.setType(Disposition.TYPE_INLINE);
@@ -450,9 +452,12 @@ public abstract class AbstractResource extends ServerResource {
                 Matcher m = pattern.matcher(queryArg);
                 String filename;
                 if (m.matches()) {
-                    filename = m.group(1);
+                    // Filter out filename-unsafe characters as well as ".."
+                    filename = m.group(1).replace("..", "_")
+                            .replaceAll(FILENAME_CHARACTERS, "_");
                 } else {
-                    filename = getDispositionFilename(identifier, outputFormat);
+                    filename = getContentDispositionFilename(identifier,
+                            outputFormat);
                 }
                 disposition.setType(Disposition.TYPE_ATTACHMENT);
                 disposition.setFilename(filename);
@@ -465,16 +470,16 @@ public abstract class AbstractResource extends ServerResource {
                     break;
                 case "attachment":
                     disposition.setType(Disposition.TYPE_ATTACHMENT);
-                    disposition.setFilename(
-                            getDispositionFilename(identifier, outputFormat));
+                    disposition.setFilename(getContentDispositionFilename(
+                            identifier, outputFormat));
                     break;
             }
         }
         return disposition;
     }
 
-    private String getDispositionFilename(Identifier identifier,
-                                          Format outputFormat) {
+    private String getContentDispositionFilename(Identifier identifier,
+                                                 Format outputFormat) {
         return identifier.toString().replaceAll(FILENAME_CHARACTERS, "_") +
                 "." + outputFormat.getPreferredExtension();
     }
@@ -530,6 +535,7 @@ public abstract class AbstractResource extends ServerResource {
 
     /**
      * @param name Template pathname, with leading slash.
+     * @param vars Template variables.
      * @return Representation using the given template and the given template
      *         variables.
      */
