@@ -8,7 +8,6 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RIOT;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
@@ -31,7 +30,13 @@ public class TIFFMetadataTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
         final Iterator<ImageReader> it = ImageIO.getImageReadersByFormatName("TIFF");
-        reader = it.next();
+        while (it.hasNext()) {
+            ImageReader reader = it.next();
+            if (reader instanceof it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader) {
+                this.reader = reader;
+                break;
+            }
+        }
     }
 
     @After
@@ -49,7 +54,6 @@ public class TIFFMetadataTest extends BaseTest {
     }
 
     @Test
-    @Ignore // TODO: fix this
     public void testGetExif() throws IOException {
         final File srcFile = TestUtil.getImage("tif-exif.tif");
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile)) {
@@ -58,7 +62,6 @@ public class TIFFMetadataTest extends BaseTest {
     }
 
     @Test
-    @Ignore // TODO: fix this
     public void testGetIptc() throws IOException {
         final File srcFile = TestUtil.getImage("tif-iptc.tif");
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile)) {
@@ -76,7 +79,6 @@ public class TIFFMetadataTest extends BaseTest {
     }
 
     @Test
-    @Ignore // TODO: fix this
     public void testGetXmp() throws IOException {
         final File srcFile = TestUtil.getImage("tif-xmp.tif");
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile)) {
@@ -85,7 +87,6 @@ public class TIFFMetadataTest extends BaseTest {
     }
 
     @Test
-    @Ignore // TODO: fix this
     public void testGetXmpRdf() throws IOException {
         RIOT.init();
 

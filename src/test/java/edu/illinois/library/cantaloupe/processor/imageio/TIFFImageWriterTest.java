@@ -13,7 +13,6 @@ import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.EXIFParentTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFTag;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
@@ -45,7 +44,6 @@ public class TIFFImageWriterTest extends BaseTest {
     }
 
     @Test
-    @Ignore // TODO: fix this
     public void testWriteWithBufferedImageAndExifMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
@@ -60,7 +58,6 @@ public class TIFFImageWriterTest extends BaseTest {
     }
 
     @Test
-    @Ignore // TODO: fix this
     public void testWriteWithBufferedImageAndIptcMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
@@ -75,7 +72,6 @@ public class TIFFImageWriterTest extends BaseTest {
     }
 
     @Test
-    @Ignore // TODO: fix this
     public void testWriteWithBufferedImageAndXmpMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
@@ -103,7 +99,6 @@ public class TIFFImageWriterTest extends BaseTest {
     }
 
     @Test
-    @Ignore // TODO: fix this
     public void testWriteWithPlanarImageAndExifMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
@@ -119,7 +114,6 @@ public class TIFFImageWriterTest extends BaseTest {
     }
 
     @Test
-    @Ignore // TODO: fix this
     public void testWriteWithPlanarImageAndIptcMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
@@ -135,7 +129,6 @@ public class TIFFImageWriterTest extends BaseTest {
     }
 
     @Test
-    @Ignore // TODO: fix this
     public void testWriteWithPlanarImageAndXmpMetadata() throws Exception {
         final Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
@@ -166,9 +159,7 @@ public class TIFFImageWriterTest extends BaseTest {
     }
 
     private void checkForExifMetadata(byte[] imageData) throws Exception {
-        final Iterator<ImageReader> readers =
-                ImageIO.getImageReadersByFormatName("TIFF");
-        final ImageReader reader = readers.next();
+        final ImageReader reader = getReader();
         try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             reader.setInput(iis);
             final IIOMetadata metadata = reader.getImageMetadata(0);
@@ -181,9 +172,7 @@ public class TIFFImageWriterTest extends BaseTest {
     }
 
     private void checkForIptcMetadata(byte[] imageData) throws Exception {
-        final Iterator<ImageReader> readers =
-                ImageIO.getImageReadersByFormatName("TIFF");
-        final ImageReader reader = readers.next();
+        final ImageReader reader = getReader();
         try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             reader.setInput(iis);
             final IIOMetadata metadata = reader.getImageMetadata(0);
@@ -197,7 +186,7 @@ public class TIFFImageWriterTest extends BaseTest {
     private void checkForXmpMetadata(byte[] imageData) throws Exception {
         final Iterator<ImageReader> readers =
                 ImageIO.getImageReadersByFormatName("TIFF");
-        final ImageReader reader = readers.next();
+        final ImageReader reader = getReader();
         try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             reader.setInput(iis);
             final IIOMetadata metadata = reader.getImageMetadata(0);
@@ -206,6 +195,19 @@ public class TIFFImageWriterTest extends BaseTest {
         } finally {
             reader.dispose();
         }
+    }
+
+    private it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader getReader() {
+        final Iterator<ImageReader> readers =
+                ImageIO.getImageReadersByFormatName("TIFF");
+        ImageReader reader = null;
+        while (readers.hasNext()) {
+            reader = readers.next();
+            if (reader instanceof it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader) {
+                return (it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader) reader;
+            }
+        }
+        return null;
     }
 
     private TIFFImageWriter newWriter(Metadata metadata) throws IOException {
