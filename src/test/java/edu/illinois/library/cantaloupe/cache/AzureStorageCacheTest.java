@@ -245,6 +245,8 @@ public class AzureStorageCacheTest extends BaseTest {
 
     @Test
     public void testPurgeExpired() throws Exception {
+        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 2);
+
         // add an image
         File fixture = TestUtil.getImage(identifier.toString());
         try (OutputStream outputStream =
@@ -261,9 +263,10 @@ public class AzureStorageCacheTest extends BaseTest {
         File fixture2 = TestUtil.getImage("gif-rgb-64x56x8.gif");
         OperationList otherOpList = new OperationList(
                 new Identifier(fixture2.getName()), Format.GIF);
+
         try (OutputStream outputStream =
                      instance.newDerivativeImageOutputStream(otherOpList)) {
-             Files.copy(fixture2.toPath(), outputStream);
+            Files.copy(fixture2.toPath(), outputStream);
         }
 
         // add another Info
@@ -273,7 +276,6 @@ public class AzureStorageCacheTest extends BaseTest {
 
         assertObjectCount(4);
 
-        // purge it
         instance.purgeExpired();
 
         assertObjectCount(2);
