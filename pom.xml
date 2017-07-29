@@ -301,11 +301,24 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!-- Used to test the control panel -->
+    <!-- Selenium is used to test the control panel, using a headless HtmlUnit
+    browser. -->
     <dependency>
       <groupId>org.seleniumhq.selenium</groupId>
-      <artifactId>selenium-java</artifactId>
-      <version>3.0.1</version>
+      <artifactId>htmlunit-driver</artifactId>
+      <version>2.21</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
+      <artifactId>selenium-api</artifactId>
+      <version>2.53.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
+      <artifactId>selenium-support</artifactId>
+      <version>2.53.0</version>
       <scope>test</scope>
     </dependency>
     <!-- Logging interface used by the application -->
