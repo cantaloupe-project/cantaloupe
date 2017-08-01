@@ -13,6 +13,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -72,7 +73,7 @@ public abstract class TestUtil {
     }
 
     public static File getTempFolder() throws IOException {
-        return new File(System.getProperty("java.io.tmpdir"));
+        return Files.createTempDirectory("test").toFile();
     }
 
     public static Configuration getTestConfig() {
