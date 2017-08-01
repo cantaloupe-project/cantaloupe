@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resolver;
 
+import edu.illinois.library.cantaloupe.WebServer;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -10,9 +11,11 @@ import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.HttpClientTransport;
 import org.eclipse.jetty.client.api.AuthenticationStore;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.api.Response;
+import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
 import org.eclipse.jetty.client.util.BasicAuthentication;
 import org.eclipse.jetty.client.util.InputStreamResponseListener;
 import org.eclipse.jetty.http.HttpField;
@@ -155,9 +158,13 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         switch (info.getURI().getScheme().toUpperCase()) {
             case "HTTPS":
                 if (httpsClient == null) {
-                    HTTP2Client h2Client = new HTTP2Client();
-                    HttpClientTransportOverHTTP2 transport =
-                            new HttpClientTransportOverHTTP2(h2Client);
+                    HttpClientTransport transport;
+                    if (WebServer.isALPNAvailable()) {
+                        HTTP2Client h2Client = new HTTP2Client();
+                        transport = new HttpClientTransportOverHTTP2(h2Client);
+                    } else {
+                        transport = new HttpClientTransportOverHTTP();
+                    }
 
                     Configuration config = Configuration.getInstance();
                     final boolean trustInvalidCerts = config.getBoolean(
