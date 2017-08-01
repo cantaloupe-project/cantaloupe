@@ -14,6 +14,7 @@ import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
@@ -357,7 +358,7 @@ public class FilesystemCacheTest extends BaseTest {
                 StringUtils.stripEnd(rootInfoPathname(), File.separator),
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator,
-                identifier.toFilename());
+                StringUtil.filesystemSafe(identifier.toString()));
         assertEquals(expected, instance.getPath(identifier).toString());
     }
 
@@ -454,7 +455,7 @@ public class FilesystemCacheTest extends BaseTest {
                 File.separator,
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator,
-                identifier.toFilename());
+                StringUtil.filesystemSafe(identifier.toString()));
         assertEquals(new File(expected), instance.infoFile(identifier));
     }
 
@@ -542,7 +543,7 @@ public class FilesystemCacheTest extends BaseTest {
                 File.separator,
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator,
-                identifier.toFilename());
+                StringUtil.filesystemSafe(identifier.toString()));
         assertEquals(new File(expected), instance.sourceImageFile(identifier));
     }
 

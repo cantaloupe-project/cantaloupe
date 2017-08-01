@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.operation.overlay.OverlayService;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.redaction.RedactionService;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
+import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -525,8 +526,8 @@ public final class OperationList implements Comparable<OperationList>,
             logger.error("toFilename(): {}", e.getMessage());
         }
 
-        return getIdentifier().toFilename() + "_" + opsString + "." +
-                getOutputFormat().getPreferredExtension();
+        return StringUtil.filesystemSafe(getIdentifier().toString()) + "_" +
+                opsString + "." + getOutputFormat().getPreferredExtension();
     }
 
     /**

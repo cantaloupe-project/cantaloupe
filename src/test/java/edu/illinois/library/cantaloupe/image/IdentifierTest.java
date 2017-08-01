@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.image;
 
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,11 +56,6 @@ public class IdentifierTest extends BaseTest {
         Identifier id1 = new Identifier("cats");
         Identifier id2 = new Identifier("cats");
         assertEquals(id1.hashCode(), id2.hashCode());
-    }
-
-    @Test
-    public void testToFilename() {
-        assertEquals("0832c1202da8d382318e329a7c133ea0", instance.toFilename());
     }
 
     @Test

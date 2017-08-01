@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -485,7 +486,8 @@ class FilesystemCache implements SourceCache, DerivativeFileCache {
         final File[] files = cacheFolder.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return name.startsWith(identifier.toFilename());
+                return name.startsWith(
+                        StringUtil.filesystemSafe(identifier.toString()));
             }
         });
         ArrayList<File> fileList;
@@ -615,7 +617,8 @@ class FilesystemCache implements SourceCache, DerivativeFileCache {
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator);
         final String pathname = cacheRoot + subfolderPath + File.separator +
-                identifier.toFilename() + INFO_EXTENSION;
+                StringUtil.filesystemSafe(identifier.toString()) +
+                INFO_EXTENSION;
         return new File(pathname);
     }
 
@@ -1031,7 +1034,7 @@ class FilesystemCache implements SourceCache, DerivativeFileCache {
                 getHashedStringBasedSubdirectory(identifier.toString()),
                 File.separator);
         final String baseName = cacheRoot + subfolderPath + File.separator +
-                identifier.toFilename();
+                StringUtil.filesystemSafe(identifier.toString());
         return new File(baseName);
     }
 

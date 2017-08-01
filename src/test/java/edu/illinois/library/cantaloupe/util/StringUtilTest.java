@@ -8,6 +8,12 @@ import static org.junit.Assert.*;
 public class StringUtilTest extends BaseTest {
 
     @Test
+    public void testFilenameSafe() {
+        assertEquals("0832c1202da8d382318e329a7c133ea0",
+                StringUtil.filesystemSafe("cats"));
+    }
+
+    @Test
     public void testRemoveTrailingZeroes() {
         assertEquals("0", StringUtil.removeTrailingZeroes(0.0f));
         assertEquals("0.5", StringUtil.removeTrailingZeroes(0.5f));
