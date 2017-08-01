@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.test;
 
+import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http2.HTTP2Cipher;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
@@ -72,7 +73,7 @@ public class WebServer {
         contextFactory.setKeyStorePassword("password");
         contextFactory.setKeyManagerPassword("password");
 
-        if (edu.illinois.library.cantaloupe.WebServer.isALPNAvailable()) {
+        if (SystemUtils.isALPNAvailable()) {
             http1 = new HttpConnectionFactory(config);
             HTTP2ServerConnectionFactory http2 =
                     new HTTP2ServerConnectionFactory(config);

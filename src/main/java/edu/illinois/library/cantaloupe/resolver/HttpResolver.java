@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import edu.illinois.library.cantaloupe.WebServer;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -10,6 +9,7 @@ import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpClientTransport;
 import org.eclipse.jetty.client.api.AuthenticationStore;
@@ -159,7 +159,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
             case "HTTPS":
                 if (httpsClient == null) {
                     HttpClientTransport transport;
-                    if (WebServer.isALPNAvailable()) {
+                    if (SystemUtils.isALPNAvailable()) {
                         HTTP2Client h2Client = new HTTP2Client();
                         transport = new HttpClientTransportOverHTTP2(h2Client);
                     } else {

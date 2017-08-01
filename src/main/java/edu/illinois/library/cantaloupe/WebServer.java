@@ -9,7 +9,6 @@ import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.NegotiatingServerConnectionFactory;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -41,22 +40,6 @@ public class WebServer {
     private boolean isSecureHTTP2Enabled = true;
     private boolean isStarted = false;
     private Server server;
-
-    /**
-     * ALPN is built into Java 9. In earlier versions, it has to be provided by
-     * a JAR on the boot classpath.
-     */
-    public static boolean isALPNAvailable() {
-        if (SystemUtils.getJavaVersion() < 1.9) {
-            try {
-                NegotiatingServerConnectionFactory.
-                        checkProtocolNegotiationAvailable();
-            } catch (IllegalStateException e) {
-                return false;
-            }
-        }
-        return true;
-    }
 
     /**
      * Initializes the instance with arbitrary defaults.
@@ -269,7 +252,7 @@ public class WebServer {
 
                 ServerConnector connector;
 
-                if (isSecureHTTP2Enabled() && isALPNAvailable()) {
+                if (isSecureHTTP2Enabled() && SystemUtils.isALPNAvailable()) {
                     HttpConnectionFactory http1 =
                             new HttpConnectionFactory(config);
                     HTTP2ServerConnectionFactory http2 =
