@@ -65,10 +65,8 @@ public class StandaloneEntryTest extends BaseTest {
     }
 
     private File getCacheDir() throws IOException {
-        File directory = new File(".");
-        String cwd = directory.getCanonicalPath();
-        Path path = Paths.get(cwd, "src", "test", "resources", "cache");
-        return path.toFile();
+        Path directory = Files.createTempDirectory("test");
+        return directory.toFile();
     }
 
     /**
@@ -271,7 +269,7 @@ public class StandaloneEntryTest extends BaseTest {
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
         config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
         config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
-                getCacheDir().getAbsolutePath());
+                cacheDir.getAbsolutePath());
         config.setProperty(Key.CACHE_SERVER_TTL, "10");
 
         // cache a dimension
@@ -326,7 +324,7 @@ public class StandaloneEntryTest extends BaseTest {
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
         config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
         config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
-                getCacheDir().getAbsolutePath());
+                cacheDir.getAbsolutePath());
         config.setProperty(Key.CACHE_SERVER_TTL, "10");
 
         // cache a couple of dimensions
@@ -378,10 +376,8 @@ public class StandaloneEntryTest extends BaseTest {
         exit.expectSystemExitWithStatus(0);
 
         File cacheDir = getCacheDir();
-        File imageDir = new File(cacheDir.getAbsolutePath() + File.separator +
-                "image");
-        File infoDir = new File(cacheDir.getAbsolutePath() + File.separator +
-                "info");
+        File imageDir = new File(cacheDir.getAbsolutePath() + "/image");
+        File infoDir = new File(cacheDir.getAbsolutePath() + "/info");
         imageDir.mkdirs();
         infoDir.mkdirs();
 
@@ -389,7 +385,7 @@ public class StandaloneEntryTest extends BaseTest {
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
         config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
         config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
-                getCacheDir().getAbsolutePath());
+                cacheDir.getAbsolutePath());
         config.setProperty(Key.CACHE_SERVER_TTL, "1");
 
         File.createTempFile("bla1", "tmp", imageDir);
