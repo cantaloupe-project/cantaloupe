@@ -364,6 +364,7 @@
         <version>2.19.1</version>
         <configuration>
           <runOrder>random</runOrder>
+          <reuseForks>false</reuseForks>
         </configuration>
       </plugin>
 
