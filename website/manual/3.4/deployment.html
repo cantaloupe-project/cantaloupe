@@ -13,6 +13,7 @@ title: Deployment
 <h1>Deployment</h1>
 
 <ul>
+  <li><a href="#OS">Operating System</a></li>
   <li><a href="#Hardware">Hardware</a>
     <ul>
       <li><a href="#HardwareCPU">CPU</a></li>
@@ -34,6 +35,12 @@ title: Deployment
 
 <hr>
 
+<h2 id="OS">Operating System</h2>
+
+<p>When running in standalone mode, the embedded Jetty server caches class files in the system temp directory. Most operating systems will automatically delete temp files older than <i>n</i> days. If Cantaloupe has been running for longer than that, and its cached classes disappear from underneath it, it can lead to <code>NoClassDefFoundError</code>s. Consider reconfiguring your OS's temp-cleaning strategy to clean up only at boot.</p>
+
+<hr>
+
 <h2 id="Hardware">Hardware</h2>
 
 <h3 id="HardwareCPU">CPU</h3>
@@ -44,27 +51,25 @@ title: Deployment
 
 <h3 id="HardwareMemory">Memory</h3>
 
-<p>Memory requirements will vary drastically depending on source format, source image size, request image size, and the number of concurrent requests. Ideally, it is best to serve only source formats that support tiling or that can be selectively decoded (like TIFF or JPEG2000). Images in other formats will have to be fully loaded into memory before being processed, at great cost.</p>
+<p>Memory requirements will vary greatly depending on source format, source image size, request image size, and the number of concurrent requests. Ideally, it is best to serve only source formats that support tiling or that can be selectively decoded (like TIFF or JPEG2000). Images in other formats will have to be fully loaded into memory before being processed, at great cost.</p>
 
 <h3 id="HardwareStorage">Storage</h3>
 
-<p>Most source formats benefit from fast read performance&mdash;in terms of both latency and throughput&mdash;in the underlying storage system. Throughput is more important for less efficient source formats&mdash;like JPEG, PNG, and mono-resolution TIFF&mdash;especially as source image size increases. <a href="resolvers.html#FilesystemResolver">Local filesystem storage</a> is usually fastest, and often by a long shot.</p>
+<p>Most source formats benefit from fast read performance&mdash;in terms of both latency and throughput&mdash;in the underlying storage system. Throughput is more important for less efficient source formats&mdash;like JPEG, PNG, and mono-resolution TIFF&mdash;especially as source image size increases. <a href="resolvers.html#FilesystemResolver">Local filesystem storage</a> is usually fastest, and often by a lot.</p>
 
 <hr>
 
 <h2 id="Limiting">Limiting</h2>
 
-<p>A <code>max_pixels</code> configuration option is available to limit the maximum returned size of processed images. This is a "safety net" to prevent clients from bogging down the server.</p>
+<p>A <code>max_pixels</code> configuration option is available to limit the maximum returned size of processed images. This is a "safety net" to prevent clients from bogging down the server. It does not affect requests for full-sized unmodified images, which do not significantly load the server because they are streamed through with no processing.</p>
 
-<p>(This does not affect requests for full-sized unmodified images, which do not significantly load the server because they are streamed through with no processing.)</p>
-
-<p>The <code><a href="access-control.html#Authorization">authorized?</a></code> delegate script method can perform the same function as <code>max_pixels</code>, with more options for fine-grained control.</p>
+<p>Note that the <code><a href="access-control.html#Authorization">authorized?</a></code> delegate script method can perform the same function as <code>max_pixels</code>, with more options for fine-grained control.</p>
 
 <hr>
 
 <h2 id="Reverse-Proxying">Reverse-Proxying</h2>
 
-<p>Cantaloupe can be set up to run behind a reverse-proxy web server like Apache or nginx. The proxy should be set up to pass-through encoded URI characters without decoding them. It should also be configured to send the following headers:</p>
+<p>Cantaloupe can run behind a reverse-proxy web server like Apache or nginx. The proxy should be set up to pass-through encoded URI characters without decoding them. It should also be configured to send the following headers:</p>
 
 <table class="table table-striped">
   <tr>
@@ -109,13 +114,13 @@ title: Deployment
   </tr>
 </table>
 
-<p>If it is not possible to configure your reverse proxy to send these headers, the <code>base_uri</code> configuration option can be used instead; set it to the URI of the client-facing reverse proxy including any base path.</p>
+<p>If it is not possible to configure your reverse proxy to send the <code>X-Forwarded-*</code> headers, the <code>base_uri</code> configuration option can be used instead; set it to the URI of the client-facing reverse proxy including any base path.</p>
 
-<p>In a reverse-proxying scenario, you might want to disable the image server's <a href="logging.html#Access%20Log">access log</a>, if it would be redundant.</p>
+<p>In a reverse-proxying scenario, you might want to disable the <a href="logging.html#Access%20Log">access log</a>, if it would be redundant.</p>
 
 <h3 id="Reverse-ProxyingApache">Apache</h3>
 
-<p>The following example will make a Cantaloupe server running at http://image-server:8182/ available at http://apache-server/.
+<p>The following example will make a Cantaloupe server running at http://image-server:8182/ available at http://apache-server/.</p>
 
 <pre>&lt;VirtualHost *:80&gt;
   # X-Forwarded-Host will be set automatically by the web server.
@@ -170,6 +175,6 @@ title: Deployment
 
 <h2 id="SSL/TLS">SSL/TLS</h2>
 
-<p>SSL/TLS is an involved subject that will not be covered here in any depth. Suffice to say that in standalone mode, Cantaloupe supports TLS connections over HTTPS, configurable via the <code>https.*</code> keys in the configuration file. The general process for getting this working is to add a signed x.509 certificate to either a Java KeyStore (JKS) or PKCS#12 key store, and then refer to the key store file with the <code>https.key_store_path</code> configuration option.</p>
+<p>In standalone mode, Cantaloupe supports TLS connections over HTTPS, configurable via the <code>https.*</code> keys in the configuration file. The general process for getting this working is to add a signed x.509 certificate to either a Java KeyStore (JKS) or PKCS#12 key store, and then refer to the key store file with the <code>https.key_store_path</code> configuration option.</p>
 
-<p>HTTPS can also be enabled on a Servlet container or <a href="#Reverse-Proxying">reverse proxy server</a>, in which case Cantaloupe requires no special configuration.</p>
+<p>HTTPS can also be enabled on a Servlet container or <a href="#Reverse-Proxying">reverse-proxying web server</a>, in which case Cantaloupe would require no special configuration.</p>
