@@ -23,7 +23,7 @@ public class StringOverlayTest extends BaseTest {
         super.setUp();
 
         final Map<TextAttribute, Object> attributes = new HashMap<>();
-        attributes.put(TextAttribute.FAMILY, "Helvetica");
+        attributes.put(TextAttribute.FAMILY, "Arial");
         attributes.put(TextAttribute.SIZE, 12);
         attributes.put(TextAttribute.WEIGHT, 2.0f);
         attributes.put(TextAttribute.TRACKING, 0.1f);
@@ -66,7 +66,7 @@ public class StringOverlayTest extends BaseTest {
     @Test
     public void testToString() throws IOException {
         instance.setString("DOGSdogs123!@#$%\n%^&*()");
-        assertEquals("801774c691b35cbd89e3bd8cb6803681_SE_5_Helvetica_12_2.0_0.1_#0000FFFF_#FFA500FF_#FF0000FF_5.0",
+        assertEquals("801774c691b35cbd89e3bd8cb6803681_SE_5_Arial_12_2.0_0.1_#0000FFFF_#FFA500FF_#FF0000FF_5.0",
                 instance.toString());
     }
 
