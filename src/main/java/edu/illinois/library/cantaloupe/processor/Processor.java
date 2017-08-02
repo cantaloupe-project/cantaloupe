@@ -30,6 +30,17 @@ public interface Processor {
     Set<Format> getAvailableOutputFormats();
 
     /**
+     * <p>Implementations may need to perform initialization (such as scanning
+     * for supported formats etc.) that is more efficient to do only once.
+     * If this process fails, a non-null value should be returned.</p>
+     *
+     * <p>This default implementation returns <code>null</code>.</p>
+     */
+    default InitializationException getInitializationException() {
+        return null;
+    }
+
+    /**
      * @return The source format of the image to be processed.
      */
     Format getSourceFormat();

@@ -63,12 +63,34 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     private static final Logger logger = LoggerFactory.
             getLogger(GraphicsMagickProcessor.class);
 
-    // Lazy-initialized by getFormats()
+    private static InitializationException initializationException;
+    private static boolean isInitialized = false;
+
+    /** Lazy-initialized by getFormats(). */
     private static Map<Format, Set<Format>> supportedFormats;
 
     /**
+     * Performs one-time class-level/shared initialization.
+     */
+    private static synchronized void initialize() {
+        if (!isInitialized) {
+            getFormats();
+            isInitialized = true;
+        }
+    }
+
+    /**
+     * For testing purposes only.
+     */
+    static synchronized void resetInitialization() {
+        supportedFormats = null;
+        isInitialized = false;
+    }
+
+    /**
      * @return Map of available output formats for all known source formats,
-     * based on information reported by <code>gm version</code>.
+     *         based on information reported by <code>gm version</code>. The
+     *         result is cached.
      */
     private static synchronized Map<Format, Set<Format>> getFormats() {
         if (supportedFormats == null) {
@@ -131,16 +153,18 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                     formats.add(Format.GIF);
                     formats.add(Format.SGI);
                     outputFormats.add(Format.GIF);
+
+                    supportedFormats = new HashMap<>();
+                    for (Format format : formats) {
+                        supportedFormats.put(format, outputFormats);
+                    }
                 } catch (InterruptedException e) {
-                    logger.error("getFormats(): ", e.getMessage());
+                    initializationException = new InitializationException(e);
+                    // This is safe to swallow.
                 }
             } catch (IOException e) {
-                logger.error("getFormats(): ", e.getMessage());
-            }
-
-            supportedFormats = new HashMap<>();
-            for (Format format : formats) {
-                supportedFormats.put(format, outputFormats);
+                initializationException = new InitializationException(e);
+                // This is safe to swallow.
             }
         }
         return supportedFormats;
@@ -411,6 +435,12 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             }
         }
         return "None";
+    }
+
+    @Override
+    public InitializationException getInitializationException() {
+        initialize();
+        return initializationException;
     }
 
     @Override

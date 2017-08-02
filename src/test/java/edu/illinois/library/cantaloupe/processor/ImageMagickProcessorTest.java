@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.operation.overlay.ImageOverlay;
 import edu.illinois.library.cantaloupe.operation.overlay.Position;
 import edu.illinois.library.cantaloupe.resolver.FileInputStreamStreamSource;
-import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +17,6 @@ import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -40,6 +38,8 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
 
     @Before
     public void setUp() {
+        Configuration.getInstance().clearProperty(
+                Key.IMAGEMAGICKPROCESSOR_PATH_TO_BINARIES);
         instance = newInstance();
     }
 
@@ -191,6 +191,16 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
                 instance.getIMOverlayGravity(Position.BOTTOM_CENTER));
         assertEquals("southeast",
                 instance.getIMOverlayGravity(Position.BOTTOM_RIGHT));
+    }
+
+    @Test
+    public void testGetInitializationException() {
+        Configuration.getInstance().setProperty(
+                Key.IMAGEMAGICKPROCESSOR_PATH_TO_BINARIES,
+                "/bogus/bogus/bogus");
+        ImageMagickProcessor.resetInitialization();
+        instance = newInstance();
+        assertNotNull(instance.getInitializationException());
     }
 
     @Test

@@ -34,12 +34,10 @@ public class ProcessorFactory {
      * @param sourceFormat Source format for which to retrieve a processor
      * @return An instance suitable for handling the given source format, based
      *         on configuration settings. The source is already set.
-     * @throws UnsupportedSourceFormatException
-     * @throws ReflectiveOperationException
-     * @throws IOException
      */
     public Processor getProcessor(final Format sourceFormat)
             throws UnsupportedSourceFormatException,
+            InitializationException,
             ReflectiveOperationException,
             IOException {
         String processorName = getAssignedProcessorName(sourceFormat);
@@ -53,6 +51,11 @@ public class ProcessorFactory {
                 "." + processorName;
         final Class class_ = Class.forName(className);
         final Processor processor = (Processor) class_.newInstance();
+
+        InitializationException e = processor.getInitializationException();
+        if (e != null) {
+            throw e;
+        }
 
         processor.setSourceFormat(sourceFormat);
 

@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
@@ -16,10 +16,6 @@ public class ProcessorFactoryTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        Configuration config = ConfigurationFactory.getInstance();
-        config.setProperty("GraphicsMagickProcessor.path_to_binaries", "/usr/local/bin");
-        config.setProperty("ImageMagickProcessor.path_to_binaries", "/usr/local/bin");
-
         instance = new ProcessorFactory();
     }
 
@@ -34,8 +30,8 @@ public class ProcessorFactoryTest extends BaseTest {
      */
     @Test
     public void testGetProcessorWithSupportedAssignedFormat() throws Exception {
-        ConfigurationFactory.getInstance().
-                setProperty("processor.jpg", "Java2dProcessor");
+        Configuration.getInstance().setProperty("processor.jpg",
+                Java2dProcessor.class.getSimpleName());
         assertTrue(instance.getProcessor(Format.JPG) instanceof Java2dProcessor);
     }
 
@@ -49,10 +45,11 @@ public class ProcessorFactoryTest extends BaseTest {
      */
     @Test
     public void testGetProcessorWithUnsupportedAssignedFormat() throws Exception {
-        ConfigurationFactory.getInstance().
-                setProperty("processor.webp", "Java2dProcessor");
-        ConfigurationFactory.getInstance().
-                setProperty("processor.fallback", "GraphicsMagickProcessor");
+        Configuration config = Configuration.getInstance();
+        config.setProperty("processor.webp",
+                Java2dProcessor.class.getSimpleName());
+        config.setProperty(Key.PROCESSOR_FALLBACK,
+                GraphicsMagickProcessor.class.getSimpleName());
         try {
             instance.getProcessor(Format.WEBP);
             fail("Expected exception");
@@ -68,8 +65,8 @@ public class ProcessorFactoryTest extends BaseTest {
      */
     @Test
     public void testGetProcessorWithFormatSupportedByFallback() throws Exception {
-        ConfigurationFactory.getInstance().
-                setProperty("processor.fallback", "Java2dProcessor");
+        Configuration.getInstance().setProperty(Key.PROCESSOR_FALLBACK,
+                Java2dProcessor.class.getSimpleName());
         assertTrue(instance.getProcessor(Format.JPG) instanceof Java2dProcessor);
     }
 
@@ -80,8 +77,8 @@ public class ProcessorFactoryTest extends BaseTest {
      */
     @Test
     public void testGetProcessorWithFormatUnsupportedByFallback() throws Exception {
-        ConfigurationFactory.getInstance().
-                setProperty("processor.fallback", "Java2dProcessor");
+        Configuration.getInstance().setProperty(Key.PROCESSOR_FALLBACK,
+                Java2dProcessor.class.getSimpleName());
         try {
             instance.getProcessor(Format.WEBP);
             fail("Expected exception");
@@ -111,8 +108,8 @@ public class ProcessorFactoryTest extends BaseTest {
      */
     @Test
     public void testGetProcessorWithUnknownProcessor() throws Exception {
-        ConfigurationFactory.getInstance().
-                setProperty("processor.jpg", "AmazingFakeProcessor");
+        Configuration.getInstance().setProperty("processor.jpg",
+                "AmazingFakeProcessor");
         try {
             instance.getProcessor(Format.JPG);
             fail("Expected exception");
@@ -128,14 +125,30 @@ public class ProcessorFactoryTest extends BaseTest {
      */
     @Test
     public void testGetProcessorWithUnknownFallbackProcessor() throws Exception {
-        ConfigurationFactory.getInstance().
-                setProperty("processor.fallback", "AmazingFakeProcessor");
+        Configuration.getInstance().setProperty(Key.PROCESSOR_FALLBACK,
+                "AmazingFakeProcessor");
         try {
             instance.getProcessor(Format.JPG);
             fail("Expected exception");
         } catch (ClassNotFoundException e) {
             assertEquals(e.getMessage(),
                     "edu.illinois.library.cantaloupe.processor.AmazingFakeProcessor");
+        }
+    }
+
+    @Test
+    public void testGetProcessorWithMisconfiguredProcessor() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.PROCESSOR_FALLBACK,
+                GraphicsMagickProcessor.class.getSimpleName());
+        config.setProperty(Key.GRAPHICSMAGICKPROCESSOR_PATH_TO_BINARIES,
+                "/bogus/bogus/bogus");
+
+        try {
+            instance.getProcessor(Format.JPG);
+            fail("Expected InitializationException");
+        } catch (InitializationException e) {
+            // pass
         }
     }
 

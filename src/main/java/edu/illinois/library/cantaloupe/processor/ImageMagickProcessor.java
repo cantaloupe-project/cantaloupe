@@ -75,16 +75,37 @@ class ImageMagickProcessor extends AbstractMagickProcessor
 
     static final String OVERLAY_TEMP_FILE_PREFIX = "cantaloupe-overlay";
 
-    // ImageMagick 7 uses a `magick` command. Earlier versions use `convert`
-    // and `identify`.
+    private static InitializationException initializationException;
+    private static boolean isInitialized = false;
+
+    /** ImageMagick 7 uses a `magick` command. Earlier versions use `convert`
+    and `identify`. */
     private static AtomicBoolean isUsingVersion7;
 
-    // Map of overlay images downloaded from web servers. Files are temp files
-    // set to delete-on-exit.
+    /** Map of overlay images downloaded from web servers. Files are temp files
+    set to delete-on-exit. */
     private static Map<URL,File> overlays = new ConcurrentHashMap<>();
 
-    // Lazy-initialized by getFormats()
+    /** Lazy-initialized by getFormats(). */
     protected static Map<Format, Set<Format>> supportedFormats;
+
+    /**
+     * Performs one-time class-level/shared initialization.
+     */
+    private static synchronized void initialize() {
+        if (!isInitialized) {
+            getFormats();
+            isInitialized = true;
+        }
+    }
+
+    /**
+     * For testing purposes only.
+     */
+    static synchronized void resetInitialization() {
+        supportedFormats = null;
+        isInitialized = false;
+    }
 
     /**
      * @return Map of available output formats for all known source formats,
@@ -166,16 +187,18 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                         }
                     }
                     process.waitFor();
+
+                    supportedFormats = new HashMap<>();
+                    for (Format format : formats) {
+                        supportedFormats.put(format, outputFormats);
+                    }
                 } catch (InterruptedException e) {
-                    logger.error("getFormats(): {}", e.getMessage());
+                    initializationException = new InitializationException(e);
+                    // This is safe to swallow.
                 }
             } catch (IOException e) {
-                logger.error("getFormats(): {}", e.getMessage());
-            }
-
-            supportedFormats = new HashMap<>();
-            for (Format format : formats) {
-                supportedFormats.put(format, outputFormats);
+                initializationException = new InitializationException(e);
+                // This is safe to swallow.
             }
         }
         return supportedFormats;
@@ -580,6 +603,12 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             }
         }
         return "None";
+    }
+
+    @Override
+    public InitializationException getInitializationException() {
+        initialize();
+        return initializationException;
     }
 
     File getOverlayTempFile(ImageOverlay overlay) throws IOException {

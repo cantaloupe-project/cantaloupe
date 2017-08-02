@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -24,7 +26,7 @@ import java.util.Set;
 import static org.junit.Assert.*;
 
 /**
- * For this to work, the GraphicsMagick binaries must be on the PATH.
+ * For this to work, the GraphicsMagick binary must be on the PATH.
  */
 public class GraphicsMagickProcessorTest extends MagickProcessorTest {
 
@@ -34,6 +36,8 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
 
     @Before
     public void setUp() {
+        Configuration.getInstance().clearProperty(
+                Key.GRAPHICSMAGICKPROCESSOR_PATH_TO_BINARIES);
         instance = newInstance();
     }
 
@@ -107,6 +111,16 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
 
     protected GraphicsMagickProcessor newInstance() {
         return new GraphicsMagickProcessor();
+    }
+
+    @Test
+    public void testGetInitializationException() {
+        Configuration.getInstance().setProperty(
+                Key.GRAPHICSMAGICKPROCESSOR_PATH_TO_BINARIES,
+                "/bogus/bogus/bogus");
+        GraphicsMagickProcessor.resetInitialization();
+        instance = newInstance();
+        assertNotNull(instance.getInitializationException());
     }
 
     @Test
