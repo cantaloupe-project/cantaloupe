@@ -526,4 +526,33 @@
 
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>nodeps</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>2.19.1</version>
+            <configuration>
+              <runOrder>random</runOrder>
+              <reuseForks>false</reuseForks>
+              <excludes>
+                <exclude>Azure*Test</exclude>
+                <exclude>Amazon*Test</exclude>
+                <exclude>Kakadu*Test</exclude>
+                <exclude>Redis*Test</exclude>
+                <exclude>ControlPanelTest</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
