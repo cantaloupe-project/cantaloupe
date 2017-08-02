@@ -13,12 +13,10 @@ import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.PlanarImage;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
-import java.util.zip.DeflaterOutputStream;
 
 /**
  * PNG image writer using ImageIO, capable of taking both Java 2D
@@ -87,43 +85,39 @@ class PNGImageWriter extends AbstractImageWriter {
         }
     }
 
-    /**
-     * Applies Deflate compression to the given bytes.
-     *
-     * @param data Data to compress.
-     * @return Deflate-compressed data.
-     */
-    private byte[] deflate(final byte[] data) throws IOException {
-        ByteArrayOutputStream deflated = new ByteArrayOutputStream();
-        DeflaterOutputStream deflater = new DeflaterOutputStream(deflated);
-        deflater.write(data);
-        deflater.flush();
-        deflater.close();
-        return deflated.toByteArray();
+    private ImageWriter getImageIOWriter() {
+        final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
+                Format.PNG.getPreferredMediaType().toString());
+        if (writers.hasNext()) {
+            return writers.next();
+        }
+        return null;
     }
 
     /**
      * Writes the given image to the given output stream.
      *
-     * @param image Image to write.
+     * @param image        Image to write.
      * @param outputStream Stream to write the image to.
      */
     void write(RenderedImage image,
                OutputStream outputStream) throws IOException {
-        final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
-                Format.PNG.getPreferredMediaType().toString());
-        final ImageWriter writer = writers.next();
+        final ImageWriter writer = getImageIOWriter();
+        if (writer != null) {
+            final IIOMetadata metadata = getMetadata(
+                    writer, writer.getDefaultWriteParam(), image);
+            final IIOImage iioImage = new IIOImage(image, null, metadata);
 
-        final IIOMetadata metadata = getMetadata(
-                writer, writer.getDefaultWriteParam(), image);
-        final IIOImage iioImage = new IIOImage(image, null, metadata);
-
-        try (ImageOutputStream os =
-                     ImageIO.createImageOutputStream(outputStream)) {
-            writer.setOutput(os);
-            writer.write(iioImage);
-        } finally {
-            writer.dispose();
+            try (ImageOutputStream os =
+                         ImageIO.createImageOutputStream(outputStream)) {
+                writer.setOutput(os);
+                writer.write(iioImage);
+            } finally {
+                writer.dispose();
+            }
+        } else {
+            throw new IOException("Unable to obtain a " +
+                    "javax.imageio.ImageWriter instance. This is a bug.");
         }
     }
 

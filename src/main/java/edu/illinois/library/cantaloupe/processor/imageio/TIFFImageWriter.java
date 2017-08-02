@@ -47,7 +47,7 @@ class TIFFImageWriter extends AbstractImageWriter {
     /**
      * No-op.
      *
-     * @see {@link #addMetadata(Metadata, IIOMetadata)}
+     * @see #addMetadata(Metadata, IIOMetadata)
      */
     @Override
     protected void addMetadata(final IIOMetadataNode baseNode) {}
@@ -55,8 +55,7 @@ class TIFFImageWriter extends AbstractImageWriter {
     /**
      * @param sourceMetadata
      * @param derivativeMetadata
-     * @return
-     * @throws IOException
+     * @return New derivative metadata.
      */
     private IIOMetadata addMetadata(final Metadata sourceMetadata,
                                     IIOMetadata derivativeMetadata)
@@ -111,6 +110,18 @@ class TIFFImageWriter extends AbstractImageWriter {
         }
     }
 
+    private ImageWriter getImageIOWriter() {
+        final Iterator<ImageWriter> it = ImageIO.getImageWritersByMIMEType(
+                Format.TIF.getPreferredMediaType().toString());
+        while (it.hasNext()) {
+            ImageWriter writer = it.next();
+            if (writer instanceof it.geosolutions.imageioimpl.plugins.tiff.TIFFImageWriter) {
+                return writer;
+            }
+        }
+        return null;
+    }
+
     /**
      * @param writer Writer to obtain the default metadata from.
      * @param writeParam Write parameters on which to base the metadata.
@@ -136,8 +147,8 @@ class TIFFImageWriter extends AbstractImageWriter {
     }
 
     /**
-     * @param writer Writer to abtain parameters for
-     * @return Write parameters respecting the application configuration.
+     * @param writer Writer to abtain parameters for.
+     * @return Write parameters respecting the operation list.
      */
     private ImageWriteParam getWriteParam(ImageWriter writer) {
         final ImageWriteParam writeParam = writer.getDefaultWriteParam();
@@ -160,31 +171,28 @@ class TIFFImageWriter extends AbstractImageWriter {
     /**
      * Writes the given image to the given output stream.
      *
-     * @param image Image to write
-     * @param outputStream Stream to write the image to
-     * @throws IOException
+     * @param image        Image to write.
+     * @param outputStream Stream to write the image to.
      */
     void write(RenderedImage image,
                OutputStream outputStream) throws IOException {
-        final Iterator<ImageWriter> it = ImageIO.getImageWritersByMIMEType(
-                Format.TIF.getPreferredMediaType().toString());
-        while (it.hasNext()) {
-            final ImageWriter writer = it.next();
-            if (writer instanceof it.geosolutions.imageioimpl.plugins.tiff.TIFFImageWriter) {
-                final ImageWriteParam writeParam = getWriteParam(writer);
-                final IIOMetadata metadata = getMetadata(writer, writeParam, image);
-                final IIOImage iioImage = new IIOImage(image, null, metadata);
+        final ImageWriter writer = getImageIOWriter();
+        if (writer != null) {
+            final ImageWriteParam writeParam = getWriteParam(writer);
+            final IIOMetadata metadata = getMetadata(writer, writeParam, image);
+            final IIOImage iioImage = new IIOImage(image, null, metadata);
 
-                try (ImageOutputStream os =
-                             ImageIO.createImageOutputStream(outputStream)) {
-                    writer.setOutput(os);
-                    writer.write(metadata, iioImage, writeParam);
-                    os.flush(); // http://stackoverflow.com/a/14489406
-                } finally {
-                    writer.dispose();
-                }
-                break;
+            try (ImageOutputStream os =
+                         ImageIO.createImageOutputStream(outputStream)) {
+                writer.setOutput(os);
+                writer.write(metadata, iioImage, writeParam);
+                os.flush(); // http://stackoverflow.com/a/14489406
+            } finally {
+                writer.dispose();
             }
+        } else {
+            throw new IOException("Unable to obtain a " +
+                    "javax.imageio.ImageWriter instance. This is a bug.");
         }
     }
 

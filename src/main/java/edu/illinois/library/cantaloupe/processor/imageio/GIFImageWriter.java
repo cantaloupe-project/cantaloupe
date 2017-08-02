@@ -68,6 +68,15 @@ class GIFImageWriter extends AbstractImageWriter {
         }
     }
 
+    private ImageWriter getImageIOWriter() {
+        final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
+                Format.GIF.getPreferredMediaType().toString());
+        if (writers.hasNext()) {
+            return writers.next();
+        }
+        return null;
+    }
+
     /**
      * Writes the given image to the given output stream.
      *
@@ -77,31 +86,33 @@ class GIFImageWriter extends AbstractImageWriter {
      */
     void write(RenderedImage image,
                OutputStream outputStream) throws IOException {
-        final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
-                Format.GIF.getPreferredMediaType().toString());
-        final ImageWriter writer = writers.next();
+        final ImageWriter writer = getImageIOWriter();
+        if (writer != null) {
+            if (image instanceof PlanarImage) {
+                // GIFImageWriter can't deal with a non-0,0 origin ("coordinate
+                // out of bounds!")
+                final ParameterBlock pb = new ParameterBlock();
+                pb.addSource(image);
+                pb.add((float) -image.getMinX());
+                pb.add((float) -image.getMinY());
+                image = JAI.create("translate", pb);
+            }
 
-        if (image instanceof PlanarImage) {
-            // GIFWriter can't deal with a non-0,0 origin ("coordinate
-            // out of bounds!")
-            final ParameterBlock pb = new ParameterBlock();
-            pb.addSource(image);
-            pb.add((float) -image.getMinX());
-            pb.add((float) -image.getMinY());
-            image = JAI.create("translate", pb);
-        }
+            final ImageWriteParam writeParam = writer.getDefaultWriteParam();
+            final IIOMetadata metadata = getMetadata(writer, writeParam, image);
+            final IIOImage iioImage = new IIOImage(image, null, metadata);
 
-        final ImageWriteParam writeParam = writer.getDefaultWriteParam();
-        final IIOMetadata metadata = getMetadata(writer, writeParam, image);
-        final IIOImage iioImage = new IIOImage(image, null, metadata);
-
-        try (ImageOutputStream os = ImageIO.
-                createImageOutputStream(outputStream)) {
-            writer.setOutput(os);
-            writer.write(iioImage);
-            os.flush(); // http://stackoverflow.com/a/14489406
-        } finally {
-            writer.dispose();
+            try (ImageOutputStream os = ImageIO.
+                    createImageOutputStream(outputStream)) {
+                writer.setOutput(os);
+                writer.write(iioImage);
+                os.flush(); // http://stackoverflow.com/a/14489406
+            } finally {
+                writer.dispose();
+            }
+        } else {
+            throw new IOException("Unable to obtain a " +
+                    "javax.imageio.ImageWriter instance. This is a bug.");
         }
     }
 
