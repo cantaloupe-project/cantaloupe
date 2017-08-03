@@ -215,7 +215,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
     @Override
     public StreamSource newStreamSource() throws IOException {
-        ResourceInfo info = null;
+        ResourceInfo info;
         try {
             info = getResourceInfo();
         } catch (Exception e) {
@@ -229,18 +229,27 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                 // Send an HTTP HEAD request to check whether the underlying
                 // resource is accessible.
                 final HttpClient client = getHTTPClient(info);
-                final Response response = client.newRequest(info.getURI()).
-                        timeout(REQUEST_TIMEOUT, TimeUnit.SECONDS).
-                        method(HttpMethod.HEAD).send();
 
-                if (response.getStatus() >= 400) {
+                InputStreamResponseListener listener =
+                        new InputStreamResponseListener();
+                client.newRequest(info.getURI()).
+                        timeout(REQUEST_TIMEOUT, TimeUnit.SECONDS).
+                        method(HttpMethod.HEAD).send(listener);
+
+                // Wait for the response headers to arrive
+                Response response = listener.get(REQUEST_TIMEOUT,
+                        TimeUnit.SECONDS);
+
+                if (response.getStatus() >= HttpStatus.BAD_REQUEST_400) {
                     final String statusLine = "HTTP " + response.getStatus() +
                             ": " + response.getReason();
-                    if (response.getStatus() == 401 || response.getStatus() == 403) {
+                    if (response.getStatus() == HttpStatus.UNAUTHORIZED_401
+                            || response.getStatus() == HttpStatus.BAD_REQUEST_400) {
                         throw new AccessDeniedException(statusLine);
-                    } else if (response.getStatus() == 404 || response.getStatus() == 410) {
+                    } else if (response.getStatus() == HttpStatus.NOT_FOUND_404
+                            || response.getStatus() == HttpStatus.GONE_410) {
                         throw new FileNotFoundException(statusLine);
-                    } else if (response.getStatus() >= 400) {
+                    } else if (response.getStatus() >= HttpStatus.BAD_REQUEST_400) {
                         throw new IOException(statusLine);
                     }
                 }
