@@ -274,7 +274,7 @@ public class RestletApplication extends Application {
             adminAuth.setNext(AdminResource.class);
             router.attach(ADMIN_PATH, adminAuth);
         } catch (ConfigurationException e) {
-            getLogger().log(Level.WARNING, e.getMessage());
+            getLogger().log(Level.INFO, e.getMessage());
         }
 
         /****************** API routes ********************/
