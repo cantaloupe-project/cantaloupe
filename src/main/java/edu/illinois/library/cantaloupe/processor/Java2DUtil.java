@@ -198,14 +198,18 @@ public abstract class Java2DUtil {
     /**
      * @param overlay
      * @return Overlay image.
-     * @throws IOException
      */
     static BufferedImage getOverlayImage(ImageOverlay overlay)
             throws IOException {
+        ImageReader reader = null;
         try (InputStream is = overlay.openStream()) {
             InputStreamStreamSource isss = new InputStreamStreamSource(is);
-            final ImageReader reader = new ImageReader(isss, Format.PNG);
+            reader = new ImageReader(isss, Format.PNG);
             return reader.read();
+        } finally {
+            if (reader != null) {
+                reader.dispose();
+            }
         }
     }
 
