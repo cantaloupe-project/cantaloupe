@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.operation.Color;
+import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Rotate;
@@ -20,6 +21,10 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.DataBufferInt;
+import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,6 +34,8 @@ import static edu.illinois.library.cantaloupe.test.Assert.*;
 import static org.junit.Assert.*;
 
 public class Java2DUtilTest extends BaseTest {
+
+    /* applyRedactions() */
 
     @Test
     public void testApplyRedactions() throws Exception {
@@ -64,6 +71,8 @@ public class Java2DUtilTest extends BaseTest {
         // test for the second one
         assertRGBA(redactedImage.getRGB(25, 25), 0, 0, 0, 255);
     }
+
+    /* applyOverlay() */
 
     @Test
     public void testApplyOverlayWithImageOverlay() throws Exception {
@@ -157,9 +166,13 @@ public class Java2DUtilTest extends BaseTest {
         assertTrue(blue > 240);
     }
 
+    /* cropImage() */
+
     @Test
     public void testCropImage() {
-        BufferedImage inImage = new BufferedImage(200, 100,
+        final float fudge = 0.0000001f;
+        final int width = 200, height = 100;
+        BufferedImage inImage = new BufferedImage(width, height,
                 BufferedImage.TYPE_INT_RGB);
         // full
         Crop crop = new Crop();
@@ -167,14 +180,14 @@ public class Java2DUtilTest extends BaseTest {
         BufferedImage outImage = Java2DUtil.cropImage(inImage, crop);
         assertSame(inImage, outImage);
 
-        // square
+        // square crop
         crop = new Crop();
         crop.setShape(Crop.Shape.SQUARE);
         crop.setWidth(50f);
         crop.setHeight(50f);
         outImage = Java2DUtil.cropImage(inImage, crop);
-        assertEquals(100, outImage.getWidth());
-        assertEquals(100, outImage.getHeight());
+        assertEquals(height, outImage.getWidth());
+        assertEquals(height, outImage.getHeight());
 
         // pixel crop
         crop = new Crop();
@@ -192,13 +205,15 @@ public class Java2DUtilTest extends BaseTest {
         crop.setWidth(0.5f);
         crop.setHeight(0.5f);
         outImage = Java2DUtil.cropImage(inImage, crop);
-        assertEquals(100, outImage.getWidth());
-        assertEquals(50, outImage.getHeight());
+        assertEquals(width * 0.5f, outImage.getWidth(), fudge);
+        assertEquals(height * 0.5f, outImage.getHeight(), fudge);
     }
 
     @Test
     public void testCropImageWithReductionFactor() {
-        BufferedImage inImage = new BufferedImage(100, 100,
+        final float fudge = 0.0000001f;
+        final int width = 100, height = 100;
+        BufferedImage inImage = new BufferedImage(width, height,
                 BufferedImage.TYPE_INT_RGB);
 
         // full crop
@@ -210,12 +225,12 @@ public class Java2DUtilTest extends BaseTest {
 
         // pixel crop
         crop = new Crop();
-        crop.setWidth(50f);
-        crop.setHeight(50f);
+        crop.setWidth(width / 2f);
+        crop.setHeight(height / 2f);
         rf = new ReductionFactor(1);
         outImage = Java2DUtil.cropImage(inImage, crop, rf);
-        assertEquals(25, outImage.getWidth());
-        assertEquals(25, outImage.getHeight());
+        assertEquals(width / 4f, outImage.getWidth(), fudge);
+        assertEquals(height / 4f, outImage.getHeight(), fudge);
 
         // percentage crop
         crop = new Crop();
@@ -226,14 +241,11 @@ public class Java2DUtilTest extends BaseTest {
         crop.setHeight(0.5f);
         rf = new ReductionFactor(1);
         outImage = Java2DUtil.cropImage(inImage, crop, rf);
-        assertEquals(25, outImage.getWidth());
-        assertEquals(25, outImage.getHeight());
+        assertEquals(width / 4f, outImage.getWidth(), fudge);
+        assertEquals(height / 4f, outImage.getHeight(), fudge);
     }
 
-    @Test
-    public void testFilterImage() {
-        // TODO: write this
-    }
+    /* getOverlayImage() */
 
     @Test
     public void testGetOverlayImage() throws Exception {
@@ -242,16 +254,22 @@ public class Java2DUtilTest extends BaseTest {
         assertNotNull(Java2DUtil.getOverlayImage(overlay));
     }
 
+    /* reduceTo8Bits() */
+
     @Test
     public void testReduceTo8Bits() throws IOException {
-        // assert that an 8-bit image is untouched
-        BufferedImage image = new BufferedImage(100, 100,
+        final int width = 100, height = 100;
+
+        // Assert that an 8-bit image is untouched.
+        BufferedImage image = new BufferedImage(width, height,
                 BufferedImage.TYPE_INT_RGB);
         BufferedImage result = Java2DUtil.reduceTo8Bits(image);
         assertSame(image, result);
 
-        // assert that a 16-bit image is downsampled
-        // TODO: write this
+        // Assert that a 16-bit image is downsampled.
+        image = new16BitBufferedImage(width, height);
+        result = Java2DUtil.reduceTo8Bits(image);
+        assertEquals(8, result.getColorModel().getComponentSize(0));
     }
 
     /* removeAlpha(BufferedImage) */
@@ -295,6 +313,8 @@ public class Java2DUtilTest extends BaseTest {
         assertArrayEquals(expected, outImage.getRaster().getPixel(0, 0, actual));
     }
 
+    /* rotateImage() */
+
     @Test
     public void testRotateImage() {
         BufferedImage inImage = new BufferedImage(200, 100,
@@ -316,6 +336,8 @@ public class Java2DUtilTest extends BaseTest {
         assertEquals(expectedWidth, outImage.getWidth());
         assertEquals(expectedHeight, outImage.getHeight());
     }
+
+    /* scaleImage(BufferedImage, Scale) */
 
     @Test
     public void testScaleImage() {
@@ -364,6 +386,8 @@ public class Java2DUtilTest extends BaseTest {
         assertEquals(25, outImage.getHeight());
     }
 
+    /* scaleImage(BufferedImage, Scale, ReductionFactor) */
+
     @Test
     public void testScaleImageWithReductionFactor() {
         BufferedImage inImage = new BufferedImage(100, 100,
@@ -398,6 +422,8 @@ public class Java2DUtilTest extends BaseTest {
         assertEquals(100, outImage.getHeight());
     }
 
+    /* sharpenImage() */
+
     @Test
     public void testSharpenImage() {
         BufferedImage inImage = new BufferedImage(200, 100,
@@ -408,6 +434,8 @@ public class Java2DUtilTest extends BaseTest {
         assertEquals(200, outImage.getWidth());
         assertEquals(100, outImage.getHeight());
     }
+
+    /* stretchContrast() */
 
     @Test
     public void testStretchContrast() {
@@ -428,6 +456,59 @@ public class Java2DUtilTest extends BaseTest {
         assertEquals(-1, image.getRGB(90, 90));
     }
 
+    /* transformColor() */
+
+    @Test
+    public void testTransformColorToBitonal() {
+        BufferedImage inImage = new BufferedImage(100, 100,
+                BufferedImage.TYPE_INT_RGB);
+
+        // Create a cyan image.
+        Graphics2D g2d = inImage.createGraphics();
+        g2d.setColor(Color.CYAN);
+        g2d.fill(new Rectangle(0, 0, 100, 100));
+        g2d.dispose();
+
+        // Transform to bitonal.
+        BufferedImage outImage = Java2DUtil.transformColor(inImage,
+                ColorTransform.BITONAL);
+
+        // Expect it to be transformed to white.
+        assertRGBA(outImage.getRGB(0, 0), 255, 255, 255, 255);
+
+        // Create a red image.
+        g2d = inImage.createGraphics();
+        g2d.setColor(Color.RED);
+        g2d.fill(new Rectangle(0, 0, 100, 100));
+        g2d.dispose();
+
+        // Transform to bitonal.
+        outImage = Java2DUtil.transformColor(inImage, ColorTransform.BITONAL);
+
+        // Expect it to be transformed to black.
+        assertRGBA(outImage.getRGB(0, 0), 0, 0, 0, 255);
+    }
+
+    @Test
+    public void testTransformColorToGray() {
+        BufferedImage inImage = new BufferedImage(100, 100,
+                BufferedImage.TYPE_INT_RGB);
+
+        // Start with a red image.
+        Graphics2D g2d = inImage.createGraphics();
+        g2d.setColor(Color.RED);
+        g2d.fill(new Rectangle(0, 0, 100, 100));
+        g2d.dispose();
+
+        // Transform to grayscale.
+        BufferedImage outImage = Java2DUtil.transformColor(inImage,
+                ColorTransform.GRAY);
+
+        assertGray(outImage.getRGB(0, 0));
+    }
+
+    /* transposeImage() */
+
     @Test
     public void testTransposeImage() {
         BufferedImage inImage = new BufferedImage(200, 100,
@@ -437,6 +518,17 @@ public class Java2DUtilTest extends BaseTest {
 
         assertEquals(200, outImage.getWidth());
         assertEquals(100, outImage.getHeight());
+    }
+
+    private BufferedImage new16BitBufferedImage(int width, int height) {
+        int[] matrix = new int[width * height];
+        DataBufferInt buffer = new DataBufferInt(matrix, matrix.length);
+        int[] bandMasks = {0xFF0000, 0xFF00, 0xFF, 0xFF000000}; // ARGB
+        WritableRaster raster = Raster.createPackedRaster(
+                buffer, width, height, width, bandMasks, null);
+
+        ColorModel cm = ColorModel.getRGBdefault();
+        return new BufferedImage(cm, raster, cm.isAlphaPremultiplied(), null);
     }
 
 }
