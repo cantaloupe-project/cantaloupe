@@ -20,12 +20,12 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.illinois.library.cantaloupe.test.Assert.*;
 import static org.junit.Assert.*;
 
 public class Java2DUtilTest extends BaseTest {
@@ -59,26 +59,10 @@ public class Java2DUtilTest extends BaseTest {
                 baseImage, crop, rf, redactions);
 
         // test for the first one
-        pixel = redactedImage.getRGB(0, 0);
-        alpha = (pixel >> 24) & 0xff;
-        red = (pixel >> 16) & 0xff;
-        green = (pixel >> 8) & 0xff;
-        blue = (pixel) & 0xff;
-        assertEquals(255, alpha);
-        assertEquals(0, red);
-        assertEquals(0, green);
-        assertEquals(0, blue);
+        assertRGBA(redactedImage.getRGB(0, 0), 0, 0, 0, 255);
 
         // test for the second one
-        pixel = redactedImage.getRGB(25, 25);
-        alpha = (pixel >> 24) & 0xff;
-        red = (pixel >> 16) & 0xff;
-        green = (pixel >> 8) & 0xff;
-        blue = (pixel) & 0xff;
-        assertEquals(255, alpha);
-        assertEquals(0, red);
-        assertEquals(0, green);
-        assertEquals(0, blue);
+        assertRGBA(redactedImage.getRGB(25, 25), 0, 0, 0, 255);
     }
 
     @Test
@@ -106,15 +90,7 @@ public class Java2DUtilTest extends BaseTest {
         final BufferedImage overlaidImage = Java2DUtil.applyOverlay(
                 baseImage, overlay);
 
-        pixel = overlaidImage.getRGB(0, 0);
-        alpha = (pixel >> 24) & 0xff;
-        red = (pixel >> 16) & 0xff;
-        green = (pixel >> 8) & 0xff;
-        blue = (pixel) & 0xff;
-        assertEquals(255, alpha);
-        assertEquals(0, red);
-        assertEquals(0, green);
-        assertEquals(0, blue);
+        assertRGBA(overlaidImage.getRGB(0, 0), 0, 0, 0, 255);
     }
 
     @Test
@@ -147,14 +123,7 @@ public class Java2DUtilTest extends BaseTest {
         pixel = overlaidImage.getRGB(
                 baseImage.getWidth() - inset - 1,
                 baseImage.getHeight() - inset - 1);
-        alpha = (pixel >> 24) & 0xff;
-        red = (pixel >> 16) & 0xff;
-        green = (pixel >> 8) & 0xff;
-        blue = (pixel) & 0xff;
-        assertEquals(255, alpha);
-        assertEquals(0, red);
-        assertEquals(0, green);
-        assertEquals(0, blue);
+        assertRGBA(pixel, 0, 0, 0, 255);
     }
 
     @Test
@@ -174,22 +143,14 @@ public class Java2DUtilTest extends BaseTest {
                 baseImage, overlay);
 
         // Test the background color
-        int pixel = overlaidImage.getRGB(2, 2);
+        assertRGBA(overlaidImage.getRGB(2, 2), 0, 0, 0, 255);
+
+        // Test the font color
+        int pixel = overlaidImage.getRGB(8, 8);
         int alpha = (pixel >> 24) & 0xff;
         int red = (pixel >> 16) & 0xff;
         int green = (pixel >> 8) & 0xff;
         int blue = (pixel) & 0xff;
-        assertEquals(255, alpha);
-        assertEquals(0, red);
-        assertEquals(0, green);
-        assertEquals(0, blue);
-
-        // Test the font color
-        pixel = overlaidImage.getRGB(8, 8);
-        alpha = (pixel >> 24) & 0xff;
-        red = (pixel >> 16) & 0xff;
-        green = (pixel >> 8) & 0xff;
-        blue = (pixel) & 0xff;
         assertEquals(255, alpha);
         assertTrue(red > 240);
         assertTrue(green > 240);

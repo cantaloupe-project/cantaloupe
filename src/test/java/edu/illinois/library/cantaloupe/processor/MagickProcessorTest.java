@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import static edu.illinois.library.cantaloupe.test.Assert.*;
 import static org.junit.Assert.*;
 
 abstract class MagickProcessorTest extends ProcessorTest {
@@ -162,15 +163,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
                 new ByteArrayInputStream(outputStream.toByteArray());
         final BufferedImage rotatedImage = ImageIO.read(inputStream);
 
-        int pixel = rotatedImage.getRGB(0, 0);
-        int alpha = (pixel >> 24) & 0xff;
-        int red = (pixel >> 16) & 0xff;
-        int green = (pixel >> 8) & 0xff;
-        int blue = (pixel) & 0xff;
-        assertEquals(0, alpha);
-        assertEquals(0, red);
-        assertEquals(0, green);
-        assertEquals(0, blue);
+        assertRGBA(rotatedImage.getRGB(0, 0), 0, 0, 0, 0);
     }
 
     @Test
