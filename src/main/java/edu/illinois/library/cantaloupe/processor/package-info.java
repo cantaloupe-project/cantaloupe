@@ -1,25 +1,55 @@
 /**
  * <p>Package in which processors reside.</p>
  *
- * <h3>Writing Custom Processors</h3>
+ * <p>A processor is an encapsulation of an image codec and processing library.
+ * Given a reference to a source image, it applies the
+ * {@link edu.illinois.library.cantaloupe.operation.Operation operations} from
+ * an {@link edu.illinois.library.cantaloupe.operation.OperationList} in
+ * order, and writes the result to an {@link java.io.OutputStream}. In this way
+ * it is more-or-less source- and output-agnostic (it doesn't care where the
+ * source image is coming from or going to)</p>
+ *
+ * <h3>Reading from files vs. streams</h3>
  *
  * <p>Processors must implement either or both of the
- * {@link edu.illinois.library.cantaloupe.processor.StreamProcessor} and
- * {@link edu.illinois.library.cantaloupe.processor.FileProcessor} interfaces.
- * Implementing StreamProcessor will enable the processor to work with any
- * resolver, and if it can provide performance equal to FileProcessor with all
- * resolvers (this will depend on its implementation), then there is no need to
- * implement FileProcessor. FileProcessor should be implemented only by
- * processors that can't read (as efficiently or at all) from streams.</p>
+ * {@link edu.illinois.library.cantaloupe.processor.FileProcessor} and
+ * {@link edu.illinois.library.cantaloupe.processor.StreamProcessor} interfaces,
+ * which enable them to read from {@link java.io.File files} and/or
+ * streams obtained from a
+ * {@link edu.illinois.library.cantaloupe.resolver.StreamSource}. A
+ * {@link edu.illinois.library.cantaloupe.processor.StreamProcessor} will work
+ * with any resolver, and if it can use streams as efficiently as direct file
+ * access, then there is no need to implement
+ * {@link edu.illinois.library.cantaloupe.processor.FileProcessor}.
+ * {@link edu.illinois.library.cantaloupe.processor.FileProcessor} should be
+ * implemented only by processors that can't read (as efficiently or at all)
+ * from streams.</p>
  *
- * <p>Format availability (or "awareness") is governed by the
- * {@link edu.illinois.library.cantaloupe.image.Format} enum. If this does not
- * already contain the formats you wish to support, you will need to add
- * them.</p>
+ * <h3>Writing custom processors</h3>
  *
- * <p>Once the custom processor is written, the
+ * <p>As mentioned above, a processor must implement either or both of the
+ * {@link edu.illinois.library.cantaloupe.processor.FileProcessor} and
+ * {@link edu.illinois.library.cantaloupe.processor.StreamProcessor} interfaces.
+ * Once it has been written, the
  * {@link edu.illinois.library.cantaloupe.processor.ProcessorFactory#getAllProcessors()}
  * method must be modified to return it. Then, it can be used like any other
  * processor.</p>
+ *
+ * <p>Format availability (or "awareness") is governed by the
+ * {@link edu.illinois.library.cantaloupe.image.Format} enum. If this does not
+ * already contain the formats a processor wishes to support, it will need to
+ * be added.</p>
+ *
+ * <h3>Other means of adding format support</h3>
+ *
+ * <p>Adding new processors is one way of adding image codec support to the
+ * application. However, note that the {@link javax.imageio.ImageIO} framework
+ * used by {@link edu.illinois.library.cantaloupe.processor.Java2dProcessor}
+ * and {@link edu.illinois.library.cantaloupe.processor.JaiProcessor} supports
+ * format plugins, which are automatically available in these processors.
+ * ImageIO also supports image access via an
+ * {@link javax.imageio.stream.ImageInputStream ImageInputStream}, which can
+ * offer major efficiency advantages. Finally, being Java, an ImageIO plugin
+ * can be bundled in so there are no external dependencies.</p>
  */
 package edu.illinois.library.cantaloupe.processor;
