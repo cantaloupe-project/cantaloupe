@@ -108,6 +108,11 @@ public class ImageResource extends IIIF1Resource {
         final Info info = getOrReadInfo(identifier, processor);
         final Dimension fullSize = info.getSize();
 
+        StringRepresentation redirectingRep = checkAuthorization(ops, fullSize);
+        if (redirectingRep != null) {
+            return redirectingRep;
+        }
+
         validateRequestedArea(ops, sourceFormat, info);
 
         processor.validate(ops, fullSize);
@@ -130,11 +135,6 @@ public class ImageResource extends IIIF1Resource {
                             disposition, inputStream);
                 }
             }
-        }
-
-        StringRepresentation redirectingRep = checkAuthorization(ops, fullSize);
-        if (redirectingRep != null) {
-            return redirectingRep;
         }
 
         final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(

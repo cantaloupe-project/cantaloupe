@@ -108,14 +108,14 @@ public class ImageResource extends IIIF2Resource {
         final Info info = getOrReadInfo(ops.getIdentifier(), processor);
         final Dimension fullSize = info.getSize();
 
-        validateRequestedArea(ops, sourceFormat, info);
-
-        processor.validate(ops, fullSize);
-
         StringRepresentation redirectingRep = checkAuthorization(ops, fullSize);
         if (redirectingRep != null) {
             return redirectingRep;
         }
+
+        validateRequestedArea(ops, sourceFormat, info);
+
+        processor.validate(ops, fullSize);
 
         if (config.getBoolean(Key.IIIF_2_RESTRICT_TO_SIZES, false)) {
             final ImageInfo imageInfo = ImageInfoFactory.newImageInfo(
