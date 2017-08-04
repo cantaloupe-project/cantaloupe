@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
-import edu.illinois.library.cantaloupe.cache.DerivativeFileCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -21,7 +20,6 @@ import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Disposition;
-import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Variant;
@@ -30,7 +28,6 @@ import org.restlet.resource.Get;
 import java.awt.Dimension;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +56,7 @@ public class ImageResource extends IIIF1Resource {
         final Resolver resolver = new ResolverFactory().getResolver(identifier);
 
         // Determine the format of the source image.
-        Format sourceFormat = Format.UNKNOWN;
+        Format sourceFormat;
         try {
             sourceFormat = resolver.getSourceFormat();
         } catch (FileNotFoundException e) { // this needs to be rethrown
@@ -152,23 +149,6 @@ public class ImageResource extends IIIF1Resource {
                 getReference().toUrl(),
                 getRequest().getHeaders().getValuesMap(),
                 getCookies().getValuesMap());
-
-        // If the reverse proxy supports X-Sendfile, and a file-based
-        // derivative cache is enabled, and it contains the info, add an
-        // X-Sendfile header. This has to be done *after*
-        // OperationList.applyNonEndpointMutations() has been called.
-        if (isXSendfileSupported() && cache != null &&
-                cache instanceof DerivativeFileCache) {
-            DerivativeFileCache fileCache = (DerivativeFileCache) cache;
-            if (fileCache.derivativeImageExists(ops)) {
-                final Path path = fileCache.getPath(ops);
-                addXSendfileHeader(path, fileCache.getRootPath());
-                // The proxy server will take it from here.
-                Representation rep = new EmptyRepresentation();
-                rep.setMediaType(new org.restlet.data.MediaType(ops.getOutputFormat().getPreferredMediaType().toString()));
-                return rep;
-            }
-        }
 
         // Find out whether the processor supports the source format by asking
         // it whether it offers any output formats for it.

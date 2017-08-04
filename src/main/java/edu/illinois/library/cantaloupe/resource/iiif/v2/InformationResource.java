@@ -1,12 +1,10 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import java.io.FileNotFoundException;
-import java.nio.file.Path;
 import java.util.List;
 
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
-import edu.illinois.library.cantaloupe.cache.DerivativeFileCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -67,7 +65,7 @@ public class InformationResource extends IIIF2Resource {
         final MediaType mediaType = getNegotiatedMediaType();
 
         // Determine the format of the source image.
-        Format format = Format.UNKNOWN;
+        Format format;
         try {
             format = resolver.getSourceFormat();
         } catch (FileNotFoundException e) { // this needs to be rethrown
@@ -80,24 +78,6 @@ public class InformationResource extends IIIF2Resource {
                 }
             }
             throw e;
-        }
-
-        // If the reverse proxy supports X-Sendfile, and a file-based
-        // derivative cache is enabled, and it contains the info, add an
-        // X-Sendfile header.
-        if (isXSendfileSupported()) {
-            final Cache cache = CacheFactory.getDerivativeCache();
-            if (cache instanceof DerivativeFileCache) {
-                DerivativeFileCache fileCache = (DerivativeFileCache) cache;
-                if (fileCache.infoExists(identifier)) {
-                    final Path file = fileCache.getPath(identifier);
-                    addXSendfileHeader(file, fileCache.getRootPath());
-                    // The proxy server will take it from here.
-                    Representation rep = new EmptyRepresentation();
-                    rep.setMediaType(mediaType);
-                    return rep;
-                }
-            }
         }
 
         // Obtain an instance of the processor assigned to that format.

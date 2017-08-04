@@ -107,11 +107,6 @@ title: Deployment
     <td>Originally-requested image identifier. Should be set only when the proxy server will change the value of the identifier in the forwarded request; i.e. when the client is asking for a different identifier than the image server ends up seeing.</td>
     <td>No</td>
   </tr>
-  <tr>
-    <td><code>X-Sendfile-Type</code></td>
-    <td>Name of the <code>X-Sendfile</code> (or equivalent) header to use with <a href="caching.html#FilesystemCache">FilesystemCache</a>.</td>
-    <td>No</td>
-  </tr>
 </table>
 
 <p>If it is not possible to configure your reverse proxy to send the <code>X-Forwarded-*</code> headers, the <code>base_uri</code> configuration option can be used instead; set it to the URI of the client-facing reverse proxy including any base path.</p>
@@ -134,12 +129,6 @@ title: Deployment
   ErrorLog logs/image-error.log
   CustomLog logs/image-access.log combined
 
-  # These are optional; they enable more efficient delivery of
-  # FilesystemCache content.
-  #RequestHeader set X-Sendfile-Type X-Sendfile
-  #XSendFile on
-  #XSendFilePath /path/to/cache/
-
   ProxyPass / http://image-server:8182/ nocanon
   ProxyPassReverse / http://image-server:8182/
   ProxyPassReverseCookieDomain image-server:8182 apache-server
@@ -161,14 +150,6 @@ title: Deployment
     proxy_set_header X-Forwarded-Path /;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_redirect http://image-server:8182/ /;
-
-    # This is optional; it enables more efficient delivery of
-    # FilesystemCache content.
-    #proxy_set_header X-Sendfile-Type X-Accel-Redirect;
-    #location /cantaloupe_sendfile/ {
-    #    internal;
-    #    alias /path/to/cache/;
-    #}
 }</pre>
 
 <hr>

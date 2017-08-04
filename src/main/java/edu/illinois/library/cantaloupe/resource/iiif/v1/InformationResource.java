@@ -54,11 +54,7 @@ public class InformationResource extends IIIF1Resource {
     }
 
     /**
-     * <p>Responds to information requests.</p>
-     *
-     * <p>N.B. This endpoint does not use the X-Sendfile mechanism as the
-     * performance cost (due to all of the necessary setup) would be greater
-     * than the benefit..</p>
+     * Responds to information requests.
      *
      * @return {@link ImageInfo} instance serialized to JSON.
      */

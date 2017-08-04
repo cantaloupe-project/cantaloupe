@@ -39,7 +39,6 @@ import javax.script.ScriptException;
 import java.awt.Dimension;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,8 +59,6 @@ public abstract class AbstractResource extends ServerResource {
     protected static final String RESPONSE_CONTENT_DISPOSITION_QUERY_ARG =
             "response-content-disposition";
 
-    private static final String ACCEL_REDIRECT_URI_PREFIX =
-            "/cantaloupe_sendfile";
     private static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
 
     private static final TemplateCache templateCache = new TemplateCache();
@@ -171,55 +168,6 @@ public abstract class AbstractResource extends ServerResource {
         getResponse().getHeaders().add("X-Powered-By",
                 "Cantaloupe/" + Application.getVersion());
         logger.info("doInit(): handling {} {}", getMethod(), getReference());
-    }
-
-    /**
-     * <p>Adds an <code>X-Sendfile</code> (or equivalent) header to the
-     * response if the <code>X-Sendfile-Type</code> request header is set.</p>
-     *
-     * <p>N.B. You probably want to return an EmptyRepresentation soon after
-     * calling this. (Don't forget to set its media type.)</p>
-     *
-     * @param path Path of the file relative to the proxy server.
-     * @param root Root path required for <code>X-Accel-Redirect</code>.
-     */
-    protected void addXSendfileHeader(Path path, Path root) {
-        // Check the input.
-        if (path == null) {
-            logger.error("addXSendfileHeader(): pathname not provided " +
-                    "(this may be a bug)");
-            return;
-        }
-
-        // If there is an X-Sendfile-Type request header, set the X-Sendfile
-        // (or equivalent) response header.
-        final Header typeHeader =
-                getRequest().getHeaders().getFirst("X-Sendfile-Type", true);
-        if (typeHeader != null) {
-            getResponse().getHeaders().add(typeHeader.getValue(),
-                    path.toString());
-            final String headerName = typeHeader.getValue();
-            // If we are sending an X-Sendfile header, the value will be the
-            // absolute path of the file. For X-Accel-Redirect, it will be the
-            // pathname of the file relative to the given root, prefixed by
-            // ACCEL_REDIRECT_URI_PREFIX.
-            String headerValue;
-            switch (headerName.toLowerCase()) {
-                case "x-accel-redirect":
-                    headerValue = ACCEL_REDIRECT_URI_PREFIX + "/" +
-                            StringUtils.stripStart(path.toString(),
-                                    root.toString());
-                    break;
-                default:
-                    headerValue = path.toString();
-                    break;
-            }
-            logger.debug("Setting {}: {}", headerName, headerValue);
-            getResponse().getHeaders().add(headerName, headerValue);
-        } else {
-            logger.debug("No X-Sendfile-Type request header. " +
-                    "X-Sendfile header won't be sent.");
-        }
     }
 
     /**
@@ -495,16 +443,6 @@ public abstract class AbstractResource extends ServerResource {
             bypassingCache = "false".equals(cacheParam.getValue());
         }
         return bypassingCache;
-    }
-
-    protected boolean isXSendfileSupported() {
-        final Header typeHeader =
-                getRequest().getHeaders().getFirst("X-Sendfile-Type", true);
-        if (typeHeader != null) {
-            return "x-sendfile".equals(typeHeader.getValue().toLowerCase()) ||
-                    "x-accel-redirect".equals(typeHeader.getValue().toLowerCase());
-        }
-        return false;
     }
 
     /**
