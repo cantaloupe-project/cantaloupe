@@ -16,7 +16,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.util.AWSClientFactory;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
