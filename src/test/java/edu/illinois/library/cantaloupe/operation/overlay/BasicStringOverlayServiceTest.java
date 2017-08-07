@@ -51,7 +51,7 @@ public class BasicStringOverlayServiceTest extends BaseTest {
         assertEquals("cats", overlay.getString());
         assertEquals(new Color(12, 23, 34, 45), overlay.getBackgroundColor());
         assertEquals(Color.red, overlay.getColor());
-        assertEquals("Helvetica", overlay.getFont().getFamily());
+        assertEquals("Helvetica", overlay.getFont().getName());
         assertEquals((long) 10, overlay.getInset());
         assertEquals(Position.TOP_LEFT, overlay.getPosition());
         assertEquals(14, overlay.getFont().getSize());

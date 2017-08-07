@@ -50,7 +50,15 @@ Any that are missing will cause the corresponding test in parentheses to fail.
 Then, copy `test.properties.sample` to `test.properties` and fill in whatever
 info you have. Same story as above: missing info will cause errors.
 
-Finally, `mvn test` will run the tests.
+Finally, `mvn clean test` will run the tests. This will run the complete suite of tests.
+You can also choose to run a subset of the tests. 
+
+For running just the tests that have no dependencies to third-party services, or
+require tools and/or libraries to be installed, you can run `mvn clean test -Pnodeps`.
+
+If you have the open source and free tools and libraries installed (e.g. FFmpeg,
+GraphicsMagick, ImageMagick, OpenJPEG), then you can run `mvn clean test -Pfreedeps`.
+This is the command executed for continuous integration.
 
 ## Build the website
 
