@@ -87,10 +87,11 @@ module Cantaloupe
 
     ##
     # @param identifier [String] Image identifier
+    # @param context [Hash] Context for this request
     # @return [String,nil] Absolute pathname of the image corresponding to the
     #                      given identifier, or nil if not found.
     #
-    def self.get_pathname(identifier)
+    def self.get_pathname(identifier, context)
     end
 
   end
@@ -99,11 +100,12 @@ module Cantaloupe
 
     ##
     # @param identifier [String] Image identifier
+    # @param context [Hash] Context for this request
     # @return [String,Hash<String,Object>,nil] S3 object key of the image 
     #					corresponding to the given identifier, 
     #                   or Hash including bucket and key, or nil if not found.
     #
-    def self.get_object_key(identifier)
+    def self.get_object_key(identifier, context)
     end
 
   end
@@ -112,10 +114,11 @@ module Cantaloupe
 
     ##
     # @param identifier [String] Image identifier
+    # @param context [Hash] Context for this request
     # @return [String,nil] Blob key of the image corresponding to the given
     #                      identifier, or nil if not found.
     #
-    def self.get_blob_key(identifier)
+    def self.get_blob_key(identifier, context)
     end
 
   end
@@ -124,11 +127,12 @@ module Cantaloupe
 
     ##
     # @param identifier [String] Image identifier
+    # @param context [Hash] Context for this request
     # @return [String,Hash<String,String>,nil] String URL of the image
     #         corresponding to the given identifier; or a hash with `uri`,
     #         `username`, and `secret` keys; or nil if not found.
     #
-    def self.get_url(identifier)
+    def self.get_url(identifier, context)
     end
 
   end
@@ -137,10 +141,11 @@ module Cantaloupe
 
     ##
     # @param identifier [String] Image identifier
+    # @param context [Hash] Context for this request
     # @return [String] Identifier of the image corresponding to the given
     #                  identifier in the database.
     #
-    def self.get_database_identifier(identifier)
+    def self.get_database_identifier(identifier, context)
     end
 
     ##

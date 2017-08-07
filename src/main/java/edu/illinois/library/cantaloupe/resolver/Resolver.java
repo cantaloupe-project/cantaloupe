@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.resource.RequestContext;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -30,4 +31,8 @@ public interface Resolver {
      */
     void setIdentifier(Identifier identifier);
 
+    /**
+     * @param context The context for the resolver. Passed to delegate method.
+     */
+    void setContext(RequestContext context);
 }

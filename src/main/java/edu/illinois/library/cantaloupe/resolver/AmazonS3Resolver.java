@@ -8,7 +8,6 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
@@ -141,7 +140,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final Object result = engine.invoke(GET_KEY_DELEGATE_METHOD,
-                identifier.toString());
+                identifier.toString(), context.asMap());
         if (result == null) {
             throw new FileNotFoundException(GET_KEY_DELEGATE_METHOD +
                     " returned nil for " + identifier);

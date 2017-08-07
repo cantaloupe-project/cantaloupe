@@ -40,25 +40,29 @@ module Cantaloupe
   end
 
   module FilesystemResolver
-    def self.get_pathname(identifier)
+    def self.get_pathname(identifier, context)
       '/bla/' + identifier
     end
   end
 
   module AzureStorageResolver
-    def self.get_blob_key(identifier)
+    def self.get_blob_key(identifier, context)
       identifier
     end
   end
 
   module AmazonS3Resolver
-    def self.get_object_key(identifier)
+    def self.get_object_key(identifier, context)
       identifier
     end
   end
 
   module HttpResolver
-    def self.get_url(identifier)
+    def self.get_url(identifier, context)
+      if context['clientIP'] == '1.2.3.4' && context['headers']['x-test-header'] == 'foo'
+        return 'http://other-example.org/bleh/' + URI.escape(identifier)
+      end
+
       case identifier
         when 'jpg-rgb-64x56x8-baseline.jpg'
           return 'http://example.org/bla/' + URI.escape(identifier)
@@ -74,7 +78,7 @@ module Cantaloupe
   end
 
   module JdbcResolver
-    def self.get_database_identifier(identifier)
+    def self.get_database_identifier(identifier, context)
       identifier
     end
 
