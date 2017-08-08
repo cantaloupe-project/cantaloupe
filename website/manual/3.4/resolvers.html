@@ -152,7 +152,7 @@ module Cantaloupe
     # get_pathname() is called, which would be slow and expensive.
     @@conn = DriverManager.get_connection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
 
-    def self.get_pathname(identifier)
+    def self.get_pathname(identifier, context)
       begin
         # Note the use of prepared statements to prevent SQL injection.
         sql = 'SELECT pathname FROM images WHERE identifier = ? LIMIT 1'
@@ -182,7 +182,7 @@ require 'cgi'
 
 module Cantaloupe
   module FilesystemResolver
-    def self.get_pathname(identifier)
+    def self.get_pathname(identifier, context)
       uri = 'http://example.org/webservice/' + CGI.escape(identifier)
       uri = URI.parse(uri)
 
@@ -207,7 +207,7 @@ require 'cgi'
 
 module Cantaloupe
   module FilesystemResolver
-    def self.get_pathname(identifier)
+    def self.get_pathname(identifier, context)
       uri = 'http://localhost:8983/solr/collection1/select?q=' +
           CGI.escape('id:"' + identifier + '"') +
           '&amp;fl=pathname_si&amp;wt=ruby'

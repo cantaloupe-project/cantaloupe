@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.AccessDeniedException;
+import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
@@ -16,6 +17,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -29,6 +32,7 @@ abstract class HttpResolverTest extends BaseTest {
     static WebServer server;
 
     private HttpResolver instance;
+    private RequestContext context;
 
     /**
      * Subclasses need to override, call super, and set
@@ -43,8 +47,10 @@ abstract class HttpResolverTest extends BaseTest {
         config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
 
+        context = new RequestContext();
         instance = new HttpResolver();
         instance.setIdentifier(IDENTIFIER);
+        instance.setContext(context);
     }
 
     /* newStreamSource() */
@@ -148,6 +154,25 @@ abstract class HttpResolverTest extends BaseTest {
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
         assertEquals(new URI("http://example.org/bla/" + IDENTIFIER),
+                instance.getResourceInfo().getURI());
+    }
+
+    @Test
+    public void testGetResourceInfoUsingScriptLookupStrategyWithContextReturningString()
+            throws Exception {
+
+        final Map headers = new HashMap<String, Object>();
+        headers.put("x-test-header", "foo");
+        context.setClientIP("1.2.3.4");
+        context.setRequestHeaders(headers);
+
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
+                "ScriptLookupStrategy");
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
+                TestUtil.getFixture("delegates.rb").getAbsolutePath());
+        assertEquals(new URI("http://other-example.org/bleh/" + IDENTIFIER),
                 instance.getResourceInfo().getURI());
     }
 

@@ -16,6 +16,7 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.JSONRepresentation;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
+import edu.illinois.library.cantaloupe.resource.RequestContext;
 import org.restlet.Request;
 import org.restlet.data.Header;
 import org.restlet.data.MediaType;
@@ -62,6 +63,14 @@ public class InformationResource extends IIIF1Resource {
     public Representation doGet() throws Exception {
         final Identifier identifier = getIdentifier();
         final Resolver resolver = new ResolverFactory().getResolver(identifier);
+
+        // Setup the resolver context.
+        final RequestContext requestContext = new RequestContext();
+        requestContext.setRequestURI(getReference().toString());
+        requestContext.setRequestHeaders(getRequest().getHeaders().getValuesMap());
+        requestContext.setClientIP(getCanonicalClientIpAddress());
+        requestContext.setCookies(getRequest().getCookies().getValuesMap());
+        resolver.setContext(requestContext);
 
         // Determine the format of the source image.
         Format format = Format.UNKNOWN;

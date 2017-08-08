@@ -18,6 +18,7 @@ import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
+import edu.illinois.library.cantaloupe.resource.RequestContext;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Disposition;
 import org.restlet.representation.Representation;
@@ -54,6 +55,14 @@ public class ImageResource extends IIIF1Resource {
         final Configuration config = Configuration.getInstance();
         final Identifier identifier = getIdentifier();
         final Resolver resolver = new ResolverFactory().getResolver(identifier);
+
+        // Setup the resolver context.
+        final RequestContext requestContext = new RequestContext();
+        requestContext.setRequestURI(getReference().toString());
+        requestContext.setRequestHeaders(getRequest().getHeaders().getValuesMap());
+        requestContext.setClientIP(getCanonicalClientIpAddress());
+        requestContext.setCookies(getRequest().getCookies().getValuesMap());
+        resolver.setContext(requestContext);
 
         // Determine the format of the source image.
         Format sourceFormat;

@@ -99,10 +99,11 @@ module Cantaloupe
     # Used by FilesystemResolver's ScriptLookupStrategy.
     #
     # @param identifier [String] Image identifier
+    # @param context [Hash] Context for this request
     # @return [String,nil] Absolute pathname of the image corresponding to the
     #                      given identifier, or nil if not found.
     #
-    def self.get_pathname(identifier)
+    def self.get_pathname(identifier, context)
       uri = 'http://localhost:8983/solr/collection1/select?q=' +
           CGI.escape('id:"' + identifier + '"') +
           '&amp;fl=pathname_si&amp;wt=ruby'
