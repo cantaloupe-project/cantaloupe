@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -104,6 +105,7 @@ public class AmazonS3ResolverTest extends BaseTest {
 
         instance = new AmazonS3Resolver();
         instance.setIdentifier(new Identifier(OBJECT_KEY));
+        instance.setContext(new RequestContext());
     }
 
     @Test

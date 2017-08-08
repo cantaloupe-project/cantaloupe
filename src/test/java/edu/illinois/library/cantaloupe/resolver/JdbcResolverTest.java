@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -60,6 +61,7 @@ public class JdbcResolverTest extends BaseTest {
 
             instance = new JdbcResolver();
             instance.setIdentifier(IDENTIFIER);
+            instance.setContext(new RequestContext());
         }
     }
 
