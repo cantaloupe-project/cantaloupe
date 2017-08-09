@@ -3,7 +3,11 @@ package edu.illinois.library.cantaloupe.resource;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Contains information about an HTTP request.
+ */
 public class RequestContext {
+
     private String requestURI;
     private Map<String,String> requestHeaders;
     private String clientIP;
@@ -46,7 +50,7 @@ public class RequestContext {
         map.put("URI", requestURI);
         map.put("headers", requestHeaders);
         map.put("clientIP", clientIP);
-        map.put("cookies", requestURI);
+        map.put("cookies", cookies);
         return map;
     }
 }
