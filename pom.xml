@@ -59,12 +59,22 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.1.8</version>
+      <version>1.2.3</version>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-core</artifactId>
+      <version>1.2.3</version>
     </dependency>
     <!-- Used by AmazonS3Resolver and AmazonS3Cache -->
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-s3</artifactId>
+      <version>1.11.116</version>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-core</artifactId>
       <version>1.11.116</version>
     </dependency>
     <!-- Object cache used for caching delegate script method invocations
@@ -130,6 +140,23 @@
       <artifactId>commons-io</artifactId>
       <version>2.4</version>
     </dependency>
+    <!-- ImageIO -->
+    <dependency>
+      <groupId>javax.media</groupId>
+      <artifactId>jai-core</artifactId>
+      <version>1.1.3</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.media</groupId>
+      <artifactId>jai_imageio</artifactId>
+      <version>1.1</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.media</groupId>
+          <artifactId>jai_core</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     <!-- Provides an ImageIO plugin for DICOM -->
     <dependency>
       <groupId>dcm4che</groupId>
@@ -166,7 +193,17 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.4</version>
+      <version>3.6</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.10</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.velocity</groupId>
+      <artifactId>velocity</artifactId>
+      <version>1.7</version>
     </dependency>
     <!-- Provides PDFBox for PdfBoxProcessor. Note that there are also some
     other dependencies in this POM used only by PDFBox. -->
@@ -184,9 +221,13 @@
     <!-- Assists in parsing XMP metadata in RDF/XML -->
     <dependency>
       <groupId>org.apache.jena</groupId>
-      <artifactId>apache-jena-libs</artifactId>
-      <type>pom</type>
-      <version>3.1.0</version>
+      <artifactId>jena-core</artifactId>
+      <version>3.4.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-arq</artifactId>
+      <version>3.4.0</version>
     </dependency>
     <!-- Used for media type detection -->
     <dependency>
@@ -238,6 +279,21 @@
     <!-- Used by HttpResolver -->
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-http</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-io</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-util</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-client</artifactId>
       <version>${jetty.version}</version>
     </dependency>
@@ -266,15 +322,37 @@
     <!-- Used to execute delegate script methods -->
     <dependency>
       <groupId>org.jruby</groupId>
-      <artifactId>jruby</artifactId>
+      <artifactId>jruby-core</artifactId>
       <version>9.1.10.0</version>
-      <type>pom</type>
+    </dependency>
+    <dependency>
+      <groupId>org.jruby</groupId>
+      <artifactId>jruby-stdlib</artifactId>
+      <version>9.1.10.0</version>
+      <!-- without jruby-stdib, tests won't pass. This is not necessary for compile-time though -->
+      <scope>runtime</scope>
     </dependency>
     <!-- Restlet is our REST framework. -->
     <dependency>
       <groupId>org.restlet.jee</groupId>
       <artifactId>org.restlet</artifactId>
       <version>${restlet.version}</version>
+    </dependency>
+    <!-- Jackson for data serialization -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>2.9.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>2.9.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.9.0</version>
     </dependency>
     <!-- Makes Restlet log to SLF4J -->
     <dependency>
@@ -336,6 +414,12 @@
   </dependencies>
 
   <repositories>
+    <!-- Provides JAI (javax.media and com.sun) -->
+    <repository>
+      <id>jboss-repository</id>
+      <name>JBoss Repository</name>
+      <url>https://repository.jboss.org/</url>
+    </repository>
     <!-- Provides the DICOM ImageIO plugin -->
     <repository>
       <id>www.dcm4che.org</id>
@@ -522,6 +606,43 @@
         <configuration>
           <mainClass>edu.illinois.library.cantaloupe.StandaloneEntry</mainClass>
         </configuration>
+      </plugin>
+
+      <!-- Build dependency check -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>1.3.1</version>
+        <dependencies>
+          <dependency>
+            <groupId>de.is24.maven.enforcer.rules</groupId>
+            <artifactId>illegal-transitive-dependency-check</artifactId>
+            <version>1.7.4</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>enforce</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <illegalTransitiveDependencyCheck implementation="de.is24.maven.enforcer.rules.IllegalTransitiveDependencyCheck">
+                  <reportOnly>false</reportOnly>
+                  <useClassesFromLastBuild>true</useClassesFromLastBuild>
+                  <suppressTypesFromJavaRuntime>true</suppressTypesFromJavaRuntime>
+                  <!-- to ignore certain packages...
+                  <regexIgnoredClasses>
+                    <regexIgnoredClass>javax\..+</regexIgnoredClass>
+                  </regexIgnoredClasses>
+                   -->
+                </illegalTransitiveDependencyCheck>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
 
     </plugins>
