@@ -160,8 +160,7 @@ abstract class HttpResolverTest extends BaseTest {
     @Test
     public void testGetResourceInfoUsingScriptLookupStrategyWithContextReturningString()
             throws Exception {
-
-        final Map headers = new HashMap<String, Object>();
+        final Map<String, String> headers = new HashMap<>();
         headers.put("x-test-header", "foo");
         context.setClientIP("1.2.3.4");
         context.setRequestHeaders(headers);

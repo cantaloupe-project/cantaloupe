@@ -42,7 +42,7 @@ public class RequestContext {
     }
 
     public Map<String, Object> asMap() {
-        Map map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put("URI", requestURI);
         map.put("headers", requestHeaders);
         map.put("clientIP", clientIP);
