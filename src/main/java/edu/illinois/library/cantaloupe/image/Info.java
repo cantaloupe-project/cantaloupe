@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import edu.illinois.library.cantaloupe.operation.Orientation;
 
 import java.awt.Dimension;
@@ -330,14 +329,10 @@ public final class Info {
 
     /**
      * @return JSON representation of the instance.
-     * @throws JsonProcessingException
      */
     @JsonIgnore
     public String toJSON() throws JsonProcessingException {
-        return new ObjectMapper().writer().
-                without(SerializationFeature.WRITE_NULL_MAP_VALUES).
-                without(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS).
-                writeValueAsString(this);
+        return new ObjectMapper().writer().writeValueAsString(this);
     }
 
     @Override
@@ -351,14 +346,10 @@ public final class Info {
 
     /**
      * @param os Output stream to write to.
-     * @throws IOException
      */
     @JsonIgnore
     public void writeAsJson(OutputStream os) throws IOException {
-        new ObjectMapper().writer().
-                without(SerializationFeature.WRITE_NULL_MAP_VALUES).
-                without(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS).
-                writeValue(os, this);
+        new ObjectMapper().writer().writeValue(os, this);
     }
 
 }

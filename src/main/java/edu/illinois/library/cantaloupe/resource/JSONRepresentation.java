@@ -1,8 +1,7 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.restlet.data.CharacterSet;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
@@ -29,10 +28,22 @@ public class JSONRepresentation extends OutputRepresentation {
     @Override
     public void write(OutputStream outputStream) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        ObjectWriter writer = mapper.writer().
-                without(SerializationFeature.WRITE_NULL_MAP_VALUES).
-                without(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
-        writer.writeValue(outputStream, toWrite);
+        // Add a config override to omit keys with empty or null values.
+        //
+        // (It would be better not to do this, and to instead use @JsonInclude
+        // annotations on the classes being serialized, which are currently
+        // e.i.l.c.resource.iiif.v1.ImageInfo
+        // and e.i.l.c.resource.iiif.v2.ImageInfo, but that won't work the way
+        // they are currently written.)
+        //
+        // The IIIF Image API 2.1 spec (sec. 5.3) says,
+        // "If any of formats, qualities, or supports have no additional values
+        // beyond those specified in the referenced compliance level, then
+        // the property should be omitted from the response rather than being
+        // present with an empty list."
+        mapper.configOverride(Object.class).setInclude(
+                JsonInclude.Value.construct(JsonInclude.Include.NON_EMPTY, null));
+        mapper.writer().writeValue(outputStream, toWrite);
     }
 
 }
