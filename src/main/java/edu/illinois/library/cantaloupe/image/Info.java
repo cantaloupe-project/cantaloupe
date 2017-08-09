@@ -162,15 +162,15 @@ public final class Info {
     private List<Image> images = new ArrayList<>();
     private String mediaType;
 
-    public static Info fromJson(File jsonFile) throws IOException {
+    public static Info fromJSON(File jsonFile) throws IOException {
         return new ObjectMapper().readValue(jsonFile, Info.class);
     }
 
-    public static Info fromJson(InputStream jsonStream) throws IOException {
+    public static Info fromJSON(InputStream jsonStream) throws IOException {
         return new ObjectMapper().readValue(jsonStream, Info.class);
     }
 
-    public static Info fromJson(String json) throws IOException {
+    public static Info fromJSON(String json) throws IOException {
         return new ObjectMapper().readValue(json, Info.class);
     }
 
@@ -333,7 +333,7 @@ public final class Info {
      * @throws JsonProcessingException
      */
     @JsonIgnore
-    public String toJson() throws JsonProcessingException {
+    public String toJSON() throws JsonProcessingException {
         return new ObjectMapper().writer().
                 without(SerializationFeature.WRITE_NULL_MAP_VALUES).
                 without(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS).
@@ -343,7 +343,7 @@ public final class Info {
     @Override
     public String toString() {
         try {
-            return toJson();
+            return toJSON();
         } catch (JsonProcessingException e) {
             return super.toString();
         }

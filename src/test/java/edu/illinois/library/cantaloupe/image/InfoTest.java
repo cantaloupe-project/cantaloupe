@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.image;
 
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
@@ -11,6 +9,8 @@ import java.awt.Dimension;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 
 import static org.junit.Assert.*;
@@ -32,22 +32,65 @@ public class InfoTest extends BaseTest {
 
     /************************ Info tests ****************************/
 
+    /* fromJSON(File) */
+
     @Test
-    public void testConstructor1() {
+    public void fromJSONWithFile() throws Exception {
+        Path tempFile = Files.createTempFile("test", "json");
+
+        // Serialize the instance to JSON and write it to a file.
+        String json = instance.toJSON();
+        Files.write(tempFile, json.getBytes("UTF-8"));
+
+        // Read the file back into a string.
+        byte[] fileBytes = Files.readAllBytes(tempFile);
+        String fileString = new String(fileBytes);
+
+        assertEquals(fileString, json);
+    }
+
+    /* fromJSON(InputStream) */
+
+    @Test
+    public void fromJSONWithInputStream() throws Exception {
+        String json = instance.toJSON();
+        InputStream inputStream = new ByteArrayInputStream(json.getBytes());
+
+        Info info = Info.fromJSON(inputStream);
+        assertEquals(info.toString(), instance.toString());
+    }
+
+    /* fromJSON(String) */
+
+    @Test
+    public void fromJSONWithString() throws Exception {
+        String json = instance.toJSON();
+        Info info = Info.fromJSON(json);
+        assertEquals(info.toString(), instance.toString());
+    }
+
+    /* Info() */
+
+    @Test
+    public void Info() {
         instance = new Info();
         assertEquals(0, instance.getImages().size());
     }
 
+    /* Info(Dimension) */
+
     @Test
-    public void testConstructor2() {
+    public void InfoWithDimension() {
         Dimension size = new Dimension(500, 200);
         instance = new Info(size);
         assertEquals(1, instance.getImages().size());
         assertEquals(size, instance.getImages().get(0).getSize());
     }
 
+    /* Info(Dimension, Format) */
+
     @Test
-    public void testConstructor3() {
+    public void InfoWithDimensionAndFormat() {
         Dimension size = new Dimension(500, 200);
         Format format = Format.JPG;
         instance = new Info(size, format);
@@ -56,8 +99,10 @@ public class InfoTest extends BaseTest {
         assertEquals(format, instance.getSourceFormat());
     }
 
+    /* Info(int, int) */
+
     @Test
-    public void testConstructor4() {
+    public void InfoWithWidthAndHeight() {
         int width = 500;
         int height = 200;
         instance = new Info(width, height);
@@ -66,8 +111,10 @@ public class InfoTest extends BaseTest {
         assertEquals(height, instance.getImages().get(0).getSize().height);
     }
 
+    /* Info(int, int, Format) */
+
     @Test
-    public void testConstructor5() {
+    public void InfoWithWidthAndHeightAndFormat() {
         int width = 500;
         int height = 200;
         Format format = Format.JPG;
@@ -78,8 +125,10 @@ public class InfoTest extends BaseTest {
         assertEquals(format, instance.getSourceFormat());
     }
 
+    /* Info(Dimension, Dimension) */
+
     @Test
-    public void testConstructor6() {
+    public void InfoWithWidthAndHeightDimensions() {
         Dimension size = new Dimension(500, 200);
         Dimension tileSize = new Dimension(300, 100);
         instance = new Info(size, tileSize);
@@ -88,8 +137,10 @@ public class InfoTest extends BaseTest {
         assertEquals(tileSize, instance.getImages().get(0).getTileSize());
     }
 
+    /* Info(int, int, int, int) */
+
     @Test
-    public void testConstructor7() {
+    public void InfoWithWidthAndHeightAndTileWidthAndTileHeight() {
         int width = 500;
         int height = 200;
         int tileWidth = 200;
@@ -102,8 +153,10 @@ public class InfoTest extends BaseTest {
         assertEquals(tileHeight, instance.getImages().get(0).getTileSize().height);
     }
 
+    /* Info(int, int, int, int, Format) */
+
     @Test
-    public void testConstructor8() {
+    public void InfoWithWidthAndHeightAndTileWidthAndTileHeightAndFormat() {
         int width = 500;
         int height = 200;
         int tileWidth = 200;
@@ -118,29 +171,10 @@ public class InfoTest extends BaseTest {
         assertEquals(format, instance.getSourceFormat());
     }
 
-    @Test
-    public void testFromJsonWithFile() throws Exception {
-        // TODO: write this
-    }
+    /* equals() */
 
     @Test
-    public void testFromJsonWithInputStream() throws Exception {
-        String json = instance.toJson();
-        InputStream inputStream = new ByteArrayInputStream(json.getBytes());
-
-        Info info = Info.fromJson(inputStream);
-        assertEquals(info.toString(), instance.toString());
-    }
-
-    @Test
-    public void testFromJsonWithString() throws Exception {
-        String json = instance.toJson();
-        Info info = Info.fromJson(json);
-        assertEquals(info.toString(), instance.toString());
-    }
-
-    @Test
-    public void testEquals() {
+    public void equals() {
         // equal
         Info info1 = new Info(100, 80, 50, 40, Format.JPG);
         Info info2 = new Info(100, 80, 50, 40, Format.JPG);
@@ -160,31 +194,41 @@ public class InfoTest extends BaseTest {
         assertFalse(info1.equals(info2));
     }
 
+    /* getImages() */
+
     @Test
-    public void testGetImages() {
+    public void getImages() {
         assertEquals(1, instance.getImages().size());
         assertEquals(0, new Info().getImages().size());
     }
 
+    /* getOrientation() */
+
     @Test
-    public void testGetOrientation() {
+    public void getOrientation() {
         assertEquals(Orientation.ROTATE_270, instance.getOrientation());
     }
 
+    /* getOrientationSize(int) */
+
     @Test
-    public void testGetOrientationSize() {
+    public void getOrientationSize() {
         Info.Image image = instance.getImages().get(0);
         image.setOrientation(Orientation.ROTATE_90);
         assertEquals(new Dimension(80, 100), instance.getOrientationSize());
     }
 
+    /* getSize() */
+
     @Test
-    public void testGetSize() {
+    public void getSize() {
         assertEquals(new Dimension(100, 80), instance.getSize());
     }
 
+    /* getSize(int) */
+
     @Test
-    public void testGetSizeWithIndex() {
+    public void getSizeWithIndex() {
         Info.Image image = new Info.Image();
         image.width = 50;
         image.height = 40;
@@ -199,29 +243,40 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testGetSourceFormat() {
+    public void getSourceFormat() {
         assertEquals(Format.JPG, instance.getSourceFormat());
 
         instance.setSourceFormat(null);
         assertEquals(Format.UNKNOWN, instance.getSourceFormat());
     }
 
+    /* toJSON() */
+
     @Test
-    public void testToJson() {
-        // tested in testFromJson()
+    public void toJSON() throws Exception {
+        // We are going to trust that Jackson creates correct JSON, but also
+        // test that null values are not serialized.
+        String json = instance.toJSON();
+        Info info2 = Info.fromJSON(json);
+        info2.setSourceFormat(instance.getSourceFormat());
+        assertEquals(instance, info2);
     }
+
+    /* toString() */
 
     @Test
     public void testToString() throws Exception {
-        assertEquals(instance.toJson(), instance.toString());
+        assertEquals(instance.toJSON(), instance.toString());
     }
 
+    /* writeAsJSON() */
+
     @Test
-    public void testWriteAsJson() throws Exception {
+    public void writeAsJSON() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         instance.writeAsJson(baos);
         assertTrue(Arrays.equals(baos.toByteArray(),
-                instance.toJson().getBytes()));
+                instance.toJSON().getBytes()));
     }
 
     /********************* Info.Image tests *************************/

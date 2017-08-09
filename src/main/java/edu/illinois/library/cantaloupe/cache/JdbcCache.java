@@ -286,7 +286,7 @@ class JdbcCache implements DerivativeCache {
                 accessImageInfo(identifier, connection);
                 logger.info("Hit for image info: {}", identifier);
                 String json = resultSet.getString(1);
-                return Info.fromJson(json);
+                return Info.fromJSON(json);
             } else {
                 logger.info("Miss for image info: {}", identifier);
                 purgeImageInfo(identifier, connection);
@@ -549,7 +549,7 @@ class JdbcCache implements DerivativeCache {
             logger.debug(sql);
             PreparedStatement statement = conn.prepareStatement(sql);
             statement.setString(1, identifier.toString());
-            statement.setString(2, imageInfo.toJson());
+            statement.setString(2, imageInfo.toJSON());
             statement.setTimestamp(3, now());
             statement.executeUpdate();
             conn.commit();

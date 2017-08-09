@@ -513,7 +513,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 if (!isExpired(cacheFile)) {
                     logger.info("getImageInfo(): hit: {}",
                             cacheFile.getAbsolutePath());
-                    return Info.fromJson(cacheFile);
+                    return Info.fromJSON(cacheFile);
                 } else {
                     logger.info("getImageInfo(): deleting stale file: {}",
                             cacheFile.getAbsolutePath());
@@ -950,7 +950,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                         tempFile.getParentFile());
             }
 
-            FileUtils.writeStringToFile(tempFile, imageInfo.toJson());
+            FileUtils.writeStringToFile(tempFile, imageInfo.toJSON());
 
             logger.debug("put(): moving {} to {}",
                     tempFile, destFile.getName());

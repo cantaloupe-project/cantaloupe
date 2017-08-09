@@ -129,7 +129,7 @@ public class HeapCacheTest extends BaseTest {
         Info info = new Info(52, 52);
         instance.put(id1, info);
 
-        assertEquals(5439 + info.toJson().length(), instance.getByteSize());
+        assertEquals(5439 + info.toJSON().length(), instance.getByteSize());
     }
 
     /* getImageInfo(Identifier) */

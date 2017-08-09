@@ -345,7 +345,7 @@ class HeapCache implements DerivativeCache {
         if (item != null) {
             logger.info("getImageInfo(): hit for {}", identifier);
             try {
-                info = Info.fromJson(new String(item.getData(), "UTF-8"));
+                info = Info.fromJSON(new String(item.getData(), "UTF-8"));
             } catch (IOException e) {
                 throw new CacheException(e.getMessage(), e);
             }
@@ -575,7 +575,7 @@ class HeapCache implements DerivativeCache {
         try {
             // Rather than storing the info instance itself, we store its JSON
             // serialization, mainly in order to be able to easily get its size.
-            Item item = new Item(imageInfo.toJson().getBytes("UTF-8"));
+            Item item = new Item(imageInfo.toJSON().getBytes("UTF-8"));
             cache.putIfAbsent(key, item);
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);

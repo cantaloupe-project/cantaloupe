@@ -147,7 +147,7 @@ class AzureStorageCache implements DerivativeCache {
 
             final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
             if (blob.exists()) {
-                Info info = Info.fromJson(blob.openInputStream());
+                Info info = Info.fromJSON(blob.openInputStream());
                 logger.info("getImageInfo(): read {} from container {} in {} msec",
                         objectKey, containerName, watch.timeElapsed());
                 return info;

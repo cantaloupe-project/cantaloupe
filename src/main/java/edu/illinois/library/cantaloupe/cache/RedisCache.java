@@ -223,7 +223,7 @@ class RedisCache implements DerivativeCache {
         if (json != null) {
             try {
                 String jsonStr = new String(json, "UTF-8");
-                return Info.fromJson(jsonStr);
+                return Info.fromJSON(jsonStr);
             } catch (IOException e) {
                 throw new CacheException(e.getMessage(), e);
             }
@@ -299,7 +299,7 @@ class RedisCache implements DerivativeCache {
         logger.info("put(): caching info for {}", identifier);
         try {
             getConnection().async().hset(INFO_HASH_KEY, infoKey(identifier),
-                    imageInfo.toJson().getBytes());
+                    imageInfo.toJSON().getBytes());
         } catch (JsonProcessingException e) {
             logger.error("put(): {}", e.getMessage());
             throw new CacheException(e.getMessage(), e);
