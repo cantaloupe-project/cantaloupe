@@ -17,13 +17,13 @@
   port(s) specified in `cantaloupe.properties`.
 * `mvn tomcat:run -Dcantaloupe.config=...` will build the project and run in
   Servlet mode, using a Tomcat container listening on port 8080.
-* `mvn package` will build a release package in the `target` folder, which
+* `mvn package` will build a release WAR in the `target` folder, which
   can be run like any other.
 
 ### IDE
 
-There are a few different ways to do this, in accordance with the options above.
-The simplest is probably to:
+There are a few ways to do this, in accordance with the options above. The
+simplest is probably to:
 
 1. Add a new run configuration using the "Java Application" template or its
    equivalent.
@@ -42,8 +42,6 @@ To achieve a 100% pass rate, several dependencies are required:
 * Kakadu (KakaduProcessorTest)
 * OpenJPEG (OpenJpegProcessorTest)
 * Redis (RedisCacheTest)
-* Firefox (ControlPanelTest)
-* geckodriver (ControlPanelTest)
 
 Any that are missing will cause the corresponding test in parentheses to fail.
 
@@ -113,11 +111,11 @@ release branch for that release, and merged back into develop.
 ### Configuration keys
 
 Different application versions may require different configuration file keys.
-If you are switching between versions, it's good to use a dedicated
+If you are switching between versions, it's good practice to use a dedicated
 configuration file for each version. Keys are documented on the website
 through the latest release. If you are using a newer build, such as a
 snapshot on the develop branch, newer keys will be documented in
-`website/upgrading.html`.
+`website/upgrade.html`.
 
 ## Releasing
 
@@ -125,21 +123,23 @@ snapshot on the develop branch, newer keys will be documented in
 
 The release process consists of the following steps:
 
-1. Finalize the code to be released, addressing any relevant milestone issues,
+1. Run the Maven Verifier plugin (`mvn verify -DskipTests=true`)
+2. Run an OWASP dependency check (`mvn org.owasp:dependency-check-maven:check`)
+3. Finalize the code to be released, addressing any relevant milestone issues,
    TODOs, etc.
-2. Ensure that the tests are current, comprehensive, and passing
-3. Finalize the documentation, including the website, user manual, change log,
+4. Ensure that the tests are current, comprehensive, and passing
+5. Finalize the documentation, including the website, user manual, change log,
    and Javadoc
-4. Merge into `release/vX.X`
-5. Update the version in `pom.xml` and commit this change
-6. Merge into `master`
-7. Create the release `.zip` archive with `mvn clean; mvn package`
-8. Check that the `.zip` archive is as expected
-9. Tag the release: `git tag -a v{version} -m 'Tag v{version}'`
-10. Push the code: `git push origin master; git push origin release/x.x;
+6. Merge into `release/vX.X`
+7. Update the version in `pom.xml` and commit this change
+8. Merge into `master`
+9. Create the release `.zip` archive with `mvn clean; mvn package`
+10. Check that the `.zip` archive is as expected
+11. Tag the release: `git tag -a v{version} -m 'Tag v{version}'`
+12. Push the code: `git push origin master; git push origin release/x.x;
     git push --tags`
-11. Add the `.zip` archive and change log info to the release tag on GitHub
-12. Deploy the updated website using `build/deploy_website.rb`.
+13. Add the `.zip` archive and change log info to the release tag on GitHub
+14. Deploy the updated website using `build/deploy_website.rb`.
 
 ## License
 
