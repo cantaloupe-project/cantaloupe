@@ -34,29 +34,38 @@ simplest is probably to:
 
 ## Test
 
-To achieve a 100% pass rate, several dependencies are required:
+For testing, copy `test.properties.sample` to `test.properties` and fill in
+whatever info you have.
 
+The tests are structured into three profiles:
+
+### Tests with no dependencies
+
+`mvn clean test -Pnodeps` will run only the tests that have no dependencies
+on third-party services and do not require any tools or libraries to be
+installed.
+
+### Tests with free dependencies
+
+`mvn clean test -Pfreedeps` will run all of the above tests, plus any that
+depend on open-source tools and libraries. These are the tests run in
+continuous integration. The following dependencies are required:
+
+* Arial font
 * FFmpeg (FfmpegProcessorTest)
 * GraphicsMagick (GraphicsMagickProcessorTest)
 * ImageMagick (ImageMagickProcessorTest)
-* Kakadu (KakaduProcessorTest)
 * OpenJPEG (OpenJpegProcessorTest)
 * Redis (RedisCacheTest)
 
-Any that are missing will cause the corresponding test in parentheses to fail.
+### All tests
 
-Then, copy `test.properties.sample` to `test.properties` and fill in whatever
-info you have. Same story as above: missing info will cause errors.
+`mvn clean test` will run all tests, including the ones above. The following
+dependencies are required in addition to the ones above:
 
-Finally, `mvn clean test` will run the tests. This will run the complete suite of tests.
-You can also choose to run a subset of the tests. 
-
-For running just the tests that have no dependencies to third-party services, or
-require tools and/or libraries to be installed, you can run `mvn clean test -Pnodeps`.
-
-If you have the open source and free tools and libraries installed (e.g. FFmpeg,
-GraphicsMagick, ImageMagick, OpenJPEG), then you can run `mvn clean test -Pfreedeps`.
-This is the command executed for continuous integration.
+* An Amazon Web Services account
+* An Azure Storage account
+* Kakadu (KakaduProcessorTest)
 
 ## Build the website
 
@@ -128,18 +137,19 @@ The release process consists of the following steps:
 3. Finalize the code to be released, addressing any relevant milestone issues,
    TODOs, etc.
 4. Ensure that the tests are current, comprehensive, and passing
-5. Finalize the documentation, including the website, user manual, change log,
-   and Javadoc
+5. Finalize the documentation, including the website, user manual, and change
+   log
 6. Merge into `release/vX.X`
 7. Update the version in `pom.xml` and commit this change
 8. Merge into `master`
-9. Create the release `.zip` archive with `mvn clean; mvn package`
-10. Check that the `.zip` archive is as expected
+9. Create the release `.zip` archive with `mvn clean package`
+10. Verify that the `.zip` archive is as expected
 11. Tag the release: `git tag -a v{version} -m 'Tag v{version}'`
 12. Push the code: `git push origin master; git push origin release/x.x;
     git push --tags`
 13. Add the `.zip` archive and change log info to the release tag on GitHub
-14. Deploy the updated website using `build/deploy_website.rb`.
+14. Deploy the updated website using `build/deploy_website.rb`
+15. Append `-SNAPSHOT` to the version in `pom.xml` and commit this change
 
 ## License
 
