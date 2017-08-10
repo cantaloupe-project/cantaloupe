@@ -44,7 +44,7 @@ class BasicStringOverlayService extends BasicOverlayService {
         // Font
         final Map<TextAttribute, Object> attributes = new HashMap<>();
         attributes.put(TextAttribute.FAMILY,
-                config.getString(Key.OVERLAY_STRING_FONT, "Helvetica"));
+                config.getString(Key.OVERLAY_STRING_FONT, "Arial"));
         attributes.put(TextAttribute.SIZE,
                 config.getInt(Key.OVERLAY_STRING_FONT_SIZE, 18));
         attributes.put(TextAttribute.WEIGHT,

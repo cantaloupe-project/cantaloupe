@@ -18,9 +18,8 @@ import org.openqa.selenium.support.ui.Select;
 
 import static org.junit.Assert.*;
 
-// TODO: this test should more-or-less work as written, but is prevented from
-// doing so by seemingly monthly Selenium-related compatibility breaks.
-// Getting it working again and keeping it working seems not worth the hassle.
+// TODO: this test should be pretty close to working as written, but is
+// prevented from doing so by frequent Selenium-related compatibility breaks.
 @Ignore
 public class ControlPanelTest extends ResourceTest {
 
@@ -490,7 +489,7 @@ public class ControlPanelTest extends ResourceTest {
         selectNamed(Key.OVERLAY_TYPE).selectByValue("string");
         inputNamed(Key.OVERLAY_IMAGE).sendKeys("/image.png");
         inputNamed(Key.OVERLAY_STRING_STRING).sendKeys("cats");
-        selectNamed(Key.OVERLAY_STRING_FONT).selectByVisibleText("Helvetica");
+        selectNamed(Key.OVERLAY_STRING_FONT).selectByVisibleText("Arial");
         inputNamed(Key.OVERLAY_STRING_FONT_SIZE).sendKeys("13");
         inputNamed(Key.OVERLAY_STRING_FONT_MIN_SIZE).sendKeys("11");
         inputNamed(Key.OVERLAY_STRING_FONT_WEIGHT).sendKeys("1.2");
@@ -525,7 +524,7 @@ public class ControlPanelTest extends ResourceTest {
                 config.getString(Key.OVERLAY_IMAGE));
         assertEquals("cats",
                 config.getString(Key.OVERLAY_STRING_STRING));
-        assertEquals("Helvetica",
+        assertEquals("Arial",
                 config.getString(Key.OVERLAY_STRING_FONT));
         assertEquals("13",
                 config.getString(Key.OVERLAY_STRING_FONT_SIZE));

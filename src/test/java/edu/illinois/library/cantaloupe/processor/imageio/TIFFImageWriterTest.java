@@ -184,8 +184,6 @@ public class TIFFImageWriterTest extends BaseTest {
     }
 
     private void checkForXmpMetadata(byte[] imageData) throws Exception {
-        final Iterator<ImageReader> readers =
-                ImageIO.getImageReadersByFormatName("TIFF");
         final ImageReader reader = getReader();
         try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             reader.setInput(iis);

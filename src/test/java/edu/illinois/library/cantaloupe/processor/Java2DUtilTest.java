@@ -144,7 +144,7 @@ public class Java2DUtilTest extends BaseTest {
         // create a StringOverlay
         final StringOverlay overlay = new StringOverlay(
                 "X", Position.TOP_LEFT, 0,
-                new Font("Helvetica", Font.PLAIN, 12), 11,
+                new Font("Arial", Font.PLAIN, 12), 11,
                 Color.WHITE, Color.BLACK, Color.WHITE, 0f);
 
         // apply it
@@ -155,7 +155,7 @@ public class Java2DUtilTest extends BaseTest {
         assertRGBA(overlaidImage.getRGB(2, 2), 0, 0, 0, 255);
 
         // Test the font color
-        int pixel = overlaidImage.getRGB(8, 8);
+        int pixel = overlaidImage.getRGB(9, 8);
         int alpha = (pixel >> 24) & 0xff;
         int red = (pixel >> 16) & 0xff;
         int green = (pixel >> 8) & 0xff;

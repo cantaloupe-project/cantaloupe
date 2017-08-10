@@ -697,7 +697,6 @@
                 <exclude>Azure*Test</exclude>
                 <exclude>Kakadu*Test</exclude>
                 <exclude>Redis*Test</exclude>
-                <exclude>ControlPanelTest</exclude>
               </excludes>
             </configuration>
           </plugin>
