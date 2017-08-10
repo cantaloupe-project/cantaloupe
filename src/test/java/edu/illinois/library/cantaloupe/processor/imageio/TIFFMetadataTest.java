@@ -30,7 +30,13 @@ public class TIFFMetadataTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
         final Iterator<ImageReader> it = ImageIO.getImageReadersByFormatName("TIFF");
-        reader = it.next();
+        while (it.hasNext()) {
+            ImageReader reader = it.next();
+            if (reader instanceof it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader) {
+                this.reader = reader;
+                break;
+            }
+        }
     }
 
     @After

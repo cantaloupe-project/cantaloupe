@@ -2,6 +2,8 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -157,9 +159,7 @@ public class TIFFImageWriterTest extends BaseTest {
     }
 
     private void checkForExifMetadata(byte[] imageData) throws Exception {
-        final Iterator<ImageReader> readers =
-                ImageIO.getImageReadersByFormatName("TIFF");
-        final ImageReader reader = readers.next();
+        final ImageReader reader = getReader();
         try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             reader.setInput(iis);
             final IIOMetadata metadata = reader.getImageMetadata(0);
@@ -172,9 +172,7 @@ public class TIFFImageWriterTest extends BaseTest {
     }
 
     private void checkForIptcMetadata(byte[] imageData) throws Exception {
-        final Iterator<ImageReader> readers =
-                ImageIO.getImageReadersByFormatName("TIFF");
-        final ImageReader reader = readers.next();
+        final ImageReader reader = getReader();
         try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             reader.setInput(iis);
             final IIOMetadata metadata = reader.getImageMetadata(0);
@@ -186,9 +184,7 @@ public class TIFFImageWriterTest extends BaseTest {
     }
 
     private void checkForXmpMetadata(byte[] imageData) throws Exception {
-        final Iterator<ImageReader> readers =
-                ImageIO.getImageReadersByFormatName("TIFF");
-        final ImageReader reader = readers.next();
+        final ImageReader reader = getReader();
         try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             reader.setInput(iis);
             final IIOMetadata metadata = reader.getImageMetadata(0);
@@ -199,8 +195,22 @@ public class TIFFImageWriterTest extends BaseTest {
         }
     }
 
+    private it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader getReader() {
+        final Iterator<ImageReader> readers =
+                ImageIO.getImageReadersByFormatName("TIFF");
+        ImageReader reader = null;
+        while (readers.hasNext()) {
+            reader = readers.next();
+            if (reader instanceof it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader) {
+                return (it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader) reader;
+            }
+        }
+        return null;
+    }
+
     private TIFFImageWriter newWriter(Metadata metadata) throws IOException {
-        OperationList opList = new OperationList();
+        OperationList opList = new OperationList(new Identifier("cats"),
+                Format.JPG);
         if (ConfigurationFactory.getInstance().
                 getBoolean(Processor.PRESERVE_METADATA_CONFIG_KEY, false)) {
             opList.add(new MetadataCopy());
