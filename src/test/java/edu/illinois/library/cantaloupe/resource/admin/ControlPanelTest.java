@@ -11,10 +11,7 @@ import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -24,6 +21,9 @@ import org.openqa.selenium.support.ui.Select;
 
 import static org.junit.Assert.*;
 
+// Firefox+geckodriver+Selenium compatibility is constantly breaking. We'll
+// work on this in 3.4.
+@Ignore
 public class ControlPanelTest extends ResourceTest {
 
     private static final int SLEEP_AFTER_SUBMIT = 600;
