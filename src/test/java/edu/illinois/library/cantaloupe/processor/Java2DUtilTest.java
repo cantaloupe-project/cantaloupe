@@ -184,7 +184,7 @@ public class Java2DUtilTest extends BaseTest {
         assertEquals(0, blue);
 
         // Test the font color
-        pixel = overlaidImage.getRGB(8, 8);
+        pixel = overlaidImage.getRGB(9, 8);
         alpha = (pixel >> 24) & 0xff;
         red = (pixel >> 16) & 0xff;
         green = (pixel >> 8) & 0xff;
