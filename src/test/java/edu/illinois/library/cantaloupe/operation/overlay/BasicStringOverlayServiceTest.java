@@ -25,7 +25,7 @@ public class BasicStringOverlayServiceTest extends BaseTest {
         config.setProperty(BasicOverlayService.POSITION_CONFIG_KEY, "top left");
         config.setProperty(BasicStringOverlayService.BACKGROUND_COLOR_CONFIG_KEY, "rgba(12, 23, 34, 45)");
         config.setProperty(BasicStringOverlayService.COLOR_CONFIG_KEY, "red");
-        config.setProperty(BasicStringOverlayService.FONT_CONFIG_KEY, "Helvetica");
+        config.setProperty(BasicStringOverlayService.FONT_CONFIG_KEY, "Arial");
         config.setProperty(BasicStringOverlayService.FONT_MIN_SIZE_CONFIG_KEY, 11);
         config.setProperty(BasicStringOverlayService.FONT_SIZE_CONFIG_KEY, 14);
         config.setProperty(BasicStringOverlayService.FONT_WEIGHT_CONFIG_KEY, 2f);
@@ -50,7 +50,7 @@ public class BasicStringOverlayServiceTest extends BaseTest {
         assertEquals("cats", overlay.getString());
         assertEquals(new Color(12, 23, 34, 45), overlay.getBackgroundColor());
         assertEquals(Color.red, overlay.getColor());
-        assertEquals("Helvetica", overlay.getFont().getFamily());
+        assertEquals("Arial", overlay.getFont().getName());
         assertEquals((long) 10, overlay.getInset());
         assertEquals(Position.TOP_LEFT, overlay.getPosition());
         assertEquals(14, overlay.getFont().getSize());

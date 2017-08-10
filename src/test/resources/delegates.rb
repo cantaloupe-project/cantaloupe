@@ -111,7 +111,7 @@ module Cantaloupe
             'inset' => 5,
             'position' => 'bottom left',
             'color' => 'red',
-            'font' => 'Helvetica',
+            'font' => 'Arial',
             'font_size' => 20,
             'font_min_size' => 11,
             'font_weight' => 1.5,

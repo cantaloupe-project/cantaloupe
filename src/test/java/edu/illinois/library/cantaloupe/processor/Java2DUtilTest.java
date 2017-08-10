@@ -165,7 +165,7 @@ public class Java2DUtilTest extends BaseTest {
         // create a StringOverlay
         final StringOverlay overlay = new StringOverlay(
                 "X", Position.TOP_LEFT, 0,
-                new Font("Helvetica", Font.PLAIN, 12), 11,
+                new Font("Arial", Font.PLAIN, 12), 11,
                 Color.WHITE, Color.BLACK, Color.WHITE, 0f);
 
         // apply it

@@ -130,7 +130,7 @@ public class StringOverlay extends Overlay implements Operation {
         map.put("background_color", getBackgroundColor().toRGBAHex());
         map.put("class", getClass().getSimpleName());
         map.put("color", getColor().toRGBAHex());
-        map.put("font", getFont().getFamily());
+        map.put("font", getFont().getName());
         map.put("font_size", getFont().getSize());
         map.put("font_weight",
                 getFont().getAttributes().get(TextAttribute.WEIGHT));
@@ -166,7 +166,7 @@ public class StringOverlay extends Overlay implements Operation {
                 string,
                 getPosition(),
                 getInset(),
-                getFont().getFamily(),
+                getFont().getName(),
                 getFont().getSize(),
                 getFont().getAttributes().get(TextAttribute.WEIGHT),
                 getFont().getAttributes().get(TextAttribute.TRACKING),

@@ -132,7 +132,7 @@ public class StandaloneEntryTest extends BaseTest {
         redirectOutput();
         System.setProperty(StandaloneEntry.LIST_FONTS_VM_OPTION, "");
         StandaloneEntry.main(new String[] {});
-        assertTrue(redirectedOutput.toString().contains("Times"));
+        assertTrue(redirectedOutput.toString().contains("Arial"));
     }
 
     // missing config

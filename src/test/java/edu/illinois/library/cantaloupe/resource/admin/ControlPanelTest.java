@@ -457,7 +457,7 @@ public class ControlPanelTest extends ResourceTest {
         css("[name=\"overlays.BasicStrategy.image\"]").sendKeys("/image.png");
         css("[name=\"overlays.BasicStrategy.string\"]").sendKeys("cats");
         new Select(css("[name=\"overlays.BasicStrategy.string.font\"]")).
-                selectByVisibleText("Helvetica");
+                selectByVisibleText("Arial");
         css("[name=\"overlays.BasicStrategy.string.font.size\"]").sendKeys("13");
         css("[name=\"overlays.BasicStrategy.string.font.min_size\"]").sendKeys("11");
         css("[name=\"overlays.BasicStrategy.string.font.weight\"]").sendKeys("1.2");
@@ -491,7 +491,7 @@ public class ControlPanelTest extends ResourceTest {
                 config.getString("overlays.BasicStrategy.image"));
         assertEquals("cats",
                 config.getString("overlays.BasicStrategy.string"));
-        assertEquals("Helvetica",
+        assertEquals("Arial",
                 config.getString("overlays.BasicStrategy.string.font"));
         assertEquals("13",
                 config.getString("overlays.BasicStrategy.string.font.size"));
