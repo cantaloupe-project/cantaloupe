@@ -42,7 +42,7 @@
                 </li>
                 <li role="presentation" class="list-group-item" id="cl-resolver-button">
                     <a href="#cl-resolver" aria-controls="cl-resolver"
-                       role="tab" data-toggle="tab">Resolver</a>
+                       role="tab" data-toggle="tab">Resolvers</a>
                 </li>
                 <li role="presentation" class="list-group-item" id="cl-processors-button">
                     <a href="#cl-processors" aria-controls="cl-processors"
@@ -55,10 +55,6 @@
                 <li role="presentation" class="list-group-item" id="cl-overlays-button">
                     <a href="#cl-overlays" aria-controls="cl-overlays"
                        role="tab" data-toggle="tab">Overlays</a>
-                </li>
-                <li role="presentation" class="list-group-item" id="cl-metadata-button">
-                    <a href="#cl-metadata" aria-controls="cl-metadata"
-                       role="tab" data-toggle="tab">Metadata</a>
                 </li>
                 <li role="presentation" class="list-group-item" id="cl-delegate-script-button">
                     <a href="#cl-delegate-script" aria-controls="cl-delegate-script"
@@ -1237,198 +1233,226 @@
                                             </select>
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td>DPI
-                                            <a tabindex="0" class="btn btn-sm cl-help"
-                                               role="button" data-toggle="popover"
-                                               data-trigger="focus"
-                                               data-content="Controls the resolution of vector
-                                                   rasterization (of e.g. PDFs) at a scale of 1.
-                                                   Requests for scales less than 0.5 or larger than
-                                                   2 will automatically use a lower or higher multiple
-                                                   of this.">?</a>
-                                        </td>
-                                        <td>
-                                            <input class="form-control" type="number"
-                                                   name="processor.dpi"
-                                                   data-requires-restart="false">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <a tabindex="0" class="btn btn-sm cl-help"
-                                               role="button" data-toggle="popover"
-                                               data-trigger="focus"
-                                               data-content="Expands contrast to utilize
-                                                   available dynamic range. This forces the entire
-                                                   source image to be read into memory, so can
-                                                   be slow with large images.">?</a>
-                                        </td>
-                                        <td>
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox"
-                                                           name="processor.normalize"
-                                                           value="true"
-                                                           data-requires-restart="false">
-                                                    Normalize
-                                                </label>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Background color
-                                            <a tabindex="0" class="btn btn-sm cl-help"
-                                               role="button" data-toggle="popover"
-                                               data-trigger="focus"
-                                               data-content="Color of the background when an image
-                                                   is rotated or alpha-flattened. Only affects output
-                                                   formats that do not support transparency.">?</a>
-                                        </td>
-                                        <td>
-                                            <select class="form-control"
-                                                    name="processor.background_color"
-                                                    data-requires-restart="false">
-                                                <option value="black">Black</option>
-                                                <option value="white">White</option>
-                                            </select>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Downscale Filter
-                                            <a tabindex="0" class="btn btn-sm cl-help"
-                                               role="button" data-toggle="popover"
-                                               data-trigger="focus"
-                                               data-content="Selectable downscale filters are supported
-                                               by all processors except JaiProcessor.">?</a>
-                                        </td>
-                                        <td>
-                                            <select class="form-control"
-                                                    name="processor.downscale_filter"
-                                                    data-requires-restart="false">
-                                                #foreach ($filter in $scaleFilters)
-                                                    <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
-                                                #end
-                                            </select>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Upscale Filter
-                                            <a tabindex="0" class="btn btn-sm cl-help"
-                                               role="button" data-toggle="popover"
-                                               data-trigger="focus"
-                                               data-content="Selectable upscale filters are supported
-                                               by all processors except JaiProcessor.">?</a>
-                                        </td>
-                                        <td>
-                                            <select class="form-control"
-                                                    name="processor.upscale_filter"
-                                                    data-requires-restart="false">
-                                                #foreach ($filter in $scaleFilters)
-                                                    <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
-                                                #end
-                                            </select>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Sharpening
-                                            <a tabindex="0" class="btn btn-sm cl-help"
-                                               role="button" data-toggle="popover"
-                                               data-trigger="focus"
-                                               data-content="Applies an unsharp mask.
-                                                   Must be a decimal number between 0 and 1">?</a>
-                                        </td>
-                                        <td>
-                                            <input class="form-control" type="number"
-                                                   step="0.1"
-                                                   name="processor.sharpen"
-                                                   data-requires-restart="false">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <a tabindex="0" class="btn btn-sm cl-help"
-                                               role="button" data-toggle="popover"
-                                               data-trigger="focus"
-                                               data-content="Progressive JPEGs are generally more
-                                               space-efficient and can provide a better user
-                                               experience, but they are not quite as well-supported
-                                               by all software.">?</a>
-                                        </td>
-                                        <td>
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox"
-                                                           name="processor.jpg.progressive"
-                                                           value="true"
-                                                           data-requires-restart="false">
-                                                    Progressive JPEG
-                                                </label>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>JPEG quality
-                                            <a tabindex="0" class="btn btn-sm cl-help"
-                                               role="button" data-toggle="popover"
-                                               data-trigger="focus"
-                                               data-content="Should be a number
-                                                   between 1 and 100. Larger numbers numbers offer better
-                                                   quality at the expense of larger files.">?</a>
-                                        </td>
-                                        <td>
-                                            <input class="form-control" type="number"
-                                                   name="processor.jpg.quality"
-                                                   min="1" max="100"
-                                                   data-requires-restart="false">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>TIFF compression
-                                            <a tabindex="0" class="btn btn-sm cl-help"
-                                               role="button" data-toggle="popover"
-                                               data-trigger="focus"
-                                               data-content="TIFF output compression type.">?</a>
-                                        </td>
-                                        <td>
-                                            <select class="form-control"
-                                                    name="processor.tif.compression"
-                                                    data-requires-restart="false">
-                                                <option value="">No Compression</option>
-                                                <option value="Deflate">Deflate</option>
-                                                <option value="JPEG">JPEG</option>
-                                                <option value="LZW">LZW</option>
-                                                <option value="RLE">RLE</option>
-                                            </select>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>StreamProcessor Retrieval Strategy
-                                            <a tabindex="0" class="btn btn-sm cl-help"
-                                               role="button" data-toggle="popover"
-                                               data-trigger="focus"
-                                               data-content="When a processor is reading
-                                               from streams, rather than the filesystem,
-                                               this option configures how it loads source images.
-                                               With &quot;stream,&quot; it will read them from
-                                               a stream per-request. With &quot;cache,&quot; it
-                                               will read them from a stream, cache
-                                               them in the source cache, and read from that
-                                               thereafter.<br><br>
-                                               With &quot;cache,&quot; FilesystemCache must be
-                                               configured.">?</a>
-                                        </td>
-                                        <td>
-                                            <select class="form-control"
-                                                    name="StreamProcessor.retrieval_strategy"
-                                                    data-restart-required="false">
-                                                <option value="StreamStrategy">Stream Each Request (StreamStrategy)</option>
-                                                <option value="CacheStrategy">Cache in Source Cache (CacheStrategy)</option>
-                                            </select>
-                                        </td>
-                                    </tr>
                                 </table>
                             </div>
+                        </section>
+
+                        <section>
+                            <h2>Options</h2>
+
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>DPI
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Controls the resolution of vector
+                                               rasterization (of e.g. PDFs) at a scale of 1.
+                                               Requests for scales less than 0.5 or larger than
+                                               2 will automatically use a lower or higher multiple
+                                               of this.">?</a>
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="number"
+                                               name="processor.dpi"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Expands contrast to utilize
+                                               available dynamic range. This forces the entire
+                                               source image to be read into memory, so can
+                                               be slow with large images.">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="processor.normalize"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Normalize
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Background color
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Color of the background when an image
+                                               is rotated or alpha-flattened. Only affects output
+                                               formats that do not support transparency.">?</a>
+                                    </td>
+                                    <td>
+                                        <select class="form-control"
+                                                name="processor.background_color"
+                                                data-requires-restart="false">
+                                            <option value="black">Black</option>
+                                            <option value="white">White</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Downscale Filter
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Selectable downscale filters are supported
+                                           by all processors except JaiProcessor.">?</a>
+                                    </td>
+                                    <td>
+                                        <select class="form-control"
+                                                name="processor.downscale_filter"
+                                                data-requires-restart="false">
+                                            #foreach ($filter in $scaleFilters)
+                                                <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
+                                            #end
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Upscale Filter
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Selectable upscale filters are supported
+                                           by all processors except JaiProcessor.">?</a>
+                                    </td>
+                                    <td>
+                                        <select class="form-control"
+                                                name="processor.upscale_filter"
+                                                data-requires-restart="false">
+                                            #foreach ($filter in $scaleFilters)
+                                                <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
+                                            #end
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Sharpening
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Applies an unsharp mask.
+                                               Must be a decimal number between 0 and 1">?</a>
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="number"
+                                               step="0.1"
+                                               name="processor.sharpen"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Attempts to copy source image metadata
+                                           (EXIF, IPTC, XMP) into derivative images. (This is
+                                           not foolproof; see the user manual.)">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="processor.metadata.preserve"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Preserve Metadata
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Progressive JPEGs are generally more
+                                           space-efficient and can provide a better user
+                                           experience, but they are not quite as well-supported
+                                           by all software.">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="processor.jpg.progressive"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Progressive JPEG
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>JPEG quality
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Should be a number
+                                               between 1 and 100. Larger numbers numbers offer better
+                                               quality at the expense of larger files.">?</a>
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="number"
+                                               name="processor.jpg.quality"
+                                               min="1" max="100"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>TIFF compression
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="TIFF output compression type.">?</a>
+                                    </td>
+                                    <td>
+                                        <select class="form-control"
+                                                name="processor.tif.compression"
+                                                data-requires-restart="false">
+                                            <option value="">No Compression</option>
+                                            <option value="Deflate">Deflate</option>
+                                            <option value="JPEG">JPEG</option>
+                                            <option value="LZW">LZW</option>
+                                            <option value="RLE">RLE</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>StreamProcessor Retrieval Strategy
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="When a processor is reading
+                                           from streams, rather than the filesystem,
+                                           this option configures how it loads source images.
+                                           With &quot;stream,&quot; it will read them from
+                                           a stream per-request. With &quot;cache,&quot; it
+                                           will read them from a stream, cache
+                                           them in the source cache, and read from that
+                                           thereafter.<br><br>
+                                           With &quot;cache,&quot; FilesystemCache must be
+                                           configured.">?</a>
+                                    </td>
+                                    <td>
+                                        <select class="form-control"
+                                                name="StreamProcessor.retrieval_strategy"
+                                                data-restart-required="false">
+                                            <option value="StreamStrategy">Stream Each Request (StreamStrategy)</option>
+                                            <option value="CacheStrategy">Cache in Source Cache (CacheStrategy)</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </table>
                         </section>
 
                         <section>
@@ -2642,32 +2666,6 @@
                                 </tr>
                             </table>
                         </section>
-                        <input type="submit" class="btn btn-primary" value="Save">
-                    </form>
-                </div>
-
-                <div role="tabpanel" class="tab-pane" id="cl-metadata">
-                    <form method="post">
-                        <section>
-                            <h2>Metadata</h2>
-                            <table class="table table-striped">
-                                <tr>
-                                    <td></td>
-                                    <td>
-                                        <div class="checkbox">
-                                            <label>
-                                                <input type="checkbox"
-                                                       name="processor.metadata.preserve"
-                                                       value="true"
-                                                       data-requires-restart="false">
-                                                Preserve
-                                            </label>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </table>
-                        </section>
-
                         <input type="submit" class="btn btn-primary" value="Save">
                     </form>
                 </div>

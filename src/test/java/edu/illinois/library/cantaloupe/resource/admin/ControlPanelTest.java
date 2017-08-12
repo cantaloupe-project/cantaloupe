@@ -286,6 +286,7 @@ public class ControlPanelTest extends ResourceTest {
         selectNamed(Key.PROCESSOR_DOWNSCALE_FILTER).
                 selectByVisibleText("Mitchell");
         inputNamed(Key.PROCESSOR_SHARPEN).sendKeys("0.2");
+        inputNamed(Key.PROCESSOR_PRESERVE_METADATA).click();
         inputNamed(Key.PROCESSOR_JPG_PROGRESSIVE).click();
         inputNamed(Key.PROCESSOR_JPG_QUALITY).sendKeys("55");
         selectNamed(Key.PROCESSOR_TIF_COMPRESSION).selectByVisibleText("LZW");
@@ -328,6 +329,7 @@ public class ControlPanelTest extends ResourceTest {
         assertEquals("mitchell",
                 config.getString(Key.PROCESSOR_DOWNSCALE_FILTER));
         assertEquals("0.2", config.getString(Key.PROCESSOR_SHARPEN));
+        assertTrue(config.getBoolean(Key.PROCESSOR_PRESERVE_METADATA));
         assertEquals("true", config.getString(Key.PROCESSOR_JPG_PROGRESSIVE));
         assertEquals("55", config.getString(Key.PROCESSOR_JPG_QUALITY));
         assertEquals("LZW", config.getString(Key.PROCESSOR_TIF_COMPRESSION));
@@ -543,23 +545,6 @@ public class ControlPanelTest extends ResourceTest {
         assertEquals("#ffd000",
                 config.getString(Key.OVERLAY_STRING_BACKGROUND_COLOR));
         assertTrue(config.getBoolean(Key.REDACTION_ENABLED));
-    }
-
-    @Test
-    public void testMetadataSection() throws Exception {
-        css("#cl-metadata-button").click();
-
-        // Fill in the form
-        inputNamed(Key.PROCESSOR_PRESERVE_METADATA).click();
-
-        // Submit the form
-        css("#cl-metadata input[type=\"submit\"]").click();
-
-        Thread.sleep(WAIT_AFTER_SUBMIT);
-
-        // Assert that the application configuration has been updated correctly
-        final Configuration config = ConfigurationFactory.getInstance();
-        assertTrue(config.getBoolean(Key.PROCESSOR_PRESERVE_METADATA));
     }
 
     @Test
