@@ -190,6 +190,13 @@
       <artifactId>commons-codec</artifactId>
       <version>1.10</version>
     </dependency>
+    <!-- This is used to fix a CVE-2015-6420 in commons-collections-3.2.1, a
+    transitive dependency -->
+    <dependency>
+      <groupId>commons-collections</groupId>
+      <artifactId>commons-collections</artifactId>
+      <version>3.2.2</version>
+    </dependency>
     <!-- Provides PDFBox for PdfBoxProcessor. Note that there are also some
     other dependencies in this POM used only by PDFBox. -->
     <dependency>
