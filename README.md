@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/medusa-project/cantaloupe.svg?branch=develop)](https://travis-ci.org/medusa-project/cantaloupe)
+
 # 🍈 Cantaloupe
 
 *High-performance dynamic image server in Java*
