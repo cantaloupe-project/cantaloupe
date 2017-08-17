@@ -680,31 +680,13 @@
 
                         <section>
                             <ul class="nav nav-pills" role="tablist">
-                                <li role="presentation">
-                                    <a href="#AmazonS3Resolver"
-                                       aria-controls="AmazonS3Resolver" role="tab"
-                                       data-toggle="tab">AmazonS3Resolver</a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#AzureStorageResolver"
-                                       aria-controls="AzureStorageResolver" role="tab"
-                                       data-toggle="tab">AzureStorageResolver</a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#FilesystemResolver"
-                                       aria-controls="FilesystemResolver" role="tab"
-                                       data-toggle="tab">FilesystemResolver</a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#HttpResolver"
-                                       aria-controls="HttpResolver" role="tab"
-                                       data-toggle="tab">HttpResolver</a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#JdbcResolver"
-                                       aria-controls="JdbcResolver" role="tab"
-                                       data-toggle="tab">JdbcResolver</a>
-                                </li>
+                                #foreach ($resolver in $resolvers)
+                                    <li role="presentation">
+                                        <a href="#$resolver.getName()"
+                                           aria-controls="$resolver.getName()" role="tab"
+                                           data-toggle="tab">$resolver.getName()</a>
+                                    </li>
+                                #end
                             </ul>
 
                             <div class="tab-content">
@@ -1459,46 +1441,13 @@
                             <h2>Processors</h2>
 
                             <ul class="nav nav-pills" role="tablist">
-                                <li role="presentation">
-                                    <a href="#FfmpegProcessor"
-                                       aria-controls="FfmpegProcessor" role="tab"
-                                       data-toggle="tab">FfmpegProcessor</a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#GraphicsMagickProcessor"
-                                       aria-controls="GraphicsMagickProcessor" role="tab"
-                                       data-toggle="tab">GraphicsMagickProcessor</a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#ImageMagickProcessor"
-                                       aria-controls="ImageMagickProcessor" role="tab"
-                                       data-toggle="tab">ImageMagickProcessor</a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#JaiProcessor"
-                                       aria-controls="JaiProcessor" role="tab"
-                                       data-toggle="tab">JaiProcessor</a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#Java2dProcessor"
-                                       aria-controls="Java2dProcessor" role="tab"
-                                       data-toggle="tab">Java2dProcessor</a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#KakaduProcessor"
-                                       aria-controls="KakaduProcessor" role="tab"
-                                       data-toggle="tab">KakaduProcessor</a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#OpenJpegProcessor"
-                                       aria-controls="OpenJpegProcessor" role="tab"
-                                       data-toggle="tab">OpenJpegProcessor</a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#PdfBoxProcessor"
-                                       aria-controls="PdfBoxProcessor" role="tab"
-                                       data-toggle="tab">PdfBoxProcessor</a>
-                                </li>
+                                #foreach ($processor in $processors)
+                                    <li role="presentation">
+                                        <a href="#$processor.getName()"
+                                           aria-controls="$processor.getName()" role="tab"
+                                           data-toggle="tab">$processor.getName()</a>
+                                    </li>
+                                #end
                             </ul>
 
                             <div class="tab-content">
@@ -1902,36 +1851,13 @@
                             <h2>Caches</h2>
 
                             <ul class="nav nav-pills" role="tablist">
-                                <li role="presentation">
-                                    <a href="#AmazonS3Cache"
-                                       aria-controls="AmazonS3Cache" role="tab"
-                                       data-toggle="tab">AmazonS3Cache</a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#AzureStorageCache"
-                                       aria-controls="AzureStorageCache" role="tab"
-                                       data-toggle="tab">AzureStorageCache</a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#FilesystemCache"
-                                       aria-controls="FilesystemCache" role="tab"
-                                       data-toggle="tab">FilesystemCache</a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#JdbcCache"
-                                       aria-controls="JdbcCache" role="tab"
-                                       data-toggle="tab">JdbcCache</a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#HeapCache"
-                                       aria-controls="HeapCache" role="tab"
-                                       data-toggle="tab">HeapCache</a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#RedisCache"
-                                       aria-controls="RedisCache" role="tab"
-                                       data-toggle="tab">RedisCache</a>
-                                </li>
+                                #foreach ($cache in $derivativeCaches)
+                                    <li role="presentation">
+                                        <a href="#$cache.getName()"
+                                           aria-controls="$cache.getName()" role="tab"
+                                           data-toggle="tab">$cache.getName()</a>
+                                    </li>
+                                #end
                             </ul>
 
                             <div class="tab-content">

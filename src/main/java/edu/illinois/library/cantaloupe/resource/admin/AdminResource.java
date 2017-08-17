@@ -41,6 +41,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+/**
+ * Handles the web-based Control Panel.
+ */
 public class AdminResource extends AbstractResource {
 
     /**
@@ -74,6 +77,10 @@ public class AdminResource extends AbstractResource {
             } catch (UnsupportedSourceFormatException e) {
                 return false;
             }
+        }
+
+        public List<String> getWarnings() {
+            return ((Processor) object).getWarnings();
         }
     }
 
