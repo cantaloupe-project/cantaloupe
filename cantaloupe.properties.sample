@@ -88,7 +88,7 @@ endpoint.iiif.2.enabled = true
 # Controls the response Content-Disposition header for images. Allowed
 # values are `inline`, `attachment`, and `none`. This can be overridden
 # using the ?response-content-disposition query argument.
-endpoint.iiif.content_disposition = inline
+endpoint.iiif.content_disposition = none
 
 # Minimum size that will be used in info.json "tiles" keys. See the user
 # manual for an explanation of how these are calculated.
