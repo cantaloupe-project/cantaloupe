@@ -98,10 +98,10 @@ var Form = function(config) {
 
         // Server
         showOrHideAllOtherTableRows(
-            '[name="http.enabled"], [name="https.enabled"], [name="auth.basic.enabled"]');
+            '[name="http.enabled"], [name="https.enabled"]');
         // Endpoints
         showOrHideAllOtherTableRows(
-            '[name="endpoint.iiif.1.enabled"], [name="endpoint.iiif.2.enabled"]');
+            '[name="endpoint.public.auth.basic.enabled"], [name="endpoint.iiif.1.enabled"], [name="endpoint.iiif.2.enabled"]');
         // Resolver
         $('[name="resolver.delegate"]').on('change', function() {
             var other_rows = $(this).parents('tr').nextAll('tr');

@@ -27,9 +27,9 @@ title: Access Control
 <p>In standalone mode, Cantaloupe has built-in support for HTTP Basic authentication. To enable it, set the following keys in the configuration file:</p>
 
 {% highlight properties %}
-auth.basic.enabled = true
-auth.basic.username = myusername
-auth.basic.secret = mypassword
+endpoint.public.auth.basic.enabled = true
+endpoint.public.auth.basic.username = myusername
+endpoint.public.auth.basic.secret = mypassword
 {% endhighlight %}
 
 <p>When enabled, the entire website and all endpoints will be restricted.</p>

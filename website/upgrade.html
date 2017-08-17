@@ -7,7 +7,7 @@ title: Upgrading
 
 <div class="alert alert-info">If you are skipping versions, work through this list upwards from your current version.</div>
 
-<h2>From 3.3.2 to 3.4</h2>
+<h2>From 3.3.3 to 3.4</h2>
 
 <ul>
   <li>Add the following keys from the sample configuration:
@@ -26,6 +26,7 @@ title: Upgrading
   </li>
   <li>Rename the following keys:
     <ul>
+      <li><code>auth.*</code> to <code>endpoint.public.auth.*</code></li>
       <li><code>PdfBoxProcessor.dpi</code> to <code>processor.dpi</code></li>
       <li><code>cache.source</code> to <code>cache.server.source</code></li>
       <li><code>cache.derivative</code> to <code>cache.server.derivative</code></li>

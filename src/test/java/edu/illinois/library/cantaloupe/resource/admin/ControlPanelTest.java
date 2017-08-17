@@ -95,9 +95,6 @@ public class ControlPanelTest extends ResourceTest {
         inputNamed(Key.HTTPS_KEY_STORE_PATH).sendKeys("/something");
         inputNamed(Key.HTTPS_KEY_STORE_PASSWORD).sendKeys("cats");
         inputNamed(Key.HTTPS_HTTP2_ENABLED).click();
-        inputNamed(Key.BASIC_AUTH_ENABLED).click();
-        inputNamed(Key.BASIC_AUTH_USERNAME).sendKeys("dogs");
-        inputNamed(Key.BASIC_AUTH_SECRET).sendKeys("foxes");
         inputNamed(Key.HTTP_ACCEPT_QUEUE_LIMIT).sendKeys("50");
         inputNamed(Key.BASE_URI).sendKeys("http://bla/bla/");
         inputNamed(Key.SLASH_SUBSTITUTE).sendKeys("^");
@@ -121,9 +118,6 @@ public class ControlPanelTest extends ResourceTest {
         assertEquals("/something", config.getString(Key.HTTPS_KEY_STORE_PATH));
         assertEquals("cats", config.getString(Key.HTTPS_KEY_STORE_PASSWORD));
         assertTrue(config.getBoolean(Key.HTTPS_HTTP2_ENABLED));
-        assertTrue(config.getBoolean(Key.BASIC_AUTH_ENABLED));
-        assertEquals("dogs", config.getString(Key.BASIC_AUTH_USERNAME));
-        assertEquals("foxes", config.getString(Key.BASIC_AUTH_SECRET));
         assertEquals("50", config.getString(Key.HTTP_ACCEPT_QUEUE_LIMIT));
         assertEquals("http://bla/bla/", config.getString(Key.BASE_URI));
         assertEquals("^", config.getString(Key.SLASH_SUBSTITUTE));
@@ -136,6 +130,9 @@ public class ControlPanelTest extends ResourceTest {
 
         // Fill in the form
         inputNamed(Key.MAX_PIXELS).sendKeys("5000");
+        inputNamed(Key.BASIC_AUTH_ENABLED).click();
+        inputNamed(Key.BASIC_AUTH_USERNAME).sendKeys("dogs");
+        inputNamed(Key.BASIC_AUTH_SECRET).sendKeys("foxes");
         selectNamed(Key.IIIF_CONTENT_DISPOSITION).selectByValue("attachment");
         inputNamed(Key.IIIF_MIN_TILE_SIZE).sendKeys("250");
         inputNamed(Key.IIIF_1_ENDPOINT_ENABLED).click();
@@ -153,6 +150,9 @@ public class ControlPanelTest extends ResourceTest {
         // Assert that the application configuration has been updated correctly
         final Configuration config = ConfigurationFactory.getInstance();
         assertEquals(5000, config.getInt(Key.MAX_PIXELS));
+        assertTrue(config.getBoolean(Key.BASIC_AUTH_ENABLED));
+        assertEquals("dogs", config.getString(Key.BASIC_AUTH_USERNAME));
+        assertEquals("foxes", config.getString(Key.BASIC_AUTH_SECRET));
         assertEquals("attachment",
                 config.getString(Key.IIIF_CONTENT_DISPOSITION));
         assertEquals(250, config.getInt(Key.IIIF_MIN_TILE_SIZE));

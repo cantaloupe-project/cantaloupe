@@ -31,11 +31,6 @@ https.key_password = myPassword
 # default.
 http.accept_queue_limit = 0
 
-# !! Configures HTTP Basic authentication.
-auth.basic.enabled = false
-auth.basic.username = myself
-auth.basic.secret = mypassword
-
 # Enables the Control Panel, at /admin.
 admin.enabled = false
 # Password to access the Control Panel. (The username is "admin".)
@@ -82,8 +77,12 @@ delegate_script.cache.enabled = false
 # ENDPOINTS
 ###########################################################################
 
-endpoint.iiif.1.enabled = true
+# !! Configures HTTP Basic authentication in all public endpoints.
+endpoint.public.auth.basic.enabled = false
+endpoint.public.auth.basic.username = myself
+endpoint.public.auth.basic.secret = mypassword
 
+endpoint.iiif.1.enabled = true
 endpoint.iiif.2.enabled = true
 
 # Controls the response Content-Disposition header for images. Allowed
