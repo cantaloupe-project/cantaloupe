@@ -68,7 +68,7 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void testGetStreamProcessorRetrievalStrategy() {
+    public void getStreamProcessorRetrievalStrategy() {
         final Configuration config = Configuration.getInstance();
         // stream
         config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
@@ -84,7 +84,7 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void testConnectWithFileResolverAndFileProcessor() throws Exception {
+    public void connectWithFileResolverAndFileProcessor() throws Exception {
         final Resolver resolver = new ResolverFactory().getResolver(identifier);
         final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
@@ -96,8 +96,7 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void testConnectWithFileResolverAndStreamProcessor()
-            throws Exception {
+    public void connectWithFileResolverAndStreamProcessor() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_FALLBACK, "ImageMagickProcessor");
 
@@ -113,7 +112,7 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void testConnectWithStreamResolverAndFileProcessorWithSourceCacheDisabled()
+    public void connectWithStreamResolverAndFileProcessorWithSourceCacheDisabled()
             throws Exception {
         identifier = new Identifier("jp2");
         Configuration config = Configuration.getInstance();
@@ -132,8 +131,7 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void testConnectWithStreamResolverAndFileProcessor()
-            throws Exception {
+    public void connectWithStreamResolverAndFileProcessor() throws Exception {
         final WebServer server = new WebServer();
         final File cacheFolder = TestUtil.getTempFolder();
         identifier = new Identifier("jp2");
@@ -172,7 +170,7 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void testConnectWithStreamResolverAndStreamProcessorWithStreamStrategy()
+    public void connectWithStreamResolverAndStreamProcessorWithStreamStrategy()
             throws Exception {
         final WebServer server = new WebServer();
         try {
@@ -184,10 +182,9 @@ public class ProcessorConnectorTest extends BaseTest {
                     "BasicLookupStrategy");
             config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                     server.getHTTPURI() + "/");
-            config.setProperty(Key.PROCESSOR_FALLBACK, "ImageMagickProcessor");
 
             final Resolver resolver = new ResolverFactory().getResolver(identifier);
-            final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
+            final Processor processor = new FakeStreamProcessor();
 
             new ProcessorConnector(resolver, processor, identifier).connect();
 
@@ -201,7 +198,7 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void testConnectWithStreamResolverAndStreamProcessorWithCacheStrategy()
+    public void connectWithStreamResolverAndStreamProcessorWithCacheStrategy()
             throws Exception {
         final WebServer server = new WebServer();
         final File cacheFolder = TestUtil.getTempFolder();
@@ -214,7 +211,6 @@ public class ProcessorConnectorTest extends BaseTest {
                     "BasicLookupStrategy");
             config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                     server.getHTTPURI() + "/");
-            config.setProperty(Key.PROCESSOR_FALLBACK, "ImageMagickProcessor");
             config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
             config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
             config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
@@ -223,7 +219,7 @@ public class ProcessorConnectorTest extends BaseTest {
                     cacheFolder.getAbsolutePath());
 
             final Resolver resolver = new ResolverFactory().getResolver(identifier);
-            final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
+            final Processor processor = new FakeStreamProcessor();
 
             new ProcessorConnector(resolver, processor, identifier).connect();
 
@@ -241,7 +237,7 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void testConnectWithStreamResolverAndStreamProcessorWithCacheStrategyAndSourceCacheDisabled()
+    public void connectWithStreamResolverAndStreamProcessorWithCacheStrategyAndSourceCacheDisabled()
             throws Exception {
         final WebServer server = new WebServer();
         final File cacheFolder = TestUtil.getTempFolder();
@@ -254,14 +250,13 @@ public class ProcessorConnectorTest extends BaseTest {
                     "BasicLookupStrategy");
             config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                     server.getHTTPURI() + "/");
-            config.setProperty(Key.PROCESSOR_FALLBACK, "ImageMagickProcessor");
             config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
                     "CacheStrategy");
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     cacheFolder.getAbsolutePath());
 
             final Resolver resolver = new ResolverFactory().getResolver(identifier);
-            final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
+            final Processor processor = new FakeStreamProcessor();
 
             try {
                 new ProcessorConnector(resolver, processor, identifier).connect();

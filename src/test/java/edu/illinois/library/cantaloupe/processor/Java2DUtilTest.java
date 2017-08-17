@@ -14,6 +14,7 @@ import edu.illinois.library.cantaloupe.operation.overlay.Position;
 import edu.illinois.library.cantaloupe.operation.overlay.StringOverlay;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
@@ -136,6 +137,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
+    @Ignore // TODO: see inline todo
     public void testApplyOverlayWithStringOverlay() throws Exception {
         // read the base image into a BufferedImage
         final File fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
@@ -154,7 +156,7 @@ public class Java2DUtilTest extends BaseTest {
         // Test the background color
         assertRGBA(overlaidImage.getRGB(2, 2), 0, 0, 0, 255);
 
-        // Test the font color
+        // Test the font color TODO: this pixel will be different colors on different JVMs and/or with different versions of the Arial font
         int pixel = overlaidImage.getRGB(9, 8);
         int alpha = (pixel >> 24) & 0xff;
         int red = (pixel >> 16) & 0xff;

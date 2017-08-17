@@ -120,17 +120,17 @@ public class StandaloneEntryTest extends BaseTest {
     // list fonts
 
     @Test
-    public void testMainWithListFontsOption() throws Exception {
+    public void mainWithListFontsOption() throws Exception {
         redirectOutput();
         System.setProperty(StandaloneEntry.LIST_FONTS_VM_OPTION, "");
         StandaloneEntry.main(new String[] {});
-        assertTrue(redirectedOutput.toString().contains("Arial"));
+        assertTrue(redirectedOutput.toString().contains("SansSerif"));
     }
 
     // missing config
 
     @Test
-    public void testMainWithMissingConfigOptionPrintsUsage() throws Exception {
+    public void mainWithMissingConfigOptionPrintsUsage() throws Exception {
         redirectOutput();
         System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
         StandaloneEntry.main(new String[] {});
@@ -139,7 +139,7 @@ public class StandaloneEntryTest extends BaseTest {
     }
 
     @Test
-    public void testMainWithMissingConfigOptionExits() throws Exception {
+    public void mainWithMissingConfigOptionExits() throws Exception {
         System.clearProperty(StandaloneEntry.TEST_VM_OPTION);
         exit.expectSystemExitWithStatus(-1);
         System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
@@ -149,14 +149,14 @@ public class StandaloneEntryTest extends BaseTest {
     // empty config VM option
 
     @Test
-    public void testMainWithEmptyConfigOptionPrintsUsage() throws Exception {
+    public void mainWithEmptyConfigOptionPrintsUsage() throws Exception {
         redirectOutput();
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "");
         StandaloneEntry.main(new String[] {});
     }
 
     @Test
-    public void testMainWithEmptyConfigOptionExits() throws Exception {
+    public void mainWithEmptyConfigOptionExits() throws Exception {
         System.clearProperty(StandaloneEntry.TEST_VM_OPTION);
         exit.expectSystemExitWithStatus(-1);
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "");
@@ -166,7 +166,7 @@ public class StandaloneEntryTest extends BaseTest {
     // missing config file
 
     @Test
-    public void testMainWithInvalidConfigFileArgumentPrintsUsage() throws Exception {
+    public void mainWithInvalidConfigFileArgumentPrintsUsage() throws Exception {
         redirectOutput();
         String path = "/bla/bla/bla";
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, path);
@@ -176,7 +176,7 @@ public class StandaloneEntryTest extends BaseTest {
     }
 
     @Test
-    public void testMainWithInvalidConfigFileArgumentExits() throws Exception {
+    public void mainWithInvalidConfigFileArgumentExits() throws Exception {
         System.clearProperty(StandaloneEntry.TEST_VM_OPTION);
         exit.expectSystemExitWithStatus(-1);
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "/bla/bla/bla");
@@ -186,7 +186,7 @@ public class StandaloneEntryTest extends BaseTest {
     // config file is a directory
 
     @Test
-    public void testMainWithDirectoryConfigFileArgumentPrintsUsage() throws Exception {
+    public void mainWithDirectoryConfigFileArgumentPrintsUsage() throws Exception {
         redirectOutput();
         String path = TestUtil.getFixture("bla").getParentFile().getAbsolutePath();
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, path);
@@ -196,7 +196,7 @@ public class StandaloneEntryTest extends BaseTest {
     }
 
     @Test
-    public void testMainWithDirectoryConfigFileArgumentExits() throws Exception {
+    public void mainWithDirectoryConfigFileArgumentExits() throws Exception {
         System.clearProperty(StandaloneEntry.TEST_VM_OPTION);
         exit.expectSystemExitWithStatus(-1);
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT,
@@ -207,7 +207,7 @@ public class StandaloneEntryTest extends BaseTest {
     // valid config file
 
     @Test
-    public void testMainWithValidConfigFileArgumentStartsServer() throws Exception {
+    public void mainWithValidConfigFileArgumentStartsServer() throws Exception {
         StandaloneEntry.main(new String[] {});
         ClientResource resource = getClientResource();
         resource.get();
@@ -218,7 +218,7 @@ public class StandaloneEntryTest extends BaseTest {
      * Tests startup with the -Dcantaloupe.cache.clean VM option.
      */
     @Test
-    public void testMainWithCleanCacheArg() throws Exception {
+    public void mainWithCleanCacheArg() throws Exception {
         exit.expectSystemExitWithStatus(0);
 
         File cacheDir = getCacheDir();
@@ -256,7 +256,7 @@ public class StandaloneEntryTest extends BaseTest {
      * Tests startup with the -Dcantaloupe.cache.purge VM option.
      */
     @Test
-    public void testMainWithPurgeCacheArg() throws Exception {
+    public void mainWithPurgeCacheArg() throws Exception {
         exit.expectSystemExitWithStatus(0);
         redirectOutput();
 
@@ -312,7 +312,7 @@ public class StandaloneEntryTest extends BaseTest {
      * Tests startup with the -Dcantaloupe.cache.purge=identifier VM option.
      */
     @Test
-    public void testMainWithPurgeIdentifierArg() throws Exception {
+    public void mainWithPurgeIdentifierArg() throws Exception {
         exit.expectSystemExitWithStatus(0);
 
         final File cacheDir = getCacheDir();
@@ -372,7 +372,7 @@ public class StandaloneEntryTest extends BaseTest {
      * Tests startup with the -Dcantaloupe.cache.purge_expired VM option.
      */
     @Test
-    public void testMainWithPurgeExpiredCacheArg() throws Exception {
+    public void mainWithPurgeExpiredCacheArg() throws Exception {
         exit.expectSystemExitWithStatus(0);
 
         File cacheDir = getCacheDir();

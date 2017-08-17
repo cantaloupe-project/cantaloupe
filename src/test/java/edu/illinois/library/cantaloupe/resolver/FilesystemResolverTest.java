@@ -8,7 +8,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
@@ -45,14 +44,32 @@ public class FilesystemResolverTest extends BaseTest {
     }
 
     @Test
-    public void testNewStreamSource() {
-        // present, readable image
+    public void newStreamSourceWithPresentReadableFile() {
         try {
             assertNotNull(instance.newStreamSource());
         } catch (IOException e) {
             fail();
         }
-        // missing image
+    }
+
+    @Test
+    public void newStreamSourceWithPresentUnreadableFile() throws Exception {
+        File file = new File(instance.getPathname(File.separator));
+        try {
+            file.setReadable(false);
+            instance.newStreamSource();
+            fail("Expected exception");
+        } catch (FileNotFoundException e) {
+            fail();
+        } catch (AccessDeniedException e) {
+            // pass
+        } finally {
+            file.setReadable(true);
+        }
+    }
+
+    @Test
+    public void newStreamSourceWithMissingFile() {
         try {
             instance.setIdentifier(new Identifier("bogus"));
             instance.newStreamSource();
@@ -65,15 +82,16 @@ public class FilesystemResolverTest extends BaseTest {
     }
 
     @Test
-    public void testGetFile() throws Exception {
-        // present, readable file
+    public void getFileWithPresentReadableFile() throws Exception {
         try {
             assertNotNull(instance.getFile());
         } catch (FileNotFoundException e) {
             fail();
         }
+    }
 
-        // present, unreadable file
+    @Test
+    public void getFileWithPresentUnreadableFile() throws Exception {
         File file = new File(instance.getPathname(File.separator));
         try {
             file.setReadable(false);
@@ -86,8 +104,10 @@ public class FilesystemResolverTest extends BaseTest {
         } finally {
             file.setReadable(true);
         }
+    }
 
-        // missing file
+    @Test
+    public void getFileWithMissingFile() throws Exception {
         try {
             instance.setIdentifier(new Identifier("bogus"));
             instance.getFile();
@@ -102,7 +122,7 @@ public class FilesystemResolverTest extends BaseTest {
     // getPathname(Identifier)
 
     @Test
-    public void testGetPathnameWithBasicLookupStrategy() throws IOException {
+    public void getPathnameWithBasicLookupStrategy() throws IOException {
         Configuration config = ConfigurationFactory.getInstance();
 
         config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
@@ -132,8 +152,7 @@ public class FilesystemResolverTest extends BaseTest {
     }
 
     @Test
-    public void testGetPathnameWithScriptLookupStrategy()
-            throws IOException {
+    public void getPathnameWithScriptLookupStrategy() throws IOException {
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
                 "ScriptLookupStrategy");
@@ -145,7 +164,7 @@ public class FilesystemResolverTest extends BaseTest {
     }
 
     @Test
-    public void testGetSourceFormatByDetection() throws IOException {
+    public void getSourceFormatByDetection() throws IOException {
         instance.setIdentifier(new Identifier("bmp"));
         assertEquals(Format.BMP, instance.getSourceFormat());
 
@@ -172,7 +191,7 @@ public class FilesystemResolverTest extends BaseTest {
     }
 
     @Test
-    public void testGetSourceFormatByInference() throws IOException {
+    public void getSourceFormatByInference() throws IOException {
         instance.setIdentifier(new Identifier("bmp-rgb-64x56x8.bmp"));
         assertEquals(Format.BMP, instance.getSourceFormat());
 
@@ -196,17 +215,10 @@ public class FilesystemResolverTest extends BaseTest {
     }
 
     @Test
-    public void testGetSourceFormatThrowsExceptionWhenResourceIsMissing()
+    public void getSourceFormatThrowsExceptionWhenResourceIsMissing()
             throws IOException {
         try {
             instance.setIdentifier(new Identifier("bogus"));
-            instance.getSourceFormat();
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        }
-        try {
-            instance.setIdentifier(new Identifier("bla.jpg"));
             instance.getSourceFormat();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
