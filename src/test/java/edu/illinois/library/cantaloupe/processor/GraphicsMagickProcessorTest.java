@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 
 /**
  * For this to work, the GraphicsMagick binary must be on the PATH.
@@ -126,6 +127,9 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
     @Test
     @Ignore // TODO: get PDF working in GM (@adolski)
     public void testProcessWithPageOption() throws Exception {
+        // Skip if GraphicsMagick does not support PDF.
+        assumeTrue(instance.getAvailableOutputFormats().size() > 0);
+
         final File fixture = TestUtil.getImage("pdf-multipage.pdf");
         byte[] page1, page2;
         instance.setSourceFormat(Format.PDF);
@@ -155,6 +159,9 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
     @Test
     @Ignore // TODO: get PDF working in GM (@adolski)
     public void testValidate() throws Exception {
+        // Skip if GraphicsMagick does not support PDF.
+        assumeTrue(instance.getAvailableOutputFormats().size() > 0);
+
         instance.setSourceFormat(Format.PDF);
         instance.setStreamSource(new FileInputStreamStreamSource(
                 TestUtil.getImage("pdf.pdf")));

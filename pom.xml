@@ -69,12 +69,12 @@
     <!-- Used by AmazonS3Resolver and AmazonS3Cache -->
     <dependency>
       <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-s3</artifactId>
+      <artifactId>aws-java-sdk-core</artifactId>
       <version>1.11.116</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-core</artifactId>
+      <artifactId>aws-java-sdk-s3</artifactId>
       <version>1.11.116</version>
     </dependency>
     <!-- Object cache used for caching delegate script method invocations
@@ -200,10 +200,12 @@
       <artifactId>commons-codec</artifactId>
       <version>1.10</version>
     </dependency>
+    <!-- This is used to fix a CVE-2015-6420 in commons-collections-3.2.1, a
+    transitive dependency -->
     <dependency>
-      <groupId>org.apache.velocity</groupId>
-      <artifactId>velocity</artifactId>
-      <version>1.7</version>
+      <groupId>commons-collections</groupId>
+      <artifactId>commons-collections</artifactId>
+      <version>3.2.2</version>
     </dependency>
     <!-- Provides PDFBox for PdfBoxProcessor. Note that there are also some
     other dependencies in this POM used only by PDFBox. -->
@@ -289,15 +291,15 @@
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-util</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-client</artifactId>
       <version>${jetty.version}</version>
     </dependency>
     <!-- Provides the standalone servlet container -->
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-util</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
@@ -319,7 +321,7 @@
       <artifactId>jansi</artifactId>
       <version>1.13</version>
     </dependency>
-    <!-- Used to execute delegate script methods -->
+    <!-- JRuby is used to execute delegate script methods. -->
     <dependency>
       <groupId>org.jruby</groupId>
       <artifactId>jruby-core</artifactId>
@@ -329,7 +331,8 @@
       <groupId>org.jruby</groupId>
       <artifactId>jruby-stdlib</artifactId>
       <version>9.1.10.0</version>
-      <!-- without jruby-stdib, tests won't pass. This is not necessary for compile-time though -->
+      <!-- Without jruby-stdib, tests won't pass. This is not necessary for
+      compile-time though. -->
       <scope>runtime</scope>
     </dependency>
     <!-- Restlet is our REST framework. -->
@@ -337,6 +340,22 @@
       <groupId>org.restlet.jee</groupId>
       <artifactId>org.restlet</artifactId>
       <version>${restlet.version}</version>
+    </dependency>
+    <!-- Jackson for data serialization -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>2.9.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>2.9.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.9.0</version>
     </dependency>
     <!-- Jackson for data serialization -->
     <dependency>
@@ -378,6 +397,11 @@
           <artifactId>log4j</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.velocity</groupId>
+      <artifactId>velocity</artifactId>
+      <version>1.7</version>
     </dependency>
     <!-- Selenium is used to test the control panel, using a headless HtmlUnit
     browser. -->
