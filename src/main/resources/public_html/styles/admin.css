@@ -73,3 +73,7 @@ textarea.form-control {
 table.cl-source-format-assignments td:first-child {
     text-align: right;
 }
+
+#cl-processor-warnings td {
+    color: #2b3e50;
+}

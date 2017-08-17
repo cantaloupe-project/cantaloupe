@@ -136,7 +136,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Test
-    public void testGetIMOverlayGeometry() {
+    public void getIMOverlayGeometry() {
         ImageMagickProcessor instance = newInstance();
 
         // top left
@@ -170,7 +170,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Test
-    public void testGetIMOverlayGravity() {
+    public void getIMOverlayGravity() {
         ImageMagickProcessor instance = newInstance();
 
         assertEquals("northwest",
@@ -194,7 +194,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Test
-    public void testGetInitializationException() {
+    public void getInitializationException() {
         Configuration.getInstance().setProperty(
                 Key.IMAGEMAGICKPROCESSOR_PATH_TO_BINARIES,
                 "/bogus/bogus/bogus");
@@ -204,7 +204,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Test
-    public void testGetOverlayTempFile() throws Exception {
+    public void getOverlayTempFile() throws Exception {
         URL url = new URL("file://" + TestUtil.getImage("jpg").getAbsolutePath());
         ImageOverlay overlay = new ImageOverlay(url, Position.TOP_LEFT, 2);
 
@@ -215,7 +215,29 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Test
-    public void testProcessWithPageOption() throws Exception {
+    public void getWarningsWithNoWarnings() {
+        boolean initialValue = ImageMagickProcessor.isUsingVersion7();
+        try {
+            ImageMagickProcessor.setUsingVersion7(true);
+            assertEquals(0, instance.getWarnings().size());
+        } finally {
+            ImageMagickProcessor.setUsingVersion7(initialValue);
+        }
+    }
+
+    @Test
+    public void getWarningsWithWarnings() {
+        boolean initialValue = ImageMagickProcessor.isUsingVersion7();
+        try {
+            ImageMagickProcessor.setUsingVersion7(false);
+            assertEquals(1, instance.getWarnings().size());
+        } finally {
+            ImageMagickProcessor.setUsingVersion7(initialValue);
+        }
+    }
+
+    @Test
+    public void processWithPageOption() throws Exception {
         final File fixture = TestUtil.getImage("pdf-multipage.pdf");
         byte[] page1, page2;
         instance.setSourceFormat(Format.PDF);
@@ -243,7 +265,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Test
-    public void testValidate() throws Exception {
+    public void validate() throws Exception {
         instance.setSourceFormat(Format.PDF);
         instance.setStreamSource(new FileInputStreamStreamSource(
                 TestUtil.getImage("pdf.pdf")));

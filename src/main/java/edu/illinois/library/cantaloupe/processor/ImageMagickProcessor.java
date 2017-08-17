@@ -229,7 +229,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
      *
      * @return Whether we appear to be using ImageMagick 7.
      */
-    private static synchronized boolean isUsingVersion7() {
+    static synchronized boolean isUsingVersion7() {
         if (isUsingVersion7 == null) {
             final ProcessBuilder pb = new ProcessBuilder();
             final List<String> command = new ArrayList<>();
@@ -248,10 +248,19 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             } catch (Exception e) {
                 logger.info("isUsingVersion7(): couldn't find magick " +
                         "command; assuming ImageMagick <7");
+                logger.warn("ImageMagick <7 support is DEPRECATED. " +
+                        "Please upgrade to version 7.");
                 isUsingVersion7.set(false);
             }
         }
         return isUsingVersion7.get();
+    }
+
+    /**
+     * For testing only.
+     */
+    static synchronized void setUsingVersion7(boolean trueOrFalse) {
+        isUsingVersion7.set(trueOrFalse);
     }
 
     @Override
@@ -633,6 +642,16 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             }
         }
         return overlayFile;
+    }
+
+    @Override
+    public List<String> getWarnings() {
+        List<String> warnings = new ArrayList<>();
+        //if (!isUsingVersion7()) {
+            warnings.add("Support for ImageMagick <7 will be removed in a " +
+                    "future release. Please upgrade to version 7.");
+        //}
+        return warnings;
     }
 
     @Override

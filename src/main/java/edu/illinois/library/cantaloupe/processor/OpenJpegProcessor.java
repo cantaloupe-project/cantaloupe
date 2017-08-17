@@ -134,7 +134,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         return path;
     }
 
-    private static synchronized boolean isQuietModeSupported() {
+    static synchronized boolean isQuietModeSupported() {
         if (!checkedForQuietMode) {
             final List<String> command = new ArrayList<>();
             command.add(getPath("opj_decompress"));
@@ -182,6 +182,13 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
             checkedForQuietMode = true;
         }
         return isQuietModeSupported;
+    }
+
+    /**
+     * For testing only.
+     */
+    static synchronized void setQuietModeSupported(boolean trueOrFalse) {
+        isQuietModeSupported = trueOrFalse;
     }
 
     @Override
@@ -286,6 +293,17 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                 imageInfo = opjOutput;
             }
         }
+    }
+
+    @Override
+    public List<String> getWarnings() {
+        List<String> warnings = new ArrayList<>();
+        //if (!isQuietModeSupported()) {
+            warnings.add("This version of opj_decompress doesn't support " +
+                    "quiet mode. Please upgrade OpenJPEG to version 2.2.0 "+
+                    "or later.");
+        //}
+        return warnings;
     }
 
     @Override

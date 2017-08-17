@@ -10,6 +10,8 @@ import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -31,10 +33,13 @@ public interface Processor {
 
     /**
      * <p>Implementations may need to perform initialization (such as scanning
-     * for supported formats etc.) that is more efficient to do only once.
-     * If this process fails, a non-null value should be returned.</p>
+     * for supported formats etc.) that is more efficient to do only once, at
+     * initialization time. If this fails, this method should return a
+     * non-null value.</p>
      *
      * <p>This default implementation returns <code>null</code>.</p>
+     *
+     * @since 3.4
      */
     default InitializationException getInitializationException() {
         return null;
@@ -64,6 +69,18 @@ public interface Processor {
      */
     Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
     getSupportedIiif2_0Qualities();
+
+    /**
+     * <p>Returns a list of global (not request-specific) warnings, such as
+     * deprecation notices.</p>
+     *
+     * <p>This default implementation returns an empty list.</p>
+     *
+     * @since 3.4
+     */
+    default List<String> getWarnings() {
+        return new ArrayList<>();
+    }
 
     /**
      * <p>Performs the supplied operations on an image, writing the result to

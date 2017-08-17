@@ -1109,6 +1109,30 @@
                         </div>
                     </section>
 
+                    #if ($anyWarnings)
+                        <section id="cl-processor-warnings">
+                            <h2>Warnings</h2>
+                            <table class="table table-striped">
+                                #foreach ($processor in $processors)
+                                    #if ($processor.getWarnings().size() > 0)
+                                        <tr>
+                                            <td class="bg-warning">
+                                                $processor.getName()
+                                            </td>
+                                            <td class="bg-warning">
+                                                <ul>
+                                                    #foreach ($warning in $processor.getWarnings())
+                                                         <li>$warning</li>
+                                                    #end
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                    #end
+                                #end
+                            </table>
+                        </section>
+                    #end
+
                     <form method="post">
                         <section>
                             <h2>Source Format Assignments</h2>
@@ -1410,7 +1434,7 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>StreamProcessor Retrieval Strategy
+                                    <td>Retrieval Strategy
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"

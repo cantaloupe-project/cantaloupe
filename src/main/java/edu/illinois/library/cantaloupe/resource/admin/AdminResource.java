@@ -296,6 +296,10 @@ public class AdminResource extends AbstractResource {
             sortedProcessorProxies.add(new ProcessorProxy(proc));
         }
 
+        // warnings
+        vars.put("anyWarnings",
+                sortedProcessorProxies.stream().anyMatch(p -> !p.getWarnings().isEmpty()));
+
         Collections.sort(sortedProcessorProxies, new ObjectProxyComparator());
         vars.put("processors", sortedProcessorProxies);
 

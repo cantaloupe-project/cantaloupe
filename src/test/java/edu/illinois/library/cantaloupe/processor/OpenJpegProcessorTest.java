@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,22 +32,44 @@ public class OpenJpegProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void testGetSupportedFeatures() throws Exception {
-        Set<ProcessorFeature> expectedFeatures = new HashSet<>();
-        expectedFeatures.add(ProcessorFeature.MIRRORING);
-        expectedFeatures.add(ProcessorFeature.REGION_BY_PERCENT);
-        expectedFeatures.add(ProcessorFeature.REGION_BY_PIXELS);
-        expectedFeatures.add(ProcessorFeature.REGION_SQUARE);
-        expectedFeatures.add(ProcessorFeature.ROTATION_ARBITRARY);
-        expectedFeatures.add(ProcessorFeature.ROTATION_BY_90S);
-        expectedFeatures.add(ProcessorFeature.SIZE_ABOVE_FULL);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_HEIGHT);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_PERCENT);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
+    public void getSupportedFeatures() throws Exception {
+        Set<ProcessorFeature> expectedFeatures = new HashSet<>(Arrays.asList(
+                ProcessorFeature.MIRRORING,
+                ProcessorFeature.REGION_BY_PERCENT,
+                ProcessorFeature.REGION_BY_PIXELS,
+                ProcessorFeature.REGION_SQUARE,
+                ProcessorFeature.ROTATION_ARBITRARY,
+                ProcessorFeature.ROTATION_BY_90S,
+                ProcessorFeature.SIZE_ABOVE_FULL,
+                ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
+                ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
+                ProcessorFeature.SIZE_BY_HEIGHT,
+                ProcessorFeature.SIZE_BY_PERCENT,
+                ProcessorFeature.SIZE_BY_WIDTH,
+                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
         assertEquals(expectedFeatures, instance.getSupportedFeatures());
+    }
+
+    @Test
+    public void getWarningsWithNoWarnings() {
+        boolean initialValue = OpenJpegProcessor.isQuietModeSupported();
+        try {
+            OpenJpegProcessor.setQuietModeSupported(true);
+            assertEquals(0, instance.getWarnings().size());
+        } finally {
+            OpenJpegProcessor.setQuietModeSupported(initialValue);
+        }
+    }
+
+    @Test
+    public void getWarningsWithWarnings() {
+        boolean initialValue = ImageMagickProcessor.isUsingVersion7();
+        try {
+            OpenJpegProcessor.setQuietModeSupported(false);
+            assertEquals(1, instance.getWarnings().size());
+        } finally {
+            OpenJpegProcessor.setQuietModeSupported(initialValue);
+        }
     }
 
 }
