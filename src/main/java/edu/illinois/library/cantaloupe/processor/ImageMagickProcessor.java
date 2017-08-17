@@ -647,10 +647,10 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     @Override
     public List<String> getWarnings() {
         List<String> warnings = new ArrayList<>();
-        //if (!isUsingVersion7()) {
+        if (!isUsingVersion7()) {
             warnings.add("Support for ImageMagick <7 will be removed in a " +
                     "future release. Please upgrade to version 7.");
-        //}
+        }
         return warnings;
     }
 

@@ -298,11 +298,11 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
     @Override
     public List<String> getWarnings() {
         List<String> warnings = new ArrayList<>();
-        //if (!isQuietModeSupported()) {
+        if (!isQuietModeSupported()) {
             warnings.add("This version of opj_decompress doesn't support " +
                     "quiet mode. Please upgrade OpenJPEG to version 2.2.0 "+
                     "or later.");
-        //}
+        }
         return warnings;
     }
 
