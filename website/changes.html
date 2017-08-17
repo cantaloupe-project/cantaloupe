@@ -24,8 +24,8 @@ title: Change Log
       <li>The <code>HttpResolver::get_url()</code> delegate method may return a hash containing HTTP authentication info.</li>
       <li>Added an option to HttpResolver to trust invalid SSL certificates.</li>
       <li>AmazonS3Resolver and AzureStorageResolver attempt to infer a source format from the object/blob key if not able to do so from the identifier or from object/blob metadata.</li>
-      <li>AmazonS3Resolver falls back to obtaining credentials from various other sources (see the user manual) when they are not set in the config file.</li>
-      <li>Resolver delegates are passed an additional context parameter.</li>
+      <li>AmazonS3Resolver falls back to obtaining credentials from various other sources (see the user manual) when they are not set in the config file. (Thanks to @jweisman)</li>
+      <li>Resolver delegates are passed an additional context parameter. (Thanks to @jonathangreen)</li>
     </ul>
   </li>
   <li>Processors
@@ -33,7 +33,7 @@ title: Change Log
       <li>GraphicsMagickProcessor and ImageMagickProcessor support SGI images.</li>
       <li>GraphicsMagickProcessor supports the GIF output format.</li>
       <li>ImageMagickProcessor supports image overlays.</li>
-      <li>The <code>processor.background_color</code> configuration key affects alpha blending as well as non-90&deg;-multiple rotations.</li>
+      <li>The <code>processor.background_color</code> configuration key affects alpha blending as well as non-90&deg;-multiple rotations. (Thanks to @Algae666)</li>
       <li>The configurable DPI used when reading PDFs is shared across PdfBoxProcessor, GraphicsMagickProcessor, and ImageMagickProcessor.</li>
       <li>ImageMagickProcessor's support for ImageMagick versions prior to 7 is deprecated.</li>
       <li>OpenJpegProcessor's support for OpenJPEG versions prior to 2.2.0 is deprecated.</li>
@@ -44,7 +44,7 @@ title: Change Log
       <li>Added RedisCache.</li>
       <li>Added HeapCache.</li>
       <li>AmazonS3Cache uses a threaded upload queue for better performance.</li>
-      <li>AmazonS3Cache falls back to obtaining credentials from various other sources (see the user manual) when they are not set in the config file.</li>
+      <li>AmazonS3Cache falls back to obtaining credentials from various other sources (see the user manual) when they are not set in the config file. (Thanks to @jweisman)</li>
     </ul>
   </li>
   <li>Other
@@ -69,7 +69,7 @@ title: Change Log
 <ul>
   <li>Fixed an inefficiency that caused image metadata to be read multiple times in a single image response.</li>
   <li>Fixed endpoint authentication being enabled for certain non-endpoint resources.</li>
-  <li>Impoved compatibility between OpenJpegProcessor and OpenJPEG when using OpenJPEG version 2.2.0 or later.</li>
+  <li>Impoved compatibility between OpenJpegProcessor and OpenJPEG when using OpenJPEG version 2.2.0 or later. (Thanks to @RussellMcOrmond)</li>
   <li>Fixed inability to stream source images when using AmazonS3Resolver.</li>
   <li>Fixed a potential HTTP 500 error when multiple processes try to write the same image metadata concurrently using FilesystemCache.</li>
   <li>Corrected the documentation for <code>processor.upscale_filter</code> and <code>processor.downscale_filter</code>.</li>
