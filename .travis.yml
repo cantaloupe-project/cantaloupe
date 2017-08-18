@@ -1,0 +1,27 @@
+language: java
+sudo: required
+# trusty is required for oraclejdk9
+dist: trusty
+
+jdk:
+  - oraclejdk8
+  #- oraclejdk9 (not ready yet)
+
+before_install:
+  # copy properties file
+  - cp test.properties.sample test.properties
+  # trusty used avconv, not ffmpeg, and tools like ffprobe are missing. So we need to add this repo
+  - sudo add-apt-repository -y ppa:mc3man/trusty-media
+  # no openjpeg2000 tools like opj_decompress for trusty as well, so adding this repo
+  - sudo apt-get install apt-transport-https
+  - wget -O - https://notesalexp.org/debian/alexp_key.asc | sudo apt-key add -
+  - sudo apt-add-repository 'deb https://notesalexp.org/debian/trusty trusty main'
+  # update and install all packages
+  - sudo apt-get -qq update
+  - sudo apt-get install -y libav-tools graphicsmagick imagemagick ffmpeg libopenjp2-tools
+
+script:
+  - mvn clean verify -Pfreedeps
+
+#after_success:
+#  - mvn clean cobertura:cobertura coveralls:report
