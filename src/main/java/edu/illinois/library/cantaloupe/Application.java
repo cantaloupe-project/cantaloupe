@@ -46,7 +46,7 @@ public final class Application {
      */
     private static String readVersionFromManifest() {
         String versionStr = null;
-        final Class clazz = Application.class;
+        final Class<Application> clazz = Application.class;
         final String className = clazz.getSimpleName() + ".class";
         final URL classUrl = clazz.getResource(className);
 

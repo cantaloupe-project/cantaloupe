@@ -16,7 +16,6 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +29,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static edu.illinois.library.cantaloupe.cache.FilesystemCache.getHashedStringBasedSubdirectory;
 import static edu.illinois.library.cantaloupe.cache.FilesystemCache.rootDerivativeImagePathname;
 import static edu.illinois.library.cantaloupe.cache.FilesystemCache.rootInfoPathname;
-import static edu.illinois.library.cantaloupe.cache.FilesystemCache.rootPathname;
 import static edu.illinois.library.cantaloupe.cache.FilesystemCache.rootSourceImagePathname;
 import static org.junit.Assert.*;
 

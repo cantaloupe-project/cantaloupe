@@ -49,7 +49,7 @@ public class ProcessorFactory {
         }
         final String className = ProcessorFactory.class.getPackage().getName() +
                 "." + processorName;
-        final Class class_ = Class.forName(className);
+        final Class<?> class_ = Class.forName(className);
         final Processor processor = (Processor) class_.newInstance();
 
         InitializationException e = processor.getInitializationException();

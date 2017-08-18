@@ -714,8 +714,8 @@ public class Version2_0ConformanceTest extends ResourceTest {
         ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/info.json");
         String json = client.get().getText();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = mapper.readValue(json, ImageInfo.class);
-        List profile = (List) info.get("profile");
+        ImageInfo<?, ?> info = mapper.readValue(json, ImageInfo.class);
+        List<?> profile = (List<?>) info.get("profile");
         assertEquals("http://iiif.io/api/image/2/level2.json",
                 profile.get(0));
     }

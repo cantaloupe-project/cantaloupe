@@ -75,7 +75,7 @@ public class Authorizer {
         resultingSizeArg.put("width", resultingSize.width);
         resultingSizeArg.put("height", resultingSize.height);
 
-        final Map opListMap = opList.toMap(fullSize);
+        final Map<String, Object> opListMap = opList.toMap(fullSize);
 
         try {
             final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
@@ -94,7 +94,7 @@ public class Authorizer {
                     return new AuthInfo(false);
                 }
             } else {
-                final Map redirectInfo = (Map) result;
+                final Map<?, ?> redirectInfo = (Map<?, ?>) result;
                 final String location = redirectInfo.get("location").toString();
                 // Prevent circular redirects
                 if (!requestURI.equals(location)) {

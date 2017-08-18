@@ -134,7 +134,7 @@ public class AdminResource extends AbstractResource {
     @Post("json")
     public Representation doPost(Representation rep) throws IOException {
         final Configuration config = Configuration.getInstance();
-        final Map submittedConfig = new ObjectMapper().readValue(
+        final Map<?, ?> submittedConfig = new ObjectMapper().readValue(
                 rep.getStream(), HashMap.class);
 
         // Copy configuration keys and values from the request JSON payload to
@@ -157,9 +157,9 @@ public class AdminResource extends AbstractResource {
     private Map<String,Object> configurationAsMap() {
         final Configuration config = Configuration.getInstance();
         final Map<String,Object> configMap = new HashMap<>();
-        final Iterator it = config.getKeys();
+        final Iterator<String> it = config.getKeys();
         while (it.hasNext()) {
-            final String key = (String) it.next();
+            final String key = it.next();
             final Object value = config.getProperty(key);
             configMap.put(key, value);
         }
