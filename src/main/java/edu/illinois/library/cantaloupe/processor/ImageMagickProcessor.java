@@ -685,9 +685,15 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             }
             args.add("-ping");
             args.add("-format");
-            // We need to read this even when not respecting orientation,
-            // because GM's crop operation is orientation-unaware.
-            args.add("%w\n%h\n%[EXIF:Orientation]");
+            // N.B. 1: We need to read this even when not respecting
+            // orientation, because GM's crop operation is orientation-unaware.
+            // N.B. 2: IM (7.0.6-7) seems to have some kind of issue with
+            // retrieving EXIF tags by name. The glob works around it. This
+            // should be OK, as I don't think there are any other EXIF tags
+            // that would match this. Another benefit of the glob is that it
+            // suppresses an "unknown image property" warning when the source
+            // image has no Orientation tag.
+            args.add("%w\n%h\n%[EXIF:*Orientation]");
             args.add(format.getPreferredExtension() + ":-");
 
             final ArrayListOutputConsumer consumer =
@@ -696,29 +702,34 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             final ProcessStarter cmd = new ProcessStarter();
             cmd.setInputProvider(new Pipe(inputStream, null));
             cmd.setOutputConsumer(consumer);
-            logger.info("readImageInfo(): invoking {}",
-                    StringUtils.join(args, " ").replace("\n", ","));
+            final String cmdString = StringUtils.join(args, " ")
+                    .replace("\n", ",");
+            logger.info("readImageInfo(): invoking {}", cmdString);
             cmd.run(args);
 
             final List<String> output = consumer.getOutput();
-            final int width = Integer.parseInt(output.get(0));
-            final int height = Integer.parseInt(output.get(1));
-            // GM is not tile-aware, so set the tile size to the full
-            // dimensions.
-            final Info info = new Info(width, height, width, height,
-                    getSourceFormat());
-            // Do we have an EXIF orientation to deal with?
-            if (output.size() > 2) {
-                try {
-                    final int exifOrientation = Integer.parseInt(output.get(2));
-                    final Orientation orientation =
-                            Orientation.forEXIFOrientation(exifOrientation);
-                    info.getImages().get(0).setOrientation(orientation);
-                } catch (IllegalArgumentException e) {
-                    // whatever
+            if (output.size() > 0) {
+                final int width = Integer.parseInt(output.get(0));
+                final int height = Integer.parseInt(output.get(1));
+                // GM is not tile-aware, so set the tile size to the full
+                // dimensions.
+                final Info info = new Info(width, height, width, height,
+                        getSourceFormat());
+                // Do we have an EXIF orientation to deal with?
+                if (output.size() > 2) {
+                    try {
+                        final int exifOrientation = Integer.parseInt(output.get(2));
+                        final Orientation orientation =
+                                Orientation.forEXIFOrientation(exifOrientation);
+                        info.getImages().get(0).setOrientation(orientation);
+                    } catch (IllegalArgumentException e) {
+                        logger.warn("readImageInfo(): {}", e.getMessage());
+                    }
                 }
+                return info;
             }
-            return info;
+            throw new IOException("readImageInfo(): nothing received on " +
+                    "stdout from command: " + cmdString);
         } catch (Exception e) {
             throw new ProcessorException(e.getMessage(), e);
         }
