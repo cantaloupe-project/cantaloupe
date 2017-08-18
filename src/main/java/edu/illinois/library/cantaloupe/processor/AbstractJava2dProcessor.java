@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
@@ -17,8 +16,6 @@ import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
@@ -31,9 +28,6 @@ import java.util.List;
 import java.util.Set;
 
 abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
-
-    private static Logger logger = LoggerFactory.
-            getLogger(AbstractJava2DProcessor.class);
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();

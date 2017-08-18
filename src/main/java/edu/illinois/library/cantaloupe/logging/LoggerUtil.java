@@ -25,7 +25,7 @@ public abstract class LoggerUtil {
             loggerContext.reset();
             // Copy logging-related configuration key/values into logger
             // context properties.
-            final Iterator it = appConfig.getKeys();
+            final Iterator<String> it = appConfig.getKeys();
             while (it.hasNext()) {
                 final String key = (String) it.next();
                 if (key.startsWith("log.")) {

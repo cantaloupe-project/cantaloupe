@@ -314,7 +314,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
         }
         // Fall back to setting it in the main config file.
         if (!wasSet) {
-            Iterator it = commonsConfigs.values().iterator();
+            Iterator<org.apache.commons.configuration.PropertiesConfiguration> it = commonsConfigs.values().iterator();
             if (it.hasNext()) {
                 org.apache.commons.configuration.PropertiesConfiguration commonsConfig =
                         (org.apache.commons.configuration.PropertiesConfiguration) it.next();

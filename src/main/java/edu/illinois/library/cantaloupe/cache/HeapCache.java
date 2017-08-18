@@ -437,7 +437,6 @@ class HeapCache implements DerivativeCache {
         return new Key(opList.getIdentifier().toString(), opList.toString());
     }
 
-    @SuppressWarnings("unchecked")
     synchronized void loadFromPersistentStore() {
         final Configuration config = Configuration.getInstance();
         final String pathname = config.getString(HEAPCACHE_PATHNAME);

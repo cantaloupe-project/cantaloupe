@@ -128,7 +128,6 @@ public class ProcessStarter {
    Constructor.
    */
 
-  @SuppressWarnings("deprecation")
   public ProcessStarter() {
     iProcessListener = new LinkedList<>();
     iProcessEventListener = new LinkedList<>();

@@ -178,7 +178,7 @@ abstract class ImageInfoFactory {
 
         // additional keys
         try {
-            final Map keyMap = (Map) ScriptEngineFactory.getScriptEngine().
+            final Map<String, Object> keyMap = (Map<String, Object>) ScriptEngineFactory.getScriptEngine().
                     invoke(SERVICE_DELEGATE_METHOD, identifier.toString());
             imageInfo.putAll(keyMap);
         } catch (DelegateScriptDisabledException e) {

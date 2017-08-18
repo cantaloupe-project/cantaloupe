@@ -79,7 +79,7 @@ public class RubyScriptEngineTest extends BaseTest {
         String function = "func3";
 
         try {
-            Map result = (Map) instance.invoke(function);
+            Map<?, ?> result = (Map<?, ?>) instance.invoke(function);
             fail("Shouldn't be able to cast an array to a map");
         } catch (ClassCastException e) {
             // pass

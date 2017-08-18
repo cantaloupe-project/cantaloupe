@@ -42,7 +42,7 @@ public class ConfigurationResource extends APIResource {
     @Put("json")
     public Representation putConfiguration(Representation rep) throws Exception {
         final Configuration config = Configuration.getInstance();
-        final Map submittedConfig = new ObjectMapper().readValue(
+        final Map<?, ?> submittedConfig = new ObjectMapper().readValue(
                 rep.getStream(), HashMap.class);
 
         // Copy configuration keys and values from the request JSON payload to

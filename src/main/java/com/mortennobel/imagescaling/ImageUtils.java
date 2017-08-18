@@ -256,8 +256,8 @@ public class ImageUtils {
      */
     public static void copyJpegMetaData(InputStream source, InputStream dest, ImageOutputStream out) throws IOException {
         // Read meta data from src image
-        Iterator iter = ImageIO.getImageReadersByFormatName("jpeg");
-        ImageReader reader=(ImageReader) iter.next();
+        Iterator<ImageReader> readersIter = ImageIO.getImageReadersByFormatName("jpeg");
+        ImageReader reader = readersIter.next();
         ImageInputStream iis = new MemoryCacheImageInputStream(source);
         reader.setInput(iis);
         IIOMetadata metadata = reader.getImageMetadata(0);
@@ -269,8 +269,8 @@ public class ImageUtils {
         image.setMetadata(metadata);
         outIis.close();
         // write dest image
-        iter = ImageIO.getImageWritersByFormatName("jpeg");
-        ImageWriter writer=(ImageWriter) iter.next();
+        Iterator<ImageWriter> writersIter = ImageIO.getImageWritersByFormatName("jpeg");
+        ImageWriter writer = writersIter.next();
         writer.setOutput(out);
         writer.write(image);
     }

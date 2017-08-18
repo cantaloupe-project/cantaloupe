@@ -92,7 +92,7 @@ public class OperationListTest extends BaseTest {
         instance = new OperationList(new Identifier("cats"), Format.JPG);
         instance.add(new Rotate());
         instance.addAfter(new Scale(), Rotate.class);
-        Iterator it = instance.iterator();
+        Iterator<Operation> it = instance.iterator();
         assertTrue(it.next() instanceof Rotate);
         assertTrue(it.next() instanceof Scale);
     }
@@ -105,7 +105,7 @@ public class OperationListTest extends BaseTest {
         class SubDummyOverlay extends DummyOverlay {}
 
         instance.addAfter(new SubDummyOverlay(), Overlay.class);
-        Iterator it = instance.iterator();
+        Iterator<Operation> it = instance.iterator();
         assertTrue(it.next() instanceof DummyOverlay);
         assertTrue(it.next() instanceof SubDummyOverlay);
     }
@@ -115,7 +115,7 @@ public class OperationListTest extends BaseTest {
         instance = new OperationList(new Identifier("cats"), Format.JPG);
         instance.add(new Rotate());
         instance.addAfter(new Scale(), Crop.class);
-        Iterator it = instance.iterator();
+        Iterator<Operation> it = instance.iterator();
         assertTrue(it.next() instanceof Rotate);
         assertTrue(it.next() instanceof Scale);
     }
@@ -157,7 +157,7 @@ public class OperationListTest extends BaseTest {
         instance = new OperationList(new Identifier("cats"), Format.JPG);
         instance.add(new Rotate());
         instance.addBefore(new Scale(), Crop.class);
-        Iterator it = instance.iterator();
+        Iterator<Operation> it = instance.iterator();
         assertTrue(it.next() instanceof Rotate);
         assertTrue(it.next() instanceof Scale);
     }
@@ -398,7 +398,7 @@ public class OperationListTest extends BaseTest {
     @Test
     public void testClear() {
         int opCount = 0;
-        Iterator it = instance.iterator();
+        Iterator<Operation> it = instance.iterator();
         while (it.hasNext()) {
             it.next();
             opCount++;
@@ -558,7 +558,7 @@ public class OperationListTest extends BaseTest {
     @Test
     public void testIterator() {
         int count = 0;
-        Iterator it = instance.iterator();
+        Iterator<Operation> it = instance.iterator();
         while (it.hasNext()) {
             it.next();
             count++;
@@ -569,7 +569,7 @@ public class OperationListTest extends BaseTest {
     @Test
     public void testIteratorCannotRemoveWhileFrozen() {
         instance.freeze();
-        Iterator it = instance.iterator();
+        Iterator<Operation> it = instance.iterator();
         it.next();
         try {
             it.remove();
@@ -660,8 +660,8 @@ public class OperationListTest extends BaseTest {
         final Dimension fullSize = new Dimension(100, 100);
         Map<String,Object> map = instance.toMap(fullSize);
         assertEquals("identifier.jpg", map.get("identifier"));
-        assertEquals(2, ((List) map.get("operations")).size());
-        assertEquals(0, ((Map) map.get("options")).size());
+        assertEquals(2, ((List<?>) map.get("operations")).size());
+        assertEquals(0, ((Map<?, ?>) map.get("options")).size());
     }
 
     /* toString() */
