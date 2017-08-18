@@ -13,6 +13,7 @@ import edu.illinois.library.cantaloupe.operation.overlay.Position;
 import edu.illinois.library.cantaloupe.operation.overlay.StringOverlay;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
@@ -156,6 +157,7 @@ public class Java2DUtilTest extends BaseTest {
         assertEquals(0, blue);
     }
 
+    @Ignore // TODO: see inline todo
     @Test
     public void testApplyOverlayWithStringOverlay() throws Exception {
         // read the base image into a BufferedImage
@@ -183,7 +185,7 @@ public class Java2DUtilTest extends BaseTest {
         assertEquals(0, green);
         assertEquals(0, blue);
 
-        // Test the font color
+        // Test the font color TODO: this pixel will be different colors on different JVMs and/or with different versions of the Arial font
         pixel = overlaidImage.getRGB(9, 8);
         alpha = (pixel >> 24) & 0xff;
         red = (pixel >> 16) & 0xff;
