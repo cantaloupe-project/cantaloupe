@@ -8,8 +8,6 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.resource.AbstractResource;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
@@ -25,7 +23,7 @@ public class ImageInfoFactoryTest extends BaseTest {
 
     private Identifier identifier;
     private String imageUri;
-    private ImageInfo imageInfo;
+    private ImageInfo<String, Object> imageInfo;
     private Processor processor;
 
     @Before
@@ -162,50 +160,50 @@ public class ImageInfoFactoryTest extends BaseTest {
 
     @Test
     public void testNewImageInfoProfile() throws Exception {
-        List profile = (List) imageInfo.get("profile");
+        List<?> profile = (List<?>) imageInfo.get("profile");
         assertEquals("http://iiif.io/api/image/2/level2.json", profile.get(0));
     }
 
     @Test
     public void testNewImageInfoFormats() throws Exception {
-        List profile = (List) imageInfo.get("profile");
+        List<?> profile = (List<?>) imageInfo.get("profile");
         // If some are present, we will assume the rest are. (The exact
         // contents of the sets are processor-dependent and this is not a
         // processor test.)
-        assertTrue(((Set) ((Map) profile.get(1)).get("formats")).contains("gif"));
+        assertTrue(((Set<?>) ((Map<?, ?>) profile.get(1)).get("formats")).contains("gif"));
     }
 
     @Test
     public void testNewImageInfoQualities() throws Exception {
-        List profile = (List) imageInfo.get("profile");
+        List<?> profile = (List<?>) imageInfo.get("profile");
         // If some are present, we will assume the rest are. (The exact
         // contents of the sets are processor-dependent and this is not a
         // processor test.)
-        assertTrue(((Set) ((Map) profile.get(1)).get("qualities")).contains("color"));
+        assertTrue(((Set<?>) ((Map<?, ?>) profile.get(1)).get("qualities")).contains("color"));
     }
 
     @Test
     public void testNewImageInfoMaxArea() throws Exception {
         final Configuration config = Configuration.getInstance();
-        List profile = (List) imageInfo.get("profile");
+        List<?> profile = (List<?>) imageInfo.get("profile");
 
         // with max_pixels > 0
-        assertTrue(((Map) profile.get(1)).get("maxArea").
+        assertTrue(((Map<?, ?>) profile.get(1)).get("maxArea").
                 equals(config.getInt(Key.MAX_PIXELS)));
 
         // with max_pixels == 0
         config.setProperty(Key.MAX_PIXELS, 0);
         imageInfo = ImageInfoFactory.newImageInfo(identifier, imageUri,
                 processor, processor.readImageInfo());
-        profile = (List) imageInfo.get("profile");
-        assertFalse(((Map) profile.get(1)).containsKey("maxArea"));
+        profile = (List<?>) imageInfo.get("profile");
+        assertFalse(((Map<?, ?>) profile.get(1)).containsKey("maxArea"));
     }
 
     @Test
     public void testNewImageInfoSupports() throws Exception {
-        List profile = (List) imageInfo.get("profile");
+        List<?> profile = (List<?>) imageInfo.get("profile");
 
-        final Set supportsSet = (Set) ((Map) profile.get(1)).get("supports");
+        final Set<?> supportsSet = (Set<?>) ((Map<?, ?>) profile.get(1)).get("supports");
         assertTrue(supportsSet.contains("baseUriRedirect"));
         assertTrue(supportsSet.contains("canonicalLinkHeader"));
         assertTrue(supportsSet.contains("cors"));

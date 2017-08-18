@@ -80,7 +80,7 @@ public abstract class CacheFactory {
                                     "implementation changed; creating a new " +
                                     "instance");
                             try {
-                                Class implClass = Class.forName(qualifiedName);
+                                Class<?> implClass = Class.forName(qualifiedName);
                                 cache = (DerivativeCache) implClass.newInstance();
                                 setDerivativeCache(cache);
                             } catch (ClassNotFoundException e) {
@@ -127,7 +127,7 @@ public abstract class CacheFactory {
                             logger.debug("getSourceCache(): implementation " +
                                     "changed; creating a new instance");
                             try {
-                                Class implClass = Class.forName(qualifiedName);
+                                Class<?> implClass = Class.forName(qualifiedName);
                                 cache = (SourceCache) implClass.newInstance();
                                 setSourceCache(cache);
                             } catch (ClassNotFoundException e) {

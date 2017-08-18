@@ -104,7 +104,7 @@ public class ResolverFactory {
 
     private Resolver newResolver(String name, Identifier identifier)
             throws Exception {
-        Class class_ = Class.forName(ResolverFactory.class.getPackage().getName() +
+        Class<?> class_ = Class.forName(ResolverFactory.class.getPackage().getName() +
                 "." + name);
         Resolver resolver = (Resolver) class_.newInstance();
         resolver.setIdentifier(identifier);

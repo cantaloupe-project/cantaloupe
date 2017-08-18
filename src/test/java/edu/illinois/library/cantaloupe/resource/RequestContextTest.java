@@ -30,8 +30,8 @@ public class RequestContextTest {
         Map<String,Object> actual = instance.asMap();
         assertEquals("http://example.org/cats", actual.get("URI"));
         assertEquals("1.2.3.4", actual.get("clientIP"));
-        assertEquals("Yes", ((Map) actual.get("headers")).get("X-Cats"));
-        assertEquals("yes", ((Map) actual.get("cookies")).get("cookie"));
+        assertEquals("Yes", ((Map<?, ?>) actual.get("headers")).get("X-Cats"));
+        assertEquals("yes", ((Map<?, ?>) actual.get("cookies")).get("cookie"));
     }
 
 }

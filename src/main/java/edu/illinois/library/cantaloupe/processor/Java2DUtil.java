@@ -3,8 +3,6 @@ package edu.illinois.library.cantaloupe.processor;
 import com.mortennobel.imagescaling.ResampleFilter;
 import com.mortennobel.imagescaling.ResampleOp;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
@@ -21,7 +19,6 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.overlay.StringOverlay;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
-import edu.illinois.library.cantaloupe.operation.overlay.OverlayService;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
