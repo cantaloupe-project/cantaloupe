@@ -23,5 +23,8 @@ before_install:
 script:
   - mvn clean verify -Pfreedeps
 
+services:
+  - redis-server
+
 #after_success:
 #  - mvn clean cobertura:cobertura coveralls:report

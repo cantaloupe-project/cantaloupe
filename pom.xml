@@ -720,7 +720,6 @@
                 <exclude>Amazon*Test</exclude>
                 <exclude>Azure*Test</exclude>
                 <exclude>Kakadu*Test</exclude>
-                <exclude>Redis*Test</exclude>
               </excludes>
             </configuration>
           </plugin>
