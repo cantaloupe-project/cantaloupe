@@ -41,13 +41,13 @@ class FakeStreamProcessor implements StreamProcessor {
     }
 
     @Override
-    public Set<Quality> getSupportedIiif1_1Qualities() {
+    public Set<Quality> getSupportedIIIF1Qualities() {
         return new HashSet<>();
     }
 
     @Override
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIiif2_0Qualities() {
+    getSupportedIIIF2Qualities() {
         return new HashSet<>();
     }
 

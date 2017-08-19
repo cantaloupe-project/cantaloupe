@@ -250,7 +250,7 @@ public abstract class ProcessorTest extends BaseTest {
      * must override if they lack support for any of these.
      */
     @Test
-    public void testGetSupportedIiif11Qualities() throws Exception {
+    public void testGetSupportedIIIF1Qualities() throws Exception {
         Processor proc = newInstance();
         proc.setSourceFormat(getAnySupportedSourceFormat(proc));
 
@@ -264,7 +264,7 @@ public abstract class ProcessorTest extends BaseTest {
                 edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY);
         expectedQualities.add(
                 edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE);
-        assertEquals(expectedQualities, proc.getSupportedIiif1_1Qualities());
+        assertEquals(expectedQualities, proc.getSupportedIIIF1Qualities());
     }
 
     /**
@@ -272,7 +272,7 @@ public abstract class ProcessorTest extends BaseTest {
      * must override if they lack support for any of these.
      */
     @Test
-    public void testGetSupportedIiif20Qualities() throws Exception {
+    public void testGetSupportedIIIF2Qualities() throws Exception {
         Processor proc = newInstance();
         proc.setSourceFormat(getAnySupportedSourceFormat(proc));
 
@@ -286,7 +286,7 @@ public abstract class ProcessorTest extends BaseTest {
                 edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT);
         expectedQualities.add(
                 edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY);
-        assertEquals(expectedQualities, proc.getSupportedIiif2_0Qualities());
+        assertEquals(expectedQualities, proc.getSupportedIIIF2Qualities());
     }
 
     /**

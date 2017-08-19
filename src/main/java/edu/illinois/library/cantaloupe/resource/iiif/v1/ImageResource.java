@@ -148,7 +148,7 @@ public class ImageResource extends IIIF1Resource {
 
         final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
                 processor.getSupportedFeatures(),
-                processor.getSupportedIiif1_1Qualities(),
+                processor.getSupportedIIIF1Qualities(),
                 processor.getAvailableOutputFormats());
         getBufferedResponseHeaders().add("Link",
                 String.format("<%s>;rel=\"profile\";", complianceLevel.getUri()));

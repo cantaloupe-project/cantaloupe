@@ -61,14 +61,14 @@ public interface Processor {
      *         format.
      */
     Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-    getSupportedIiif1_1Qualities();
+    getSupportedIIIF1Qualities();
 
     /**
      * @return All qualities supported by the processor for the set source
      *         format.
      */
     Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIiif2_0Qualities();
+    getSupportedIIIF2Qualities();
 
     /**
      * <p>Returns a list of global (not request-specific) warnings, such as

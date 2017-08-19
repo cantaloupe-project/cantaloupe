@@ -140,7 +140,7 @@ abstract class ImageInfoFactory {
         final String complianceUri = ComplianceLevel.getLevel(
                 SUPPORTED_SERVICE_FEATURES,
                 processor.getSupportedFeatures(),
-                processor.getSupportedIiif2_0Qualities(),
+                processor.getSupportedIIIF2Qualities(),
                 processor.getAvailableOutputFormats()).getUri();
         profile.add(complianceUri);
 
@@ -161,7 +161,7 @@ abstract class ImageInfoFactory {
 
         // qualities
         Set<String> qualityStrings = new HashSet<>();
-        for (Quality quality : processor.getSupportedIiif2_0Qualities()) {
+        for (Quality quality : processor.getSupportedIIIF2Qualities()) {
             qualityStrings.add(quality.toString().toLowerCase());
         }
         profileMap.put("qualities", qualityStrings);

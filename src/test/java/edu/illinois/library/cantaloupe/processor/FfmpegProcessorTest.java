@@ -89,7 +89,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
 
     @Test
     @Override
-    public void testGetSupportedIiif11Qualities() throws Exception {
+    public void testGetSupportedIIIF1Qualities() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
         Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
                 expectedQualities = new HashSet<>();
@@ -102,12 +102,12 @@ public class FfmpegProcessorTest extends ProcessorTest {
         expectedQualities.add(
                 edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE);
         assertEquals(expectedQualities,
-                instance.getSupportedIiif1_1Qualities());
+                instance.getSupportedIIIF1Qualities());
     }
 
     @Test
     @Override
-    public void testGetSupportedIiif20Qualities() throws Exception {
+    public void testGetSupportedIIIF2Qualities() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
         Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
                 expectedQualities = new HashSet<>();
@@ -120,7 +120,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
         expectedQualities.add(
                 edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY);
         assertEquals(expectedQualities,
-                instance.getSupportedIiif2_0Qualities());
+                instance.getSupportedIIIF2Qualities());
     }
 
     @Test

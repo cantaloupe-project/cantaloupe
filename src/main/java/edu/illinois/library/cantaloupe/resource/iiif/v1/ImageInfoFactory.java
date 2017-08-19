@@ -25,7 +25,7 @@ abstract class ImageInfoFactory {
 
         final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
                 processor.getSupportedFeatures(),
-                processor.getSupportedIiif1_1Qualities(),
+                processor.getSupportedIIIF1Qualities(),
                 processor.getAvailableOutputFormats());
 
         final int minTileSize = ConfigurationFactory.getInstance().
@@ -70,7 +70,7 @@ abstract class ImageInfoFactory {
         }
 
         // qualities
-        for (Quality quality : processor.getSupportedIiif1_1Qualities()) {
+        for (Quality quality : processor.getSupportedIIIF1Qualities()) {
             imageInfo.qualities.add(quality.toString().toLowerCase());
         }
 

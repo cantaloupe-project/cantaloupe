@@ -72,7 +72,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
     }
 
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-    getSupportedIiif1_1Qualities() {
+    getSupportedIIIF1Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
                 qualities = new HashSet<>();
         if (getAvailableOutputFormats().size() > 0) {
@@ -82,7 +82,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
     }
 
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIiif2_0Qualities() {
+    getSupportedIIIF2Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
                 qualities = new HashSet<>();
         if (getAvailableOutputFormats().size() > 0) {
