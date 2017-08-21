@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -74,6 +75,9 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
     /** Lazy-set by {@link #isQuietModeSupported()} */
     private static boolean checkedForQuietMode = false;
+    /** Set by {@link #initialize()} */
+    private static InitializationException initializationException;
+    private static AtomicBoolean isClassInitialized = new AtomicBoolean(false);
     /** Lazy-set by {@link #isQuietModeSupported()} */
     private static boolean isQuietModeSupported = true;
 
@@ -82,31 +86,11 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
     // will cache opj_dump output
     private String imageInfo;
 
-    static {
-        // Due to a quirk of opj_decompress, this processor requires access to
-        // /dev/stdout.
-        final File devStdout = new File("/dev/stdout");
-        if (devStdout.exists() && devStdout.canWrite()) {
-            // Due to another quirk of opj_decompress, we need to create a
-            // symlink from {temp path}/stdout.bmp to /dev/stdout, to tell
-            // opj_decompress what format to write.
-            try {
-                stdoutSymlink = createStdoutSymlink();
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        } else {
-            logger.error("Sorry, but OpenJpegProcessor won't work on this " +
-                    "platform as it requires access to /dev/stdout.");
-        }
-    }
-
     /**
      * Creates a unique symlink to /dev/stdout in a temporary directory, and
      * sets it to delete on exit.
      *
      * @return Path to the symlink.
-     * @throws IOException
      */
     private static Path createStdoutSymlink() throws IOException {
         File tempDir = new File(System.getProperty("java.io.tmpdir"));
@@ -119,8 +103,8 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
     }
 
     /**
-     * @param binaryName Name of one of the opj_* binaries
-     * @return
+     * @param binaryName Name of one of the opj_* binaries.
+     * @return Absolute path to the given binary.
      */
     private static String getPath(String binaryName) {
         String path = Configuration.getInstance().
@@ -132,6 +116,22 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
             path = binaryName;
         }
         return path;
+    }
+
+    private static synchronized void initialize() throws IOException {
+        // Due to a quirk of opj_decompress, this processor requires access to
+        // /dev/stdout.
+        final Path devStdout = Paths.get("/dev/stdout");
+        if (Files.exists(devStdout) && Files.isWritable(devStdout)) {
+            // Due to another quirk of opj_decompress, we need to create a
+            // symlink from {temp path}/stdout.bmp to /dev/stdout, to tell
+            // opj_decompress what format to write.
+            stdoutSymlink = createStdoutSymlink();
+        } else {
+            logger.error("Sorry, but " + OpenJpegProcessor.class.getSimpleName() +
+                    " won't work on this platform as it requires access to " +
+                    "/dev/stdout.");
+        }
     }
 
     static synchronized boolean isQuietModeSupported() {
@@ -191,6 +191,16 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         isQuietModeSupported = trueOrFalse;
     }
 
+    OpenJpegProcessor() {
+        if (!isClassInitialized.get()) {
+            try {
+                initialize();
+            } catch (Exception e) {
+                initializationException = new InitializationException(e);
+            }
+        }
+    }
+
     @Override
     public Set<Format> getAvailableOutputFormats() {
         final Set<Format> outputFormats = new HashSet<>();
@@ -217,6 +227,11 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
             }
         }
         return tileSize;
+    }
+
+    @Override
+    public InitializationException getInitializationException() {
+        return initializationException;
     }
 
     /**

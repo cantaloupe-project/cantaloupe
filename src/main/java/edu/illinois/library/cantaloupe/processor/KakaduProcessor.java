@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * <p>Processor using the Kakadu kdu_expand and kdu_jp2info command-line
@@ -79,34 +80,18 @@ import java.util.UUID;
  */
 class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
-    private static Logger logger = LoggerFactory.
+    private static final Logger logger = LoggerFactory.
             getLogger(KakaduProcessor.class);
 
     private static final short MAX_REDUCTION_FACTOR = 5;
 
+    /** Set by {@link #initialize()} */
+    private static InitializationException initializationException;
+    private static AtomicBoolean isClassInitialized = new AtomicBoolean(false);
     private static Path stdoutSymlink;
 
     /** will cache the output of kdu_jp2info */
     private Document infoDocument;
-
-    static {
-        // Due to a quirk of kdu_expand, this processor requires access to
-        // /dev/stdout.
-        final File devStdout = new File("/dev/stdout");
-        if (devStdout.exists() && devStdout.canWrite()) {
-            // Due to another quirk of kdu_expand, we need to create a symlink
-            // from {temp path}/stdout.tif to /dev/stdout, to tell kdu_expand
-            // what format to write.
-            try {
-                stdoutSymlink = createStdoutSymlink();
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        } else {
-            logger.error("Sorry, but KakaduProcessor won't work on this " +
-                    "platform as it requires access to /dev/stdout.");
-        }
-    }
 
     /**
      * Creates a unique symlink to /dev/stdout in a temporary directory, and
@@ -127,7 +112,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
     /**
      * @param binaryName Name of one of the kdu_* binaries
-     * @return
+     * @return Absolute path to the given binary.
      */
     private static String getPath(String binaryName) {
         String path = Configuration.getInstance().
@@ -139,6 +124,32 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
             path = binaryName;
         }
         return path;
+    }
+
+    private static synchronized void initialize() throws IOException {
+        // Due to a quirk of kdu_expand, this processor requires access to
+        // /dev/stdout.
+        final Path devStdout = Paths.get("/dev/stdout");
+        if (Files.exists(devStdout) && Files.isWritable(devStdout)) {
+            // Due to another quirk of kdu_expand, we need to create a symlink
+            // from {temp path}/stdout.tif to /dev/stdout, to tell kdu_expand
+            // what format to write.
+            stdoutSymlink = createStdoutSymlink();
+        } else {
+            logger.error("Sorry, but " + KakaduProcessor.class.getSimpleName() +
+                    " won't work on this platform as it requires access to " +
+                    "/dev/stdout.");
+        }
+    }
+
+    KakaduProcessor() {
+        if (!isClassInitialized.get()) {
+            try {
+                initialize();
+            } catch (Exception e) {
+                initializationException = new InitializationException(e);
+            }
+        }
     }
 
     @Override
@@ -167,6 +178,11 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
             }
         }
         return tileSize;
+    }
+
+    @Override
+    public InitializationException getInitializationException() {
+        return initializationException;
     }
 
     /**
