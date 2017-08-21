@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.script;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
@@ -88,7 +87,7 @@ public class RubyScriptEngineTest extends BaseTest {
 
     @Test
     public void testInvokeWithCacheEnabled() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_METHOD_INVOCATION_CACHE_ENABLED, true);
 
         final String code = "module Cantaloupe\n" +

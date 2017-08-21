@@ -5,7 +5,6 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -62,7 +61,7 @@ public class AmazonS3CacheTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         config.setProperty(Key.CACHE_SERVER_TTL, 2);
         config.setProperty(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX, "test/");
         config.setProperty(Key.AMAZONS3CACHE_ACCESS_KEY_ID, getAccessKeyId());
@@ -96,7 +95,7 @@ public class AmazonS3CacheTest extends BaseTest {
     @Test
     public void testGetBucketName() {
         assertEquals(
-                ConfigurationFactory.getInstance().getString(Key.AMAZONS3CACHE_BUCKET_NAME),
+                Configuration.getInstance().getString(Key.AMAZONS3CACHE_BUCKET_NAME),
                 instance.getBucketName());
     }
 
@@ -187,7 +186,7 @@ public class AmazonS3CacheTest extends BaseTest {
 
     @Test
     public void testGetObjectKeyPrefix() {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
 
         config.setProperty(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX, "");
         assertEquals("", instance.getObjectKeyPrefix());
@@ -264,7 +263,7 @@ public class AmazonS3CacheTest extends BaseTest {
 
     @Test
     public void testPurgeExpired() throws Exception {
-        ConfigurationFactory.getInstance().setProperty(Key.CACHE_SERVER_TTL, 4);
+        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 4);
 
         // add an image
         File fixture1 = TestUtil.getImage(identifier.toString());

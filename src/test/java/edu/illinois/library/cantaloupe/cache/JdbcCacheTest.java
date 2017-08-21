@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -38,7 +37,7 @@ public class JdbcCacheTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         // use an in-memory H2 database
         config.setProperty(Key.JDBCCACHE_JDBC_URL, "jdbc:h2:mem:test");
         config.setProperty(Key.JDBCCACHE_USER, "sa");
@@ -87,7 +86,7 @@ public class JdbcCacheTest extends BaseTest {
     }
 
     private void seed(Connection connection) throws Exception {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
 
         // persist some derivative images
         OperationList ops = TestUtil.newOperationList();
@@ -173,7 +172,7 @@ public class JdbcCacheTest extends BaseTest {
 
     @Test
     public void testGetImageInfoWithNonZeroTtl() throws Exception {
-        ConfigurationFactory.getInstance().setProperty(Key.CACHE_SERVER_TTL, 1);
+        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 1);
 
         // wait for the seed data to invalidate
         Thread.sleep(1500);
@@ -202,7 +201,7 @@ public class JdbcCacheTest extends BaseTest {
 
     @Test
     public void testGetImageInfoUpdatesLastAccessedTime() throws Exception {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
 
         final Identifier identifier = new Identifier("cats");
 
@@ -247,7 +246,7 @@ public class JdbcCacheTest extends BaseTest {
     @Test
     public void testNewDerivativeImageInputStreamWithOpListWithNonzeroTtl()
             throws Exception {
-        ConfigurationFactory.getInstance().setProperty(Key.CACHE_SERVER_TTL, 1);
+        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 1);
 
         // wait for the seed data to invalidate
         Thread.sleep(1500);
@@ -277,7 +276,7 @@ public class JdbcCacheTest extends BaseTest {
     @Test
     public void testNewDerivativeImageInputStreamWithOpListUpdatesLastAccessedTime()
             throws Exception {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
 
         final OperationList opList = TestUtil.newOperationList();
         opList.setIdentifier(new Identifier("cats"));
@@ -327,7 +326,7 @@ public class JdbcCacheTest extends BaseTest {
         // ttl = 0
         assertEquals(new Date(Long.MIN_VALUE), instance.oldestValidDate());
         // ttl = 50
-        ConfigurationFactory.getInstance().setProperty(Key.CACHE_SERVER_TTL, 50);
+        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 50);
         long expectedTime = Date.from(Instant.now().minus(Duration.ofSeconds(50))).getTime();
         long actualTime = instance.oldestValidDate().getTime();
         assertTrue(Math.abs(actualTime - expectedTime) < 100);
@@ -337,7 +336,7 @@ public class JdbcCacheTest extends BaseTest {
 
     @Test
     public void testPurge() throws Exception {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
 
         instance.purge();
 
@@ -370,7 +369,7 @@ public class JdbcCacheTest extends BaseTest {
         ops.setIdentifier(new Identifier("cats"));
         instance.purge(ops);
 
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
 
         try (Connection connection = JdbcCache.getConnection()) {
             // assert that the derivative image was purged
@@ -397,7 +396,7 @@ public class JdbcCacheTest extends BaseTest {
 
     @Test
     public void testPurgeExpired() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.CACHE_SERVER_TTL, 1);
 
         // wait for the seed data to invalidate
@@ -440,7 +439,7 @@ public class JdbcCacheTest extends BaseTest {
 
     @Test
     public void testPurgeWithIdentifier() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
 
         Identifier id1 = new Identifier("cats");
         instance.purge(id1);
@@ -477,7 +476,7 @@ public class JdbcCacheTest extends BaseTest {
 
     @Test
     public void testPutWithImageInfoSetsLastAccessedTime() throws Exception {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
 
         Identifier identifier = new Identifier("birds");
         Info info = new Info(52, 52);

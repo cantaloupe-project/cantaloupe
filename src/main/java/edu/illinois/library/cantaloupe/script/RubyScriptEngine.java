@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.script;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
@@ -120,7 +119,7 @@ class RubyScriptEngine extends AbstractScriptEngine
         }
 
         Object returnValue;
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         if (config.getBoolean(Key.DELEGATE_METHOD_INVOCATION_CACHE_ENABLED, false)) {
             returnValue = retrieveFromCacheOrInvoke(methodName, args);
         } else {

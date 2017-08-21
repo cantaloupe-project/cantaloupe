@@ -8,7 +8,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -57,7 +56,7 @@ public class AzureStorageCacheTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.CACHE_SERVER_TTL, 1);
         config.setProperty(Key.AZURESTORAGECACHE_OBJECT_KEY_PREFIX, "test/");
         config.setProperty(Key.AZURESTORAGECACHE_ACCOUNT_NAME, getAccountName());
@@ -89,8 +88,7 @@ public class AzureStorageCacheTest extends BaseTest {
     @Test
     public void testGetContainerName() {
         assertEquals(
-                ConfigurationFactory.getInstance().
-                        getString(Key.AZURESTORAGECACHE_CONTAINER_NAME),
+                Configuration.getInstance().getString(Key.AZURESTORAGECACHE_CONTAINER_NAME),
                 AzureStorageCache.getContainerName());
     }
 
@@ -173,7 +171,7 @@ public class AzureStorageCacheTest extends BaseTest {
 
     @Test
     public void testGetObjectKeyPrefix() {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
 
         config.setProperty(Key.AZURESTORAGECACHE_OBJECT_KEY_PREFIX, "");
         assertEquals("", instance.getObjectKeyPrefix());

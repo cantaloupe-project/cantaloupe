@@ -9,7 +9,6 @@ import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.blob.ListBlobItem;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
@@ -102,7 +101,7 @@ class AzureStorageCache implements DerivativeCache {
     static synchronized CloudBlobClient getClientInstance() {
         if (client == null) {
             try {
-                final Configuration config = ConfigurationFactory.getInstance();
+                final Configuration config = Configuration.getInstance();
                 final String accountName =
                         config.getString(Key.AZURESTORAGECACHE_ACCOUNT_NAME);
                 final String accountKey =
@@ -130,7 +129,7 @@ class AzureStorageCache implements DerivativeCache {
 
     static String getContainerName() {
         // All letters in a container name must be lowercase.
-        return ConfigurationFactory.getInstance().
+        return Configuration.getInstance().
                 getString(Key.AZURESTORAGECACHE_CONTAINER_NAME).toLowerCase();
     }
 
@@ -239,7 +238,7 @@ class AzureStorageCache implements DerivativeCache {
      *         with trailing slash.
      */
     String getObjectKeyPrefix() {
-        String prefix = ConfigurationFactory.getInstance().
+        String prefix = Configuration.getInstance().
                 getString(Key.AZURESTORAGECACHE_OBJECT_KEY_PREFIX);
         if (prefix.length() < 1 || prefix.equals("/")) {
             return "";
@@ -295,7 +294,7 @@ class AzureStorageCache implements DerivativeCache {
         final CloudBlobClient client = getClientInstance();
 
         final Calendar c = Calendar.getInstance();
-        c.add(Calendar.SECOND, 0 - ConfigurationFactory.getInstance().
+        c.add(Calendar.SECOND, 0 - Configuration.getInstance().
                 getInt(Key.CACHE_SERVER_TTL));
         final Date cutoffDate = c.getTime();
 

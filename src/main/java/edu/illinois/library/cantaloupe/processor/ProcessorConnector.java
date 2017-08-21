@@ -4,7 +4,7 @@ import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.SourceCache;
 import edu.illinois.library.cantaloupe.cache.CacheDisabledException;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resolver.FileResolver;
@@ -40,7 +40,7 @@ public class ProcessorConnector {
 
     public static StreamProcessorRetrievalStrategy
     getStreamProcessorRetrievalStrategy() {
-        return ConfigurationFactory.getInstance().getString(
+        return Configuration.getInstance().getString(
                 Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
                 "StreamStrategy").equals("StreamStrategy") ?
                 StreamProcessorRetrievalStrategy.STREAM :

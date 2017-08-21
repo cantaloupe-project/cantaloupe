@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -29,7 +28,7 @@ public class DelegateOverlayServiceTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());

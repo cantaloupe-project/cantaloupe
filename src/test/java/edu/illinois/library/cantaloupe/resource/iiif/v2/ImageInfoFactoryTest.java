@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -30,7 +29,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
         config.setProperty(Key.MAX_PIXELS, 100);
 
@@ -44,7 +43,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     private void setUpForRotatedImage() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_RESPECT_ORIENTATION, true);
 
         identifier = new Identifier("bla");
@@ -215,7 +214,7 @@ public class ImageInfoFactoryTest extends BaseTest {
 
     @Test
     public void testNewImageInfoDelegateScriptKeys() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());

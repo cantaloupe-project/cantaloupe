@@ -90,8 +90,8 @@ public class StandaloneEntryTest extends BaseTest {
         System.setProperty(StandaloneEntry.TEST_VM_OPTION, "true");
 
         ConfigurationFactory.clearInstance();
-        final Configuration config = ConfigurationFactory.getInstance();
 
+        final Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTP_ENABLED, true);
         config.setProperty(Key.HTTP_PORT, HTTP_PORT);
         config.setProperty(Key.HTTPS_ENABLED, false);
@@ -264,7 +264,7 @@ public class StandaloneEntryTest extends BaseTest {
         final File infoDir = new File(cacheDir.getAbsolutePath() + "/info");
 
         // set up the cache
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
         config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
         config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
@@ -319,7 +319,7 @@ public class StandaloneEntryTest extends BaseTest {
         final File infoDir = new File(cacheDir.getAbsolutePath() + "/info");
 
         // set up the cache
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
         config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
         config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
@@ -380,7 +380,7 @@ public class StandaloneEntryTest extends BaseTest {
         imageDir.mkdirs();
         infoDir.mkdirs();
 
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
         config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
         config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,

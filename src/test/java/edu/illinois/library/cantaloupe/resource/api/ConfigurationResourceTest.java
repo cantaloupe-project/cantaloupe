@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.resource.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.RestletApplication;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.restlet.data.MediaType;
@@ -44,7 +44,7 @@ public class ConfigurationResourceTest extends APIResourceTest {
                 RestletApplication.CONFIGURATION_PATH, USERNAME, SECRET);
         client.put(entity, MediaType.APPLICATION_JSON);
 
-        assertEquals("cats", ConfigurationFactory.getInstance().getString("test"));
+        assertEquals("cats", Configuration.getInstance().getString("test"));
     }
 
 }

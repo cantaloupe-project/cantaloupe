@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +19,7 @@ public abstract class CacheWorkerRunner {
     private static ScheduledFuture<?> future;
 
     public static synchronized void start() {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         if (config.getBoolean(Key.CACHE_WORKER_ENABLED, false)) {
             executorService = Executors.newSingleThreadScheduledExecutor();
             future = executorService.scheduleAtFixedRate(

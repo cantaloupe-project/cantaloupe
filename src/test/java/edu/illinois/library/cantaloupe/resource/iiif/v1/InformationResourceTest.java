@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
@@ -37,7 +36,7 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testCacheHeadersWhenClientCachingIsEnabledAndResponseIsCacheable() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.CLIENT_CACHE_ENABLED, "true");
         config.setProperty(Key.CLIENT_CACHE_MAX_AGE, "1234");
         config.setProperty(Key.CLIENT_CACHE_SHARED_MAX_AGE, "4567");
@@ -75,7 +74,7 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testCacheHeadersWhenClientCachingIsEnabledAndResponseIsNotCacheable() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.CLIENT_CACHE_ENABLED, "true");
         config.setProperty(Key.CLIENT_CACHE_MAX_AGE, "1234");
         config.setProperty(Key.CLIENT_CACHE_SHARED_MAX_AGE, "4567");
@@ -106,7 +105,7 @@ public class InformationResourceTest extends ResourceTest {
     @Test
     public void testCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInUrl()
             throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.CLIENT_CACHE_ENABLED, "true");
         config.setProperty(Key.CLIENT_CACHE_MAX_AGE, "1234");
         config.setProperty(Key.CLIENT_CACHE_SHARED_MAX_AGE, "4567");
@@ -126,7 +125,7 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testCacheHeadersWhenClientCachingIsDisabled() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.CLIENT_CACHE_ENABLED, false);
 
         ClientResource client = getClientForUriPath(
@@ -175,7 +174,7 @@ public class InformationResourceTest extends ResourceTest {
             cacheFolder.mkdir();
         }
 
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
         config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
         config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
@@ -194,7 +193,7 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testEndpointDisabled() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
 
         config.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, true);
@@ -249,7 +248,7 @@ public class InformationResourceTest extends ResourceTest {
             cacheDir.mkdir();
         }
 
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX,
                 sourceDir.getAbsolutePath() + "/");
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
@@ -313,7 +312,7 @@ public class InformationResourceTest extends ResourceTest {
      */
     @Test
     public void testResolverProcessorCompatibility() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
         config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
@@ -333,7 +332,7 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testSlashSubstitution() throws Exception {
-        ConfigurationFactory.getInstance().setProperty(Key.SLASH_SUBSTITUTE, "CATS");
+        Configuration.getInstance().setProperty(Key.SLASH_SUBSTITUTE, "CATS");
 
         ClientResource client = getClientForUriPath("/subfolderCATSjpg/info.json");
         client.get();
@@ -364,7 +363,7 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testUrisInJsonWithBaseUriOverride() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.BASE_URI, "http://example.org/");
 
         ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");
@@ -394,7 +393,7 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testBaseUriOverridesProxyHeaders() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.BASE_URI, "https://example.net/");
 
         ClientResource client = getClientForUriPath("/" + IMAGE + "/info.json");

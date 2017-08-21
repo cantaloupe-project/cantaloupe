@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
@@ -335,7 +334,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             digest.update(uniqueString.getBytes(Charset.forName("UTF8")));
             final String sum = Hex.encodeHexString(digest.digest());
 
-            final Configuration config = ConfigurationFactory.getInstance();
+            final Configuration config = Configuration.getInstance();
             final int depth = config.getInt(Key.FILESYSTEMCACHE_DIRECTORY_DEPTH, 3);
             final int nameLength =
                     config.getInt(Key.FILESYSTEMCACHE_DIRECTORY_NAME_LENGTH, 2);
@@ -369,7 +368,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      *         returned.
      */
     private static boolean isExpired(File file) {
-        final long ttlMsec = 1000 * ConfigurationFactory.getInstance().
+        final long ttlMsec = 1000 * Configuration.getInstance().
                 getLong(Key.CACHE_SERVER_TTL, 0);
         final long age = System.currentTimeMillis() - getLastAccessTime(file);
         return ttlMsec > 0 && file.isFile() && age > ttlMsec;

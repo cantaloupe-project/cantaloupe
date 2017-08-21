@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -76,7 +75,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
 
     @Test
     public void testProcessPreservesMetadata() throws Exception {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         config.clear();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         assertXmpPresent(true);
@@ -84,7 +83,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
 
     @Test
     public void testProcessStripsMetadata() throws Exception {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         config.clear();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, false);
         // Metadata shouldn't be stripped, because it would also strip the ICC
@@ -93,7 +92,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
     }
 
     private void assertXmpPresent(boolean yesOrNo) throws Exception {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         config.clear();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, yesOrNo);
 
@@ -141,7 +140,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
     @Test
     public void testProcessWithRotationAndCustomBackgroundColorAndTransparentOutputFormat()
             throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.clear();
         config.setProperty(Key.PROCESSOR_BACKGROUND_COLOR, "blue");
 

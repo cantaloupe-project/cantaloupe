@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.resolver;
 import static org.junit.Assert.*;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -29,7 +28,7 @@ public class FilesystemResolverTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
@@ -123,7 +122,7 @@ public class FilesystemResolverTest extends BaseTest {
 
     @Test
     public void getPathnameWithBasicLookupStrategy() throws IOException {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
 
         config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
@@ -153,7 +152,7 @@ public class FilesystemResolverTest extends BaseTest {
 
     @Test
     public void getPathnameWithScriptLookupStrategy() throws IOException {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
                 "ScriptLookupStrategy");
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);

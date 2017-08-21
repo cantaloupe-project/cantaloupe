@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -42,7 +41,7 @@ public class GIFImageWriterTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         // Disable metadata preservation (will be re-enabled in certain tests)
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, false);
 

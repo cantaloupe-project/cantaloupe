@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 
 import java.awt.Dimension;
@@ -18,7 +17,7 @@ abstract class BasicOverlayService {
      * the given dimensions.
      */
     static boolean shouldApplyToImage(Dimension outputImageSize) {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         final int minOutputWidth =
                 config.getInt(Key.OVERLAY_OUTPUT_WIDTH_THRESHOLD, 0);
         final int minOutputHeight =
@@ -49,12 +48,11 @@ abstract class BasicOverlayService {
     abstract Overlay getOverlay();
 
     private void readInset() {
-        final Configuration config = ConfigurationFactory.getInstance();
-        inset = config.getInt(Key.OVERLAY_INSET, 0);
+        inset = Configuration.getInstance().getInt(Key.OVERLAY_INSET, 0);
     }
 
     private void readPosition() throws ConfigurationException {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         final String configValue = config.getString(Key.OVERLAY_POSITION, "");
         if (configValue.length() > 0) {
             try {

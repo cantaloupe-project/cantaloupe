@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import com.zaxxer.hikari.HikariDataSource;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.MediaType;
@@ -79,7 +78,7 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
      */
     public static synchronized Connection getConnection() throws SQLException {
         if (dataSource == null) {
-            final Configuration config = ConfigurationFactory.getInstance();
+            final Configuration config = Configuration.getInstance();
 
             final String connectionString =
                     config.getString(Key.JDBCRESOLVER_JDBC_URL, "");

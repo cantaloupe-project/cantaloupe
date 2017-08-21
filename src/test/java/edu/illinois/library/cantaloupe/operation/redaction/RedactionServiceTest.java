@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.operation.redaction;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -21,7 +20,7 @@ public class RedactionServiceTest extends BaseTest {
     private RedactionService instance;
 
     public static void setUpConfiguration() throws IOException {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
@@ -53,7 +52,7 @@ public class RedactionServiceTest extends BaseTest {
 
     @Test
     public void testIsEnabled() {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.clear();
         // false
         config.setProperty(Key.REDACTION_ENABLED, false);

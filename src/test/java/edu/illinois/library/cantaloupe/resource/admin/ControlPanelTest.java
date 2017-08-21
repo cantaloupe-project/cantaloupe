@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.resource.admin;
 
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.junit.After;
@@ -106,7 +105,7 @@ public class ControlPanelTest extends ResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         assertTrue(config.getBoolean(Key.HTTP_ENABLED));
         assertEquals("1.2.3.4", config.getString(Key.HTTP_HOST));
         assertEquals(8989, config.getInt(Key.HTTP_PORT));
@@ -148,7 +147,7 @@ public class ControlPanelTest extends ResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         assertEquals(5000, config.getInt(Key.MAX_PIXELS));
         assertTrue(config.getBoolean(Key.BASIC_AUTH_ENABLED));
         assertEquals("dogs", config.getString(Key.BASIC_AUTH_USERNAME));
@@ -215,7 +214,7 @@ public class ControlPanelTest extends ResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         assertFalse(config.getBoolean(Key.RESOLVER_DELEGATE));
         assertEquals("FilesystemResolver",
                 config.getString(Key.RESOLVER_STATIC));
@@ -318,7 +317,7 @@ public class ControlPanelTest extends ResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         assertEquals("Java2dProcessor", config.getString("processor.gif"));
         assertEquals("JaiProcessor", config.getString(Key.PROCESSOR_FALLBACK));
         assertEquals(300, config.getInt(Key.PROCESSOR_DPI));
@@ -423,7 +422,7 @@ public class ControlPanelTest extends ResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         assertTrue(config.getBoolean(Key.CLIENT_CACHE_ENABLED));
         assertEquals("250", config.getString(Key.CLIENT_CACHE_MAX_AGE));
         assertEquals("220", config.getString(Key.CLIENT_CACHE_SHARED_MAX_AGE));
@@ -508,7 +507,7 @@ public class ControlPanelTest extends ResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         assertTrue(config.getBoolean(Key.OVERLAY_ENABLED));
         assertEquals("BasicStrategy",
                 config.getString(Key.OVERLAY_STRATEGY));
@@ -562,7 +561,7 @@ public class ControlPanelTest extends ResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         assertTrue(config.getBoolean(Key.DELEGATE_SCRIPT_ENABLED));
         assertEquals("file", config.getString(Key.DELEGATE_SCRIPT_PATHNAME));
         assertTrue(config.getBoolean(Key.DELEGATE_METHOD_INVOCATION_CACHE_ENABLED));
@@ -623,7 +622,7 @@ public class ControlPanelTest extends ResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
 
         // Application log
         assertEquals("warn", config.getString(Key.APPLICATION_LOG_LEVEL));

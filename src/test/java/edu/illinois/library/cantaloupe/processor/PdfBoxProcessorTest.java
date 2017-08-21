@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
@@ -29,7 +28,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_DPI, 72);
         instance = newInstance();
     }

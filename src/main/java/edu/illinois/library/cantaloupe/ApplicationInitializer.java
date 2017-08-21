@@ -1,26 +1,24 @@
 package edu.illinois.library.cantaloupe;
 
-import java.io.FileNotFoundException;
-
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-
+import edu.illinois.library.cantaloupe.cache.Cache;
+import edu.illinois.library.cantaloupe.cache.CacheException;
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.CacheWorkerRunner;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.logging.LoggerUtil;
+import edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute;
+import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
+import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.illinois.library.cantaloupe.cache.Cache;
-import edu.illinois.library.cantaloupe.cache.CacheException;
-import edu.illinois.library.cantaloupe.cache.CacheFactory;
-import edu.illinois.library.cantaloupe.cache.CacheWorkerRunner;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.logging.LoggerUtil;
-import edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute;
-import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import java.io.FileNotFoundException;
 
 /**
  * <p>Performs application initialization that cannot be performed
@@ -29,7 +27,8 @@ import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
  */
 public class ApplicationInitializer implements ServletContextListener {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationInitializer.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(ApplicationInitializer.class);
 
     static final String CLEAN_CACHE_VM_ARGUMENT = "cantaloupe.cache.clean";
     static final String PURGE_CACHE_VM_ARGUMENT = "cantaloupe.cache.purge";
@@ -160,7 +159,7 @@ public class ApplicationInitializer implements ServletContextListener {
 
         handleVmArguments();
 
-        ConfigurationFactory.getInstance().startWatching();
+        Configuration.getInstance().startWatching();
         CacheWorkerRunner.start();
         try {
             ScriptEngineFactory.getScriptEngine().startWatching();
@@ -177,7 +176,7 @@ public class ApplicationInitializer implements ServletContextListener {
     public void contextDestroyed(ServletContextEvent sce) {
         LOGGER.info("Shutting down...");
         CacheWorkerRunner.stop();
-        ConfigurationFactory.getInstance().stopWatching();
+        Configuration.getInstance().stopWatching();
         ThreadPool.getInstance().shutdown();
         try {
             ScriptEngineFactory.getScriptEngine().stopWatching();

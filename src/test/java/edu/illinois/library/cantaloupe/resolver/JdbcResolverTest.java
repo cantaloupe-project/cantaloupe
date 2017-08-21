@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -31,7 +30,7 @@ public class JdbcResolverTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         // Use an in-memory H2 database.
         config.setProperty(Key.JDBCRESOLVER_JDBC_URL, "jdbc:h2:mem:test");
         config.setProperty(Key.JDBCRESOLVER_USER, "sa");

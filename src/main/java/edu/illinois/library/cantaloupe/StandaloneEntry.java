@@ -86,7 +86,7 @@ public class StandaloneEntry {
             exitUnlessTesting(0);
         }
 
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         if (config == null) {
             printUsage();
             exitUnlessTesting(-1);

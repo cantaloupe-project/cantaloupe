@@ -17,7 +17,7 @@ public abstract class ConfigurationFactory {
     /**
      * @return Shared application configuration instance.
      */
-    public static Configuration getInstance() {
+    static Configuration getInstance() {
         Configuration config = instance;
         if (config == null) {
             synchronized (lock) {

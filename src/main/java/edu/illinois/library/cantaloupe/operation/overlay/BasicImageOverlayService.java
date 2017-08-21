@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 
 import java.io.File;
@@ -34,7 +33,7 @@ class BasicImageOverlayService extends BasicOverlayService {
     }
 
     private void readLocation() throws ConfigurationException {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         location = config.getString(Key.OVERLAY_IMAGE, "");
         if (location.length() < 1) {
             throw new ConfigurationException(Key.OVERLAY_IMAGE + " is not set.");

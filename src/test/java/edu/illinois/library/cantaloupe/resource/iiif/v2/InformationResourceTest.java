@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
@@ -78,7 +77,7 @@ public class InformationResourceTest extends ResourceTest {
     @Test
     public void testCacheHeadersWhenClientCachingIsEnabledAndResponseIsNotCacheable()
             throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.CLIENT_CACHE_ENABLED, "true");
         config.setProperty(Key.CLIENT_CACHE_MAX_AGE, "1234");
         config.setProperty(Key.CLIENT_CACHE_SHARED_MAX_AGE, "4567");
@@ -336,7 +335,7 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testSlashSubstitution() throws Exception {
-        ConfigurationFactory.getInstance().setProperty("slash_substitute", "CATS");
+        Configuration.getInstance().setProperty("slash_substitute", "CATS");
 
         ClientResource client = getClientForUriPath("/subfolderCATSjpg/info.json");
         client.get();

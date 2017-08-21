@@ -14,7 +14,7 @@ public class ConfigurationFactoryTest extends BaseTest {
     @Test
     public void testGetInstanceReturnsMemoryConfiguration() throws Exception {
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
-        assertTrue(ConfigurationFactory.getInstance() instanceof MemoryConfiguration);
+        assertTrue(Configuration.getInstance() instanceof MemoryConfiguration);
     }
 
     @Test
@@ -26,7 +26,7 @@ public class ConfigurationFactoryTest extends BaseTest {
         String opt = testPath + File.separator + "cantaloupe.properties";
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, opt);
 
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         assertTrue(config instanceof HeritablePropertiesConfiguration);
     }
 

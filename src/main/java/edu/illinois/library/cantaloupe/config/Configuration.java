@@ -7,9 +7,7 @@ import java.util.Iterator;
 public interface Configuration {
 
     /**
-     * Alias of {@link ConfigurationFactory#getInstance()}.
-     *
-     * @return The global application configuration instance.
+     * @return Global application configuration instance.
      */
     static Configuration getInstance() {
         return ConfigurationFactory.getInstance();

@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.StandaloneEntry;
 import edu.illinois.library.cantaloupe.WebServer;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -30,7 +29,7 @@ public abstract class ResourceTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         config.setProperty(Key.ADMIN_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,

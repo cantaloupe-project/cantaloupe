@@ -5,7 +5,6 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.MediaType;
@@ -72,7 +71,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     private S3Object getObject() throws IOException {
         AmazonS3 s3 = getClientInstance();
 
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         final String objectKey = getObjectKey();
         if (bucketName == null) {
         	bucketName = config.getString(Key.AMAZONS3RESOLVER_BUCKET_NAME);
@@ -98,7 +97,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     }
 
     private String getObjectKey() throws IOException {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         switch (config.getString(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY)) {
             case "BasicLookupStrategy":
                 return identifier.toString();

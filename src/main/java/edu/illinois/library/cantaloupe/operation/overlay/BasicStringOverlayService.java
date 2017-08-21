@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.operation.Color;
 
@@ -32,7 +31,7 @@ class BasicStringOverlayService extends BasicOverlayService {
     }
 
     private void readConfig() throws ConfigurationException {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
 
         // Background color
         backgroundColor = Color.fromString(

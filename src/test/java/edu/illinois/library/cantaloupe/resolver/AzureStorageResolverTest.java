@@ -5,7 +5,6 @@ import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -96,7 +95,7 @@ public class AzureStorageResolverTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.AZURESTORAGERESOLVER_CONTAINER_NAME,
                 getContainer());
         config.setProperty(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME,
@@ -133,7 +132,7 @@ public class AzureStorageResolverTest extends BaseTest {
 
     @Test
     public void testNewStreamSourceWithScriptLookupStrategy() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY,
                 "ScriptLookupStrategy");
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
@@ -179,7 +178,7 @@ public class AzureStorageResolverTest extends BaseTest {
 
     @Test
     public void testGetSourceFormatWithScriptLookupStrategy() throws IOException {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY,
                 "ScriptLookupStrategy");
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);

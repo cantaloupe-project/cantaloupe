@@ -4,7 +4,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -95,7 +94,7 @@ public class AmazonS3ResolverTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.AMAZONS3RESOLVER_BUCKET_NAME, getBucket());
         config.setProperty(Key.AMAZONS3RESOLVER_BUCKET_REGION, getRegion());
         config.setProperty(Key.AMAZONS3RESOLVER_ACCESS_KEY_ID, getAccessKeyId());
@@ -130,7 +129,7 @@ public class AmazonS3ResolverTest extends BaseTest {
 
     @Test
     public void testNewStreamSourceWithScriptLookupStrategy() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY,
                 "ScriptLookupStrategy");
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
@@ -176,7 +175,7 @@ public class AmazonS3ResolverTest extends BaseTest {
 
     @Test
     public void testGetSourceFormatWithScriptLookupStrategy() throws IOException {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY,
                 "ScriptLookupStrategy");
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);

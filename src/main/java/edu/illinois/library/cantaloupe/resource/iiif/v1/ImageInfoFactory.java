@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
@@ -28,7 +28,7 @@ abstract class ImageInfoFactory {
                 processor.getSupportedIIIF1Qualities(),
                 processor.getAvailableOutputFormats());
 
-        final int minTileSize = ConfigurationFactory.getInstance().
+        final int minTileSize = Configuration.getInstance().
                 getInt(Key.IIIF_MIN_TILE_SIZE, 1024);
 
         // Find a tile width and height. If the image is not tiled,

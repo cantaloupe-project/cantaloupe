@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
@@ -17,7 +17,7 @@ abstract class IIIF1Resource extends AbstractResource {
             throw new ResourceException(414);
         }
 
-        if (!ConfigurationFactory.getInstance().
+        if (!Configuration.getInstance().
                 getBoolean(Key.IIIF_1_ENDPOINT_ENABLED, true)) {
             throw new EndpointDisabledException();
         }

@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.script;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -20,7 +19,7 @@ public class ScriptEngineFactoryTest extends BaseTest {
         super.setUp();
         ScriptEngineFactory.clearInstance();
 
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
@@ -28,7 +27,7 @@ public class ScriptEngineFactoryTest extends BaseTest {
 
     @Test
     public void testGetScriptEngineWithDelegateScriptDisabled() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, false);
         try {
             ScriptEngineFactory.getScriptEngine();
@@ -46,7 +45,7 @@ public class ScriptEngineFactoryTest extends BaseTest {
 
     @Test
     public void testGetScriptEngineWithPresentInvalidScript() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getImage("txt").getAbsolutePath());
         try {
@@ -59,7 +58,7 @@ public class ScriptEngineFactoryTest extends BaseTest {
 
     @Test
     public void testGetScriptEngineWithNoScript() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME, "");
         try {
             ScriptEngineFactory.getScriptEngine();
@@ -71,7 +70,7 @@ public class ScriptEngineFactoryTest extends BaseTest {
 
     @Test
     public void testGetScriptEngineWithBogusScript() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 "/bla/bla/blaasdfasdfasfd");
         try {

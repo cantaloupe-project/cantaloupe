@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -44,7 +43,7 @@ public class PNGImageWriterTest extends BaseTest {
 
     @Test
     public void testWriteWithBufferedImageAndNativeMetadata()  throws Exception {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("png-nativemetadata.png");
         final PNGImageReader reader = new PNGImageReader(fixture);
@@ -58,7 +57,7 @@ public class PNGImageWriterTest extends BaseTest {
 
     @Test
     public void testWriteWithBufferedImageAndXmpMetadata()  throws Exception {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("png-xmp.png");
         final PNGImageReader reader = new PNGImageReader(fixture);
@@ -85,7 +84,7 @@ public class PNGImageWriterTest extends BaseTest {
 
     @Test
     public void testWriteWithPlanarImageAndNativeMetadata() throws Exception {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("png-nativemetadata.png");
         final PNGImageReader reader = new PNGImageReader(fixture);
@@ -100,7 +99,7 @@ public class PNGImageWriterTest extends BaseTest {
 
     @Test
     public void testWriteWithPlanarImageAndXmpMetadata() throws Exception {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("png-xmp.png");
         final PNGImageReader reader = new PNGImageReader(fixture);

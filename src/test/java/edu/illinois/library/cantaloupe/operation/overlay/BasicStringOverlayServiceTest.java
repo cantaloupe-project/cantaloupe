@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -18,7 +17,7 @@ public class BasicStringOverlayServiceTest extends BaseTest {
     private BasicStringOverlayService instance;
 
     public static void setUpConfiguration() {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.OVERLAY_ENABLED, true);
         config.setProperty(Key.OVERLAY_STRATEGY, "BasicStrategy");
         config.setProperty(Key.OVERLAY_TYPE, "string");
@@ -64,7 +63,7 @@ public class BasicStringOverlayServiceTest extends BaseTest {
 
     @Test
     public void testShouldApplyToImage() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.clear();
 
         final Dimension imageSize = new Dimension(100, 100);

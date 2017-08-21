@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.resource.admin;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.junit.Before;
@@ -37,13 +36,13 @@ public class AdminResourceTest extends ResourceTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         config.setProperty(Key.ADMIN_SECRET, SECRET);
     }
 
     @Test
     public void testCacheHeaders() {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.CLIENT_CACHE_ENABLED, "true");
         config.setProperty(Key.CLIENT_CACHE_MAX_AGE, "1234");
         config.setProperty(Key.CLIENT_CACHE_SHARED_MAX_AGE, "4567");
@@ -105,7 +104,7 @@ public class AdminResourceTest extends ResourceTest {
 
     @Test
     public void testDoGetAsJson() {
-        ConfigurationFactory.getInstance().setProperty("test", "cats");
+        Configuration.getInstance().setProperty("test", "cats");
 
         ClientResource client = getClientForUriPath(RestletApplication.ADMIN_PATH,
                 USERNAME, SECRET);
@@ -127,7 +126,7 @@ public class AdminResourceTest extends ResourceTest {
                 RestletApplication.ADMIN_PATH, USERNAME, SECRET);
         client.post(rep);
 
-        assertEquals("cats", ConfigurationFactory.getInstance().getString("test"));
+        assertEquals("cats", Configuration.getInstance().getString("test"));
     }
 
     @Test
@@ -137,7 +136,7 @@ public class AdminResourceTest extends ResourceTest {
 
     @Test
     public void testEnabled() {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         // enabled
         config.setProperty(Key.ADMIN_ENABLED, true);
 

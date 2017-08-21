@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -49,7 +48,7 @@ public class JPEGImageWriterTest extends BaseTest {
     // invalid, even though other readers have no problems. Maybe they are
     // invalid and other readers are more lenient.
     public void testWriteWithBufferedImageAndExifMetadata() throws Exception {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("jpg-exif.jpg");
         final JPEGImageReader reader = new JPEGImageReader(fixture);
@@ -67,7 +66,7 @@ public class JPEGImageWriterTest extends BaseTest {
     // invalid, even though other readers have no problems. Maybe they are
     // invalid and other readers are more lenient.
     public void testWriteWithBufferedImageAndIptcMetadata() throws Exception {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("jpg-iptc.jpg");
         final JPEGImageReader reader = new JPEGImageReader(fixture);
@@ -85,7 +84,7 @@ public class JPEGImageWriterTest extends BaseTest {
     // invalid, even though other readers have no problems. Maybe they are
     // invalid and other readers are more lenient.
     public void testWriteWithBufferedImageAndXmpMetadata() throws Exception {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("jpg-xmp.jpg");
         final JPEGImageReader reader = new JPEGImageReader(fixture);
@@ -116,7 +115,7 @@ public class JPEGImageWriterTest extends BaseTest {
     // invalid, even though other readers have no problems. Maybe they are
     // invalid and other readers are more lenient.
     public void testWriteWithPlanarImageAndExifMetadata() throws Exception {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("jpg-exif.jpg");
         final JPEGImageReader reader = new JPEGImageReader(fixture);
@@ -135,7 +134,7 @@ public class JPEGImageWriterTest extends BaseTest {
     // invalid, even though other readers have no problems. Maybe they are
     // invalid and other readers are more lenient.
     public void testWriteWithPlanarImageAndIptcMetadata() throws Exception {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("jpg-iptc.jpg");
         final JPEGImageReader reader = new JPEGImageReader(fixture);
@@ -154,7 +153,7 @@ public class JPEGImageWriterTest extends BaseTest {
     // invalid, even though other readers have no problems. Maybe they are
     // invalid and other readers are more lenient.
     public void testWriteWithPlanarImageAndXmpMetadata() throws Exception {
-        final Configuration config = ConfigurationFactory.getInstance();
+        final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("jpg-xmp.jpg");
         final JPEGImageReader reader = new JPEGImageReader(fixture);
@@ -257,7 +256,7 @@ public class JPEGImageWriterTest extends BaseTest {
     private JPEGImageWriter getWriter(Metadata metadata) throws IOException {
         OperationList opList = new OperationList(new Identifier("cats"),
                 Format.JPG);
-        if (ConfigurationFactory.getInstance().
+        if (Configuration.getInstance().
                 getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
             opList.add(new MetadataCopy());
         }

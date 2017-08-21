@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -27,7 +26,7 @@ public class ResolverFactoryTest extends BaseTest {
 
     @Test
     public void testGetResolverWithStaticResolver() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.clear();
 
         Identifier identifier = new Identifier("jdbc");
@@ -50,7 +49,7 @@ public class ResolverFactoryTest extends BaseTest {
 
     @Test
     public void testGetResolverUsingDelegateScript() throws Exception {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.clear();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
@@ -66,7 +65,7 @@ public class ResolverFactoryTest extends BaseTest {
 
     @Test
     public void testGetSelectionStrategy() {
-        Configuration config = ConfigurationFactory.getInstance();
+        Configuration config = Configuration.getInstance();
         config.clear();
 
         config.setProperty(Key.RESOLVER_DELEGATE, "false");
