@@ -1,26 +1,20 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.Orientation;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.util.HashMap;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.Assert.*;
 
-public class JaiProcessorTest extends ProcessorTest {
+public class JaiProcessorTest extends ImageIOProcessorTest {
 
     private JaiProcessor instance;
 
@@ -30,92 +24,39 @@ public class JaiProcessorTest extends ProcessorTest {
         instance = newInstance();
     }
 
+    @Override
+    protected Format getSupported16BitSourceFormat() throws IOException {
+        return Format.PNG;
+    }
+
+    @Override
+    protected File getSupported16BitImage() throws IOException {
+        return TestUtil.getImage("png-rgb-64x56x16.png");
+    }
+
+    @Override
     protected JaiProcessor newInstance() {
         return new JaiProcessor();
     }
 
     @Test
-    public void testAvailableOutputFormats() throws Exception {
-        final HashMap<Format,Set<Format>> formats = new HashMap<>();
-        for (Format format : ImageReader.supportedFormats()) {
-            formats.put(format, ImageWriter.supportedFormats());
-        }
-
-        instance.setSourceFormat(Format.JPG);
-        Set<Format> expectedFormats = formats.get(Format.JPG);
-        assertEquals(expectedFormats, instance.getAvailableOutputFormats());
-    }
-
-    /**
-     * Tile-aware override.
-     *
-     * @throws Exception
-     */
-    @Test
-    @Override
-    public void testReadImageInfo() throws Exception {
-        Info expectedInfo = new Info(64, 56, Format.TIF);
-        expectedInfo.getImages().get(0).tileWidth = 16;
-        expectedInfo.getImages().get(0).tileHeight = 16;
-
-        final File fixture = TestUtil.
-                getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif");
-
-        // test as a StreamProcessor
-        StreamProcessor sproc = (StreamProcessor) newInstance();
-        StreamSource streamSource = new TestStreamSource(fixture);
-        sproc.setStreamSource(streamSource);
-        sproc.setSourceFormat(Format.TIF);
-        assertEquals(expectedInfo, sproc.readImageInfo());
-
-        // test as a FileProcessor
-        FileProcessor fproc = (FileProcessor) newInstance();
-        fproc.setSourceFile(fixture);
-        fproc.setSourceFormat(Format.TIF);
-        assertEquals(expectedInfo, fproc.readImageInfo());
-
-        try {
-            fproc.setSourceFile(TestUtil.getImage("mpg"));
-            fproc.setSourceFormat(Format.MPG);
-            expectedInfo = new Info(640, 360, Format.MPG);
-            assertEquals(expectedInfo, fproc.readImageInfo());
-        } catch (UnsupportedSourceFormatException e) {
-            // pass
-        }
-    }
-
-    @Test
-    public void testReadImageInfoWithOrientation() throws Exception {
-        Configuration.getInstance().
-                setProperty(Key.PROCESSOR_RESPECT_ORIENTATION, true);
-
-        final File fixture = TestUtil.getImage("jpg-rotated.jpg");
-
-        final FileProcessor fproc = newInstance();
-        fproc.setSourceFile(fixture);
-        fproc.setSourceFormat(Format.JPG);
-
-        final Info info = fproc.readImageInfo();
-        assertEquals(Orientation.ROTATE_90, info.getOrientation());
-    }
-
-    @Test
-    public void testGetSupportedFeatures() throws Exception {
+    public void getSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
-        Set<ProcessorFeature> expectedFeatures = new HashSet<>();
-        expectedFeatures.add(ProcessorFeature.MIRRORING);
-        expectedFeatures.add(ProcessorFeature.REGION_BY_PERCENT);
-        expectedFeatures.add(ProcessorFeature.REGION_BY_PIXELS);
-        expectedFeatures.add(ProcessorFeature.REGION_SQUARE);
-        expectedFeatures.add(ProcessorFeature.ROTATION_ARBITRARY);
-        expectedFeatures.add(ProcessorFeature.ROTATION_BY_90S);
-        expectedFeatures.add(ProcessorFeature.SIZE_ABOVE_FULL);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_HEIGHT);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_PERCENT);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
+
+        Set<ProcessorFeature> expectedFeatures = new HashSet<>(Arrays.asList(
+                ProcessorFeature.MIRRORING,
+                ProcessorFeature.REGION_BY_PERCENT,
+                ProcessorFeature.REGION_BY_PIXELS,
+                ProcessorFeature.REGION_SQUARE,
+                ProcessorFeature.ROTATION_ARBITRARY,
+                ProcessorFeature.ROTATION_BY_90S,
+                ProcessorFeature.SIZE_ABOVE_FULL,
+                ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
+                ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
+                ProcessorFeature.SIZE_BY_HEIGHT,
+                ProcessorFeature.SIZE_BY_PERCENT,
+                ProcessorFeature.SIZE_BY_WIDTH,
+                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
         assertEquals(expectedFeatures, instance.getSupportedFeatures());
     }
 

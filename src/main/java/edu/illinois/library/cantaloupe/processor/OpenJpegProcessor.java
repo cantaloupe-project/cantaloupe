@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -47,23 +48,29 @@ import java.util.regex.Pattern;
  * tools.</p>
  *
  * <p>opj_decompress is used for cropping and an initial scale reduction
- * factor. (Java 2D is used for all remaining processing steps.)
- * opj_decompress generates BMP output which is streamed to an ImageIO reader.
- * (BMP does not support embedded ICC profiles, but this is less of a problem
- * because opj_decompress converts the RGB source data itself.)</p>
+ * factor, and Java 2D is used for all remaining processing steps.
+ * opj_decompress produces BMP output which is streamed to an ImageIO reader.
+ * (BMP does not copy embedded ICC profiles into output images, but
+ * opj_decompress converts the RGB source data itself. BMP also doesn't support
+ * more than 8 bits per sample, which means that this processor can't respect
+ * {@link Encode#getMaxSampleSize()}, and all output is &le; 8 bits.)</p>
  *
  * <p>opj_decompress reads and writes the files named in the <code>-i</code>
  * and <code>-o</code> flags passed to it, respectively. The file in the
- * <code>-o</code> flag must have a recognized image extension such as .bmp,
- * .tif, etc. This means that it's not possible to natively write to a
- * {@link ProcessBuilder} {@link InputStream}. Instead, we have to resort to
- * a trick whereby we create a symlink from /tmp/whatever.bmp to /dev/stdout
- * (which only exists on Unix), which will enable us to accomplish this.
- * The temporary symlink is created in the static initializer and deleted on
+ * <code>-o</code> flag must have a <code>.bmp</code> extension. This means
+ * that it's not possible to natively write to the {@link InputStream} of a
+ * {@link Process}. Instead, we have to resort to a special trick whereby we
+ * create a symlink from <code>/tmp/whatever.bmp</code> to
+ * <code>/dev/stdout</code>, which will enable us to accomplish this. The
+ * temporary symlink is created in the static initializer and deleted on
  * exit.</p>
  *
+ * <p>Unfortunately, Windows doesn't have anything like
+ * <code>/dev/stdout</code>, and so this processor won't work there.</p>
+ *
  * <p><strong>opj_decompress version 2.2.0 is highly recommended.</strong>
- * Earlier versions echo log messages to stdout, which can cause problems .</p>
+ * Earlier versions echo log messages to stdout, which can cause problems with
+ * some images.</p>
  */
 class OpenJpegProcessor extends AbstractJava2DProcessor
         implements FileProcessor {
@@ -217,7 +224,6 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
      *
      * @param opList
      * @param fullSize
-     * @return
      */
     private Dimension getCroppedSize(OperationList opList, Dimension fullSize) {
         Dimension tileSize = (Dimension) fullSize.clone();
@@ -236,9 +242,6 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
     /**
      * Gets the size of the given image by parsing the output of opj_dump.
-     *
-     * @return
-     * @throws ProcessorException
      */
     @Override
     public Info readImageInfo() throws ProcessorException {

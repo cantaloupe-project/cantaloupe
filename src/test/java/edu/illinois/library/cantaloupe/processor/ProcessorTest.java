@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
@@ -20,20 +21,24 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static edu.illinois.library.cantaloupe.test.Assert.*;
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 
 /**
  * Contains base tests common to all Processors.
  */
 public abstract class ProcessorTest extends BaseTest {
 
-    protected static final String IMAGE = "images/jpg-rgb-64x56x8-baseline.jpg";
+    protected static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";
 
     Format getAnySupportedSourceFormat(Processor processor) throws Exception {
         for (Format format : Format.values()) {
@@ -47,23 +52,35 @@ public abstract class ProcessorTest extends BaseTest {
         return null;
     }
 
+    /**
+     * @return Format aligning with that of {@link #getSupported16BitImage()}.
+     */
+    protected abstract Format getSupported16BitSourceFormat()
+            throws IOException;
+
+    /**
+     * @return Supported 16-bit image file as returned by
+     *         {@link TestUtil#getImage(String)}.
+     */
+    protected abstract File getSupported16BitImage() throws IOException;
+
     protected abstract Processor newInstance();
+
+    /* readImageInfo() */
 
     /**
      * This implementation is tile-unaware. Tile-aware processors will need to
      * override it.
-     *
-     * @throws Exception
      */
     @Test
-    public void testReadImageInfo() throws Exception {
+    public void readImageInfo() throws Exception {
         Info expectedInfo = new Info(64, 56, 64, 56, Format.JPG);
 
         Processor proc = newInstance();
         if (proc instanceof StreamProcessor) {
             StreamProcessor sproc = (StreamProcessor) proc;
             StreamSource streamSource = new TestStreamSource(
-                    TestUtil.getFixture(IMAGE));
+                    TestUtil.getImage(IMAGE));
             sproc.setStreamSource(streamSource);
             sproc.setSourceFormat(Format.JPG);
             assertEquals(expectedInfo, sproc.readImageInfo());
@@ -71,7 +88,7 @@ public abstract class ProcessorTest extends BaseTest {
         if (proc instanceof FileProcessor) {
             FileProcessor fproc = (FileProcessor) proc;
             try {
-                fproc.setSourceFile(TestUtil.getFixture(IMAGE));
+                fproc.setSourceFile(TestUtil.getImage(IMAGE));
                 fproc.setSourceFormat(Format.JPG);
                 assertEquals(expectedInfo.toString(),
                         fproc.readImageInfo().toString());
@@ -81,14 +98,17 @@ public abstract class ProcessorTest extends BaseTest {
         }
     }
 
+    /* process() */
+
     @Test
-    public void testProcessWithSupportedSourceFormatsAndNoOperations()
+    public void processWithSupportedSourceFormatsAndNoOperations()
             throws Exception {
         doProcessTest(TestUtil.newOperationList());
     }
 
     @Test
-    public void testProcessWithSupportedSourceFormatsAndNoOpOperations() throws Exception {
+    public void processWithSupportedSourceFormatsAndNoOpOperations()
+            throws Exception {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
@@ -100,7 +120,7 @@ public abstract class ProcessorTest extends BaseTest {
     }
 
     @Test
-    public void testProcessWithUnsupportedSourceFormats() throws Exception {
+    public void processWithUnsupportedSourceFormats() throws Exception {
         Crop crop = new Crop();
         crop.setX(20f);
         crop.setY(20f);
@@ -146,7 +166,7 @@ public abstract class ProcessorTest extends BaseTest {
     }
 
     @Test
-    public void testProcessWithCropOperation() throws Exception {
+    public void processWithCropOperation() throws Exception {
         List<Crop> crops = new ArrayList<>();
         Crop crop = new Crop();
         crop.setFull(true);
@@ -179,7 +199,12 @@ public abstract class ProcessorTest extends BaseTest {
     }
 
     @Test
-    public void testProcessWithScaleOperation() throws Exception {
+    public void processWithNormalizeOperation() {
+        // TODO: write this
+    }
+
+    @Test
+    public void processWithScaleOperation() throws Exception {
         List<Scale> scales = new ArrayList<>();
         Scale scale = new Scale();
         scales.add(scale);
@@ -201,7 +226,7 @@ public abstract class ProcessorTest extends BaseTest {
     }
 
     @Test
-    public void testProcessWithTransposeOperation() throws Exception {
+    public void processWithTransposeOperation() throws Exception {
         List<Transpose> transposes = new ArrayList<>();
         transposes.add(Transpose.HORIZONTAL);
         // we aren't using this yet
@@ -214,7 +239,7 @@ public abstract class ProcessorTest extends BaseTest {
     }
 
     @Test
-    public void testProcessWithRotateOperation() throws Exception {
+    public void processWithRotateOperation() throws Exception {
         Rotate[] rotates = {
                 new Rotate(0), new Rotate(15), new Rotate(275) };
         for (Rotate rotate : rotates) {
@@ -225,7 +250,7 @@ public abstract class ProcessorTest extends BaseTest {
     }
 
     @Test
-    public void testProcessWithFilterOperation() throws Exception {
+    public void processWithFilterOperation() throws Exception {
         for (ColorTransform transform : ColorTransform.values()) {
             OperationList ops = TestUtil.newOperationList();
             ops.add(transform);
@@ -234,7 +259,49 @@ public abstract class ProcessorTest extends BaseTest {
     }
 
     @Test
-    public void testProcessWithSupportedOutputFormats() throws Exception {
+    public void processOf16BitImageWithEncodeOperationLimitingTo8Bits()
+            throws Exception {
+        final File fixture = getSupported16BitImage();
+        assumeNotNull(fixture);
+
+        final Format sourceFormat = getSupported16BitSourceFormat();
+
+        final Encode encode = new Encode(Format.PNG);
+        encode.setMaxSampleSize(8);
+
+        OperationList ops = new OperationList(new Identifier("cats"),
+                Format.PNG);
+        ops.add(encode);
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        doProcessTest(fixture, sourceFormat, ops, os);
+
+        assertSampleSize(8, os.toByteArray());
+    }
+
+    @Test
+    public void processOf16BitImageWithEncodeOperationWithNoLimit()
+            throws Exception {
+        final File fixture = getSupported16BitImage();
+        assumeNotNull(fixture);
+
+        final Format sourceFormat = getSupported16BitSourceFormat();
+
+        final Encode encode = new Encode(Format.PNG);
+        encode.setMaxSampleSize(null);
+
+        OperationList ops = new OperationList(new Identifier("cats"), Format.PNG);
+        ops.setOutputFormat(Format.PNG);
+        ops.add(encode);
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        doProcessTest(fixture, sourceFormat, ops, os);
+
+        assertSampleSize(16, os.toByteArray());
+    }
+
+    @Test
+    public void processWithAllSupportedOutputFormats() throws Exception {
         Processor proc = newInstance();
         proc.setSourceFormat(getAnySupportedSourceFormat(proc));
         Set<Format> outputFormats = proc.getAvailableOutputFormats();
@@ -245,8 +312,10 @@ public abstract class ProcessorTest extends BaseTest {
         }
     }
 
+    /* getSupportedIiif11Qualities() */
+
     /**
-     * Tests for the presernce of all available IIIF 1.1 qualities. Subclasses
+     * Tests for the presence of all available IIIF 1.1 qualities. Subclasses
      * must override if they lack support for any of these.
      */
     @Test
@@ -255,20 +324,18 @@ public abstract class ProcessorTest extends BaseTest {
         proc.setSourceFormat(getAnySupportedSourceFormat(proc));
 
         Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-                expectedQualities = new HashSet<>();
-        expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL);
-        expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR);
-        expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY);
-        expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE);
+                expectedQualities = new HashSet<>(Arrays.asList(
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
+                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
         assertEquals(expectedQualities, proc.getSupportedIIIF1Qualities());
     }
 
+    /* getSupportedIiif20Qualities() */
+
     /**
-     * Tests for the presernce of all available IIIF 2.0 qualities. Subclasses
+     * Tests for the presence of all available IIIF 2.0 qualities. Subclasses
      * must override if they lack support for any of these.
      */
     @Test
@@ -277,24 +344,17 @@ public abstract class ProcessorTest extends BaseTest {
         proc.setSourceFormat(getAnySupportedSourceFormat(proc));
 
         Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-                expectedQualities = new HashSet<>();
-        expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL);
-        expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR);
-        expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT);
-        expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY);
+                expectedQualities = new HashSet<>(Arrays.asList(
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY,
+                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT));
         assertEquals(expectedQualities, proc.getSupportedIIIF2Qualities());
     }
 
     /**
-     * Tests Processor.process() for every one of the fixtures for every source
-     * format the processor supports.
-     *
-     * @param ops
-     * @throws Exception
+     * Tests {@link Processor#process} for every one of the fixtures for every
+     * source format the processor supports.
      */
     private void doProcessTest(OperationList ops) throws Exception {
         final Collection<File> fixtures = FileUtils.
@@ -315,7 +375,7 @@ public abstract class ProcessorTest extends BaseTest {
                                     fixtureName.contains("x16-") &&
                                     (fixtureName.contains("-zip") ||
                                             fixtureName.contains("-lzw"))) {
-                                continue;
+                                continue; // TODO: this conditional may no longer be necessary
                             }
                             // TIFFImageReader doesn't like JPEG-encoded TIFFs
                             // either.
@@ -323,7 +383,7 @@ public abstract class ProcessorTest extends BaseTest {
                                     this instanceof JaiProcessorTest) &&
                                     sourceFormat.equals(Format.TIF) &&
                                     StringUtils.contains(fixtureName, "-jpeg")) {
-                                continue;
+                                continue; // TODO: this conditional may no longer be necessary
                             }
                             // Don't test 1x1 images as they are problematic
                             // with cropping & scaling.
@@ -335,7 +395,7 @@ public abstract class ProcessorTest extends BaseTest {
                             if (this instanceof JaiProcessorTest &&
                                     ops.getFirst(ColorTransform.class) != null &&
                                     fixture.getName().endsWith("gif")) {
-                                continue;
+                                continue; // TODO: this conditional may no longer be necessary
                             }
                             doProcessTest(fixture, sourceFormat, ops);
                         }
@@ -347,18 +407,16 @@ public abstract class ProcessorTest extends BaseTest {
         }
     }
 
+    /**
+     * Instantiates a processor, configures it with the given arguments, and
+     * tests that {@link Processor#process} writes a result without throwing
+     * any exceptions.
+     */
     private void doProcessTest(final File fixture,
                                final Format sourceFormat,
                                final OperationList opList)
             throws IOException, ProcessorException {
-        final Processor proc = newInstance();
-        proc.setSourceFormat(sourceFormat);
-        if (proc instanceof FileProcessor) {
-            ((FileProcessor) proc).setSourceFile(fixture);
-        } else if (proc instanceof StreamProcessor) {
-            StreamSource source = new TestStreamSource(fixture);
-            ((StreamProcessor) proc).setStreamSource(source);
-        }
+        final Processor proc = newConfiguredProcessor(fixture, sourceFormat);
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             proc.process(opList, proc.readImageInfo(), outputStream);
@@ -369,6 +427,40 @@ public abstract class ProcessorTest extends BaseTest {
             System.out.println("Ops: " + opList);
             throw e;
         }
+    }
+
+    /**
+     * Instantiates a processor, configures it with the given arguments, and
+     * invokes {@link Processor#process} to write the result to the given
+     * output stream.
+     */
+    private void doProcessTest(final File fixture,
+                               final Format sourceFormat,
+                               final OperationList opList,
+                               final OutputStream os)
+            throws IOException, ProcessorException {
+        final Processor proc = newConfiguredProcessor(fixture, sourceFormat);
+        try {
+            proc.process(opList, proc.readImageInfo(), os);
+        } catch (Exception e) {
+            System.out.println("Fixture: " + fixture);
+            System.out.println("Ops: " + opList);
+            throw e;
+        }
+    }
+
+    private Processor newConfiguredProcessor(File fixture, Format sourceFormat)
+            throws UnsupportedSourceFormatException {
+        Processor proc = newInstance();
+        proc.setSourceFormat(sourceFormat);
+
+        if (proc instanceof FileProcessor) {
+            ((FileProcessor) proc).setSourceFile(fixture);
+        } else if (proc instanceof StreamProcessor) {
+            StreamSource source = new TestStreamSource(fixture);
+            ((StreamProcessor) proc).setStreamSource(source);
+        }
+        return proc;
     }
 
 }

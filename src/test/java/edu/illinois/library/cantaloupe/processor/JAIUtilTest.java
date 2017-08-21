@@ -35,21 +35,10 @@ public class JAIUtilTest extends BaseTest {
 
     private static final String IMAGE = "png-rgb-64x56x8.png";
 
-    /* convertTo8Bits() */
-
-    @Test
-    public void testConvertTo8Bits() throws Exception {
-        RenderedOp inImage = readImage("png-rgb-64x56x16.png");
-        assertEquals(16, inImage.getColorModel().getComponentSize(0));
-
-        RenderedOp outImage = JAIUtil.convertTo8Bits(inImage);
-        assertEquals(8, outImage.getColorModel().getComponentSize(0));
-    }
-
     /* cropImage(RenderedOp, Crop) */
 
     @Test
-    public void testCropImage() throws Exception {
+    public void cropImage() throws Exception {
         RenderedOp inImage = readImage(IMAGE);
 
         // full
@@ -88,7 +77,7 @@ public class JAIUtilTest extends BaseTest {
     /* cropImage(RenderedOp, Crop, ReductionFactor) */
 
     @Test
-    public void testCropImageWithReductionFactor() throws Exception {
+    public void cropImageWithReductionFactor() throws Exception {
         final float fudge = 0.000000001f;
         RenderedOp inImage = readImage(IMAGE);
 
@@ -133,7 +122,7 @@ public class JAIUtilTest extends BaseTest {
     /* getAsRenderedOp() */
 
     @Test
-    public void testGetAsRenderedOp() throws Exception {
+    public void getAsRenderedOp() throws Exception {
         final OperationList ops = new OperationList(new Identifier("cats"),
                 Format.JPG);
         RenderedImage image = readImage(IMAGE);
@@ -143,17 +132,37 @@ public class JAIUtilTest extends BaseTest {
         assertEquals(56, renderedOp.getHeight());
     }
 
+    /* reduceTo8Bits() */
+
+    @Test
+    public void reduceTo8BitsWith16BitImage() throws Exception {
+        RenderedOp inImage = readImage("png-rgb-64x56x16.png");
+        assertEquals(16, inImage.getColorModel().getComponentSize(0));
+
+        RenderedOp outImage = JAIUtil.reduceTo8Bits(inImage);
+        assertEquals(8, outImage.getColorModel().getComponentSize(0));
+    }
+
+    @Test
+    public void reduceTo8BitsWith8BitImage() throws Exception {
+        RenderedOp inImage = readImage("png-rgb-64x56x8.png");
+        assertEquals(8, inImage.getColorModel().getComponentSize(0));
+
+        RenderedOp outImage = JAIUtil.reduceTo8Bits(inImage);
+        assertSame(inImage, outImage);
+    }
+
     /* rescalePixels() */
 
     @Test
-    public void testRescalePixels() {
+    public void rescalePixels() {
         // TODO: write this
     }
 
     /* rotateImage() */
 
     @Test
-    public void testRotateImage() throws Exception {
+    public void rotateImage() throws Exception {
         RenderedOp inImage = readImage(IMAGE);
 
         // test with no-op rotate
@@ -183,7 +192,7 @@ public class JAIUtilTest extends BaseTest {
     /* scaleImage() */
 
     @Test
-    public void testScaleImage() throws Exception {
+    public void scaleImage() throws Exception {
         RenderedOp image = readImage(IMAGE);
         final Interpolation interpolation =
                 Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
@@ -301,7 +310,7 @@ public class JAIUtilTest extends BaseTest {
     /* scaleImageUsingSubsampleAverage() */
 
     @Test
-    public void testScaleImageUsingSubsampleAverage() throws Exception {
+    public void scaleImageUsingSubsampleAverage() throws Exception {
         RenderedOp image = readImage(IMAGE);
         final ReductionFactor rf = new ReductionFactor();
         final double fudge = 0.00000001f;
@@ -417,7 +426,7 @@ public class JAIUtilTest extends BaseTest {
     /* sharpenImage() */
 
     @Test
-    public void testSharpenImage() throws Exception {
+    public void sharpenImage() throws Exception {
         RenderedOp image = readImage(IMAGE);
 
         // test with no-op sharpen
@@ -436,7 +445,7 @@ public class JAIUtilTest extends BaseTest {
     /* stretchContrast() */
 
     @Test
-    public void testStretchContrast() throws IOException {
+    public void stretchContrast() throws IOException {
         BufferedImage image = new BufferedImage(100, 100,
                 BufferedImage.TYPE_INT_RGB);
         final Rectangle leftHalf = new Rectangle(0, 0, 50, 100);
@@ -462,7 +471,7 @@ public class JAIUtilTest extends BaseTest {
     /* transformColor() */
 
     @Test
-    public void testTransformColorToBitonal() throws Exception {
+    public void transformColorToBitonal() throws Exception {
         RenderedOp image = readImage(IMAGE);
         ColorTransform transform = ColorTransform.BITONAL;
 
@@ -472,7 +481,7 @@ public class JAIUtilTest extends BaseTest {
     }
 
     @Test
-    public void testTransformColorToGray() throws Exception {
+    public void transformColorToGray() throws Exception {
         RenderedOp image = readImage(IMAGE);
         ColorTransform transform = ColorTransform.GRAY;
 
@@ -486,7 +495,7 @@ public class JAIUtilTest extends BaseTest {
     /* transposeImage() */
 
     @Test
-    public void testTransposeImage() throws Exception {
+    public void transposeImage() throws Exception {
         RenderedOp image = readImage(IMAGE);
         // horizontal
         RenderedOp result = JAIUtil.transposeImage(image, Transpose.HORIZONTAL);

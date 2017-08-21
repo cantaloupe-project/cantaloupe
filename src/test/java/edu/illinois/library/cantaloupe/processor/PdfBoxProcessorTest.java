@@ -14,6 +14,8 @@ import org.junit.Test;
 
 import java.awt.Dimension;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -33,6 +35,17 @@ public class PdfBoxProcessorTest extends ProcessorTest {
         instance = newInstance();
     }
 
+    @Override
+    protected Format getSupported16BitSourceFormat() throws IOException {
+        return null;
+    }
+
+    @Override
+    protected File getSupported16BitImage() throws IOException {
+        return null;
+    }
+
+    @Override
     protected PdfBoxProcessor newInstance() {
         PdfBoxProcessor proc = new PdfBoxProcessor();
         try {
@@ -44,26 +57,28 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void testGetSupportedFeatures() throws Exception {
-        Set<ProcessorFeature> expectedFeatures = new HashSet<>();
-        expectedFeatures.add(ProcessorFeature.MIRRORING);
-        expectedFeatures.add(ProcessorFeature.REGION_BY_PERCENT);
-        expectedFeatures.add(ProcessorFeature.REGION_BY_PIXELS);
-        expectedFeatures.add(ProcessorFeature.REGION_SQUARE);
-        expectedFeatures.add(ProcessorFeature.ROTATION_ARBITRARY);
-        expectedFeatures.add(ProcessorFeature.ROTATION_BY_90S);
-        expectedFeatures.add(ProcessorFeature.SIZE_ABOVE_FULL);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_HEIGHT);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_PERCENT);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH);
-        expectedFeatures.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
+    public void getSupportedFeatures() throws Exception {
+        instance.setSourceFormat(getAnySupportedSourceFormat(instance));
+
+        Set<ProcessorFeature> expectedFeatures = new HashSet<>(Arrays.asList(
+                ProcessorFeature.MIRRORING,
+                ProcessorFeature.REGION_BY_PERCENT,
+                ProcessorFeature.REGION_BY_PIXELS,
+                ProcessorFeature.REGION_SQUARE,
+                ProcessorFeature.ROTATION_ARBITRARY,
+                ProcessorFeature.ROTATION_BY_90S,
+                ProcessorFeature.SIZE_ABOVE_FULL,
+                ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
+                ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
+                ProcessorFeature.SIZE_BY_HEIGHT,
+                ProcessorFeature.SIZE_BY_PERCENT,
+                ProcessorFeature.SIZE_BY_WIDTH,
+                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
         assertEquals(expectedFeatures, instance.getSupportedFeatures());
     }
 
     @Test
-    public void testProcessWithPageOption() throws Exception {
+    public void processWithPageOption() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
         final Info imageInfo = instance.readImageInfo();
 
@@ -83,8 +98,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void testProcessWithIllegalPageOptionThrowsException()
-            throws Exception {
+    public void processWithIllegalPageOptionThrowsException() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
         final Info imageInfo = instance.readImageInfo();
 
@@ -102,7 +116,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
 
     @Test
     @Override
-    public void testReadImageInfo() throws Exception {
+    public void readImageInfo() throws Exception {
         Info expectedInfo = new Info(100, 88, 100, 88, Format.PDF);
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
         instance.setSourceFormat(Format.PDF);

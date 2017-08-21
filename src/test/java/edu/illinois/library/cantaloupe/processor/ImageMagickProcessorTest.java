@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 
 /**
  * For this to work, the ImageMagick binaries must be on the PATH.
@@ -131,6 +132,17 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
         return supportedFormats;
     }
 
+    @Override
+    protected Format getSupported16BitSourceFormat() throws IOException {
+        return Format.PNG;
+    }
+
+    @Override
+    protected File getSupported16BitImage() throws IOException {
+        return TestUtil.getImage("png-rgb-64x56x16.png");
+    }
+
+    @Override
     protected ImageMagickProcessor newInstance() {
         return new ImageMagickProcessor();
     }
@@ -236,11 +248,33 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
         }
     }
 
+    @Override
+    @Test
+    public void processOf16BitImageWithEncodeOperationLimitingTo8Bits() {
+        // >8-bit output is not currently available in this processor.
+        // IM only has a -depth argument that forces all output to that depth.
+        // In order to accomplish this, we would probably need readImageInfo()
+        // to return a sample size in the Info and use that to determine
+        // whether we need to call -depth.
+    }
+
+    @Override
+    @Test
+    public void processOf16BitImageWithEncodeOperationWithNoLimit() {
+        // See above method.
+    }
+
     @Test
     public void processWithPageOption() throws Exception {
+        // Skip if ImageMagick does not support PDF.
+        try {
+            instance.setSourceFormat(Format.PDF);
+        } catch (UnsupportedSourceFormatException e) {
+            return;
+        }
+
         final File fixture = TestUtil.getImage("pdf-multipage.pdf");
         byte[] page1, page2;
-        instance.setSourceFormat(Format.PDF);
         Info imageInfo;
 
         // page option missing
@@ -266,7 +300,13 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
 
     @Test
     public void validate() throws Exception {
-        instance.setSourceFormat(Format.PDF);
+        // Skip if ImageMagick does not support PDF.
+        try {
+            instance.setSourceFormat(Format.PDF);
+        } catch (UnsupportedSourceFormatException e) {
+            return;
+        }
+
         instance.setStreamSource(new FileInputStreamStreamSource(
                 TestUtil.getImage("pdf.pdf")));
 

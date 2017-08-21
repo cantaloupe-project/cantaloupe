@@ -66,7 +66,7 @@ public class OperationListTest extends BaseTest {
     /* add(Operation) */
 
     @Test
-    public void testAdd() {
+    public void add() {
         instance = new OperationList(new Identifier("cats"), Format.JPG);
         assertFalse(instance.iterator().hasNext());
         instance.add(new Rotate());
@@ -74,7 +74,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void testAddWhileFrozen() {
+    public void addWhileFrozen() {
         instance = new OperationList(new Identifier("cats"), Format.JPG);
         instance.freeze();
         try {
@@ -88,7 +88,7 @@ public class OperationListTest extends BaseTest {
     /* addAfter(Class, Operation) */
 
     @Test
-    public void testAddAfterWithExistingClass() {
+    public void addAfterWithExistingClass() {
         instance = new OperationList(new Identifier("cats"), Format.JPG);
         instance.add(new Rotate());
         instance.addAfter(new Scale(), Rotate.class);
@@ -98,7 +98,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void testAddAfterWithExistingSuperclass() {
+    public void addAfterWithExistingSuperclass() {
         instance = new OperationList(new Identifier("cats"), Format.JPG);
         instance.add(new DummyOverlay());
 
@@ -111,7 +111,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void testAddAfterWithoutExistingClass() {
+    public void addAfterWithoutExistingClass() {
         instance = new OperationList(new Identifier("cats"), Format.JPG);
         instance.add(new Rotate());
         instance.addAfter(new Scale(), Crop.class);
@@ -121,7 +121,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void testAddAfterWhileFrozen() {
+    public void addAfterWhileFrozen() {
         instance = new OperationList(new Identifier("cats"), Format.JPG);
         instance.freeze();
         try {
@@ -135,7 +135,7 @@ public class OperationListTest extends BaseTest {
     /* addBefore(Class, Operation) */
 
     @Test
-    public void testAddBeforeWithExistingClass() {
+    public void addBeforeWithExistingClass() {
         instance = new OperationList(new Identifier("cats"), Format.JPG);
         instance.add(new Rotate());
         instance.addBefore(new Scale(), Rotate.class);
@@ -143,7 +143,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void testAddBeforeWithExistingSuperclass() {
+    public void addBeforeWithExistingSuperclass() {
         class SubDummyOverlay extends DummyOverlay {}
 
         instance = new OperationList(new Identifier("cats"), Format.JPG);
@@ -153,7 +153,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void testAddBeforeWithoutExistingClass() {
+    public void addBeforeWithoutExistingClass() {
         instance = new OperationList(new Identifier("cats"), Format.JPG);
         instance.add(new Rotate());
         instance.addBefore(new Scale(), Crop.class);
@@ -163,7 +163,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void testAddBeforeWhileFrozen() {
+    public void addBeforeWhileFrozen() {
         instance = new OperationList(new Identifier("cats"), Format.JPG);
         instance.freeze();
         try {
@@ -177,7 +177,7 @@ public class OperationListTest extends BaseTest {
     /* applyNonEndpointMutations() */
 
     @Test
-    public void testApplyNonEndpointMutationsWithNoOutputFormatSetThrowsException()
+    public void applyNonEndpointMutationsWithNoOutputFormatSetThrowsException()
             throws Exception {
         final OperationList opList = new OperationList(new Identifier("cats"),
                 Format.UNKNOWN);
@@ -193,7 +193,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void testApplyNonEndpointMutationsWithBackgroundColor()
+    public void applyNonEndpointMutationsWithBackgroundColor()
             throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_BACKGROUND_COLOR, "white");
@@ -211,7 +211,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void testApplyNonEndpointMutationsWithJPEGOutputFormat()
+    public void applyNonEndpointMutationsWithJPEGOutputFormat()
             throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_JPG_QUALITY, 50);
@@ -233,7 +233,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void testApplyNonEndpointMutationsWithMetadataCopies()
+    public void applyNonEndpointMutationsWithMetadataCopies()
             throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
@@ -250,8 +250,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void testApplyNonEndpointMutationsWithNormalization()
-            throws Exception {
+    public void applyNonEndpointMutationsWithNormalization() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_NORMALIZE, true);
 
@@ -293,7 +292,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void testApplyNonEndpointMutationsWithOverlay() throws Exception {
+    public void applyNonEndpointMutationsWithOverlay() throws Exception {
         BasicStringOverlayServiceTest.setUpConfiguration();
 
         final OperationList opList = new OperationList(new Identifier("cats"),
@@ -308,8 +307,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void testApplyNonEndpointMutationsWithRedactions()
-            throws Exception {
+    public void applyNonEndpointMutationsWithRedactions() throws Exception {
         RedactionServiceTest.setUpConfiguration();
 
         final OperationList opList = new OperationList(
@@ -324,8 +322,40 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void testApplyNonEndpointMutationsWithScaleFilters()
+    public void applyNonEndpointMutationsWithLimitTo8Bits() throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.PROCESSOR_LIMIT_TO_8_BITS, true);
+
+        final OperationList opList = new OperationList(new Identifier("cats"),
+                Format.JPG);
+        opList.applyNonEndpointMutations(
+                new Dimension(2000,1000), "127.0.0.1",
+                new URL("http://example.org/"), new HashMap<>(),
+                new HashMap<>());
+
+        Encode encode = (Encode) opList.getFirst(Encode.class);
+        assertEquals(8, encode.getMaxSampleSize().intValue());
+    }
+
+    @Test
+    public void applyNonEndpointMutationsWithoutLimitTo8Bits()
             throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.PROCESSOR_LIMIT_TO_8_BITS, false);
+
+        final OperationList opList = new OperationList(new Identifier("cats"),
+                Format.JPG);
+        opList.applyNonEndpointMutations(
+                new Dimension(2000,1000), "127.0.0.1",
+                new URL("http://example.org/"), new HashMap<>(),
+                new HashMap<>());
+
+        Encode encode = (Encode) opList.getFirst(Encode.class);
+        assertNull(encode.getMaxSampleSize());
+    }
+
+    @Test
+    public void applyNonEndpointMutationsWithScaleFilters() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_DOWNSCALE_FILTER, "bicubic");
         config.setProperty(Key.PROCESSOR_UPSCALE_FILTER, "triangle");
@@ -354,8 +384,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void testApplyNonEndpointMutationsWithSharpening()
-            throws Exception {
+    public void applyNonEndpointMutationsWithSharpening() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_SHARPEN, 0.2f);
 
@@ -374,7 +403,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void testAddNonEndpointMutationsWithTIFFOutputFormat()
+    public void addNonEndpointMutationsWithTIFFOutputFormat()
             throws IOException {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_TIF_COMPRESSION, "LZW");
@@ -396,7 +425,7 @@ public class OperationListTest extends BaseTest {
     /* clear() */
 
     @Test
-    public void testClear() {
+    public void clear() {
         int opCount = 0;
         Iterator<Operation> it = instance.iterator();
         while (it.hasNext()) {
@@ -416,7 +445,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void testClearWhileFrozen() {
+    public void clearWhileFrozen() {
         instance.freeze();
         try {
             instance.clear();
@@ -429,7 +458,7 @@ public class OperationListTest extends BaseTest {
     /* compareTo(OperationList) */
 
     @Test
-    public void testCompareTo() {
+    public void compareTo() {
         OperationList ops2 = new OperationList(new Identifier("identifier.jpg"),
                 Format.JPG);
 
@@ -447,7 +476,7 @@ public class OperationListTest extends BaseTest {
     /* equals(Object) */
 
     @Test
-    public void testEqualsWithEqualOperationList() {
+    public void equalsWithEqualOperationList() {
         OperationList ops1 = TestUtil.newOperationList();
         OperationList ops2 = TestUtil.newOperationList();
         ops2.add(new Rotate());
@@ -455,7 +484,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void testEqualsWithUnequalOperationList() {
+    public void equalsWithUnequalOperationList() {
         OperationList ops1 = TestUtil.newOperationList();
         OperationList ops2 = TestUtil.newOperationList();
         ops2.add(new Rotate(1));
@@ -465,13 +494,13 @@ public class OperationListTest extends BaseTest {
     /* getFirst(Class<Operation>) */
 
     @Test
-    public void testGetFirst() {
+    public void getFirst() {
         assertNull(instance.getFirst(MetadataCopy.class));
         assertNotNull(instance.getFirst(Scale.class));
     }
 
     @Test
-    public void testGetFirstWithSuperclass() {
+    public void getFirstWithSuperclass() {
         instance.add(new DummyOverlay());
 
         Overlay overlay = (Overlay) instance.getFirst(Overlay.class);
@@ -482,12 +511,12 @@ public class OperationListTest extends BaseTest {
     /* getOptions() */
 
     @Test
-    public void testGetOptions() {
+    public void getOptions() {
         assertNotNull(instance.getOptions());
     }
 
     @Test
-    public void testGetOptionsWhileFrozen() {
+    public void getOptionsWhileFrozen() {
         instance.freeze();
         try {
             instance.getOptions().put("test", "test");
@@ -500,7 +529,7 @@ public class OperationListTest extends BaseTest {
     /* getResultingSize(Dimension) */
 
     @Test
-    public void testGetResultingSize() {
+    public void getResultingSize() {
         Dimension fullSize = new Dimension(300, 200);
         instance = new OperationList(new Identifier("cats"), Format.JPG);
         Crop crop = new Crop();
@@ -526,7 +555,7 @@ public class OperationListTest extends BaseTest {
     /* hasEffect(Format) */
 
     @Test
-    public void testHasEffect() {
+    public void hasEffect() {
         // same format
         instance = new OperationList(new Identifier("identifier.gif"),
                 Format.GIF);
@@ -539,14 +568,14 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void testHasEffectWithPdfSourceAndPdfOutputAndOverlay() {
+    public void hasEffectWithPdfSourceAndPdfOutputAndOverlay() {
         instance = new OperationList(new Identifier("identifier.pdf"),
                 Format.PDF);
         assertFalse(instance.hasEffect(Format.PDF));
     }
 
     @Test
-    public void testHasEffectWithEncodeAndSameOutputFormat() {
+    public void hasEffectWithEncodeAndSameOutputFormat() {
         instance = new OperationList(new Identifier("identifier.jpg"),
                 Format.JPG);
         instance.add(new Encode(Format.JPG));
@@ -556,7 +585,7 @@ public class OperationListTest extends BaseTest {
     /* iterator() */
 
     @Test
-    public void testIterator() {
+    public void iterator() {
         int count = 0;
         Iterator<Operation> it = instance.iterator();
         while (it.hasNext()) {
@@ -567,7 +596,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void testIteratorCannotRemoveWhileFrozen() {
+    public void iteratorCannotRemoveWhileFrozen() {
         instance.freeze();
         Iterator<Operation> it = instance.iterator();
         it.next();
@@ -582,7 +611,7 @@ public class OperationListTest extends BaseTest {
     /* setIdentifier() */
 
     @Test
-    public void testSetIdentifierWhileFrozen() {
+    public void setIdentifierWhileFrozen() {
         instance.freeze();
         try {
             instance.setIdentifier(new Identifier("alpaca"));
@@ -595,7 +624,7 @@ public class OperationListTest extends BaseTest {
     /* setOutputFormat() */
 
     @Test
-    public void testSetOutputFormatWhileFrozen() {
+    public void setOutputFormatWhileFrozen() {
         instance.freeze();
         try {
             instance.setOutputFormat(Format.GIF);
@@ -608,7 +637,7 @@ public class OperationListTest extends BaseTest {
     /* toFilename() */
 
     @Test
-    public void testToFilename() {
+    public void toFilename() {
         instance = new OperationList(new Identifier("identifier.jpg"),
                 Format.JPG);
         Crop crop = new Crop();
@@ -640,7 +669,7 @@ public class OperationListTest extends BaseTest {
     /* toMap() */
 
     @Test
-    public void testToMap() {
+    public void toMap() {
         instance = new OperationList(new Identifier("identifier.jpg"),
                 Format.JPG);
         // crop
@@ -689,7 +718,7 @@ public class OperationListTest extends BaseTest {
     /* validate() */
 
     @Test
-    public void testValidateWithValidInstance() {
+    public void validateWithValidInstance() {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(
                 new Identifier("cats"),
@@ -703,7 +732,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void testValidateWithOutOfBoundsCrop() {
+    public void validateWithOutOfBoundsCrop() {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(new Identifier("cats"),
                 Format.JPG,

@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
 public class FormatTest extends BaseTest {
 
     @Test
-    public void testInferFormatWithIdentifier() {
+    public void inferFormatWithIdentifier() {
         // AVI
         assertEquals(Format.AVI,
                 Format.inferFormat(new Identifier("bla.avi")));
@@ -68,7 +68,7 @@ public class FormatTest extends BaseTest {
     }
 
     @Test
-    public void testInferFormatWithString() {
+    public void inferFormatWithString() {
         // AVI
         assertEquals(Format.AVI,
                 Format.inferFormat("bla.avi"));
@@ -125,7 +125,7 @@ public class FormatTest extends BaseTest {
     }
 
     @Test
-    public void testGetExtensions() {
+    public void getExtensions() {
         // AVI
         assertEquals(Arrays.asList("avi"), Format.AVI.getExtensions());
         // BMP
@@ -165,7 +165,7 @@ public class FormatTest extends BaseTest {
     }
 
     @Test
-    public void testGetImageType() {
+    public void getImageType() {
         assertEquals(Format.ImageType.RASTER, Format.AVI.getImageType());
         assertEquals(Format.ImageType.RASTER, Format.BMP.getImageType());
         assertEquals(Format.ImageType.RASTER, Format.DCM.getImageType());
@@ -186,7 +186,28 @@ public class FormatTest extends BaseTest {
     }
 
     @Test
-    public void testGetMediaTypes() {
+    public void getMaxSampleSize() {
+        assertEquals(8, Format.AVI.getMaxSampleSize());
+        assertEquals(8, Format.BMP.getMaxSampleSize());
+        assertEquals(16, Format.DCM.getMaxSampleSize());
+        assertEquals(3, Format.GIF.getMaxSampleSize());
+        assertEquals(16, Format.JP2.getMaxSampleSize());
+        assertEquals(8, Format.JPG.getMaxSampleSize());
+        assertEquals(8, Format.MOV.getMaxSampleSize());
+        assertEquals(8, Format.MP4.getMaxSampleSize());
+        assertEquals(8, Format.MPG.getMaxSampleSize());
+        assertEquals(16, Format.PDF.getMaxSampleSize());
+        assertEquals(16, Format.PNG.getMaxSampleSize());
+        assertEquals(16, Format.SGI.getMaxSampleSize());
+        assertEquals(16, Format.SID.getMaxSampleSize());
+        assertEquals(16, Format.TIF.getMaxSampleSize());
+        assertEquals(8, Format.WEBM.getMaxSampleSize());
+        assertEquals(8, Format.WEBP.getMaxSampleSize());
+        assertEquals(0, Format.UNKNOWN.getMaxSampleSize());
+    }
+
+    @Test
+    public void getMediaTypes() {
         // AVI
         assertEquals(Arrays.asList(
                 new MediaType("video/avi"),
@@ -265,7 +286,7 @@ public class FormatTest extends BaseTest {
     }
 
     @Test
-    public void testGetName() {
+    public void getName() {
         assertEquals("AVI", Format.AVI.getName());
         assertEquals("BMP", Format.BMP.getName());
         assertEquals("DICOM", Format.DCM.getName());
@@ -286,7 +307,7 @@ public class FormatTest extends BaseTest {
     }
 
     @Test
-    public void testGetPreferredExtension() {
+    public void getPreferredExtension() {
         assertEquals("avi", Format.AVI.getPreferredExtension());
         assertEquals("bmp", Format.BMP.getPreferredExtension());
         assertEquals("dcm", Format.DCM.getPreferredExtension());
@@ -307,7 +328,7 @@ public class FormatTest extends BaseTest {
     }
 
     @Test
-    public void testGetPreferredMediaType() {
+    public void getPreferredMediaType() {
         assertEquals("video/avi",
                 Format.AVI.getPreferredMediaType().toString());
         assertEquals("image/bmp",
@@ -345,7 +366,7 @@ public class FormatTest extends BaseTest {
     }
 
     @Test
-    public void testGetType() {
+    public void getType() {
         assertEquals(Format.Type.VIDEO, Format.AVI.getType());
         assertEquals(Format.Type.IMAGE, Format.BMP.getType());
         assertEquals(Format.Type.IMAGE, Format.DCM.getType());
@@ -366,7 +387,7 @@ public class FormatTest extends BaseTest {
     }
 
     @Test
-    public void testIsImage() {
+    public void isImage() {
         assertFalse(Format.AVI.isImage());
         assertTrue(Format.BMP.isImage());
         assertTrue(Format.DCM.isImage());
@@ -387,7 +408,7 @@ public class FormatTest extends BaseTest {
     }
 
     @Test
-    public void testIsVideo() {
+    public void isVideo() {
         assertTrue(Format.AVI.isVideo());
         assertFalse(Format.BMP.isVideo());
         assertFalse(Format.DCM.isVideo());
@@ -408,7 +429,7 @@ public class FormatTest extends BaseTest {
     }
 
     @Test
-    public void testSupportsTransparency() {
+    public void supportsTransparency() {
         assertFalse(Format.AVI.supportsTransparency());
         assertTrue(Format.BMP.supportsTransparency());
         assertFalse(Format.DCM.supportsTransparency());
@@ -427,7 +448,7 @@ public class FormatTest extends BaseTest {
     }
 
     @Test
-    public void testToMap() {
+    public void toMap() {
         Map<String,Object> map = Format.JPG.toMap();
         assertEquals("jpg", map.get("extension"));
         assertEquals("image/jpeg", map.get("media_type"));

@@ -24,7 +24,7 @@ public class EncodeTest extends BaseTest {
     /* getResultingSize(Dimension) */
 
     @Test
-    public void testGetResultingSize() {
+    public void getResultingSize() {
         Dimension size = new Dimension(500, 500);
         assertEquals(size, instance.getResultingSize(size));
     }
@@ -32,14 +32,14 @@ public class EncodeTest extends BaseTest {
     /* hasEffect() */
 
     @Test
-    public void testHasEffect() {
+    public void hasEffect() {
         assertTrue(instance.hasEffect());
     }
 
     /* hasEffect(Dimension, OperationList) */
 
     @Test
-    public void testHasEffectWithArguments() {
+    public void hasEffectWithArguments() {
         Dimension size = new Dimension(500, 500);
         OperationList opList = TestUtil.newOperationList();
         assertTrue(instance.hasEffect(size, opList));
@@ -48,7 +48,7 @@ public class EncodeTest extends BaseTest {
     /* setQuality() */
 
     @Test
-    public void testSetQualityWithZeroArgumentThrowsException() {
+    public void setQualityWithZeroArgumentThrowsException() {
         try {
             instance.setQuality(0);
             fail("Expected exception");
@@ -58,7 +58,7 @@ public class EncodeTest extends BaseTest {
     }
 
     @Test
-    public void testSetQualityWithNegativeArgumentThrowsException() {
+    public void setQualityWithNegativeArgumentThrowsException() {
         try {
             instance.setQuality(-1);
             fail("Expected exception");
@@ -68,7 +68,7 @@ public class EncodeTest extends BaseTest {
     }
 
     @Test
-    public void testSetQualityWithArgumentAboveMaxThrowsException() {
+    public void setQualityWithArgumentAboveMaxThrowsException() {
         try {
             instance.setQuality(Encode.MAX_QUALITY + 1);
             fail("Expected exception");
@@ -78,7 +78,7 @@ public class EncodeTest extends BaseTest {
     }
 
     @Test
-    public void testSetQualityWithValidArgument() {
+    public void setQualityWithValidArgument() {
         instance.setQuality(50);
         assertEquals(50, instance.getQuality());
     }
@@ -86,11 +86,12 @@ public class EncodeTest extends BaseTest {
     /* toMap() */
 
     @Test
-    public void testToMap() {
+    public void toMap() {
         instance.setCompression(Compression.JPEG);
         instance.setInterlacing(true);
         instance.setQuality(50);
         instance.setBackgroundColor(Color.BLUE);
+        instance.setMaxSampleSize(10);
 
         final Map<String,Object> map = instance.toMap(new Dimension(500, 500));
         assertEquals("Encode", map.get("class"));
@@ -99,6 +100,7 @@ public class EncodeTest extends BaseTest {
         assertEquals(Format.JPG.getPreferredMediaType(), map.get("format"));
         assertTrue((boolean) map.get("interlace"));
         assertEquals(50, map.get("quality"));
+        assertEquals(10, map.get("max_sample_size"));
     }
 
     /* toString() */
@@ -109,7 +111,8 @@ public class EncodeTest extends BaseTest {
         instance.setInterlacing(true);
         instance.setQuality(50);
         instance.setBackgroundColor(Color.BLUE);
-        assertEquals("jpg_JPEG_50_interlace_#0000FF", instance.toString());
+        instance.setMaxSampleSize(10);
+        assertEquals("jpg_JPEG_50_interlace_#0000FF_10", instance.toString());
     }
 
 }

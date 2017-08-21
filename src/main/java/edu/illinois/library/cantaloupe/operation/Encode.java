@@ -23,6 +23,8 @@ public class Encode implements Operation {
     private Compression compression = Compression.UNDEFINED;
     private Format format = Format.UNKNOWN;
     private boolean interlace = false;
+    /** May be null to indicate no max. */
+    private Integer maxSampleSize;
     private int quality = MAX_QUALITY;
 
     public Encode(Format format) {
@@ -50,6 +52,14 @@ public class Encode implements Operation {
 
     public Format getFormat() {
         return format;
+    }
+
+    /**
+     * @return Maximum sample size to encode. May be <code>null</code> to
+     *         indicate no max.
+     */
+    public Integer getMaxSampleSize() {
+        return maxSampleSize;
     }
 
     /**
@@ -118,11 +128,19 @@ public class Encode implements Operation {
     }
 
     /**
+     * @param depth Maximum sample size to encode. Supply <code>null</code> to
+     *              indicate no max.
+     */
+    public void setMaxSampleSize(Integer depth) {
+        this.maxSampleSize = depth;
+    }
+
+    /**
      * @param quality
      * @throws IllegalArgumentException If the given quality is outside the
      *         range of 1-{@link #MAX_QUALITY}.
      */
-    public void setQuality(int quality) throws IllegalArgumentException {
+    public void setQuality(int quality) {
         if (quality < 1 || quality > MAX_QUALITY) {
             throw new IllegalArgumentException(
                     "Quality must be in the range of 1-" + MAX_QUALITY + ".");
@@ -139,7 +157,8 @@ public class Encode implements Operation {
      *     compression: String,
      *     format: Media type string,
      *     interlace: Boolean,
-     *     quality: Integer
+     *     quality: Integer,
+     *     max_sample_size: Integer
      * }</pre>
      *
      * @param fullSize Ignored.
@@ -156,6 +175,7 @@ public class Encode implements Operation {
         map.put("format", getFormat().getPreferredMediaType());
         map.put("interlace", isInterlacing());
         map.put("quality", getQuality());
+        map.put("max_sample_size", getMaxSampleSize());
         return map;
     }
 
@@ -181,6 +201,8 @@ public class Encode implements Operation {
         if (getBackgroundColor() != null) {
             parts.add(getBackgroundColor().toRGBHex());
         }
+        parts.add(getMaxSampleSize() + "");
+
         return StringUtils.join(parts, "_");
     }
 

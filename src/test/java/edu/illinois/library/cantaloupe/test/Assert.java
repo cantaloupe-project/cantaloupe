@@ -1,5 +1,13 @@
 package edu.illinois.library.cantaloupe.test;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.Iterator;
+
 import static org.junit.Assert.assertEquals;
 
 public abstract class Assert {
@@ -37,6 +45,31 @@ public abstract class Assert {
         assertEquals(expectedRed, red);
         assertEquals(expectedGreen, green);
         assertEquals(expectedBlue, blue);
+    }
+
+    public static void assertSampleSize(int expectedSampleSize,
+                                        Object image) throws IOException {
+        try {
+            if (image instanceof byte[]) {
+                image = new ByteArrayInputStream((byte[]) image);
+                image = ImageIO.createImageInputStream(image);
+            }
+
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(image);
+            if (readers.hasNext()) {
+                ImageReader reader = readers.next();
+                reader.setInput(image);
+                BufferedImage bImage = reader.read(0);
+                assertEquals(expectedSampleSize,
+                        bImage.getColorModel().getComponentSize(0));
+            } else {
+                throw new IOException("No reader available for " + image);
+            }
+        } finally {
+            if (image instanceof Closeable) {
+                ((Closeable) image).close();
+            }
+        }
     }
 
 }

@@ -60,9 +60,6 @@ public final class OperationList implements Comparable<OperationList>,
 
     /**
      * Constructs a minimal valid instance.
-     *
-     * @param identifier
-     * @param outputFormat
      */
     public OperationList(Identifier identifier, Format outputFormat) {
         setIdentifier(identifier);
@@ -290,7 +287,7 @@ public final class OperationList implements Comparable<OperationList>,
                 break;
         }
 
-        // Set the Encode operation's background color
+        // Set the Encode operation's background color.
         if (!encode.getFormat().supportsTransparency()) {
             final String bgColor =
                     config.getString(Key.PROCESSOR_BACKGROUND_COLOR);
@@ -298,6 +295,10 @@ public final class OperationList implements Comparable<OperationList>,
                 encode.setBackgroundColor(Color.fromString(bgColor));
             }
         }
+
+        // Set the Encode operation's max sample size.
+        boolean limit = config.getBoolean(Key.PROCESSOR_LIMIT_TO_8_BITS, true);
+        encode.setMaxSampleSize(limit ? 8 : null);
     }
 
     /**

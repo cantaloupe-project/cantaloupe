@@ -26,31 +26,13 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.renderable.ParameterBlock;
 
+/**
+ * @see <a href="http://docs.oracle.com/cd/E19957-01/806-5413-10/806-5413-10.pdf">
+ *     Programming in Java Advanced Imaging</a>
+ */
 abstract class JAIUtil {
 
-    private static Logger logger = LoggerFactory.getLogger(JAIUtil.class);
-
-    /**
-     * Reduces an image's component size to 8 bits if greater.
-     *
-     * @param inImage Image to reduce
-     * @return Reduced image, or the input image if it already is 8 bits or
-     *         less.
-     */
-    static RenderedOp convertTo8Bits(RenderedOp inImage) {
-        final int componentSize = inImage.getColorModel().getComponentSize(0);
-        if (componentSize != 8) {
-            // This seems to clip the color depth to 8-bit. Not sure why it
-            // works.
-            final ParameterBlock pb = new ParameterBlock();
-            pb.addSource(inImage);
-
-            logger.debug("convertTo8Bits(): converting {}-bit to 8-bit",
-                    componentSize);
-            inImage = JAI.create("format", pb, inImage.getRenderingHints());
-        }
-        return inImage;
-    }
+    private static final Logger logger = LoggerFactory.getLogger(JAIUtil.class);
 
     /**
      * @param inImage Image to crop.
@@ -111,10 +93,37 @@ abstract class JAIUtil {
     }
 
     /**
+     * <p>Reduces an image's component size to 8 bits if greater.</p>
+     *
+     * <p>Pixel values will not be rescaled.</p>
+     *
+     * @param inImage Image to reduce.
+     * @return Reduced image, or the input image if it already is 8 bits or
+     *         less.
+     * @see #rescalePixels(RenderedOp)
+     */
+    static RenderedOp reduceTo8Bits(RenderedOp inImage) {
+        final int componentSize = inImage.getColorModel().getComponentSize(0);
+        if (componentSize > 8) {
+            final ParameterBlock pb = new ParameterBlock();
+            pb.addSource(inImage);
+
+            logger.debug("reduceTo8Bits(): converting {}-bit to 8-bit",
+                    componentSize);
+
+            // See Programming in Java Advanced Imaging sec. 4.5 for an
+            // explanation of the Format operation.
+            inImage = JAI.create("format", pb, inImage.getRenderingHints());
+        }
+        return inImage;
+    }
+
+    /**
      * Linearly scales the pixel values of the given image into an 8-bit range.
      *
      * @param inImage Image to rescale.
      * @return Rescaled image.
+     * @see #reduceTo8Bits(RenderedOp)
      */
     static RenderedOp rescalePixels(RenderedOp inImage) {
         final int targetSize = 8;

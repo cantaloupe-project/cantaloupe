@@ -1,8 +1,10 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -112,6 +114,8 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
                      ReductionFactor reductionFactor,
                      final OutputStream outputStream)
             throws IOException, ProcessorException {
+        final Format outputFormat = opList.getOutputFormat();
+
         if (reductionFactor == null) {
             reductionFactor = new ReductionFactor();
         }
@@ -122,7 +126,21 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
         if (opList.getFirst(Normalize.class) != null) {
             image = Java2DUtil.stretchContrast(image);
         }
-        image = Java2DUtil.reduceTo8Bits(image);
+
+        // If the Encode specifies a max sample size of 8 bits, or if the
+        // output format's max sample size is 8 bits, we will need to reduce
+        // it. HOWEVER, if the output format's max sample size is LESS THAN
+        // 8 bits (I'm looking at you, GIF), don't do anything and let the
+        // writer handle it.
+        // The writer could actually do this itself regardless, but doing it
+        // here could make subsequent processing steps more efficient as they
+        // will have less data to deal with.
+        Encode encode = (Encode) opList.getFirst(Encode.class);
+        if (((encode != null && encode.getMaxSampleSize() != null && encode.getMaxSampleSize() <= 8)
+                || outputFormat.getMaxSampleSize() <= 8)
+                && !Format.GIF.equals(outputFormat)) {
+            image = Java2DUtil.reduceTo8Bits(image);
+        }
 
         final Dimension fullSize = imageInfo.getSize();
 
@@ -174,8 +192,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
             }
         }
 
-        new ImageWriter(opList).
-                write(image, opList.getOutputFormat(), outputStream);
+        new ImageWriter(opList).write(image, outputFormat, outputStream);
     }
 
 }

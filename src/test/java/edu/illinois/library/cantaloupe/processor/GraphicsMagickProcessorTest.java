@@ -110,12 +110,23 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
         return supportedFormats;
     }
 
+    @Override
+    protected Format getSupported16BitSourceFormat() throws IOException {
+        return Format.PNG;
+    }
+
+    @Override
+    protected File getSupported16BitImage() throws IOException {
+        return TestUtil.getImage("png-rgb-64x56x16.png");
+    }
+
+    @Override
     protected GraphicsMagickProcessor newInstance() {
         return new GraphicsMagickProcessor();
     }
 
     @Test
-    public void testGetInitializationException() {
+    public void getInitializationException() {
         Configuration.getInstance().setProperty(
                 Key.GRAPHICSMAGICKPROCESSOR_PATH_TO_BINARIES,
                 "/bogus/bogus/bogus");
@@ -124,15 +135,33 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
         assertNotNull(instance.getInitializationException());
     }
 
+    @Override
     @Test
-    @Ignore // TODO: get PDF working in GM (@adolski)
-    public void testProcessWithPageOption() throws Exception {
+    public void processOf16BitImageWithEncodeOperationLimitingTo8Bits() {
+        // >8-bit output is not currently available in this processor.
+        // GM only has a -depth argument that forces all output to that depth.
+        // In order to accomplish this, we would probably need readImageInfo()
+        // to return a sample size in the Info and use that to determine
+        // whether we need to call -depth.
+    }
+
+    @Override
+    @Test
+    public void processOf16BitImageWithEncodeOperationWithNoLimit() {
+        // See above method.
+    }
+
+    @Test
+    public void processWithPageOption() throws Exception {
         // Skip if GraphicsMagick does not support PDF.
-        assumeTrue(instance.getAvailableOutputFormats().size() > 0);
+        try {
+            instance.setSourceFormat(Format.PDF);
+        } catch (UnsupportedSourceFormatException e) {
+            return;
+        }
 
         final File fixture = TestUtil.getImage("pdf-multipage.pdf");
         byte[] page1, page2;
-        instance.setSourceFormat(Format.PDF);
         Info imageInfo;
 
         // page option missing
@@ -157,12 +186,14 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Test
-    @Ignore // TODO: get PDF working in GM (@adolski)
-    public void testValidate() throws Exception {
+    public void validate() throws Exception {
         // Skip if GraphicsMagick does not support PDF.
-        assumeTrue(instance.getAvailableOutputFormats().size() > 0);
+        try {
+            instance.setSourceFormat(Format.PDF);
+        } catch (UnsupportedSourceFormatException e) {
+            return;
+        }
 
-        instance.setSourceFormat(Format.PDF);
         instance.setStreamSource(new FileInputStreamStreamSource(
                 TestUtil.getImage("pdf.pdf")));
 

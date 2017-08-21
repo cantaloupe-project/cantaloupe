@@ -1375,6 +1375,29 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
+                                           data-content="Whether to reduce images with more than
+                                           8 bits per sample to 8 bits. This only applies to
+                                           formats that support more than 8 bits per sample, and
+                                           not all processors respect this setting &mdash;
+                                           see the user manual..">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="processor.limit_to_8_bits"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Limit Output to 8 Bits Per Sample
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
                                            data-content="Progressive JPEGs are generally more
                                            space-efficient and can provide a better user
                                            experience, but they are not quite as well-supported

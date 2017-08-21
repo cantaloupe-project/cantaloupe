@@ -25,6 +25,7 @@ public enum Format {
             Arrays.asList("video/avi", "video/msvideo", "video/x-msvideo"),
             Arrays.asList("avi"),
             Type.VIDEO,
+            8,
             false),
 
     /**
@@ -35,6 +36,7 @@ public enum Format {
             Arrays.asList("image/bmp", "image/x-bmp", "image/x-ms-bmp"),
             Arrays.asList("bmp", "dib"),
             Type.IMAGE,
+            8,
             true),
 
     /**
@@ -45,6 +47,7 @@ public enum Format {
             Arrays.asList("application/dicom"),
             Arrays.asList("dcm", "dic"),
             Type.IMAGE,
+            16,
             false),
 
     /**
@@ -55,6 +58,7 @@ public enum Format {
             Arrays.asList("image/gif"),
             Arrays.asList("gif"),
             Type.IMAGE,
+            3,
             true),
 
     /**
@@ -65,6 +69,7 @@ public enum Format {
             Arrays.asList("image/jp2"),
             Arrays.asList("jp2", "j2k"),
             Type.IMAGE,
+            16,
             true),
 
     /**
@@ -75,6 +80,7 @@ public enum Format {
             Arrays.asList("image/jpeg"),
             Arrays.asList("jpg", "jpeg"),
             Type.IMAGE,
+            8,
             false),
 
     /**
@@ -85,6 +91,7 @@ public enum Format {
             Arrays.asList("video/quicktime", "video/x-quicktime"),
             Arrays.asList("mov"),
             Type.VIDEO,
+            8,
             false),
 
     /**
@@ -95,6 +102,7 @@ public enum Format {
             Arrays.asList("video/mp4"),
             Arrays.asList("mp4", "m4v"),
             Type.VIDEO,
+            8,
             false),
 
     /**
@@ -105,6 +113,7 @@ public enum Format {
             Arrays.asList("video/mpeg"),
             Arrays.asList("mpg"),
             Type.VIDEO,
+            8,
             false),
 
     /**
@@ -115,6 +124,7 @@ public enum Format {
             Arrays.asList("application/pdf"),
             Arrays.asList("pdf"),
             Type.IMAGE,
+            16,
             false),
 
     /**
@@ -125,6 +135,7 @@ public enum Format {
             Arrays.asList("image/png"),
             Arrays.asList("png"),
             Type.IMAGE,
+            16,
             true),
 
     /**
@@ -135,6 +146,7 @@ public enum Format {
             Arrays.asList("image/sgi"),
             Arrays.asList("sgi", "rgb", "rgba", "bw", "int", "inta"),
             Type.IMAGE,
+            16,
             true),
 
     /**
@@ -146,6 +158,7 @@ public enum Format {
                     "image/x-mrsid-image"),
             Arrays.asList("sid"),
             Type.IMAGE,
+            16,
             true),
 
     /**
@@ -156,6 +169,7 @@ public enum Format {
             Arrays.asList("image/tiff"),
             Arrays.asList("tif", "ptif", "tiff"),
             Type.IMAGE,
+            16,
             true),
 
     /**
@@ -166,6 +180,7 @@ public enum Format {
             Arrays.asList("video/webm"),
             Arrays.asList("webm"),
             Type.VIDEO,
+            8,
             false),
 
     /**
@@ -176,6 +191,7 @@ public enum Format {
             Arrays.asList("image/webp"),
             Arrays.asList("webp"),
             Type.IMAGE,
+            8,
             true),
 
     /**
@@ -186,6 +202,7 @@ public enum Format {
             Arrays.asList("unknown/unknown"),
             Arrays.asList("unknown"),
             Type.UNKNOWN,
+            0,
             false);
 
     public enum ImageType {
@@ -200,6 +217,7 @@ public enum Format {
     private ImageType imageType;
     private List<String> mediaTypes;
     private String name;
+    private int maxSampleSize;
     private boolean supportsTransparency;
     private Type type;
 
@@ -251,12 +269,14 @@ public enum Format {
            final List<String> mediaTypes,
            final List<String> extensions,
            final Type type,
+           final int maxSampleSize,
            final boolean supportsTransparency) {
         this.imageType = imageType;
         this.mediaTypes = mediaTypes;
         this.extensions = extensions;
         this.name = name;
         this.type = type;
+        this.maxSampleSize = maxSampleSize;
         this.supportsTransparency = supportsTransparency;
     }
 
@@ -270,6 +290,17 @@ public enum Format {
 
     public ImageType getImageType() {
         return imageType;
+    }
+
+    /**
+     * N.B. This is not to be taken too seriously. As of the time it was
+     * written, its only purpose is to query formats' support for
+     * greater-than-8-bit samples.
+     *
+     * @return Maximum sample size supported by the format.
+     */
+    public int getMaxSampleSize() {
+        return maxSampleSize;
     }
 
     /**
@@ -292,18 +323,18 @@ public enum Format {
      * @return The most appropriate extension for the format.
      */
     public String getPreferredExtension() {
-        return this.getExtensions().get(0);
+        return getExtensions().get(0);
     }
 
     /**
      * @return The most appropriate media type for the format.
      */
     public MediaType getPreferredMediaType() {
-        return this.getMediaTypes().get(0);
+        return getMediaTypes().get(0);
     }
 
     public Type getType() {
-        return this.type;
+        return type;
     }
 
     /**
@@ -327,7 +358,7 @@ public enum Format {
     }
 
     public boolean supportsTransparency() {
-        return this.supportsTransparency;
+        return supportsTransparency;
     }
 
     /**

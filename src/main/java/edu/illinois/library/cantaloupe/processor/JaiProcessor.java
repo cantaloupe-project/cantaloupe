@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -45,7 +46,8 @@ import java.util.Set;
 class JaiProcessor extends AbstractImageIOProcessor
         implements FileProcessor, StreamProcessor {
 
-    private static Logger logger = LoggerFactory.getLogger(JaiProcessor.class);
+    private static final Logger logger = LoggerFactory.
+            getLogger(JaiProcessor.class);
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             new HashSet<>();
@@ -121,6 +123,7 @@ class JaiProcessor extends AbstractImageIOProcessor
 
         final ImageReader reader = getReader();
         try {
+            final Format outputFormat = opList.getOutputFormat();
             final Orientation orientation = getEffectiveOrientation();
             final Dimension fullSize = imageInfo.getSize();
             final ReductionFactor rf = new ReductionFactor();
@@ -143,8 +146,20 @@ class JaiProcessor extends AbstractImageIOProcessor
             if (normalize) {
                 renderedOp = JAIUtil.stretchContrast(renderedOp);
             }
-            renderedOp = JAIUtil.rescalePixels(renderedOp);
-            renderedOp = JAIUtil.convertTo8Bits(renderedOp);
+
+            // If the Encode specifies a max sample size of 8 bits, or if the
+            // output format's max sample size is 8 bits, we will need to
+            // reduce it. HOWEVER, if the output format's max sample size is
+            // LESS THAN 8 bits (I'm looking at you, GIF), don't do anything
+            // and let the writer handle it.
+            Encode encode = (Encode) opList.getFirst(Encode.class);
+            if (((encode != null && encode.getMaxSampleSize() != null
+                    && encode.getMaxSampleSize() <= 8)
+                    || outputFormat.getMaxSampleSize() <= 8)
+                    && !Format.GIF.equals(outputFormat)) {
+                renderedOp = JAIUtil.rescalePixels(renderedOp);
+                renderedOp = JAIUtil.reduceTo8Bits(renderedOp);
+            }
 
             for (Operation op : opList) {
                 if (op.hasEffect(fullSize, opList)) {
@@ -224,9 +239,9 @@ class JaiProcessor extends AbstractImageIOProcessor
                     reader.getMetadata(0));
 
             if (image != null) {
-                writer.write(image, opList.getOutputFormat(), outputStream);
+                writer.write(image, outputFormat, outputStream);
             } else {
-                writer.write(renderedOp, opList.getOutputFormat(), outputStream);
+                writer.write(renderedOp, outputFormat, outputStream);
             }
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);

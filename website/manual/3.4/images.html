@@ -14,7 +14,8 @@ title: Source Formats
 
 <ul>
   <li><a href="#Size%20Considerations">Size Considerations</a></li>
-  <li><a href="#Bit%20Depth%20Considerations">Bit Depth Considerations</a></li>
+  <li><a href="#Sample%20Sizes">Sample Sizes</a></li>
+  <li><a href="#Normalization">Normalization</a></li>
   <li><a href="#Source%20Formats">Source Formats</a>
     <ul>
       <li><a href="#DICOM">DICOM</a></li>
@@ -43,11 +44,13 @@ title: Source Formats
 
 <hr>
 
-<h2 id="Bit Depth Considerations">Bit Depth Considerations</h2>
+<h2 id="Sample Sizes">Sample Sizes</h2>
 
-<p>Most processors support non-8-bits-per-channel source images, but all output (derivative) images have 8 bits per channel. The pixel luminance values of non-8-bit images will be scaled linerarly to fit within 8 bits.</p>
+<p>Most processors can read images that have more than 8 bits per sample. However, as most clients are incapable of making use of more than 8 bits per sample, version 3.4 introduces a <code>processor.limit_to_8_bits</code> configuration option that will cause all images with more than 8 bits per sample to be rescaled to 8 bits.</p>
 
-<p>When set to <code>true</code>, the <code>processor.normalize</code> configuration option modifies this behavior, normalizing the pixel values to utilize the full 8 bits of dynamic range. This is useful when working with 16-bit source images (for example) that do not use a full 16 bits of dynamic range and would appear overly dark when scaled down to 8 bits.</p>
+<h2 id="Normalization">Normalization</h2>
+
+<p>When set to <code>true</code>, the <code>processor.normalize</code> configuration option normalizes the pixel values to utilize the full dynamic range of the output image. This is useful when working with 16-bit source images (for example) that do not use a full 16 bits of dynamic range and would appear overly dark when scaled down to 8 bits.</p>
 
 <hr>
 

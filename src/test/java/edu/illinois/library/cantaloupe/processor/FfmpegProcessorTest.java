@@ -35,6 +35,17 @@ public class FfmpegProcessorTest extends ProcessorTest {
         instance = newInstance();
     }
 
+    @Override
+    protected Format getSupported16BitSourceFormat() throws IOException {
+        return null;
+    }
+
+    @Override
+    protected File getSupported16BitImage() throws IOException {
+        return null;
+    }
+
+    @Override
     protected FfmpegProcessor newInstance() {
         FfmpegProcessor instance = new FfmpegProcessor();
         try {
@@ -50,7 +61,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void testGetAvailableOutputFormats() throws Exception {
+    public void getAvailableOutputFormats() throws Exception {
         for (Format format : Format.values()) {
             try {
                 instance = newInstance();
@@ -68,7 +79,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void testGetSupportedFeatures() throws Exception {
+    public void getSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
         Set<ProcessorFeature> expectedFeatures = new HashSet<>(Arrays.asList(
                 ProcessorFeature.MIRRORING,
@@ -124,7 +135,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void testProcessWithFrameOption() throws Exception {
+    public void processWithTimeOption() throws Exception {
         final Info imageInfo = instance.readImageInfo();
 
         // time option missing
@@ -143,7 +154,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void testProcessWithInvalidFrameOptionThrowsException()
+    public void processWithInvalidFrameOptionThrowsException()
             throws Exception {
         final Info imageInfo = instance.readImageInfo();
 
@@ -160,7 +171,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
 
     @Override
     @Test
-    public void testReadImageInfo() throws Exception {
+    public void readImageInfo() throws Exception {
         instance.setSourceFile(TestUtil.getImage("mpg"));
         instance.setSourceFormat(Format.MPG);
         Info expectedInfo = new Info(640, 360, 640, 360, Format.MPG);
@@ -169,7 +180,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void testValidate() throws Exception {
+    public void validate() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         Dimension fullSize = new Dimension(1000, 1000);
         instance.validate(ops, fullSize);
