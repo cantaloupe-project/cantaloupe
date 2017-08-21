@@ -51,7 +51,6 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
     private double durationSec = 0;
     private Info imageInfo;
-    private File sourceFile;
 
     /**
      * @param binaryName Name of one of the ffmpeg binaries
@@ -140,11 +139,6 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
     }
 
     @Override
-    public File getSourceFile() {
-        return this.sourceFile;
-    }
-
-    @Override
     public void process(final OperationList opList,
                         final Info imageInfo,
                         final OutputStream outputStream)
@@ -191,11 +185,6 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
             }
             throw new ProcessorException(msg, e);
         }
-    }
-
-    @Override
-    public void setSourceFile(File sourceFile) {
-        this.sourceFile = sourceFile;
     }
 
     /**
