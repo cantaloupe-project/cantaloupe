@@ -269,8 +269,18 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                     } else if (line.startsWith("tdx=")) {
                         String[] parts = StringUtils.split(line, ",");
                         if (parts.length == 2) {
-                            image.tileWidth = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
-                            image.tileHeight = Integer.parseInt(parts[1].replaceAll("[^0-9]", ""));
+                            final int dim1 = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
+                            final int dim2 = Integer.parseInt(parts[1].replaceAll("[^0-9]", ""));
+                            int tileWidth, tileHeight;
+                            if (image.width > image.height) {
+                                tileWidth = Math.max(dim1, dim2);
+                                tileHeight = Math.min(dim1, dim2);
+                            } else {
+                                tileWidth = Math.min(dim1, dim2);
+                                tileHeight = Math.max(dim1, dim2);
+                            }
+                            image.tileWidth = tileWidth;
+                            image.tileHeight = tileHeight;
                         }
                     }
                 }
