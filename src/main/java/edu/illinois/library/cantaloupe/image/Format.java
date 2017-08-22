@@ -139,6 +139,17 @@ public enum Format {
             true),
 
     /**
+     * Adobe Photoshop document format.
+     */
+    PSD("PSD",
+            ImageType.RASTER,
+            Arrays.asList("image/vnd.adobe.photoshop"),
+            Arrays.asList("psd"),
+            Type.IMAGE,
+            16,
+            true),
+
+    /**
      * Silicon Graphics Image format.
      */
     SGI("SGI",

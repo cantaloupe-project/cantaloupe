@@ -113,7 +113,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
      */
     private static synchronized Map<Format, Set<Format>> getFormats() {
         if (supportedFormats == null) {
-            final Set<Format> formats = new HashSet<>();
+            final Set<Format> sourceFormats = new HashSet<>();
             final Set<Format> outputFormats = new HashSet<>();
 
             // Retrieve the output of the `identify -list format` command,
@@ -141,46 +141,48 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                     while ((s = buffReader.readLine()) != null) {
                         s = s.trim();
                         if (s.startsWith("BMP")) {
-                            formats.add(Format.BMP);
+                            sourceFormats.add(Format.BMP);
                             if (s.contains(" rw")) {
                                 outputFormats.add(Format.BMP);
                             }
                         } else if (s.startsWith("DCM")) {
-                            formats.add(Format.DCM);
+                            sourceFormats.add(Format.DCM);
                             if (s.contains(" rw")) {
                                 outputFormats.add(Format.DCM);
                             }
                         } else if (s.startsWith("GIF")) {
-                            formats.add(Format.GIF);
+                            sourceFormats.add(Format.GIF);
                             if (s.contains(" rw")) {
                                 outputFormats.add(Format.GIF);
                             }
                         } else if (s.startsWith("JP2")) {
-                            formats.add(Format.JP2);
+                            sourceFormats.add(Format.JP2);
                             if (s.contains(" rw")) {
                                 outputFormats.add(Format.JP2);
                             }
                         } else if (s.startsWith("JPEG")) {
-                            formats.add(Format.JPG);
+                            sourceFormats.add(Format.JPG);
                             if (s.contains(" rw")) {
                                 outputFormats.add(Format.JPG);
                             }
+                        } else if (s.startsWith("PDF") && s.contains("  r")) {
+                            sourceFormats.add(Format.PDF);
                         } else if (s.startsWith("PNG")) {
-                            formats.add(Format.PNG);
+                            sourceFormats.add(Format.PNG);
                             if (s.contains(" rw")) {
                                 outputFormats.add(Format.PNG);
                             }
-                        } else if (s.startsWith("PDF") && s.contains(" rw")) {
-                            formats.add(Format.PDF);
+                        } else if (s.startsWith("PSD") && s.contains("  r")) {
+                            sourceFormats.add(Format.PSD);
                         } else if (s.startsWith("TIFF")) {
-                            formats.add(Format.TIF);
+                            sourceFormats.add(Format.TIF);
                             if (s.contains(" rw")) {
                                 outputFormats.add(Format.TIF);
                             }
                         } else if (s.startsWith("SGI") && s.contains("  r")) {
-                            formats.add(Format.SGI);
+                            sourceFormats.add(Format.SGI);
                         } else if (s.startsWith("WEBP")) {
-                            formats.add(Format.WEBP);
+                            sourceFormats.add(Format.WEBP);
                             if (s.contains(" rw")) {
                                 outputFormats.add(Format.WEBP);
                             }
@@ -189,7 +191,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                     process.waitFor();
 
                     supportedFormats = new HashMap<>();
-                    for (Format format : formats) {
+                    for (Format format : sourceFormats) {
                         supportedFormats.put(format, outputFormats);
                     }
                 } catch (InterruptedException e) {

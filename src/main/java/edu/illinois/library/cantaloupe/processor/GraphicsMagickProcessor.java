@@ -94,7 +94,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
      */
     private static synchronized Map<Format, Set<Format>> getFormats() {
         if (supportedFormats == null) {
-            final Set<Format> formats = new HashSet<>();
+            final Set<Format> sourceFormats = new HashSet<>();
             final Set<Format> outputFormats = new HashSet<>();
 
             // Get the output of the `gm version` command, which contains
@@ -124,21 +124,21 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                         if (read) {
                             s = s.trim();
                             if (s.startsWith("JPEG-2000 ") && s.endsWith(" yes")) {
-                                formats.add(Format.JP2);
+                                sourceFormats.add(Format.JP2);
                                 outputFormats.add(Format.JP2);
                             } else if (s.startsWith("JPEG ") && s.endsWith(" yes")) {
-                                formats.add(Format.JPG);
+                                sourceFormats.add(Format.JPG);
                                 outputFormats.add(Format.JPG);
                             } else if (s.startsWith("PNG ") && s.endsWith(" yes")) {
-                                formats.add(Format.PNG);
+                                sourceFormats.add(Format.PNG);
                                 outputFormats.add(Format.PNG);
                             } else if (s.startsWith("Ghostscript") && s.endsWith(" yes")) {
-                                formats.add(Format.PDF);
+                                sourceFormats.add(Format.PDF);
                             } else if (s.startsWith("TIFF ") && s.endsWith(" yes")) {
-                                formats.add(Format.TIF);
+                                sourceFormats.add(Format.TIF);
                                 outputFormats.add(Format.TIF);
                             } else if (s.startsWith("WebP ") && s.endsWith(" yes")) {
-                                formats.add(Format.WEBP);
+                                sourceFormats.add(Format.WEBP);
                                 outputFormats.add(Format.WEBP);
                             }
                         }
@@ -148,14 +148,15 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                     // Add formats that are not listed in the output of
                     // "gm version" but are definitely available
                     // (http://www.graphicsmagick.org/formats.html)
-                    formats.add(Format.BMP);
-                    formats.add(Format.DCM);
-                    formats.add(Format.GIF);
-                    formats.add(Format.SGI);
+                    sourceFormats.add(Format.BMP);
+                    sourceFormats.add(Format.DCM);
+                    sourceFormats.add(Format.GIF);
+                    sourceFormats.add(Format.PSD);
+                    sourceFormats.add(Format.SGI);
                     outputFormats.add(Format.GIF);
 
                     supportedFormats = new HashMap<>();
-                    for (Format format : formats) {
+                    for (Format format : sourceFormats) {
                         supportedFormats.put(format, outputFormats);
                     }
                 } catch (InterruptedException e) {

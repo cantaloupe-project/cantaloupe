@@ -15,7 +15,6 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.NullOutputStream;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -366,36 +365,10 @@ public abstract class ProcessorTest extends BaseTest {
                     for (File fixture : fixtures) {
                         final String fixtureName = fixture.getName();
                         if (fixtureName.startsWith(sourceFormat.name().toLowerCase())) {
-                            // Don't test various compressed 16-bit TIFFs in
-                            // Java2dProcessor or JaiProcessor because
-                            // TIFFImageReader doesn't support them.
-                            if ((this instanceof Java2dProcessorTest ||
-                                    this instanceof JaiProcessorTest) &&
-                                    sourceFormat.equals(Format.TIF) &&
-                                    fixtureName.contains("x16-") &&
-                                    (fixtureName.contains("-zip") ||
-                                            fixtureName.contains("-lzw"))) {
-                                continue; // TODO: this conditional may no longer be necessary
-                            }
-                            // TIFFImageReader doesn't like JPEG-encoded TIFFs
-                            // either.
-                            if ((this instanceof Java2dProcessorTest ||
-                                    this instanceof JaiProcessorTest) &&
-                                    sourceFormat.equals(Format.TIF) &&
-                                    StringUtils.contains(fixtureName, "-jpeg")) {
-                                continue; // TODO: this conditional may no longer be necessary
-                            }
                             // Don't test 1x1 images as they are problematic
                             // with cropping & scaling.
                             if (fixtureName.contains("-1x1")) {
                                 continue;
-                            }
-                            // The JAI bandcombine operation does not like to
-                            // work with GIFs, apparently only when testing. (?)
-                            if (this instanceof JaiProcessorTest &&
-                                    ops.getFirst(ColorTransform.class) != null &&
-                                    fixture.getName().endsWith("gif")) {
-                                continue; // TODO: this conditional may no longer be necessary
                             }
                             doProcessTest(fixture, sourceFormat, ops);
                         }

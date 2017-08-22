@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.resolver.FileInputStreamStreamSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.awt.Dimension;
@@ -24,7 +23,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.*;
 
 /**
  * For this to work, the GraphicsMagick binary must be on the PATH.
@@ -45,7 +43,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
     protected HashMap<Format, Set<Format>> getAvailableOutputFormats()
             throws IOException {
         if (supportedFormats == null) {
-            final Set<Format> formats = new HashSet<>();
+            final Set<Format> sourceFormats = new HashSet<>();
             final Set<Format> outputFormats = new HashSet<>();
 
             // retrieve the output of the `gm version` command, which contains a
@@ -66,26 +64,26 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
                 }
                 if (read) {
                     if (s.startsWith("JPEG-2000  ") && s.endsWith(" yes")) {
-                        formats.add(Format.JP2);
+                        sourceFormats.add(Format.JP2);
                         outputFormats.add(Format.JP2);
                     }
                     if (s.startsWith("JPEG  ") && s.endsWith(" yes")) {
-                        formats.add(Format.JPG);
+                        sourceFormats.add(Format.JPG);
                         outputFormats.add(Format.JPG);
                     }
                     if (s.startsWith("PNG  ") && s.endsWith(" yes")) {
-                        formats.add(Format.PNG);
+                        sourceFormats.add(Format.PNG);
                         outputFormats.add(Format.PNG);
                     }
                     if (s.startsWith("Ghostscript") && s.endsWith(" yes")) {
-                        formats.add(Format.PDF);
+                        sourceFormats.add(Format.PDF);
                     }
                     if (s.startsWith("TIFF  ") && s.endsWith(" yes")) {
-                        formats.add(Format.TIF);
+                        sourceFormats.add(Format.TIF);
                         outputFormats.add(Format.TIF);
                     }
                     if (s.startsWith("WebP  ") && s.endsWith(" yes")) {
-                        formats.add(Format.WEBP);
+                        sourceFormats.add(Format.WEBP);
                         outputFormats.add(Format.WEBP);
                     }
                 }
@@ -93,17 +91,18 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
 
             // add formats that are definitely available
             // (http://www.graphicsmagick.org/formats.html)
-            formats.add(Format.BMP);
-            formats.add(Format.DCM);
-            formats.add(Format.GIF);
-            formats.add(Format.SGI);
+            sourceFormats.add(Format.BMP);
+            sourceFormats.add(Format.DCM);
+            sourceFormats.add(Format.GIF);
+            sourceFormats.add(Format.PSD);
+            sourceFormats.add(Format.SGI);
             outputFormats.add(Format.GIF);
 
             supportedFormats = new HashMap<>();
             for (Format format : Format.values()) {
                 supportedFormats.put(format, new HashSet<>());
             }
-            for (Format format : formats) {
+            for (Format format : sourceFormats) {
                 supportedFormats.put(format, outputFormats);
             }
         }
