@@ -4,19 +4,18 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.resource.AccessDeniedException;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,7 +55,7 @@ abstract class HttpResolverTest extends BaseTest {
     /* newStreamSource() */
 
     @Test
-    public void testNewStreamSourceWithPresentReadableImage() {
+    public void newStreamSourceWithPresentReadableImage() {
         try {
             assertNotNull(instance.newStreamSource());
         } catch (IOException e) {
@@ -65,7 +64,7 @@ abstract class HttpResolverTest extends BaseTest {
     }
 
     @Test
-    public void testNewStreamSourceWithMissingImage() {
+    public void newStreamSourceWithMissingImage() {
         try {
             instance.setIdentifier(new Identifier("bogus"));
             instance.newStreamSource();
@@ -78,10 +77,8 @@ abstract class HttpResolverTest extends BaseTest {
     }
 
     @Test
-    @Ignore // TODO: Jetty server returns HTTP 200 for unreadable files
-    public void testNewStreamSourceWithPresentUnreadableImage()
-            throws Exception {
-        File image = TestUtil.getFixture("gif");
+    public void newStreamSourceWithPresentUnreadableImage() throws Exception {
+        File image = TestUtil.getImage("gif");
         try {
             image.setReadable(false);
             instance.setIdentifier(new Identifier("gif"));
@@ -97,7 +94,7 @@ abstract class HttpResolverTest extends BaseTest {
     /* getSourceFormat() */
 
     @Test
-    public void testGetSourceFormat() throws Exception {
+    public void getSourceFormat() throws Exception {
         assertEquals(Format.JPG, instance.getSourceFormat());
         try {
             instance.setIdentifier(new Identifier("image.bogus"));
@@ -111,7 +108,7 @@ abstract class HttpResolverTest extends BaseTest {
     /* getResourceInfo() */
 
     @Test
-    public void testGetResourceInfoUsingBasicLookupStrategyWithPrefix()
+    public void getResourceInfoUsingBasicLookupStrategyWithPrefix()
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
@@ -122,7 +119,7 @@ abstract class HttpResolverTest extends BaseTest {
     }
 
     @Test
-    public void testGetResourceInfoUsingBasicLookupStrategyWithPrefixAndSuffix()
+    public void getResourceInfoUsingBasicLookupStrategyWithPrefixAndSuffix()
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
@@ -134,7 +131,7 @@ abstract class HttpResolverTest extends BaseTest {
     }
 
     @Test
-    public void testGetResourceInfoUsingBasicLookupStrategyWithoutPrefixOrSuffix()
+    public void getResourceInfoUsingBasicLookupStrategyWithoutPrefixOrSuffix()
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_URL_PREFIX, "");
@@ -145,7 +142,7 @@ abstract class HttpResolverTest extends BaseTest {
     }
 
     @Test
-    public void testGetResourceInfoUsingScriptLookupStrategyReturningString()
+    public void getResourceInfoUsingScriptLookupStrategyReturningString()
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
@@ -158,7 +155,7 @@ abstract class HttpResolverTest extends BaseTest {
     }
 
     @Test
-    public void testGetResourceInfoUsingScriptLookupStrategyWithContextReturningString()
+    public void getResourceInfoUsingScriptLookupStrategyWithContextReturningString()
             throws Exception {
         final Map<String, String> headers = new HashMap<>();
         headers.put("x-test-header", "foo");
@@ -176,7 +173,7 @@ abstract class HttpResolverTest extends BaseTest {
     }
 
     @Test
-    public void testGetResourceInfoUsingScriptLookupStrategyReturningHash()
+    public void getResourceInfoUsingScriptLookupStrategyReturningHash()
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
@@ -195,7 +192,7 @@ abstract class HttpResolverTest extends BaseTest {
     }
 
     @Test
-    public void testGetResourceInfoUsingScriptLookupStrategyReturningNil()
+    public void getResourceInfoUsingScriptLookupStrategyReturningNil()
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,

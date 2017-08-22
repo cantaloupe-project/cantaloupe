@@ -104,7 +104,6 @@ public class OpenJpegProcessorTest extends ProcessorTest {
 
     @Test
     @Override
-    @Ignore // TODO: fix this
     public void readImageInfo() throws Exception {
         Info expectedInfo = new Info(100, 88, 100, 88, Format.JP2);
 

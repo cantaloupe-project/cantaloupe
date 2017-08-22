@@ -1,22 +1,26 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import org.junit.Test;
-import org.restlet.data.Status;
-import org.restlet.resource.ClientResource;
 
-import static org.junit.Assert.*;
+import static edu.illinois.library.cantaloupe.test.HTTPAssert.*;
 
 /**
  * Functional test of LandingResource.
  */
 public class LandingResourceTest extends ResourceTest {
 
+    private String getURI() {
+        return "http://localhost:" + PORT;
+    }
+
     @Test
-    public void testRootUri() throws Exception {
-        ClientResource client = getClientForUriPath("");
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
-        assertTrue(client.get().getText().contains("<body"));
+    public void rootURIStatus() throws Exception {
+        assertStatus(200, getURI());
+    }
+
+    @Test
+    public void rootURIRepresentation() throws Exception {
+        assertRepresentationContains("<body", getURI());
     }
 
 }

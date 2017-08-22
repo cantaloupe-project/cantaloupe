@@ -23,7 +23,6 @@ import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.http2.client.HTTP2Client;
 import org.eclipse.jetty.http2.client.http.HttpClientTransportOverHTTP2;
-import org.eclipse.jetty.io.EofException;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -225,28 +224,26 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
         if (info != null) {
             logger.info("Resolved {} to {}", identifier, info.getURI());
-            try {
-                // Send an HTTP HEAD request to check whether the underlying
-                // resource is accessible.
-                final HttpClient client = getHTTPClient(info);
 
+            // Send an HTTP HEAD request to check whether the underlying
+            // resource is accessible.
+            final HttpClient client = getHTTPClient(info);
+            try {
                 InputStreamResponseListener listener =
                         new InputStreamResponseListener();
                 client.newRequest(info.getURI()).
                         timeout(REQUEST_TIMEOUT, TimeUnit.SECONDS).
                         method(HttpMethod.HEAD).send(listener);
 
-                // Wait for the response headers to arrive
+                // Wait for the response headers to arrive.
                 Response response = listener.get(REQUEST_TIMEOUT,
                         TimeUnit.SECONDS);
 
                 if (response.getStatus() >= HttpStatus.BAD_REQUEST_400) {
                     final String statusLine = "HTTP " + response.getStatus() +
                             ": " + response.getReason();
-                    if (response.getStatus() == HttpStatus.UNAUTHORIZED_401
-                            || response.getStatus() == HttpStatus.BAD_REQUEST_400) {
-                        throw new AccessDeniedException(statusLine);
-                    } else if (response.getStatus() == HttpStatus.NOT_FOUND_404
+
+                    if (response.getStatus() == HttpStatus.NOT_FOUND_404
                             || response.getStatus() == HttpStatus.GONE_410) {
                         throw new FileNotFoundException(statusLine);
                     } else if (response.getStatus() >= HttpStatus.BAD_REQUEST_400) {
@@ -254,8 +251,11 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                     }
                 }
                 return new HTTPStreamSource(client, info.getURI());
-            } catch (EofException | InterruptedException | ExecutionException
-                    | TimeoutException e) {
+            } catch (ExecutionException e) {
+                // Jetty does not throw a clear "access denied" exception,
+                // and there are different causes depending on HTTP or HTTPS
+                throw new AccessDeniedException(info.getURI().toString());
+            } catch (InterruptedException | TimeoutException e) {
                 logger.error(e.getMessage(), e);
                 throw new IOException(e.getMessage(), e);
             }
