@@ -96,6 +96,15 @@ is:
 
 ## Other Notes
 
+### Configuration keys
+
+Different application versions may require different configuration file keys.
+It's good practice to use a dedicated configuration file for each version.
+Keys are documented on the website through the latest release. If you are
+using a newer build, like a snapshot from the `develop` branch, newer keys will
+be documented in
+[website/upgrade.html](https://github.com/medusa-project/cantaloupe/blob/develop/website/upgrade.html).
+
 ### Versioning
 
 Cantaloupe roughly uses semantic versioning. Major releases (n) involve major
@@ -118,15 +127,6 @@ is then merged into `master`, where the release is tagged.
 
 Bugfixes that would increment a minor version of a release are applied to the
 release branch for that release, and merged back into develop.
-
-### Configuration keys
-
-Different application versions may require different configuration file keys.
-If you are switching between versions, it's good practice to use a dedicated
-configuration file for each version. Keys are documented on the website
-through the latest release. If you are using a newer build, such as a
-snapshot on the develop branch, newer keys will be documented in
-`website/upgrade.html`.
 
 ## Releasing
 
