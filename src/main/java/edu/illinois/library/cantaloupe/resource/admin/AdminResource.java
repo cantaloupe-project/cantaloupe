@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -11,7 +10,6 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
-import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
@@ -32,14 +30,14 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 /**
  * Handles the web-based Control Panel.
@@ -47,15 +45,15 @@ import java.util.TreeMap;
 public class AdminResource extends AbstractResource {
 
     /**
-     * <p>Resolver, caches, etc. can't be accessed from the templates, so
+     * <p>Resolvers, caches, etc. can't be accessed from the templates, so
      * instances of this class will proxy for them.</p>
      *
-     * <p>Velocity requires this class to be public.</p>
+     * <p>N.B.: Velocity requires this class to be public.</p>
      */
     public static class ObjectProxy {
         protected Object object;
 
-        public ObjectProxy(Object object) {
+        ObjectProxy(Object object) {
             this.object = object;
         }
 
@@ -64,9 +62,12 @@ public class AdminResource extends AbstractResource {
         }
     }
 
+    /**
+     * N.B.: Velocity requires this class to be public.
+     */
     public static class ProcessorProxy extends ObjectProxy {
 
-        public ProcessorProxy(Processor proc) {
+        ProcessorProxy(Processor proc) {
             super(proc);
         }
 
@@ -90,7 +91,7 @@ public class AdminResource extends AbstractResource {
         }
     }
 
-    private static org.slf4j.Logger logger = LoggerFactory.
+    private static final org.slf4j.Logger logger = LoggerFactory.
             getLogger(AdminResource.class);
 
     @Override
@@ -224,7 +225,7 @@ public class AdminResource extends AbstractResource {
                 configFile.getAbsolutePath() : "None");
 
         ////////////////////////////////////////////////////////////////////
-        /////////////////////// resolver section ///////////////////////////
+        /////////////////////// resolvers section //////////////////////////
         ////////////////////////////////////////////////////////////////////
 
         ResolverFactory.SelectionStrategy selectionStrategy =
@@ -236,12 +237,11 @@ public class AdminResource extends AbstractResource {
                     new ResolverFactory().getResolver(new Identifier("irrelevant"))));
         }
 
-        List<ObjectProxy> sortedProxies = new ArrayList<>();
-        for (Resolver resolver : ResolverFactory.getAllResolvers()) {
-            sortedProxies.add(new ObjectProxy(resolver));
-        }
-
-        Collections.sort(sortedProxies, new ObjectProxyComparator());
+        List<ObjectProxy> sortedProxies = ResolverFactory.getAllResolvers().
+                stream().
+                map(ObjectProxy::new).
+                collect(Collectors.toList());
+        sortedProxies.sort(new ObjectProxyComparator());
         vars.put("resolvers", sortedProxies);
 
         ////////////////////////////////////////////////////////////////////
@@ -267,40 +267,32 @@ public class AdminResource extends AbstractResource {
         }
 
         // image source formats
-        List<Format> imageFormats = new ArrayList<>();
-        for (Format format : Format.values()) {
-            if (format.getType() != null &&
-                    format.getType().equals(Format.Type.IMAGE)) {
-                imageFormats.add(format);
-            }
-        }
-        Collections.sort(imageFormats, new SourceFormatComparator());
+        List<Format> imageFormats = Arrays.stream(Format.values()).
+                filter(f -> Format.Type.IMAGE.equals(f.getType())).
+                collect(Collectors.toList());
+        imageFormats.sort(new SourceFormatComparator());
         vars.put("imageSourceFormats", imageFormats);
 
         // video source formats
-        List<Format> videoFormats = new ArrayList<>();
-        for (Format format : Format.values()) {
-            if (format.getType() != null &&
-                    format.getType().equals(Format.Type.VIDEO)) {
-                videoFormats.add(format);
-            }
-        }
-        Collections.sort(videoFormats, new SourceFormatComparator());
+        List<Format> videoFormats = Arrays.stream(Format.values()).
+                filter(f -> Format.Type.VIDEO.equals(f.getType())).
+                collect(Collectors.toList());
+        videoFormats.sort(new SourceFormatComparator());
         vars.put("videoSourceFormats", videoFormats);
 
         // source format assignments
         vars.put("sourceFormats", Format.values());
 
-        List<ProcessorProxy> sortedProcessorProxies = new ArrayList<>();
-        for (Processor proc : ProcessorFactory.getAllProcessors()) {
-            sortedProcessorProxies.add(new ProcessorProxy(proc));
-        }
+        List<ProcessorProxy> sortedProcessorProxies =
+                ProcessorFactory.getAllProcessors().stream().
+                        map(ProcessorProxy::new).
+                        collect(Collectors.toList());
 
         // warnings
-        vars.put("anyWarnings",
-                sortedProcessorProxies.stream().anyMatch(p -> !p.getWarnings().isEmpty()));
+        vars.put("anyWarnings", sortedProcessorProxies.stream().
+                anyMatch(p -> !p.getWarnings().isEmpty()));
 
-        Collections.sort(sortedProcessorProxies, new ObjectProxyComparator());
+        sortedProcessorProxies.sort(new ObjectProxyComparator());
         vars.put("processors", sortedProcessorProxies);
 
         vars.put("streamProcessorRetrievalStrategy",
@@ -320,12 +312,10 @@ public class AdminResource extends AbstractResource {
             // noop
         }
 
-        sortedProxies = new ArrayList<>();
-        for (Cache cache : CacheFactory.getAllSourceCaches()) {
-            sortedProxies.add(new ObjectProxy(cache));
-        }
-
-        Collections.sort(sortedProxies, new ObjectProxyComparator());
+        sortedProxies = CacheFactory.getAllSourceCaches().stream().
+                map(ObjectProxy::new).
+                collect(Collectors.toList());
+        sortedProxies.sort(new ObjectProxyComparator());
         vars.put("sourceCaches", sortedProxies);
 
         // derivative caches
@@ -336,12 +326,10 @@ public class AdminResource extends AbstractResource {
             // noop
         }
 
-        sortedProxies = new ArrayList<>();
-        for (Cache cache : CacheFactory.getAllDerivativeCaches()) {
-            sortedProxies.add(new ObjectProxy(cache));
-        }
-
-        Collections.sort(sortedProxies, new ObjectProxyComparator());
+        sortedProxies = CacheFactory.getAllDerivativeCaches().stream().
+                map(ObjectProxy::new).
+                collect(Collectors.toList());
+        sortedProxies.sort(new ObjectProxyComparator());
         vars.put("derivativeCaches", sortedProxies);
 
         ////////////////////////////////////////////////////////////////////
