@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.resource;
 
 import org.junit.Test;
 
-import static edu.illinois.library.cantaloupe.test.HTTPAssert.*;
+import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
 
 /**
  * Functional test of LandingResource.

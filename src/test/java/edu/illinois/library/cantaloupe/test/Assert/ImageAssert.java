@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.test;
+package edu.illinois.library.cantaloupe.test.Assert;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -10,7 +10,7 @@ import java.util.Iterator;
 
 import static org.junit.Assert.assertEquals;
 
-public abstract class Assert {
+public abstract class ImageAssert {
 
     /**
      * Asserts that the given pixel is some shade of gray.

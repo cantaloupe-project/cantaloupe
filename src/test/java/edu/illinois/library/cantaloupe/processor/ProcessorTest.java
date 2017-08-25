@@ -28,7 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static edu.illinois.library.cantaloupe.test.Assert.*;
+import static edu.illinois.library.cantaloupe.test.Assert.ImageAssert.*;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 

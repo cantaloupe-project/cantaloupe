@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.test;
+package edu.illinois.library.cantaloupe.test.Assert;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;

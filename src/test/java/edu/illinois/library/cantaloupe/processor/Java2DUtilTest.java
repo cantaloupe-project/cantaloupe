@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.illinois.library.cantaloupe.test.Assert.*;
+import static edu.illinois.library.cantaloupe.test.Assert.ImageAssert.*;
 import static org.junit.Assert.*;
 
 public class Java2DUtilTest extends BaseTest {

@@ -28,7 +28,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import static edu.illinois.library.cantaloupe.test.Assert.*;
+import static edu.illinois.library.cantaloupe.test.Assert.ImageAssert.*;
 import static org.junit.Assert.*;
 
 public class JAIUtilTest extends BaseTest {

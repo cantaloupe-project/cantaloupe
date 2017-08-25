@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static edu.illinois.library.cantaloupe.test.HTTPAssert.*;
+import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 

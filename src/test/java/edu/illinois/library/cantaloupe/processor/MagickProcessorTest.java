@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import static edu.illinois.library.cantaloupe.test.Assert.*;
+import static edu.illinois.library.cantaloupe.test.Assert.ImageAssert.*;
 import static org.junit.Assert.*;
 
 abstract class MagickProcessorTest extends ProcessorTest {
