@@ -177,22 +177,6 @@ public class OperationListTest extends BaseTest {
     /* applyNonEndpointMutations() */
 
     @Test
-    public void applyNonEndpointMutationsWithNoOutputFormatSetThrowsException()
-            throws Exception {
-        final OperationList opList = new OperationList(new Identifier("cats"),
-                Format.UNKNOWN);
-        try {
-            opList.applyNonEndpointMutations(
-                    new Dimension(2000, 1000), "127.0.0.1",
-                    new URL("http://example.org/"), new HashMap<>(),
-                    new HashMap<>());
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
-    }
-
-    @Test
     public void applyNonEndpointMutationsWithBackgroundColor()
             throws Exception {
         final Configuration config = Configuration.getInstance();
@@ -630,6 +614,16 @@ public class OperationListTest extends BaseTest {
             instance.setOutputFormat(Format.GIF);
             fail("Expected exception");
         } catch (IllegalStateException e) {
+            // pass
+        }
+    }
+
+    @Test
+    public void setOutputFormatWithIllegalFormat() {
+        try {
+            instance.setOutputFormat(Format.UNKNOWN);
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
             // pass
         }
     }

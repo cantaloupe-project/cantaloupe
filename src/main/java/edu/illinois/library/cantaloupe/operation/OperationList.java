@@ -490,12 +490,16 @@ public final class OperationList implements Comparable<OperationList>,
     }
 
     /**
-     * @param outputFormat
+     * @param outputFormat Format to set.
      * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalArgumentException If the given format is not supported.
      */
     public void setOutputFormat(Format outputFormat) {
         if (frozen) {
             throw new IllegalStateException();
+        } else if (Format.UNKNOWN.equals(outputFormat)) {
+            throw new IllegalArgumentException("Illegal output format: " +
+                    outputFormat);
         }
         this.outputFormat = outputFormat;
     }
