@@ -13,8 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -23,7 +23,7 @@ import java.util.Set;
  */
 abstract class AbstractImageIOProcessor extends AbstractProcessor {
 
-    private static Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(AbstractImageIOProcessor.class);
 
     private static final HashMap<Format,Set<Format>> FORMATS =
@@ -52,7 +52,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
     public Set<Format> getAvailableOutputFormats() {
         Set<Format> formats = FORMATS.get(format);
         if (formats == null) {
-            formats = new HashSet<>();
+            formats = Collections.unmodifiableSet(Collections.emptySet());
         }
         return formats;
     }
@@ -82,7 +82,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
      * @return Effective orientation of the image, respecting the setting of
      *         {@link Key#PROCESSOR_RESPECT_ORIENTATION}. Never null.
      */
-    protected Orientation getEffectiveOrientation() throws IOException {
+    Orientation getEffectiveOrientation() throws IOException {
         Orientation orientation = null;
         if (Configuration.getInstance().
                 getBoolean(Key.PROCESSOR_RESPECT_ORIENTATION, false)) {
@@ -107,7 +107,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
                     reader = new ImageReader(sourceFile, getSourceFormat());
                 }
             } catch (IOException e) {
-                logger.error(e.getMessage(), e);
+                LOGGER.error(e.getMessage(), e);
             }
         }
         return reader;

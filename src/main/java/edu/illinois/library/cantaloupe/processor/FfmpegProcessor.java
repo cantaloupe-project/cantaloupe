@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -43,10 +43,10 @@ import java.util.regex.Pattern;
  */
 class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
-    private static Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(FfmpegProcessor.class);
 
-    private static final Pattern timePattern =
+    private static final Pattern TIME_PATTERN =
             Pattern.compile("[0-9][0-9]:[0-5][0-9]:[0-5][0-9]");
 
     private double durationSec = 0;
@@ -70,9 +70,11 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
     @Override
     public Set<Format> getAvailableOutputFormats() {
-        final Set<Format> outputFormats = new HashSet<>();
+        final Set<Format> outputFormats;
         if (format.isVideo()) {
-            outputFormats.addAll(ImageWriter.supportedFormats());
+            outputFormats = ImageWriter.supportedFormats();
+        } else {
+            outputFormats = Collections.unmodifiableSet(Collections.emptySet());
         }
         return outputFormats;
     }
@@ -80,9 +82,6 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
     /**
      * Gets information about the video by invoking ffprobe and parsing its
      * output. The result is cached.
-     *
-     * @return
-     * @throws ProcessorException
      */
     @Override
     public Info readImageInfo() throws ProcessorException {
@@ -100,7 +99,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
                 ProcessBuilder pb = new ProcessBuilder(command);
                 pb.redirectErrorStream(true);
 
-                logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
+                LOGGER.info("Invoking {}", StringUtils.join(pb.command(), " "));
                 Process process = pb.start();
 
                 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -130,7 +129,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
                     try {
                         processInputStream.close();
                     } catch (IOException e) {
-                        logger.error(e.getMessage(), e);
+                        LOGGER.error(e.getMessage(), e);
                     }
                 }
             }
@@ -148,7 +147,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
             final ProcessBuilder pb = getProcessBuilder(opList);
-            logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
+            LOGGER.info("Invoking {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
             try (final InputStream processInputStream = process.getInputStream();
@@ -165,7 +164,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
                             outputStream);
                     final int code = process.waitFor();
                     if (code != 0) {
-                        logger.error("ffmpeg returned with code {}", code);
+                        LOGGER.error("ffmpeg returned with code {}", code);
                         final String errorStr = errorBucket.toString();
                         if (errorStr != null && errorStr.length() > 0) {
                             throw new ProcessorException(errorStr);
@@ -189,8 +188,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
     /**
      * @param opList
-     * @return Command string
-     * @throws IllegalArgumentException
+     * @return Command string corresponding to the given operation list.
      */
     private ProcessBuilder getProcessBuilder(OperationList opList) {
         final List<String> command = new ArrayList<>();
@@ -234,7 +232,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
         // Check that the "time" option, if supplied, is in the correct format.
         final String timeStr = (String) opList.getOptions().get("time");
         if (timeStr != null) {
-            Matcher matcher = timePattern.matcher(timeStr);
+            Matcher matcher = TIME_PATTERN.matcher(timeStr);
             if (matcher.matches()) {
                 // Check that the supplied time is within the bounds of the
                 // video's duration.

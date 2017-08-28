@@ -8,8 +8,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Set;
 
 /**
@@ -18,6 +18,10 @@ import java.util.Set;
  */
 public class ImageWriter {
 
+    private static final Set<Format> SUPPORTED_FORMATS =
+            Collections.unmodifiableSet(EnumSet.of(Format.GIF, Format.JPG,
+                    Format.PNG, Format.TIF));
+
     private OperationList opList;
     private Metadata sourceMetadata;
 
@@ -25,8 +29,7 @@ public class ImageWriter {
      * @return Set of supported output formats.
      */
     public static Set<Format> supportedFormats() {
-        return new HashSet<>(Arrays.asList(Format.GIF, Format.JPG,
-                Format.PNG, Format.TIF));
+        return SUPPORTED_FORMATS;
     }
 
     public ImageWriter(final OperationList opList) {

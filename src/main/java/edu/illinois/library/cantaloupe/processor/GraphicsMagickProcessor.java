@@ -33,8 +33,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,7 +61,7 @@ import java.util.Set;
 class GraphicsMagickProcessor extends AbstractMagickProcessor
         implements StreamProcessor {
 
-    private static final Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(GraphicsMagickProcessor.class);
 
     private static InitializationException initializationException;
@@ -94,8 +95,8 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
      */
     private static synchronized Map<Format, Set<Format>> getFormats() {
         if (supportedFormats == null) {
-            final Set<Format> sourceFormats = new HashSet<>();
-            final Set<Format> outputFormats = new HashSet<>();
+            final Set<Format> sourceFormats = EnumSet.noneOf(Format.class);
+            final Set<Format> outputFormats = EnumSet.noneOf(Format.class);
 
             // Get the output of the `gm version` command, which contains
             // a list of all optional formats.
@@ -107,7 +108,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             final String commandString = StringUtils.join(pb.command(), " ");
 
             try {
-                logger.info("getFormats(): invoking {}", commandString);
+                LOGGER.info("getFormats(): invoking {}", commandString);
                 final Process process = pb.start();
 
                 try (final InputStream processInputStream = process.getInputStream()) {
@@ -159,6 +160,8 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                     for (Format format : sourceFormats) {
                         supportedFormats.put(format, outputFormats);
                     }
+                    supportedFormats =
+                            Collections.unmodifiableMap(supportedFormats);
                 } catch (InterruptedException e) {
                     initializationException = new InitializationException(e);
                     // This is safe to swallow.
@@ -191,7 +194,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     public Set<Format> getAvailableOutputFormats() {
         Set<Format> formats = getFormats().get(format);
         if (formats == null) {
-            formats = new HashSet<>();
+            formats = Collections.unmodifiableSet(Collections.emptySet());
         }
         return formats;
     }
@@ -409,7 +412,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             try {
                 index = Integer.parseInt(pageStr) - 1;
             } catch (NumberFormatException e) {
-                logger.info("Page number from URI query string is not " +
+                LOGGER.info("Page number from URI query string is not " +
                         "an integer; using page 1.");
             }
             index = Math.max(index, 0);
@@ -456,7 +459,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             final ProcessStarter cmd = new ProcessStarter();
             cmd.setInputProvider(new Pipe(inputStream, null));
             cmd.setOutputConsumer(new Pipe(null, outputStream));
-            logger.info("process(): invoking {}", StringUtils.join(args, " "));
+            LOGGER.info("process(): invoking {}", StringUtils.join(args, " "));
             cmd.run(args);
         } catch (Exception e) {
             throw new ProcessorException(e.getMessage(), e);
@@ -482,7 +485,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             final ProcessStarter cmd = new ProcessStarter();
             cmd.setInputProvider(new Pipe(inputStream, null));
             cmd.setOutputConsumer(consumer);
-            logger.info("readImageInfo(): invoking {}",
+            LOGGER.info("readImageInfo(): invoking {}",
                     StringUtils.join(args, " ").replace("\n", ""));
             cmd.run(args);
 

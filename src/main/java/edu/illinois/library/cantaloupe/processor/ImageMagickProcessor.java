@@ -40,8 +40,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -70,7 +71,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 class ImageMagickProcessor extends AbstractMagickProcessor
         implements StreamProcessor {
 
-    private static final Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(ImageMagickProcessor.class);
 
     static final String OVERLAY_TEMP_FILE_PREFIX = "cantaloupe-overlay";
@@ -84,7 +85,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
 
     /** Map of overlay images downloaded from web servers. Files are temp files
     set to delete-on-exit. */
-    private static Map<URL,File> overlays = new ConcurrentHashMap<>();
+    private static final Map<URL,File> overlays = new ConcurrentHashMap<>();
 
     /** Lazy-initialized by getFormats(). */
     protected static Map<Format, Set<Format>> supportedFormats;
@@ -113,8 +114,8 @@ class ImageMagickProcessor extends AbstractMagickProcessor
      */
     private static synchronized Map<Format, Set<Format>> getFormats() {
         if (supportedFormats == null) {
-            final Set<Format> sourceFormats = new HashSet<>();
-            final Set<Format> outputFormats = new HashSet<>();
+            final Set<Format> sourceFormats = EnumSet.noneOf(Format.class);
+            final Set<Format> outputFormats = EnumSet.noneOf(Format.class);
 
             // Retrieve the output of the `identify -list format` command,
             // which contains a list of all supported formats.
@@ -132,7 +133,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             final String commandString = StringUtils.join(pb.command(), " ");
 
             try {
-                logger.info("getFormats(): invoking {}", commandString);
+                LOGGER.info("getFormats(): invoking {}", commandString);
                 final Process process = pb.start();
                 final InputStream pis = process.getInputStream();
                 final InputStreamReader reader = new InputStreamReader(pis);
@@ -194,6 +195,8 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                     for (Format format : sourceFormats) {
                         supportedFormats.put(format, outputFormats);
                     }
+                    supportedFormats =
+                            Collections.unmodifiableMap(supportedFormats);
                 } catch (InterruptedException e) {
                     initializationException = new InitializationException(e);
                     // This is safe to swallow.
@@ -240,17 +243,17 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             try {
                 isUsingVersion7 = new AtomicBoolean(false);
                 final String commandString = StringUtils.join(pb.command(), " ");
-                logger.debug("isUsingVersion7(): trying to invoke {}",
+                LOGGER.debug("isUsingVersion7(): trying to invoke {}",
                         commandString);
                 final Process process = pb.start();
                 process.waitFor();
-                logger.info("isUsingVersion7(): found magick command; " +
+                LOGGER.info("isUsingVersion7(): found magick command; " +
                         "assuming ImageMagick 7+");
                 isUsingVersion7.set(true);
             } catch (Exception e) {
-                logger.info("isUsingVersion7(): couldn't find magick " +
+                LOGGER.info("isUsingVersion7(): couldn't find magick " +
                         "command; assuming ImageMagick <7");
-                logger.warn("ImageMagick <7 support is DEPRECATED. " +
+                LOGGER.warn("ImageMagick <7 support is DEPRECATED. " +
                         "Please upgrade to version 7.");
                 isUsingVersion7.set(false);
             }
@@ -269,7 +272,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     public Set<Format> getAvailableOutputFormats() {
         Set<Format> formats = getFormats().get(format);
         if (formats == null) {
-            formats = new HashSet<>();
+            formats = Collections.unmodifiableSet(Collections.emptySet());
         }
         return formats;
     }
@@ -439,17 +442,17 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                         args.add("-composite");
                     } else {
                         if (overlay.getFile() != null) {
-                            logger.warn("getConvertArguments(): overlay not found: {}",
+                            LOGGER.warn("getConvertArguments(): overlay not found: {}",
                                     overlay.getFile());
                         } else if (overlay.getURL() != null) {
-                            logger.warn("getConvertArguments(): overlay not found: {}",
+                            LOGGER.warn("getConvertArguments(): overlay not found: {}",
                                     overlay.getURL());
                         } else {
-                            logger.error("getConvertArguments(): overlay source not set");
+                            LOGGER.error("getConvertArguments(): overlay source not set");
                         }
                     }
                 } catch (IOException e) {
-                    logger.error("getConvertArguments(): overlay error: {}",
+                    LOGGER.error("getConvertArguments(): overlay error: {}",
                             e.getMessage());
                 }
             } else if (op instanceof Encode) {
@@ -524,7 +527,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             try {
                 index = Integer.parseInt(pageStr) - 1;
             } catch (NumberFormatException e) {
-                logger.info("Page number from URI query string is not " +
+                LOGGER.info("Page number from URI query string is not " +
                         "an integer; using page 1.");
             }
             index = Math.max(index, 0);
@@ -668,7 +671,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             final ProcessStarter cmd = new ProcessStarter();
             cmd.setInputProvider(new Pipe(inputStream, null));
             cmd.setOutputConsumer(new Pipe(null, outputStream));
-            logger.info("process(): invoking {}", StringUtils.join(args, " "));
+            LOGGER.info("process(): invoking {}", StringUtils.join(args, " "));
             cmd.run(args);
         } catch (Exception e) {
             throw new ProcessorException(e.getMessage(), e);
@@ -706,7 +709,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             cmd.setOutputConsumer(consumer);
             final String cmdString = StringUtils.join(args, " ")
                     .replace("\n", ",");
-            logger.info("readImageInfo(): invoking {}", cmdString);
+            LOGGER.info("readImageInfo(): invoking {}", cmdString);
             cmd.run(args);
 
             final List<String> output = consumer.getOutput();
@@ -725,7 +728,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                                 Orientation.forEXIFOrientation(exifOrientation);
                         info.getImages().get(0).setOrientation(orientation);
                     } catch (IllegalArgumentException e) {
-                        logger.warn("readImageInfo(): {}", e.getMessage());
+                        LOGGER.warn("readImageInfo(): {}", e.getMessage());
                     }
                 }
                 return info;

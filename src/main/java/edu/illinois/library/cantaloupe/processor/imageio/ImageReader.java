@@ -15,8 +15,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Set;
 
 /**
@@ -46,22 +46,25 @@ public class ImageReader {
         IGNORE_CROP
     }
 
+    private static final Set<Format> SUPPORTED_FORMATS =
+            Collections.unmodifiableSet(EnumSet.of(Format.BMP, Format.DCM,
+                    Format.GIF, Format.JPG, Format.PNG, Format.TIF));
+
     private Metadata cachedMetadata;
     private AbstractImageReader reader;
 
     static {
         // The application will handle caching itself, if so configured. The
-        // ImageIO cache would only slow things down.
+        // ImageIO cache would be redundant.
         ImageIO.setUseCache(false);
     }
 
     /**
      * @return Map of available output formats for all known source formats,
-     * based on information reported by ImageIO.
+     *         based on information reported by ImageIO.
      */
     public static Set<Format> supportedFormats() {
-        return new HashSet<>(Arrays.asList(Format.BMP, Format.DCM, Format.GIF,
-                Format.JPG, Format.PNG, Format.TIF));
+        return SUPPORTED_FORMATS;
     }
 
     /**
@@ -69,7 +72,6 @@ public class ImageReader {
      *
      * @param sourceFile File to read from.
      * @param format Format of the source image.
-     * @throws IOException
      */
     public ImageReader(File sourceFile, Format format)
             throws IOException {
@@ -100,7 +102,6 @@ public class ImageReader {
      *
      * @param streamSource Source of stream to read from.
      * @param format Format of the source image.
-     * @throws IOException
      */
     public ImageReader(StreamSource streamSource, Format format)
             throws IOException {
@@ -144,7 +145,6 @@ public class ImageReader {
     /**
      * @param imageIndex Zero-based index.
      * @return Metadata of the image at the given index.
-     * @throws IOException
      */
     public Metadata getMetadata(int imageIndex) throws IOException {
         if (cachedMetadata == null) {
@@ -155,7 +155,6 @@ public class ImageReader {
 
     /**
      * @return
-     * @throws IOException
      */
     public int getNumResolutions() throws IOException {
         return reader.getNumResolutions();
@@ -164,7 +163,6 @@ public class ImageReader {
     /**
      * @return Actual dimensions of the image at the zero index, not taking
      *         into account embedded orientation metadata.
-     * @throws IOException
      */
     public Dimension getSize() throws IOException {
         return reader.getSize();
@@ -174,7 +172,6 @@ public class ImageReader {
      * @param imageIndex Zero-based index.
      * @return Actual dimensions of the image at the given index, not taking
      *         into account embedded orientation metadata.
-     * @throws IOException
      */
     public Dimension getSize(int imageIndex) throws IOException {
         return reader.getSize(imageIndex);
@@ -185,7 +182,6 @@ public class ImageReader {
      * @return Size of the tiles of the image at the given index, not taking
      *         into account embedded orientation metadata. If the image is not
      *         tiled, the full image dimensions are returned.
-     * @throws IOException
      */
     public Dimension getTileSize(int imageIndex) throws IOException {
         return reader.getTileSize(imageIndex);
@@ -197,7 +193,6 @@ public class ImageReader {
      *
      * @return BufferedImage guaranteed to not be of type
      *         {@link BufferedImage#TYPE_CUSTOM}.
-     * @throws IOException
      */
     public BufferedImage read() throws IOException {
         return reader.read();
@@ -226,8 +221,6 @@ public class ImageReader {
      *         not be of type {@link BufferedImage#TYPE_CUSTOM}. Clients should
      *         check the hints set to see whether they need to perform
      *         additional cropping.
-     * @throws IOException
-     * @throws ProcessorException
      */
     public BufferedImage read(final OperationList opList,
                               final Orientation orientation,
@@ -241,8 +234,6 @@ public class ImageReader {
      * Reads an image (excluding subimages).
      *
      * @return RenderedImage
-     * @throws IOException
-     * @throws UnsupportedSourceFormatException
      */
     public RenderedImage readRendered() throws IOException,
             UnsupportedSourceFormatException {
@@ -266,8 +257,6 @@ public class ImageReader {
      * @param hints           Will be populated by information returned from
      *                        the reader.
      * @return RenderedImage best matching the given parameters.
-     * @throws IOException
-     * @throws ProcessorException
      */
     public RenderedImage readRendered(final OperationList opList,
                                       final Orientation orientation,

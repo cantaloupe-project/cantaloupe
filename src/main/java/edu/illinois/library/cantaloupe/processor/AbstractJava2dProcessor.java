@@ -24,7 +24,8 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,43 +33,39 @@ import java.util.Set;
 abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
-            new HashSet<>();
+            Collections.unmodifiableSet(EnumSet.of(
+                    ProcessorFeature.MIRRORING,
+                    ProcessorFeature.REGION_BY_PERCENT,
+                    ProcessorFeature.REGION_BY_PIXELS,
+                    ProcessorFeature.REGION_SQUARE,
+                    ProcessorFeature.ROTATION_ARBITRARY,
+                    ProcessorFeature.ROTATION_BY_90S,
+                    ProcessorFeature.SIZE_ABOVE_FULL,
+                    ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
+                    ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
+                    ProcessorFeature.SIZE_BY_HEIGHT,
+                    ProcessorFeature.SIZE_BY_PERCENT,
+                    ProcessorFeature.SIZE_BY_WIDTH,
+                    ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-            SUPPORTED_IIIF_1_1_QUALITIES = new HashSet<>();
+            SUPPORTED_IIIF_1_1_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
+                    edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
+                    edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
+                    edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
+                    edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-            SUPPORTED_IIIF_2_0_QUALITIES = new HashSet<>();
-
-    static {
-        SUPPORTED_IIIF_1_1_QUALITIES.addAll(Arrays.asList(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
-        SUPPORTED_IIIF_2_0_QUALITIES.addAll(Arrays.asList(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
-        SUPPORTED_FEATURES.addAll(Arrays.asList(
-                ProcessorFeature.MIRRORING,
-                ProcessorFeature.REGION_BY_PERCENT,
-                ProcessorFeature.REGION_BY_PIXELS,
-                ProcessorFeature.REGION_SQUARE,
-                ProcessorFeature.ROTATION_ARBITRARY,
-                ProcessorFeature.ROTATION_BY_90S,
-                ProcessorFeature.SIZE_ABOVE_FULL,
-                ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
-                ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
-                ProcessorFeature.SIZE_BY_HEIGHT,
-                ProcessorFeature.SIZE_BY_PERCENT,
-                ProcessorFeature.SIZE_BY_WIDTH,
-                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
-    }
+            SUPPORTED_IIIF_2_0_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
+                    edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
+                    edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
+                    edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
+                    edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
 
     public Set<ProcessorFeature> getSupportedFeatures() {
-        Set<ProcessorFeature> features = new HashSet<>();
-        if (getAvailableOutputFormats().size() > 0) {
-            features.addAll(SUPPORTED_FEATURES);
+        Set<ProcessorFeature> features;
+        if (!getAvailableOutputFormats().isEmpty()) {
+            features = SUPPORTED_FEATURES;
+        } else {
+            features = Collections.unmodifiableSet(Collections.emptySet());
         }
         return features;
     }
@@ -76,9 +73,11 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
     getSupportedIIIF1Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-                qualities = new HashSet<>();
-        if (getAvailableOutputFormats().size() > 0) {
-            qualities.addAll(SUPPORTED_IIIF_1_1_QUALITIES);
+                qualities;
+        if (!getAvailableOutputFormats().isEmpty()) {
+            qualities = SUPPORTED_IIIF_1_1_QUALITIES;
+        } else {
+            qualities = Collections.unmodifiableSet(Collections.emptySet());
         }
         return qualities;
     }
@@ -86,9 +85,11 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
     getSupportedIIIF2Qualities() {
         Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-                qualities = new HashSet<>();
-        if (getAvailableOutputFormats().size() > 0) {
-            qualities.addAll(SUPPORTED_IIIF_2_0_QUALITIES);
+                qualities;
+        if (!getAvailableOutputFormats().isEmpty()) {
+            qualities = SUPPORTED_IIIF_2_0_QUALITIES;
+        } else {
+            qualities = Collections.unmodifiableSet(Collections.emptySet());
         }
         return qualities;
     }
@@ -104,8 +105,6 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
      * @param imageInfo Information about the source image.
      * @param reductionFactor May be <code>null</code>.
      * @param outputStream Output stream to write the resulting image to.
-     * @throws IOException
-     * @throws ProcessorException
      */
     void postProcess(BufferedImage image,
                      Set<ImageReader.Hint> readerHints,

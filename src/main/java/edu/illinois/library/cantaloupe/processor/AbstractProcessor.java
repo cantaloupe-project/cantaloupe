@@ -41,7 +41,7 @@ abstract class AbstractProcessor {
     public void setSourceFormat(Format format)
             throws UnsupportedSourceFormatException{
         this.format = format;
-        if (getAvailableOutputFormats().size() < 1) {
+        if (getAvailableOutputFormats().isEmpty()) {
             throw new UnsupportedSourceFormatException(
                     (Processor) this, format);
         }

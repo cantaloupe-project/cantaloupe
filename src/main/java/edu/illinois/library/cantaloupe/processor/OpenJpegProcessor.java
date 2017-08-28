@@ -34,6 +34,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
@@ -75,7 +76,7 @@ import java.util.regex.Pattern;
 class OpenJpegProcessor extends AbstractJava2DProcessor
         implements FileProcessor {
 
-    private static final Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(OpenJpegProcessor.class);
 
     private static final short MAX_REDUCTION_FACTOR = 5;
@@ -135,7 +136,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
             // opj_decompress what format to write.
             stdoutSymlink = createStdoutSymlink();
         } else {
-            logger.error("Sorry, but " + OpenJpegProcessor.class.getSimpleName() +
+            LOGGER.error("Sorry, but " + OpenJpegProcessor.class.getSimpleName() +
                     " won't work on this platform as it requires access to " +
                     "/dev/stdout.");
         }
@@ -149,7 +150,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
-            logger.debug("isQuietModeSupported(): invoking {}",
+            LOGGER.debug("isQuietModeSupported(): invoking {}",
                     StringUtils.join(pb.command(), " "));
             try {
                 Process process = pb.start();
@@ -165,7 +166,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
                     if (matcher.find()) {
                         String version = matcher.group(0).substring(2); // after " v"
-                        logger.info("opj_decompress reports version {}", version);
+                        LOGGER.info("opj_decompress reports version {}", version);
 
                         String[] parts = StringUtils.split(version, ".");
                         if (parts.length == 3) {
@@ -177,11 +178,11 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                     }
                 }
             } catch (IOException e) {
-                logger.error("isQuietModeSupported(): {}", e.getMessage());
+                LOGGER.error("isQuietModeSupported(): {}", e.getMessage());
             }
 
             if (!isQuietModeSupported) {
-                logger.warn("This version of opj_decompress doesn't support " +
+                LOGGER.warn("This version of opj_decompress doesn't support " +
                         "quiet mode. Please upgrade OpenJPEG to version 2.2.0 "+
                         "or later.");
             }
@@ -210,9 +211,11 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
     @Override
     public Set<Format> getAvailableOutputFormats() {
-        final Set<Format> outputFormats = new HashSet<>();
-        if (format == Format.JP2) {
-            outputFormats.addAll(ImageWriter.supportedFormats());
+        final Set<Format> outputFormats;
+        if (Format.JP2.equals(format)) {
+            outputFormats = ImageWriter.supportedFormats();
+        } else {
+            outputFormats = Collections.unmodifiableSet(Collections.emptySet());
         }
         return outputFormats;
     }
@@ -221,9 +224,6 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
      * Computes the effective size of an image after all crop operations are
      * applied but excluding any scale operations, in order to use
      * opj_decompress' -r (reduce) argument.
-     *
-     * @param opList
-     * @param fullSize
      */
     private Dimension getCroppedSize(OperationList opList, Dimension fullSize) {
         Dimension tileSize = (Dimension) fullSize.clone();
@@ -302,7 +302,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.redirectErrorStream(true);
-        logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
+        LOGGER.info("Invoking {}", StringUtils.join(pb.command(), " "));
         Process process = pb.start();
 
         try (InputStream processInputStream = process.getInputStream()) {
@@ -351,7 +351,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
             final ProcessBuilder pb = getProcessBuilder(
                     opList, imageInfo.getSize(), reductionFactor, normalize);
-            logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
+            LOGGER.info("Invoking {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
             try (final InputStream processInputStream =
@@ -373,7 +373,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                             reductionFactor, outputStream);
                     final int code = process.waitFor();
                     if (code != 0) {
-                        logger.warn("opj_decompress returned with code {}", code);
+                        LOGGER.warn("opj_decompress returned with code {}", code);
                         final String errorStr = errorBucket.toString();
                         if (errorStr != null && errorStr.length() > 0) {
                             throw new ProcessorException(errorStr);
@@ -391,7 +391,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
             msg = String.format("process(): %s (%s)",
                     (msg != null && msg.length() > 0) ? msg : "EOFException",
                     opList.toString());
-            logger.info(msg, e);
+            LOGGER.info(msg, e);
             throw new ProcessorException(msg, e);
         } catch (IOException | InterruptedException e) {
             String msg = e.getMessage();

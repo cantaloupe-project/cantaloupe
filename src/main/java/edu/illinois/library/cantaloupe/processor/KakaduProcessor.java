@@ -45,6 +45,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
@@ -80,7 +81,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
-    private static final Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(KakaduProcessor.class);
 
     private static final short MAX_REDUCTION_FACTOR = 5;
@@ -98,7 +99,6 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
      * sets it to delete on exit.
      *
      * @return Path to the symlink.
-     * @throws IOException
      */
     private static Path createStdoutSymlink() throws IOException {
         File tempDir = new File(System.getProperty("java.io.tmpdir"));
@@ -136,7 +136,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
             // what format to write.
             stdoutSymlink = createStdoutSymlink();
         } else {
-            logger.error("Sorry, but " + KakaduProcessor.class.getSimpleName() +
+            LOGGER.error("Sorry, but " + KakaduProcessor.class.getSimpleName() +
                     " won't work on this platform as it requires access to " +
                     "/dev/stdout.");
         }
@@ -154,9 +154,11 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
     @Override
     public Set<Format> getAvailableOutputFormats() {
-        final Set<Format> outputFormats = new HashSet<>();
-        if (format == Format.JP2) {
-            outputFormats.addAll(ImageWriter.supportedFormats());
+        final Set<Format> outputFormats;
+        if (Format.JP2.equals(format)) {
+            outputFormats = ImageWriter.supportedFormats();
+        } else {
+            outputFormats = Collections.unmodifiableSet(Collections.emptySet());
         }
         return outputFormats;
     }
@@ -165,10 +167,6 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
      * Computes the effective size of an image after all crop operations are
      * applied but excluding any scale operations, in order to use
      * kdu_expand's -reduce argument.
-     *
-     * @param opList
-     * @param fullSize
-     * @return
      */
     private Dimension getCroppedSize(OperationList opList, Dimension fullSize) {
         Dimension tileSize = (Dimension) fullSize.clone();
@@ -188,9 +186,6 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     /**
      * Gets the size of the given image by parsing the XML output of
      * kdu_jp2info.
-     *
-     * @return
-     * @throws ProcessorException
      */
     @Override
     public Info readImageInfo() throws ProcessorException {
@@ -246,10 +241,6 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     /**
      * Executes kdu_jp2info and parses the output into a Document object,
      * saved in an instance variable.
-     *
-     * @throws SAXException
-     * @throws IOException
-     * @throws ParserConfigurationException
      */
     private void readImageInfoDocument()
             throws SAXException, IOException, ParserConfigurationException {
@@ -261,7 +252,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
         final ProcessBuilder pb = new ProcessBuilder(command);
         pb.redirectErrorStream(true);
-        logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
+        LOGGER.info("Invoking {}", StringUtils.join(pb.command(), " "));
         Process process = pb.start();
         ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
 
@@ -307,7 +298,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
             final ProcessBuilder pb = getProcessBuilder(
                     opList, imageInfo.getSize(), reductionFactor, normalize);
-            logger.info("Invoking {}", StringUtils.join(pb.command(), " "));
+            LOGGER.info("Invoking {}", StringUtils.join(pb.command(), " "));
             final Process process = pb.start();
 
             try (final InputStream processInputStream =
@@ -329,7 +320,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
                             reductionFactor, outputStream);
                     final int code = process.waitFor();
                     if (code != 0) {
-                        logger.warn("kdu_expand returned with code {}", code);
+                        LOGGER.warn("kdu_expand returned with code {}", code);
                         final String errorStr = errorBucket.toString();
                         if (errorStr != null && errorStr.length() > 0) {
                             throw new ProcessorException(errorStr);
@@ -347,7 +338,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
             msg = String.format("process(): %s (%s)",
                     (msg != null && msg.length() > 0) ? msg : "EOFException",
                     opList.toString());
-            logger.info(msg, e);
+            LOGGER.info(msg, e);
             throw new ProcessorException(msg, e);
         } catch (IOException | InterruptedException e) {
             String msg = e.getMessage();

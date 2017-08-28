@@ -20,7 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -31,7 +31,7 @@ import java.util.Set;
 class PdfBoxProcessor extends AbstractJava2DProcessor
         implements FileProcessor, StreamProcessor {
 
-    private static final Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(PdfBoxProcessor.class);
 
     private PDDocument doc;
@@ -49,9 +49,11 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
 
     @Override
     public Set<Format> getAvailableOutputFormats() {
-        final Set<Format> outputFormats = new HashSet<>();
-        if (format == Format.PDF) {
-            outputFormats.addAll(ImageWriter.supportedFormats());
+        final Set<Format> outputFormats;
+        if (Format.PDF.equals(format)) {
+            outputFormats = ImageWriter.supportedFormats();
+        } else {
+            outputFormats = Collections.unmodifiableSet(Collections.emptySet());
         }
         return outputFormats;
     }
@@ -104,7 +106,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                 try {
                     page = Integer.parseInt(pageStr);
                 } catch (NumberFormatException e) {
-                    logger.info("Page number from URI query string is not " +
+                    LOGGER.info("Page number from URI query string is not " +
                             "an integer; using page 1.");
                 }
             }
@@ -127,12 +129,11 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
      * @param reductionFactor Scale factor by which to reduce the image (or
      *                        enlarge it if negative).
      * @return Rasterized first page of the PDF.
-     * @throws IOException
      */
     private BufferedImage readImage(int pageIndex,
                                     int reductionFactor) throws IOException {
         float dpi = new RasterizationHelper().getDPI(reductionFactor);
-        logger.debug("readImage(): using a DPI of {} ({}x reduction factor)",
+        LOGGER.debug("readImage(): using a DPI of {} ({}x reduction factor)",
                 Math.round(dpi), reductionFactor);
         try {
             loadDocument();
