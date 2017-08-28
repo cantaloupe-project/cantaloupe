@@ -78,11 +78,11 @@ public final class OperationList implements Comparable<OperationList>,
      * Adds an operation to the end of the list.
      *
      * @param op Operation to add. Null values are silently discarded.
-     * @throws UnsupportedOperationException If the instance is frozen.
+     * @throws IllegalStateException If the instance is frozen.
      */
     public void add(Operation op) {
         if (frozen) {
-            throw new UnsupportedOperationException();
+            throw new IllegalStateException();
         }
         if (op != null) {
             operations.add(op);
@@ -97,12 +97,12 @@ public final class OperationList implements Comparable<OperationList>,
      * @param op Operation to add.
      * @param afterClass The operation will be added after the last
      *                   instance of this class in the list.
-     * @throws UnsupportedOperationException If the instance is frozen.
+     * @throws IllegalStateException If the instance is frozen.
      */
     public void addAfter(Operation op,
                          Class<? extends Operation> afterClass) {
         if (frozen) {
-            throw new UnsupportedOperationException();
+            throw new IllegalStateException();
         }
         final int index = lastIndexOf(afterClass);
         if (index >= 0) {
@@ -120,12 +120,12 @@ public final class OperationList implements Comparable<OperationList>,
      * @param op Operation to add.
      * @param beforeClass The operation will be added before the first
      *                    instance of this class in the list.
-     * @throws UnsupportedOperationException If the instance is frozen.
+     * @throws IllegalStateException If the instance is frozen.
      */
     public void addBefore(Operation op,
                           Class<? extends Operation> beforeClass) {
         if (frozen) {
-            throw new UnsupportedOperationException();
+            throw new IllegalStateException();
         }
         int index = firstIndexOf(beforeClass);
         if (index >= 0) {
@@ -302,11 +302,11 @@ public final class OperationList implements Comparable<OperationList>,
     }
 
     /**
-     * @throws UnsupportedOperationException If the instance is frozen.
+     * @throws IllegalStateException If the instance is frozen.
      */
     public void clear() {
         if (frozen) {
-            throw new UnsupportedOperationException();
+            throw new IllegalStateException();
         }
         operations.clear();
     }
@@ -480,22 +480,22 @@ public final class OperationList implements Comparable<OperationList>,
 
     /**
      * @param identifier
-     * @throws UnsupportedOperationException If the instance is frozen.
+     * @throws IllegalStateException If the instance is frozen.
      */
     public void setIdentifier(Identifier identifier) {
         if (frozen) {
-            throw new UnsupportedOperationException();
+            throw new IllegalStateException();
         }
         this.identifier = identifier;
     }
 
     /**
      * @param outputFormat
-     * @throws UnsupportedOperationException If the instance is frozen.
+     * @throws IllegalStateException If the instance is frozen.
      */
     public void setOutputFormat(Format outputFormat) {
         if (frozen) {
-            throw new UnsupportedOperationException();
+            throw new IllegalStateException();
         }
         this.outputFormat = outputFormat;
     }

@@ -80,7 +80,7 @@ public class OperationListTest extends BaseTest {
         try {
             instance.add(new Rotate());
             fail("Expected exception");
-        } catch (UnsupportedOperationException e) {
+        } catch (IllegalStateException e) {
             // pass
         }
     }
@@ -127,7 +127,7 @@ public class OperationListTest extends BaseTest {
         try {
             instance.addAfter(new Rotate(), Crop.class);
             fail("Expected exception");
-        } catch (UnsupportedOperationException e) {
+        } catch (IllegalStateException e) {
             // pass
         }
     }
@@ -169,7 +169,7 @@ public class OperationListTest extends BaseTest {
         try {
             instance.addBefore(new Rotate(), Crop.class);
             fail("Expected exception");
-        } catch (UnsupportedOperationException e) {
+        } catch (IllegalStateException e) {
             // pass
         }
     }
@@ -450,7 +450,7 @@ public class OperationListTest extends BaseTest {
         try {
             instance.clear();
             fail("Expected exception");
-        } catch (UnsupportedOperationException e) {
+        } catch (IllegalStateException e) {
             // pass
         }
     }
@@ -616,7 +616,7 @@ public class OperationListTest extends BaseTest {
         try {
             instance.setIdentifier(new Identifier("alpaca"));
             fail("Expected exception");
-        } catch (UnsupportedOperationException e) {
+        } catch (IllegalStateException e) {
             // pass
         }
     }
@@ -629,7 +629,7 @@ public class OperationListTest extends BaseTest {
         try {
             instance.setOutputFormat(Format.GIF);
             fail("Expected exception");
-        } catch (UnsupportedOperationException e) {
+        } catch (IllegalStateException e) {
             // pass
         }
     }
