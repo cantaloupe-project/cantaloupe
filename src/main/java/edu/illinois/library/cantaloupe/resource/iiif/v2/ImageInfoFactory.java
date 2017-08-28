@@ -18,16 +18,16 @@ import javax.script.ScriptException;
 import java.awt.Dimension;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-abstract class ImageInfoFactory {
+class ImageInfoFactory {
 
-    private static Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(ImageInfoFactory.class);
 
     /** Minimum size that will be used in info.json "sizes" keys. */
@@ -54,11 +54,10 @@ abstract class ImageInfoFactory {
     }
 
     @SuppressWarnings("unchecked")
-    static ImageInfo<String,Object> newImageInfo(
-            final Identifier identifier,
-            final String imageUri,
-            final Processor processor,
-            final Info cacheInfo)
+    ImageInfo<String,Object> newImageInfo(final Identifier identifier,
+                                          final String imageUri,
+                                          final Processor processor,
+                                          final Info cacheInfo)
             throws ProcessorException {
         final Configuration config = Configuration.getInstance();
 
@@ -182,10 +181,10 @@ abstract class ImageInfoFactory {
                     invoke(SERVICE_DELEGATE_METHOD, identifier.toString());
             imageInfo.putAll(keyMap);
         } catch (DelegateScriptDisabledException e) {
-            logger.info("Delegate script disabled; skipping service " +
+            LOGGER.info("Delegate script disabled; skipping service " +
                     "information.");
         } catch (ScriptException | IOException e) {
-            logger.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
 
         return imageInfo;

@@ -128,8 +128,9 @@ public class ImageResource extends IIIF2Resource {
         processor.validate(ops, fullSize);
 
         if (config.getBoolean(Key.IIIF_2_RESTRICT_TO_SIZES, false)) {
-            final ImageInfo<String, Object> imageInfo = ImageInfoFactory.newImageInfo(
-                    identifier, null, processor, info);
+            final ImageInfo<String, Object> imageInfo =
+                    new ImageInfoFactory().newImageInfo(
+                            identifier, null, processor, info);
             final Dimension resultingSize = ops.getResultingSize(fullSize);
             boolean ok = false;
             @SuppressWarnings("unchecked")

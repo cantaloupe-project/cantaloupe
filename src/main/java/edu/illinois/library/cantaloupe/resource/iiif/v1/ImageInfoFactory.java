@@ -10,15 +10,14 @@ import edu.illinois.library.cantaloupe.resource.iiif.ImageInfoUtil;
 
 import java.awt.Dimension;
 
-abstract class ImageInfoFactory {
+class ImageInfoFactory {
 
     /** Will be used to calculate a maximum scale factor. */
     private static final int MIN_SIZE = 64;
 
-    static ImageInfo newImageInfo(final String imageUri,
-                                  final Processor processor,
-                                  final Info cacheInfo)
-            throws ProcessorException {
+    ImageInfo newImageInfo(final String imageUri,
+                           final Processor processor,
+                           final Info cacheInfo) throws ProcessorException {
         // We want to use the orientation-aware full size, which takes the
         // embedded orientation into account.
         final Dimension virtualSize = cacheInfo.getOrientationSize();

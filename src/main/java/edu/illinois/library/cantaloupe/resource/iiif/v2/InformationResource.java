@@ -95,9 +95,10 @@ public class InformationResource extends IIIF2Resource {
         // Connect it to the resolver.
         new ProcessorConnector(resolver, processor, identifier).connect();
 
-        final ImageInfo<String, Object> imageInfo = ImageInfoFactory.newImageInfo(
-                identifier, getImageUri(identifier), processor,
-                getOrReadInfo(identifier, processor));
+        final ImageInfo<String, Object> imageInfo =
+                new ImageInfoFactory().newImageInfo(
+                        identifier, getImageUri(identifier), processor,
+                        getOrReadInfo(identifier, processor));
 
         commitCustomResponseHeaders();
 

@@ -38,8 +38,8 @@ public class ImageInfoFactoryTest extends BaseTest {
         processor = new ProcessorFactory().newProcessor(Format.JPG);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
-        imageInfo = ImageInfoFactory.newImageInfo(identifier, imageUri, processor,
-                processor.readImageInfo());
+        imageInfo = new ImageInfoFactory().newImageInfo(
+                identifier, imageUri, processor, processor.readImageInfo());
     }
 
     private void setUpForRotatedImage() throws Exception {
@@ -51,8 +51,8 @@ public class ImageInfoFactoryTest extends BaseTest {
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rotated.jpg"));
 
-        imageInfo = ImageInfoFactory.newImageInfo(identifier, imageUri, processor,
-                processor.readImageInfo());
+        imageInfo = new ImageInfoFactory().newImageInfo(
+                identifier, imageUri, processor, processor.readImageInfo());
     }
 
     @Test
@@ -143,8 +143,8 @@ public class ImageInfoFactoryTest extends BaseTest {
         processor.setSourceFormat(Format.TIF);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"));
-        imageInfo = ImageInfoFactory.newImageInfo(identifier, imageUri, processor,
-                processor.readImageInfo());
+        imageInfo = new ImageInfoFactory().newImageInfo(
+                identifier, imageUri, processor, processor.readImageInfo());
 
         @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =
@@ -192,8 +192,8 @@ public class ImageInfoFactoryTest extends BaseTest {
 
         // with max_pixels == 0
         config.setProperty(Key.MAX_PIXELS, 0);
-        imageInfo = ImageInfoFactory.newImageInfo(identifier, imageUri,
-                processor, processor.readImageInfo());
+        imageInfo = new ImageInfoFactory().newImageInfo(
+                identifier, imageUri, processor, processor.readImageInfo());
         profile = (List<?>) imageInfo.get("profile");
         assertFalse(((Map<?, ?>) profile.get(1)).containsKey("maxArea"));
     }
@@ -218,7 +218,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
-        imageInfo = ImageInfoFactory.newImageInfo(identifier, imageUri,
+        imageInfo = new ImageInfoFactory().newImageInfo(identifier, imageUri,
                 processor, processor.readImageInfo());
 
         assertEquals("Copyright My Great Organization. All rights reserved.",
