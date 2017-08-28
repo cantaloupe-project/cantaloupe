@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -169,6 +170,7 @@ public class AdminResource extends AbstractResource {
      */
     private Map<String,Object> getTemplateVars() throws Exception {
         final Map<String, Object> vars = getCommonTemplateVars(getRequest());
+        vars.put("adminUri", vars.get("baseUri") + WebApplication.ADMIN_PATH);
 
         ////////////////////////////////////////////////////////////////////
         //////////////////////// status section ////////////////////////////
