@@ -40,18 +40,13 @@ class ImageInfoFactory {
 
     /** Will be populated in the static initializer. */
     private static final Set<ServiceFeature> SUPPORTED_SERVICE_FEATURES =
-            new HashSet<>();
-
-    static {
-        SUPPORTED_SERVICE_FEATURES.addAll(Arrays.asList(
-                ServiceFeature.SIZE_BY_CONFINED_WIDTH_HEIGHT,
-                ServiceFeature.SIZE_BY_WHITELISTED,
-                ServiceFeature.BASE_URI_REDIRECT,
-                ServiceFeature.CANONICAL_LINK_HEADER,
-                ServiceFeature.CORS,
-                ServiceFeature.JSON_LD_MEDIA_TYPE,
-                ServiceFeature.PROFILE_LINK_HEADER));
-    }
+            EnumSet.of(ServiceFeature.SIZE_BY_CONFINED_WIDTH_HEIGHT,
+                    ServiceFeature.SIZE_BY_WHITELISTED,
+                    ServiceFeature.BASE_URI_REDIRECT,
+                    ServiceFeature.CANONICAL_LINK_HEADER,
+                    ServiceFeature.CORS,
+                    ServiceFeature.JSON_LD_MEDIA_TYPE,
+                    ServiceFeature.PROFILE_LINK_HEADER);
 
     @SuppressWarnings("unchecked")
     ImageInfo<String,Object> newImageInfo(final Identifier identifier,
