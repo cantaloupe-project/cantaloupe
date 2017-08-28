@@ -89,4 +89,9 @@ public class ReductionFactor {
         return Math.pow(0.5f, this.factor);
     }
 
+    @Override
+    public int hashCode() {
+        return Float.hashCode(factor);
+    }
+
 }

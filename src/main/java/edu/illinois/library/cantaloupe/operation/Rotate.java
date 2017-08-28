@@ -74,6 +74,11 @@ public class Rotate implements Operation {
         return hasEffect();
     }
 
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
+
     /**
      * @param degrees Degrees of rotation between 0 and 360
      * @throws IllegalArgumentException

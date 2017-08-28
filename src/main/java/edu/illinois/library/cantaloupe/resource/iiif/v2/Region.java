@@ -119,6 +119,11 @@ class Region {
         return y;
     }
 
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
+
     public void setHeight(Float height) throws IllegalArgumentException {
         if (height <= 0) {
             throw new IllegalArgumentException("Height must be a positive integer");

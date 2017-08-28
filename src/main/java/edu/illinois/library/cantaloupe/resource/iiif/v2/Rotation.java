@@ -65,7 +65,7 @@ class Rotation implements Comparable<Object> {
 
     @Override
     public int hashCode(){
-        return ("" + this.getDegrees() + this.shouldMirror()).hashCode();
+        return toString().hashCode();
     }
 
     /**

@@ -101,6 +101,11 @@ class Region {
         return y;
     }
 
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
+
     public boolean isFull() {
         return this.isFull;
     }

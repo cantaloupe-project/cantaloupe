@@ -111,6 +111,11 @@ class Size {
         return width;
     }
 
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
+
     public void setHeight(Integer height) throws IllegalArgumentException {
         if (height != null && height <= 0) {
             throw new IllegalArgumentException("Height must be a positive integer");

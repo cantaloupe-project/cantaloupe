@@ -62,6 +62,11 @@ public final class MediaType {
         return (obj.toString() != null && obj.toString().equals(toString()));
     }
 
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
+
     /**
      * @return Format corresponding with the instance.
      */

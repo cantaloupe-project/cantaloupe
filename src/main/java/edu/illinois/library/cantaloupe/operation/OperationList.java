@@ -444,6 +444,11 @@ public final class OperationList implements Comparable<OperationList>,
         return false;
     }
 
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
+
     /**
      * @return Iterator over the instance's operations. If the instance is
      *         frozen, {@link Iterator#remove()} will throw an
