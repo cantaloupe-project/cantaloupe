@@ -22,10 +22,12 @@ http://maven.apache.org/plugins/maven-assembly-plugin/assembly.html
     <files>
         <file>
             <source>cantaloupe.properties.sample</source>
+            <destName>cantaloupe-${project.version}.properties.sample</destName>
             <fileMode>0644</fileMode>
         </file>
         <file>
             <source>delegates.rb.sample</source>
+            <destName>delegates-${project.version}.rb.sample</destName>
             <fileMode>0644</fileMode>
         </file>
         <file>
