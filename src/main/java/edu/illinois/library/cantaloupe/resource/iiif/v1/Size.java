@@ -84,9 +84,11 @@ class Size {
     }
 
     @Override
-    public boolean equals(Object object) {
-        if (object instanceof Size) {
-            Size otherSize = (Size) object;
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        } else if (obj instanceof Size) {
+            Size otherSize = (Size) obj;
             return toString().equals(otherSize.toString());
         }
         return false;

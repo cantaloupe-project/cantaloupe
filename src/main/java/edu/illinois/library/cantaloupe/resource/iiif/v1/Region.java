@@ -55,6 +55,9 @@ class Region {
 
     @Override
     public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
         final float fudge = 0.0001f;
         if (obj instanceof Region) {
             final Region region = (Region) obj;

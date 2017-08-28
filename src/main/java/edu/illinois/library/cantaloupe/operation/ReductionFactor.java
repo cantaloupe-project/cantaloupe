@@ -76,7 +76,9 @@ public class ReductionFactor {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof ReductionFactor) {
+        if (obj == this) {
+            return true;
+        } else if (obj instanceof ReductionFactor) {
             return ((ReductionFactor) obj).factor == factor;
         }
         return super.equals(obj);

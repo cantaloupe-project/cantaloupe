@@ -35,7 +35,9 @@ public class Rotate implements Operation {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Rotate) {
+        if (obj == this) {
+            return true;
+        } else if (obj instanceof Rotate) {
             return toString().equals(obj.toString());
         }
         return super.equals(obj);

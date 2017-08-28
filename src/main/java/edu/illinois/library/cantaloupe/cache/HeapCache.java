@@ -123,7 +123,9 @@ class HeapCache implements DerivativeCache {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof Key) {
+            if (obj == this) {
+                return true;
+            } else if (obj instanceof Key) {
                 final Key other = (Key) obj;
                 return toString().equals(other.toString());
             }

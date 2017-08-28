@@ -318,7 +318,9 @@ public final class OperationList implements Comparable<OperationList>,
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof OperationList) {
+        if (obj == this) {
+            return true;
+        } else if (obj instanceof OperationList) {
             return obj.toString().equals(this.toString());
         }
         return super.equals(obj);

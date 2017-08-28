@@ -56,6 +56,9 @@ class Rotation implements Comparable<Object> {
 
     @Override
     public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
         return this.compareTo(obj) == 0;
     }
 
