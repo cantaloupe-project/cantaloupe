@@ -22,7 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-public abstract class TestUtil {
+public final class TestUtil {
 
     public static int countFiles(File dir) {
         List<File> allFiles = new ArrayList<>();
@@ -94,5 +94,7 @@ public abstract class TestUtil {
         ops.add(new Encode(Format.JPG));
         return ops;
     }
+
+    private TestUtil() {}
 
 }

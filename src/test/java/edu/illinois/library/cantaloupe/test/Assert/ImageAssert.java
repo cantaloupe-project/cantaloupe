@@ -10,7 +10,7 @@ import java.util.Iterator;
 
 import static org.junit.Assert.assertEquals;
 
-public abstract class ImageAssert {
+public final class ImageAssert {
 
     /**
      * Asserts that the given pixel is some shade of gray.
@@ -71,5 +71,7 @@ public abstract class ImageAssert {
             }
         }
     }
+
+    private ImageAssert() {}
 
 }

@@ -10,9 +10,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-public abstract class CacheWorkerRunner {
+public final class CacheWorkerRunner {
 
-    private static final Logger logger = LoggerFactory.getLogger(
+    private static final Logger LOGGER = LoggerFactory.getLogger(
             CacheWorkerRunner.class);
 
     private static ScheduledExecutorService executorService;
@@ -30,7 +30,7 @@ public abstract class CacheWorkerRunner {
     }
 
     public static synchronized void stop() {
-        logger.info("Stopping the cache worker...");
+        LOGGER.info("Stopping the cache worker...");
         if (future != null) {
             future.cancel(true);
         }
@@ -38,5 +38,7 @@ public abstract class CacheWorkerRunner {
             executorService.shutdown();
         }
     }
+
+    private CacheWorkerRunner() {}
 
 }

@@ -14,9 +14,9 @@ import java.util.Set;
  * Used to obtain an instance of the current {@link Cache} according to the
  * application configuration.
  */
-public abstract class CacheFactory {
+public final class CacheFactory {
 
-    private static Logger logger = LoggerFactory.getLogger(CacheFactory.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(CacheFactory.class);
 
     /** Lazy-initialized by {@link #getDerivativeCache()}. */
     private static volatile DerivativeCache derivativeCache;
@@ -76,7 +76,7 @@ public abstract class CacheFactory {
                     synchronized (CacheFactory.class) {
                         if (cache == null ||
                                 !cache.getClass().getName().equals(qualifiedName)) {
-                            logger.debug("getDerivativeCache(): " +
+                            LOGGER.debug("getDerivativeCache(): " +
                                     "implementation changed; creating a new " +
                                     "instance");
                             try {
@@ -85,10 +85,10 @@ public abstract class CacheFactory {
                                 setDerivativeCache(cache);
                             } catch (ClassNotFoundException e) {
                                 cache = null;
-                                logger.error("Class not found: {}", e.getMessage());
+                                LOGGER.error("Class not found: {}", e.getMessage());
                             } catch (IllegalAccessException | InstantiationException e) {
                                 cache = null;
-                                logger.error(e.getMessage());
+                                LOGGER.error(e.getMessage());
                             }
                         }
                     }
@@ -124,7 +124,7 @@ public abstract class CacheFactory {
                     synchronized (CacheFactory.class) {
                         if (cache == null ||
                                 !cache.getClass().getName().equals(qualifiedName)) {
-                            logger.debug("getSourceCache(): implementation " +
+                            LOGGER.debug("getSourceCache(): implementation " +
                                     "changed; creating a new instance");
                             try {
                                 Class<?> implClass = Class.forName(qualifiedName);
@@ -132,10 +132,10 @@ public abstract class CacheFactory {
                                 setSourceCache(cache);
                             } catch (ClassNotFoundException e) {
                                 cache = null;
-                                logger.error("Class not found: {}", e.getMessage());
+                                LOGGER.error("Class not found: {}", e.getMessage());
                             } catch (IllegalAccessException | InstantiationException e) {
                                 cache = null;
-                                logger.error(e.getMessage());
+                                LOGGER.error(e.getMessage());
                             }
                         }
                     }
@@ -158,7 +158,7 @@ public abstract class CacheFactory {
             runtime.removeShutdownHook(derivativeCacheShutdownHook);
         }
         if (derivativeCache != null) {
-            logger.debug("setDerivativeCache(): calling Cache.shutdown()");
+            LOGGER.debug("setDerivativeCache(): calling Cache.shutdown()");
             derivativeCache.shutdown();
         }
 
@@ -167,7 +167,7 @@ public abstract class CacheFactory {
                 new Thread(() -> derivativeCache.shutdown());
         runtime.addShutdownHook(derivativeCacheShutdownHook);
 
-        logger.debug("setDerivativeCache(): calling Cache.initialize()");
+        LOGGER.debug("setDerivativeCache(): calling Cache.initialize()");
         derivativeCache.initialize();
     }
 
@@ -184,7 +184,7 @@ public abstract class CacheFactory {
             runtime.removeShutdownHook(sourceCacheShutdownHook);
         }
         if (sourceCache != null) {
-            logger.debug("setSourceCache(): calling Cache.shutdown()");
+            LOGGER.debug("setSourceCache(): calling Cache.shutdown()");
             sourceCache.shutdown();
         }
 
@@ -192,8 +192,10 @@ public abstract class CacheFactory {
         sourceCacheShutdownHook = new Thread(sourceCache::shutdown);
         runtime.addShutdownHook(sourceCacheShutdownHook);
 
-        logger.debug("setSourceCache(): calling Cache.initialize()");
+        LOGGER.debug("setSourceCache(): calling Cache.initialize()");
         sourceCache.initialize();
     }
+
+    private CacheFactory() {}
 
 }

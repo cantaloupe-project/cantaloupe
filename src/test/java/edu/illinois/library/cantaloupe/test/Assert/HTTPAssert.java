@@ -12,7 +12,7 @@ import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertEquals;
 
-public abstract class HTTPAssert {
+public final class HTTPAssert {
 
     public static void assertConnectionRefused(String uri) {
         try {
@@ -77,5 +77,7 @@ public abstract class HTTPAssert {
         httpClient.start();
         return httpClient;
     }
+
+    private HTTPAssert() {}
 
 }

@@ -8,9 +8,9 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public abstract class StringUtil {
+public final class StringUtil {
 
-    private static final Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(StringUtil.class);
 
     /**
@@ -25,7 +25,7 @@ public abstract class StringUtil {
             digest.update(str.getBytes(Charset.forName("UTF8")));
             return Hex.encodeHexString(digest.digest());
         } catch (NoSuchAlgorithmException e) {
-            logger.error("filenameSafe(): {}", e.getMessage(), e);
+            LOGGER.error("filenameSafe(): {}", e.getMessage(), e);
         }
         return str; // This should never hit.
     }
@@ -40,5 +40,7 @@ public abstract class StringUtil {
         return s.indexOf(".") < 0 ? s : s.replaceAll("0*$", "").
                 replaceAll("\\.$", "");
     }
+
+    private StringUtil() {}
 
 }

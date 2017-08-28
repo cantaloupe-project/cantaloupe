@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.util.Iterator;
 
-public abstract class LoggerUtil {
+public final class LoggerUtil {
 
     /**
      * Reloads the Logback configuration from logback.xml.
@@ -42,5 +42,7 @@ public abstract class LoggerUtil {
             StatusPrinter.printIfErrorsOccured(loggerContext);
         }
     }
+
+    private LoggerUtil() {}
 
 }

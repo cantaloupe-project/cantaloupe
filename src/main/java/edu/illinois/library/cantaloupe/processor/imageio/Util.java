@@ -5,7 +5,7 @@ import org.w3c.dom.Node;
 
 import javax.imageio.metadata.IIOMetadata;
 
-abstract class Util {
+class Util {
 
     /**
      * Can help debug Node objects from {@link IIOMetadata#getAsTree(String)}.
@@ -56,5 +56,7 @@ abstract class Util {
         indent(level);
         System.out.println("</" + node.getNodeName() + ">");
     }
+
+    private Util() {}
 
 }

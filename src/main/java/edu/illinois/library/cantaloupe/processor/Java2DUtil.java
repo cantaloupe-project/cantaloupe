@@ -48,7 +48,7 @@ import java.util.List;
 /**
  * A collection of methods for operating on {@link BufferedImage}s.
  */
-public abstract class Java2DUtil {
+public final class Java2DUtil {
 
     private static Logger logger = LoggerFactory.getLogger(Java2DUtil.class);
 
@@ -949,5 +949,7 @@ public abstract class Java2DUtil {
                 watch.timeElapsed());
         return outImage;
     }
+
+    private Java2DUtil() {}
 
 }

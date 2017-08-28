@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.config;
 
-public abstract class ConfigurationFactory {
+public final class ConfigurationFactory {
 
     public static final String CONFIG_VM_ARGUMENT = "cantaloupe.config";
 
@@ -46,5 +46,7 @@ public abstract class ConfigurationFactory {
         }
         return config;
     }
+
+    private ConfigurationFactory() {}
 
 }

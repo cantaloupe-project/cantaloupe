@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-abstract class TimeUtils {
+final class TimeUtils {
 
     static String millisecondsToHumanTime(long msec) {
         final long days = TimeUnit.MILLISECONDS.toDays(msec);
@@ -39,5 +39,7 @@ abstract class TimeUtils {
         }
         return unit;
     }
+
+    private TimeUtils() {}
 
 }

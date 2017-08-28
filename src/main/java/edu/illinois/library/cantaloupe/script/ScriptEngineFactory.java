@@ -12,7 +12,7 @@ import java.io.IOException;
 /**
  * Provides access to a shared {@link ScriptEngine} instance.
  */
-public abstract class ScriptEngineFactory {
+public final class ScriptEngineFactory {
 
     private static ScriptEngine scriptEngine;
 
@@ -91,5 +91,7 @@ public abstract class ScriptEngineFactory {
         }
         return script;
     }
+
+    private ScriptEngineFactory() {}
 
 }

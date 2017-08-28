@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.util;
 
 import org.eclipse.jetty.server.NegotiatingServerConnectionFactory;
 
-public abstract class SystemUtils {
+public final class SystemUtils {
 
     public static double getJavaVersion() {
         final String versionStr = System.getProperty("java.version");
@@ -28,5 +28,7 @@ public abstract class SystemUtils {
         }
         return true;
     }
+
+    private SystemUtils() {}
 
 }
