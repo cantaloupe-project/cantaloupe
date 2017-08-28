@@ -274,7 +274,7 @@ public class InfoTest extends BaseTest {
     @Test
     public void writeAsJSON() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        instance.writeAsJson(baos);
+        instance.writeAsJSON(baos);
         assertTrue(Arrays.equals(baos.toByteArray(),
                 instance.toJSON().getBytes()));
     }
@@ -282,7 +282,7 @@ public class InfoTest extends BaseTest {
     /********************* Info.Image tests *************************/
 
     @Test
-    public void testImageConstructor1() {
+    public void imageConstructor1() {
         Info.Image image = new Info.Image();
         assertEquals(Orientation.ROTATE_0, image.getOrientation());
         assertEquals(new Dimension(0, 0), image.getSize());
@@ -290,7 +290,7 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testImageConstructor2() {
+    public void imageConstructor2() {
         Dimension size = new Dimension(300, 200);
         Info.Image image = new Info.Image(size);
         assertEquals(Orientation.ROTATE_0, image.getOrientation());
@@ -299,7 +299,7 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testImageConstructor3() {
+    public void imageConstructor3() {
         Dimension size = new Dimension(300, 200);
         Orientation orientation = Orientation.ROTATE_90;
         Info.Image image = new Info.Image(size, orientation);
@@ -309,7 +309,7 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testImageConstructor4() {
+    public void imageConstructor4() {
         int width = 300;
         int height = 200;
         Info.Image image = new Info.Image(width, height);
@@ -320,7 +320,7 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testImageConstructor5() {
+    public void imageConstructor5() {
         int width = 300;
         int height = 200;
         Orientation orientation = Orientation.ROTATE_90;
@@ -332,14 +332,14 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testImageGetOrientationSize() {
+    public void imageGetOrientationSize() {
         Info.Image image = instance.getImages().get(0);
         image.setOrientation(Orientation.ROTATE_90);
         assertEquals(new Dimension(80, 100), image.getOrientationSize());
     }
 
     @Test
-    public void testImageGetOrientationTileSize() {
+    public void imageGetOrientationTileSize() {
         Info.Image image = instance.getImages().get(0);
         image.setOrientation(Orientation.ROTATE_90);
         assertEquals(new Dimension(80, 100), image.getOrientationTileSize());

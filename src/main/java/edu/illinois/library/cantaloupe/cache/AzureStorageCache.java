@@ -352,10 +352,10 @@ class AzureStorageCache implements DerivativeCache {
                 blob.getProperties().setContentType("application/json");
                 blob.getProperties().setContentEncoding("UTF-8");
 
-                // writeAsJson() will close this.
+                // writeAsJSON() will close this.
                 OutputStream os = new AzureStorageOutputStream(
                         objectKey, blob.openOutputStream(), uploadingKeys);
-                imageInfo.writeAsJson(os);
+                imageInfo.writeAsJSON(os);
             } catch (IOException | URISyntaxException | StorageException e) {
                 throw new CacheException(e.getMessage(), e);
             }

@@ -360,7 +360,7 @@ public final class Info {
      * @param os Output stream to write to.
      */
     @JsonIgnore
-    public void writeAsJson(OutputStream os) throws IOException {
+    public void writeAsJSON(OutputStream os) throws IOException {
         new ObjectMapper().writer().writeValue(os, this);
     }
 

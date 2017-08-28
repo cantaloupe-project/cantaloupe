@@ -382,7 +382,7 @@ class AmazonS3Cache implements DerivativeCache {
 
         try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            info.writeAsJson(os);
+            info.writeAsJSON(os);
 
             final ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType("application/json");
