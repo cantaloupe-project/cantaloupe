@@ -23,7 +23,7 @@ import java.util.Set;
 public class ResolverFactory {
 
     /**
-     * How resolvers are chosen by {@link #getResolver(Identifier)}.
+     * How resolvers are chosen by {@link #newResolver(Identifier)}.
      */
     public enum SelectionStrategy {
         STATIC, DELEGATE_SCRIPT
@@ -59,7 +59,7 @@ public class ResolverFactory {
      * @throws FileNotFoundException If the specified chooser script is not
      * found.
      */
-    public Resolver getResolver(Identifier identifier) throws Exception {
+    public Resolver newResolver(Identifier identifier) throws Exception {
         final Configuration config = Configuration.getInstance();
         if (getSelectionStrategy().equals(SelectionStrategy.DELEGATE_SCRIPT)) {
             Resolver resolver = newDynamicResolver(identifier);
@@ -79,7 +79,7 @@ public class ResolverFactory {
     }
 
     /**
-     * @return How resolvers are chosen by {@link #getResolver(Identifier)}.
+     * @return How resolvers are chosen by {@link #newResolver(Identifier)}.
      */
     public SelectionStrategy getSelectionStrategy() {
         final Configuration config = Configuration.getInstance();

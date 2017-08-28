@@ -234,7 +234,7 @@ public class AdminResource extends AbstractResource {
 
         if (selectionStrategy.equals(ResolverFactory.SelectionStrategy.STATIC)) {
             vars.put("currentResolver", new ObjectProxy(
-                    new ResolverFactory().getResolver(new Identifier("irrelevant"))));
+                    new ResolverFactory().newResolver(new Identifier("irrelevant"))));
         }
 
         List<ObjectProxy> sortedProxies = ResolverFactory.getAllResolvers().

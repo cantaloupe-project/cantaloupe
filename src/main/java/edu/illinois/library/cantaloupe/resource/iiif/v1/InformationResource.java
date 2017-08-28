@@ -62,7 +62,7 @@ public class InformationResource extends IIIF1Resource {
     @Get
     public Representation doGet() throws Exception {
         final Identifier identifier = getIdentifier();
-        final Resolver resolver = new ResolverFactory().getResolver(identifier);
+        final Resolver resolver = new ResolverFactory().newResolver(identifier);
 
         // Setup the resolver context.
         final RequestContext requestContext = new RequestContext();

@@ -85,7 +85,7 @@ public class ProcessorConnectorTest extends BaseTest {
 
     @Test
     public void connectWithFileResolverAndFileProcessor() throws Exception {
-        final Resolver resolver = new ResolverFactory().getResolver(identifier);
+        final Resolver resolver = new ResolverFactory().newResolver(identifier);
         final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
         new ProcessorConnector(resolver, processor, identifier).connect();
@@ -100,7 +100,7 @@ public class ProcessorConnectorTest extends BaseTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_FALLBACK, "ImageMagickProcessor");
 
-        final Resolver resolver = new ResolverFactory().getResolver(identifier);
+        final Resolver resolver = new ResolverFactory().newResolver(identifier);
         final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
 
         new ProcessorConnector(resolver, processor, identifier).connect();
@@ -119,7 +119,7 @@ public class ProcessorConnectorTest extends BaseTest {
         config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
         config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
 
-        final Resolver resolver = new ResolverFactory().getResolver(identifier);
+        final Resolver resolver = new ResolverFactory().newResolver(identifier);
         final Processor processor = new ProcessorFactory().getProcessor(Format.JP2);
 
         try {
@@ -151,7 +151,7 @@ public class ProcessorConnectorTest extends BaseTest {
                     server.getHTTPURI() + "/");
             config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
 
-            final Resolver resolver = new ResolverFactory().getResolver(identifier);
+            final Resolver resolver = new ResolverFactory().newResolver(identifier);
             final Processor processor = new ProcessorFactory().getProcessor(Format.JP2);
 
             new ProcessorConnector(resolver, processor, identifier).connect();
@@ -183,7 +183,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                     server.getHTTPURI() + "/");
 
-            final Resolver resolver = new ResolverFactory().getResolver(identifier);
+            final Resolver resolver = new ResolverFactory().newResolver(identifier);
             final Processor processor = new FakeStreamProcessor();
 
             new ProcessorConnector(resolver, processor, identifier).connect();
@@ -218,7 +218,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     cacheFolder.getAbsolutePath());
 
-            final Resolver resolver = new ResolverFactory().getResolver(identifier);
+            final Resolver resolver = new ResolverFactory().newResolver(identifier);
             final Processor processor = new FakeStreamProcessor();
 
             new ProcessorConnector(resolver, processor, identifier).connect();
@@ -255,7 +255,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     cacheFolder.getAbsolutePath());
 
-            final Resolver resolver = new ResolverFactory().getResolver(identifier);
+            final Resolver resolver = new ResolverFactory().newResolver(identifier);
             final Processor processor = new FakeStreamProcessor();
 
             try {

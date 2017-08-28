@@ -62,7 +62,7 @@ public class InformationResource extends IIIF2Resource {
     @Get
     public Representation doGet() throws Exception {
         final Identifier identifier = getIdentifier();
-        final Resolver resolver = new ResolverFactory().getResolver(identifier);
+        final Resolver resolver = new ResolverFactory().newResolver(identifier);
         final MediaType mediaType = getNegotiatedMediaType();
 
         // Setup the resolver context.

@@ -54,7 +54,7 @@ public class ImageResource extends IIIF1Resource {
     public Representation doGet() throws Exception {
         final Configuration config = Configuration.getInstance();
         final Identifier identifier = getIdentifier();
-        final Resolver resolver = new ResolverFactory().getResolver(identifier);
+        final Resolver resolver = new ResolverFactory().newResolver(identifier);
 
         // Setup the resolver context.
         final RequestContext requestContext = new RequestContext();

@@ -84,7 +84,7 @@ public class ImageResource extends IIIF2Resource {
             }
         }
 
-        Resolver resolver = new ResolverFactory().getResolver(identifier);
+        Resolver resolver = new ResolverFactory().newResolver(identifier);
 
         // Setup the resolver context.
         final RequestContext requestContext = new RequestContext();

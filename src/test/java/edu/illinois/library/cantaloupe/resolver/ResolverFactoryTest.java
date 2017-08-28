@@ -20,27 +20,27 @@ public class ResolverFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testGetAllResolvers() {
+    public void getAllResolvers() {
         assertEquals(5, ResolverFactory.getAllResolvers().size());
     }
 
     @Test
-    public void testGetResolverWithStaticResolver() throws Exception {
+    public void newResolverWithStaticResolver() throws Exception {
         Configuration config = Configuration.getInstance();
         config.clear();
 
         Identifier identifier = new Identifier("jdbc");
 
         config.setProperty(Key.RESOLVER_STATIC, "FilesystemResolver");
-        assertTrue(instance.getResolver(identifier) instanceof FilesystemResolver);
+        assertTrue(instance.newResolver(identifier) instanceof FilesystemResolver);
 
         config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
-        assertTrue(instance.getResolver(identifier) instanceof HttpResolver);
+        assertTrue(instance.newResolver(identifier) instanceof HttpResolver);
 
         // invalid resolver
         try {
             config.setProperty(Key.RESOLVER_STATIC, "BogusResolver");
-            instance.getResolver(identifier);
+            instance.newResolver(identifier);
             fail("Expected exception");
         } catch (ClassNotFoundException e) {
             // pass
@@ -48,7 +48,7 @@ public class ResolverFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testGetResolverUsingDelegateScript() throws Exception {
+    public void newResolverUsingDelegateScript() throws Exception {
         Configuration config = Configuration.getInstance();
         config.clear();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
@@ -57,14 +57,14 @@ public class ResolverFactoryTest extends BaseTest {
         config.setProperty(Key.RESOLVER_DELEGATE, true);
 
         Identifier identifier = new Identifier("http");
-        assertTrue(instance.getResolver(identifier) instanceof HttpResolver);
+        assertTrue(instance.newResolver(identifier) instanceof HttpResolver);
 
         identifier = new Identifier("anythingelse");
-        assertTrue(instance.getResolver(identifier) instanceof FilesystemResolver);
+        assertTrue(instance.newResolver(identifier) instanceof FilesystemResolver);
     }
 
     @Test
-    public void testGetSelectionStrategy() {
+    public void getSelectionStrategy() {
         Configuration config = Configuration.getInstance();
         config.clear();
 
