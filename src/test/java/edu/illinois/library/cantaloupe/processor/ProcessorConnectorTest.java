@@ -86,7 +86,7 @@ public class ProcessorConnectorTest extends BaseTest {
     @Test
     public void connectWithFileResolverAndFileProcessor() throws Exception {
         final Resolver resolver = new ResolverFactory().newResolver(identifier);
-        final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
+        final Processor processor = new ProcessorFactory().newProcessor(Format.JPG);
 
         new ProcessorConnector(resolver, processor, identifier).connect();
 
@@ -101,7 +101,7 @@ public class ProcessorConnectorTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_FALLBACK, "ImageMagickProcessor");
 
         final Resolver resolver = new ResolverFactory().newResolver(identifier);
-        final Processor processor = new ProcessorFactory().getProcessor(Format.JPG);
+        final Processor processor = new ProcessorFactory().newProcessor(Format.JPG);
 
         new ProcessorConnector(resolver, processor, identifier).connect();
 
@@ -120,7 +120,7 @@ public class ProcessorConnectorTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
 
         final Resolver resolver = new ResolverFactory().newResolver(identifier);
-        final Processor processor = new ProcessorFactory().getProcessor(Format.JP2);
+        final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
 
         try {
             new ProcessorConnector(resolver, processor, identifier).connect();
@@ -152,7 +152,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
 
             final Resolver resolver = new ResolverFactory().newResolver(identifier);
-            final Processor processor = new ProcessorFactory().getProcessor(Format.JP2);
+            final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
 
             new ProcessorConnector(resolver, processor, identifier).connect();
 

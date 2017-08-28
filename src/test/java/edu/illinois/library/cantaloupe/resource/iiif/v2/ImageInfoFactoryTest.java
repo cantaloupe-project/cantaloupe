@@ -35,7 +35,7 @@ public class ImageInfoFactoryTest extends BaseTest {
 
         identifier = new Identifier("bla");
         imageUri = "http://example.org/bla";
-        processor = new ProcessorFactory().getProcessor(Format.JPG);
+        processor = new ProcessorFactory().newProcessor(Format.JPG);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
         imageInfo = ImageInfoFactory.newImageInfo(identifier, imageUri, processor,
@@ -47,7 +47,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_RESPECT_ORIENTATION, true);
 
         identifier = new Identifier("bla");
-        processor = new ProcessorFactory().getProcessor(Format.JPG);
+        processor = new ProcessorFactory().newProcessor(Format.JPG);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rotated.jpg"));
 

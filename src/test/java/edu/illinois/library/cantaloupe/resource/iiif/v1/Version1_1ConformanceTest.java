@@ -539,7 +539,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
 
         // does the current processor support this output format?
         Format sourceFormat = Format.inferFormat(IMAGE);
-        Processor processor = new ProcessorFactory().getProcessor(sourceFormat);
+        Processor processor = new ProcessorFactory().newProcessor(sourceFormat);
         if (processor.getAvailableOutputFormats().contains(format)) {
             client.get();
             assertEquals(Status.SUCCESS_OK, client.getStatus());

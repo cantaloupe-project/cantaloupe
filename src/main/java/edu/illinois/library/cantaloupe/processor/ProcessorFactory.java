@@ -35,7 +35,7 @@ public class ProcessorFactory {
      * @return An instance suitable for handling the given source format, based
      *         on configuration settings. The source is already set.
      */
-    public Processor getProcessor(final Format sourceFormat)
+    public Processor newProcessor(final Format sourceFormat)
             throws UnsupportedSourceFormatException,
             InitializationException,
             ReflectiveOperationException,

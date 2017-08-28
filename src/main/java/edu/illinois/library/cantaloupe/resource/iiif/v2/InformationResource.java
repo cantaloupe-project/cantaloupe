@@ -90,7 +90,7 @@ public class InformationResource extends IIIF2Resource {
         }
 
         // Obtain an instance of the processor assigned to that format.
-        final Processor processor = new ProcessorFactory().getProcessor(format);
+        final Processor processor = new ProcessorFactory().newProcessor(format);
 
         // Connect it to the resolver.
         new ProcessorConnector(resolver, processor, identifier).connect();
