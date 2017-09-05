@@ -80,7 +80,7 @@ class RubyScriptEngine extends AbstractScriptEngine
         }
         final List<String> partsArr = Arrays.asList(parts);
         return TOP_MODULE + "::" +
-                StringUtils.join(partsArr.subList(0, partsArr.size() - 1), "::");
+                String.join("::", partsArr.subList(0, partsArr.size() - 1));
     }
 
     /**

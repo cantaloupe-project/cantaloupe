@@ -252,7 +252,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
         final ProcessBuilder pb = new ProcessBuilder(command);
         pb.redirectErrorStream(true);
-        LOGGER.info("Invoking {}", StringUtils.join(pb.command(), " "));
+        LOGGER.info("Invoking {}", String.join(" ", pb.command()));
         Process process = pb.start();
         ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
 
@@ -298,7 +298,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
             final ProcessBuilder pb = getProcessBuilder(
                     opList, imageInfo.getSize(), reductionFactor, normalize);
-            LOGGER.info("Invoking {}", StringUtils.join(pb.command(), " "));
+            LOGGER.info("Invoking {}", String.join(" ", pb.command()));
             final Process process = pb.start();
 
             try (final InputStream processInputStream =

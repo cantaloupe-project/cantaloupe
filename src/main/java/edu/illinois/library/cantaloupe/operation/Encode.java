@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.operation;
 
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
-import org.apache.commons.lang3.StringUtils;
 
 import java.awt.Dimension;
 import java.util.ArrayList;
@@ -203,7 +202,7 @@ public class Encode implements Operation {
         }
         parts.add(getMaxSampleSize() + "");
 
-        return StringUtils.join(parts, "_");
+        return String.join("_", parts);
     }
 
 }

@@ -99,7 +99,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
                 ProcessBuilder pb = new ProcessBuilder(command);
                 pb.redirectErrorStream(true);
 
-                LOGGER.info("Invoking {}", StringUtils.join(pb.command(), " "));
+                LOGGER.info("Invoking {}", String.join(" ", pb.command()));
                 Process process = pb.start();
 
                 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -121,7 +121,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
                         getSourceFormat());
             } catch (SAXException e) {
                 throw new ProcessorException("Failed to parse XML. Command: " +
-                        StringUtils.join(command, " "), e);
+                        String.join(" ", command), e);
             } catch (Exception e) {
                 throw new ProcessorException(e.getMessage(), e);
             } finally {
@@ -147,7 +147,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
             final ProcessBuilder pb = getProcessBuilder(opList);
-            LOGGER.info("Invoking {}", StringUtils.join(pb.command(), " "));
+            LOGGER.info("Invoking {}", String.join(" ", pb.command()));
             final Process process = pb.start();
 
             try (final InputStream processInputStream = process.getInputStream();

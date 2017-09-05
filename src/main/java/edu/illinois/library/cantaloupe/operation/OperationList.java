@@ -12,7 +12,6 @@ import edu.illinois.library.cantaloupe.operation.redaction.RedactionService;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -528,7 +527,7 @@ public final class OperationList implements Comparable<OperationList>,
             opStrings.add(key + ":" + this.getOptions().get(key));
         }
 
-        String opsString = StringUtils.join(opStrings, "_");
+        String opsString = String.join("_", opStrings);
 
         try {
             final MessageDigest digest = MessageDigest.getInstance("MD5");
@@ -587,10 +586,10 @@ public final class OperationList implements Comparable<OperationList>,
                 parts.add(opName + ":" + op.toString());
             }
         }
-        for (String key : this.getOptions().keySet()) {
-            parts.add(key + ":" + this.getOptions().get(key));
+        for (String key : getOptions().keySet()) {
+            parts.add(key + ":" + getOptions().get(key));
         }
-        return StringUtils.join(parts, "_") + "." +
+        return String.join("_", parts) + "." +
                 getOutputFormat().getPreferredExtension();
     }
 

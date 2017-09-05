@@ -151,7 +151,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
             LOGGER.debug("isQuietModeSupported(): invoking {}",
-                    StringUtils.join(pb.command(), " "));
+                    String.join(" ", pb.command()));
             try {
                 Process process = pb.start();
                 try (InputStream processInputStream = process.getInputStream()) {
@@ -302,7 +302,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.redirectErrorStream(true);
-        LOGGER.info("Invoking {}", StringUtils.join(pb.command(), " "));
+        LOGGER.info("Invoking {}", String.join(" ", pb.command()));
         Process process = pb.start();
 
         try (InputStream processInputStream = process.getInputStream()) {
@@ -351,7 +351,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
             final ProcessBuilder pb = getProcessBuilder(
                     opList, imageInfo.getSize(), reductionFactor, normalize);
-            LOGGER.info("Invoking {}", StringUtils.join(pb.command(), " "));
+            LOGGER.info("Invoking {}", String.join(" ", pb.command()));
             final Process process = pb.start();
 
             try (final InputStream processInputStream =
