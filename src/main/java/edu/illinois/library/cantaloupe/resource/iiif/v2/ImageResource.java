@@ -149,13 +149,14 @@ public class ImageResource extends IIIF2Resource {
         }
 
         ops.applyNonEndpointMutations(fullSize,
+                info.getOrientation(),
                 getCanonicalClientIpAddress(),
                 getReference().toUrl(),
                 getRequest().getHeaders().getValuesMap(),
                 getCookies().getValuesMap());
 
-        // Find out whether the processor supports that source format by
-        // asking it whether it offers any output formats for it
+        // Find out whether the processor supports the source format by asking
+        // it whether it offers any output formats for it.
         Set<Format> availableOutputFormats = processor.getAvailableOutputFormats();
         if (!availableOutputFormats.contains(ops.getOutputFormat())) {
             String msg = String.format("%s does not support the \"%s\" output format",

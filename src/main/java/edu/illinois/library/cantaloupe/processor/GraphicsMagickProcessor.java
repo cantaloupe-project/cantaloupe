@@ -249,7 +249,6 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                 args.add("-normalize");
             } else if (op instanceof Crop) {
                 Crop crop = (Crop) op;
-                crop.applyOrientation(imageInfo.getOrientation(), fullSize);
                 if (crop.hasEffect(fullSize, ops)) {
                     args.add("-crop");
                     if (crop.getShape().equals(Crop.Shape.SQUARE)) {

@@ -279,13 +279,7 @@ abstract class AbstractImageReader {
         }
         BufferedImage image;
 
-        Crop crop = null;
-        for (Operation op : ops) {
-            if (op instanceof Crop) {
-                crop = (Crop) op;
-                crop.applyOrientation(orientation, getSize());
-            }
-        }
+        Crop crop = (Crop) ops.getFirst(Crop.class);
         if (crop != null && !hints.contains(ImageReader.Hint.IGNORE_CROP)) {
             final Dimension fullSize = new Dimension(
                     iioReader.getWidth(0), iioReader.getHeight(0));
@@ -505,14 +499,7 @@ abstract class AbstractImageReader {
             createReader();
         }
         RenderedImage image;
-        Crop crop = null;
-        for (Operation op : ops) {
-            if (op instanceof Crop) {
-                crop = (Crop) op;
-                crop.applyOrientation(orientation, getSize());
-                break;
-            }
-        }
+        Crop crop = (Crop) ops.getFirst(Crop.class);
         if (crop != null && !hints.contains(ImageReader.Hint.IGNORE_CROP)) {
             image = iioReader.readAsRenderedImage(0,
                     iioReader.getDefaultReadParam());

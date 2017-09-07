@@ -177,6 +177,27 @@ public class OperationListTest extends BaseTest {
     /* applyNonEndpointMutations() */
 
     @Test
+    public void applyNonEndpointMutationsWithOrientation() throws Exception {
+        final Dimension fullSize = new Dimension(2000,1000);
+        final OperationList opList = new OperationList(new Identifier("cats"),
+                Format.JPG, new Crop(0, 0, 70, 30));
+
+        opList.applyNonEndpointMutations(
+                fullSize,
+                Orientation.ROTATE_90,
+                "127.0.0.1",
+                new URL("http://example.org/"),
+                new HashMap<>(),
+                new HashMap<>());
+
+        Crop expectedCrop = new Crop(0, 0, 70, 30);
+        expectedCrop.applyOrientation(Orientation.ROTATE_90, fullSize);
+        Crop actualCrop = (Crop) opList.getFirst(Crop.class);
+
+        assertEquals(expectedCrop, actualCrop);
+    }
+
+    @Test
     public void applyNonEndpointMutationsWithBackgroundColor()
             throws Exception {
         final Configuration config = Configuration.getInstance();
@@ -186,8 +207,11 @@ public class OperationListTest extends BaseTest {
                 Format.JPG, new Rotate(45));
 
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000), "127.0.0.1",
-                new URL("http://example.org/"), new HashMap<>(),
+                new Dimension(2000,1000),
+                Orientation.ROTATE_0,
+                "127.0.0.1",
+                new URL("http://example.org/"),
+                new HashMap<>(),
                 new HashMap<>());
 
         Encode encode = (Encode) opList.getFirst(Encode.class);
@@ -204,8 +228,11 @@ public class OperationListTest extends BaseTest {
         final OperationList opList = new OperationList(new Identifier("cats"),
                 Format.JPG);
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000), "127.0.0.1",
-                new URL("http://example.org/"), new HashMap<>(),
+                new Dimension(2000,1000),
+                Orientation.ROTATE_0,
+                "127.0.0.1",
+                new URL("http://example.org/"),
+                new HashMap<>(),
                 new HashMap<>());
 
         Iterator<Operation> it = opList.iterator();
@@ -225,8 +252,11 @@ public class OperationListTest extends BaseTest {
         final OperationList opList = new OperationList(new Identifier("cats"),
                 Format.JPG);
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000), "127.0.0.1",
-                new URL("http://example.org/"), new HashMap<>(),
+                new Dimension(2000,1000),
+                Orientation.ROTATE_0,
+                "127.0.0.1",
+                new URL("http://example.org/"),
+                new HashMap<>(),
                 new HashMap<>());
 
         Iterator<Operation> it = opList.iterator();
@@ -242,8 +272,11 @@ public class OperationListTest extends BaseTest {
         OperationList opList = new OperationList(new Identifier("cats"),
                 Format.TIF, new Crop());
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000), "127.0.0.1",
-                new URL("http://example.org/"), new HashMap<>(),
+                new Dimension(2000,1000),
+                Orientation.ROTATE_0,
+                "127.0.0.1",
+                new URL("http://example.org/"),
+                new HashMap<>(),
                 new HashMap<>());
 
         Iterator<Operation> it = opList.iterator();
@@ -254,8 +287,11 @@ public class OperationListTest extends BaseTest {
         opList = new OperationList(new Identifier("cats"), Format.TIF,
                 new Scale(1.5f));
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000), "127.0.0.1",
-                new URL("http://example.org/"), new HashMap<>(),
+                new Dimension(2000,1000),
+                Orientation.ROTATE_0,
+                "127.0.0.1",
+                new URL("http://example.org/"),
+                new HashMap<>(),
                 new HashMap<>());
 
         it = opList.iterator();
@@ -266,8 +302,11 @@ public class OperationListTest extends BaseTest {
         opList = new OperationList(new Identifier("cats"), Format.TIF,
                 new Scale(0.5f));
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000), "127.0.0.1",
-                new URL("http://example.org/"), new HashMap<>(),
+                new Dimension(2000,1000),
+                Orientation.ROTATE_0,
+                "127.0.0.1",
+                new URL("http://example.org/"),
+                new HashMap<>(),
                 new HashMap<>());
 
         it = opList.iterator();
@@ -282,8 +321,11 @@ public class OperationListTest extends BaseTest {
         final OperationList opList = new OperationList(new Identifier("cats"),
                 Format.TIF);
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000), "127.0.0.1",
-                new URL("http://example.org/"), new HashMap<>(),
+                new Dimension(2000,1000),
+                Orientation.ROTATE_0,
+                "127.0.0.1",
+                new URL("http://example.org/"),
+                new HashMap<>(),
                 new HashMap<>());
 
         Overlay overlay = (Overlay) opList.getFirst(Overlay.class);
@@ -297,8 +339,11 @@ public class OperationListTest extends BaseTest {
         final OperationList opList = new OperationList(
                 new Identifier("cats"), Format.TIF);
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000), "127.0.0.1",
-                new URL("http://example.org/"), new HashMap<>(),
+                new Dimension(2000,1000),
+                Orientation.ROTATE_0,
+                "127.0.0.1",
+                new URL("http://example.org/"),
+                new HashMap<>(),
                 new HashMap<>());
 
         Redaction redaction = (Redaction) opList.getFirst(Redaction.class);
@@ -313,8 +358,11 @@ public class OperationListTest extends BaseTest {
         final OperationList opList = new OperationList(new Identifier("cats"),
                 Format.JPG);
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000), "127.0.0.1",
-                new URL("http://example.org/"), new HashMap<>(),
+                new Dimension(2000,1000),
+                Orientation.ROTATE_0,
+                "127.0.0.1",
+                new URL("http://example.org/"),
+                new HashMap<>(),
                 new HashMap<>());
 
         Encode encode = (Encode) opList.getFirst(Encode.class);
@@ -330,8 +378,11 @@ public class OperationListTest extends BaseTest {
         final OperationList opList = new OperationList(new Identifier("cats"),
                 Format.JPG);
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000), "127.0.0.1",
-                new URL("http://example.org/"), new HashMap<>(),
+                new Dimension(2000,1000),
+                Orientation.ROTATE_0,
+                "127.0.0.1",
+                new URL("http://example.org/"),
+                new HashMap<>(),
                 new HashMap<>());
 
         Encode encode = (Encode) opList.getFirst(Encode.class);
@@ -348,8 +399,11 @@ public class OperationListTest extends BaseTest {
         OperationList opList = new OperationList(new Identifier("cats"),
                 Format.TIF, new Scale(0.5f));
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000), "127.0.0.1",
-                new URL("http://example.org/"), new HashMap<>(),
+                new Dimension(2000,1000),
+                Orientation.ROTATE_0,
+                "127.0.0.1",
+                new URL("http://example.org/"),
+                new HashMap<>(),
                 new HashMap<>());
 
         Iterator<Operation> it = opList.iterator();
@@ -359,8 +413,11 @@ public class OperationListTest extends BaseTest {
         opList = new OperationList(new Identifier("cats"), Format.TIF,
                 new Scale(1.5f));
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000), "127.0.0.1",
-                new URL("http://example.org/"), new HashMap<>(),
+                new Dimension(2000,1000),
+                Orientation.ROTATE_0,
+                "127.0.0.1",
+                new URL("http://example.org/"),
+                new HashMap<>(),
                 new HashMap<>());
 
         it = opList.iterator();
@@ -375,8 +432,11 @@ public class OperationListTest extends BaseTest {
         final OperationList opList = new OperationList(new Identifier("cats"),
                 Format.TIF);
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000), "127.0.0.1",
-                new URL("http://example.org/"), new HashMap<>(),
+                new Dimension(2000,1000),
+                Orientation.ROTATE_0,
+                "127.0.0.1",
+                new URL("http://example.org/"),
+                new HashMap<>(),
                 new HashMap<>());
 
         Iterator<Operation> it = opList.iterator();
@@ -387,7 +447,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void addNonEndpointMutationsWithTIFFOutputFormat()
+    public void applyNonEndpointMutationsWithTIFFOutputFormat()
             throws IOException {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_TIF_COMPRESSION, "LZW");
@@ -395,8 +455,11 @@ public class OperationListTest extends BaseTest {
         final OperationList opList = new OperationList(new Identifier("cats"),
                 Format.TIF);
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000), "127.0.0.1",
-                new URL("http://example.org/"), new HashMap<>(),
+                new Dimension(2000,1000),
+                Orientation.ROTATE_0,
+                "127.0.0.1",
+                new URL("http://example.org/"),
+                new HashMap<>(),
                 new HashMap<>());
 
         Iterator<Operation> it = opList.iterator();

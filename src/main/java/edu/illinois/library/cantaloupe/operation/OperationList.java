@@ -48,7 +48,7 @@ import java.util.stream.Stream;
 public final class OperationList implements Comparable<OperationList>,
         Iterable<Operation> {
 
-    private static final Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(OperationList.class);
 
     private boolean frozen = false;
@@ -145,15 +145,17 @@ public final class OperationList implements Comparable<OperationList>,
      * operations have been added, as it may modify them. It will have the
      * side-effect of freezing the instance.</p>
      *
-     * @param sourceImageSize Full size of the source image.
-     * @param clientIp        Client IP address.
-     * @param requestUrl      Request URL.
-     * @param requestHeaders  Request headers.
-     * @param cookies         Client cookies.
+     * @param sourceImageSize        Full size of the source image.
+     * @param sourceImageOrientation Orientation of the source image.
+     * @param clientIp               Client IP address.
+     * @param requestUrl             Request URL.
+     * @param requestHeaders         Request headers.
+     * @param cookies                Client cookies.
      * @throws IllegalArgumentException If the instance's output format has not
      *                                  been set.
      */
     public void applyNonEndpointMutations(final Dimension sourceImageSize,
+                                          final Orientation sourceImageOrientation,
                                           final String clientIp,
                                           final URL requestUrl,
                                           final Map<String,String> requestHeaders,
@@ -165,6 +167,12 @@ public final class OperationList implements Comparable<OperationList>,
         }
 
         final Configuration config = Configuration.getInstance();
+
+        // Apply the orientation to the Crop operation, if both are present.
+        Crop crop = (Crop) getFirst(Crop.class);
+        if (crop != null && sourceImageOrientation != null) {
+            crop.applyOrientation(sourceImageOrientation, sourceImageSize);
+        }
 
         // Normalization
         final boolean normalize =
@@ -203,14 +211,14 @@ public final class OperationList implements Comparable<OperationList>,
                     add(redaction);
                 }
             } else {
-                logger.debug("applyNonEndpointMutations(): redactions are " +
+                LOGGER.debug("applyNonEndpointMutations(): redactions are " +
                         "disabled; skipping.");
             }
         } catch (DelegateScriptDisabledException e) {
-            logger.debug("applyNonEndpointMutations(): delegate script is " +
+            LOGGER.debug("applyNonEndpointMutations(): delegate script is " +
                     "disabled; skipping redactions.");
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         }
 
         // Scale filter
@@ -227,7 +235,7 @@ public final class OperationList implements Comparable<OperationList>,
                             Scale.Filter.valueOf(filterStr.toUpperCase());
                     scale.setFilter(filter);
                 } catch (Exception e) {
-                    logger.warn("applyNonEndpointMutations(): invalid value for {}",
+                    LOGGER.warn("applyNonEndpointMutations(): invalid value for {}",
                             filterKey);
                 }
             }
@@ -248,14 +256,14 @@ public final class OperationList implements Comparable<OperationList>,
                         clientIp, cookies);
                 add(overlay);
             } else {
-                logger.debug("applyNonEndpointMutations(): overlays are " +
+                LOGGER.debug("applyNonEndpointMutations(): overlays are " +
                         "disabled; skipping.");
             }
         } catch (DelegateScriptDisabledException e) {
-            logger.debug("applyNonEndpointMutations(): delegate script is " +
+            LOGGER.debug("applyNonEndpointMutations(): delegate script is " +
                     "disabled; skipping overlay.");
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         }
 
         // Metadata copies
@@ -540,7 +548,7 @@ public final class OperationList implements Comparable<OperationList>,
             digest.update(opsString.getBytes(Charset.forName("UTF8")));
             opsString = Hex.encodeHexString(digest.digest());
         } catch (NoSuchAlgorithmException e) {
-            logger.error("toFilename(): {}", e.getMessage());
+            LOGGER.error("toFilename(): {}", e.getMessage());
         }
 
         return StringUtil.filesystemSafe(getIdentifier().toString()) + "_" +

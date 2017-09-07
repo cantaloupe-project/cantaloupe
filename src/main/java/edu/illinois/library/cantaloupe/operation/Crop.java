@@ -82,7 +82,7 @@ public class Crop implements Operation {
      *                    invocation will be a no-op.
      * @param fullSize    Dimensions of the un-rotated image.
      */
-    public void applyOrientation(Orientation orientation, Dimension fullSize) {
+    void applyOrientation(Orientation orientation, Dimension fullSize) {
         if (orientation == null) {
             return;
         }

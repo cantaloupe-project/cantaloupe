@@ -154,6 +154,7 @@ public class ImageResource extends IIIF1Resource {
                 String.format("<%s>;rel=\"profile\";", complianceLevel.getUri()));
 
         ops.applyNonEndpointMutations(fullSize,
+                info.getOrientation(),
                 getCanonicalClientIpAddress(),
                 getReference().toUrl(),
                 getRequest().getHeaders().getValuesMap(),

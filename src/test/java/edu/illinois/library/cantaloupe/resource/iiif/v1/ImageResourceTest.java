@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.resource.*;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.FileUtils;
@@ -427,8 +428,12 @@ public class ImageResourceTest extends ResourceTest {
             final String imagePath = "/" + IMAGE + "/full/full/0/native.jpg";
             final OperationList ops = Parameters.fromUri(imagePath).
                     toOperationList();
-            ops.applyNonEndpointMutations(new Dimension(64, 56), "",
-                    new URL("http://example.org/"), new HashMap<>(),
+            ops.applyNonEndpointMutations(
+                    new Dimension(64, 56),
+                    Orientation.ROTATE_0,
+                    "",
+                    new URL("http://example.org/"),
+                    new HashMap<>(),
                     new HashMap<>());
 
             assertEquals(0, FileUtils.listFiles(cacheDir, null, true).size());

@@ -150,10 +150,10 @@ class TIFFImageReader extends AbstractImageReader {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
+
         for (Operation op : ops) {
             if (op instanceof Crop) {
                 crop = (Crop) op;
-                crop.applyOrientation(orientation, getSize());
             } else if (op instanceof Scale) {
                 scale = (Scale) op;
             }
@@ -206,10 +206,10 @@ class TIFFImageReader extends AbstractImageReader {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
+
         for (Operation op : ops) {
             if (op instanceof Crop) {
                 crop = (Crop) op;
-                crop.applyOrientation(orientation, getSize());
             } else if (op instanceof Scale) {
                 scale = (Scale) op;
             }
