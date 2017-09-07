@@ -15,6 +15,14 @@ public enum Transpose implements Operation {
     /** Indicates flipping. */
     VERTICAL;
 
+    /**
+     * Does nothing.
+     */
+    @Override
+    public void freeze() {
+        // no-op
+    }
+
     @Override
     public Dimension getResultingSize(Dimension fullSize) {
         return fullSize;

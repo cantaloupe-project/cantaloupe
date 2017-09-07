@@ -25,12 +25,24 @@ public class Crop implements Operation {
     }
 
     private float height = 0.0f;
+    private boolean isFrozen = false;
     private boolean isFull = false;
     private Shape shape = Shape.ARBITRARY;
     private Unit unit = Unit.PIXELS;
     private float width = 0.0f;
     private float x = 0.0f;
     private float y = 0.0f;
+
+    private void checkFrozen() {
+        if (isFrozen) {
+            throw new IllegalStateException("Instance is frozen.");
+        }
+    }
+
+    @Override
+    public void freeze() {
+        isFrozen = true;
+    }
 
     /**
      * @param rect Rectangle to imitate.
@@ -81,8 +93,10 @@ public class Crop implements Operation {
      * @param orientation Orientation of the image. If <code>null</code>, the
      *                    invocation will be a no-op.
      * @param fullSize    Dimensions of the un-rotated image.
+     * @throws IllegalStateException If the instance is frozen.
      */
     void applyOrientation(Orientation orientation, Dimension fullSize) {
+        checkFrozen();
         if (orientation == null) {
             return;
         }
@@ -283,45 +297,83 @@ public class Crop implements Operation {
         this.isFull = isFull;
     }
 
-    public void setHeight(float height) throws IllegalArgumentException {
+    /**
+     * @param height Height to set.
+     * @throws IllegalArgumentException If the given height is invalid.
+     * @throws IllegalStateException    If the instance is frozen.
+     */
+    public void setHeight(float height) {
+        checkFrozen();
         if (height <= 0) {
             throw new IllegalArgumentException("Height must be a positive integer");
-        } else if (this.getUnit().equals(Unit.PERCENT) && height > 1) {
+        }
+        if (Unit.PERCENT.equals(getUnit()) && height > 1) {
             throw new IllegalArgumentException("Height percentage must be <= 1");
         }
         this.height = height;
     }
 
+    /**
+     * @param shape Shape to set.
+     * @throws IllegalStateException If the instance is frozen.
+     */
     public void setShape(Shape shape) {
+        checkFrozen();
         this.shape = shape;
     }
 
+    /**
+     * @param unit Unit to set.
+     * @throws IllegalStateException If the instance is frozen.
+     */
     public void setUnit(Unit unit) {
+        checkFrozen();
         this.unit = unit;
     }
 
-    public void setWidth(float width) throws IllegalArgumentException {
+    /**
+     * @param width Width to set.
+     * @throws IllegalArgumentException If the given width is invalid.
+     * @throws IllegalStateException If the instance is frozen.
+     */
+    public void setWidth(float width) {
+        checkFrozen();
         if (width <= 0) {
             throw new IllegalArgumentException("Width must be a positive integer");
-        } else if (this.getUnit().equals(Unit.PERCENT) && width > 1) {
+        }
+        if (Unit.PERCENT.equals(getUnit()) && width > 1) {
             throw new IllegalArgumentException("Width percentage must be <= 1");
         }
         this.width = width;
     }
 
-    public void setX(float x) throws IllegalArgumentException {
+    /**
+     * @param x X coordinate to set.
+     * @throws IllegalArgumentException If the given X coordinate is invalid.
+     * @throws IllegalStateException If the instance is frozen.
+     */
+    public void setX(float x) {
+        checkFrozen();
         if (x < 0) {
             throw new IllegalArgumentException("X must be a positive float");
-        } else if (this.getUnit().equals(Unit.PERCENT) && x > 1) {
+        }
+        if (Unit.PERCENT.equals(getUnit()) && x > 1) {
             throw new IllegalArgumentException("X percentage must be <= 1");
         }
         this.x = x;
     }
 
-    public void setY(float y) throws IllegalArgumentException {
+    /**
+     * @param y Y coordinate to set.
+     * @throws IllegalArgumentException If the given Y coordinate is invalid.
+     * @throws IllegalStateException If the instance is frozen.
+     */
+    public void setY(float y) {
+        checkFrozen();
         if (y < 0) {
             throw new IllegalArgumentException("Y must be a positive float");
-        } else if (this.getUnit().equals(Unit.PERCENT) && y > 1) {
+        }
+        if (Unit.PERCENT.equals(getUnit()) && y > 1) {
             throw new IllegalArgumentException("Y percentage must be <= 1");
         }
         this.y = y;

@@ -16,6 +16,14 @@ import java.util.Map;
 public class MetadataCopy implements Operation {
 
     /**
+     * Does nothing.
+     */
+    @Override
+    public void freeze() {
+        // no-op
+    }
+
+    /**
      * @param fullSize Full size of the source image on which the operation
      *                 is being applied.
      * @return fullSize

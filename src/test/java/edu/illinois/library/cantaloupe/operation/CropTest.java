@@ -107,6 +107,13 @@ public class CropTest extends BaseTest {
         assertEquals(400, instance.getHeight(), DELTA);
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void applyOrientationThrowsExceptionWhenFrozen() {
+        instance.freeze();
+        Dimension fullSize = new Dimension(500, 250);
+        instance.applyOrientation(Orientation.ROTATE_90, fullSize);
+    }
+
     @Test
     public void getRectangleWithFull() {
         final Dimension fullSize = new Dimension(300, 200);
@@ -285,6 +292,24 @@ public class CropTest extends BaseTest {
         }
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void setHeightThrowsExceptionWhenInstanceIsFrozen() {
+        instance.freeze();
+        instance.setHeight(30f);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setShapeThrowsExceptionWhenInstanceIsFrozen() {
+        instance.freeze();
+        instance.setShape(Crop.Shape.SQUARE);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setUnitThrowsExceptionWhenInstanceIsFrozen() {
+        instance.freeze();
+        instance.setUnit(Crop.Unit.PIXELS);
+    }
+
     @Test
     public void setWidth() {
         Float width = 50f;
@@ -323,6 +348,12 @@ public class CropTest extends BaseTest {
         }
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void setWidthThrowsExceptionWhenInstanceIsFrozen() {
+        instance.freeze();
+        instance.setWidth(30f);
+    }
+
     @Test
     public void setX() {
         float x = 50f;
@@ -349,6 +380,12 @@ public class CropTest extends BaseTest {
         } catch (IllegalArgumentException e) {
             assertEquals("X percentage must be <= 1", e.getMessage());
         }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setXThrowsExceptionWhenInstanceIsFrozen() {
+        instance.freeze();
+        instance.setX(30f);
     }
 
     @Test
@@ -379,6 +416,12 @@ public class CropTest extends BaseTest {
         }
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void setYThrowsExceptionWhenInstanceIsFrozen() {
+        instance.freeze();
+        instance.setY(30f);
+    }
+
     @Test
     public void testToMap() {
         final Crop crop = new Crop(25, 25, 50, 50);
@@ -395,16 +438,11 @@ public class CropTest extends BaseTest {
         assertEquals(50, map.get("height"));
     }
 
-    @Test
+    @Test(expected = UnsupportedOperationException.class)
     public void toMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
         Map<String,Object> map = instance.toMap(fullSize);
-        try {
-            map.put("test", "test");
-            fail("Expected exception");
-        } catch (UnsupportedOperationException e) {
-            // pass
-        }
+        map.put("test", "test");
     }
 
     @Test
@@ -434,59 +472,39 @@ public class CropTest extends BaseTest {
     }
 
     @Test
-    public void validateWithValidInstance() {
+    public void validateWithValidInstance() throws ValidationException {
         Dimension fullSize = new Dimension(1000, 1000);
         instance.setWidth(100);
         instance.setHeight(100);
-        try {
-            instance.validate(fullSize);
-        } catch (ValidationException e) {
-            fail(e.getMessage());
-        }
+        instance.validate(fullSize);
     }
 
-    @Test
-    public void validateWithOutOfBoundsCrop() {
-        // OOB X
+    @Test(expected = ValidationException.class)
+    public void validateWithOutOfBoundsCropX() throws ValidationException {
         Dimension fullSize = new Dimension(1000, 1000);
         Crop crop = new Crop(1001, 0, 5, 5);
-        try {
-            crop.validate(fullSize);
-            fail("Expected exception");
-        } catch (ValidationException e) {
-            // pass
-        }
-
-        // OOB Y
-        crop = new Crop(0, 1001, 5, 5);
-        try {
-            crop.validate(fullSize);
-            fail("Expected exception");
-        } catch (ValidationException e) {
-            // pass
-        }
+        crop.validate(fullSize);
     }
 
-    @Test
-    public void validateWithZeroDimensionCrop() {
-        // X
+    @Test(expected = ValidationException.class)
+    public void validateWithOutOfBoundsCropY() throws ValidationException {
+        Dimension fullSize = new Dimension(1000, 1000);
+        Crop crop = new Crop(0, 1001, 5, 5);
+        crop.validate(fullSize);
+    }
+
+    @Test(expected = ValidationException.class)
+    public void validateWithZeroDimensionCropX() throws ValidationException {
         Dimension fullSize = new Dimension(1000, 1000);
         Crop crop = new Crop(1000, 0, 100, 100);
-        try {
-            crop.validate(fullSize);
-            fail("Expected exception");
-        } catch (ValidationException e) {
-            // pass
-        }
+        crop.validate(fullSize);
+    }
 
-        // Y
-        crop = new Crop(0, 1000, 100, 100);
-        try {
-            crop.validate(fullSize);
-            fail("Expected exception");
-        } catch (ValidationException e) {
-            // pass
-        }
+    @Test(expected = ValidationException.class)
+    public void validateWithZeroDimensionCrop() throws ValidationException {
+        Dimension fullSize = new Dimension(1000, 1000);
+        Crop crop = new Crop(0, 1000, 100, 100);
+        crop.validate(fullSize);
     }
 
 }

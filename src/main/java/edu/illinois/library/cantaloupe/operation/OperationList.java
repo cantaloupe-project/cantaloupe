@@ -51,7 +51,7 @@ public final class OperationList implements Comparable<OperationList>,
     private static final Logger LOGGER = LoggerFactory.
             getLogger(OperationList.class);
 
-    private boolean frozen = false;
+    private boolean isFrozen = false;
     private Identifier identifier;
     private List<Operation> operations = new ArrayList<>();
     private Map<String,Object> options = new HashMap<>();
@@ -80,9 +80,7 @@ public final class OperationList implements Comparable<OperationList>,
      * @throws IllegalStateException If the instance is frozen.
      */
     public void add(Operation op) {
-        if (frozen) {
-            throw new IllegalStateException();
-        }
+        checkFrozen();
         if (op != null) {
             operations.add(op);
         }
@@ -100,9 +98,7 @@ public final class OperationList implements Comparable<OperationList>,
      */
     public void addAfter(Operation op,
                          Class<? extends Operation> afterClass) {
-        if (frozen) {
-            throw new IllegalStateException();
-        }
+        checkFrozen();
         final int index = lastIndexOf(afterClass);
         if (index >= 0) {
             operations.add(index + 1, op);
@@ -123,9 +119,7 @@ public final class OperationList implements Comparable<OperationList>,
      */
     public void addBefore(Operation op,
                           Class<? extends Operation> beforeClass) {
-        if (frozen) {
-            throw new IllegalStateException();
-        }
+        checkFrozen();
         int index = firstIndexOf(beforeClass);
         if (index >= 0) {
             operations.add(index, op);
@@ -314,13 +308,17 @@ public final class OperationList implements Comparable<OperationList>,
         freeze();
     }
 
+    private void checkFrozen() {
+        if (isFrozen) {
+            throw new IllegalStateException("Instance is frozen.");
+        }
+    }
+
     /**
      * @throws IllegalStateException If the instance is frozen.
      */
     public void clear() {
-        if (frozen) {
-            throw new IllegalStateException();
-        }
+        checkFrozen();
         operations.clear();
     }
 
@@ -358,10 +356,13 @@ public final class OperationList implements Comparable<OperationList>,
     }
 
     /**
-     * "Freezes" the instance so that operations cannot be added or removed.
+     * "Freezes" the instance and all of its operations.
      */
     public void freeze() {
-        this.frozen = true;
+        isFrozen = true;
+        for (Operation op : this) {
+            op.freeze();
+        }
     }
 
     /**
@@ -389,7 +390,7 @@ public final class OperationList implements Comparable<OperationList>,
      *         instance is frozen, the map will be unmodifiable.
      */
     public Map<String,Object> getOptions() {
-        if (frozen) {
+        if (isFrozen) {
             return Collections.unmodifiableMap(options);
         }
         return options;
@@ -471,7 +472,7 @@ public final class OperationList implements Comparable<OperationList>,
      */
     @Override
     public Iterator<Operation> iterator() {
-        if (frozen) {
+        if (isFrozen) {
             return Collections.unmodifiableList(operations).iterator();
         }
         return operations.iterator();
@@ -496,9 +497,7 @@ public final class OperationList implements Comparable<OperationList>,
      * @throws IllegalStateException If the instance is frozen.
      */
     public void setIdentifier(Identifier identifier) {
-        if (frozen) {
-            throw new IllegalStateException();
-        }
+        checkFrozen();
         this.identifier = identifier;
     }
 
@@ -508,9 +507,8 @@ public final class OperationList implements Comparable<OperationList>,
      * @throws IllegalArgumentException If the given format is not supported.
      */
     public void setOutputFormat(Format outputFormat) {
-        if (frozen) {
-            throw new IllegalStateException();
-        } else if (Format.UNKNOWN.equals(outputFormat)) {
+        checkFrozen();
+        if (Format.UNKNOWN.equals(outputFormat)) {
             throw new IllegalArgumentException("Illegal output format: " +
                     outputFormat);
         }

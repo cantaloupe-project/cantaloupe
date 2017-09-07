@@ -23,12 +23,18 @@ public class Encode implements Operation {
     private Compression compression = Compression.UNDEFINED;
     private Format format = Format.UNKNOWN;
     private boolean interlace = false;
+    private boolean isFrozen = false;
     /** May be null to indicate no max. */
     private Integer maxSampleSize;
     private int quality = MAX_QUALITY;
 
     public Encode(Format format) {
         setFormat(format);
+    }
+
+    @Override
+    public void freeze() {
+        isFrozen = true;
     }
 
     /**
@@ -107,31 +113,60 @@ public class Encode implements Operation {
 
     /**
      * @param color Background color.
+     * @throws IllegalStateException If the instance is frozen.
      */
     public void setBackgroundColor(Color color) {
+        if (isFrozen) {
+            throw new IllegalStateException("Instance is frozen.");
+        }
         this.backgroundColor = color;
     }
 
+    /**
+     * @param compression Compression to set.
+     * @throws IllegalStateException If the instance is frozen.
+     */
     public void setCompression(Compression compression) {
+        if (isFrozen) {
+            throw new IllegalStateException("Instance is frozen.");
+        }
         this.compression = compression;
     }
 
+    /**
+     * @param format Format to set.
+     * @throws IllegalStateException If the instance is frozen.
+     */
     public void setFormat(Format format) {
+        if (isFrozen) {
+            throw new IllegalStateException("Instance is frozen.");
+        }
         if (format == null) {
             format = Format.UNKNOWN;
         }
         this.format = format;
     }
 
+    /**
+     * @param interlace Interlacing to set.
+     * @throws IllegalStateException If the instance is frozen.
+     */
     public void setInterlacing(boolean interlace) {
+        if (isFrozen) {
+            throw new IllegalStateException("Instance is frozen.");
+        }
         this.interlace = interlace;
     }
 
     /**
      * @param depth Maximum sample size to encode. Supply <code>null</code> to
      *              indicate no max.
+     * @throws IllegalStateException If the instance is frozen.
      */
     public void setMaxSampleSize(Integer depth) {
+        if (isFrozen) {
+            throw new IllegalStateException("Instance is frozen.");
+        }
         this.maxSampleSize = depth;
     }
 
@@ -139,8 +174,12 @@ public class Encode implements Operation {
      * @param quality
      * @throws IllegalArgumentException If the given quality is outside the
      *         range of 1-{@link #MAX_QUALITY}.
+     * @throws IllegalStateException If the instance is frozen.
      */
     public void setQuality(int quality) {
+        if (isFrozen) {
+            throw new IllegalStateException("Instance is frozen.");
+        }
         if (quality < 1 || quality > MAX_QUALITY) {
             throw new IllegalArgumentException(
                     "Quality must be in the range of 1-" + MAX_QUALITY + ".");

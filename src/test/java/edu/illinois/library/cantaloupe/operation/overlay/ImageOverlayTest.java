@@ -11,6 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
@@ -41,15 +42,26 @@ public class ImageOverlayTest extends BaseTest {
         assertEquals(5439, os.toByteArray().length);
     }
 
-    @Test
+    @Test(expected = IOException.class)
     public void openStreamWithNonexistentImage() throws IOException {
         instance = new ImageOverlay(new File("/dev/cats"),
                 Position.BOTTOM_RIGHT, 5);
+        instance.openStream();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setFileThrowsExceptionWhenFrozen() {
+        instance.freeze();
+        instance.setFile(new File("/dev/null"));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setURLThrowsExceptionWhenFrozen() {
+        instance.freeze();
         try {
-            instance.openStream();
-            fail("Expected exception");
-        } catch (IOException e) {
-            // pass
+            instance.setURL(new URL("http://example.org/cats"));
+        } catch (MalformedURLException e) {
+            fail();
         }
     }
 
@@ -64,16 +76,11 @@ public class ImageOverlayTest extends BaseTest {
         assertEquals(instance.getPosition().toString(), map.get("position"));
     }
 
-    @Test
+    @Test(expected = UnsupportedOperationException.class)
     public void toMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
         Map<String,Object> map = instance.toMap(fullSize);
-        try {
-            map.put("test", "test");
-            fail("Expected exception");
-        } catch (UnsupportedOperationException e) {
-            // pass
-        }
+        map.put("test", "test");
     }
 
     @Test

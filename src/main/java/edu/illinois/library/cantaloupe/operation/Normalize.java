@@ -12,6 +12,14 @@ import java.util.Map;
  */
 public class Normalize implements Operation {
 
+    /**
+     * Does nothing.
+     */
+    @Override
+    public void freeze() {
+        // no-op
+    }
+
     @Override
     public Dimension getResultingSize(Dimension fullSize) {
         return fullSize;

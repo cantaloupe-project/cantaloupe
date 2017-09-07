@@ -80,7 +80,6 @@ public class ImageOverlay extends Overlay implements Operation {
 
     /**
      * @return Stream from which the image can be read.
-     * @throws IOException
      */
     public InputStream openStream() throws IOException {
         byte[] bytes;
@@ -94,16 +93,20 @@ public class ImageOverlay extends Overlay implements Operation {
 
     /**
      * @param file Image file.
+     * @throws IllegalStateException If the instance is frozen.
      */
     public void setFile(File file) {
+        checkFrozen();
         this.url = null;
         this.file = file;
     }
 
     /**
      * @param url Image URL.
+     * @throws IllegalStateException If the instance is frozen.
      */
     public void setURL(URL url) {
+        checkFrozen();
         this.file = null;
         this.url = url;
     }

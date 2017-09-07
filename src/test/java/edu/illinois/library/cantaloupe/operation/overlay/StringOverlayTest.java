@@ -18,19 +18,21 @@ public class StringOverlayTest extends BaseTest {
 
     private StringOverlay instance;
 
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-
+    private Font newFont() {
         final Map<TextAttribute, Object> attributes = new HashMap<>();
         attributes.put(TextAttribute.FAMILY, "Arial");
         attributes.put(TextAttribute.SIZE, 12);
         attributes.put(TextAttribute.WEIGHT, 2.0f);
         attributes.put(TextAttribute.TRACKING, 0.1f);
-        final Font font = Font.getFont(attributes);
+        return Font.getFont(attributes);
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
 
         instance = new StringOverlay("cats", Position.BOTTOM_RIGHT, 5,
-                font, 11, Color.BLUE, Color.ORANGE, Color.RED, 5f);
+                newFont(), 11, Color.BLUE, Color.ORANGE, Color.RED, 5f);
     }
 
     @Test
@@ -38,6 +40,48 @@ public class StringOverlayTest extends BaseTest {
         assertTrue(instance.hasEffect());
         instance.setString("");
         assertFalse(instance.hasEffect());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setBackgroundColorThrowsExceptionWhenFrozen() {
+        instance.freeze();
+        instance.setBackgroundColor(Color.RED);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setColorThrowsExceptionWhenFrozen() {
+        instance.freeze();
+        instance.setColor(Color.RED);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setFontThrowsExceptionWhenFrozen() {
+        instance.freeze();
+        instance.setFont(newFont());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setMinSizeThrowsExceptionWhenFrozen() {
+        instance.freeze();
+        instance.setMinSize(1);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setStringThrowsExceptionWhenFrozen() {
+        instance.freeze();
+        instance.setString("");
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setStrokeColorThrowsExceptionWhenFrozen() {
+        instance.freeze();
+        instance.setStrokeColor(Color.RED);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setStrokeWidthThrowsExceptionWhenFrozen() {
+        instance.freeze();
+        instance.setStrokeWidth(3);
     }
 
     @Test
@@ -63,16 +107,11 @@ public class StringOverlayTest extends BaseTest {
         assertEquals(5f, map.get("stroke_width"));
     }
 
-    @Test
+    @Test(expected = UnsupportedOperationException.class)
     public void toMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
         Map<String,Object> map = instance.toMap(fullSize);
-        try {
-            map.put("test", "test");
-            fail("Expected exception");
-        } catch (UnsupportedOperationException e) {
-            // pass
-        }
+        map.put("test", "test");
     }
 
     @Test

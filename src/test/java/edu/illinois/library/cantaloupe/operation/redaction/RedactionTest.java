@@ -81,6 +81,12 @@ public class RedactionTest extends BaseTest {
         assertFalse(instance.hasEffect(fullSize, opList));
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void setRegionWhenInstanceIsFrozen() {
+        instance.freeze();
+        instance.setRegion(new Rectangle(0, 0, 10, 10));
+    }
+
     @Test
     public void toMap() {
         Dimension fullSize = new Dimension(500, 500);
@@ -93,16 +99,11 @@ public class RedactionTest extends BaseTest {
         assertEquals(100, map.get("height"));
     }
 
-    @Test
+    @Test(expected = UnsupportedOperationException.class)
     public void toMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
         Map<String,Object> map = instance.toMap(fullSize);
-        try {
-            map.put("test", "test");
-            fail("Expected exception");
-        } catch (UnsupportedOperationException e) {
-            // pass
-        }
+        map.put("test", "test");
     }
 
     @Test

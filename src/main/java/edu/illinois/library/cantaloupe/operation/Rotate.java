@@ -13,6 +13,7 @@ import java.util.Map;
 public class Rotate implements Operation {
 
     private float degrees = 0f;
+    private boolean isFrozen = false;
 
     /**
      * No-op constructor.
@@ -29,8 +30,12 @@ public class Rotate implements Operation {
 
     /**
      * @param degrees Degrees to add.
+     * @throws IllegalStateException If the instance is frozen.
      */
     public void addDegrees(float degrees) {
+        if (isFrozen) {
+            throw new IllegalStateException("Instance is frozen.");
+        }
         this.degrees = (this.degrees + degrees) % 360;
     }
 
@@ -42,6 +47,14 @@ public class Rotate implements Operation {
             return toString().equals(obj.toString());
         }
         return super.equals(obj);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    @Override
+    public void freeze() {
+        isFrozen = true;
     }
 
     /**
@@ -84,9 +97,13 @@ public class Rotate implements Operation {
 
     /**
      * @param degrees Degrees of rotation between 0 and 360
-     * @throws IllegalArgumentException
+     * @throws IllegalArgumentException If the given degrees are invalid.
+     * @throws IllegalStateException if the instance is frozen.
      */
-    public void setDegrees(float degrees) throws IllegalArgumentException {
+    public void setDegrees(float degrees) {
+        if (isFrozen) {
+            throw new IllegalStateException("Instance is frozen.");
+        }
         if (degrees < 0 || degrees > 360) {
             throw new IllegalArgumentException("Degrees must be between 0 and 360");
         }

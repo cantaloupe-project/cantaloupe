@@ -63,8 +63,6 @@ public class OperationListTest extends BaseTest {
         assertNotNull(instance.getOptions());
     }
 
-    /* add(Operation) */
-
     @Test
     public void add() {
         instance = new OperationList(new Identifier("cats"), Format.JPG);
@@ -84,8 +82,6 @@ public class OperationListTest extends BaseTest {
             // pass
         }
     }
-
-    /* addAfter(Class, Operation) */
 
     @Test
     public void addAfterWithExistingClass() {
@@ -120,19 +116,12 @@ public class OperationListTest extends BaseTest {
         assertTrue(it.next() instanceof Scale);
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void addAfterWhileFrozen() {
         instance = new OperationList(new Identifier("cats"), Format.JPG);
         instance.freeze();
-        try {
-            instance.addAfter(new Rotate(), Crop.class);
-            fail("Expected exception");
-        } catch (IllegalStateException e) {
-            // pass
-        }
+        instance.addAfter(new Rotate(), Crop.class);
     }
-
-    /* addBefore(Class, Operation) */
 
     @Test
     public void addBeforeWithExistingClass() {
@@ -162,19 +151,12 @@ public class OperationListTest extends BaseTest {
         assertTrue(it.next() instanceof Scale);
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void addBeforeWhileFrozen() {
         instance = new OperationList(new Identifier("cats"), Format.JPG);
         instance.freeze();
-        try {
-            instance.addBefore(new Rotate(), Crop.class);
-            fail("Expected exception");
-        } catch (IllegalStateException e) {
-            // pass
-        }
+        instance.addBefore(new Rotate(), Crop.class);
     }
-
-    /* applyNonEndpointMutations() */
 
     @Test
     public void applyNonEndpointMutationsWithOrientation() throws Exception {
@@ -469,8 +451,6 @@ public class OperationListTest extends BaseTest {
         assertEquals(Compression.LZW, encode.getCompression());
     }
 
-    /* clear() */
-
     @Test
     public void clear() {
         int opCount = 0;
@@ -491,18 +471,11 @@ public class OperationListTest extends BaseTest {
         assertEquals(0, opCount);
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void clearWhileFrozen() {
         instance.freeze();
-        try {
-            instance.clear();
-            fail("Expected exception");
-        } catch (IllegalStateException e) {
-            // pass
-        }
+        instance.clear();
     }
-
-    /* compareTo(OperationList) */
 
     @Test
     public void compareTo() {
@@ -520,8 +493,6 @@ public class OperationListTest extends BaseTest {
         assertEquals(0, ops2.compareTo(this.instance));
     }
 
-    /* equals(Object) */
-
     @Test
     public void equalsWithEqualOperationList() {
         OperationList ops1 = TestUtil.newOperationList();
@@ -538,7 +509,11 @@ public class OperationListTest extends BaseTest {
         assertFalse(ops1.equals(ops2));
     }
 
-    /* getFirst(Class<Operation>) */
+    @Test(expected = IllegalStateException.class)
+    public void freezeFreezesOperations() {
+        instance.freeze();
+        ((Crop) instance.getFirst(Crop.class)).setHeight(300);
+    }
 
     @Test
     public void getFirst() {
@@ -555,25 +530,16 @@ public class OperationListTest extends BaseTest {
         assertTrue(overlay instanceof DummyOverlay);
     }
 
-    /* getOptions() */
-
     @Test
     public void getOptions() {
         assertNotNull(instance.getOptions());
     }
 
-    @Test
-    public void getOptionsWhileFrozen() {
+    @Test(expected = UnsupportedOperationException.class)
+    public void getOptionsWhenFrozen() {
         instance.freeze();
-        try {
-            instance.getOptions().put("test", "test");
-            fail("Expected exception");
-        } catch (UnsupportedOperationException e) {
-            // pass
-        }
+        instance.getOptions().put("test", "test");
     }
-
-    /* getResultingSize(Dimension) */
 
     @Test
     public void getResultingSize() {
@@ -598,8 +564,6 @@ public class OperationListTest extends BaseTest {
         instance.add(scale);
         assertEquals(new Dimension(75, 50), instance.getResultingSize(fullSize));
     }
-
-    /* hasEffect(Format) */
 
     @Test
     public void hasEffect() {
@@ -629,8 +593,6 @@ public class OperationListTest extends BaseTest {
         assertFalse(instance.hasEffect(Format.JPG));
     }
 
-    /* iterator() */
-
     @Test
     public void iterator() {
         int count = 0;
@@ -642,56 +604,30 @@ public class OperationListTest extends BaseTest {
         assertEquals(3, count);
     }
 
-    @Test
+    @Test(expected = UnsupportedOperationException.class)
     public void iteratorCannotRemoveWhileFrozen() {
         instance.freeze();
         Iterator<Operation> it = instance.iterator();
         it.next();
-        try {
-            it.remove();
-            fail("Expected exception");
-        } catch (UnsupportedOperationException e) {
-            // pass
-        }
+        it.remove();
     }
 
-    /* setIdentifier() */
-
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void setIdentifierWhileFrozen() {
         instance.freeze();
-        try {
-            instance.setIdentifier(new Identifier("alpaca"));
-            fail("Expected exception");
-        } catch (IllegalStateException e) {
-            // pass
-        }
+        instance.setIdentifier(new Identifier("alpaca"));
     }
 
-    /* setOutputFormat() */
-
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void setOutputFormatWhileFrozen() {
         instance.freeze();
-        try {
-            instance.setOutputFormat(Format.GIF);
-            fail("Expected exception");
-        } catch (IllegalStateException e) {
-            // pass
-        }
+        instance.setOutputFormat(Format.GIF);
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void setOutputFormatWithIllegalFormat() {
-        try {
-            instance.setOutputFormat(Format.UNKNOWN);
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
+        instance.setOutputFormat(Format.UNKNOWN);
     }
-
-    /* toFilename() */
 
     @Test
     public void toFilename() {
@@ -723,8 +659,6 @@ public class OperationListTest extends BaseTest {
         assertNotEquals(expected, instance.toFilename());
     }
 
-    /* toMap() */
-
     @Test
     public void toMap() {
         instance = new OperationList(new Identifier("identifier.jpg"),
@@ -750,19 +684,12 @@ public class OperationListTest extends BaseTest {
         assertEquals(0, ((Map<?, ?>) map.get("options")).size());
     }
 
-    @Test
+    @Test(expected = UnsupportedOperationException.class)
     public void toMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
         Map<String,Object> map = instance.toMap(fullSize);
-        try {
-            map.put("test", "test");
-            fail("Expected exception");
-        } catch (UnsupportedOperationException e) {
-            // pass
-        }
+        map.put("test", "test");
     }
-
-    /* toString() */
 
     @Test
     public void testToString() {
@@ -784,34 +711,23 @@ public class OperationListTest extends BaseTest {
         assertEquals(expected, instance.toString());
     }
 
-    /* validate() */
-
     @Test
-    public void validateWithValidInstance() {
+    public void validateWithValidInstance() throws ValidationException {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(
                 new Identifier("cats"),
                 Format.JPG,
                 new Crop(0, 0, 100, 100));
-        try {
-            ops.validate(fullSize);
-        } catch (ValidationException e) {
-            fail(e.getMessage());
-        }
+        ops.validate(fullSize);
     }
 
-    @Test
-    public void validateWithOutOfBoundsCrop() {
+    @Test(expected = ValidationException.class)
+    public void validateWithOutOfBoundsCrop() throws ValidationException {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(new Identifier("cats"),
                 Format.JPG,
                 new Crop(1001, 1001, 100, 100));
-        try {
-            ops.validate(fullSize);
-            fail("Expected exception");
-        } catch (ValidationException e) {
-            // pass
-        }
+        ops.validate(fullSize);
     }
 
 }

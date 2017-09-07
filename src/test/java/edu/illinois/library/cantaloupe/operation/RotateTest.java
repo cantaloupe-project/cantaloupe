@@ -33,6 +33,12 @@ public class RotateTest extends BaseTest {
         assertEquals(25.5f, instance.getDegrees(), 0.00000001f);
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void addDegreesWhenFrozenThrowsException() {
+        instance.freeze();
+        instance.addDegrees(15);
+    }
+
     @Test
     public void equals() {
         assertTrue(instance.equals(new Rotate()));
@@ -87,15 +93,15 @@ public class RotateTest extends BaseTest {
     @Test
     public void setDegrees() {
         float degrees = 50f;
-        this.instance.setDegrees(degrees);
-        assertEquals(degrees, this.instance.getDegrees(), 0.000001f);
+        instance.setDegrees(degrees);
+        assertEquals(degrees, instance.getDegrees(), 0.000001f);
     }
 
     @Test
     public void setDegreesWithLargeDegrees() {
         float degrees = 530f;
         try {
-            this.instance.setDegrees(degrees);
+            instance.setDegrees(degrees);
         } catch (IllegalArgumentException e) {
             assertEquals("Degrees must be between 0 and 360", e.getMessage());
         }
@@ -105,30 +111,31 @@ public class RotateTest extends BaseTest {
     public void setDegreesWithNegativeDegrees() {
         float degrees = -50f;
         try {
-            this.instance.setDegrees(degrees);
+            instance.setDegrees(degrees);
         } catch (IllegalArgumentException e) {
             assertEquals("Degrees must be between 0 and 360", e.getMessage());
         }
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void setDegreesWhenFrozenThrowsException() {
+        instance.freeze();
+        instance.setDegrees(15);
+    }
+
     @Test
     public void toMap() {
-        this.instance.setDegrees(15);
-        Map<String,Object> map = this.instance.toMap(new Dimension(0, 0));
+        instance.setDegrees(15);
+        Map<String,Object> map = instance.toMap(new Dimension(0, 0));
         assertEquals(instance.getClass().getSimpleName(), map.get("class"));
         assertEquals(15f, map.get("degrees"));
     }
 
-    @Test
+    @Test(expected = UnsupportedOperationException.class)
     public void toMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
         Map<String,Object> map = instance.toMap(fullSize);
-        try {
-            map.put("test", "test");
-            fail("Expected exception");
-        } catch (UnsupportedOperationException e) {
-            // pass
-        }
+        map.put("test", "test");
     }
 
     @Test

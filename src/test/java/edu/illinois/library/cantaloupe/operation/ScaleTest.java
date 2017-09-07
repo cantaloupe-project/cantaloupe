@@ -327,17 +327,23 @@ public class ScaleTest extends BaseTest {
         assertTrue(instance.isUp(size));
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void setFilterWhenFrozenThrowsException() {
+        instance.freeze();
+        instance.setFilter(Scale.Filter.LANCZOS3);
+    }
+
     @Test
     public void setHeight() {
         Integer height = 50;
-        this.instance.setHeight(height);
+        instance.setHeight(height);
         assertEquals(height, this.instance.getHeight());
     }
 
     @Test
     public void setHeightWithNegativeHeight() {
         try {
-            this.instance.setHeight(-1);
+            instance.setHeight(-1);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Height must be a positive integer", e.getMessage());
@@ -347,7 +353,7 @@ public class ScaleTest extends BaseTest {
     @Test
     public void setHeightWithZeroHeight() {
         try {
-            this.instance.setHeight(0);
+            instance.setHeight(0);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Height must be a positive integer", e.getMessage());
@@ -356,14 +362,20 @@ public class ScaleTest extends BaseTest {
 
     @Test
     public void setHeightWithNullHeight() {
-        this.instance.setHeight(null);
+        instance.setHeight(null);
         assertNull(instance.getHeight());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setHeightWhenFrozenThrowsException() {
+        instance.freeze();
+        instance.setHeight(80);
     }
 
     @Test
     public void setPercent() {
         float percent = 0.5f;
-        this.instance.setPercent(percent);
+        instance.setPercent(percent);
         assertEquals(percent, instance.getPercent(), 0.000001f);
         assertEquals(Scale.Mode.ASPECT_FIT_INSIDE, instance.getMode());
     }
@@ -371,7 +383,7 @@ public class ScaleTest extends BaseTest {
     @Test
     public void setPercentWithNegativePercent() {
         try {
-            this.instance.setPercent(-0.5f);
+            instance.setPercent(-0.5f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Percent must be greater than zero", e.getMessage());
@@ -381,7 +393,7 @@ public class ScaleTest extends BaseTest {
     @Test
     public void setPercentWithZeroPercent() {
         try {
-            this.instance.setPercent(0f);
+            instance.setPercent(0f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Percent must be greater than zero", e.getMessage());
@@ -390,21 +402,33 @@ public class ScaleTest extends BaseTest {
 
     @Test
     public void setPercentWithNullPercent() {
-        this.instance.setPercent(null);
+        instance.setPercent(null);
         assertNull(instance.getPercent());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setPercentWhenFrozenThrowsException() {
+        instance.freeze();
+        instance.setPercent(0.5f);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setModeWhenFrozenThrowsException() {
+        instance.freeze();
+        instance.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
     }
 
     @Test
     public void setWidth() {
         Integer width = 50;
-        this.instance.setWidth(width);
+        instance.setWidth(width);
         assertEquals(width, this.instance.getWidth());
     }
 
     @Test
     public void setWidthWithNegativeWidth() {
         try {
-            this.instance.setWidth(-1);
+            instance.setWidth(-1);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Width must be a positive integer", e.getMessage());
@@ -414,7 +438,7 @@ public class ScaleTest extends BaseTest {
     @Test
     public void setWidthWithZeroWidth() {
         try {
-            this.instance.setWidth(0);
+            instance.setWidth(0);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Width must be a positive integer", e.getMessage());
@@ -425,6 +449,12 @@ public class ScaleTest extends BaseTest {
     public void setWidthWithNullWidth() {
         this.instance.setWidth(null);
         assertNull(instance.getWidth());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setWidthWhenFrozenThrowsException() {
+        instance.freeze();
+        instance.setWidth(50);
     }
 
     @Test
@@ -442,16 +472,11 @@ public class ScaleTest extends BaseTest {
         assertEquals(resultingSize.height, map.get("height"));
     }
 
-    @Test
+    @Test(expected = UnsupportedOperationException.class)
     public void toMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
         Map<String,Object> map = instance.toMap(fullSize);
-        try {
-            map.put("test", "test");
-            fail("Expected exception");
-        } catch (UnsupportedOperationException e) {
-            // pass
-        }
+        map.put("test", "test");
     }
 
     @Test

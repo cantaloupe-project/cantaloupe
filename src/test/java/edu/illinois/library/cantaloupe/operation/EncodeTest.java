@@ -21,22 +21,16 @@ public class EncodeTest extends BaseTest {
         instance = new Encode(Format.JPG);
     }
 
-    /* getResultingSize(Dimension) */
-
     @Test
     public void getResultingSize() {
         Dimension size = new Dimension(500, 500);
         assertEquals(size, instance.getResultingSize(size));
     }
 
-    /* hasEffect() */
-
     @Test
     public void hasEffect() {
         assertTrue(instance.hasEffect());
     }
-
-    /* hasEffect(Dimension, OperationList) */
 
     @Test
     public void hasEffectWithArguments() {
@@ -45,36 +39,55 @@ public class EncodeTest extends BaseTest {
         assertTrue(instance.hasEffect(size, opList));
     }
 
-    /* setQuality() */
+    @Test(expected = IllegalStateException.class)
+    public void setBackgroundColorWhenFrozenThrowsException() {
+        instance.freeze();
+        instance.setBackgroundColor(Color.RED);
+    }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
+    public void setCompressionWhenFrozenThrowsException() {
+        instance.freeze();
+        instance.setCompression(Compression.LZW);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setFormatWhenFrozenThrowsException() {
+        instance.freeze();
+        instance.setFormat(Format.PNG);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setInterlacingWhenFrozenThrowsException() {
+        instance.freeze();
+        instance.setInterlacing(false);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setMaxSampleSizeWhenFrozenThrowsException() {
+        instance.freeze();
+        instance.setMaxSampleSize(8);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void setQualityWithZeroArgumentThrowsException() {
-        try {
-            instance.setQuality(0);
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
+        instance.setQuality(0);
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void setQualityWithNegativeArgumentThrowsException() {
-        try {
-            instance.setQuality(-1);
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
+        instance.setQuality(-1);
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void setQualityWithArgumentAboveMaxThrowsException() {
-        try {
-            instance.setQuality(Encode.MAX_QUALITY + 1);
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
+        instance.setQuality(Encode.MAX_QUALITY + 1);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setQualityWhenFrozenThrowsException() {
+        instance.freeze();
+        instance.setQuality(50);
     }
 
     @Test
@@ -82,8 +95,6 @@ public class EncodeTest extends BaseTest {
         instance.setQuality(50);
         assertEquals(50, instance.getQuality());
     }
-
-    /* toMap() */
 
     @Test
     public void toMap() {
@@ -103,19 +114,12 @@ public class EncodeTest extends BaseTest {
         assertEquals(10, map.get("max_sample_size"));
     }
 
-    @Test
+    @Test(expected = UnsupportedOperationException.class)
     public void toMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
-        Map<String,Object> map = instance.toMap(fullSize);
-        try {
-            map.put("test", "test");
-            fail("Expected exception");
-        } catch (UnsupportedOperationException e) {
-            // pass
-        }
+        Map<String, Object> map = instance.toMap(fullSize);
+        map.put("test", "test");
     }
-
-    /* toString() */
 
     @Test
     public void testToString() {

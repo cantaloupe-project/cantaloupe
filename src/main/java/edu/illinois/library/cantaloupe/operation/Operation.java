@@ -10,6 +10,13 @@ import java.util.Map;
 public interface Operation {
 
     /**
+     * Freezes the instance, making it immutable. When frozen, mutation methods
+     * should throw an {@link IllegalStateException} and getters should return
+     * immutable values, if possible. (But they should do that anyway.)
+     */
+    void freeze();
+
+    /**
      * @param fullSize Full size of the source image on which the operation
      *                 is being applied.
      * @return Resulting dimensions when the operation is applied to an image

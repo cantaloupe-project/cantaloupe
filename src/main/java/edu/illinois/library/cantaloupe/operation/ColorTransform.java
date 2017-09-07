@@ -12,6 +12,14 @@ public enum ColorTransform implements Operation {
 
     BITONAL, GRAY;
 
+    /**
+     * Does nothing.
+     */
+    @Override
+    public void freeze() {
+        // no-op
+    }
+
     @Override
     public Dimension getResultingSize(Dimension fullSize) {
         return fullSize;
@@ -36,7 +44,7 @@ public enum ColorTransform implements Operation {
     public Map<String,Object> toMap(Dimension fullSize) {
         final Map<String,Object> map = new HashMap<>();
         map.put("class", getClass().getSimpleName());
-        map.put("type", this.name().toLowerCase());
+        map.put("type", name().toLowerCase());
         return Collections.unmodifiableMap(map);
     }
 

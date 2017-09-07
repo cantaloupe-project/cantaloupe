@@ -41,6 +41,14 @@ public class Scale implements Operation {
             this.resampleFilter = resampleFilter;
         }
 
+        /**
+         * Does nothing.
+         */
+        @Override
+        public void freeze() {
+            // no-op
+        }
+
         public String getName() {
             return name;
         }
@@ -111,6 +119,7 @@ public class Scale implements Operation {
 
     private Filter filter;
     private Integer height;
+    private boolean isFrozen = false;
     private Mode scaleMode = Mode.FULL;
     private Float percent;
     private Integer width;
@@ -136,6 +145,17 @@ public class Scale implements Operation {
         setWidth(width);
         setHeight(height);
         setMode(mode);
+    }
+
+    private void checkFrozen() {
+        if (isFrozen) {
+            throw new IllegalStateException("Instance is frozen.");
+        }
+    }
+
+    @Override
+    public void freeze() {
+        isFrozen = true;
     }
 
     /**
@@ -328,16 +348,20 @@ public class Scale implements Operation {
 
     /**
      * @param filter Resample filter to prefer.
+     * @throws IllegalStateException If the instance is frozen.
      */
     public void setFilter(Filter filter) {
+        checkFrozen();
         this.filter = filter;
     }
 
     /**
      * @param height Integer greater than 0
-     * @throws IllegalArgumentException
+     * @throws IllegalArgumentException If the given height is invalid.
+     * @throws IllegalStateException If the instance is frozen.
      */
-    public void setHeight(Integer height) throws IllegalArgumentException {
+    public void setHeight(Integer height) {
+        checkFrozen();
         if (height != null && height <= 0) {
             throw new IllegalArgumentException("Height must be a positive integer");
         }
@@ -348,10 +372,12 @@ public class Scale implements Operation {
      * N.B. Invoking this method also sets the instance's mode to
      * {@link Mode#ASPECT_FIT_INSIDE}.
      *
-     * @param percent Float greater than 0.
-     * @throws IllegalArgumentException
+     * @param percent Float &gt; 0 and &le; 1.
+     * @throws IllegalArgumentException If the given percent is invalid.
+     * @throws IllegalStateException If the instance is frozen.
      */
-    public void setPercent(Float percent) throws IllegalArgumentException {
+    public void setPercent(Float percent) {
+        checkFrozen();
         if (percent != null && percent <= 0) {
             throw new IllegalArgumentException("Percent must be greater than zero");
         }
@@ -359,15 +385,22 @@ public class Scale implements Operation {
         this.percent = percent;
     }
 
+    /**
+     * @param scaleMode Scale mode to set.
+     * @throws IllegalStateException If the instance is frozen.
+     */
     public void setMode(Mode scaleMode) {
+        checkFrozen();
         this.scaleMode = scaleMode;
     }
 
     /**
      * @param width Integer greater than 0.
-     * @throws IllegalArgumentException
+     * @throws IllegalArgumentException If the given width is invalid.
+     * @throws IllegalStateException If the instance is frozen.
      */
-    public void setWidth(Integer width) throws IllegalArgumentException {
+    public void setWidth(Integer width) {
+        checkFrozen();
         if (width != null && width <= 0) {
             throw new IllegalArgumentException("Width must be a positive integer");
         }

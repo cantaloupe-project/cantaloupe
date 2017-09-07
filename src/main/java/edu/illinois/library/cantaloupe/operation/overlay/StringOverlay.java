@@ -24,7 +24,7 @@ import java.util.Map;
  */
 public class StringOverlay extends Overlay implements Operation {
 
-    private static final Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(StringOverlay.class);
 
     private Color backgroundColor;
@@ -85,34 +85,66 @@ public class StringOverlay extends Overlay implements Operation {
         return (getString() != null && getString().length() > 0);
     }
 
+    /**
+     * @param color Background color to set.
+     * @throws IllegalStateException If the instance is frozen.
+     */
     public void setBackgroundColor(Color color) {
+        checkFrozen();
         this.backgroundColor = color;
     }
 
+    /**
+     * @param color Color to set.
+     * @throws IllegalStateException If the instance is frozen.
+     */
     public void setColor(Color color) {
+        checkFrozen();
         this.color = color;
     }
 
+    /**
+     * @param font Font to set.
+     * @throws IllegalStateException If the instance is frozen.
+     */
     public void setFont(Font font) {
+        checkFrozen();
         this.font = font;
     }
 
+    /**
+     * @param minSize Minimum size in pixels
+     * @throws IllegalStateException If the instance is frozen.
+     */
     public void setMinSize(int minSize) {
+        checkFrozen();
         this.minSize = minSize;
     }
 
+    /**
+     * @param string String to set.
+     * @throws IllegalStateException If the instance is frozen.
+     */
     public void setString(String string) {
+        checkFrozen();
         this.string = string;
     }
 
+    /**
+     * @param color Color to set.
+     * @throws IllegalStateException If the instance is frozen.
+     */
     public void setStrokeColor(Color color) {
+        checkFrozen();
         this.strokeColor = color;
     }
 
     /**
      * @param width Width in pixels.
+     * @throws IllegalStateException If the instance is frozen.
      */
     public void setStrokeWidth(float width) {
+        checkFrozen();
         this.strokeWidth = width;
     }
 
@@ -158,7 +190,7 @@ public class StringOverlay extends Overlay implements Operation {
             digest.update(getString().getBytes(Charset.forName("UTF8")));
             string = Hex.encodeHexString(digest.digest());
         } catch (NoSuchAlgorithmException e) {
-            logger.error("toString(): {}", e.getMessage());
+            LOGGER.error("toString(): {}", e.getMessage());
             string = getString().replaceAll("[^A-Za-z0-9]", "");
         }
         // minSize is not included, as it is more of a potential property than
