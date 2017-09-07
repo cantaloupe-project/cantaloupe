@@ -118,6 +118,17 @@ public class Crop implements Operation {
         }
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof Crop) {
+            return obj.toString().equals(toString());
+        }
+        return super.equals(obj);
+    }
+
     /**
      * @return The height of the operation. If {@link #getUnit()} returns
      * {@link Unit#PERCENT}, this will be a percentage of the full image height
@@ -261,6 +272,11 @@ public class Crop implements Operation {
         return !(Unit.PIXELS.equals(getUnit()) &&
                 fullSize.width == Math.round(getWidth()) &&
                 fullSize.height == Math.round(getHeight()));
+    }
+
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
     }
 
     public void setFull(boolean isFull) {
