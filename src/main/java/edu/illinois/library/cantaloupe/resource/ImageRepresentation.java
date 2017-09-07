@@ -54,7 +54,6 @@ public class ImageRepresentation extends OutputRepresentation {
         this.imageInfo = imageInfo;
         this.processor = processor;
         this.opList = opList;
-        this.opList.freeze();
         this.bypassCache = bypassCache;
         this.setDisposition(disposition);
     }

@@ -136,12 +136,14 @@ public final class OperationList implements Comparable<OperationList>,
 
     /**
      * <p>Most image-processing operations (crop, scale, etc.) are specified in
-     * a client request to an endpoint. This method adds any operations or
-     * options that endpoints have nothing to do with. (Normally these will come
-     * either from the configuration, or a delegate method.)</p>
+     * a client request to an endpoint. This method adds any other operations or
+     * options that endpoints have nothing to do with, and also tweaks existing
+     * operations according to either/both the application configuration and
+     * delegate method return values.</p>
      *
-     * <p>This method should be called after all endpoint operations have been
-     * added, as it may modify them.</p>
+     * <p>This method should be called <strong>after</strong> all endpoint
+     * operations have been added, as it may modify them. It will have the
+     * side-effect of freezing the instance.</p>
      *
      * @param sourceImageSize Full size of the source image.
      * @param clientIp        Client IP address.
@@ -298,6 +300,10 @@ public final class OperationList implements Comparable<OperationList>,
         // Set the Encode operation's max sample size.
         boolean limit = config.getBoolean(Key.PROCESSOR_LIMIT_TO_8_BITS, true);
         encode.setMaxSampleSize(limit ? 8 : null);
+
+        // Now that mutations have been applied, we don't want any more
+        // changes to the instance down the pike.
+        freeze();
     }
 
     /**
