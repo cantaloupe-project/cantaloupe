@@ -26,19 +26,15 @@ public class ImageOverlayTest extends BaseTest {
                 Position.BOTTOM_RIGHT, 5);
     }
 
-    // getIdentifier()
-
     @Test
-    public void testGetIdentifier() throws Exception {
+    public void getIdentifier() throws Exception {
         assertEquals("jpg", instance.getIdentifier());
         instance.setURL(new URL("http://example.org/dogs"));
         assertEquals("dogs", instance.getIdentifier());
     }
 
-    // openStream()
-
     @Test
-    public void testOpenStream() throws IOException {
+    public void openStream() throws IOException {
         InputStream is = instance.openStream();
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         IOUtils.copy(is, os);
@@ -46,7 +42,7 @@ public class ImageOverlayTest extends BaseTest {
     }
 
     @Test
-    public void testOpenStreamWithNonexistentImage() throws IOException {
+    public void openStreamWithNonexistentImage() throws IOException {
         instance = new ImageOverlay(new File("/dev/cats"),
                 Position.BOTTOM_RIGHT, 5);
         try {
@@ -57,10 +53,8 @@ public class ImageOverlayTest extends BaseTest {
         }
     }
 
-    // toMap()
-
     @Test
-    public void testToMap() {
+    public void toMap() {
         Dimension fullSize = new Dimension(100, 100);
 
         Map<String,Object> map = instance.toMap(fullSize);
@@ -70,7 +64,17 @@ public class ImageOverlayTest extends BaseTest {
         assertEquals(instance.getPosition().toString(), map.get("position"));
     }
 
-    // toString()
+    @Test
+    public void toMapReturnsUnmodifiableMap() {
+        Dimension fullSize = new Dimension(100, 100);
+        Map<String,Object> map = instance.toMap(fullSize);
+        try {
+            map.put("test", "test");
+            fail("Expected exception");
+        } catch (UnsupportedOperationException e) {
+            // pass
+        }
+    }
 
     @Test
     public void testToString() throws IOException {

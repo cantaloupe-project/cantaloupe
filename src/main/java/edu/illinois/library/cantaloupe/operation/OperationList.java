@@ -558,7 +558,7 @@ public final class OperationList implements Comparable<OperationList>,
      *
      * @param fullSize Full size of the source image on which the instance is
      *                 being applied.
-     * @return         Map representation of the instance.
+     * @return         Unmodifiable Map representation of the instance.
      */
     public Map<String,Object> toMap(Dimension fullSize) {
         final Map<String,Object> map = new HashMap<>();
@@ -568,7 +568,7 @@ public final class OperationList implements Comparable<OperationList>,
                 map(op -> op.toMap(fullSize)).
                 collect(Collectors.toList()));
         map.put("options", getOptions());
-        return map;
+        return Collections.unmodifiableMap(map);
     }
 
     /**

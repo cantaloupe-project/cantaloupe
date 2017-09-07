@@ -12,6 +12,7 @@ import java.awt.font.TextAttribute;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -141,7 +142,7 @@ public class StringOverlay extends Overlay implements Operation {
         map.put("string", getString());
         map.put("stroke_color", getStrokeColor().toRGBAHex());
         map.put("stroke_width", getStrokeWidth());
-        return map;
+        return Collections.unmodifiableMap(map);
     }
 
     /**

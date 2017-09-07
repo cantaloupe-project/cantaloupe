@@ -39,305 +39,305 @@ public class ScaleTest extends BaseTest {
 
     }
 
-    private Scale scale;
+    private Scale instance;
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        this.scale = new Scale();
+        this.instance = new Scale();
     }
 
     @Test
-    public void testConstructor1() {
-        assertEquals(Scale.Mode.FULL, scale.getMode());
-        assertNull(scale.getPercent());
-        assertNull(scale.getHeight());
-        assertNull(scale.getWidth());
+    public void constructor1() {
+        assertEquals(Scale.Mode.FULL, instance.getMode());
+        assertNull(instance.getPercent());
+        assertNull(instance.getHeight());
+        assertNull(instance.getWidth());
     }
 
     @Test
-    public void testConstructor2() {
-        this.scale = new Scale(0.3f);
-        assertEquals(Scale.Mode.ASPECT_FIT_INSIDE, scale.getMode());
-        assertEquals(0.3f, scale.getPercent(), 0.00001f);
+    public void constructor2() {
+        this.instance = new Scale(0.3f);
+        assertEquals(Scale.Mode.ASPECT_FIT_INSIDE, instance.getMode());
+        assertEquals(0.3f, instance.getPercent(), 0.00001f);
     }
 
     @Test
-    public void testConstructor3() {
-        this.scale = new Scale(300, 200, Scale.Mode.ASPECT_FIT_HEIGHT);
-        assertEquals(Scale.Mode.ASPECT_FIT_HEIGHT, scale.getMode());
-        assertEquals(300, (long) scale.getWidth());
-        assertEquals(200, (long) scale.getHeight());
+    public void constructor3() {
+        this.instance = new Scale(300, 200, Scale.Mode.ASPECT_FIT_HEIGHT);
+        assertEquals(Scale.Mode.ASPECT_FIT_HEIGHT, instance.getMode());
+        assertEquals(300, (long) instance.getWidth());
+        assertEquals(200, (long) instance.getHeight());
     }
 
     @Test
-    public void testGetReductionFactor() {
+    public void getReductionFactor() {
         Dimension size = new Dimension(300, 300);
 
         // FULL
-        assertEquals(0, scale.getReductionFactor(size, 999).factor);
+        assertEquals(0, instance.getReductionFactor(size, 999).factor);
 
         // ASPECT_FIT_WIDTH
-        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
-        scale.setWidth(145);
-        scale.setHeight(145);
-        assertEquals(1, scale.getReductionFactor(size, 999).factor);
+        instance.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        instance.setWidth(145);
+        instance.setHeight(145);
+        assertEquals(1, instance.getReductionFactor(size, 999).factor);
 
         // ASPECT_FIT_HEIGHT
-        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
-        scale.setWidth(145);
-        scale.setHeight(145);
-        assertEquals(1, scale.getReductionFactor(size, 999).factor);
+        instance.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        instance.setWidth(145);
+        instance.setHeight(145);
+        assertEquals(1, instance.getReductionFactor(size, 999).factor);
 
         // ASPECT_FIT_INSIDE
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        scale.setWidth(145);
-        scale.setHeight(145);
-        assertEquals(1, scale.getReductionFactor(size, 999).factor);
+        instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        instance.setWidth(145);
+        instance.setHeight(145);
+        assertEquals(1, instance.getReductionFactor(size, 999).factor);
 
         // NON_ASPECT_FILL
-        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
-        scale.setWidth(145);
-        scale.setHeight(145);
-        assertEquals(0, scale.getReductionFactor(size, 999).factor);
+        instance.setMode(Scale.Mode.NON_ASPECT_FILL);
+        instance.setWidth(145);
+        instance.setHeight(145);
+        assertEquals(0, instance.getReductionFactor(size, 999).factor);
 
         // percent
-        scale = new Scale();
-        scale.setPercent(0.45f);
-        assertEquals(1, scale.getReductionFactor(size, 999).factor);
-        scale.setPercent(0.2f);
-        assertEquals(2, scale.getReductionFactor(size, 999).factor);
-        assertEquals(1, scale.getReductionFactor(size, 1).factor);
+        instance = new Scale();
+        instance.setPercent(0.45f);
+        assertEquals(1, instance.getReductionFactor(size, 999).factor);
+        instance.setPercent(0.2f);
+        assertEquals(2, instance.getReductionFactor(size, 999).factor);
+        assertEquals(1, instance.getReductionFactor(size, 1).factor);
     }
 
     @Test
-    public void testGetResultingScale() {
+    public void getResultingScale() {
         final Dimension fullSize = new Dimension(300, 200);
         final float fudge = 0.0000001f;
 
-        scale.setMode(Scale.Mode.FULL);
-        assertEquals(1f, scale.getResultingScale(fullSize), fudge);
+        instance.setMode(Scale.Mode.FULL);
+        assertEquals(1f, instance.getResultingScale(fullSize), fudge);
 
         // ASPECT_FIT_WIDTH
-        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
-        scale.setWidth(200);
-        scale.setHeight(100);
-        assertEquals(0.6666667f, scale.getResultingScale(fullSize), fudge);
+        instance.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        instance.setWidth(200);
+        instance.setHeight(100);
+        assertEquals(0.6666667f, instance.getResultingScale(fullSize), fudge);
 
         // ASPECT_FIT_HEIGHT
-        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
-        scale.setWidth(200);
-        scale.setHeight(100);
-        assertEquals(0.5f, scale.getResultingScale(fullSize), fudge);
+        instance.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        instance.setWidth(200);
+        instance.setHeight(100);
+        assertEquals(0.5f, instance.getResultingScale(fullSize), fudge);
 
         // ASPECT_FIT_INSIDE
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        scale.setWidth(200);
-        scale.setHeight(100);
-        assertEquals(0.5f, scale.getResultingScale(fullSize), fudge);
+        instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        instance.setWidth(200);
+        instance.setHeight(100);
+        assertEquals(0.5f, instance.getResultingScale(fullSize), fudge);
 
         // NON_ASPECT_FILL
-        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
-        scale.setWidth(200);
-        scale.setHeight(100);
-        assertNull(scale.getResultingScale(fullSize));
+        instance.setMode(Scale.Mode.NON_ASPECT_FILL);
+        instance.setWidth(200);
+        instance.setHeight(100);
+        assertNull(instance.getResultingScale(fullSize));
 
         // percent
-        scale = new Scale();
-        scale.setPercent(0.5f);
-        assertEquals(0.5f, scale.getResultingScale(fullSize), fudge);
+        instance = new Scale();
+        instance.setPercent(0.5f);
+        assertEquals(0.5f, instance.getResultingScale(fullSize), fudge);
     }
 
     @Test
-    public void testGetResultingSize() {
+    public void getResultingSize() {
         final Dimension fullSize = new Dimension(600, 400);
 
-        scale.setMode(Scale.Mode.FULL);
-        assertEquals(fullSize, scale.getResultingSize(fullSize));
+        instance.setMode(Scale.Mode.FULL);
+        assertEquals(fullSize, instance.getResultingSize(fullSize));
 
         // ASPECT_FIT_WIDTH
-        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        instance.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         // down
-        scale.setWidth(400);
-        scale.setHeight(200);
-        assertEquals(new Dimension(400, 267), scale.getResultingSize(fullSize));
+        instance.setWidth(400);
+        instance.setHeight(200);
+        assertEquals(new Dimension(400, 267), instance.getResultingSize(fullSize));
         // up
-        scale.setWidth(1200);
-        scale.setHeight(600);
-        assertEquals(new Dimension(1200, 800), scale.getResultingSize(fullSize));
+        instance.setWidth(1200);
+        instance.setHeight(600);
+        assertEquals(new Dimension(1200, 800), instance.getResultingSize(fullSize));
 
         // ASPECT_FIT_HEIGHT
-        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        instance.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
         // down
-        scale.setWidth(400);
-        scale.setHeight(200);
-        assertEquals(new Dimension(300, 200), scale.getResultingSize(fullSize));
+        instance.setWidth(400);
+        instance.setHeight(200);
+        assertEquals(new Dimension(300, 200), instance.getResultingSize(fullSize));
         // up
-        scale.setWidth(1200);
-        scale.setHeight(600);
-        assertEquals(new Dimension(900, 600), scale.getResultingSize(fullSize));
+        instance.setWidth(1200);
+        instance.setHeight(600);
+        assertEquals(new Dimension(900, 600), instance.getResultingSize(fullSize));
 
         // ASPECT_FIT_INSIDE
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         // down
-        scale.setWidth(400);
-        scale.setHeight(200);
-        assertEquals(new Dimension(300, 200), scale.getResultingSize(fullSize));
+        instance.setWidth(400);
+        instance.setHeight(200);
+        assertEquals(new Dimension(300, 200), instance.getResultingSize(fullSize));
         // up
-        scale.setWidth(1200);
-        scale.setHeight(600);
-        assertEquals(new Dimension(900, 600), scale.getResultingSize(fullSize));
+        instance.setWidth(1200);
+        instance.setHeight(600);
+        assertEquals(new Dimension(900, 600), instance.getResultingSize(fullSize));
 
         // NON_ASPECT_FILL
-        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
+        instance.setMode(Scale.Mode.NON_ASPECT_FILL);
         // down
-        scale.setWidth(400);
-        scale.setHeight(200);
-        assertEquals(new Dimension(400, 200), scale.getResultingSize(fullSize));
+        instance.setWidth(400);
+        instance.setHeight(200);
+        assertEquals(new Dimension(400, 200), instance.getResultingSize(fullSize));
         // up
-        scale.setWidth(1200);
-        scale.setHeight(600);
-        assertEquals(new Dimension(1200, 600), scale.getResultingSize(fullSize));
+        instance.setWidth(1200);
+        instance.setHeight(600);
+        assertEquals(new Dimension(1200, 600), instance.getResultingSize(fullSize));
 
         // percent
-        scale = new Scale();
+        instance = new Scale();
         // down
-        scale.setPercent(0.5f);
-        assertEquals(new Dimension(300, 200), scale.getResultingSize(fullSize));
+        instance.setPercent(0.5f);
+        assertEquals(new Dimension(300, 200), instance.getResultingSize(fullSize));
         // up
-        scale.setPercent(1.5f);
-        assertEquals(new Dimension(900, 600), scale.getResultingSize(fullSize));
+        instance.setPercent(1.5f);
+        assertEquals(new Dimension(900, 600), instance.getResultingSize(fullSize));
     }
 
     @Test
-    public void testHasEffect() {
-        scale.setMode(Scale.Mode.FULL);
-        assertFalse(scale.hasEffect());
-        scale = new Scale(1f);
-        assertFalse(scale.hasEffect());
-        scale = new Scale(0.5f);
-        assertTrue(scale.hasEffect());
-        scale = new Scale(100, 100, Scale.Mode.ASPECT_FIT_INSIDE);
-        assertTrue(scale.hasEffect());
-        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
-        assertTrue(scale.hasEffect());
-        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
-        assertTrue(scale.hasEffect());
+    public void hasEffect() {
+        instance.setMode(Scale.Mode.FULL);
+        assertFalse(instance.hasEffect());
+        instance = new Scale(1f);
+        assertFalse(instance.hasEffect());
+        instance = new Scale(0.5f);
+        assertTrue(instance.hasEffect());
+        instance = new Scale(100, 100, Scale.Mode.ASPECT_FIT_INSIDE);
+        assertTrue(instance.hasEffect());
+        instance.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        assertTrue(instance.hasEffect());
+        instance.setMode(Scale.Mode.NON_ASPECT_FILL);
+        assertTrue(instance.hasEffect());
     }
 
     @Test
-    public void testHasEffectWithArguments() {
+    public void hasEffectWithArguments() {
         final Dimension fullSize = new Dimension(600, 400);
         final OperationList opList = new OperationList(
                 new Identifier("cats"), Format.JPG, new Crop(0, 0, 300, 200));
 
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        scale.setPercent(0.5f);
-        assertTrue(scale.hasEffect(fullSize, opList));
+        instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        instance.setPercent(0.5f);
+        assertTrue(instance.hasEffect(fullSize, opList));
 
-        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
-        scale.setWidth(300);
-        assertFalse(scale.hasEffect(fullSize, opList));
+        instance.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        instance.setWidth(300);
+        assertFalse(instance.hasEffect(fullSize, opList));
 
-        scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
-        scale.setHeight(200);
-        assertFalse(scale.hasEffect(fullSize, opList));
+        instance = new Scale();
+        instance.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        instance.setHeight(200);
+        assertFalse(instance.hasEffect(fullSize, opList));
 
-        scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        scale.setWidth(300);
-        scale.setHeight(200);
-        assertFalse(scale.hasEffect(fullSize, opList));
+        instance = new Scale();
+        instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        instance.setWidth(300);
+        instance.setHeight(200);
+        assertFalse(instance.hasEffect(fullSize, opList));
 
-        scale = new Scale();
-        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
-        scale.setWidth(300);
-        scale.setHeight(200);
-        assertFalse(scale.hasEffect(fullSize, opList));
+        instance = new Scale();
+        instance.setMode(Scale.Mode.NON_ASPECT_FILL);
+        instance.setWidth(300);
+        instance.setHeight(200);
+        assertFalse(instance.hasEffect(fullSize, opList));
     }
 
     @Test
-    public void testIsUp() {
+    public void isUp() {
         Dimension size = new Dimension(600, 400);
         // Percent
-        scale = new Scale();
-        scale.setPercent(0.5f); // down
-        assertFalse(scale.isUp(size));
-        scale.setPercent(1f); // even
-        assertFalse(scale.isUp(size));
-        scale.setPercent(1.2f); // up
-        assertTrue(scale.isUp(size));
+        instance = new Scale();
+        instance.setPercent(0.5f); // down
+        assertFalse(instance.isUp(size));
+        instance.setPercent(1f); // even
+        assertFalse(instance.isUp(size));
+        instance.setPercent(1.2f); // up
+        assertTrue(instance.isUp(size));
 
         // FULL
-        scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
-        assertFalse(scale.isUp(size));
+        instance = new Scale();
+        instance.setMode(Scale.Mode.FULL);
+        assertFalse(instance.isUp(size));
 
         // ASPECT_FIT_WIDTH
-        scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
-        scale.setWidth(300); // down
-        assertFalse(scale.isUp(size));
-        scale.setWidth(600); // even
-        assertFalse(scale.isUp(size));
-        scale.setWidth(800); // up
-        assertTrue(scale.isUp(size));
+        instance = new Scale();
+        instance.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        instance.setWidth(300); // down
+        assertFalse(instance.isUp(size));
+        instance.setWidth(600); // even
+        assertFalse(instance.isUp(size));
+        instance.setWidth(800); // up
+        assertTrue(instance.isUp(size));
 
         // ASPECT_FIT_HEIGHT
-        scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
-        scale.setHeight(200); // down
-        assertFalse(scale.isUp(size));
-        scale.setHeight(400); // even
-        assertFalse(scale.isUp(size));
-        scale.setHeight(600); // up
-        assertTrue(scale.isUp(size));
+        instance = new Scale();
+        instance.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        instance.setHeight(200); // down
+        assertFalse(instance.isUp(size));
+        instance.setHeight(400); // even
+        assertFalse(instance.isUp(size));
+        instance.setHeight(600); // up
+        assertTrue(instance.isUp(size));
 
         // ASPECT_FIT_INSIDE
-        scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        scale.setWidth(300); // down
-        scale.setHeight(200);
-        assertFalse(scale.isUp(size));
-        scale.setWidth(600); // even
-        scale.setHeight(400);
-        assertFalse(scale.isUp(size));
-        scale.setWidth(800); // up
-        scale.setHeight(600);
-        assertTrue(scale.isUp(size));
+        instance = new Scale();
+        instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        instance.setWidth(300); // down
+        instance.setHeight(200);
+        assertFalse(instance.isUp(size));
+        instance.setWidth(600); // even
+        instance.setHeight(400);
+        assertFalse(instance.isUp(size));
+        instance.setWidth(800); // up
+        instance.setHeight(600);
+        assertTrue(instance.isUp(size));
 
         // NON_ASPECT_FILL
-        scale = new Scale();
-        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
-        scale.setWidth(300); // down
-        scale.setHeight(200);
-        assertFalse(scale.isUp(size));
-        scale.setWidth(600); // even
-        scale.setHeight(400);
-        assertFalse(scale.isUp(size));
-        scale.setWidth(800); // up
-        scale.setHeight(600);
-        assertTrue(scale.isUp(size));
-        scale.setWidth(500);
-        scale.setHeight(800);
-        assertTrue(scale.isUp(size));
-        scale.setWidth(900);
-        scale.setHeight(300);
-        assertTrue(scale.isUp(size));
+        instance = new Scale();
+        instance.setMode(Scale.Mode.NON_ASPECT_FILL);
+        instance.setWidth(300); // down
+        instance.setHeight(200);
+        assertFalse(instance.isUp(size));
+        instance.setWidth(600); // even
+        instance.setHeight(400);
+        assertFalse(instance.isUp(size));
+        instance.setWidth(800); // up
+        instance.setHeight(600);
+        assertTrue(instance.isUp(size));
+        instance.setWidth(500);
+        instance.setHeight(800);
+        assertTrue(instance.isUp(size));
+        instance.setWidth(900);
+        instance.setHeight(300);
+        assertTrue(instance.isUp(size));
     }
 
     @Test
-    public void testSetHeight() {
+    public void setHeight() {
         Integer height = 50;
-        this.scale.setHeight(height);
-        assertEquals(height, this.scale.getHeight());
+        this.instance.setHeight(height);
+        assertEquals(height, this.instance.getHeight());
     }
 
     @Test
-    public void testSetNegativeHeight() {
+    public void setHeightWithNegativeHeight() {
         try {
-            this.scale.setHeight(-1);
+            this.instance.setHeight(-1);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Height must be a positive integer", e.getMessage());
@@ -345,9 +345,9 @@ public class ScaleTest extends BaseTest {
     }
 
     @Test
-    public void testSetZeroHeight() {
+    public void setHeightWithZeroHeight() {
         try {
-            this.scale.setHeight(0);
+            this.instance.setHeight(0);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Height must be a positive integer", e.getMessage());
@@ -355,23 +355,23 @@ public class ScaleTest extends BaseTest {
     }
 
     @Test
-    public void testSetNullHeight() {
-        this.scale.setHeight(null);
-        assertNull(scale.getHeight());
+    public void setHeightWithNullHeight() {
+        this.instance.setHeight(null);
+        assertNull(instance.getHeight());
     }
 
     @Test
-    public void testSetPercent() {
+    public void setPercent() {
         float percent = 0.5f;
-        this.scale.setPercent(percent);
-        assertEquals(percent, scale.getPercent(), 0.000001f);
-        assertEquals(Scale.Mode.ASPECT_FIT_INSIDE, scale.getMode());
+        this.instance.setPercent(percent);
+        assertEquals(percent, instance.getPercent(), 0.000001f);
+        assertEquals(Scale.Mode.ASPECT_FIT_INSIDE, instance.getMode());
     }
 
     @Test
-    public void testSetNegativePercent() {
+    public void setPercentWithNegativePercent() {
         try {
-            this.scale.setPercent(-0.5f);
+            this.instance.setPercent(-0.5f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Percent must be greater than zero", e.getMessage());
@@ -379,9 +379,9 @@ public class ScaleTest extends BaseTest {
     }
 
     @Test
-    public void testSetZeroPercent() {
+    public void setPercentWithZeroPercent() {
         try {
-            this.scale.setPercent(0f);
+            this.instance.setPercent(0f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Percent must be greater than zero", e.getMessage());
@@ -389,22 +389,22 @@ public class ScaleTest extends BaseTest {
     }
 
     @Test
-    public void testSetNullPercent() {
-        this.scale.setPercent(null);
-        assertNull(scale.getPercent());
+    public void setPercentWithNullPercent() {
+        this.instance.setPercent(null);
+        assertNull(instance.getPercent());
     }
 
     @Test
-    public void testSetWidth() {
+    public void setWidth() {
         Integer width = 50;
-        this.scale.setWidth(width);
-        assertEquals(width, this.scale.getWidth());
+        this.instance.setWidth(width);
+        assertEquals(width, this.instance.getWidth());
     }
 
     @Test
-    public void testSetNegativeWidth() {
+    public void setWidthWithNegativeWidth() {
         try {
-            this.scale.setWidth(-1);
+            this.instance.setWidth(-1);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Width must be a positive integer", e.getMessage());
@@ -412,9 +412,9 @@ public class ScaleTest extends BaseTest {
     }
 
     @Test
-    public void testSetZeroWidth() {
+    public void setWidthWithZeroWidth() {
         try {
-            this.scale.setWidth(0);
+            this.instance.setWidth(0);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Width must be a positive integer", e.getMessage());
@@ -422,24 +422,36 @@ public class ScaleTest extends BaseTest {
     }
 
     @Test
-    public void testSetNullWidth() {
-        this.scale.setWidth(null);
-        assertNull(scale.getWidth());
+    public void setWidthWithNullWidth() {
+        this.instance.setWidth(null);
+        assertNull(instance.getWidth());
     }
 
     @Test
-    public void testToMap() {
-        scale.setWidth(50);
-        scale.setHeight(45);
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+    public void toMap() {
+        instance.setWidth(50);
+        instance.setHeight(45);
+        instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
 
         Dimension fullSize = new Dimension(100, 100);
-        Dimension resultingSize = scale.getResultingSize(fullSize);
+        Dimension resultingSize = instance.getResultingSize(fullSize);
 
-        Map<String,Object> map = scale.toMap(fullSize);
-        assertEquals(scale.getClass().getSimpleName(), map.get("class"));
+        Map<String,Object> map = instance.toMap(fullSize);
+        assertEquals(instance.getClass().getSimpleName(), map.get("class"));
         assertEquals(resultingSize.width, map.get("width"));
         assertEquals(resultingSize.height, map.get("height"));
+    }
+
+    @Test
+    public void toMapReturnsUnmodifiableMap() {
+        Dimension fullSize = new Dimension(100, 100);
+        Map<String,Object> map = instance.toMap(fullSize);
+        try {
+            map.put("test", "test");
+            fail("Expected exception");
+        } catch (UnsupportedOperationException e) {
+            // pass
+        }
     }
 
     @Test

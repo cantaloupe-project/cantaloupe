@@ -103,6 +103,18 @@ public class EncodeTest extends BaseTest {
         assertEquals(10, map.get("max_sample_size"));
     }
 
+    @Test
+    public void toMapReturnsUnmodifiableMap() {
+        Dimension fullSize = new Dimension(100, 100);
+        Map<String,Object> map = instance.toMap(fullSize);
+        try {
+            map.put("test", "test");
+            fail("Expected exception");
+        } catch (UnsupportedOperationException e) {
+            // pass
+        }
+    }
+
     /* toString() */
 
     @Test

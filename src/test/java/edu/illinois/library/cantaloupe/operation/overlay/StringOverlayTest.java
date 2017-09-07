@@ -34,14 +34,14 @@ public class StringOverlayTest extends BaseTest {
     }
 
     @Test
-    public void testHasEffect() {
+    public void hasEffect() {
         assertTrue(instance.hasEffect());
         instance.setString("");
         assertFalse(instance.hasEffect());
     }
 
     @Test
-    public void testToMap() {
+    public void toMap() {
         Dimension fullSize = new Dimension(100, 100);
 
         Map<String,Object> map = instance.toMap(fullSize);
@@ -61,6 +61,18 @@ public class StringOverlayTest extends BaseTest {
         assertEquals(instance.getStrokeColor().toRGBAHex(),
                 map.get("stroke_color"));
         assertEquals(5f, map.get("stroke_width"));
+    }
+
+    @Test
+    public void toMapReturnsUnmodifiableMap() {
+        Dimension fullSize = new Dimension(100, 100);
+        Map<String,Object> map = instance.toMap(fullSize);
+        try {
+            map.put("test", "test");
+            fail("Expected exception");
+        } catch (UnsupportedOperationException e) {
+            // pass
+        }
     }
 
     @Test

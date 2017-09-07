@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -120,7 +121,7 @@ public class ImageOverlay extends Overlay implements Operation {
         map.put("filename", getIdentifier());
         map.put("position", getPosition().toString());
         map.put("inset", getInset());
-        return map;
+        return Collections.unmodifiableMap(map);
     }
 
     /**

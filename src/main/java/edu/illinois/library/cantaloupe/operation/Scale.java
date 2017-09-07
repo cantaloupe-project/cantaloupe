@@ -5,6 +5,7 @@ import com.mortennobel.imagescaling.ResampleFilters;
 import edu.illinois.library.cantaloupe.util.StringUtil;
 
 import java.awt.Dimension;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -83,11 +84,11 @@ public class Scale implements Operation {
             final Map<String,Object> map = new HashMap<>();
             map.put("class", Filter.class.getSimpleName());
             map.put("name", getName());
-            return map;
+            return Collections.unmodifiableMap(map);
         }
 
         /**
-         * @return Equivalent ResampleFilter instance.
+         * @return Equivalent {@link ResampleFilter} instance.
          */
         public ResampleFilter toResampleFilter() {
             return resampleFilter;
@@ -387,7 +388,7 @@ public class Scale implements Operation {
         map.put("class", Scale.class.getSimpleName());
         map.put("width", resultingSize.width);
         map.put("height", resultingSize.height);
-        return map;
+        return Collections.unmodifiableMap(map);
     }
 
     /**

@@ -13,47 +13,59 @@ import static org.junit.Assert.*;
 
 public class TransposeTest extends BaseTest {
 
-    private Transpose transpose;
+    private Transpose instance;
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        this.transpose = Transpose.HORIZONTAL;
+        this.instance = Transpose.HORIZONTAL;
     }
 
     @Test
-    public void testGetEffectiveSize() {
+    public void getEffectiveSize() {
         Dimension fullSize = new Dimension(200, 200);
         assertEquals(fullSize, Transpose.VERTICAL.getResultingSize(fullSize));
         assertEquals(fullSize, Transpose.HORIZONTAL.getResultingSize(fullSize));
     }
 
     @Test
-    public void testHasEffect() {
-        assertTrue(transpose.hasEffect());
+    public void hasEffect() {
+        assertTrue(instance.hasEffect());
     }
 
     @Test
-    public void testHasEffectWithArguments() {
+    public void hasEffectWithArguments() {
         Dimension fullSize = new Dimension(600, 400);
         OperationList opList = new OperationList(new Identifier("cats"),
                 Format.JPG, new Crop(0, 0, 300, 200));
-        assertTrue(transpose.hasEffect(fullSize, opList));
+        assertTrue(instance.hasEffect(fullSize, opList));
     }
 
     @Test
-    public void testToMap() {
-        Map<String,Object> map = transpose.toMap(new Dimension(0, 0));
-        assertEquals(transpose.getClass().getSimpleName(), map.get("class"));
+    public void toMap() {
+        Map<String,Object> map = instance.toMap(new Dimension(0, 0));
+        assertEquals(instance.getClass().getSimpleName(), map.get("class"));
         assertEquals("horizontal", map.get("axis"));
     }
 
     @Test
+    public void toMapReturnsUnmodifiableMap() {
+        Dimension fullSize = new Dimension(100, 100);
+        Map<String,Object> map = instance.toMap(fullSize);
+        try {
+            map.put("test", "test");
+            fail("Expected exception");
+        } catch (UnsupportedOperationException e) {
+            // pass
+        }
+    }
+
+    @Test
     public void testToString() {
-        transpose = Transpose.HORIZONTAL;
-        assertEquals("h", transpose.toString());
-        transpose = Transpose.VERTICAL;
-        assertEquals("v", transpose.toString());
+        instance = Transpose.HORIZONTAL;
+        assertEquals("h", instance.toString());
+        instance = Transpose.VERTICAL;
+        assertEquals("v", instance.toString());
     }
 
 }

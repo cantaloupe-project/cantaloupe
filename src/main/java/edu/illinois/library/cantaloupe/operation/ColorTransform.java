@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.operation;
 
 import java.awt.Dimension;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,7 +37,7 @@ public enum ColorTransform implements Operation {
         final Map<String,Object> map = new HashMap<>();
         map.put("class", getClass().getSimpleName());
         map.put("type", this.name().toLowerCase());
-        return map;
+        return Collections.unmodifiableMap(map);
     }
 
     @Override

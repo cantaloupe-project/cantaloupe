@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -89,7 +90,7 @@ public class Redaction implements Operation {
         map.put("y", getRegion().y);
         map.put("width", getRegion().width);
         map.put("height", getRegion().height);
-        return map;
+        return Collections.unmodifiableMap(map);
     }
 
     /**

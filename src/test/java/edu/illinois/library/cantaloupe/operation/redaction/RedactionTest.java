@@ -24,7 +24,7 @@ public class RedactionTest extends BaseTest {
     }
 
     @Test
-    public void testGetResultingRegion() {
+    public void getResultingRegion() {
         Dimension sourceSize = new Dimension(500, 500);
 
         // redaction within source image bounds
@@ -44,13 +44,13 @@ public class RedactionTest extends BaseTest {
     }
 
     @Test
-    public void testGetResultingSize() {
+    public void getResultingSize() {
         Dimension fullSize = new Dimension(500, 500);
         assertEquals(fullSize, instance.getResultingSize(fullSize));
     }
 
     @Test
-    public void testHasEffect() {
+    public void hasEffect() {
         assertTrue(instance.hasEffect());
 
         // zero width
@@ -67,7 +67,7 @@ public class RedactionTest extends BaseTest {
     }
 
     @Test
-    public void testIsNoOpWithArguments() {
+    public void isNoOpWithArguments() {
         final Dimension fullSize = new Dimension(600, 400);
         final OperationList opList = new OperationList(
                 new Identifier("cats"), Format.JPG);
@@ -82,7 +82,7 @@ public class RedactionTest extends BaseTest {
     }
 
     @Test
-    public void testToMap() {
+    public void toMap() {
         Dimension fullSize = new Dimension(500, 500);
 
         Map<String,Object> map = instance.toMap(fullSize);
@@ -91,6 +91,18 @@ public class RedactionTest extends BaseTest {
         assertEquals(60, map.get("y"));
         assertEquals(200, map.get("width"));
         assertEquals(100, map.get("height"));
+    }
+
+    @Test
+    public void toMapReturnsUnmodifiableMap() {
+        Dimension fullSize = new Dimension(100, 100);
+        Map<String,Object> map = instance.toMap(fullSize);
+        try {
+            map.put("test", "test");
+            fail("Expected exception");
+        } catch (UnsupportedOperationException e) {
+            // pass
+        }
     }
 
     @Test

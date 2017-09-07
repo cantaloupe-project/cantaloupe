@@ -51,6 +51,18 @@ public class ColorTransformTest extends BaseTest {
     }
 
     @Test
+    public void toMapReturnsUnmodifiableMap() {
+        Dimension fullSize = new Dimension(100, 100);
+        Map<String,Object> map = ColorTransform.GRAY.toMap(fullSize);
+        try {
+            map.put("test", "test");
+            fail("Expected exception");
+        } catch (UnsupportedOperationException e) {
+            // pass
+        }
+    }
+
+    @Test
     public void testToString() {
         assertEquals("bitonal", ColorTransform.BITONAL.toString());
         assertEquals("gray", ColorTransform.GRAY.toString());

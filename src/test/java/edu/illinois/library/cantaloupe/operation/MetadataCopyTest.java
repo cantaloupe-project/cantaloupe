@@ -34,7 +34,7 @@ public class MetadataCopyTest extends BaseTest {
     }
 
     @Test
-    public void testhasEffectWithArguments() {
+    public void testHasEffectWithArguments() {
         Dimension fullSize = new Dimension(600, 400);
         OperationList opList = new OperationList(
                 new Identifier("cats"),
@@ -48,6 +48,18 @@ public class MetadataCopyTest extends BaseTest {
         Dimension fullSize = new Dimension(500, 500);
         Map<String,Object> map = instance.toMap(fullSize);
         assertEquals(instance.getClass().getSimpleName(), map.get("class"));
+    }
+
+    @Test
+    public void toMapReturnsUnmodifiableMap() {
+        Dimension fullSize = new Dimension(100, 100);
+        Map<String,Object> map = instance.toMap(fullSize);
+        try {
+            map.put("test", "test");
+            fail("Expected exception");
+        } catch (UnsupportedOperationException e) {
+            // pass
+        }
     }
 
     @Test

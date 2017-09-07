@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.operation;
 import edu.illinois.library.cantaloupe.util.StringUtil;
 
 import java.awt.Dimension;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,7 +54,7 @@ public class Rotate implements Operation {
     /**
      * @param fullSize
      * @return Resulting dimensions when the scale is applied to the given full
-     * size.
+     *         size.
      */
     @Override
     public Dimension getResultingSize(Dimension fullSize) {
@@ -108,7 +109,7 @@ public class Rotate implements Operation {
         final Map<String,Object> map = new HashMap<>();
         map.put("class", getClass().getSimpleName());
         map.put("degrees", getDegrees());
-        return map;
+        return Collections.unmodifiableMap(map);
     }
 
     /**

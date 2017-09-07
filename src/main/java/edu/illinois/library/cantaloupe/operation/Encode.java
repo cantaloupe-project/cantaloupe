@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 
 import java.awt.Dimension;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -175,7 +176,7 @@ public class Encode implements Operation {
         map.put("interlace", isInterlacing());
         map.put("quality", getQuality());
         map.put("max_sample_size", getMaxSampleSize());
-        return map;
+        return Collections.unmodifiableMap(map);
     }
 
     /**

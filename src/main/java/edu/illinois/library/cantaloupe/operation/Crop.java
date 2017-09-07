@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.util.StringUtil;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -79,7 +80,7 @@ public class Crop implements Operation {
      *
      * @param orientation Orientation of the image. If <code>null</code>, the
      *                    invocation will be a no-op.
-     * @param fullSize Dimensions of the un-rotated image.
+     * @param fullSize    Dimensions of the un-rotated image.
      */
     public void applyOrientation(Orientation orientation, Dimension fullSize) {
         if (orientation == null) {
@@ -143,10 +144,10 @@ public class Crop implements Operation {
      */
     public Rectangle getRectangle(Dimension imageSize, ReductionFactor rf) {
         final double scale = rf.getScale();
-        final double regionX = this.getX() * scale;
-        final double regionY = this.getY() * scale;
-        final double regionWidth = this.getWidth() * scale;
-        final double regionHeight = this.getHeight() * scale;
+        final double regionX = getX() * scale;
+        final double regionY = getY() * scale;
+        final double regionWidth = getWidth() * scale;
+        final double regionHeight = getHeight() * scale;
 
         int x, y, requestedWidth, requestedHeight, croppedWidth,
                 croppedHeight;
@@ -195,8 +196,8 @@ public class Crop implements Operation {
 
     /**
      * @return The width of the operation. If {@link #getUnit()} returns
-     * {@link Unit#PERCENT}, this will be a percentage of the full image width
-     * between 0 and 1.
+     *         {@link Unit#PERCENT}, this will be a percentage of the full
+     *         image width between 0 and 1.
      */
     public float getWidth() {
         return width;
@@ -213,8 +214,8 @@ public class Crop implements Operation {
 
     /**
      * @return The top bounding coordinate of the operation. If
-     * {@link #getUnit()} returns {@link Unit#PERCENT}, this will be a
-     * percentage of the full image height between 0 and 1.
+     *         {@link #getUnit()} returns {@link Unit#PERCENT}, this will be a
+     *         percentage of the full image height between 0 and 1.
      */
     public float getY() {
         return y;
@@ -222,10 +223,10 @@ public class Crop implements Operation {
 
     /**
      * @return Whether the crop specifies the full source area, i.e. whether it
-     * is effectively a no-op.
+     *         is effectively a no-op.
      */
     public boolean isFull() {
-        return this.isFull;
+        return isFull;
     }
 
     /**
@@ -235,9 +236,9 @@ public class Crop implements Operation {
     public boolean hasEffect() {
         if (this.isFull()) {
             return false;
-        } else if (Unit.PERCENT.equals(this.getUnit()) &&
-                Math.abs(this.getWidth() - 1f) < 0.000001f &&
-                Math.abs(this.getHeight() - 1f) < 0.000001f) {
+        } else if (Unit.PERCENT.equals(getUnit()) &&
+                Math.abs(getWidth() - 1f) < 0.000001f &&
+                Math.abs(getHeight() - 1f) < 0.000001f) {
             return false;
         }
         return true;
@@ -320,13 +321,13 @@ public class Crop implements Operation {
     @Override
     public Map<String,Object> toMap(Dimension fullSize) {
         final Rectangle rect = getRectangle(fullSize);
-        final HashMap<String,Object> map = new HashMap<>();
+        final Map<String,Object> map = new HashMap<>();
         map.put("class", getClass().getSimpleName());
         map.put("x", rect.x);
         map.put("y", rect.y);
         map.put("width", rect.width);
         map.put("height", rect.height);
-        return map;
+        return Collections.unmodifiableMap(map);
     }
 
     /**
