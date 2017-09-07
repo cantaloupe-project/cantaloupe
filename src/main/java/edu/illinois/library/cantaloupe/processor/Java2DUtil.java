@@ -43,6 +43,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -79,7 +80,7 @@ public final class Java2DUtil {
     static BufferedImage applyRedactions(final BufferedImage baseImage,
                                          final Crop appliedCrop,
                                          final ReductionFactor reductionFactor,
-                                         final List<Redaction> redactions) {
+                                         final Collection<Redaction> redactions) {
         if (baseImage != null && redactions.size() > 0) {
             final Stopwatch watch = new Stopwatch();
             final Dimension imageSize = new Dimension(
