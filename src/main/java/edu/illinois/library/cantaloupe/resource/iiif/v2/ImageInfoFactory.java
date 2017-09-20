@@ -76,7 +76,7 @@ class ImageInfoFactory {
 
         final int maxReductionFactor =
                 ImageInfoUtil.maxReductionFactor(virtualSize, minSize);
-        for (double i = 2; i <= Math.pow(2, maxReductionFactor); i *= 2) {
+        for (double i = 1; i <= Math.pow(2, maxReductionFactor); i *= 2) {
             final int width = (int) Math.round(virtualSize.width / i);
             final int height = (int) Math.round(virtualSize.height / i);
             if (width < minSize || height < minSize) {
