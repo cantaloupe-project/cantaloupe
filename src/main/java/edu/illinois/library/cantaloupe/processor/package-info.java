@@ -6,8 +6,8 @@
  * {@link edu.illinois.library.cantaloupe.operation.Operation operations} from
  * an {@link edu.illinois.library.cantaloupe.operation.OperationList} in
  * order, and writes the result to an {@link java.io.OutputStream}. In this way
- * it is more-or-less source- and output-agnostic (it doesn't care where the
- * source image is coming from or going to)</p>
+ * it is source- and output-agnostic (it doesn't care where the source image is
+ * coming from or going to).</p>
  *
  * <h3>Reading from files vs. streams</h3>
  *
@@ -36,9 +36,8 @@
  * processor.</p>
  *
  * <p>Format availability (or "awareness") is governed by the
- * {@link edu.illinois.library.cantaloupe.image.Format} enum. If this does not
- * already contain the formats a processor wishes to support, it will need to
- * be added.</p>
+ * {@link edu.illinois.library.cantaloupe.image.Format} enum. If a processor
+ * wishes to support a format not contained therein, it must be added.</p>
  *
  * <h3>Other means of adding format support</h3>
  *
@@ -46,10 +45,9 @@
  * application. However, note that the {@link javax.imageio.ImageIO} framework
  * used by {@link edu.illinois.library.cantaloupe.processor.Java2dProcessor}
  * and {@link edu.illinois.library.cantaloupe.processor.JaiProcessor} supports
- * format plugins, which are automatically available in these processors.
+ * format plugins, which are trivial to make available in these processors.
  * ImageIO also supports image access via an
  * {@link javax.imageio.stream.ImageInputStream ImageInputStream}, which can
- * offer major efficiency advantages. Finally, being Java, an ImageIO plugin
- * can be bundled in so there are no external dependencies.</p>
+ * offer major efficiency advantages.</p>
  */
 package edu.illinois.library.cantaloupe.processor;

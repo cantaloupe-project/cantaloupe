@@ -213,13 +213,14 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             this.toRemove = toRemove;
         }
 
+        /**
+         * N.B.: This implementation can cope with being called multiple times,
+         * which is important. See inline doc in
+         * {@link edu.illinois.library.cantaloupe.resource.ImageRepresentation#write}
+         * for more info.
+         */
         @Override
         public void close() throws IOException {
-            // This check prevents double-closing. Clients will frequently wrap
-            // this stream in a TeeOutputStream, which they can't close due to
-            // Restlet's OutputRepresentation.write() API contract, so it (the
-            // tee stream) gets detected and double-closed by the finalizer.
-            // See ImageRepresentation.write() for more info.
             if (!isClosed) {
                 isClosed = true;
                 try {
@@ -276,8 +277,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
     // Algorithm used for hashing identifiers to create filenames & pathnames.
     // Will be passed to MessageDigest.getInstance(). MD5 is chosen for its
-    // practical combination of efficiency and collision resistance.
-    // N.B. filenameSafe() must be updated when changing this.
+    // efficiency. A collision here and there is not a big deal.
     private static final String HASH_ALGORITHM = "MD5";
     private static final String SOURCE_IMAGE_FOLDER = "source";
     private static final String DERIVATIVE_IMAGE_FOLDER = "image";
@@ -395,7 +395,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     /**
      * @return Pathname of the derivative image cache folder, or null if
      *         {@link Key#FILESYSTEMCACHE_PATHNAME} is not set.
-     * @throws CacheException
      */
     static String rootDerivativeImagePathname() throws CacheException {
         return rootPathname() + File.separator + DERIVATIVE_IMAGE_FOLDER;
@@ -404,7 +403,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     /**
      * @return Pathname of the image info cache folder, or null if
      *         {@link Key#FILESYSTEMCACHE_PATHNAME} is not set.
-     * @throws CacheException
      */
     static String rootInfoPathname() throws CacheException {
         return rootPathname() + File.separator + INFO_FOLDER;
@@ -414,7 +412,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @return Pathname of the source image cache folder, or null if
      *         {@link Key#FILESYSTEMCACHE_PATHNAME}
      *         is not set.
-     * @throws CacheException
      */
     static String rootSourceImagePathname() throws CacheException {
         return rootPathname() + File.separator + SOURCE_IMAGE_FOLDER;
@@ -431,8 +428,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
     /**
      * Cleans up temp and zero-byte files.
-     *
-     * @throws CacheException
      */
     @Override
     public void cleanUp() throws CacheException {
@@ -472,7 +467,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @param identifier
      * @return All image files deriving from the image with the given
      *         identifier.
-     * @throws CacheException
      */
     Collection<File> derivativeImageFiles(Identifier identifier)
             throws CacheException {
@@ -705,8 +699,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      *
      * <p>Will do nothing and return immediately if a global purge is in
      * progress in another thread.</p>
-     *
-     * @throws CacheException
      */
     @Override
     public void purge() throws CacheException {
@@ -757,8 +749,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      *
      * <p>Will do nothing and return immediately if a global purge is in
      * progress in another thread.</p>
-     *
-     * @throws CacheException
      */
     @Override
     public void purge(OperationList opList) throws CacheException {
@@ -803,8 +793,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      *
      * <p>Will do nothing and return immediately if a global purge is in
      * progress in another thread.</p>
-     *
-     * @throws CacheException
      */
     @Override
     public void purgeExpired() throws CacheException {
@@ -873,8 +861,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      *
      * <p>Will do nothing and return immediately if a global purge is in
      * progress in another thread.</p>
-     *
-     * @throws CacheException
      */
     @Override
     public void purge(Identifier identifier) throws CacheException {

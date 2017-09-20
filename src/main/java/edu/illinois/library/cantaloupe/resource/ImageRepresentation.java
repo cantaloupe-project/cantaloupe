@@ -27,7 +27,7 @@ import java.nio.file.Files;
  */
 public class ImageRepresentation extends OutputRepresentation {
 
-    private static Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(ImageRepresentation.class);
 
     private boolean bypassCache = false;
@@ -63,11 +63,10 @@ public class ImageRepresentation extends OutputRepresentation {
      * stream, either retrieving it from the derivative cache, or getting it
      * from a processor (and caching it if so configured) as appropriate.
      *
-     * @param outputStream Response body output stream.
-     * @throws IOException
+     * @param responseOutputStream Response body output stream.
      */
     @Override
-    public void write(OutputStream outputStream) throws IOException {
+    public void write(OutputStream responseOutputStream) throws IOException {
         // N.B. We don't need to close outputStream after writing to it;
         // Restlet will take care of that.
         if (!bypassCache) {
@@ -75,30 +74,37 @@ public class ImageRepresentation extends OutputRepresentation {
             final DerivativeCache cache = CacheFactory.getDerivativeCache();
             if (cache != null) {
                 // Try to get the image from the cache.
-                try (InputStream inputStream = cache.newDerivativeImageInputStream(opList)) {
-                    if (inputStream != null) {
+                try (InputStream cacheInputStream =
+                             cache.newDerivativeImageInputStream(opList)) {
+                    if (cacheInputStream != null) {
                         // The image is available in the cache; write it to the
                         // response output stream.
                         final Stopwatch watch = new Stopwatch();
+                        IOUtils.copy(cacheInputStream, responseOutputStream);
 
-                        IOUtils.copy(inputStream, outputStream);
-
-                        logger.debug("Streamed from {} in {} msec: {}",
+                        LOGGER.debug("Streamed from {} in {} msec: {}",
                                 cache.getClass().getSimpleName(),
                                 watch.timeElapsed(),
                                 opList);
                     } else {
                         // Create a TeeOutputStream to write to the response
                         // output stream and the cache pseudo-simultaneously.
-                        // Restlet will close outputStream, but
-                        // cacheOutputStream is our responsibility. (teeStream
-                        // doesn't matter, although the finalizer may close it,
-                        // so it's important that these two output streams'
-                        // close() methods can deal with being called twice.)
+                        //
+                        // N.B.: The contract for this method says we can't
+                        // close responseOutputStream, which means we also
+                        // can't close teeOutputStream (because that would
+                        // close its wrapped streams). So, we have to leave it
+                        // up to the finalizer. But, when the finalizer closes
+                        // teeOutputStream, the end result will be close()
+                        // having been called twice on both of its wrapped
+                        // streams. So, it's important that these two output
+                        // streams' close() methods can deal with being called
+                        // twice.
                         try (OutputStream cacheOutputStream =
                                      cache.newDerivativeImageOutputStream(opList)) {
+
                             OutputStream teeStream = new TeeOutputStream(
-                                    outputStream, cacheOutputStream);
+                                    responseOutputStream, cacheOutputStream);
                             doWrite(teeStream);
                         } catch (Exception e) {
                             // This typically happens when the connection has
@@ -106,7 +112,7 @@ public class ImageRepresentation extends OutputRepresentation {
                             // the client hitting the stop button. The cached
                             // image has been incompletely written and is
                             // corrupt, so it must be purged.
-                            logger.info("write(): {}", e.getMessage());
+                            LOGGER.info("write(): {}", e.getMessage());
                             cache.purge(opList);
                         }
                     }
@@ -115,14 +121,14 @@ public class ImageRepresentation extends OutputRepresentation {
                 }
             } else {
                 try {
-                    doWrite(outputStream);
+                    doWrite(responseOutputStream);
                 } catch (Exception e) {
                     throw new IOException(e);
                 }
             }
         } else {
             try {
-                doWrite(outputStream);
+                doWrite(responseOutputStream);
             } catch (Exception e) {
                 throw new IOException(e);
             }
@@ -133,7 +139,6 @@ public class ImageRepresentation extends OutputRepresentation {
      * @param outputStream Either the response output stream, or a tee stream
      *                     for writing to the response and the cache
      *                     pseudo-simultaneously. Will not be closed.
-     * @throws Exception
      */
     private void doWrite(OutputStream outputStream) throws Exception {
         final Stopwatch watch = new Stopwatch();
@@ -152,12 +157,12 @@ public class ImageRepresentation extends OutputRepresentation {
                     IOUtils.copy(inputStream, outputStream);
                 }
             }
-            logger.debug("Streamed with no processing in {} msec: {}",
+            LOGGER.debug("Streamed with no processing in {} msec: {}",
                     watch.timeElapsed(), opList);
         } else {
             processor.process(opList, imageInfo, outputStream);
 
-            logger.debug("{} processed in {} msec: {}",
+            LOGGER.debug("{} processed in {} msec: {}",
                     processor.getClass().getSimpleName(),
                     watch.timeElapsed(), opList);
         }
