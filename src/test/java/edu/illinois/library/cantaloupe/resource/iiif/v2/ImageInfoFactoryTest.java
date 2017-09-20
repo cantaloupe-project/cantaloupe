@@ -108,6 +108,23 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
+    public void testNewImageInfoSizesMinSize() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.IIIF_MIN_SIZE, 200);
+
+        imageInfo = new ImageInfoFactory().newImageInfo(
+                identifier, imageUri, processor, processor.readImageInfo());
+        @SuppressWarnings("unchecked")
+        List<ImageInfo.Size> sizes =
+                (List<ImageInfo.Size>) imageInfo.get("sizes");
+        assertEquals(2, sizes.size());
+        assertEquals(297, (long) sizes.get(0).width);
+        assertEquals(261, (long) sizes.get(0).height);
+        assertEquals(594, (long) sizes.get(1).width);
+        assertEquals(522, (long) sizes.get(1).height);
+    }
+
+    @Test
     public void testNewImageInfoSizesWithRotatedImage() throws Exception {
         // TODO: write this (need a bigger rotated image)
     }
