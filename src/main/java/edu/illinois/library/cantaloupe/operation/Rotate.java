@@ -71,12 +71,14 @@ public class Rotate implements Operation {
      */
     @Override
     public Dimension getResultingSize(Dimension fullSize) {
+        final double radians = Math.toRadians(getDegrees());
+        final double sin = Math.sin(radians);
+        final double cos = Math.cos(radians);
+
         final int width = (int) Math.round(
-                Math.abs(fullSize.width * Math.cos(this.getDegrees())) +
-                        Math.abs(fullSize.height * Math.sin(this.getDegrees())));
+                Math.abs(fullSize.width * cos) + Math.abs(fullSize.height * sin));
         final int height = (int) Math.round(
-                Math.abs(fullSize.height * Math.cos(this.getDegrees())) +
-                        Math.abs(fullSize.width * Math.sin(this.getDegrees())));
+                Math.abs(fullSize.height * cos) + Math.abs(fullSize.width * sin));
         return new Dimension(width, height);
     }
 
