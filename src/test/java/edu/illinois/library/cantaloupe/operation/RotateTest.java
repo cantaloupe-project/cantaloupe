@@ -39,20 +39,14 @@ public class RotateTest extends BaseTest {
     }
 
     @Test
-    public void testGetEffectiveSize() {
+    public void testGetResultingSize() {
         Dimension fullSize = new Dimension(300, 200);
         assertEquals(fullSize, rotate.getResultingSize(fullSize));
 
-        final int degrees = 45;
+        final int degrees = 30;
         rotate.setDegrees(degrees);
 
-        final int expectedWidth = (int) Math.round(
-                Math.abs(fullSize.width * Math.cos(degrees)) +
-                        Math.abs(fullSize.height * Math.sin(degrees)));
-        final int expectedHeight = (int) Math.round(
-                Math.abs(fullSize.height * Math.cos(degrees)) +
-                        Math.abs(fullSize.width * Math.sin(degrees)));
-        Dimension expectedSize = new Dimension(expectedWidth, expectedHeight);
+        Dimension expectedSize = new Dimension(360, 323);
         assertEquals(expectedSize, rotate.getResultingSize(fullSize));
     }
 
