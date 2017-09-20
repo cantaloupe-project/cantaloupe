@@ -172,35 +172,38 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     /**
-     * Returned by {@link FilesystemCache#newDerivativeImageOutputStream} when
-     * an image can be cached. Points to a temp file that will be moved into
-     * place when closed.
+     * <p>Returned by {@link #newDerivativeImageOutputStream(OperationList)}}
+     * when an image can be cached. Points to a temp file that will be moved
+     * into place when closed.</p>
+     *
+     * <p>{@link T} may be either an {@link Identifier} corresponding to a
+     * source image, or an {@link OperationList} corresponding to a derivative
+     * image.</p>
      */
-    private static class ConcurrentFileOutputStream extends FileOutputStream {
+    private static class ConcurrentFileOutputStream<T>
+            extends FileOutputStream {
 
         private static final Logger logger = LoggerFactory.
                 getLogger(ConcurrentFileOutputStream.class);
 
         private File destinationFile;
-        private Set imagesBeingWritten;
+        private Set<T> imagesBeingWritten;
         private boolean isClosed = false;
-        private Object toRemove;
+        private T toRemove;
         private File tempFile;
 
         /**
          * @param tempFile Pathname of the temp file to write to.
          * @param destinationFile Pathname to move tempFile to when it is done
          *                        being written.
-         * @param imagesBeingWritten Set of OperationLists for all images
+         * @param imagesBeingWritten Set of identifiers for all images
          *                           currently being written.
          * @param toRemove Object to remove from the set when done.
-         * @throws FileNotFoundException
          */
-        @SuppressWarnings("unchecked")
         ConcurrentFileOutputStream(File tempFile,
                                    File destinationFile,
-                                   Set imagesBeingWritten,
-                                   Object toRemove)
+                                   Set<T> imagesBeingWritten,
+                                   T toRemove)
                 throws FileNotFoundException {
             super(tempFile);
             imagesBeingWritten.add(toRemove);
@@ -648,7 +651,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             // stream is closed.
             derivativeImagesBeingWritten.add(ops);
             try {
-                return new ConcurrentFileOutputStream(tempFile,
+                return new ConcurrentFileOutputStream<>(tempFile,
                         derivativeImageFile(ops),
                         derivativeImagesBeingWritten, ops);
             } catch (IOException e) {
@@ -689,7 +692,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 }
             }
             final File destFile = sourceImageFile(identifier);
-            return new ConcurrentFileOutputStream(
+            return new ConcurrentFileOutputStream<>(
                     tempFile, destFile, sourceImagesBeingWritten, identifier);
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);
