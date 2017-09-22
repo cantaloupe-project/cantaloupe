@@ -933,7 +933,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
         try {
             if (!tempFile.getParentFile().exists() &&
-                    !tempFile.getParentFile().mkdirs()) {
+                    !tempFile.getParentFile().mkdirs() &&
+                    !tempFile.getParentFile().exists()) {
                 throw new IOException("Unable to create directory: " +
                         tempFile.getParentFile());
             }
