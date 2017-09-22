@@ -6,8 +6,6 @@
  */
 var Configuration = function(data) {
 
-    var self = this;
-
     /**
      * @returns {*}
      */
@@ -46,6 +44,9 @@ var Configuration = function(data) {
     };
 
 };
+
+Configuration.ENDPOINT = window.location + '/configuration';
+
 
 /**
  * @param config {Configuration}
@@ -189,9 +190,9 @@ var Form = function(config) {
         console.debug(config.data());
 
         $.ajax({
-            type: 'POST',
+            type: 'PUT',
             contentType: 'application/json',
-            url: window.location,
+            url: Configuration.ENDPOINT,
             data: config.toJsonString(),
             success: function() {
                 // Set the success message, make it appear, and fade it out on
@@ -239,7 +240,7 @@ $(document).ready(function() {
     // initialize a Form instance on success.
     $.ajax({
         dataType: 'json',
-        url: window.location,
+        url: Configuration.ENDPOINT,
         data: null,
         success: function(data) {
             new Form(new Configuration(data)).load();

@@ -8,8 +8,8 @@ import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatExceptio
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
+import edu.illinois.library.cantaloupe.resource.admin.ConfigurationResource;
 import edu.illinois.library.cantaloupe.resource.api.CacheResource;
-import edu.illinois.library.cantaloupe.resource.api.ConfigurationResource;
 import edu.illinois.library.cantaloupe.resource.api.DMICResource;
 import org.restlet.Application;
 import org.restlet.Request;
@@ -111,6 +111,7 @@ public class RestletApplication extends Application {
     }
 
     public static final String ADMIN_PATH = "/admin";
+    public static final String ADMIN_CONFIG_PATH = "/admin/configuration";
     public static final String CACHE_PATH = "/cache";
     public static final String CONFIGURATION_PATH = "/configuration";
     public static final String DELEGATE_METHOD_INVOCATION_CACHE_PATH = "/dmic";
@@ -267,12 +268,16 @@ public class RestletApplication extends Application {
                 Redirector.MODE_CLIENT_SEE_OTHER);
         router.attach(IIIF_PATH, redirector);
 
-        /****************** Admin route ********************/
+        /****************** Admin routes ********************/
 
         try {
             ChallengeAuthenticator adminAuth = createAdminAuthenticator();
             adminAuth.setNext(AdminResource.class);
             router.attach(ADMIN_PATH, adminAuth);
+
+            adminAuth = createAdminAuthenticator();
+            adminAuth.setNext(ConfigurationResource.class);
+            router.attach(ADMIN_CONFIG_PATH, adminAuth);
         } catch (ConfigurationException e) {
             getLogger().log(Level.INFO, e.getMessage());
         }

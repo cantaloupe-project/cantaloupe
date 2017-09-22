@@ -15,6 +15,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <jetty.version>9.4.6.v20170531</jetty.version>
     <restlet.version>2.3.10</restlet.version>
+    <surefire.version>2.20.1</surefire.version>
   </properties>
 
   <developers>
@@ -453,7 +454,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.19.1</version>
+        <version>${surefire.version}</version>
         <configuration>
           <runOrder>random</runOrder>
           <reuseForks>false</reuseForks>
@@ -565,7 +566,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
-        <version>2.6</version>
+        <version>3.1.0</version>
         <executions>
           <execution>
             <id>create-war</id>
@@ -584,12 +585,22 @@
             </configuration>
           </execution>
         </executions>
+        <!-- This plugin depends on a version of plexus-archiver that
+        doesn't work with JDK 9. So, use a version that does.
+        TODO: revisit this -->
+        <dependencies>
+          <dependency>
+             <groupId>org.codehaus.plexus</groupId>
+             <artifactId>plexus-archiver</artifactId>
+             <version>3.5</version>
+          </dependency>
+        </dependencies>
       </plugin>
 
       <!-- Assemble the created war into a release package. -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.5.5</version>
+        <version>3.1.0</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -604,6 +615,16 @@
             <descriptor>${basedir}/build/assembly.xml</descriptor>
           </descriptors>
         </configuration>
+        <!-- This plugin depends on a version of plexus-archiver that
+        doesn't work with JDK 9. So, use a version that does.
+        TODO: revisit this -->
+        <dependencies>
+          <dependency>
+             <groupId>org.codehaus.plexus</groupId>
+             <artifactId>plexus-archiver</artifactId>
+             <version>3.5</version>
+          </dependency>
+        </dependencies>
       </plugin>
 
       <!-- Enables running with mvn exec:java -->
@@ -667,7 +688,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
-            <version>2.19.1</version>
+            <version>${surefire.version}</version>
             <configuration>
               <runOrder>random</runOrder>
               <reuseForks>false</reuseForks>
@@ -696,7 +717,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
-            <version>2.19.1</version>
+            <version>${surefire.version}</version>
             <configuration>
               <runOrder>random</runOrder>
               <reuseForks>false</reuseForks>
