@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatExceptio
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
+import edu.illinois.library.cantaloupe.resource.admin.ConfigurationResource;
 import edu.illinois.library.cantaloupe.resource.api.APIResource;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.runtime.RuntimeConstants;
@@ -118,6 +119,7 @@ public class WebApplication extends Application {
             "auth.basic.username";
 
     public static final String ADMIN_PATH = "/admin";
+    public static final String ADMIN_CONFIG_PATH = "/admin/configuration";
     public static final String CACHE_PATH = "/cache";
     public static final String CONFIGURATION_PATH = "/configuration";
     public static final String IIIF_PATH = "/iiif";
@@ -276,12 +278,16 @@ public class WebApplication extends Application {
                 Redirector.MODE_CLIENT_SEE_OTHER);
         router.attach(IIIF_PATH, redirector);
 
-        /****************** Admin route ********************/
+        /****************** Admin routes ********************/
 
         try {
             ChallengeAuthenticator adminAuth = createAdminAuthenticator();
             adminAuth.setNext(AdminResource.class);
             router.attach(ADMIN_PATH, adminAuth);
+
+            adminAuth = createAdminAuthenticator();
+            adminAuth.setNext(ConfigurationResource.class);
+            router.attach(ADMIN_CONFIG_PATH, adminAuth);
         } catch (ConfigurationException e) {
             getLogger().log(Level.WARNING, e.getMessage());
         }

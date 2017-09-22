@@ -1,10 +1,8 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
-import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -14,30 +12,21 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
-import edu.illinois.library.cantaloupe.resource.AbstractResource;
-import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.Header;
-import org.restlet.ext.jackson.JacksonRepresentation;
-import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
-import org.restlet.resource.Post;
 import org.restlet.resource.ResourceException;
 import org.restlet.util.Series;
-import org.slf4j.LoggerFactory;
 
 import java.awt.GraphicsEnvironment;
 import java.io.File;
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -84,17 +73,8 @@ public class AdminResource extends AbstractResource {
         }
     }
 
-    private static org.slf4j.Logger logger = LoggerFactory.
-            getLogger(AdminResource.class);
-
-    static final String CONTROL_PANEL_ENABLED_CONFIG_KEY = "admin.enabled";
-
     @Override
     protected void doInit() throws ResourceException {
-        if (!ConfigurationFactory.getInstance().
-                getBoolean(CONTROL_PANEL_ENABLED_CONFIG_KEY, false)) {
-            throw new EndpointDisabledException();
-        }
         super.doInit();
 
         // Add a "Cache-Control: no-cache" header because this page contains
@@ -104,69 +84,15 @@ public class AdminResource extends AbstractResource {
 
     /**
      * @return HTML representation of the admin interface.
-     * @throws Exception
      */
     @Get("html")
-    public Representation doGetAsHtml() throws Exception {
+    public Representation doGet() throws Exception {
         return template("/admin.vm", getTemplateVars());
-    }
-
-    /**
-     * @return JSON application configuration. <strong>This may contain
-     *         sensitive info and must be protected.</strong>
-     * @throws Exception
-     */
-    @Get("json")
-    public Representation doGetAsJson() throws Exception {
-        return new JacksonRepresentation<>(configurationAsMap());
-    }
-
-    /**
-     * Deserializes submitted JSON data and updates the application
-     * configuration instance with it.
-     *
-     * @param rep
-     * @throws IOException
-     */
-    @Post("json")
-    public Representation doPost(Representation rep) throws IOException {
-        final Configuration config = ConfigurationFactory.getInstance();
-        final Map submittedConfig = new ObjectMapper().readValue(
-                rep.getStream(), HashMap.class);
-
-        // Copy configuration keys and values from the request JSON payload to
-        // the application configuration.
-        for (final Object key : submittedConfig.keySet()) {
-            final Object value = submittedConfig.get(key);
-            logger.debug("Setting {} = {}", key, value);
-            config.setProperty((String) key, value);
-
-        }
-
-        config.save();
-
-        return new EmptyRepresentation();
-    }
-
-    /**
-     * @return Map representation of the application configuration.
-     */
-    private Map<String,Object> configurationAsMap() {
-        final Configuration config = ConfigurationFactory.getInstance();
-        final Map<String,Object> configMap = new HashMap<>();
-        final Iterator it = config.getKeys();
-        while (it.hasNext()) {
-            final String key = (String) it.next();
-            final Object value = config.getProperty(key);
-            configMap.put(key, value);
-        }
-        return configMap;
     }
 
     /**
      * @return Map containing variables for use in the admin interface HTML
      *         template.
-     * @throws Exception
      */
     private Map<String,Object> getTemplateVars() throws Exception {
         final Map<String, Object> vars = getCommonTemplateVars(getRequest());
