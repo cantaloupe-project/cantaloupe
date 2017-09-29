@@ -98,13 +98,32 @@ public class ImageInfoFactoryTest extends BaseTest {
         @SuppressWarnings("unchecked")
         List<ImageInfo.Size> sizes =
                 (List<ImageInfo.Size>) imageInfo.get("sizes");
-        assertEquals(3, sizes.size());
+        assertEquals(4, sizes.size());
         assertEquals(74, (long) sizes.get(0).width);
         assertEquals(65, (long) sizes.get(0).height);
         assertEquals(149, (long) sizes.get(1).width);
         assertEquals(131, (long) sizes.get(1).height);
         assertEquals(297, (long) sizes.get(2).width);
         assertEquals(261, (long) sizes.get(2).height);
+        assertEquals(594, (long) sizes.get(3).width);
+        assertEquals(522, (long) sizes.get(3).height);
+    }
+
+    @Test
+    public void testNewImageInfoSizesMinSize() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.IIIF_MIN_SIZE, 200);
+
+        imageInfo = new ImageInfoFactory().newImageInfo(
+                identifier, imageUri, processor, processor.readImageInfo());
+        @SuppressWarnings("unchecked")
+        List<ImageInfo.Size> sizes =
+                (List<ImageInfo.Size>) imageInfo.get("sizes");
+        assertEquals(2, sizes.size());
+        assertEquals(297, (long) sizes.get(0).width);
+        assertEquals(261, (long) sizes.get(0).height);
+        assertEquals(594, (long) sizes.get(1).width);
+        assertEquals(522, (long) sizes.get(1).height);
     }
 
     @Test
