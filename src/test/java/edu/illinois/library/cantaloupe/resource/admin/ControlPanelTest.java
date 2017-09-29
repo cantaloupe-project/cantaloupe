@@ -133,6 +133,7 @@ public class ControlPanelTest extends ResourceTest {
         inputNamed(Key.BASIC_AUTH_USERNAME).sendKeys("dogs");
         inputNamed(Key.BASIC_AUTH_SECRET).sendKeys("foxes");
         selectNamed(Key.IIIF_CONTENT_DISPOSITION).selectByValue("attachment");
+        inputNamed(Key.IIIF_MIN_SIZE).sendKeys("75");
         inputNamed(Key.IIIF_MIN_TILE_SIZE).sendKeys("250");
         inputNamed(Key.IIIF_1_ENDPOINT_ENABLED).click();
         inputNamed(Key.IIIF_2_ENDPOINT_ENABLED).click();
@@ -154,6 +155,7 @@ public class ControlPanelTest extends ResourceTest {
         assertEquals("foxes", config.getString(Key.BASIC_AUTH_SECRET));
         assertEquals("attachment",
                 config.getString(Key.IIIF_CONTENT_DISPOSITION));
+        assertEquals(75, config.getInt(Key.IIIF_MIN_SIZE));
         assertEquals(250, config.getInt(Key.IIIF_MIN_TILE_SIZE));
         assertTrue(config.getBoolean(Key.IIIF_1_ENDPOINT_ENABLED));
         assertTrue(config.getBoolean(Key.IIIF_2_ENDPOINT_ENABLED));
