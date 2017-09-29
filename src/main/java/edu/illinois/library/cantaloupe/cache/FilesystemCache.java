@@ -286,9 +286,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     private static final String INFO_EXTENSION = ".json";
     private static final String TEMP_EXTENSION = ".tmp";
 
-    /** Set of operation lists for which image files are currently being
-     * written from any thread. */
-    private final Set<OperationList> derivativeImagesBeingWritten =
+    /** Set of {@link Identifier}s or {@link OperationList}s) for which image
+     * files are currently being written from any thread. */
+    private final Set<Object> imagesBeingWritten =
             new ConcurrentSkipListSet<>();
 
     /** Set of Operations for which image files are currently being purged by
@@ -302,11 +302,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             new ConcurrentSkipListSet<>();
 
     private long minCleanableAge = 1000 * 60 * 10;
-
-    /** Set of identifiers for which image files are currently being written
-     * from any thread. */
-    private final Set<Identifier> sourceImagesBeingWritten =
-            new ConcurrentSkipListSet<>();
 
     /** Toggled by purge() and purgeExpired(). */
     private final AtomicBoolean globalPurgeInProgress =
@@ -533,7 +528,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     @Override
     public File getSourceImageFile(Identifier identifier) throws CacheException {
         synchronized (sourceImageWriteLock) {
-            while (sourceImagesBeingWritten.contains(identifier)) {
+            while (imagesBeingWritten.contains(identifier)) {
                 try {
                     sourceImageWriteLock.wait();
                 } catch (InterruptedException e) {
@@ -623,69 +618,55 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     @Override
     public OutputStream newDerivativeImageOutputStream(OperationList ops)
             throws CacheException {
-        // If the image is being written in another thread, it will
-        // be present in the derivativeImagesBeingWritten set. If so,
-        // return a null output stream to avoid interfering.
-        if (derivativeImagesBeingWritten.contains(ops)) {
-            LOGGER.info("newDerivativeImageOutputStream(OperationList): miss, " +
-                    "but cache file for {} is being written in " +
-                    "another thread, so not caching", ops);
-            return new NullOutputStream();
-        } else {
-            LOGGER.info("newDerivativeImageOutputStream(OperationList): miss; " +
-                    "caching {}", ops);
-
-            final File tempFile = derivativeImageTempFile(ops);
-
-            try {
-                // Create the containing directory. This may throw a
-                // FileAlreadyExistsException for concurrent invocations with the
-                // same argument.
-                Files.createDirectories(tempFile.getParentFile().toPath());
-
-                // ops will be removed from this set when the returned output
-                // stream is closed.
-                derivativeImagesBeingWritten.add(ops);
-
-                return new ConcurrentFileOutputStream<>(tempFile,
-                        derivativeImageFile(ops),
-                        derivativeImagesBeingWritten, ops);
-            } catch (FileAlreadyExistsException e) {
-                // The image either already exists in its complete form, or is
-                // being written by another thread/process. Either way, there
-                // is no need to write over it.
-                LOGGER.debug("newDerivativeImageOutputStream(OperationList): " +
-                                "{} already exists; returning a {}",
-                        tempFile.getParentFile(),
-                        NullOutputStream.class.getSimpleName());
-                return new NullOutputStream();
-            } catch (IOException e) {
-                throw new CacheException(e.getMessage(), e);
-            }
+        try {
+            return newOutputStream(ops, derivativeImageTempFile(ops),
+                    derivativeImageFile(ops));
+        } catch (IOException e) {
+            throw new CacheException(e.getMessage(), e);
         }
     }
 
+    /**
+     * @param identifier Identifier representing the image to write to.
+     * @return An output stream to write to. The stream will generally write to
+     *         a temp file and then move it into place when closed. It may also
+     *         write to nothing if an output stream for the same operation list
+     *         has been returned to another thread but not yet closed.
+     * @throws CacheException If anything goes wrong.
+     */
     @Override
     public OutputStream newSourceImageOutputStream(Identifier identifier)
             throws CacheException {
+        try {
+            return newOutputStream(identifier, sourceImageTempFile(identifier),
+                    sourceImageFile(identifier));
+        } catch (IOException e) {
+            throw new CacheException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * @param imageIdentifier {@link Identifier} or {@link OperationList}
+     * @param tempFile Temporary file to write to.
+     * @param destFile Destination file that tempFile will be moved to when
+     *                 writing is complete.
+     * @return Output stream for writing.
+     * @throws IOException IF anything goes wrong.
+     */
+    private OutputStream newOutputStream(Object imageIdentifier,
+                                         File tempFile,
+                                         File destFile) throws IOException {
         // If the image is being written in another thread, it may (or may not)
-        // be present in the sourceImagesBeingWritten set. If so, return a null
+        // be present in the imagesBeingWritten set. If so, return a null
         // output stream to avoid interfering.
-        if (sourceImagesBeingWritten.contains(identifier)) {
-            LOGGER.info("newSourceImageOutputStream(Identifier): miss, but cache " +
-                    "file for {} is being written in another thread, so not " +
-                    "caching", identifier);
+        if (imagesBeingWritten.contains(imageIdentifier)) {
+            LOGGER.info("newOutputStream(): miss, but cache file for {} is " +
+                    "being written in another thread, so not caching",
+                    imageIdentifier);
             return new NullOutputStream();
         }
 
-        // identifier will be removed from this set when the non-null output
-        // stream returned by this method is closed.
-        sourceImagesBeingWritten.add(identifier);
-
-        LOGGER.info("newSourceImageOutputStream(Identifier): miss; caching {}",
-                identifier);
-
-        final File tempFile = sourceImageTempFile(identifier);
+        LOGGER.info("newOutputStream(): miss; caching {}", imageIdentifier);
 
         try {
             // Create the containing directory. This may throw a
@@ -695,11 +676,10 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
             // identifier will be removed from this set when the non-null output
             // stream returned by this method is closed.
-            sourceImagesBeingWritten.add(identifier);
+            imagesBeingWritten.add(imageIdentifier);
 
             return new ConcurrentFileOutputStream<>(
-                    tempFile, sourceImageFile(identifier),
-                    sourceImagesBeingWritten, identifier);
+                    tempFile, destFile, imagesBeingWritten, imageIdentifier);
         } catch (FileAlreadyExistsException e) {
             // The image either already exists in its complete form, or is
             // being written by another thread/process. Either way, there is no
@@ -709,8 +689,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     tempFile.getParentFile(),
                     NullOutputStream.class.getSimpleName());
             return new NullOutputStream();
-        } catch (IOException e) {
-            throw new CacheException(e.getMessage(), e);
         }
     }
 
