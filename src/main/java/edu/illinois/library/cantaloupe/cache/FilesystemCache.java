@@ -952,14 +952,15 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     public void put(Identifier identifier, Info imageInfo)
             throws CacheException {
         final ReadWriteLock lock = acquireInfoLock(identifier);
-        lock.writeLock().lock();
-
-        logger.info("put(): caching: {}", identifier);
 
         final File destFile = infoFile(identifier);
         final File tempFile = infoTempFile(identifier);
 
         try {
+            lock.writeLock().lock();
+
+            logger.info("put(): caching: {}", identifier);
+
             try {
                 // Create the containing directory.
                 Files.createDirectories(tempFile.getParentFile().toPath());
