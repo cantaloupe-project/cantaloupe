@@ -17,7 +17,8 @@ title: What's New
 <ul>
   <li>Upgraded dependencies to fix the following vulnerabilities: CVE-2015-6420. (Thanks to @kinow)</li>
   <li>Fixed incorrect computation of post-rotation bounding boxes, manifesting as bogus values passed to the <code>resulting_size</code> delegate method arguments. (Thanks to @SaschaAdler)</li>
-  <li>Fixed potentially incorrect tile sizes being returned in information responses when using OpenJpegProcessor.</li>
+  <li>Fixed a bug in FilesystemCache when multiple processes tried to create the same directory at the same time. (Thanks to @cbeer)</li>
+  <li>Fixed potentially incorrect tile sizes in information responses when using OpenJpegProcessor.</li>
   <li>Fixed a resource leak when using image overlays.</li>
   <li>Fixed potential malformed links in the Control Panel.</li>
   <li>Improvements in the testing and build process. (Thanks to @kinow)</li>
