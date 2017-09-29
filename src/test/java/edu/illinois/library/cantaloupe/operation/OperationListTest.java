@@ -159,7 +159,8 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void applyNonEndpointMutationsWithOrientation() throws Exception {
+    public void applyNonEndpointMutationsWithOrientationMutatesCrop()
+            throws Exception {
         final Dimension fullSize = new Dimension(2000,1000);
         final OperationList opList = new OperationList(new Identifier("cats"),
                 Format.JPG, new Crop(0, 0, 70, 30));
@@ -175,8 +176,28 @@ public class OperationListTest extends BaseTest {
         Crop expectedCrop = new Crop(0, 0, 70, 30);
         expectedCrop.applyOrientation(Orientation.ROTATE_90, fullSize);
         Crop actualCrop = (Crop) opList.getFirst(Crop.class);
-
         assertEquals(expectedCrop, actualCrop);
+    }
+
+    @Test
+    public void applyNonEndpointMutationsWithOrientationMutatesRotate()
+            throws Exception {
+        final Dimension fullSize = new Dimension(2000,1000);
+        final OperationList opList = new OperationList(new Identifier("cats"),
+                Format.JPG, new Crop(0, 0, 70, 30), new Rotate(45));
+
+        opList.applyNonEndpointMutations(
+                fullSize,
+                Orientation.ROTATE_90,
+                "127.0.0.1",
+                new URL("http://example.org/"),
+                new HashMap<>(),
+                new HashMap<>());
+
+        Rotate expectedRotate = new Rotate(45);
+        expectedRotate.addDegrees(Orientation.ROTATE_90.getDegrees());
+        Rotate actualRotate = (Rotate) opList.getFirst(Rotate.class);
+        assertEquals(expectedRotate, actualRotate);
     }
 
     @Test

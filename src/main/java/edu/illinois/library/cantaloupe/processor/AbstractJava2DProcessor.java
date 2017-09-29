@@ -178,9 +178,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
                 } else if (op instanceof Transpose) {
                     image = Java2DUtil.transposeImage(image, (Transpose) op);
                 } else if (op instanceof Rotate) {
-                    Rotate rotation = (Rotate) op;
-                    rotation.addDegrees(imageInfo.getOrientation().getDegrees());
-                    image = Java2DUtil.rotateImage(image, rotation);
+                    image = Java2DUtil.rotateImage(image, (Rotate) op);
                 } else if (op instanceof ColorTransform) {
                     image = Java2DUtil.transformColor(image, (ColorTransform) op);
                 } else if (op instanceof Sharpen) {

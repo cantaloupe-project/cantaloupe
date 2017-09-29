@@ -162,10 +162,18 @@ public final class OperationList implements Comparable<OperationList>,
 
         final Configuration config = Configuration.getInstance();
 
-        // Apply the orientation to the Crop operation, if both are present.
-        Crop crop = (Crop) getFirst(Crop.class);
-        if (crop != null && sourceImageOrientation != null) {
-            crop.applyOrientation(sourceImageOrientation, sourceImageSize);
+        // If the source image has a different orientation, adjust any Crop
+        // and Rotate operations accordingly.
+        if (sourceImageOrientation != null) {
+            Crop crop = (Crop) getFirst(Crop.class);
+            if (crop != null) {
+                crop.applyOrientation(sourceImageOrientation, sourceImageSize);
+            }
+
+            Rotate rotate = (Rotate) getFirst(Rotate.class);
+            if (rotate != null) {
+                rotate.addDegrees(sourceImageOrientation.getDegrees());
+            }
         }
 
         // Normalization

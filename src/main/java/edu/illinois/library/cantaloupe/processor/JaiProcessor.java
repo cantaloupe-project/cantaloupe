@@ -209,9 +209,7 @@ class JaiProcessor extends AbstractImageIOProcessor
                         renderedOp = JAIUtil.
                                 transposeImage(renderedOp, (Transpose) op);
                     } else if (op instanceof Rotate) {
-                        Rotate rotate = (Rotate) op;
-                        rotate.addDegrees(orientation.getDegrees());
-                        renderedOp = JAIUtil.rotateImage(renderedOp, rotate);
+                        renderedOp = JAIUtil.rotateImage(renderedOp, (Rotate) op);
                     } else if (op instanceof ColorTransform) {
                         renderedOp = JAIUtil.
                                 transformColor(renderedOp, (ColorTransform) op);
