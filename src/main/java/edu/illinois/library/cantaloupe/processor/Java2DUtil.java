@@ -611,11 +611,11 @@ public final class Java2DUtil {
             // note: operations happen in reverse order of declaration
             AffineTransform tx = new AffineTransform();
             // 3. translate the image to the center of the "canvas"
-            tx.translate(canvasWidth / 2, canvasHeight / 2);
+            tx.translate(canvasWidth / 2f, canvasHeight / 2f);
             // 2. rotate it
             tx.rotate(radians);
             // 1. translate the image so that it is rotated about the center
-            tx.translate(-sourceWidth / 2, -sourceHeight / 2);
+            tx.translate(-sourceWidth / 2f, -sourceHeight / 2f);
 
             rotatedImage = new BufferedImage(canvasWidth, canvasHeight,
                     BufferedImage.TYPE_INT_ARGB);

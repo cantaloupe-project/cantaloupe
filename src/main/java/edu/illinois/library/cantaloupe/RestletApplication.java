@@ -49,7 +49,7 @@ import java.util.logging.Level;
  */
 public class RestletApplication extends Application {
 
-    private class CustomStatusService extends StatusService {
+    private static class CustomStatusService extends StatusService {
 
         @Override
         public Representation toRepresentation(Status status, Request request,

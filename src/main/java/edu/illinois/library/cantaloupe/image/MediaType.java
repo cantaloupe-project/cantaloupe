@@ -59,7 +59,8 @@ public final class MediaType {
      */
     @Override
     public boolean equals(Object obj) {
-        return (obj.toString() != null && obj.toString().equals(toString()));
+        return (obj != null && obj.toString() != null &&
+                obj.toString().equals(toString()));
     }
 
     @Override
