@@ -140,6 +140,12 @@ public final class Info {
             return new Dimension(width, height);
         }
 
+        @Override
+        public int hashCode() {
+            return String.format("%d_%d_%s_%d_%d", width, height,
+                    orientation, tileWidth, tileHeight).hashCode();
+        }
+
         public void setOrientation(Orientation orientation) {
             this.orientation = orientation.toString();
         }
@@ -326,6 +332,12 @@ public final class Info {
         } else {
             mediaType = sourceFormat.getPreferredMediaType().toString();
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return new Long(getImages().hashCode() + mediaType.hashCode() +
+                getSourceFormat().hashCode()).hashCode();
     }
 
     /**

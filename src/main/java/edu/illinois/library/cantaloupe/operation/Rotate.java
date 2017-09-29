@@ -47,11 +47,14 @@ public class Rotate implements Operation {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Rotate) {
+        if (obj == this) {
+            return true;
+        } else if (obj instanceof Rotate) {
             return toString().equals(obj.toString());
         }
         return super.equals(obj);
     }
+
 
     /**
      * @return Degrees.
@@ -95,6 +98,11 @@ public class Rotate implements Operation {
     @Override
     public boolean hasEffect(Dimension fullSize, OperationList opList) {
         return hasEffect();
+    }
+
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
     }
 
     /**

@@ -86,6 +86,16 @@ class Parameters implements ParameterList, Comparable<Parameters> {
         return (last == 0) ? this.toString().compareTo(params.toString()) : last;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        } else if (obj instanceof Parameters) {
+            return obj.toString().equals(toString());
+        }
+        return super.equals(obj);
+    }
+
     public Identifier getIdentifier() {
         return identifier;
     }
@@ -117,6 +127,11 @@ class Parameters implements ParameterList, Comparable<Parameters> {
 
     public Size getSize() {
         return size;
+    }
+
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
     }
 
     public void setIdentifier(Identifier identifier) {

@@ -76,7 +76,9 @@ public class ReductionFactor {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof ReductionFactor) {
+        if (obj == this) {
+            return true;
+        } else if (obj instanceof ReductionFactor) {
             return ((ReductionFactor) obj).factor == factor;
         }
         return super.equals(obj);
@@ -87,6 +89,11 @@ public class ReductionFactor {
      */
     public double getScale() {
         return Math.pow(0.5f, this.factor);
+    }
+
+    @Override
+    public int hashCode() {
+        return Float.hashCode(factor);
     }
 
 }

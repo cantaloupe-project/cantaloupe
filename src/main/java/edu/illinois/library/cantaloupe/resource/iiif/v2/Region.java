@@ -62,6 +62,9 @@ class Region {
 
     @Override
     public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
         final float fudge = 0.0001f;
         if (obj instanceof Region) {
             final Region region = (Region) obj;
@@ -117,6 +120,11 @@ class Region {
 
     public Float getY() {
         return y;
+    }
+
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
     }
 
     public void setHeight(Float height) throws IllegalArgumentException {
