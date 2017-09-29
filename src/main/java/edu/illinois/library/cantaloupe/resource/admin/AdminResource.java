@@ -67,7 +67,8 @@ public class AdminResource extends AbstractResource {
         }
     }
 
-    private class ObjectProxyComparator implements Comparator<ObjectProxy> {
+    private static class ObjectProxyComparator
+            implements Comparator<ObjectProxy> {
         public int compare(ObjectProxy o1, ObjectProxy o2) {
             return o1.getName().compareTo(o2.getName());
         }
