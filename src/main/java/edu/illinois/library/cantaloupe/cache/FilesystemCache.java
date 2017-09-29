@@ -637,17 +637,28 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
             final File tempFile = derivativeImageTempFile(ops);
 
-            // No need to check the return value. If anything went wrong,
-            // the client will find out about it shortly. :D
-            tempFile.getParentFile().mkdirs();
-
-            // ops will be removed from this set when the returned output
-            // stream is closed.
-            derivativeImagesBeingWritten.add(ops);
             try {
+                // Create the containing directory. This may throw a
+                // FileAlreadyExistsException for concurrent invocations with the
+                // same argument.
+                Files.createDirectories(tempFile.getParentFile().toPath());
+
+                // ops will be removed from this set when the returned output
+                // stream is closed.
+                derivativeImagesBeingWritten.add(ops);
+
                 return new ConcurrentFileOutputStream<>(tempFile,
                         derivativeImageFile(ops),
                         derivativeImagesBeingWritten, ops);
+            } catch (FileAlreadyExistsException e) {
+                // The image either already exists in its complete form, or is
+                // being written by another thread/process. Either way, there
+                // is no need to write over it.
+                LOGGER.debug("newDerivativeImageOutputStream(OperationList): " +
+                                "{} already exists; returning a {}",
+                        tempFile.getParentFile(),
+                        NullOutputStream.class.getSimpleName());
+                return new NullOutputStream();
             } catch (IOException e) {
                 throw new CacheException(e.getMessage(), e);
             }
@@ -673,21 +684,31 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
         LOGGER.info("newSourceImageOutputStream(Identifier): miss; caching {}",
                 identifier);
+
+        final File tempFile = sourceImageTempFile(identifier);
+
         try {
-            final File tempFile = sourceImageTempFile(identifier);
-            if (!tempFile.getParentFile().isDirectory()) {
-                if (!tempFile.getParentFile().mkdirs()) {
-                    LOGGER.info("newSourceImageOutputStream(Identifier): can't create {}",
-                            tempFile.getParentFile());
-                    // We could threw a CacheException here, but it is probably
-                    // not necessary as we are likely to get here often during
-                    // concurrent invocations.
-                    return new NullOutputStream();
-                }
-            }
-            final File destFile = sourceImageFile(identifier);
+            // Create the containing directory. This may throw a
+            // FileAlreadyExistsException for concurrent invocations with the
+            // same argument.
+            Files.createDirectories(tempFile.getParentFile().toPath());
+
+            // identifier will be removed from this set when the non-null output
+            // stream returned by this method is closed.
+            sourceImagesBeingWritten.add(identifier);
+
             return new ConcurrentFileOutputStream<>(
-                    tempFile, destFile, sourceImagesBeingWritten, identifier);
+                    tempFile, sourceImageFile(identifier),
+                    sourceImagesBeingWritten, identifier);
+        } catch (FileAlreadyExistsException e) {
+            // The image either already exists in its complete form, or is
+            // being written by another thread/process. Either way, there is no
+            // need to write over it.
+            LOGGER.debug("newSourceImageOutputStream(OperationList): " +
+                            "{} already exists; returning a {}",
+                    tempFile.getParentFile(),
+                    NullOutputStream.class.getSimpleName());
+            return new NullOutputStream();
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);
         }
@@ -932,10 +953,15 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         final File tempFile = infoTempFile(identifier);
 
         try {
-            if (!tempFile.getParentFile().exists() &&
-                    !tempFile.getParentFile().mkdirs()) {
-                throw new IOException("Unable to create directory: " +
-                        tempFile.getParentFile());
+            try {
+                // Create the containing directory.
+                Files.createDirectories(tempFile.getParentFile().toPath());
+            } catch (FileAlreadyExistsException e) {
+                // When this method runs concurrently with an equal Identifier
+                // argument, all of the other invocations will throw this,
+                // which is fine.
+                LOGGER.debug("put(): failed to create directory: {}",
+                        e.getMessage());
             }
 
             FileUtils.writeStringToFile(tempFile, imageInfo.toJSON());
@@ -944,10 +970,10 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     tempFile, destFile.getName());
             Files.move(tempFile.toPath(), destFile.toPath());
         } catch (FileAlreadyExistsException e) {
-            // When this method is called concurrently for the same info, one
-            // invocation will complete successfully and the other(s) will
-            // produce this, which is fine.
-            LOGGER.debug("put(): {}", e.getMessage());
+            // When this method runs concurrently with an equal Identifier
+            // argument, all of the other invocations of Files.move() will
+            // throw this, which is fine.
+            LOGGER.debug("put(): failed to move file: {}", e.getMessage());
         } catch (IOException e) {
             tempFile.delete();
             throw new CacheException(e.getMessage(), e);
