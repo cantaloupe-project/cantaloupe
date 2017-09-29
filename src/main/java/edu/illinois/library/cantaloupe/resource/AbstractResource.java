@@ -165,6 +165,10 @@ public abstract class AbstractResource extends ServerResource {
     @Override
     protected void doInit() throws ResourceException {
         super.doInit();
+        // "Dimensions" are added to the Vary header. Restlet doesn't supply
+        // Origin by default, but it's needed.
+        // See: https://github.com/medusa-project/cantaloupe/issues/107
+        getResponse().getDimensions().add(org.restlet.data.Dimension.ORIGIN);
         getResponse().getHeaders().add("X-Powered-By",
                 "Cantaloupe/" + Application.getVersion());
         logger.info("doInit(): handling {} {}", getMethod(), getReference());
