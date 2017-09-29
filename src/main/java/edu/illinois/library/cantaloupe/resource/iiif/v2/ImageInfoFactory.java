@@ -30,9 +30,6 @@ class ImageInfoFactory {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(ImageInfoFactory.class);
 
-    /** Minimum size that will be used in info.json "sizes" keys. */
-    private static final int MIN_SIZE = 64;
-
     /** Delegate script method that returns a JSON object (Ruby hash)
      * containing additional keys to add to the information response. */
     private static final String SERVICE_DELEGATE_METHOD =
@@ -74,12 +71,15 @@ class ImageInfoFactory {
         final List<ImageInfo.Size> sizes = new ArrayList<>();
         imageInfo.put("sizes", sizes);
 
+        /** Minimum size that will be used in info.json "sizes" keys. */
+        final int minSize = config.getInt(Key.IIIF_MIN_SIZE, 64);
+
         final int maxReductionFactor =
-                ImageInfoUtil.maxReductionFactor(virtualSize, MIN_SIZE);
-        for (double i = 2; i <= Math.pow(2, maxReductionFactor); i *= 2) {
+                ImageInfoUtil.maxReductionFactor(virtualSize, minSize);
+        for (double i = 1; i <= Math.pow(2, maxReductionFactor); i *= 2) {
             final int width = (int) Math.round(virtualSize.width / i);
             final int height = (int) Math.round(virtualSize.height / i);
-            if (width < MIN_SIZE || height < MIN_SIZE) {
+            if (width < minSize || height < minSize) {
                 break;
             }
             ImageInfo.Size size = new ImageInfo.Size(width, height);

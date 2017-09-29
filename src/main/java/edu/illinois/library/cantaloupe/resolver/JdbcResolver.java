@@ -34,14 +34,17 @@ import java.sql.SQLException;
  */
 class JdbcResolver extends AbstractResolver implements StreamResolver {
 
+    /**
+     * StreamSource for binary a.k.a. BLOB column values.
+     */
     private static class JdbcStreamSource implements StreamSource {
 
-        private final int column;
-        private final ResultSet resultSet;
+        private String sql;
+        private String databaseIdentifier;
 
-        JdbcStreamSource(ResultSet resultSet, int column) {
-            this.resultSet = resultSet;
-            this.column = column;
+        JdbcStreamSource(String sql, String databaseIdentifier) {
+            this.sql = sql;
+            this.databaseIdentifier = databaseIdentifier;
         }
 
         @Override
@@ -51,8 +54,18 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
 
         @Override
         public InputStream newInputStream() throws IOException {
-            try {
-                return resultSet.getBinaryStream(column);
+            try (Connection connection = getConnection();
+                 PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, databaseIdentifier);
+
+                logger.debug(sql);
+                try (ResultSet result = statement.executeQuery()) {
+                    if (result.next()) {
+                        return result.getBinaryStream(1);
+                    } else {
+                        throw new IOException("Resource not found");
+                    }
+                }
             } catch (SQLException e) {
                 throw new IOException(e.getMessage(), e);
             }
@@ -72,9 +85,7 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     private static HikariDataSource dataSource;
 
     /**
-     * @return Connection from the connection pool. Clients must
-     * <code>close()</code> it when they are done with it.
-     * @throws SQLException
+     * @return Connection from the connection pool. Clients must close it.
      */
     public static synchronized Connection getConnection() throws SQLException {
         if (dataSource == null) {
@@ -115,19 +126,22 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
                 throw new IOException(GET_LOOKUP_SQL_DELEGATE_METHOD +
                         " implementation does not support prepared statements");
             }
-            logger.debug(sql);
 
-            PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setString(1, getDatabaseIdentifier());
-            ResultSet result = statement.executeQuery();
-            if (result.next()) {
-                return new JdbcStreamSource(result, 1);
+            // Check that the image exists.
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, getDatabaseIdentifier());
+                logger.debug(sql);
+                try (ResultSet result = statement.executeQuery()) {
+                    if (!result.next()) {
+                        throw new FileNotFoundException();
+                    }
+                }
             }
+            return new JdbcStreamSource(sql, getDatabaseIdentifier());
         } catch (ScriptException | SQLException |
                 DelegateScriptDisabledException e) {
             throw new IOException(e.getMessage(), e);
         }
-        throw new FileNotFoundException();
     }
 
     @Override
@@ -143,13 +157,14 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
                     // statement to look it up.
                     if (methodResult.toUpperCase().startsWith("SELECT")) {
                         logger.debug(methodResult);
-                        try (Connection connection = getConnection()) {
-                            PreparedStatement statement = connection.
-                                    prepareStatement(methodResult);
+                        try (Connection connection = getConnection();
+                             PreparedStatement statement = connection.
+                                     prepareStatement(methodResult)) {
                             statement.setString(1, getDatabaseIdentifier());
-                            ResultSet resultSet = statement.executeQuery();
-                            if (resultSet.next()) {
-                                mediaType = new MediaType(resultSet.getString(1));
+                            try (ResultSet resultSet = statement.executeQuery()) {
+                                if (resultSet.next()) {
+                                    mediaType = new MediaType(resultSet.getString(1));
+                                }
                             }
                         }
                     } else {

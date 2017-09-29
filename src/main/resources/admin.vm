@@ -501,6 +501,20 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td>Minimum Size
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Minimum size that will be used in info.json
+                                           &lt;code&gt;sizes&lt;/code&gt; keys.">?</a>
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="number"
+                                               name="endpoint.iiif.min_size" min="0"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td>Minimum Tile Size
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"

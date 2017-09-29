@@ -90,6 +90,9 @@ endpoint.iiif.2.enabled = true
 # using the ?response-content-disposition query argument.
 endpoint.iiif.content_disposition = none
 
+# Minimum size that will be used in info.json "sizes" keys.
+endpoint.iiif.min_size = 64
+
 # Minimum size that will be used in info.json "tiles" keys. See the user
 # manual for an explanation of how these are calculated.
 endpoint.iiif.min_tile_size = 1024
