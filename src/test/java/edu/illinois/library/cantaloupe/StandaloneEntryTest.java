@@ -33,6 +33,7 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.assertRecursiveFileCount;
 import static org.junit.Assert.*;
 
 public class StandaloneEntryTest extends BaseTest {
@@ -260,8 +261,6 @@ public class StandaloneEntryTest extends BaseTest {
         redirectOutput();
 
         final File cacheDir = getCacheDir();
-        final File imageDir = new File(cacheDir.getAbsolutePath() + "/image");
-        final File infoDir = new File(cacheDir.getAbsolutePath() + "/info");
 
         // set up the cache
         Configuration config = Configuration.getInstance();
@@ -284,8 +283,7 @@ public class StandaloneEntryTest extends BaseTest {
         }
 
         // assert that they've been cached
-        assertEquals(1, FileUtils.listFiles(imageDir, null, true).size());
-        assertEquals(1, FileUtils.listFiles(infoDir, null, true).size());
+        assertRecursiveFileCount(cacheDir.toPath(), 2);
 
         // purge the cache
         System.setProperty(ApplicationInitializer.PURGE_CACHE_VM_ARGUMENT, "");
@@ -303,8 +301,7 @@ public class StandaloneEntryTest extends BaseTest {
         assertTrue(redirectedOutput.toString().contains("Purging the derivative cache"));
 
         // assert that they've been purged
-        assertEquals(0, TestUtil.countFiles(imageDir));
-        assertEquals(0, TestUtil.countFiles(infoDir));
+        assertRecursiveFileCount(cacheDir.toPath(), 0);
     }
 
     /**

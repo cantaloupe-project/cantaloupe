@@ -13,50 +13,42 @@ import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import edu.illinois.library.cantaloupe.util.DeletingFileVisitor;
 import edu.illinois.library.cantaloupe.util.StringUtil;
-import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static edu.illinois.library.cantaloupe.cache.FilesystemCache.getHashedStringBasedSubdirectory;
-import static edu.illinois.library.cantaloupe.cache.FilesystemCache.rootDerivativeImagePathname;
-import static edu.illinois.library.cantaloupe.cache.FilesystemCache.rootInfoPathname;
-import static edu.illinois.library.cantaloupe.cache.FilesystemCache.rootSourceImagePathname;
+import static edu.illinois.library.cantaloupe.cache.FilesystemCache.*;
+import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.assertRecursiveFileCount;
 import static org.junit.Assert.*;
 
 public class FilesystemCacheTest extends BaseTest {
 
-    private File fixturePath;
-    private File sourceImagePath;
-    private File derivativeImagePath;
-    private File infoPath;
+    private Path fixturePath;
+    private Path sourceImagePath;
+    private Path derivativeImagePath;
+    private Path infoPath;
     private FilesystemCache instance;
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
 
-        fixturePath = new File(TestUtil.getTempFolder().getAbsolutePath() + "/cache");
-        sourceImagePath = new File(fixturePath.getAbsolutePath() + "/source");
-        derivativeImagePath = new File(fixturePath.getAbsolutePath() + "/image");
-        infoPath = new File(fixturePath.getAbsolutePath() + "/info");
-
-        if (!sourceImagePath.isDirectory() && !sourceImagePath.mkdirs()) {
-            throw new IOException("Failed to create folder: " + sourceImagePath);
-        }
-        if (!derivativeImagePath.isDirectory() && !derivativeImagePath.mkdirs()) {
-            throw new IOException("Failed to create folder: " + derivativeImagePath);
-        }
-        if (!infoPath.isDirectory() && !infoPath.mkdirs()) {
-            throw new IOException("Failed to create folder: " + infoPath);
-        }
+        fixturePath = TestUtil.getTempFolder().toPath().resolve("cache");
+        sourceImagePath = fixturePath.resolve("source");
+        derivativeImagePath = fixturePath.resolve("image");
+        infoPath = fixturePath.resolve("info");
 
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.FILESYSTEMCACHE_DIRECTORY_DEPTH, 3);
@@ -70,147 +62,95 @@ public class FilesystemCacheTest extends BaseTest {
 
     @After
     public void tearDown() throws IOException {
-        FileUtils.deleteDirectory(fixturePath);
+        Files.walkFileTree(fixturePath, new DeletingFileVisitor());
     }
 
-    /* getHashedStringBasedSubdirectory(String) */
+    private void createEmptyFile(Path path) throws IOException {
+        Files.createDirectories(path.getParent());
+        Files.createFile(path);
+    }
+
+    private void sleep(int msec) {
+        try {
+            Thread.sleep(msec);
+        } catch (InterruptedException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    private void writeStringToFile(Path path, String contents)
+            throws IOException {
+        Files.createDirectories(path.getParent());
+        Files.write(path, contents.getBytes("UTF-8"));
+    }
 
     @Test
-    public void testGetHashedStringBasedSubdirectory() throws Exception {
-        assertEquals(
-                String.format("/08%s32%sc1", File.separator, File.separator),
-                getHashedStringBasedSubdirectory("cats"));
-
+    public void testHashedPathFragment() {
+        // depth = 2, length = 3
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.FILESYSTEMCACHE_DIRECTORY_DEPTH, 2);
         config.setProperty(Key.FILESYSTEMCACHE_DIRECTORY_NAME_LENGTH, 3);
         assertEquals(
-                String.format("/083%s2c1", File.separator, File.separator),
-                getHashedStringBasedSubdirectory("cats"));
+                String.format("083%s2c1", File.separator),
+                FilesystemCache.hashedPathFragment("cats"));
 
+        // depth = 0
         config.setProperty(Key.FILESYSTEMCACHE_DIRECTORY_DEPTH, 0);
-        assertEquals("", getHashedStringBasedSubdirectory("cats"));
-    }
-
-    /* cleanUp() */
-
-    @Test
-    public void testCleanUpDoesNotDeleteUnexpiredFiles() throws Exception {
-        OperationList ops = TestUtil.newOperationList();
-
-        // create a new source image file
-        File sourceImageFile = instance.sourceImageFile(ops.getIdentifier());
-        sourceImageFile.getParentFile().mkdirs();
-        FileUtils.writeStringToFile(sourceImageFile, "not empty");
-        // create a new derivative image file
-        File derivativeImageFile = instance.derivativeImageFile(ops);
-        derivativeImageFile.getParentFile().mkdirs();
-        FileUtils.writeStringToFile(derivativeImageFile, "not empty");
-        // create a new info file
-        File infoFile = instance.infoFile(ops.getIdentifier());
-        infoFile.getParentFile().mkdirs();
-        FileUtils.writeStringToFile(infoFile, "not empty");
-        // create some temp files
-        File sourceImageTempFile = instance.sourceImageTempFile(ops.getIdentifier());
-        FileUtils.writeStringToFile(sourceImageTempFile, "not empty");
-        File derivativeImageTempFile = instance.derivativeImageTempFile(ops);
-        FileUtils.writeStringToFile(derivativeImageTempFile, "not empty");
-        File infoTempFile = instance.infoTempFile(ops.getIdentifier());
-        FileUtils.writeStringToFile(infoTempFile, "not empty");
-
-        // create some empty files
-        String root = rootSourceImagePathname();
-        File path = new File(root + "/bogus");
-        path.mkdirs();
-        new File(path + "/empty").createNewFile();
-        new File(path + "/empty2").createNewFile();
-
-        root = rootDerivativeImagePathname();
-        path = new File(root + "/bogus");
-        path.mkdirs();
-        new File(path + "/empty").createNewFile();
-        new File(path + "/empty2").createNewFile();
-
-        root = rootInfoPathname();
-        path = new File(root + "/bogus");
-        path.mkdirs();
-        new File(path + "/empty").createNewFile();
-        new File(path + "/empty2").createNewFile();
-
-        instance.setMinCleanableAge(10000);
-        instance.cleanUp();
-
-        Iterator<File> it = FileUtils.iterateFiles(fixturePath, null, true);
-        int count = 0;
-        while (it.hasNext()) {
-            it.next();
-            count++;
-        }
-        assertEquals(12, count);
+        assertEquals("", hashedPathFragment("cats"));
     }
 
     @Test
-    public void testCleanUpDeletesExpiredFiles() throws Exception {
-        OperationList ops = TestUtil.newOperationList();
+    public void testDerivativeImageFileWithOperationList() {
+        String pathname = Configuration.getInstance().
+                getString(Key.FILESYSTEMCACHE_PATHNAME);
 
-        // create a new source image file
-        File sourceImageFile = instance.sourceImageFile(ops.getIdentifier());
-        sourceImageFile.getParentFile().mkdirs();
-        FileUtils.writeStringToFile(sourceImageFile, "not empty");
-        // create a new derivative image file
-        File derivativeImageFile = instance.derivativeImageFile(ops);
-        derivativeImageFile.getParentFile().mkdirs();
-        FileUtils.writeStringToFile(derivativeImageFile, "not empty");
-        // create a new info file
-        File infoFile = instance.infoFile(ops.getIdentifier());
-        infoFile.getParentFile().mkdirs();
-        FileUtils.writeStringToFile(infoFile, "not empty");
-        // create some temp files
-        File sourceImageTempFile = instance.sourceImageTempFile(ops.getIdentifier());
-        FileUtils.writeStringToFile(sourceImageTempFile, "not empty");
-        File derivativeImageTempFile = instance.derivativeImageTempFile(ops);
-        FileUtils.writeStringToFile(derivativeImageTempFile, "not empty");
-        File infoTempFile = instance.infoTempFile(ops.getIdentifier());
-        FileUtils.writeStringToFile(infoTempFile, "not empty");
+        Identifier identifier = new Identifier("cats_~!@#$%^&*()");
+        Crop crop = new Crop();
+        crop.setWidth(50f);
+        crop.setHeight(50f);
+        Scale scale = new Scale();
+        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        scale.setPercent(0.905f);
+        Rotate rotate = new Rotate(10);
+        ColorTransform transform = ColorTransform.BITONAL;
+        Format format = Format.TIF;
 
-        // create some empty files
-        String root = rootSourceImagePathname();
-        File path = new File(root + "/bogus");
-        path.mkdirs();
-        new File(path + "/empty").createNewFile();
-        new File(path + "/empty2").createNewFile();
+        OperationList ops = new OperationList(identifier, format, crop, scale,
+                rotate, transform);
 
-        root = rootDerivativeImagePathname();
-        path = new File(root + "/bogus");
-        path.mkdirs();
-        new File(path + "/empty").createNewFile();
-        new File(path + "/empty2").createNewFile();
-
-        root = rootInfoPathname();
-        path = new File(root + "/bogus");
-        path.mkdirs();
-        new File(path + "/empty").createNewFile();
-        new File(path + "/empty2").createNewFile();
-
-        instance.setMinCleanableAge(10);
-
-        Thread.sleep(1000);
-
-        instance.cleanUp();
-
-        Iterator<File> it = FileUtils.iterateFiles(fixturePath, null, true);
-        int count = 0;
-        while (it.hasNext()) {
-            it.next();
-            count++;
-        }
-        assertEquals(3, count);
+        final Path expected = Paths.get(
+                pathname,
+                "image",
+                hashedPathFragment(identifier.toString()),
+                ops.toFilename());
+        assertEquals(expected, derivativeImageFile(ops));
     }
 
-    /* derivativeImageFile(OperationList) */
+    @Test
+    public void testDerivativeImageFileWithNoOpOperationList() {
+        String pathname = Configuration.getInstance().getString(
+                Key.FILESYSTEMCACHE_PATHNAME);
+
+        final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
+        Crop crop = new Crop();
+        crop.setFull(true);
+        Scale scale = new Scale();
+        Rotate rotate = new Rotate(0);
+        Format format = Format.TIF;
+
+        final OperationList ops = new OperationList(identifier, format,
+                crop, scale, rotate);
+
+        final Path expected = Paths.get(
+                pathname,
+                "image",
+                FilesystemCache.hashedPathFragment(ops.getIdentifier().toString()),
+                ops.toFilename());
+        assertEquals(expected, derivativeImageFile(ops));
+    }
 
     @Test
-    public void testDerivativeImageFileWithOperationList() throws Exception {
+    public void testDerivativeImageTempFile() {
         String pathname = Configuration.getInstance().
                 getString(Key.FILESYSTEMCACHE_PATHNAME);
 
@@ -228,301 +168,416 @@ public class FilesystemCacheTest extends BaseTest {
         OperationList ops = new OperationList(identifier, format,
                 crop, scale, rotate, transform);
 
-        final String expected = String.format("%s%simage%s%s%s",
+        final Path expected = Paths.get(
                 pathname,
-                File.separator,
-                getHashedStringBasedSubdirectory(identifier.toString()),
-                File.separator,
-                ops.toFilename());
-        assertEquals(new File(expected), instance.derivativeImageFile(ops));
+                "image",
+                FilesystemCache.hashedPathFragment(identifier.toString()),
+                ops.toFilename() + FilesystemCache.tempFileSuffix());
+        assertEquals(expected, FilesystemCache.derivativeImageTempFile(ops));
     }
 
     @Test
-    public void testDerivativeImageFileWithNoOpOperations() throws Exception {
-        String pathname = Configuration.getInstance().getString(
-                Key.FILESYSTEMCACHE_PATHNAME);
-
+    public void testInfoFile() {
+        final String pathname = Configuration.getInstance().
+                getString(Key.FILESYSTEMCACHE_PATHNAME);
         final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
-        Crop crop = new Crop();
-        crop.setFull(true);
-        Scale scale = new Scale();
-        Rotate rotate = new Rotate(0);
-        Format format = Format.TIF;
-
-        final OperationList ops = new OperationList(identifier, format,
-                crop, scale, rotate);
-
-        final String expected = String.format("%s%simage%s%s%s",
+        final Path expected = Paths.get(
                 pathname,
-                File.separator,
-                getHashedStringBasedSubdirectory(ops.getIdentifier().toString()),
-                File.separator,
-                ops.toFilename());
-        assertEquals(new File(expected), instance.derivativeImageFile(ops));
+                "info",
+                FilesystemCache.hashedPathFragment(identifier.toString()),
+                StringUtil.filesystemSafe(identifier.toString()) + ".json");
+        assertEquals(expected, infoFile(identifier));
     }
 
-    /* derivativeImageFiles(Identifier) */
+    @Test
+    public void testInfoTempFile() {
+        final String pathname = Configuration.getInstance().
+                getString(Key.FILESYSTEMCACHE_PATHNAME);
+        final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
+        final Path expected = Paths.get(
+                pathname,
+                "info",
+                FilesystemCache.hashedPathFragment(identifier.toString()),
+                StringUtil.filesystemSafe(identifier.toString()) + ".json"
+                        + FilesystemCache.tempFileSuffix());
+        assertEquals(expected, infoTempFile(identifier));
+    }
 
     @Test
-    public void testDerivativeImageFiles() throws Exception {
+    public void testSourceImageFile() {
+        final String pathname = Configuration.getInstance().
+                getString(Key.FILESYSTEMCACHE_PATHNAME);
+        final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
+        final Path expected = Paths.get(
+                pathname,
+                "source",
+                FilesystemCache.hashedPathFragment(identifier.toString()),
+                StringUtil.filesystemSafe(identifier.toString()));
+        assertEquals(expected, sourceImageFile(identifier));
+    }
+
+    @Test
+    public void testSourceImageTempFile() {
+        final String pathname = Configuration.getInstance().
+                getString(Key.FILESYSTEMCACHE_PATHNAME);
+        final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
+        final Path expected = Paths.get(
+                pathname,
+                "source",
+                FilesystemCache.hashedPathFragment(identifier.toString()),
+                StringUtil.filesystemSafe(identifier.toString())
+                        + FilesystemCache.tempFileSuffix());
+        assertEquals(expected, sourceImageTempFile(identifier));
+    }
+
+    @Test
+    public void testTempFileSuffix() {
+        assertEquals("_" + Thread.currentThread().getName() + ".tmp",
+                FilesystemCache.tempFileSuffix());
+    }
+
+    @Test
+    public void testCleanUpShouldNotDeleteUnexpiredFiles() throws Exception {
+        OperationList ops = TestUtil.newOperationList();
+
+        // create a new source image file
+        Path sourceImageFile = sourceImageFile(ops.getIdentifier());
+        writeStringToFile(sourceImageFile, "not empty");
+
+        // create a new derivative image file
+        Path derivativeImageFile = derivativeImageFile(ops);
+        Files.createDirectories(derivativeImageFile.getParent());
+        writeStringToFile(derivativeImageFile, "not empty");
+
+        // create a new info file
+        Path infoFile = infoFile(ops.getIdentifier());
+        Files.createDirectories(infoFile.getParent());
+        writeStringToFile(infoFile, "not empty");
+
+        // create some temp files
+        Path sourceImageTempFile = sourceImageTempFile(ops.getIdentifier());
+        writeStringToFile(sourceImageTempFile, "not empty");
+
+        Path derivativeImageTempFile = derivativeImageTempFile(ops);
+        writeStringToFile(derivativeImageTempFile, "not empty");
+
+        Path infoTempFile = infoTempFile(ops.getIdentifier());
+        writeStringToFile(infoTempFile, "not empty");
+
+        // create some empty files
+        Path root = FilesystemCache.rootSourceImagePath();
+        Path subdir = root.resolve("bogus");
+        Files.createDirectories(subdir);
+        Files.createFile(subdir.resolve("empty"));
+        Files.createFile(subdir.resolve("empty2"));
+
+        root = FilesystemCache.rootDerivativeImagePath();
+        subdir = root.resolve("bogus");
+        Files.createDirectories(subdir);
+        Files.createFile(subdir.resolve("empty"));
+        Files.createFile(subdir.resolve("empty2"));
+
+        root = FilesystemCache.rootInfoPath();
+        subdir = root.resolve("bogus");
+        Files.createDirectories(subdir);
+        Files.createFile(subdir.resolve("empty"));
+        Files.createFile(subdir.resolve("empty2"));
+
+        instance.setMinCleanableAge(10000);
+        instance.cleanUp();
+
+        assertRecursiveFileCount(fixturePath, 12);
+    }
+
+    @Test
+    public void testCleanUpShouldDeleteExpiredFiles() throws Exception {
+        OperationList ops = TestUtil.newOperationList();
+
+        // create a new source image file
+        Path sourceImageFile = sourceImageFile(ops.getIdentifier());
+        writeStringToFile(sourceImageFile, "not empty");
+
+        // create a new derivative image file
+        Path derivativeImageFile = derivativeImageFile(ops);
+        writeStringToFile(derivativeImageFile, "not empty");
+
+        // create a new info file
+        Path infoFile = infoFile(ops.getIdentifier());
+        writeStringToFile(infoFile, "not empty");
+
+        // create some temp files
+        Path sourceImageTempFile = sourceImageTempFile(ops.getIdentifier());
+        writeStringToFile(sourceImageTempFile, "not empty");
+
+        Path derivativeImageTempFile = derivativeImageTempFile(ops);
+        writeStringToFile(derivativeImageTempFile, "not empty");
+
+        Path infoTempFile = infoTempFile(ops.getIdentifier());
+        writeStringToFile(infoTempFile, "not empty");
+
+        // create some empty files
+        Path root = FilesystemCache.rootSourceImagePath();
+        Path subdir = root.resolve("bogus");
+        Files.createDirectories(subdir);
+        Files.createFile(subdir.resolve("empty"));
+        Files.createFile(subdir.resolve("empty2"));
+
+        root = FilesystemCache.rootDerivativeImagePath();
+        subdir = root.resolve("bogus");
+        Files.createDirectories(subdir);
+        Files.createFile(subdir.resolve("empty"));
+        Files.createFile(subdir.resolve("empty2"));
+
+        root = FilesystemCache.rootInfoPath();
+        subdir = root.resolve("bogus");
+        Files.createDirectories(subdir);
+        Files.createFile(subdir.resolve("empty"));
+        Files.createFile(subdir.resolve("empty2"));
+
+        instance.setMinCleanableAge(10);
+
+        sleep(1000);
+
+        instance.cleanUp();
+
+        assertRecursiveFileCount(fixturePath, 3);
+    }
+
+    @Test
+    public void testGetDerivativeImageFiles() throws Exception {
         Identifier identifier = new Identifier("dogs");
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(identifier);
 
-        File imageFile = instance.derivativeImageFile(ops);
-        imageFile.getParentFile().mkdirs();
-        imageFile.createNewFile();
+        Path imageFile = derivativeImageFile(ops);
+        createEmptyFile(imageFile);
 
         ops.add(new Rotate(15));
-        imageFile = instance.derivativeImageFile(ops);
-        imageFile.getParentFile().mkdirs();
-        imageFile.createNewFile();
+        imageFile = derivativeImageFile(ops);
+        createEmptyFile(imageFile);
 
         ops.add(ColorTransform.GRAY);
-        imageFile = instance.derivativeImageFile(ops);
-        imageFile.getParentFile().mkdirs();
-        imageFile.createNewFile();
+        imageFile = derivativeImageFile(ops);
+        createEmptyFile(imageFile);
 
-        assertEquals(3, instance.derivativeImageFiles(identifier).size());
+        assertEquals(3, instance.getDerivativeImageFiles(identifier).size());
     }
 
-    /* derivativeImageTempFile(OperationList) */
-
     @Test
-    public void testDerivativeImageTempFile() throws Exception {
-        // TODO: write this
-    }
-
-    /* getImageInfo(Identifier) */
-
-    @Test
-    public void testGetImageInfoWithZeroTtl() throws Exception {
+    public void testGetImageInfoWithZeroTTL() throws Exception {
         Identifier identifier = new Identifier("test");
-        File file = instance.infoFile(identifier);
-        file.getParentFile().mkdirs();
-        file.createNewFile();
+        Path file = infoFile(identifier);
+        createEmptyFile(file);
 
         ObjectMapper mapper = new ObjectMapper();
         Info info = new Info(50, 50);
-        mapper.writeValue(file, info);
+        mapper.writeValue(file.toFile(), info);
         assertEquals(info, instance.getImageInfo(identifier));
     }
 
     @Test
-    public void testGetImageInfoWithNonZeroTtl() throws Exception {
+    public void testGetImageInfoWithNonZeroTTL() throws Exception {
         Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 1);
 
         Identifier identifier = new Identifier("test");
-        File file = instance.infoFile(identifier);
-        file.getParentFile().mkdirs();
-        file.createNewFile();
+        Path file = infoFile(identifier);
+        Files.createDirectories(file.getParent());
+        Files.createFile(file);
 
         ObjectMapper mapper = new ObjectMapper();
         Info info = new Info(50, 50);
-        mapper.writeValue(file, info);
+        mapper.writeValue(file.toFile(), info);
 
-        Thread.sleep(1100);
+        sleep(1100);
         assertNull(instance.getImageInfo(identifier));
     }
 
-    /* getSourceImageFile(Identifier) */
-
     @Test
-    public void testGetSourceImageFileWithIdentifierWithZeroTtl()
-            throws Exception {
+    public void testGetSourceImageFileWithZeroTTL() throws Exception {
         Identifier identifier = new Identifier("cats");
         assertNull(instance.getSourceImageFile(identifier));
 
-        File imageFile = instance.sourceImageFile(identifier);
-        imageFile.getParentFile().mkdirs();
-        imageFile.createNewFile();
+        Path imageFile = sourceImageFile(identifier);
+        Files.createDirectories(imageFile.getParent());
+        Files.createFile(imageFile);
         assertNotNull(instance.getSourceImageFile(identifier));
     }
 
     @Test
-    public void testGetSourceImageFileWithIdentifierWithNonzeroTtl()
-            throws Exception {
+    public void testGetSourceImageFileWithNonzeroTTL() throws Exception {
         Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 1);
 
         Identifier identifier = new Identifier("cats");
-        File cacheFile = instance.sourceImageFile(identifier);
-        cacheFile.getParentFile().mkdirs();
-        cacheFile.createNewFile();
+        Path cacheFile = sourceImageFile(identifier);
+        Files.createDirectories(cacheFile.getParent());
+        Files.createFile(cacheFile);
         assertNotNull(instance.getSourceImageFile(identifier));
 
-        Thread.sleep(1100);
+        sleep(1100);
 
         assertNull(instance.getSourceImageFile(identifier));
-        assertFalse(cacheFile.exists());
-    }
-
-    /* infoFile(Identifier) */
-
-    @Test
-    public void testInfoFile() throws CacheException {
-        final String pathname = Configuration.getInstance().
-                getString(Key.FILESYSTEMCACHE_PATHNAME);
-
-        final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
-
-        final String expected = String.format("%s%sinfo%s%s%s.json",
-                pathname,
-                File.separator,
-                getHashedStringBasedSubdirectory(identifier.toString()),
-                File.separator,
-                StringUtil.filesystemSafe(identifier.toString()));
-        assertEquals(new File(expected), instance.infoFile(identifier));
+        assertFalse(Files.exists(cacheFile));
     }
 
     @Test
-    public void testInfoTempFile() throws Exception {
-        // TODO: write this
-    }
-
-    /* newDerivativeImageInputStream(OperationList) */
-
-    @Test
-    public void testNewDerivativeImageInputStreamWithOpListWithZeroTtl()
+    public void testNewDerivativeImageInputStreamWithZeroTTL()
             throws Exception {
         OperationList ops = TestUtil.newOperationList();
-        assertNull(instance.newDerivativeImageInputStream(ops));
+        try (InputStream is = instance.newDerivativeImageInputStream(ops)) {
+            assertNull(is);
+        }
 
-        File imageFile = instance.derivativeImageFile(ops);
-        imageFile.getParentFile().mkdirs();
-        imageFile.createNewFile();
-        assertNotNull(instance.newDerivativeImageInputStream(ops));
+        Path imageFile = derivativeImageFile(ops);
+        createEmptyFile(imageFile);
+        try (InputStream is = instance.newDerivativeImageInputStream(ops)) {
+            assertNotNull(is);
+        }
     }
 
     @Test
-    public void testNewDerivativeImageInputStreamWithOpListWithNonzeroTtl()
+    public void testNewDerivativeImageInputStreamWithNonzeroTTL()
             throws Exception {
         Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 1);
 
         OperationList ops = TestUtil.newOperationList();
-        File cacheFile = instance.derivativeImageFile(ops);
-        cacheFile.getParentFile().mkdirs();
-        cacheFile.createNewFile();
-        assertNotNull(instance.newDerivativeImageInputStream(ops));
+        Path cacheFile = derivativeImageFile(ops);
+        createEmptyFile(cacheFile);
+        try (InputStream is = instance.newDerivativeImageInputStream(ops)) {
+            assertNotNull(is);
+        }
 
-        Thread.sleep(1100);
+        sleep(1100);
 
-        assertNull(instance.newDerivativeImageInputStream(ops));
-        assertFalse(cacheFile.exists());
+        try (InputStream is = instance.newDerivativeImageInputStream(ops)) {
+            assertNull(is);
+        }
+        assertFalse(Files.exists(cacheFile));
     }
-
-    /* newDerivativeImageOutputStream(OperationList) */
 
     @Test
     public void testNewDerivativeImageOutputStreamWithOpList() throws Exception {
         OperationList ops = TestUtil.newOperationList();
-        assertNotNull(instance.newDerivativeImageOutputStream(ops));
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+            assertNotNull(os);
+        }
     }
 
     @Test
     public void testNewDerivativeImageOutputStreamWithOpListCreatesFolder()
             throws Exception {
-        FileUtils.deleteDirectory(derivativeImagePath);
+        Files.walkFileTree(derivativeImagePath, new DeletingFileVisitor());
+        assertFalse(Files.exists(derivativeImagePath));
 
         OperationList ops = TestUtil.newOperationList();
-        instance.newDerivativeImageOutputStream(ops);
-        assertTrue(derivativeImagePath.exists());
-    }
-
-    /* newSourceImageOutputStream(Identifier) */
-
-    @Test
-    public void testNewSourceImageOutputStreamWithIdentifier() throws Exception {
-        assertNotNull(instance.newSourceImageOutputStream(new Identifier("cats")));
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+            assertTrue(Files.exists(derivativeImagePath));
+        }
     }
 
     @Test
-    public void testNewSourceImageOutputStreamWithIdentifierCreatesFolder()
+    public void testNewSourceImageOutputStream() throws Exception {
+        try (OutputStream os = instance.newSourceImageOutputStream(new Identifier("cats"))) {
+            assertNotNull(os);
+        }
+    }
+
+    @Test
+    public void testNewSourceImageOutputStreamCreatesFolder()
             throws Exception {
-        FileUtils.deleteDirectory(sourceImagePath);
+        Files.walkFileTree(sourceImagePath, new DeletingFileVisitor());
+        assertFalse(Files.exists(sourceImagePath));
 
         Identifier identifier = new Identifier("cats");
-        instance.newSourceImageOutputStream(identifier);
-        assertTrue(sourceImagePath.exists());
+        try (OutputStream os = instance.newSourceImageOutputStream(identifier)) {
+            assertTrue(Files.exists(sourceImagePath));
+        }
     }
-
-    /* sourceImageFile(Identifier) */
-
-    @Test
-    public void testGetSourceImageFileWithIdentifier() throws Exception {
-        final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
-
-        final String pathname = Configuration.getInstance().
-                getString(Key.FILESYSTEMCACHE_PATHNAME);
-        final String expected = String.format("%s%ssource%s%s%s",
-                pathname,
-                File.separator,
-                getHashedStringBasedSubdirectory(identifier.toString()),
-                File.separator,
-                StringUtil.filesystemSafe(identifier.toString()));
-        assertEquals(new File(expected), instance.sourceImageFile(identifier));
-    }
-
-    /* sourceImageTempFile(Identifier) */
-
-    @Test
-    public void testGetSourceImageTempFile() throws Exception {
-        // TODO: write this
-    }
-
-    /* purge() */
 
     @Test
     public void testPurge() throws Exception {
         OperationList ops = TestUtil.newOperationList();
 
         // create a new source image file
-        File sourceImageFile = instance.sourceImageFile(ops.getIdentifier());
-        sourceImageFile.getParentFile().mkdirs();
-        sourceImageFile.createNewFile();
+        Path sourceImageFile = sourceImageFile(ops.getIdentifier());
+        createEmptyFile(sourceImageFile);
+
         // create a new derivative image file
-        File derivativeImageFile = instance.derivativeImageFile(ops);
-        derivativeImageFile.getParentFile().mkdirs();
-        derivativeImageFile.createNewFile();
+        Path derivativeImageFile = derivativeImageFile(ops);
+        createEmptyFile(derivativeImageFile);
+
         // create a new info file
-        File infoFile = instance.infoFile(ops.getIdentifier());
-        infoFile.getParentFile().mkdirs();
-        infoFile.createNewFile();
+        Path infoFile = infoFile(ops.getIdentifier());
+        createEmptyFile(infoFile);
 
         // change the op list
         ops.setIdentifier(new Identifier("dogs"));
         ops.add(new Rotate(15));
 
         // create a new derivative image file based on the changed op list
-        derivativeImageFile = instance.derivativeImageFile(ops);
-        derivativeImageFile.getParentFile().mkdirs();
-        derivativeImageFile.createNewFile();
+        derivativeImageFile = derivativeImageFile(ops);
+        createEmptyFile(derivativeImageFile);
 
         instance.purge();
 
-        Iterator<File> it = FileUtils.iterateFiles(fixturePath, null, true);
-        int count = 0;
-        while (it.hasNext()) {
-            it.next();
-            count++;
-        }
-        assertEquals(0, count);
+        assertRecursiveFileCount(fixturePath, 0);
     }
 
-    /* purge(OperationsList) */
+    @Test
+    public void testPurgeWithIdentifier() throws Exception {
+        OperationList ops = TestUtil.newOperationList();
+
+        Identifier id1 = new Identifier("dogs");
+        ops.setIdentifier(id1);
+
+        // create a new source image
+        Path sourceImageFile = sourceImageFile(ops.getIdentifier());
+        createEmptyFile(sourceImageFile);
+
+        // create a new derivative image
+        Path derivativeImageFile = derivativeImageFile(ops);
+        createEmptyFile(derivativeImageFile);
+
+        // create a new info
+        Path infoFile = infoFile(ops.getIdentifier());
+        createEmptyFile(infoFile);
+
+        Identifier id2 = new Identifier("ferrets");
+        ops.setIdentifier(id2);
+        ops.add(new Rotate(15));
+
+        sourceImageFile = sourceImageFile(ops.getIdentifier());
+        createEmptyFile(sourceImageFile);
+
+        derivativeImageFile = derivativeImageFile(ops);
+        createEmptyFile(derivativeImageFile);
+
+        infoFile = infoFile(ops.getIdentifier());
+        createEmptyFile(infoFile);
+
+        assertRecursiveFileCount(sourceImagePath, 2);
+        assertRecursiveFileCount(derivativeImagePath, 2);
+        assertRecursiveFileCount(infoPath, 2);
+        instance.purge(id1);
+        assertRecursiveFileCount(sourceImagePath, 1);
+        assertRecursiveFileCount(derivativeImagePath, 1);
+        assertRecursiveFileCount(infoPath, 1);
+        instance.purge(id2);
+        assertRecursiveFileCount(sourceImagePath, 0);
+        assertRecursiveFileCount(derivativeImagePath, 0);
+        assertRecursiveFileCount(infoPath, 0);
+    }
 
     @Test
     public void testPurgeWithOperationList() throws Exception {
         OperationList ops = TestUtil.newOperationList();
 
-        final File imageFile = instance.derivativeImageFile(ops);
-        imageFile.getParentFile().mkdirs();
-        imageFile.createNewFile();
+        final Path imageFile = derivativeImageFile(ops);
+        createEmptyFile(imageFile);
 
         instance.purge(ops);
-        assertEquals(0, FileUtils.listFiles(derivativeImagePath, null, true).size());
-    }
 
-    /* purgeExpired() */
+        assertRecursiveFileCount(derivativeImagePath, 0);
+    }
 
     @Test
     public void testPurgeExpired() throws Exception {
@@ -533,84 +588,31 @@ public class FilesystemCacheTest extends BaseTest {
 
         // add a source image
         OperationList ops = TestUtil.newOperationList();
-        File imageFile = instance.sourceImageFile(ops.getIdentifier());
-        imageFile.getParentFile().mkdirs();
-        imageFile.createNewFile();
+        Path imageFile = sourceImageFile(ops.getIdentifier());
+        createEmptyFile(imageFile);
+
         // add a derivative image
         ops = TestUtil.newOperationList();
-        imageFile = instance.derivativeImageFile(ops);
-        imageFile.getParentFile().mkdirs();
-        imageFile.createNewFile();
+        imageFile = derivativeImageFile(ops);
+        createEmptyFile(imageFile);
+
         // add an info
-        File infoFile = instance.infoFile(ops.getIdentifier());
-        infoFile.getParentFile().mkdirs();
-        infoFile.createNewFile();
+        Path infoFile = infoFile(ops.getIdentifier());
+        createEmptyFile(infoFile);
 
         // wait for them to expire
-        Thread.sleep(1500);
+        sleep(1500);
 
         // add a changed derivative
         ops.setIdentifier(new Identifier("dogs"));
-        imageFile = instance.derivativeImageFile(ops);
-        imageFile.getParentFile().mkdirs();
-        imageFile.createNewFile();
+        imageFile = derivativeImageFile(ops);
+        createEmptyFile(imageFile);
 
         instance.purgeExpired();
-        assertEquals(1, FileUtils.listFiles(sourceImagePath, null, true).size());
-        assertEquals(1, FileUtils.listFiles(derivativeImagePath, null, true).size());
-        assertEquals(0, FileUtils.listFiles(infoPath, null, true).size());
+        assertRecursiveFileCount(sourceImagePath, 0);
+        assertRecursiveFileCount(derivativeImagePath, 1);
+        assertRecursiveFileCount(infoPath, 0);
     }
-
-    /* purge(Identifier) */
-
-    @Test
-    public void testPurgeWithIdentifier() throws Exception {
-        OperationList ops = TestUtil.newOperationList();
-
-        Identifier id1 = new Identifier("dogs");
-        ops.setIdentifier(id1);
-
-        // create a new source image
-        File sourceImageFile = instance.sourceImageFile(ops.getIdentifier());
-        sourceImageFile.getParentFile().mkdirs();
-        sourceImageFile.createNewFile();
-        // create a new derivative image
-        File derivativeImageFile = instance.derivativeImageFile(ops);
-        derivativeImageFile.getParentFile().mkdirs();
-        derivativeImageFile.createNewFile();
-        // create a new info
-        File infoFile = instance.infoFile(ops.getIdentifier());
-        infoFile.getParentFile().mkdirs();
-        infoFile.createNewFile();
-
-        Identifier id2 = new Identifier("ferrets");
-        ops.setIdentifier(id2);
-        ops.add(new Rotate(15));
-
-        sourceImageFile = instance.sourceImageFile(ops.getIdentifier());
-        sourceImageFile.getParentFile().mkdirs();
-        sourceImageFile.createNewFile();
-        derivativeImageFile = instance.derivativeImageFile(ops);
-        derivativeImageFile.getParentFile().mkdirs();
-        derivativeImageFile.createNewFile();
-        infoFile = instance.infoFile(ops.getIdentifier());
-        infoFile.getParentFile().mkdirs();
-        infoFile.createNewFile();
-
-        assertEquals(2, FileUtils.listFiles(sourceImagePath, null, true).size());
-        assertEquals(2, FileUtils.listFiles(derivativeImagePath, null, true).size());
-        assertEquals(2, FileUtils.listFiles(infoPath, null, true).size());
-        instance.purge(id1);
-        assertEquals(1, FileUtils.listFiles(sourceImagePath, null, true).size());
-        assertEquals(1, FileUtils.listFiles(derivativeImagePath, null, true).size());
-        assertEquals(1, FileUtils.listFiles(infoPath, null, true).size());
-        instance.purge(id2);
-        assertEquals(0, FileUtils.listFiles(sourceImagePath, null, true).size());
-        assertEquals(0, FileUtils.listFiles(derivativeImagePath, null, true).size());
-        assertEquals(0, FileUtils.listFiles(infoPath, null, true).size());
-    }
-
-    /* put(Identifier, Info) */
 
     @Test
     public void testPut() throws CacheException {
@@ -621,10 +623,10 @@ public class FilesystemCacheTest extends BaseTest {
     }
 
     /**
-     * This isn't foolproof, but is hopefully better than nothing.
+     * This isn't foolproof, but hopefully better than nothing.
      */
     @Test
-    public void concurrentlyTestPut() throws CacheException {
+    public void testPutConcurrently() throws CacheException {
         final Identifier identifier = new Identifier("monkeys");
         final Info info = new Info(52, 42);
 
@@ -633,9 +635,8 @@ public class FilesystemCacheTest extends BaseTest {
         final AtomicInteger writeCount = new AtomicInteger(0);
         final short numWriterThreads = 500;
 
-        // Fire off a bunch of threads to write the same info
-        // hopefully-concurrently, and a bunch more to read it
-        // hopefully-concurrently.
+        // Fire off a bunch of threads to write the same info, and a bunch more
+        // to read it.
         for (int i = 0; i < numWriterThreads; i++) {
             new Thread(() -> { // writer thread
                 try {
@@ -682,24 +683,6 @@ public class FilesystemCacheTest extends BaseTest {
         } else {
             assertEquals(info, instance.getImageInfo(identifier));
         }
-    }
-
-    /* sourceImageFile(Identifier) */
-
-    @Test
-    public void testSourceImageFile() throws CacheException {
-        // TODO: write this
-    }
-
-    @Test
-    public void testSourceImageTempFile() throws Exception {
-        // TODO: write this
-    }
-
-    private void sleep(int msec) {
-        try {
-            Thread.sleep(msec);
-        } catch (InterruptedException e) {}
     }
 
 }
