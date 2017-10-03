@@ -32,16 +32,13 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -600,8 +597,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @return All cached image files deriving from the image with the given
      *         identifier.
      */
-    Collection<Path> getDerivativeImageFiles(Identifier identifier)
-            throws IOException {
+    Set<Path> getDerivativeImageFiles(Identifier identifier) throws IOException {
         final Path cachePath = rootDerivativeImagePath().resolve(
                 hashedPathFragment(identifier.toString()));
         final String expectedNamePrefix =
