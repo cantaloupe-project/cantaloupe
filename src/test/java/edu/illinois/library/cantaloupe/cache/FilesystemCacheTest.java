@@ -12,6 +12,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.test.ConcurrentReaderWriter;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.DeletingFileVisitor;
 import edu.illinois.library.cantaloupe.util.StringUtil;
@@ -26,8 +27,6 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static edu.illinois.library.cantaloupe.cache.FilesystemCache.*;
 import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.assertRecursiveFileCount;
@@ -100,51 +99,22 @@ public class FilesystemCacheTest extends BaseTest {
     }
 
     @Test
-    public void testDerivativeImageFileWithOperationList() {
+    public void testDerivativeImageFile() {
         String pathname = Configuration.getInstance().
                 getString(Key.FILESYSTEMCACHE_PATHNAME);
 
         Identifier identifier = new Identifier("cats_~!@#$%^&*()");
-        Crop crop = new Crop();
-        crop.setWidth(50f);
-        crop.setHeight(50f);
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setPercent(0.905f);
-        Rotate rotate = new Rotate(10);
-        ColorTransform transform = ColorTransform.BITONAL;
         Format format = Format.TIF;
 
-        OperationList ops = new OperationList(identifier, format, crop, scale,
-                rotate, transform);
+        OperationList ops = new OperationList(identifier, format, scale);
 
         final Path expected = Paths.get(
                 pathname,
                 "image",
                 hashedPathFragment(identifier.toString()),
-                ops.toFilename());
-        assertEquals(expected, derivativeImageFile(ops));
-    }
-
-    @Test
-    public void testDerivativeImageFileWithNoOpOperationList() {
-        String pathname = Configuration.getInstance().getString(
-                Key.FILESYSTEMCACHE_PATHNAME);
-
-        final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
-        Crop crop = new Crop();
-        crop.setFull(true);
-        Scale scale = new Scale();
-        Rotate rotate = new Rotate(0);
-        Format format = Format.TIF;
-
-        final OperationList ops = new OperationList(identifier, format,
-                crop, scale, rotate);
-
-        final Path expected = Paths.get(
-                pathname,
-                "image",
-                FilesystemCache.hashedPathFragment(ops.getIdentifier().toString()),
                 ops.toFilename());
         assertEquals(expected, derivativeImageFile(ops));
     }
@@ -365,6 +335,8 @@ public class FilesystemCacheTest extends BaseTest {
 
     @Test
     public void testGetImageInfoWithZeroTTL() throws Exception {
+        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 0);
+
         Identifier identifier = new Identifier("test");
         Path file = infoFile(identifier);
         createEmptyFile(file);
@@ -393,7 +365,14 @@ public class FilesystemCacheTest extends BaseTest {
     }
 
     @Test
+    public void testGetImageInfoConcurrently() {
+        // This is tested in testPutConcurrently()
+    }
+
+    @Test
     public void testGetSourceImageFileWithZeroTTL() throws Exception {
+        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 0);
+
         Identifier identifier = new Identifier("cats");
         assertNull(instance.getSourceImageFile(identifier));
 
@@ -420,8 +399,30 @@ public class FilesystemCacheTest extends BaseTest {
     }
 
     @Test
+    public void testGetSourceImageFileConcurrently() throws CacheException {
+        final Identifier identifier = new Identifier("monkeys");
+
+        new ConcurrentReaderWriter(() -> {
+            try (OutputStream os =
+                         instance.newSourceImageOutputStream(identifier)) {
+                Files.copy(TestUtil.getImage("jpg").toPath(), os);
+            } catch (Exception e) {
+                fail(e.getMessage());
+            }
+        }, () -> {
+            try {
+                instance.getSourceImageFile(identifier);
+            } catch (Exception e) {
+                fail(e.getMessage());
+            }
+        }).run();
+    }
+
+    @Test
     public void testNewDerivativeImageInputStreamWithZeroTTL()
             throws Exception {
+        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 0);
+
         OperationList ops = TestUtil.newOperationList();
         try (InputStream is = instance.newDerivativeImageInputStream(ops)) {
             assertNull(is);
@@ -455,7 +456,30 @@ public class FilesystemCacheTest extends BaseTest {
     }
 
     @Test
-    public void testNewDerivativeImageOutputStreamWithOpList() throws Exception {
+    public void testNewDerivativeImageInputStreamConcurrently() {
+        OperationList ops = TestUtil.newOperationList();
+
+        new ConcurrentReaderWriter(() -> {
+            try (OutputStream os =
+                         instance.newDerivativeImageOutputStream(ops)) {
+                Files.copy(TestUtil.getImage("jpg").toPath(), os);
+            } catch (Exception e) {
+                fail(e.getMessage());
+            }
+        }, () -> {
+            try (InputStream is =
+                         instance.newDerivativeImageInputStream(ops)) {
+                while (is.read() != -1) {
+                    // consume the stream fully
+                }
+            } catch (Exception e) {
+                fail(e.getMessage());
+            }
+        }).run();
+    }
+
+    @Test
+    public void testNewDerivativeImageOutputStream() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
             assertNotNull(os);
@@ -463,7 +487,7 @@ public class FilesystemCacheTest extends BaseTest {
     }
 
     @Test
-    public void testNewDerivativeImageOutputStreamWithOpListCreatesFolder()
+    public void testNewDerivativeImageOutputStreamCreatesFolder()
             throws Exception {
         Files.walkFileTree(derivativeImagePath, new DeletingFileVisitor());
         assertFalse(Files.exists(derivativeImagePath));
@@ -472,6 +496,11 @@ public class FilesystemCacheTest extends BaseTest {
         try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
             assertTrue(Files.exists(derivativeImagePath));
         }
+    }
+
+    @Test
+    public void testNewDerivativeImageOutputStreamConcurrently() {
+        // tested in testNewDerivativeImageInputStreamConcurrently()
     }
 
     @Test
@@ -491,6 +520,11 @@ public class FilesystemCacheTest extends BaseTest {
         try (OutputStream os = instance.newSourceImageOutputStream(identifier)) {
             assertTrue(Files.exists(sourceImagePath));
         }
+    }
+
+    @Test
+    public void testNewSourceImageOutputStreamConcurrently() {
+        // Tested in testGetSourceImageFileConcurrently()
     }
 
     @Test
@@ -622,67 +656,27 @@ public class FilesystemCacheTest extends BaseTest {
         assertEquals(info, instance.getImageInfo(identifier));
     }
 
-    /**
-     * This isn't foolproof, but hopefully better than nothing.
-     */
     @Test
     public void testPutConcurrently() throws CacheException {
         final Identifier identifier = new Identifier("monkeys");
         final Info info = new Info(52, 42);
 
-        final AtomicBoolean anyFailures = new AtomicBoolean(false);
-        final AtomicInteger readCount = new AtomicInteger(0);
-        final AtomicInteger writeCount = new AtomicInteger(0);
-        final short numWriterThreads = 500;
-
-        // Fire off a bunch of threads to write the same info, and a bunch more
-        // to read it.
-        for (int i = 0; i < numWriterThreads; i++) {
-            new Thread(() -> { // writer thread
-                try {
-                    instance.put(identifier, info);
-                } catch (Exception e) {
-                    anyFailures.set(true);
-                    e.printStackTrace();
-                } finally {
-                    writeCount.incrementAndGet();
+        new ConcurrentReaderWriter(() -> {
+            try {
+                instance.put(identifier, info);
+            } catch (Exception e) {
+                fail(e.getMessage());
+            }
+        }, () -> {
+            try {
+                Info otherInfo = instance.getImageInfo(identifier);
+                if (otherInfo != null && !info.equals(otherInfo)) {
+                    fail();
                 }
-            }).start();
-
-            new Thread(() -> { // reader thread
-                while (true) {
-                    // Spin until we have something to read.
-                    if (writeCount.get() > 0) {
-                        try {
-                            Info otherInfo =
-                                    instance.getImageInfo(identifier);
-                            if (!info.equals(otherInfo)) {
-                                throw new CacheException("Fail!");
-                            }
-                        } catch (Exception e) {
-                            anyFailures.set(true);
-                            e.printStackTrace();
-                        } finally {
-                            readCount.incrementAndGet();
-                        }
-                        break;
-                    } else {
-                        sleep(1);
-                    }
-                }
-            }).start();
-        }
-
-        while (readCount.get() < numWriterThreads ||
-                writeCount.get() < numWriterThreads) {
-            sleep(1);
-        }
-
-        if (anyFailures.get()) {
-            fail();
-        } else {
-            assertEquals(info, instance.getImageInfo(identifier));
-        }
+            } catch (Exception e) {
+                fail(e.getMessage());
+            }
+        }).run();
     }
 
 }
