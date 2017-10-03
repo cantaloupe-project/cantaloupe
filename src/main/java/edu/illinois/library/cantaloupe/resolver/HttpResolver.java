@@ -44,7 +44,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * <p>Provides access to source content located on an HTTP(S) server.</p>
  *
- * <h3>Format Determination</h3>
+ * <h1>Format Determination</h1>
  *
  * <p>For images with extensions, the extension will be assumed to correctly
  * denote the image format, based on the return value of
@@ -53,7 +53,7 @@ import java.util.concurrent.TimeoutException;
  * checked to determine their format, which will incur a penalty of an extra
  * request. It is therefore more efficient to serve images with extensions.</p>
  *
- * <h3>Lookup Strategies</h3>
+ * <h1>Lookup Strategies</h1>
  *
  * <p>Two distinct lookup strategies are supported, defined by
  * {@link Key#HTTPRESOLVER_LOOKUP_STRATEGY}. BasicLookupStrategy locates
@@ -66,7 +66,7 @@ import java.util.concurrent.TimeoutException;
  */
 class HttpResolver extends AbstractResolver implements StreamResolver {
 
-    private class HTTPStreamSource implements StreamSource {
+    private static class HTTPStreamSource implements StreamSource {
 
         private final HttpClient client;
         private final URI uri;
@@ -106,7 +106,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
     }
 
-    class ResourceInfo {
+    static class ResourceInfo {
 
         private URI uri;
         private String username;
