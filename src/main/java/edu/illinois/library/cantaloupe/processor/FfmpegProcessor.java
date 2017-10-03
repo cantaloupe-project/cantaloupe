@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -165,7 +166,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
                     final int code = process.waitFor();
                     if (code != 0) {
                         LOGGER.error("ffmpeg returned with code {}", code);
-                        final String errorStr = errorBucket.toString();
+                        final String errorStr = errorBucket.toString("UTF-8");
                         if (errorStr != null && errorStr.length() > 0) {
                             throw new ProcessorException(errorStr);
                         }
@@ -178,9 +179,13 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
             }
         } catch (Exception e) {
             String msg = e.getMessage();
-            final String errorStr = errorBucket.toString();
-            if (errorStr != null && errorStr.length() > 0) {
-                msg += " (command output: " + msg + ")";
+            try {
+                final String errorStr = errorBucket.toString("UTF-8");
+                if (errorStr != null && errorStr.length() > 0) {
+                    msg += " (command output: " + msg + ")";
+                }
+            } catch (UnsupportedEncodingException e2) {
+                LOGGER.error("process(): {}", e2.getMessage());
             }
             throw new ProcessorException(msg, e);
         }

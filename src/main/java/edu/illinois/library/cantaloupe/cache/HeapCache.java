@@ -297,7 +297,7 @@ class HeapCache implements DerivativeCache {
                             HeapCacheProtos.Info.newBuilder().
                                     setLastAccessed(key.getLastAccessedTime()).
                                     setIdentifier(key.getIdentifier()).
-                                    setJson(new String(item.getData())).
+                                    setJson(new String(item.getData(), "UTF-8")).
                                     build();
                     cacheBuilder.addInfo(info);
                 }

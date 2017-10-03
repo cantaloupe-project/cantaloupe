@@ -55,8 +55,8 @@ class TemplateCache {
         logger.debug("load(): loading {}", name);
         try (InputStream is = TemplateCache.class.getResourceAsStream(name)) {
             if (is != null) {
-                try (BufferedReader reader =
-                             new BufferedReader(new InputStreamReader(is))) {
+                try (BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(is, "UTF-8"))) {
                     final StringBuilder builder = new StringBuilder();
                     String str = "";
                     while ((str = reader.readLine()) != null) {

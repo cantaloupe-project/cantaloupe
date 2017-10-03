@@ -113,7 +113,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
 
                 final InputStream processInputStream = process.getInputStream();
                 try (BufferedReader stdInput = new BufferedReader(
-                        new InputStreamReader(processInputStream))) {
+                        new InputStreamReader(processInputStream, "UTF-8"))) {
                     String s;
                     boolean read = false;
                     while ((s = stdInput.readLine()) != null) {

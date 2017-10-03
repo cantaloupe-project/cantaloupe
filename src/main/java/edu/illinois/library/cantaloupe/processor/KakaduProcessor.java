@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -139,6 +140,15 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
             LOGGER.error("Sorry, but " + KakaduProcessor.class.getSimpleName() +
                     " won't work on this platform as it requires access to " +
                     "/dev/stdout.");
+        }
+    }
+
+    private static String toString(ByteArrayOutputStream os) {
+        try {
+            return new String(os.toByteArray(), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            LOGGER.error(e.getMessage(), e);
+            return "";
         }
     }
 
@@ -260,7 +270,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
             IOUtils.copy(processInputStream, outputBucket);
             // This will be an XML string if all went well, otherwise it will
             // be non-XML text.
-            final String kduOutput = outputBucket.toString("UTF-8").trim();
+            final String kduOutput = toString(outputBucket).trim();
 
             // A typical error message looks like:
             // -------------
@@ -321,8 +331,8 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
                     final int code = process.waitFor();
                     if (code != 0) {
                         LOGGER.warn("kdu_expand returned with code {}", code);
-                        final String errorStr = errorBucket.toString();
-                        if (errorStr != null && errorStr.length() > 0) {
+                        final String errorStr = toString(errorBucket);
+                        if (errorStr.length() > 0) {
                             throw new ProcessorException(errorStr);
                         }
                     }
@@ -342,8 +352,8 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
             throw new ProcessorException(msg, e);
         } catch (IOException | InterruptedException e) {
             String msg = e.getMessage();
-            final String errorStr = errorBucket.toString();
-            if (errorStr != null && errorStr.length() > 0) {
+            final String errorStr = toString(errorBucket);
+            if (errorStr.length() > 0) {
                 msg += " (command output: " + errorStr + ")";
             }
             throw new ProcessorException(msg, e);

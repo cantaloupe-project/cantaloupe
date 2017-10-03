@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
 /**
@@ -299,8 +300,8 @@ class RedisCache implements DerivativeCache {
         logger.info("put(): caching info for {}", identifier);
         try {
             getConnection().async().hset(INFO_HASH_KEY, infoKey(identifier),
-                    imageInfo.toJSON().getBytes());
-        } catch (JsonProcessingException e) {
+                    imageInfo.toJSON().getBytes("UTF-8"));
+        } catch (JsonProcessingException | UnsupportedEncodingException e) {
             logger.error("put(): {}", e.getMessage());
             throw new CacheException(e.getMessage(), e);
         }

@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -197,6 +198,15 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
      */
     static synchronized void setQuietModeSupported(boolean trueOrFalse) {
         isQuietModeSupported = trueOrFalse;
+    }
+
+    private static String toString(ByteArrayOutputStream os) {
+        try {
+            return new String(os.toByteArray(), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            LOGGER.error(e.getMessage(), e);
+            return "";
+        }
     }
 
     OpenJpegProcessor() {
@@ -374,8 +384,8 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                     final int code = process.waitFor();
                     if (code != 0) {
                         LOGGER.warn("opj_decompress returned with code {}", code);
-                        final String errorStr = errorBucket.toString();
-                        if (errorStr != null && errorStr.length() > 0) {
+                        final String errorStr = toString(errorBucket);
+                        if (errorStr.length() > 0) {
                             throw new ProcessorException(errorStr);
                         }
                     }
@@ -395,8 +405,8 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
             throw new ProcessorException(msg, e);
         } catch (IOException | InterruptedException e) {
             String msg = e.getMessage();
-            final String errorStr = errorBucket.toString();
-            if (errorStr != null && errorStr.length() > 0) {
+            final String errorStr = toString(errorBucket);
+            if (errorStr.length() > 0) {
                 msg += " (command output: " + errorStr + ")";
             }
             throw new ProcessorException(msg, e);

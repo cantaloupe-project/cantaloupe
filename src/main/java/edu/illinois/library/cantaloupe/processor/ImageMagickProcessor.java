@@ -137,7 +137,8 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                 LOGGER.info("getFormats(): invoking {}", commandString);
                 final Process process = pb.start();
                 final InputStream pis = process.getInputStream();
-                final InputStreamReader reader = new InputStreamReader(pis);
+                final InputStreamReader reader =
+                        new InputStreamReader(pis, "UTF-8");
                 try (final BufferedReader buffReader = new BufferedReader(reader)) {
                     String s;
                     while ((s = buffReader.readLine()) != null) {
