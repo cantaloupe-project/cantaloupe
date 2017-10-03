@@ -155,7 +155,8 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                     String.join(" ", pb.command()));
             try {
                 Process process = pb.start();
-                try (InputStream processInputStream = process.getInputStream()) {
+                try (InputStream processInputStream =
+                             new BufferedInputStream(process.getInputStream())) {
                     String opjOutput = IOUtils.toString(processInputStream, "UTF-8");
 
                     // We are looking for the following line in the output of
@@ -315,7 +316,8 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         LOGGER.info("Invoking {}", String.join(" ", pb.command()));
         Process process = pb.start();
 
-        try (InputStream processInputStream = process.getInputStream()) {
+        try (InputStream processInputStream =
+                     new BufferedInputStream(process.getInputStream())) {
             String opjOutput = IOUtils.toString(processInputStream, "UTF-8");
 
             // A typical error message looks like:

@@ -266,7 +266,8 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
         Process process = pb.start();
         ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
 
-        try (InputStream processInputStream = process.getInputStream()) {
+        try (InputStream processInputStream =
+                     new BufferedInputStream(process.getInputStream())) {
             IOUtils.copy(processInputStream, outputBucket);
             // This will be an XML string if all went well, otherwise it will
             // be non-XML text.
