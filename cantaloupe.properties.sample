@@ -3,19 +3,20 @@
 #
 # Copy this file to `cantaloupe.properties` and edit as desired.
 #
+# Keys may change from version to version. See the "Upgrading" section of
+# the website.
+#
 # Most changes will take effect without restarting. Those that won't are
 # marked with "!!".
 ###########################################################################
 
-# !! Whether to enable HTTP access (http://), and on what host interface
-# and TCP port. (Applies in standalone mode only.)
+# !! Configures the HTTP server. (Standalone mode only.)
 http.enabled = true
 http.host = 0.0.0.0
 http.port = 8182
 http.http2.enabled = true
 
-# !! Whether to enable HTTPS access (https://), and on what host interface
-# and TCP port. (Applies in standalone mode only.)
+# !! Configures the HTTPS server. (Standalone mode only.)
 https.enabled = false
 https.host = 0.0.0.0
 https.port = 8183
@@ -27,8 +28,7 @@ https.key_store_password = myPassword
 https.key_store_path = /path/to/keystore.jks
 https.key_password = myPassword
 
-# !! Maximum size of the HTTP(S) request queue. Set to 0 to use the OS
-# default.
+# !! Maximum size of the HTTP(S) request queue. 0 will use the OS default.
 http.accept_queue_limit = 0
 
 # Enables the Control Panel, at /admin.
@@ -38,14 +38,14 @@ admin.password =
 
 # Base URI to use for internal links, such as Link headers and JSON-LD @id
 # values, in a reverse-proxy context. This should only be used when
-# X-Forwarded-* headers cannot be used instead (see the user manual).
+# X-Forwarded-* headers cannot be used instead. (See the user manual.)
 base_uri =
 
 # Normally, slashes in a URI path component must be percent-encoded as
 # "%2F". If your proxy is incapable of passing these through without
-# decoding them, you can define an alternate character or character
-# sequence to substitute for a slash. Supply the non-percent-encoded
-# version here, and use the percent-encoded version in URLs.
+# decoding, you can define an alternate character or character sequence
+# to substitute for a slash. Supply the non-percent-encoded version here,
+# and use the percent-encoded version in URLs.
 slash_substitute =
 
 # Maximum number of pixels to return in a response, to prevent overloading
@@ -53,7 +53,7 @@ slash_substitute =
 # response. Set to 0 for no maximum.
 max_pixels = 400000000
 
-# Sometimes helpful.
+# Errors will also be logged to the error log (if enabled).
 print_stack_trace_on_error_pages = true
 
 ###########################################################################
@@ -90,11 +90,11 @@ endpoint.iiif.2.enabled = true
 # using the ?response-content-disposition query argument.
 endpoint.iiif.content_disposition = none
 
-# Minimum size that will be used in info.json "sizes" keys.
+# Minimum size that will be used in info.json `sizes` keys.
 endpoint.iiif.min_size = 64
 
-# Minimum size that will be used in info.json "tiles" keys. See the user
-# manual for an explanation of how these are calculated.
+# Minimum size that will be used in info.json `tiles` keys. See the user
+# manual to learn how these are calculated.
 endpoint.iiif.min_tile_size = 1024
 
 # If true, requests for sizes other than those specified in an info.json
@@ -127,14 +127,13 @@ resolver.delegate = false
 # FilesystemResolver
 #----------------------------------------
 
-# Tells FilesystemResolver how to look up files. Allowed values are
-# `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
-# uses the delegate script for dynamic lookups; see the user manual for
-# details.
+# How to look up files. Allowed values are `BasicLookupStrategy` and
+# `ScriptLookupStrategy`. ScriptLookupStrategy uses the delegate script for
+# dynamic lookups; see the user manual.
 FilesystemResolver.lookup_strategy = BasicLookupStrategy
 
 # Server-side path that will be prefixed to the identifier in the URL.
-# Trailing slash is important.
+# Trailing slash is important!
 FilesystemResolver.BasicLookupStrategy.path_prefix = /home/myself/images/
 
 # Server-side path or extension that will be suffixed to the identifier in
@@ -154,15 +153,15 @@ HttpResolver.trust_invalid_certs = false
 # details.
 HttpResolver.lookup_strategy = BasicLookupStrategy
 
-# URL that will be prefixed to the identifier in the request URL. Trailing
-# slash is important.
+# URL that will be prefixed to the identifier in the request URL.
+# Trailing slash is important!
 HttpResolver.BasicLookupStrategy.url_prefix = http://localhost/images/
 
 # Path, extension, query string, etc. that will be suffixed to the
 # identifier in the request URL.
 HttpResolver.BasicLookupStrategy.url_suffix =
 
-# Used for HTTP Basic authentication.
+# Enables access to resources that require HTTP Basic authentication.
 HttpResolver.auth.basic.username =
 HttpResolver.auth.basic.secret =
 
@@ -171,7 +170,8 @@ HttpResolver.auth.basic.secret =
 #----------------------------------------
 
 # Note: JdbcResolver requires some delegate methods to be implemented in
-# addition to the configuration here; see the user manual.
+# addition to the configuration here, and a JDBC driver to be installed on
+# the classpath; see the user manual.
 
 # !!
 JdbcResolver.url = jdbc:postgresql://localhost:5432/my_database
@@ -265,7 +265,7 @@ processor.fallback = Java2dProcessor
 #----------------------------------------
 
 # Controls the resolution of vector rasterization (of e.g. PDFs) at a scale
-# of 1. Requests for scales less than 0.5 or larger than 2 will automatically
+# of 1. Requests for scales less than 1/2 or larger than 2 will automatically
 # use a lower or higher multiple of this.
 processor.dpi = 150
 
@@ -274,11 +274,11 @@ processor.dpi = 150
 processor.normalize = false
 
 # Color of the background when an image is rotated or alpha-flattened, for
-# output formats that do not support transparency.
+# output formats that don't support transparency.
 processor.background_color = black
 
 # Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
-# `lanczos3`, `mitchell`, `triangle`. (These are not used by JaiProcessor.)
+# `lanczos3`, `mitchell`, `triangle`. (These are ignored by JaiProcessor.)
 processor.downscale_filter = bicubic
 processor.upscale_filter = bicubic
 
@@ -289,13 +289,13 @@ processor.sharpen = 0
 # images. (This is not foolproof; see the user manual.)
 processor.metadata.preserve = false
 
-# Whether to auto-rotate images using the EXIF "Orientation" field.
+# Whether to auto-rotate images using the EXIF `Orientation` field.
 # The check for this field can impair performance slightly.
 processor.metadata.respect_orientation = false
 
 # Whether to reduce images with more than 8 bits per sample to 8 bits.
 # This only applies to formats that support >8-bit samples, and not all
-# processors respect this setting -- see the user manual.
+# processors respect this setting; see the user manual.
 processor.limit_to_8_bits = true
 
 # Progressive JPEGs are generally more space-efficient.
@@ -385,10 +385,10 @@ cache.server.source.enabled = false
 cache.server.source = FilesystemCache
 
 # Enables the derivative (processed image) cache.
-cache.server.derivative.enabled =
+cache.server.derivative.enabled = false
 
-# Available values are `FilesystemCache`, `JdbcCache`, `AmazonS3Cache`, and
-# `AzureStorageCache`.
+# Available values are `FilesystemCache`, `JdbcCache`, `RedisCache`,
+# `HeapCache`, `AmazonS3Cache`, and `AzureStorageCache`.
 cache.server.derivative =
 
 # Time before a cached image becomes stale and needs to be reloaded. Set to
@@ -402,15 +402,15 @@ cache.server.ttl_seconds = 2592000
 cache.server.purge_missing = false
 
 # If true, the source image will be confirmed to exist before a cached copy
-# is returned. If false, the cached copy will be returned without any
-# checking. Resolving first is slower but safer.
+# is returned. If false, the cached copy will be returned without checking.
+# Resolving first is safer but slower.
 cache.server.resolve_first = false
 
-# !! Enables the cache worker, which periodically purges expired cache
+# !! Enables the cache worker, which periodically purges invalid cache
 # items in the background.
 cache.server.worker.enabled = false
 
-# !! The cache worker will wait this many seconds between purgings.
+# !! The cache worker will wait this many seconds between shifts.
 cache.server.worker.interval = 86400
 
 #----------------------------------------
@@ -554,8 +554,8 @@ overlays.BasicStrategy.string.font.size = 24
 # at which it does fit will be used, down to this.
 overlays.BasicStrategy.string.font.min_size = 18
 
-# Font weight. 1 = regular, 2 = bold. Note that many fonts don't support
-# fractional weights.
+# Font weight. 1 = regular, 2 = bold. Unfortunately, many fonts don't
+# support fractional weights.
 overlays.BasicStrategy.string.font.weight = 1.0
 
 # Point spacing between glyphs, typically between -0.1 and 0.1.
@@ -571,7 +571,7 @@ overlays.BasicStrategy.string.stroke.color = black
 overlays.BasicStrategy.string.stroke.width = 1
 
 # Color of a background to draw under the string.
-# CSS color syntax is supported.
+# CSS color syntax and alpha are supported.
 overlays.BasicStrategy.string.background.color = rgba(0, 0, 0, 100)
 
 # Allowed values: `top left`, `top center`, `top right`, `left center`,
