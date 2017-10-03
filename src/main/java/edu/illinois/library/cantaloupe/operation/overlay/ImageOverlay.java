@@ -7,10 +7,13 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.URI;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * <p>Encapsulates an image overlaid on top of another image.</p>
@@ -19,10 +22,13 @@ import java.util.Map;
  */
 public class ImageOverlay extends Overlay implements Operation {
 
+    static final Set<String> SUPPORTED_URI_SCHEMES = Collections.unmodifiableSet(
+            new HashSet<>(Arrays.asList("http://", "https://", "file://")));
+
     private static ImageOverlayCache overlayCache = new ImageOverlayCache();
 
     private File file;
-    private URL url;
+    private URI uri;
 
     /**
      * Constructor for images that reside on the local filesystem.
@@ -39,13 +45,13 @@ public class ImageOverlay extends Overlay implements Operation {
     /**
      * Constructor for images that reside on a web server.
      *
-     * @param url      Image URL.
+     * @param uri      Image URI.
      * @param position Position of the overlay.
      * @param inset    Inset in pixels.
      */
-    public ImageOverlay(URL url, Position position, int inset) {
+    public ImageOverlay(URI uri, Position position, int inset) {
         super(position, inset);
-        setURL(url);
+        setURI(uri);
     }
 
     /**
@@ -59,23 +65,23 @@ public class ImageOverlay extends Overlay implements Operation {
 
     /**
      * @return The identifier of the image, such as its filename or the file
-     *         component of its URL.
+     *         component of its URI.
      */
     public String getIdentifier() {
         if (getFile() != null) {
             return getFile().getName();
         } else {
-            return getURL().getFile().replace("/", "");
+            return getURI().getPath().replace("/", "");
         }
     }
 
     /**
      * For reading the image, clients should use {@link #openStream()} instead.
      *
-     * @return URL of the image.
+     * @return URI of the image.
      */
-    public URL getURL() {
-        return url;
+    public URI getURI() {
+        return uri;
     }
 
     /**
@@ -86,7 +92,7 @@ public class ImageOverlay extends Overlay implements Operation {
         if (getFile() != null) {
             bytes = overlayCache.putAndGet(getFile());
         } else {
-            bytes = overlayCache.putAndGet(getURL());
+            bytes = overlayCache.putAndGet(getURI());
         }
         return new ByteArrayInputStream(bytes);
     }
@@ -97,18 +103,18 @@ public class ImageOverlay extends Overlay implements Operation {
      */
     public void setFile(File file) {
         checkFrozen();
-        this.url = null;
+        this.uri = null;
         this.file = file;
     }
 
     /**
-     * @param url Image URL.
+     * @param uri Image URI.
      * @throws IllegalStateException If the instance is frozen.
      */
-    public void setURL(URL url) {
+    public void setURI(URI uri) {
         checkFrozen();
         this.file = null;
-        this.url = url;
+        this.uri = uri;
     }
 
     /**

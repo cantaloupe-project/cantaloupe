@@ -14,7 +14,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.font.TextAttribute;
 import java.io.File;
-import java.net.URL;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,13 +41,13 @@ public class DelegateOverlayServiceTest extends BaseTest {
         final OperationList opList = new OperationList(new Identifier("image"),
                 Format.JPG);
         final Dimension fullSize = new Dimension(100, 100);
-        final URL requestUrl = new URL("http://example.org/");
+        final URI requestURI = new URI("http://example.org/");
         final Map<String,String> requestHeaders = new HashMap<>();
-        final String clientIp = "";
+        final String clientIP = "";
         final Map<String,String> cookies = new HashMap<>();
 
         final ImageOverlay overlay = (ImageOverlay) instance.getOverlay(
-                opList, fullSize, requestUrl, requestHeaders, clientIp,
+                opList, fullSize, requestURI, requestHeaders, clientIP,
                 cookies);
         assertEquals(new File("/dev/cats"), overlay.getFile());
         assertEquals((long) 5, overlay.getInset());
@@ -59,13 +59,13 @@ public class DelegateOverlayServiceTest extends BaseTest {
         final OperationList opList = new OperationList(
                 new Identifier("string"), Format.JPG);
         final Dimension fullSize = new Dimension(100, 100);
-        final URL requestUrl = new URL("http://example.org/");
+        final URI requestURI = new URI("http://example.org/");
         final Map<String,String> requestHeaders = new HashMap<>();
-        final String clientIp = "";
+        final String clientIP = "";
         final Map<String,String> cookies = new HashMap<>();
 
         final StringOverlay overlay = (StringOverlay) instance.getOverlay(
-                opList, fullSize, requestUrl, requestHeaders, clientIp,
+                opList, fullSize, requestURI, requestHeaders, clientIP,
                 cookies);
         assertEquals("dogs\ndogs", overlay.getString());
         assertEquals("Arial", overlay.getFont().getName());
@@ -86,13 +86,13 @@ public class DelegateOverlayServiceTest extends BaseTest {
         final OperationList opList = new OperationList(new Identifier("bogus"),
                 Format.JPG);
         final Dimension fullSize = new Dimension(100, 100);
-        final URL requestUrl = new URL("http://example.org/");
+        final URI requestURI = new URI("http://example.org/");
         final Map<String,String> requestHeaders = new HashMap<>();
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
         Overlay overlay = instance.getOverlay(
-                opList, fullSize, requestUrl, requestHeaders, clientIp, cookies);
+                opList, fullSize, requestURI, requestHeaders, clientIp, cookies);
         assertNull(overlay);
     }
 

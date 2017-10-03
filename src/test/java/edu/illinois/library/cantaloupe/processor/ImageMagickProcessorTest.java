@@ -19,6 +19,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -219,8 +220,8 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
 
     @Test
     public void getOverlayTempFile() throws Exception {
-        URL url = new URL("file://" + TestUtil.getImage("jpg").getAbsolutePath());
-        ImageOverlay overlay = new ImageOverlay(url, Position.TOP_LEFT, 2);
+        URI uri = new URI("file://" + TestUtil.getImage("jpg").getAbsolutePath());
+        ImageOverlay overlay = new ImageOverlay(uri, Position.TOP_LEFT, 2);
 
         ImageMagickProcessor instance = newInstance();
         File overlayFile = instance.getOverlayTempFile(overlay);

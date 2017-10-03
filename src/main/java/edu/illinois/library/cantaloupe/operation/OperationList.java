@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -142,7 +142,7 @@ public final class OperationList implements Comparable<OperationList>,
      * @param sourceImageSize        Full size of the source image.
      * @param sourceImageOrientation Orientation of the source image.
      * @param clientIp               Client IP address.
-     * @param requestUrl             Request URL.
+     * @param requestURI             Request URL.
      * @param requestHeaders         Request headers.
      * @param cookies                Client cookies.
      * @throws IllegalArgumentException If the instance's output format has not
@@ -151,7 +151,7 @@ public final class OperationList implements Comparable<OperationList>,
     public void applyNonEndpointMutations(final Dimension sourceImageSize,
                                           final Orientation sourceImageOrientation,
                                           final String clientIp,
-                                          final URL requestUrl,
+                                          final URI requestURI,
                                           final Map<String,String> requestHeaders,
                                           final Map<String,String> cookies) {
         if (getOutputFormat() == null
@@ -254,7 +254,7 @@ public final class OperationList implements Comparable<OperationList>,
             final OverlayService service = new OverlayService();
             if (service.isEnabled() && service.shouldApplyToImage(getResultingSize(sourceImageSize))) {
                 final Overlay overlay = service.newOverlay(
-                        this, sourceImageSize, requestUrl, requestHeaders,
+                        this, sourceImageSize, requestURI, requestHeaders,
                         clientIp, cookies);
                 add(overlay);
             } else {

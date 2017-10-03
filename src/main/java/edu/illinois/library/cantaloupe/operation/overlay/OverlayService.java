@@ -9,7 +9,7 @@ import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import javax.script.ScriptException;
 import java.awt.Dimension;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.util.Map;
 
 /**
@@ -43,22 +43,18 @@ public class OverlayService {
      *
      * @param opList Required for ScriptStrategy.
      * @param fullSize Required for ScriptStrategy.
-     * @param requestUrl Required for ScriptStrategy.
+     * @param requestURI Required for ScriptStrategy.
      * @param requestHeaders Required for ScriptStrategy.
-     * @param clientIp Required for ScriptStrategy.
+     * @param clientIP Required for ScriptStrategy.
      * @param cookies Required for ScriptStrategy.
      * @return Overlay respecting the overlay strategy and given arguments,
-     *         or null.
-     * @throws IOException
-     * @throws ScriptException
-     * @throws DelegateScriptDisabledException
-     * @throws ConfigurationException
+     *         or <code>null</code>.
      */
     public Overlay newOverlay(OperationList opList,
                               Dimension fullSize,
-                              URL requestUrl,
+                              URI requestURI,
                               Map<String,String> requestHeaders,
-                              String clientIp,
+                              String clientIP,
                               Map<String,String> cookies)
             throws IOException, ScriptException,
             DelegateScriptDisabledException, ConfigurationException {
@@ -74,7 +70,7 @@ public class OverlayService {
                 break;
             case DELEGATE_METHOD:
                 return new DelegateOverlayService().getOverlay(
-                        opList, fullSize, requestUrl, requestHeaders, clientIp,
+                        opList, fullSize, requestURI, requestHeaders, clientIP,
                         cookies);
         }
         return null;

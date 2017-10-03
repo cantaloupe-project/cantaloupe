@@ -11,8 +11,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -30,7 +30,7 @@ public class ImageOverlayTest extends BaseTest {
     @Test
     public void getIdentifier() throws Exception {
         assertEquals("jpg", instance.getIdentifier());
-        instance.setURL(new URL("http://example.org/dogs"));
+        instance.setURI(new URI("http://example.org/dogs"));
         assertEquals("dogs", instance.getIdentifier());
     }
 
@@ -56,11 +56,11 @@ public class ImageOverlayTest extends BaseTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void setURLThrowsExceptionWhenFrozen() {
+    public void setURIThrowsExceptionWhenFrozen() throws Exception {
         instance.freeze();
         try {
-            instance.setURL(new URL("http://example.org/cats"));
-        } catch (MalformedURLException e) {
+            instance.setURI(new URI("http://example.org/cats"));
+        } catch (URISyntaxException e) {
             fail();
         }
     }

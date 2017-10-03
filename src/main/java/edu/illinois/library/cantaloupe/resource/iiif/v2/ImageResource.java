@@ -151,7 +151,7 @@ public class ImageResource extends IIIF2Resource {
         ops.applyNonEndpointMutations(fullSize,
                 info.getOrientation(),
                 getCanonicalClientIpAddress(),
-                getReference().toUrl(),
+                getReference().toUri(),
                 getRequest().getHeaders().getValuesMap(),
                 getCookies().getValuesMap());
 

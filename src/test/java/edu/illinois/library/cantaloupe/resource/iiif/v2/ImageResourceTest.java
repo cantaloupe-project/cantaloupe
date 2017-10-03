@@ -20,6 +20,7 @@ import org.restlet.resource.ResourceException;
 
 import java.awt.Dimension;
 import java.io.File;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -467,7 +468,7 @@ public class ImageResourceTest extends ResourceTest {
                     new Dimension(64, 56),
                     Orientation.ROTATE_0,
                     "",
-                    new URL("http://example.org/"),
+                    new URI("http://example.org/"),
                     new HashMap<>(),
                     new HashMap<>());
 

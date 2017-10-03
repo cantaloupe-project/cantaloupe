@@ -13,7 +13,7 @@ import org.junit.Test;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
-import java.net.URL;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,13 +52,13 @@ public class OverlayServiceTest extends BaseTest {
         final OperationList opList = new OperationList(
                 new Identifier("cats"), Format.JPG);
         final Dimension fullSize = new Dimension(0, 0);
-        final URL requestUrl = new URL("http://example.org/");
+        final URI requestURI = new URI("http://example.org/");
         final Map<String,String> requestHeaders = new HashMap<>();
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
         ImageOverlay overlay = (ImageOverlay) instance.newOverlay(
-                opList, fullSize, requestUrl, requestHeaders, clientIp, cookies);
+                opList, fullSize, requestURI, requestHeaders, clientIp, cookies);
         assertEquals(new File("/dev/null"), overlay.getFile());
         assertEquals(10, overlay.getInset());
         assertEquals(Position.TOP_LEFT, overlay.getPosition());
@@ -75,13 +75,13 @@ public class OverlayServiceTest extends BaseTest {
         final OperationList opList = new OperationList(
                 new Identifier("cats"), Format.JPG);
         final Dimension fullSize = new Dimension(0, 0);
-        final URL requestUrl = new URL("http://example.org/");
+        final URI requestURI = new URI("http://example.org/");
         final Map<String,String> requestHeaders = new HashMap<>();
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
         StringOverlay overlay = (StringOverlay) instance.newOverlay(
-                opList, fullSize, requestUrl, requestHeaders, clientIp, cookies);
+                opList, fullSize, requestURI, requestHeaders, clientIp, cookies);
         assertEquals("cats", overlay.getString());
         assertEquals(10, overlay.getInset());
         assertEquals(Position.TOP_LEFT, overlay.getPosition());
@@ -96,13 +96,13 @@ public class OverlayServiceTest extends BaseTest {
         final OperationList opList = new OperationList(new Identifier("image"),
                 Format.JPG);
         final Dimension fullSize = new Dimension(100, 100);
-        final URL requestUrl = new URL("http://example.org/");
+        final URI requestURI = new URI("http://example.org/");
         final Map<String,String> requestHeaders = new HashMap<>();
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
         ImageOverlay overlay = (ImageOverlay) instance.newOverlay(
-                opList, fullSize, requestUrl, requestHeaders, clientIp, cookies);
+                opList, fullSize, requestURI, requestHeaders, clientIp, cookies);
         assertEquals(new File("/dev/cats"), overlay.getFile());
         assertEquals(5, overlay.getInset());
         assertEquals(Position.BOTTOM_LEFT, overlay.getPosition());
@@ -116,13 +116,13 @@ public class OverlayServiceTest extends BaseTest {
         final OperationList opList = new OperationList(
                 new Identifier("string"), Format.JPG);
         final Dimension fullSize = new Dimension(100, 100);
-        final URL requestUrl = new URL("http://example.org/");
+        final URI requestURI = new URI("http://example.org/");
         final Map<String,String> requestHeaders = new HashMap<>();
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
         StringOverlay overlay = (StringOverlay) instance.newOverlay(
-                opList, fullSize, requestUrl, requestHeaders, clientIp, cookies);
+                opList, fullSize, requestURI, requestHeaders, clientIp, cookies);
         assertEquals("dogs\ndogs", overlay.getString());
         assertEquals(5, overlay.getInset());
         assertEquals(Position.BOTTOM_LEFT, overlay.getPosition());
@@ -135,13 +135,13 @@ public class OverlayServiceTest extends BaseTest {
         final OperationList opList = new OperationList(new Identifier("bogus"),
                 Format.JPG);
         final Dimension fullSize = new Dimension(100, 100);
-        final URL requestUrl = new URL("http://example.org/");
+        final URI requestURI = new URI("http://example.org/");
         final Map<String,String> requestHeaders = new HashMap<>();
         final String clientIp = "";
         final Map<String,String> cookies = new HashMap<>();
 
-        Overlay overlay = instance.newOverlay(opList, fullSize,
-                requestUrl, requestHeaders, clientIp, cookies);
+        Overlay overlay = instance.newOverlay(opList, fullSize, requestURI,
+                requestHeaders, clientIp, cookies);
         assertNull(overlay);
     }
 

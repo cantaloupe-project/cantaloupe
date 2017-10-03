@@ -13,6 +13,8 @@ import java.awt.font.TextAttribute;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,27 +24,23 @@ class DelegateOverlayService {
     /**
      * @param opList
      * @param fullSize
-     * @param requestUrl
+     * @param requestURI
      * @param requestHeaders
-     * @param clientIp
+     * @param clientIP
      * @param cookies
      * @return Map with "inset", "position", and "pathname" or "string" keys;
      *         or null
-     * @throws IOException
-     * @throws ScriptException
-     * @throws DelegateScriptDisabledException
      */
     Overlay getOverlay(OperationList opList,
                        Dimension fullSize,
-                       URL requestUrl,
+                       URI requestURI,
                        Map<String,String> requestHeaders,
-                       String clientIp,
+                       String clientIP,
                        Map<String,String> cookies)
             throws IOException, ScriptException,
             DelegateScriptDisabledException {
-        final Map<String,Object> defs = overlayProperties(
-                opList, fullSize, requestUrl, requestHeaders, clientIp,
-                cookies);
+        final Map<String,Object> defs = overlayProperties(opList, fullSize,
+                requestURI, requestHeaders, clientIP, cookies);
         if (defs != null) {
             final int inset = ((Long) defs.get("inset")).intValue();
             final Position position = (Position) defs.get("position");
@@ -50,8 +48,8 @@ class DelegateOverlayService {
             if (location != null) {
                 try {
                     URL url = new URL(location);
-                    return new ImageOverlay(url, position, inset);
-                } catch (MalformedURLException e) {
+                    return new ImageOverlay(url.toURI(), position, inset);
+                } catch (MalformedURLException | URISyntaxException e) {
                     return new ImageOverlay(new File(location), position, inset);
                 }
             } else {
@@ -124,9 +122,9 @@ class DelegateOverlayService {
      *
      * @param opList
      * @param fullSize
-     * @param requestUrl
+     * @param requestURI
      * @param requestHeaders
-     * @param clientIp
+     * @param clientIP
      * @param cookies
      * @return Map with one of the above structures, or <code>null</code> for
      *         no overlay.
@@ -135,8 +133,8 @@ class DelegateOverlayService {
      * @throws DelegateScriptDisabledException
      */
     private Map<String,Object> overlayProperties(
-            OperationList opList, Dimension fullSize, URL requestUrl,
-            Map<String,String> requestHeaders, String clientIp,
+            OperationList opList, Dimension fullSize, URI requestURI,
+            Map<String,String> requestHeaders, String clientIP,
             Map<String,String> cookies)
             throws IOException, ScriptException,
             DelegateScriptDisabledException {
@@ -152,9 +150,9 @@ class DelegateOverlayService {
                 opList.toMap(fullSize).get("operations"),    // operations
                 resultingSizeArg,                            // resulting_size
                 opList.toMap(fullSize).get("output_format"), // output_format
-                requestUrl.toString(),                       // request_uri
+                requestURI.toString(),                       // request_uri
                 requestHeaders,                              // request_headers
-                clientIp,                                    // client_ip
+                clientIP,                                    // client_ip
                 cookies);                                    // cookies
         if (result == null || (result instanceof Boolean && !((Boolean) result))) {
             return null;

@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -85,7 +86,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
 
     /** Map of overlay images downloaded from web servers. Files are temp files
     set to delete-on-exit. */
-    private static final Map<URL,File> overlays = new ConcurrentHashMap<>();
+    private static final Map<URI,File> overlays = new ConcurrentHashMap<>();
 
     /** Lazy-initialized by getFormats(). */
     protected static Map<Format, Set<Format>> supportedFormats;
@@ -427,7 +428,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                     // If the overlay is a file, use that.
                     File file = overlay.getFile();
                     // If it instead resides at a URL, use that instead.
-                    if (file == null && overlay.getURL() != null) {
+                    if (file == null && overlay.getURI() != null) {
                         file = getOverlayTempFile(overlay);
                     }
                     if (file != null) {
@@ -443,9 +444,9 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                         if (overlay.getFile() != null) {
                             LOGGER.warn("getConvertArguments(): overlay not found: {}",
                                     overlay.getFile());
-                        } else if (overlay.getURL() != null) {
+                        } else if (overlay.getURI() != null) {
                             LOGGER.warn("getConvertArguments(): overlay not found: {}",
-                                    overlay.getURL());
+                                    overlay.getURI());
                         } else {
                             LOGGER.error("getConvertArguments(): overlay source not set");
                         }
@@ -626,7 +627,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
 
     File getOverlayTempFile(ImageOverlay overlay) throws IOException {
         File overlayFile = null;
-        final URL url = overlay.getURL();
+        final URI url = overlay.getURI();
 
         if (url != null) {
             // Try to retrieve it if it has already been downloaded.

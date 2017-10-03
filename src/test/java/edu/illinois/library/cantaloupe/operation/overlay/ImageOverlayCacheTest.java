@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 
 import static org.junit.Assert.*;
 
@@ -75,20 +75,20 @@ public class ImageOverlayCacheTest extends BaseTest {
         }
     }
 
-    // putAndGet(URL)
+    // putAndGet(URI)
 
     @Test
-    public void testPutAndGetWithPresentURL() throws IOException {
-        URL url = new URL(webServer.getHTTPURI() + "/jpg");
-        byte[] bytes = instance.putAndGet(url.toString());
+    public void testPutAndGetWithPresentURI() throws Exception {
+        URI uri = new URI(webServer.getHTTPURI() + "/jpg");
+        byte[] bytes = instance.putAndGet(uri.toString());
         assertEquals(5439, bytes.length);
     }
 
     @Test
-    public void testPutAndGetWithMissingURL() {
+    public void testPutAndGetWithMissingURI() throws Exception {
         try {
-            URL url = new URL(webServer.getHTTPURI() + "/blablabla");
-            instance.putAndGet(url.toString());
+            URI uri = new URI(webServer.getHTTPURI() + "/blablabla");
+            instance.putAndGet(uri.toString());
             fail("Expected exception");
         } catch (IOException e) {
             // pass

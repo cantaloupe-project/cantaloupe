@@ -19,7 +19,7 @@ import org.junit.Test;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
-import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -169,7 +169,7 @@ public class OperationListTest extends BaseTest {
                 fullSize,
                 Orientation.ROTATE_90,
                 "127.0.0.1",
-                new URL("http://example.org/"),
+                new URI("http://example.org/"),
                 new HashMap<>(),
                 new HashMap<>());
 
@@ -190,7 +190,7 @@ public class OperationListTest extends BaseTest {
                 fullSize,
                 Orientation.ROTATE_90,
                 "127.0.0.1",
-                new URL("http://example.org/"),
+                new URI("http://example.org/"),
                 new HashMap<>(),
                 new HashMap<>());
 
@@ -213,7 +213,7 @@ public class OperationListTest extends BaseTest {
                 new Dimension(2000,1000),
                 Orientation.ROTATE_0,
                 "127.0.0.1",
-                new URL("http://example.org/"),
+                new URI("http://example.org/"),
                 new HashMap<>(),
                 new HashMap<>());
 
@@ -234,7 +234,7 @@ public class OperationListTest extends BaseTest {
                 new Dimension(2000,1000),
                 Orientation.ROTATE_0,
                 "127.0.0.1",
-                new URL("http://example.org/"),
+                new URI("http://example.org/"),
                 new HashMap<>(),
                 new HashMap<>());
 
@@ -258,7 +258,7 @@ public class OperationListTest extends BaseTest {
                 new Dimension(2000,1000),
                 Orientation.ROTATE_0,
                 "127.0.0.1",
-                new URL("http://example.org/"),
+                new URI("http://example.org/"),
                 new HashMap<>(),
                 new HashMap<>());
 
@@ -278,7 +278,7 @@ public class OperationListTest extends BaseTest {
                 new Dimension(2000,1000),
                 Orientation.ROTATE_0,
                 "127.0.0.1",
-                new URL("http://example.org/"),
+                new URI("http://example.org/"),
                 new HashMap<>(),
                 new HashMap<>());
 
@@ -293,7 +293,7 @@ public class OperationListTest extends BaseTest {
                 new Dimension(2000,1000),
                 Orientation.ROTATE_0,
                 "127.0.0.1",
-                new URL("http://example.org/"),
+                new URI("http://example.org/"),
                 new HashMap<>(),
                 new HashMap<>());
 
@@ -308,7 +308,7 @@ public class OperationListTest extends BaseTest {
                 new Dimension(2000,1000),
                 Orientation.ROTATE_0,
                 "127.0.0.1",
-                new URL("http://example.org/"),
+                new URI("http://example.org/"),
                 new HashMap<>(),
                 new HashMap<>());
 
@@ -327,7 +327,7 @@ public class OperationListTest extends BaseTest {
                 new Dimension(2000,1000),
                 Orientation.ROTATE_0,
                 "127.0.0.1",
-                new URL("http://example.org/"),
+                new URI("http://example.org/"),
                 new HashMap<>(),
                 new HashMap<>());
 
@@ -345,7 +345,7 @@ public class OperationListTest extends BaseTest {
                 new Dimension(2000,1000),
                 Orientation.ROTATE_0,
                 "127.0.0.1",
-                new URL("http://example.org/"),
+                new URI("http://example.org/"),
                 new HashMap<>(),
                 new HashMap<>());
 
@@ -364,7 +364,7 @@ public class OperationListTest extends BaseTest {
                 new Dimension(2000,1000),
                 Orientation.ROTATE_0,
                 "127.0.0.1",
-                new URL("http://example.org/"),
+                new URI("http://example.org/"),
                 new HashMap<>(),
                 new HashMap<>());
 
@@ -384,7 +384,7 @@ public class OperationListTest extends BaseTest {
                 new Dimension(2000,1000),
                 Orientation.ROTATE_0,
                 "127.0.0.1",
-                new URL("http://example.org/"),
+                new URI("http://example.org/"),
                 new HashMap<>(),
                 new HashMap<>());
 
@@ -405,7 +405,7 @@ public class OperationListTest extends BaseTest {
                 new Dimension(2000,1000),
                 Orientation.ROTATE_0,
                 "127.0.0.1",
-                new URL("http://example.org/"),
+                new URI("http://example.org/"),
                 new HashMap<>(),
                 new HashMap<>());
 
@@ -419,7 +419,7 @@ public class OperationListTest extends BaseTest {
                 new Dimension(2000,1000),
                 Orientation.ROTATE_0,
                 "127.0.0.1",
-                new URL("http://example.org/"),
+                new URI("http://example.org/"),
                 new HashMap<>(),
                 new HashMap<>());
 
@@ -438,7 +438,7 @@ public class OperationListTest extends BaseTest {
                 new Dimension(2000,1000),
                 Orientation.ROTATE_0,
                 "127.0.0.1",
-                new URL("http://example.org/"),
+                new URI("http://example.org/"),
                 new HashMap<>(),
                 new HashMap<>());
 
@@ -451,7 +451,7 @@ public class OperationListTest extends BaseTest {
 
     @Test
     public void applyNonEndpointMutationsWithTIFFOutputFormat()
-            throws IOException {
+            throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_TIF_COMPRESSION, "LZW");
 
@@ -461,7 +461,7 @@ public class OperationListTest extends BaseTest {
                 new Dimension(2000,1000),
                 Orientation.ROTATE_0,
                 "127.0.0.1",
-                new URL("http://example.org/"),
+                new URI("http://example.org/"),
                 new HashMap<>(),
                 new HashMap<>());
 

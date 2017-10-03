@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
@@ -26,8 +27,8 @@ class BasicImageOverlayService extends BasicOverlayService {
     ImageOverlay getOverlay() {
         try {
             URL url = new URL(location);
-            return new ImageOverlay(url, getPosition(), getInset());
-        } catch (MalformedURLException e) {
+            return new ImageOverlay(url.toURI(), getPosition(), getInset());
+        } catch (MalformedURLException | URISyntaxException e) {
             return new ImageOverlay(new File(location), getPosition(), getInset());
         }
     }

@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.util.Map;
 import java.util.Set;
@@ -20,12 +21,12 @@ import java.util.concurrent.ConcurrentSkipListSet;
  */
 class ImageOverlayCache {
 
-    private static final Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(ImageOverlayCache.class);
 
     private final Set<String> downloadingOverlays =
             new ConcurrentSkipListSet<>();
-    private final Map<String,byte[]> overlays = new ConcurrentHashMap<>();
+    private final Map<String, byte[]> overlays = new ConcurrentHashMap<>();
 
     private static final Object lock = new Object();
 
@@ -39,12 +40,12 @@ class ImageOverlayCache {
     }
 
     /**
-     * @param url Overlay image URL.
+     * @param uri Overlay image URI.
      * @return Overlay image.
      * @throws IOException If the image cannot be accessed.
      */
-    byte[] putAndGet(URL url) throws IOException {
-        return putAndGet(url.toString());
+    byte[] putAndGet(URI uri) throws IOException {
+        return putAndGet(uri.toString());
     }
 
     /**
@@ -58,7 +59,7 @@ class ImageOverlayCache {
         synchronized (lock) {
             while (downloadingOverlays.contains(pathnameOrURL)) {
                 try {
-                    logger.debug("putAndGet(): waiting on {}", pathnameOrURL);
+                    LOGGER.debug("putAndGet(): waiting on {}", pathnameOrURL);
                     lock.wait();
                 } catch (InterruptedException e) {
                     break;
@@ -69,20 +70,20 @@ class ImageOverlayCache {
         // Try to pluck it out of the cache.
         byte[] cachedValue = overlays.get(pathnameOrURL);
         if (cachedValue != null) {
-            logger.debug("putAndGet(): hit for {}", pathnameOrURL);
+            LOGGER.debug("putAndGet(): hit for {}", pathnameOrURL);
             return cachedValue;
         }
 
-        logger.debug("putAndGet(): miss for {}", pathnameOrURL);
+        LOGGER.debug("putAndGet(): miss for {}", pathnameOrURL);
 
         // It's not being downloaded and isn't cached, so download and cache it.
         InputStream is = null;
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         try {
             downloadingOverlays.add(pathnameOrURL);
-            if (pathnameOrURL.startsWith("http://")
-                    || pathnameOrURL.startsWith("https://")
-                    || pathnameOrURL.startsWith("file:/")) {
+
+            if (ImageOverlay.SUPPORTED_URI_SCHEMES.stream()
+                    .filter(pathnameOrURL::startsWith).count() > 0) {
                 final URL url = new URL(pathnameOrURL);
                 is = url.openStream();
             } else {
