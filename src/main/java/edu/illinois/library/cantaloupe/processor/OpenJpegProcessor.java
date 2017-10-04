@@ -128,18 +128,22 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
     }
 
     private static synchronized void initialize() throws IOException {
-        // Due to a quirk of opj_decompress, this processor requires access to
-        // /dev/stdout.
-        final Path devStdout = Paths.get("/dev/stdout");
-        if (Files.exists(devStdout) && Files.isWritable(devStdout)) {
-            // Due to another quirk of opj_decompress, we need to create a
-            // symlink from {temp path}/stdout.bmp to /dev/stdout, to tell
-            // opj_decompress what format to write.
-            stdoutSymlink = createStdoutSymlink();
-        } else {
-            LOGGER.error("Sorry, but " + OpenJpegProcessor.class.getSimpleName() +
-                    " won't work on this platform as it requires access to " +
-                    "/dev/stdout.");
+        try {
+            // Due to a quirk of opj_decompress, this processor requires access to
+            // /dev/stdout.
+            final Path devStdout = Paths.get("/dev/stdout");
+            if (Files.exists(devStdout) && Files.isWritable(devStdout)) {
+                // Due to another quirk of opj_decompress, we need to create a
+                // symlink from {temp path}/stdout.bmp to /dev/stdout, to tell
+                // opj_decompress what format to write.
+                stdoutSymlink = createStdoutSymlink();
+            } else {
+                LOGGER.error("Sorry, but " + OpenJpegProcessor.class.getSimpleName() +
+                        " won't work on this platform as it requires access to " +
+                        "/dev/stdout.");
+            }
+        } finally {
+            isClassInitialized.set(true);
         }
     }
 
