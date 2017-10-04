@@ -128,18 +128,22 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     }
 
     private static synchronized void initialize() throws IOException {
-        // Due to a quirk of kdu_expand, this processor requires access to
-        // /dev/stdout.
-        final Path devStdout = Paths.get("/dev/stdout");
-        if (Files.exists(devStdout) && Files.isWritable(devStdout)) {
-            // Due to another quirk of kdu_expand, we need to create a symlink
-            // from {temp path}/stdout.tif to /dev/stdout, to tell kdu_expand
-            // what format to write.
-            stdoutSymlink = createStdoutSymlink();
-        } else {
-            LOGGER.error("Sorry, but " + KakaduProcessor.class.getSimpleName() +
-                    " won't work on this platform as it requires access to " +
-                    "/dev/stdout.");
+        try {
+            // Due to a quirk of kdu_expand, this processor requires access to
+            // /dev/stdout.
+            final Path devStdout = Paths.get("/dev/stdout");
+            if (Files.exists(devStdout) && Files.isWritable(devStdout)) {
+                // Due to another quirk of kdu_expand, we need to create a symlink
+                // from {temp path}/stdout.tif to /dev/stdout, to tell kdu_expand
+                // what format to write.
+                stdoutSymlink = createStdoutSymlink();
+            } else {
+                LOGGER.error("Sorry, but " + KakaduProcessor.class.getSimpleName() +
+                        " won't work on this platform as it requires access to " +
+                        "/dev/stdout.");
+            }
+        } finally {
+            isClassInitialized.set(true);
         }
     }
 
