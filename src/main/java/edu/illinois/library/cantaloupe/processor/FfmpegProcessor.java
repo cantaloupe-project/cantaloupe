@@ -13,21 +13,15 @@ import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathFactory;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -91,48 +85,35 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
             command.add(getPath("ffprobe"));
             command.add("-v");
             command.add("quiet");
-            command.add("-print_format");
-            command.add("xml");
-            command.add("-show_streams");
+            command.add("-select_streams");
+            command.add("v:0");
+            command.add("-show_entries");
+            command.add("stream=width,height,duration");
+            command.add("-of");
+            command.add("default=noprint_wrappers=1:nokey=1");
             command.add(sourceFile.getAbsolutePath());
-            InputStream processInputStream = null;
+
+            ProcessBuilder pb = new ProcessBuilder(command);
+            pb.redirectErrorStream(true);
+
             try {
-                ProcessBuilder pb = new ProcessBuilder(command);
-                pb.redirectErrorStream(true);
-
-                LOGGER.info("Invoking {}", String.join(" ", pb.command()));
+                LOGGER.info("Invoking {}", StringUtils.join(pb.command(), " "));
                 Process process = pb.start();
-
-                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-                DocumentBuilder db = dbf.newDocumentBuilder();
-                processInputStream = process.getInputStream();
-                Document doc = db.parse(processInputStream);
-
-                XPath xpath = XPathFactory.newInstance().newXPath();
-                // duration
-                XPathExpression expr = xpath.compile("//stream[@index=\"0\"]/@duration");
-                durationSec = (double) expr.evaluate(doc, XPathConstants.NUMBER);
-                expr = xpath.compile("//stream[@index=\"0\"]/@width");
-                // width
-                int width = (int) Math.round((double) expr.evaluate(doc, XPathConstants.NUMBER));
-                expr = xpath.compile("//stream[@index=\"0\"]/@height");
-                // height
-                int height = (int) Math.round((double) expr.evaluate(doc, XPathConstants.NUMBER));
-                imageInfo = new Info(width, height, width, height,
-                        getSourceFormat());
-            } catch (SAXException e) {
-                throw new ProcessorException("Failed to parse XML. Command: " +
-                        String.join(" ", command), e);
-            } catch (Exception e) {
-                throw new ProcessorException(e.getMessage(), e);
-            } finally {
-                if (processInputStream != null) {
+                InputStream processInputStream = process.getInputStream();
+                try (BufferedReader reader =
+                             new BufferedReader(new InputStreamReader(processInputStream))) {
+                    int width = Integer.parseInt(reader.readLine());
+                    int height = Integer.parseInt(reader.readLine());
                     try {
-                        processInputStream.close();
-                    } catch (IOException e) {
-                        LOGGER.error(e.getMessage(), e);
+                        durationSec = Double.parseDouble(reader.readLine());
+                    } catch (NumberFormatException e) {
+                        LOGGER.debug("readImageInfo(): {}", e.getMessage());
                     }
+                    imageInfo = new Info(width, height, width, height,
+                            getSourceFormat());
                 }
+            } catch (IOException e) {
+                throw new ProcessorException(e.getMessage(), e);
             }
         }
         return imageInfo;
