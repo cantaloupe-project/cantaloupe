@@ -9,7 +9,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" href="../static/styles/admin.css">
+    <link rel="stylesheet" href="$adminUri/../static/styles/admin.css">
 
     <title>Cantaloupe Image Server</title>
 </head>
@@ -19,7 +19,7 @@
 <div class="container-fluid">
     <div class="clearfix">
         <header>
-            <img src="../static/images/cantaloupe-320.png" alt="Cantaloupe icon"
+            <img src="$adminUri/../static/images/cantaloupe-320.png" alt="Cantaloupe icon"
                  width="154" height="82" style="float:left">
             <h1>Cantaloupe Image Server <small>$version</small></h1>
         </header>
