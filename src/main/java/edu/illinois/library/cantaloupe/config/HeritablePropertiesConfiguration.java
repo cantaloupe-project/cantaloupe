@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.config;
 
 import org.apache.commons.configuration.ConversionException;
+import org.apache.commons.configuration.PropertiesConfiguration;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,8 +19,8 @@ import java.util.NoSuchElementException;
 
 /**
  * Properties configuration that allows file-based inheritance. A file can be
- * linked to a parent file using {@link #EXTENDS_KEY}. Keys in child files are
- * considered to override ones in ancestor files.
+ * linked to a parent file using {@link #EXTENDS_KEY}. Keys in child files
+ * override ones in ancestor files.
  */
 class HeritablePropertiesConfiguration extends HeritableFileConfiguration
         implements Configuration {
@@ -29,16 +30,15 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
     /**
      * Map of PropertiesConfigurations in order from leaf to trunk.
      */
-    private Map<File, org.apache.commons.configuration.PropertiesConfiguration>
-            commonsConfigs = new LinkedHashMap<>();
+    private Map<File, PropertiesConfiguration> commonsConfigs =
+            new LinkedHashMap<>();
     private byte[] mainContentsChecksum = new byte[] {};
 
     /**
      * @return Wrapped configurations in order from main to most distant
      *         ancestor.
      */
-    List<org.apache.commons.configuration.PropertiesConfiguration>
-    getConfigurationTree() {
+    List<PropertiesConfiguration> getConfigurationTree() {
         return new ArrayList<>(commonsConfigs.values());
     }
 
@@ -53,25 +53,18 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
 
     @Override
     public void clear() {
-        for (org.apache.commons.configuration.PropertiesConfiguration commonsConfig :
-                commonsConfigs.values()) {
-            commonsConfig.clear();
-        }
+        commonsConfigs.values().stream().forEach(PropertiesConfiguration::clear);
         mainContentsChecksum = new byte[] {};
     }
 
     @Override
     public void clearProperty(String key) {
-        for (org.apache.commons.configuration.PropertiesConfiguration commonsConfig :
-                commonsConfigs.values()) {
-            commonsConfig.clearProperty(key);
-        }
+        commonsConfigs.values().stream().forEach(c -> c.clearProperty(key));
     }
 
     @Override
     public boolean getBoolean(String key) {
-        for (org.apache.commons.configuration.PropertiesConfiguration commonsConfig :
-                commonsConfigs.values()) {
+        for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
             if (commonsConfig.containsKey(key)) {
                 return commonsConfig.getBoolean(key);
             }
@@ -82,8 +75,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
     @Override
     public boolean getBoolean(String key, boolean defaultValue) {
         try {
-            for (org.apache.commons.configuration.PropertiesConfiguration commonsConfig :
-                    commonsConfigs.values()) {
+            for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
                 if (commonsConfig.containsKey(key)) {
                     return commonsConfig.getBoolean(key, defaultValue);
                 }
@@ -96,8 +88,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
 
     @Override
     public double getDouble(String key) {
-        for (org.apache.commons.configuration.PropertiesConfiguration commonsConfig :
-                commonsConfigs.values()) {
+        for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
             if (commonsConfig.containsKey(key)) {
                 return commonsConfig.getDouble(key);
             }
@@ -108,8 +99,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
     @Override
     public double getDouble(String key, double defaultValue) {
         try {
-            for (org.apache.commons.configuration.PropertiesConfiguration commonsConfig :
-                    commonsConfigs.values()) {
+            for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
                 if (commonsConfig.containsKey(key)) {
                     return commonsConfig.getDouble(key, defaultValue);
                 }
@@ -122,8 +112,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
 
     @Override
     public float getFloat(String key) {
-        for (org.apache.commons.configuration.PropertiesConfiguration commonsConfig :
-                commonsConfigs.values()) {
+        for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
             if (commonsConfig.containsKey(key)) {
                 return commonsConfig.getFloat(key);
             }
@@ -134,8 +123,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
     @Override
     public float getFloat(String key, float defaultValue) {
         try {
-            for (org.apache.commons.configuration.PropertiesConfiguration commonsConfig :
-                    commonsConfigs.values()) {
+            for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
                 if (commonsConfig.containsKey(key)) {
                     return commonsConfig.getFloat(key, defaultValue);
                 }
@@ -148,8 +136,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
 
     @Override
     public int getInt(String key) {
-        for (org.apache.commons.configuration.PropertiesConfiguration commonsConfig :
-                commonsConfigs.values()) {
+        for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
             if (commonsConfig.containsKey(key)) {
                 return commonsConfig.getInt(key);
             }
@@ -160,8 +147,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
     @Override
     public int getInt(String key, int defaultValue) {
         try {
-            for (org.apache.commons.configuration.PropertiesConfiguration commonsConfig :
-                    commonsConfigs.values()) {
+            for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
                 if (commonsConfig.containsKey(key)) {
                     return commonsConfig.getInt(key, defaultValue);
                 }
@@ -180,8 +166,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
     public Iterator<String> getKeys() {
         // Compile an ordered list of all keys from all config files.
         final List<String> allKeys = new ArrayList<>();
-        for (org.apache.commons.configuration.PropertiesConfiguration commonsConfig :
-                commonsConfigs.values()) {
+        for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
             final Iterator<String> it = commonsConfig.getKeys();
             while (it.hasNext()) {
                 allKeys.add(it.next());
@@ -192,8 +177,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
 
     @Override
     public long getLong(String key) {
-        for (org.apache.commons.configuration.PropertiesConfiguration commonsConfig :
-                commonsConfigs.values()) {
+        for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
             if (commonsConfig.containsKey(key)) {
                 return commonsConfig.getLong(key);
             }
@@ -204,8 +188,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
     @Override
     public long getLong(String key, long defaultValue) {
         try {
-            for (org.apache.commons.configuration.PropertiesConfiguration commonsConfig :
-                    commonsConfigs.values()) {
+            for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
                 if (commonsConfig.containsKey(key)) {
                     return commonsConfig.getLong(key, defaultValue);
                 }
@@ -218,8 +201,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
 
     @Override
     public Object getProperty(String key) {
-        for (org.apache.commons.configuration.PropertiesConfiguration commonsConfig :
-                commonsConfigs.values()) {
+        for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
             if (commonsConfig.containsKey(key)) {
                 return commonsConfig.getProperty(key);
             }
@@ -229,8 +211,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
 
     @Override
     public String getString(String key) {
-        for (org.apache.commons.configuration.PropertiesConfiguration commonsConfig :
-                commonsConfigs.values()) {
+        for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
             if (commonsConfig.containsKey(key)) {
                 return commonsConfig.getString(key);
             }
@@ -282,8 +263,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
     @Override
     public synchronized void save() throws IOException {
         try {
-            for (org.apache.commons.configuration.PropertiesConfiguration commonsConfig :
-                    commonsConfigs.values()) {
+            for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
                 commonsConfig.save();
             }
         } catch (org.apache.commons.configuration.ConfigurationException e) {
@@ -305,7 +285,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
         // Try to set it in the first matching config file that already
         // contains it.
         boolean wasSet = false;
-        for (org.apache.commons.configuration.PropertiesConfiguration commonsConfig :
+        for (PropertiesConfiguration commonsConfig :
                 commonsConfigs.values()) {
             if (commonsConfig.containsKey(key)) {
                 commonsConfig.setProperty(key, value);
@@ -314,10 +294,9 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
         }
         // Fall back to setting it in the main config file.
         if (!wasSet) {
-            Iterator<org.apache.commons.configuration.PropertiesConfiguration> it = commonsConfigs.values().iterator();
+            Iterator<PropertiesConfiguration> it = commonsConfigs.values().iterator();
             if (it.hasNext()) {
-                org.apache.commons.configuration.PropertiesConfiguration commonsConfig =
-                        (org.apache.commons.configuration.PropertiesConfiguration) it.next();
+                PropertiesConfiguration commonsConfig = it.next();
                 commonsConfig.setProperty(key, value);
             }
         }
@@ -327,8 +306,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
             throws ConfigurationException {
         System.out.println("Loading config file: " + file);
 
-        org.apache.commons.configuration.PropertiesConfiguration commonsConfig =
-                new org.apache.commons.configuration.PropertiesConfiguration();
+        PropertiesConfiguration commonsConfig = new PropertiesConfiguration();
         // Prevent commas in values from being interpreted as list item
         // delimiters.
         commonsConfig.setDelimiterParsingDisabled(true);

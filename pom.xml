@@ -531,7 +531,6 @@
                     <include name="edu/illinois/library/cantaloupe/config/HeritableFileConfiguration.class" />
                     <include name="edu/illinois/library/cantaloupe/config/HeritablePropertiesConfiguration.class" />
                     <include name="edu/illinois/library/cantaloupe/config/Key.class" />
-                    <include name="edu/illinois/library/cantaloupe/config/PropertiesConfiguration.class" />
                     <include name="edu/illinois/library/cantaloupe/util/FilesystemWatcher.class" />
                     <include name="edu/illinois/library/cantaloupe/util/FilesystemWatcher$Callback.class" />
                     <include name="edu/illinois/library/cantaloupe/util/SystemUtils.class" />
