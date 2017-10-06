@@ -25,7 +25,7 @@ abstract class FileConfiguration extends AbstractConfiguration {
                 // on a working configuration. (Also, we don't want to
                 // introduce a dependency on the logger, because of the way
                 // the application is packaged.)
-                System.out.println(e.getMessage());
+                System.err.println(e.getMessage());
             }
         }
         return null;
