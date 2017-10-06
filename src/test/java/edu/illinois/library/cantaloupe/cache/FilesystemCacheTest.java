@@ -399,7 +399,7 @@ public class FilesystemCacheTest extends BaseTest {
     }
 
     @Test
-    public void testGetSourceImageFileConcurrently() throws CacheException {
+    public void testGetSourceImageFileConcurrently() throws Exception {
         final Identifier identifier = new Identifier("monkeys");
 
         new ConcurrentReaderWriter(() -> {
@@ -456,7 +456,8 @@ public class FilesystemCacheTest extends BaseTest {
     }
 
     @Test
-    public void testNewDerivativeImageInputStreamConcurrently() {
+    public void testNewDerivativeImageInputStreamConcurrently()
+            throws Exception {
         OperationList ops = TestUtil.newOperationList();
 
         new ConcurrentReaderWriter(() -> {
@@ -657,7 +658,7 @@ public class FilesystemCacheTest extends BaseTest {
     }
 
     @Test
-    public void testPutConcurrently() throws CacheException {
+    public void testPutConcurrently() throws Exception {
         final Identifier identifier = new Identifier("monkeys");
         final Info info = new Info(52, 42);
 
