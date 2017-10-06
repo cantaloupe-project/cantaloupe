@@ -14,8 +14,9 @@ import java.util.stream.Collectors;
  */
 public enum Format {
 
-    // For each one of these, there should be a corresponding file with a name
-    // of the lowercased enum value present in the test resources directory.
+    // N.B.: For each one of these, there should be a corresponding file with
+    // a name of the lowercased enum value present in the test resources
+    // directory.
 
     /**
      * AVI video format.
@@ -89,7 +90,7 @@ public enum Format {
     MOV("QuickTime",
             ImageType.RASTER,
             Arrays.asList("video/quicktime", "video/x-quicktime"),
-            Arrays.asList("mov"),
+            Arrays.asList("mov", "qt"),
             Type.VIDEO,
             8,
             false),
