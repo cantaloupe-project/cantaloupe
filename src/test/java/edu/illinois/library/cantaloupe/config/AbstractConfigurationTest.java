@@ -1,15 +1,19 @@
 package edu.illinois.library.cantaloupe.config;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
+import edu.illinois.library.cantaloupe.test.ConcurrentReaderWriter;
 import org.apache.commons.configuration.ConversionException;
 import org.junit.Test;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 
 public abstract class AbstractConfigurationTest extends BaseTest {
+
+    private static final int NUM_CONCURRENT_THREADS = 1000;
 
     abstract protected Configuration getInstance();
 
@@ -21,6 +25,17 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         instance.setProperty("cats", "yes");
         instance.clear();
         assertNull(instance.getString("cats"));
+    }
+
+    @Test
+    public void testClearConcurrently() throws Exception {
+        final Configuration instance = getInstance();
+        final String key = "cats";
+
+        new ConcurrentReaderWriter(
+                () -> instance.clear(),
+                () -> instance.setProperty(key, "dogs"))
+            .numThreads(NUM_CONCURRENT_THREADS).run();
     }
 
     /* clearProperty(Key) */
@@ -45,6 +60,17 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         instance.clearProperty("cats");
         assertNull(instance.getString("cats"));
         assertNotNull(instance.getString("dogs"));
+    }
+
+    @Test
+    public void testClearPropertyWithStringConcurrently() throws Exception {
+        final Configuration instance = getInstance();
+        final String key = "cats";
+
+        new ConcurrentReaderWriter(
+                () -> instance.setProperty(key, "dogs"),
+                () -> instance.clearProperty(key))
+                .numThreads(NUM_CONCURRENT_THREADS).run();
     }
 
     /* getBoolean(Key) */
@@ -113,6 +139,17 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         } catch (NoSuchElementException e) {
             // pass
         }
+    }
+
+    @Test
+    public void testGetBooleanWithStringConcurrently() throws Exception {
+        final Configuration instance = getInstance();
+        final String key = "cats";
+
+        new ConcurrentReaderWriter(
+                () -> instance.setProperty(key, true),
+                () -> instance.getBoolean(key))
+                .numThreads(NUM_CONCURRENT_THREADS).run();
     }
 
     /* getBoolean(Key, boolean) */
@@ -252,6 +289,17 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         }
     }
 
+    @Test
+    public void testGetDoubleWithStringConcurrently() throws Exception {
+        final Configuration instance = getInstance();
+        final String key = "cats";
+
+        new ConcurrentReaderWriter(
+                () -> instance.setProperty(key, Double.MAX_VALUE),
+                () -> instance.getDouble(key))
+                .numThreads(NUM_CONCURRENT_THREADS).run();
+    }
+
     /* getDouble(Key, double) */
 
     @Test
@@ -372,6 +420,17 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         }
     }
 
+    @Test
+    public void testGetFloatWithStringConcurrently() throws Exception {
+        final Configuration instance = getInstance();
+        final String key = "cats";
+
+        new ConcurrentReaderWriter(
+                () -> instance.setProperty(key, Float.MAX_VALUE),
+                () -> instance.getFloat(key))
+                .numThreads(NUM_CONCURRENT_THREADS).run();
+    }
+
     /* getFloat(Key, float) */
 
     @Test
@@ -490,6 +549,17 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         }
     }
 
+    @Test
+    public void testGetIntWithStringConcurrently() throws Exception {
+        final Configuration instance = getInstance();
+        final String key = "cats";
+
+        new ConcurrentReaderWriter(
+                () -> instance.setProperty(key, 12312),
+                () -> instance.getInt(key))
+                .numThreads(NUM_CONCURRENT_THREADS).run();
+    }
+
     /* getInt(Key, int) */
 
     @Test
@@ -550,6 +620,17 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         } catch (NoSuchElementException e) {
             // pass
         }
+    }
+
+    @Test
+    public void testGetKeysConcurrently() throws Exception {
+        final Configuration instance = getInstance();
+        final AtomicInteger id = new AtomicInteger();
+
+        new ConcurrentReaderWriter(
+                () -> instance.setProperty(String.valueOf(id.incrementAndGet()), 234234),
+                () -> instance.getKeys())
+                .numThreads(NUM_CONCURRENT_THREADS).run();
     }
 
     /* getLong(Key) */
@@ -618,6 +699,17 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         } catch (NoSuchElementException e) {
             // pass
         }
+    }
+
+    @Test
+    public void testGetLongWithStringConcurrently() throws Exception {
+        final Configuration instance = getInstance();
+        final String key = "cats";
+
+        new ConcurrentReaderWriter(
+                () -> instance.setProperty(key, 32234),
+                () -> instance.getLong(key))
+                .numThreads(NUM_CONCURRENT_THREADS).run();
     }
 
     /* getLong(Key, int) */
@@ -700,6 +792,17 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertNull(instance.getProperty("cats"));
     }
 
+    @Test
+    public void testGetPropertyWithStringConcurrently() throws Exception {
+        final Configuration instance = getInstance();
+        final String key = "cats";
+
+        new ConcurrentReaderWriter(
+                () -> instance.setProperty(key, "dogs"),
+                () -> instance.getProperty(key))
+                .numThreads(NUM_CONCURRENT_THREADS).run();
+    }
+
     /* getString(Key) */
 
     @Test
@@ -728,6 +831,17 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     public void testGetStringWithMissingProperty() {
         final Configuration instance = getInstance();
         assertNull(instance.getString("bogus"));
+    }
+
+    @Test
+    public void testGetStringWithStringConcurrently() throws Exception {
+        final Configuration instance = getInstance();
+        final String key = "cats";
+
+        new ConcurrentReaderWriter(
+                () -> instance.setProperty(key, "dogs"),
+                () -> instance.getString(key))
+                .numThreads(NUM_CONCURRENT_THREADS).run();
     }
 
     /* getString(Key, String) */

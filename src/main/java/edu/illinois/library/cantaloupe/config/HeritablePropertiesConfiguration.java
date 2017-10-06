@@ -51,7 +51,12 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
 
     @Override
     Collection<File> getFiles() {
-        return commonsConfigs.keySet();
+        final long stamp = lock.readLock();
+        try {
+            return commonsConfigs.keySet();
+        } finally {
+            lock.unlock(stamp);
+        }
     }
 
     //////////////////////// Configuration methods //////////////////////////
@@ -269,7 +274,18 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
      */
     @Override
     public Iterator<String> getKeys() {
-        // Compile an ordered list of all keys from all config files.
+        final long stamp = lock.readLock();
+        try {
+            return readKeys();
+        } finally {
+            lock.unlock(stamp);
+        }
+    }
+
+    /**
+     * @return Ordered list of all keys from all config files.
+     */
+    private Iterator<String> readKeys() {
         final List<String> allKeys = new ArrayList<>();
         for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
             final Iterator<String> it = commonsConfig.getKeys();
