@@ -126,7 +126,7 @@ public class FormatTest extends BaseTest {
         // JPG
         assertEquals(Arrays.asList("jpg", "jpeg"), Format.JPG.getExtensions());
         // MOV
-        assertEquals(Arrays.asList("mov"), Format.MOV.getExtensions());
+        assertEquals(Arrays.asList("mov", "qt"), Format.MOV.getExtensions());
         // MP4
         assertEquals(Arrays.asList("mp4", "m4v"), Format.MP4.getExtensions());
         // MPG
