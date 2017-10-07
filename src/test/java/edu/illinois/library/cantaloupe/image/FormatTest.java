@@ -83,6 +83,7 @@ public class FormatTest extends BaseTest {
         assertTrue(Format.JPG.getExtensions().contains("jpg"));
         assertTrue(Format.JPG.getExtensions().contains("jpeg"));
         assertTrue(Format.MOV.getExtensions().contains("mov"));
+        assertTrue(Format.MOV.getExtensions().contains("qt"));
         assertTrue(Format.MP4.getExtensions().contains("mp4"));
         assertTrue(Format.MP4.getExtensions().contains("m4v"));
         assertTrue(Format.MPG.getExtensions().contains("mpg"));
