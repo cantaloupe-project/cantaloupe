@@ -22,6 +22,7 @@ title: What's New
   <li>Fixed potentially incorrect tile sizes in information responses when using OpenJpegProcessor.</li>
   <li>Fixed a bug in FfmpegProcessor that caused video info parsing to fail for some videos.</li>
   <li>Added <code>Origin</code> to all <code>Vary</code> response headers, which fixes a potential CORS-related caching issue.</li>
+  <li>Fixed an issue where certain ImageIO plugins could fail to register when running multiple ImageIO-using applications in the same container. (Thanks to @mmatela)</li>
   <li>Fixed a resource leak when using image overlays.</li>
   <li>Improvements in the testing and build process. (Thanks to @kinow)</li>
 </ul>

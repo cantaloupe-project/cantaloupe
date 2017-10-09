@@ -53,6 +53,12 @@ public class ImageReader {
         // The application will handle caching itself, if so configured. The
         // ImageIO cache would only slow things down.
         ImageIO.setUseCache(false);
+
+        // ImageIO will automatically scan for plugins once, the first time
+        // it's used. That means that if our app is initialized after another
+        // ImageIO-using app in a container, any additional plugins bundled
+        // within our app won't be picked up unless we scan again.
+        ImageIO.scanForPlugins();
     }
 
     /**
