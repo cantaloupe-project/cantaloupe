@@ -66,9 +66,10 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             "ImageMagickProcessor.path_to_binaries";
 
     // ImageMagick 7 uses a `magick` command. Earlier versions use `convert`
-    // and `identify`.
-    private static AtomicBoolean isUsingVersion7;
-    private static final Object lock = new Object();
+    // and `identify`. IM7 may provide aliases for these.
+    private static final AtomicBoolean hasCheckedVersion =
+            new AtomicBoolean(false);
+    private static boolean isUsingVersion7 = false;
 
     // Lazy-initialized by getFormats()
     protected static Map<Format, Set<Format>> supportedFormats;
@@ -193,14 +194,14 @@ class ImageMagickProcessor extends AbstractMagickProcessor
      * @return Whether we appear to be using ImageMagick 7.
      */
     private static boolean isUsingVersion7() {
-        if (isUsingVersion7 == null) {
-            synchronized (lock) {
+        if (!hasCheckedVersion.get()) {
+            synchronized (ImageMagickProcessor.class) {
                 final ProcessBuilder pb = new ProcessBuilder();
                 final List<String> command = new ArrayList<>();
                 command.add(getPath("magick"));
                 pb.command(command);
                 try {
-                    isUsingVersion7 = new AtomicBoolean(false);
+                    isUsingVersion7 = false;
                     final String commandString = StringUtils.join(pb.command(), " ");
                     logger.debug("isUsingVersion7(): trying to invoke {}",
                             commandString);
@@ -208,15 +209,15 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                     process.waitFor();
                     logger.info("isUsingVersion7(): found magick command; " +
                             "assuming ImageMagick 7+");
-                    isUsingVersion7.set(true);
+                    isUsingVersion7 = true;
                 } catch (Exception e) {
                     logger.info("isUsingVersion7(): couldn't find magick " +
                             "command; assuming ImageMagick <7");
-                    isUsingVersion7.set(false);
+                    isUsingVersion7 = false;
                 }
             }
         }
-        return isUsingVersion7.get();
+        return isUsingVersion7;
     }
 
     @Override
