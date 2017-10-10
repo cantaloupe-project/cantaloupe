@@ -77,12 +77,16 @@ class ImageMagickProcessor extends AbstractMagickProcessor
 
     static final String OVERLAY_TEMP_FILE_PREFIX = "cantaloupe-overlay";
 
+    // ImageMagick 7 uses a `magick` command. Earlier versions use `convert`
+    // and `identify`. IM7 may provide aliases for these.
+    private static final AtomicBoolean hasCheckedVersion =
+            new AtomicBoolean(false);
+
     private static InitializationException initializationException;
+
     private static boolean isInitialized = false;
 
-    /** ImageMagick 7 uses a `magick` command. Earlier versions use `convert`
-    and `identify`. */
-    private static AtomicBoolean isUsingVersion7;
+    private static boolean isUsingVersion7 = false;
 
     /** Map of overlay images downloaded from web servers. Files are temp files
     set to delete-on-exit. */
@@ -236,38 +240,45 @@ class ImageMagickProcessor extends AbstractMagickProcessor
      *
      * @return Whether we appear to be using ImageMagick 7.
      */
-    static synchronized boolean isUsingVersion7() {
-        if (isUsingVersion7 == null) {
-            final ProcessBuilder pb = new ProcessBuilder();
-            final List<String> command = new ArrayList<>();
-            command.add(getPath("magick"));
-            pb.command(command);
-            try {
-                isUsingVersion7 = new AtomicBoolean(false);
-                final String commandString = String.join(" ", pb.command());
-                LOGGER.debug("isUsingVersion7(): trying to invoke {}",
-                        commandString);
-                final Process process = pb.start();
-                process.waitFor();
-                LOGGER.info("isUsingVersion7(): found magick command; " +
-                        "assuming ImageMagick 7+");
-                isUsingVersion7.set(true);
-            } catch (Exception e) {
-                LOGGER.info("isUsingVersion7(): couldn't find magick " +
-                        "command; assuming ImageMagick <7");
-                LOGGER.warn("ImageMagick <7 support is DEPRECATED. " +
-                        "Please upgrade to version 7.");
-                isUsingVersion7.set(false);
+    static boolean isUsingVersion7() {
+        if (!hasCheckedVersion.get()) {
+            synchronized (ImageMagickProcessor.class) {
+                final ProcessBuilder pb = new ProcessBuilder();
+                final List<String> command = new ArrayList<>();
+                command.add(getPath("magick"));
+                pb.command(command);
+                try {
+                    isUsingVersion7 = false;
+                    final String commandString = StringUtils.join(pb.command(), " ");
+                    LOGGER.debug("isUsingVersion7(): trying to invoke {}",
+                            commandString);
+                    final Process process = pb.start();
+                    process.waitFor();
+                    LOGGER.info("isUsingVersion7(): found magick command; " +
+                            "assuming ImageMagick 7+");
+                    isUsingVersion7 = true;
+                } catch (Exception e) {
+                    LOGGER.info("isUsingVersion7(): couldn't find magick " +
+                            "command; assuming ImageMagick <7");
+                    isUsingVersion7 = false;
+                }
             }
         }
-        return isUsingVersion7.get();
+        return isUsingVersion7;
     }
 
     /**
-     * For testing only.
+     * For testing only!
      */
-    static synchronized void setUsingVersion7(boolean trueOrFalse) {
-        isUsingVersion7.set(trueOrFalse);
+    static void setHasCheckedVersion(boolean yesOrNo) {
+        hasCheckedVersion.set(yesOrNo);
+    }
+
+    /**
+     * For testing only!
+     */
+    static synchronized void setUsingVersion7(boolean yesOrNo) {
+        isUsingVersion7 = yesOrNo;
     }
 
     @Override
