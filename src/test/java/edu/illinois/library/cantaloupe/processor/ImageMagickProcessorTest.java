@@ -234,6 +234,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
         boolean initialValue = ImageMagickProcessor.isUsingVersion7();
         try {
             ImageMagickProcessor.setUsingVersion7(true);
+            ImageMagickProcessor.setHasCheckedVersion(true);
             assertEquals(0, instance.getWarnings().size());
         } finally {
             ImageMagickProcessor.setUsingVersion7(initialValue);
