@@ -13,7 +13,7 @@ import javax.script.ScriptException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.StampedLock;
 
 /**
  * @see <a href="https://github.com/jruby/jruby/wiki/Embedding-with-JSR-223">
@@ -23,16 +23,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 class RubyScriptEngine extends AbstractScriptEngine
         implements ScriptEngine {
 
-    private static Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(RubyScriptEngine.class);
 
     /** Top-level Ruby module containing methods to invoke. */
     static final String TOP_MODULE = "Cantaloupe";
 
-    private InvocationCache invocationCache = new CaffeineInvocationCache();
-    private final Object lock = new Object();
+    private final InvocationCache invocationCache =
+            new CaffeineInvocationCache();
     private javax.script.ScriptEngine scriptEngine;
-    private final AtomicBoolean scriptIsLoading = new AtomicBoolean(false);
+    private final StampedLock stampedLock = new StampedLock();
 
     static {
         // Available values are singleton, singlethread, threadsafe and
@@ -48,8 +48,8 @@ class RubyScriptEngine extends AbstractScriptEngine
 
     /**
      * @param methodName Name of the method being invoked.
-     * @param args Method arguments.
-     * @return The cache key corresponding to the given arguments.
+     * @param args       Method arguments.
+     * @return           Cache key corresponding to the given arguments.
      */
     private Object getCacheKey(String methodName, Object... args) {
         // The cache key is comprised of the method name at position 0 followed
@@ -61,7 +61,7 @@ class RubyScriptEngine extends AbstractScriptEngine
     }
 
     /**
-     * @return The method invocation cache.
+     * @return Method invocation cache.
      */
     @Override
     public InvocationCache getInvocationCache() {
@@ -70,8 +70,7 @@ class RubyScriptEngine extends AbstractScriptEngine
 
     /**
      * @param methodName Full method name including module names.
-     * @return Module name.
-     * @throws ScriptException
+     * @return           Module name.
      */
     String getModuleName(String methodName) {
         final String[] parts = StringUtils.split(methodName, "::");
@@ -85,7 +84,7 @@ class RubyScriptEngine extends AbstractScriptEngine
 
     /**
      * @param methodName Full method name including module names.
-     * @return Method name excluding module names.
+     * @return           Method name excluding module names.
      */
     String getUnqualifiedMethodName(String methodName) {
         String[] parts = StringUtils.split(methodName, "::");
@@ -98,47 +97,40 @@ class RubyScriptEngine extends AbstractScriptEngine
      *
      * @param methodName Method to invoke, including all prefixes except the
      *                   top-level one in {@link #TOP_MODULE}.
-     * @param args Arguments to pass to the method.
-     * @return Return value of the method.
-     * @throws ScriptException
+     * @param args       Arguments to pass to the method.
+     * @return           Return value of the method.
      */
     @Override
     public Object invoke(String methodName, Object... args)
             throws ScriptException {
-        final Stopwatch watch = new Stopwatch();
+        final long stamp = stampedLock.readLock();
+        try {
+            final Stopwatch watch = new Stopwatch();
 
-        // Block while the script is being (re)loaded.
-        synchronized (lock) {
-            while (scriptIsLoading.get()) {
-                try {
-                    lock.wait();
-                } catch (InterruptedException e) {
-                    break;
-                }
+            Object returnValue;
+            final Configuration config = Configuration.getInstance();
+            if (config.getBoolean(Key.DELEGATE_METHOD_INVOCATION_CACHE_ENABLED, false)) {
+                returnValue = retrieveFromCacheOrInvoke(methodName, args);
+            } else {
+                returnValue = doInvoke(methodName, args);
             }
+            LOGGER.debug("invoke({}::{}): exec time: {} msec",
+                    TOP_MODULE, methodName, watch.timeElapsed());
+            return returnValue;
+        } finally {
+            stampedLock.unlock(stamp);
         }
-
-        Object returnValue;
-        final Configuration config = Configuration.getInstance();
-        if (config.getBoolean(Key.DELEGATE_METHOD_INVOCATION_CACHE_ENABLED, false)) {
-            returnValue = retrieveFromCacheOrInvoke(methodName, args);
-        } else {
-            returnValue = doInvoke(methodName, args);
-        }
-        logger.debug("invoke({}::{}): exec time: {} msec",
-                TOP_MODULE, methodName, watch.timeElapsed());
-        return returnValue;
     }
 
     @Override
-    public synchronized void load(String code) throws ScriptException {
-        scriptIsLoading.set(true);
-        logger.info("load(): loading script code");
-        scriptEngine = new ScriptEngineManager().getEngineByName("jruby");
-        scriptEngine.eval(code);
-        scriptIsLoading.set(false);
-        synchronized (lock) {
-            lock.notifyAll();
+    public void load(String code) throws ScriptException {
+        final long stamp = stampedLock.writeLock();
+        try {
+            LOGGER.info("load(): loading script code");
+            scriptEngine = new ScriptEngineManager().getEngineByName("jruby");
+            scriptEngine.eval(code);
+        } finally {
+            stampedLock.unlock(stamp);
         }
     }
 
@@ -147,10 +139,10 @@ class RubyScriptEngine extends AbstractScriptEngine
         final Object cacheKey = getCacheKey(methodName, args);
         Object returnValue = invocationCache.get(cacheKey);
         if (returnValue != null) {
-            logger.debug("invoke({}::{}): cache hit (skipping invocation)",
+            LOGGER.debug("invoke({}::{}): cache hit (skipping invocation)",
                     TOP_MODULE, methodName);
         } else {
-            logger.debug("invoke({}::{}): cache miss", TOP_MODULE, methodName);
+            LOGGER.debug("invoke({}::{}): cache miss", TOP_MODULE, methodName);
             returnValue = doInvoke(methodName, args);
             if (returnValue != null) {
                 invocationCache.put(cacheKey, returnValue);
