@@ -239,18 +239,18 @@ public class Color extends java.awt.Color {
         // Check for rgb(r, g, b).
         Matcher m = rgbPattern.matcher(string.replace(" ", ""));
         if (m.matches()) {
-            return new Color(Integer.valueOf(m.group(1)),
-                    Integer.valueOf(m.group(2)),
-                    Integer.valueOf(m.group(3)));
+            return new Color(Integer.parseInt(m.group(1)),
+                    Integer.parseInt(m.group(2)),
+                    Integer.parseInt(m.group(3)));
         }
 
         // Check for rgba(r, g, b, a).
         m = rgbaPattern.matcher(string.replace(" ", ""));
         if (m.matches()) {
-            return new Color(Integer.valueOf(m.group(1)),
-                    Integer.valueOf(m.group(2)),
-                    Integer.valueOf(m.group(3)),
-                    Integer.valueOf(m.group(4)));
+            return new Color(Integer.parseInt(m.group(1)),
+                    Integer.parseInt(m.group(2)),
+                    Integer.parseInt(m.group(3)),
+                    Integer.parseInt(m.group(4)));
         }
 
         throw new IllegalArgumentException("Unrecognized color string: " + string);
