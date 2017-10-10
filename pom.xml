@@ -13,7 +13,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <jetty.version>9.4.6.v20170531</jetty.version>
+    <jetty.version>9.4.7.v20170914</jetty.version>
     <restlet.version>2.3.11</restlet.version>
     <surefire.version>2.20.1</surefire.version>
   </properties>
