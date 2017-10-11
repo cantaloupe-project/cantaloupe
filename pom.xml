@@ -326,14 +326,13 @@
     <dependency>
       <groupId>org.jruby</groupId>
       <artifactId>jruby-core</artifactId>
-      <version>9.1.10.0</version>
+      <version>9.1.13.0</version>
     </dependency>
+    <!-- Needed by tests, but not necessary at compile time. -->
     <dependency>
       <groupId>org.jruby</groupId>
       <artifactId>jruby-stdlib</artifactId>
-      <version>9.1.10.0</version>
-      <!-- Without jruby-stdib, tests won't pass. This is not necessary for
-      compile-time though. -->
+      <version>9.1.13.0</version>
       <scope>runtime</scope>
     </dependency>
     <!-- Restlet is our REST framework. -->
