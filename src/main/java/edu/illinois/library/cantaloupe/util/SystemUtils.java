@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.server.NegotiatingServerConnectionFactory;
 
 public final class SystemUtils {
@@ -8,12 +9,14 @@ public final class SystemUtils {
      * @return Java major version such as <code>8</code>, <code>9</code>, etc.
      */
     public static int getJavaVersion() {
-        // Up to Java 8, this will be a string like: 1.[0-8]
+        // Up to Java 8, this will be a string like: 1.8.0_60
         // Beginning in Java 9, it will be an integer like 9.
         final String versionStr = System.getProperty("java.version");
         if (versionStr.contains(".")) {
-            int pos = versionStr.indexOf('.');
-            return Integer.parseInt(versionStr.substring(0, pos));
+            String[] parts = StringUtils.split(versionStr, ".");
+            if (parts.length > 1) {
+                return Integer.parseInt(parts[1]);
+            }
         }
         return Integer.parseInt(versionStr);
     }
