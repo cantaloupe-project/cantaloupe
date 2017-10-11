@@ -8,12 +8,16 @@ public class SystemUtilsTest {
 
     @Test
     public void testGetJavaVersion() {
+        int expected;
         final String versionStr = System.getProperty("java.version");
-        int pos = versionStr.indexOf('.');
-        pos = versionStr.indexOf('.', pos + 1);
-        double expected = Double.parseDouble(versionStr.substring (0, pos));
+        if (versionStr.contains(".")) {
+            int pos = versionStr.indexOf('.');
+            expected = Integer.parseInt(versionStr.substring(0, pos));
+        } else {
+            expected = Integer.parseInt(versionStr);
+        }
 
-        assertEquals(expected, SystemUtils.getJavaVersion(), 0.000001f);
+        assertEquals(expected, SystemUtils.getJavaVersion());
     }
 
 }

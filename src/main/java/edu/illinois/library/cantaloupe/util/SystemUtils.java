@@ -4,11 +4,18 @@ import org.eclipse.jetty.server.NegotiatingServerConnectionFactory;
 
 public final class SystemUtils {
 
-    public static double getJavaVersion() {
+    /**
+     * @return Java major version such as <code>8</code>, <code>9</code>, etc.
+     */
+    public static int getJavaVersion() {
+        // Up to Java 8, this will be a string like: 1.[0-8]
+        // Beginning in Java 9, it will be an integer like 9.
         final String versionStr = System.getProperty("java.version");
-        int pos = versionStr.indexOf('.');
-        pos = versionStr.indexOf('.', pos + 1);
-        return Double.parseDouble(versionStr.substring (0, pos));
+        if (versionStr.contains(".")) {
+            int pos = versionStr.indexOf('.');
+            return Integer.parseInt(versionStr.substring(0, pos));
+        }
+        return Integer.parseInt(versionStr);
     }
 
     /**
@@ -18,7 +25,7 @@ public final class SystemUtils {
      * <code>-Xbootclasspath/p:/path/to/alpn-boot-8.1.5.v20150921.jar</code>
      */
     public static boolean isALPNAvailable() {
-        if (getJavaVersion() < 1.9) {
+        if (getJavaVersion() < 9) {
             try {
                 NegotiatingServerConnectionFactory.
                         checkProtocolNegotiationAvailable();
