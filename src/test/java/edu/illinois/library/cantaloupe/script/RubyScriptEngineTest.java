@@ -39,7 +39,6 @@ public class RubyScriptEngineTest extends BaseTest {
     @Test
     public void testInvokeWithNoArgs() throws Exception {
         final String code = "module Cantaloupe\n" +
-                "SOMETHING = 1\n" +
                 "def self.func1\n" +
                 "'cats'\n" +
                 "end\n" +
@@ -53,7 +52,6 @@ public class RubyScriptEngineTest extends BaseTest {
     @Test
     public void testInvokeWithArgs() throws Exception {
         final String code = "module Cantaloupe\n" +
-                "SOMETHING = 1\n" +
                 "def self.func2(arg)\n" +
                 "arg\n" +
                 "end\n" +
@@ -91,7 +89,6 @@ public class RubyScriptEngineTest extends BaseTest {
         config.setProperty(Key.DELEGATE_METHOD_INVOCATION_CACHE_ENABLED, true);
 
         final String code = "module Cantaloupe\n" +
-                "SOMETHING = 1\n" +
                 "def self.func2(arg)\n" +
                 "arg\n" +
                 "end\n" +
