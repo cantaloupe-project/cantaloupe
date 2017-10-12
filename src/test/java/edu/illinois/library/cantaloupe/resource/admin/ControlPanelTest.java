@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
 
 public class ControlPanelTest extends ResourceTest {
 
-    private static final int WAIT_AFTER_SUBMIT = 600;
+    private static final int WAIT_AFTER_SUBMIT = 1000;
     private static final String USERNAME = "admin";
     private static final String SECRET = "secret";
 
