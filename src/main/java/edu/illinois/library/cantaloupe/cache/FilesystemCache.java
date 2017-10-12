@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.FileExistsException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -229,9 +230,16 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     }
 
                     if (tempFile.length() > 0) {
-                        logger.debug("close(): moving {} to {}",
-                                tempFile, destinationFile.getName());
-                        FileUtils.moveFile(tempFile, destinationFile);
+                        try {
+                            logger.debug("close(): moving {} to {}",
+                                    tempFile, destinationFile.getName());
+                            FileUtils.moveFile(tempFile, destinationFile);
+                        } catch (FileExistsException e) {
+                            // This is OK, as most likely another thread or
+                            // process has already moved it.
+                            logger.debug("close(): file already exists: {}",
+                                    destinationFile);
+                        }
                     } else {
                         logger.debug("close(): deleting zero-byte file: {}",
                                 tempFile);
