@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -17,9 +16,6 @@ import org.openqa.selenium.support.ui.Select;
 
 import static org.junit.Assert.*;
 
-// TODO: this test should be pretty close to working as written, but is
-// prevented from doing so by frequent Selenium-related compatibility breaks.
-@Ignore
 public class ControlPanelTest extends ResourceTest {
 
     private static final int WAIT_AFTER_SUBMIT = 600;
@@ -80,7 +76,7 @@ public class ControlPanelTest extends ResourceTest {
 
     @Test
     public void testServerSection() throws Exception {
-        css("#cl-http-button").click();
+        css("#cl-http-button > a").click();
 
         // Fill in the form
         inputNamed(Key.HTTP_ENABLED).click();
@@ -90,7 +86,7 @@ public class ControlPanelTest extends ResourceTest {
         inputNamed(Key.HTTPS_ENABLED).click();
         inputNamed(Key.HTTPS_HOST).sendKeys("2.3.4.5");
         inputNamed(Key.HTTPS_PORT).sendKeys("8990");
-        inputNamed(Key.HTTPS_KEY_STORE_TYPE).sendKeys("PKCS12");
+        selectNamed(Key.HTTPS_KEY_STORE_TYPE).selectByVisibleText("PKCS12");
         inputNamed(Key.HTTPS_KEY_STORE_PATH).sendKeys("/something");
         inputNamed(Key.HTTPS_KEY_STORE_PASSWORD).sendKeys("cats");
         inputNamed(Key.HTTPS_HTTP2_ENABLED).click();
@@ -125,7 +121,7 @@ public class ControlPanelTest extends ResourceTest {
 
     @Test
     public void testEndpointsSection() throws Exception {
-        css("#cl-endpoints-button").click();
+        css("#cl-endpoints-button > a").click();
 
         // Fill in the form
         inputNamed(Key.MAX_PIXELS).sendKeys("5000");
@@ -167,7 +163,7 @@ public class ControlPanelTest extends ResourceTest {
 
     @Test
     public void testResolverSection() throws Exception {
-        css("#cl-resolver-button").click();
+        css("#cl-resolver-button > a").click();
 
         // Fill in the form
         selectNamed(Key.RESOLVER_DELEGATE).selectByValue("false");
@@ -273,7 +269,7 @@ public class ControlPanelTest extends ResourceTest {
 
     @Test
     public void testProcessorsSection() throws Exception {
-        css("#cl-processors-button").click();
+        css("#cl-processors-button > a").click();
 
         // Fill in the form
         css("#cl-processors li > a[href=\"#cl-image-assignments\"]").click();
@@ -359,7 +355,7 @@ public class ControlPanelTest extends ResourceTest {
 
     @Test
     public void testCachesSection() throws Exception {
-        css("#cl-caches-button").click();
+        css("#cl-caches-button > a").click();
 
         // Fill in the form
         inputNamed(Key.CLIENT_CACHE_ENABLED).click();
@@ -386,7 +382,7 @@ public class ControlPanelTest extends ResourceTest {
         inputNamed(Key.AMAZONS3CACHE_ACCESS_KEY_ID).sendKeys("cats");
         inputNamed(Key.AMAZONS3CACHE_SECRET_KEY).sendKeys("dogs");
         inputNamed(Key.AMAZONS3CACHE_BUCKET_NAME).sendKeys("bucket");
-        inputNamed(Key.AMAZONS3CACHE_BUCKET_NAME).sendKeys("greenland");
+        inputNamed(Key.AMAZONS3CACHE_BUCKET_REGION).sendKeys("greenland");
         inputNamed(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX).sendKeys("obj");
         // AzureStorageCache
         css("#cl-caches li > a[href=\"#AzureStorageCache\"]").click();
@@ -441,7 +437,7 @@ public class ControlPanelTest extends ResourceTest {
         assertTrue(config.getBoolean(Key.SOURCE_CACHE_ENABLED));
         assertEquals("FilesystemCache", config.getString(Key.DERIVATIVE_CACHE));
         assertTrue(config.getBoolean(Key.DERIVATIVE_CACHE_ENABLED));
-        //assertTrue(config.getBoolean(Cache.PURGE_MISSING_CONFIG_KEY)); TODO: why does this not work?
+        assertTrue(config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING));
         assertTrue(config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST));
         assertEquals(10, config.getInt(Key.CACHE_SERVER_TTL));
         assertTrue(config.getBoolean(Key.CACHE_WORKER_ENABLED));
@@ -482,7 +478,7 @@ public class ControlPanelTest extends ResourceTest {
 
     @Test
     public void testOverlaysSection() throws Exception {
-        css("#cl-overlays-button").click();
+        css("#cl-overlays-button > a").click();
 
         // Fill in the form
         inputNamed(Key.OVERLAY_ENABLED).click();
@@ -552,7 +548,7 @@ public class ControlPanelTest extends ResourceTest {
 
     @Test
     public void testDelegateScriptSection() throws Exception {
-        css("#cl-delegate-script-button").click();
+        css("#cl-delegate-script-button > a").click();
 
         // Fill in the form
         inputNamed(Key.DELEGATE_SCRIPT_ENABLED).click();
@@ -573,7 +569,7 @@ public class ControlPanelTest extends ResourceTest {
 
     @Test
     public void testLoggingSection() throws Exception {
-        css("#cl-logging-button").click();
+        css("#cl-logging-button > a").click();
 
         // Fill in the form
         // Application log

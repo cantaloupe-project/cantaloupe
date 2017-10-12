@@ -2324,7 +2324,7 @@
                                     <td>
                                         <input class="form-control" type="number"
                                                name="cache.server.worker.interval"
-                                               value="true" min="0"
+                                               min="0"
                                                data-requires-restart="true">
                                     </td>
                                 </tr>
