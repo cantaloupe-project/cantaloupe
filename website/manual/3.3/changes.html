@@ -18,11 +18,11 @@ title: What's New
   <li>Added Java 9 compatibility.</li>
   <li>Upgraded dependencies to fix the following vulnerabilities: CVE-2015-6420. (Thanks to @kinow)</li>
   <li>Fixed incorrect computation of post-rotation bounding boxes, manifesting as bogus values passed to the <code>resulting_size</code> delegate method arguments. (Thanks to @SaschaAdler)</li>
-  <li>Fixed a bug in FilesystemCache when multiple processes tried to create the same directory at the same time. (Thanks to @cbeer)</li>
+  <li>Fixed a warning from FilesystemCache when multiple processes tried to create the same directory at the same time. (Thanks to @cbeer)</li>
   <li>Fixed potentially incorrect tile sizes in information responses when using OpenJpegProcessor.</li>
   <li>Fixed a bug in FfmpegProcessor that caused video info parsing to fail for some videos.</li>
   <li>Added <code>Origin</code> to all <code>Vary</code> response headers, which fixes a potential CORS-related caching issue.</li>
-  <li>Fixed an issue where certain ImageIO plugins could fail to register when running multiple ImageIO-using applications in the same container. (Thanks to @mmatela)</li>
+  <li>Fixed an issue where certain ImageIO plugins could fail to register when multiple applications that use ImageIO are running in the same container. (Thanks to @mmatela)</li>
   <li>Fixed a resource leak when using image overlays.</li>
   <li>Improvements in the testing and build process. (Thanks to @kinow)</li>
 </ul>
