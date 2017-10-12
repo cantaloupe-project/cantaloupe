@@ -18,18 +18,18 @@ footer {
 }
 
 section {
-    margin-bottom: 2em;
+    margin-bottom: 3em;
 }
 
 h2 {
-    font-size: 1.8em;
+    font-size: 1.6em;
     margin-top: 0px;
 }
 
-h3 { font-size: 1.5em; }
-h4 { font-size: 1.3em; }
-h5 { font-size: 1.1em; }
-h6 { font-size: 1em; }
+h3 { font-size: 1.4em; }
+h4 { font-size: 1.2em; }
+h5 { font-size: 1em; }
+h6 { font-size: 0.8em; }
 
 pre {
     background-color: #1b2e40;
