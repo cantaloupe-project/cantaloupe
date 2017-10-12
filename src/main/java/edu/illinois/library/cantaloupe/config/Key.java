@@ -46,7 +46,7 @@ public enum Key {
     APPLICATION_LOG_FILEAPPENDER_ENABLED("log.application.FileAppender.enabled"),
     APPLICATION_LOG_FILEAPPENDER_PATHNAME("log.application.FileAppender.pathname"),
     APPLICATION_LOG_ROLLINGFILEAPPENDER_ENABLED("log.application.RollingFileAppender.enabled"),
-    APPLICATION_LOG_ROLLINGFILEAPPENDER_PATHNAME("/path/to/logs/rolling-application.log"),
+    APPLICATION_LOG_ROLLINGFILEAPPENDER_PATHNAME("log.application.RollingFileAppender.pathname"),
     APPLICATION_LOG_ROLLINGFILEAPPENDER_POLICY("log.application.RollingFileAppender.policy"),
     APPLICATION_LOG_ROLLINGFILEAPPENDER_FILENAME_PATTERN("log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern"),
     APPLICATION_LOG_ROLLINGFILEAPPENDER_MAX_HISTORY("log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history"),
