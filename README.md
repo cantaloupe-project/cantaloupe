@@ -53,7 +53,6 @@ installed.
 depend on open-source tools and libraries. These are the tests run in
 continuous integration. The following dependencies are required:
 
-* Arial font
 * FFmpeg (for FfmpegProcessorTest)
 * GraphicsMagick (for GraphicsMagickProcessorTest)
 * ImageMagick (for ImageMagickProcessorTest)

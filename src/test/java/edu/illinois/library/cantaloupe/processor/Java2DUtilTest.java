@@ -146,7 +146,7 @@ public class Java2DUtilTest extends BaseTest {
         // create a StringOverlay
         final StringOverlay overlay = new StringOverlay(
                 "X", Position.TOP_LEFT, 0,
-                new Font("Arial", Font.PLAIN, 12), 11,
+                new Font("SansSerif", Font.PLAIN, 12), 11,
                 Color.WHITE, Color.BLACK, Color.WHITE, 0f);
 
         // apply it
@@ -156,7 +156,7 @@ public class Java2DUtilTest extends BaseTest {
         // Test the background color
         assertRGBA(overlaidImage.getRGB(2, 2), 0, 0, 0, 255);
 
-        // Test the font color TODO: this pixel will be different colors on different JVMs and/or with different versions of the Arial font
+        // Test the font color TODO: this pixel will be different colors on different JVMs and/or with different versions of the SansSerif font
         int pixel = overlaidImage.getRGB(9, 8);
         int alpha = (pixel >> 24) & 0xff;
         int red = (pixel >> 16) & 0xff;

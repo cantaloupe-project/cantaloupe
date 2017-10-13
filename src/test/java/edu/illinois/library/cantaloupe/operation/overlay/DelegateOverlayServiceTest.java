@@ -68,7 +68,7 @@ public class DelegateOverlayServiceTest extends BaseTest {
                 opList, fullSize, requestURI, requestHeaders, clientIP,
                 cookies);
         assertEquals("dogs\ndogs", overlay.getString());
-        assertEquals("Arial", overlay.getFont().getName());
+        assertEquals("SansSerif", overlay.getFont().getName());
         assertEquals(20, overlay.getFont().getSize());
         assertEquals(11, overlay.getMinSize());
         assertEquals(1.5f, overlay.getFont().getAttributes().get(TextAttribute.WEIGHT));
