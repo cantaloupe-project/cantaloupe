@@ -158,11 +158,15 @@ public class ApplicationInitializer implements ServletContextListener {
 
         final int mb = 1024 * 1024;
         final Runtime runtime = Runtime.getRuntime();
-        LOGGER.info(System.getProperty("java.vm.name") + " / " +
+        LOGGER.info(System.getProperty("java.vendor") + " " +
+                System.getProperty("java.vm.name") + " " +
+                System.getProperty("java.version") + " / " +
                 System.getProperty("java.vm.info"));
+        LOGGER.info("Java home: {}", System.getProperty("java.home"));
         LOGGER.info("{} available processor cores",
                 runtime.availableProcessors());
-        LOGGER.info("Heap total: {}MB; max: {}MB", runtime.totalMemory() / mb,
+        LOGGER.info("Heap total: {}MB; max: {}MB",
+                runtime.totalMemory() / mb,
                 runtime.maxMemory() / mb);
         LOGGER.info("\uD83C\uDF48 Starting Cantaloupe {}",
                 Application.getVersion());
@@ -174,11 +178,12 @@ public class ApplicationInitializer implements ServletContextListener {
         try {
             ScriptEngineFactory.getScriptEngine().startWatching();
         } catch (DelegateScriptDisabledException e) {
-            LOGGER.info("init(): {}", e.getMessage());
+            LOGGER.debug(e.getMessage());
         } catch (FileNotFoundException e) {
-            LOGGER.error("init(): file not found: {}", e.getMessage());
+            LOGGER.error("contextInitialized(): file not found: {}",
+                    e.getMessage());
         } catch (Exception e) {
-            LOGGER.error("init(): {}", e.getMessage());
+            LOGGER.error("contextInitialized(): {}", e.getMessage());
         }
     }
 
@@ -191,11 +196,11 @@ public class ApplicationInitializer implements ServletContextListener {
         try {
             ScriptEngineFactory.getScriptEngine().stopWatching();
         } catch (DelegateScriptDisabledException e) {
-            LOGGER.info("init(): {}", e.getMessage());
+            LOGGER.debug("contextDestroyed(): {}", e.getMessage());
         } catch (FileNotFoundException e) {
-            LOGGER.error("destroy(): file not found: {}", e.getMessage());
+            LOGGER.error("contextDestroyed(): file not found: {}", e.getMessage());
         } catch (Exception e) {
-            LOGGER.error("destroy(): {}", e.getMessage());
+            LOGGER.error("contextDestroyed(): {}", e.getMessage());
         }
     }
 
