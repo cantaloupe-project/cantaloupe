@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -15,10 +16,17 @@ import static org.junit.Assume.assumeTrue;
 
 public class WebServerTest extends BaseTest {
 
-    private static final int HTTP_PORT = TestUtil.getOpenPort();
-    private static final int HTTPS_PORT = TestUtil.getOpenPort();
+    private static int HTTP_PORT;
+    private static int HTTPS_PORT;
 
     private WebServer instance;
+
+    @BeforeClass
+    public static void beforeClass() {
+        Integer[] ports = TestUtil.getOpenPorts(2);
+        HTTP_PORT = ports[0];
+        HTTPS_PORT = ports[1];
+    }
 
     @Before
     public void setUp() throws Exception {

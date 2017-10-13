@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -98,17 +99,17 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     /**
      * Creates a unique symlink to /dev/stdout in a temporary directory, and
      * sets it to delete on exit.
-     *
-     * @return Path to the symlink.
      */
-    private static Path createStdoutSymlink() throws IOException {
-        File tempDir = new File(System.getProperty("java.io.tmpdir"));
-        final File link = new File(tempDir.getAbsolutePath() + "/cantaloupe-" +
+    private static void createStdoutSymlink() throws IOException {
+        Path tempDir = Application.getTempPath();
+
+        final Path link = tempDir.resolve("cantaloupe-" +
+                KakaduProcessor.class.getSimpleName() + "-" +
                 UUID.randomUUID() + ".tif");
-        link.deleteOnExit();
-        final File devStdout = new File("/dev/stdout");
-        return Files.createSymbolicLink(Paths.get(link.getAbsolutePath()),
-                Paths.get(devStdout.getAbsolutePath()));
+        final Path devStdout = Paths.get("/dev/stdout");
+
+        stdoutSymlink = Files.createSymbolicLink(link, devStdout);
+        stdoutSymlink.toFile().deleteOnExit();
     }
 
     /**
@@ -136,7 +137,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
                 // Due to another quirk of kdu_expand, we need to create a symlink
                 // from {temp path}/stdout.tif to /dev/stdout, to tell kdu_expand
                 // what format to write.
-                stdoutSymlink = createStdoutSymlink();
+                createStdoutSymlink();
             } else {
                 LOGGER.error("Sorry, but " + KakaduProcessor.class.getSimpleName() +
                         " won't work on this platform as it requires access to " +
@@ -303,7 +304,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
             throws ProcessorException {
         super.process(opList, imageInfo, outputStream);
 
-        // will receive stderr output from kdu_expand
+        // Will receive stderr output from kdu_expand.
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
             final ReductionFactor reductionFactor = new ReductionFactor();

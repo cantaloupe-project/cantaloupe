@@ -11,7 +11,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.io.FileUtils;
+import edu.illinois.library.cantaloupe.util.DeletingFileVisitor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,15 +23,15 @@ import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
-import org.restlet.resource.ResourceException;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.assertRecursiveFileCount;
 import static org.junit.Assert.*;
@@ -44,6 +44,7 @@ public class StandaloneEntryTest extends BaseTest {
 
     private Client httpClient;
 
+    private Path cacheDir;
     private final ByteArrayOutputStream redirectedOutput =
             new ByteArrayOutputStream();
     private final ByteArrayOutputStream redirectedError =
@@ -61,12 +62,19 @@ public class StandaloneEntryTest extends BaseTest {
     }
 
     private void deleteCacheDir() throws IOException {
-        FileUtils.deleteDirectory(getCacheDir());
+        Files.walkFileTree(getCacheDir(), new DeletingFileVisitor());
     }
 
-    private File getCacheDir() throws IOException {
-        Path directory = Files.createTempDirectory("test");
-        return directory.toFile();
+    private Path getCacheDir() throws IOException {
+        if (cacheDir == null) {
+            try {
+                cacheDir = Files.createTempDirectory("test");
+            } catch (NoSuchFileException e) { // TODO: why does this happen?
+                cacheDir = Paths.get(System.getProperty("java.io.tmpdir"), "test");
+                Files.createDirectories(cacheDir);
+            }
+        }
+        return cacheDir;
     }
 
     /**
@@ -88,7 +96,7 @@ public class StandaloneEntryTest extends BaseTest {
 
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT,
                 TestUtil.getFixture("config.properties").getAbsolutePath());
-        System.setProperty(StandaloneEntry.TEST_VM_OPTION, "true");
+        System.setProperty(StandaloneEntry.TEST_VM_ARGUMENT, "true");
 
         ConfigurationFactory.clearInstance();
 
@@ -110,10 +118,10 @@ public class StandaloneEntryTest extends BaseTest {
         httpClient.stop();
         deleteCacheDir();
         System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
-        System.clearProperty(ApplicationInitializer.CLEAN_CACHE_VM_ARGUMENT);
-        System.clearProperty(ApplicationInitializer.PURGE_CACHE_VM_ARGUMENT);
-        System.clearProperty(ApplicationInitializer.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT);
-        System.clearProperty(StandaloneEntry.LIST_FONTS_VM_OPTION);
+        System.clearProperty(StandaloneEntry.CLEAN_CACHE_VM_ARGUMENT);
+        System.clearProperty(StandaloneEntry.PURGE_CACHE_VM_ARGUMENT);
+        System.clearProperty(StandaloneEntry.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT);
+        System.clearProperty(StandaloneEntry.LIST_FONTS_VM_ARGUMENT);
         resetOutput();
     }
 
@@ -122,9 +130,18 @@ public class StandaloneEntryTest extends BaseTest {
     @Test
     public void mainWithListFontsOption() throws Exception {
         redirectOutput();
-        System.setProperty(StandaloneEntry.LIST_FONTS_VM_OPTION, "");
-        StandaloneEntry.main(new String[] {});
+        System.setProperty(StandaloneEntry.LIST_FONTS_VM_ARGUMENT, "");
+        StandaloneEntry.main("");
         assertTrue(redirectedOutput.toString().contains("SansSerif"));
+    }
+
+    @Test
+    public void mainWithListFontsOptionExits() throws Exception {
+        exit.expectSystemExitWithStatus(0);
+        System.clearProperty(StandaloneEntry.TEST_VM_ARGUMENT);
+
+        System.setProperty(StandaloneEntry.LIST_FONTS_VM_ARGUMENT, "");
+        StandaloneEntry.main("");
     }
 
     // missing config
@@ -133,17 +150,17 @@ public class StandaloneEntryTest extends BaseTest {
     public void mainWithMissingConfigOptionPrintsUsage() throws Exception {
         redirectOutput();
         System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
-        StandaloneEntry.main(new String[] {});
+        StandaloneEntry.main("");
         assertEquals(StandaloneEntry.usage().trim(),
                 redirectedOutput.toString().trim());
     }
 
     @Test
     public void mainWithMissingConfigOptionExits() throws Exception {
-        System.clearProperty(StandaloneEntry.TEST_VM_OPTION);
+        System.clearProperty(StandaloneEntry.TEST_VM_ARGUMENT);
         exit.expectSystemExitWithStatus(-1);
         System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
-        StandaloneEntry.main(new String[] {});
+        StandaloneEntry.main("");
     }
 
     // empty config VM option
@@ -152,15 +169,15 @@ public class StandaloneEntryTest extends BaseTest {
     public void mainWithEmptyConfigOptionPrintsUsage() throws Exception {
         redirectOutput();
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "");
-        StandaloneEntry.main(new String[] {});
+        StandaloneEntry.main("");
     }
 
     @Test
     public void mainWithEmptyConfigOptionExits() throws Exception {
-        System.clearProperty(StandaloneEntry.TEST_VM_OPTION);
+        System.clearProperty(StandaloneEntry.TEST_VM_ARGUMENT);
         exit.expectSystemExitWithStatus(-1);
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "");
-        StandaloneEntry.main(new String[] {});
+        StandaloneEntry.main("");
     }
 
     // missing config file
@@ -170,17 +187,17 @@ public class StandaloneEntryTest extends BaseTest {
         redirectOutput();
         String path = "/bla/bla/bla";
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, path);
-        StandaloneEntry.main(new String[] {});
+        StandaloneEntry.main("");
         assertEquals("Does not exist: " + path + "\n\n" + StandaloneEntry.usage().trim(),
                 redirectedOutput.toString().trim());
     }
 
     @Test
     public void mainWithInvalidConfigFileArgumentExits() throws Exception {
-        System.clearProperty(StandaloneEntry.TEST_VM_OPTION);
+        System.clearProperty(StandaloneEntry.TEST_VM_ARGUMENT);
         exit.expectSystemExitWithStatus(-1);
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "/bla/bla/bla");
-        StandaloneEntry.main(new String[] {});
+        StandaloneEntry.main("");
     }
 
     // config file is a directory
@@ -190,25 +207,25 @@ public class StandaloneEntryTest extends BaseTest {
         redirectOutput();
         String path = TestUtil.getFixture("bla").getParentFile().getAbsolutePath();
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, path);
-        StandaloneEntry.main(new String[] {});
+        StandaloneEntry.main("");
         assertEquals("Not a file: " + path + "\n\n" + StandaloneEntry.usage().trim(),
                 redirectedOutput.toString().trim());
     }
 
     @Test
     public void mainWithDirectoryConfigFileArgumentExits() throws Exception {
-        System.clearProperty(StandaloneEntry.TEST_VM_OPTION);
+        System.clearProperty(StandaloneEntry.TEST_VM_ARGUMENT);
         exit.expectSystemExitWithStatus(-1);
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT,
                 TestUtil.getFixture("bla").getParentFile().getAbsolutePath());
-        StandaloneEntry.main(new String[] {});
+        StandaloneEntry.main("");
     }
 
     // valid config file
 
     @Test
     public void mainWithValidConfigFileArgumentStartsServer() throws Exception {
-        StandaloneEntry.main(new String[] {});
+        StandaloneEntry.main("");
         ClientResource resource = getClientResource();
         resource.get();
         assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
@@ -219,37 +236,35 @@ public class StandaloneEntryTest extends BaseTest {
      */
     @Test
     public void mainWithCleanCacheArg() throws Exception {
-        exit.expectSystemExitWithStatus(0);
-
-        File cacheDir = getCacheDir();
-        File imageDir = new File(cacheDir.getAbsolutePath() + File.separator +
-                "image");
-        File infoDir = new File(cacheDir.getAbsolutePath() + File.separator +
-                "info");
-        imageDir.mkdirs();
-        infoDir.mkdirs();
+        Path cacheDir = getCacheDir();
+        Path imageDir = cacheDir.resolve("image");
+        Path infoDir = cacheDir.resolve("info");
+        Files.createDirectories(imageDir);
+        Files.createDirectories(infoDir);
 
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
         config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
         config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
-                getCacheDir().getAbsolutePath());
+                getCacheDir().toString());
         config.setProperty(Key.CACHE_SERVER_TTL, "1");
 
         // TODO: write this
 
-        System.setProperty(ApplicationInitializer.CLEAN_CACHE_VM_ARGUMENT, "");
-        StandaloneEntry.main(new String[] {});
+        System.setProperty(StandaloneEntry.CLEAN_CACHE_VM_ARGUMENT, "");
+        StandaloneEntry.main("");
+    }
 
-        // Cause the Servlet to be loaded
-        try {
-            getClientResource().get();
-        } catch (ResourceException e) {
-            // This is expected, as the server has called System.exit() before
-            // it could generate a response.
-        }
+    /**
+     * Tests startup with the -Dcantaloupe.cache.clean VM option.
+     */
+    @Test
+    public void mainWithCleanCacheArgExits() throws Exception {
+        exit.expectSystemExitWithStatus(0);
+        System.clearProperty(StandaloneEntry.TEST_VM_ARGUMENT);
 
-        Thread.sleep(5000);
+        System.setProperty(StandaloneEntry.CLEAN_CACHE_VM_ARGUMENT, "");
+        StandaloneEntry.main("");
     }
 
     /**
@@ -257,17 +272,15 @@ public class StandaloneEntryTest extends BaseTest {
      */
     @Test
     public void mainWithPurgeCacheArg() throws Exception {
-        exit.expectSystemExitWithStatus(0);
         redirectOutput();
 
-        final File cacheDir = getCacheDir();
+        final Path cacheDir = getCacheDir();
 
         // set up the cache
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
         config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
-        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
-                cacheDir.getAbsolutePath());
+        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME, cacheDir.toString());
         config.setProperty(Key.CACHE_SERVER_TTL, "10");
 
         // cache a dimension
@@ -283,25 +296,18 @@ public class StandaloneEntryTest extends BaseTest {
         }
 
         // assert that they've been cached
-        assertRecursiveFileCount(cacheDir.toPath(), 2);
+        assertRecursiveFileCount(cacheDir, 2);
 
         // purge the cache
-        System.setProperty(ApplicationInitializer.PURGE_CACHE_VM_ARGUMENT, "");
-        StandaloneEntry.main(new String[] {});
+        System.setProperty(StandaloneEntry.PURGE_CACHE_VM_ARGUMENT, "");
+        StandaloneEntry.main("");
 
-        // Cause the Servlet to be loaded
-        try {
-            getClientResource().get();
-        } catch (ResourceException e) {
-            // This is expected, as the server has called System.exit() before
-            // it could generate a response.
-        }
-
-        Thread.sleep(5000);
         assertTrue(redirectedOutput.toString().contains("Purging the derivative cache"));
 
+        Thread.sleep(100);
+
         // assert that they've been purged
-        assertRecursiveFileCount(cacheDir.toPath(), 0);
+        assertRecursiveFileCount(cacheDir, 0);
     }
 
     /**
@@ -309,18 +315,17 @@ public class StandaloneEntryTest extends BaseTest {
      */
     @Test
     public void mainWithPurgeIdentifierArg() throws Exception {
-        exit.expectSystemExitWithStatus(0);
-
-        final File cacheDir = getCacheDir();
-        final File imageDir = new File(cacheDir.getAbsolutePath() + "/image");
-        final File infoDir = new File(cacheDir.getAbsolutePath() + "/info");
+        final Path cacheDir = getCacheDir();
+        final Path imageDir = cacheDir.resolve("image");
+        final Path infoDir = cacheDir.resolve("info");
+        Files.createDirectories(imageDir);
+        Files.createDirectories(infoDir);
 
         // set up the cache
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
         config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
-        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
-                cacheDir.getAbsolutePath());
+        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME, cacheDir.toString());
         config.setProperty(Key.CACHE_SERVER_TTL, "10");
 
         // cache a couple of dimensions
@@ -342,26 +347,28 @@ public class StandaloneEntryTest extends BaseTest {
         }
 
         // assert that they've been cached
-        assertEquals(2, FileUtils.listFiles(imageDir, null, true).size());
-        assertEquals(2, FileUtils.listFiles(infoDir, null, true).size());
+        assertRecursiveFileCount(imageDir, 2);
+        assertRecursiveFileCount(infoDir, 2);
 
         // purge one identifier
-        System.setProperty(ApplicationInitializer.PURGE_CACHE_VM_ARGUMENT, "dogs");
-        StandaloneEntry.main(new String[] {});
-
-        // Cause the Servlet to be loaded
-        try {
-            getClientResource().get();
-        } catch (ResourceException e) {
-            // This is expected, as the server has called System.exit() before
-            // it could generate a response.
-        }
-
-        Thread.sleep(2000);
+        System.setProperty(StandaloneEntry.PURGE_CACHE_VM_ARGUMENT, "dogs");
+        StandaloneEntry.main("");
 
         // assert that they've been purged
-        assertEquals(1, TestUtil.countFiles(imageDir));
-        assertEquals(1, TestUtil.countFiles(infoDir));
+        assertRecursiveFileCount(imageDir, 1);
+        assertRecursiveFileCount(infoDir, 1);
+    }
+
+    /**
+     * Tests startup with the -Dcantaloupe.cache.purge=identifier VM option.
+     */
+    @Test
+    public void mainWithPurgeIdentifierArgExits() throws Exception {
+        exit.expectSystemExitWithStatus(0);
+        System.clearProperty(StandaloneEntry.TEST_VM_ARGUMENT);
+
+        System.setProperty(StandaloneEntry.PURGE_CACHE_VM_ARGUMENT, "dogs");
+        StandaloneEntry.main("");
     }
 
     /**
@@ -369,42 +376,41 @@ public class StandaloneEntryTest extends BaseTest {
      */
     @Test
     public void mainWithPurgeExpiredCacheArg() throws Exception {
-        exit.expectSystemExitWithStatus(0);
-
-        File cacheDir = getCacheDir();
-        File imageDir = new File(cacheDir.getAbsolutePath() + "/image");
-        File infoDir = new File(cacheDir.getAbsolutePath() + "/info");
-        imageDir.mkdirs();
-        infoDir.mkdirs();
+        Path cacheDir = getCacheDir();
+        Path imageDir = cacheDir.resolve("image");
+        Path infoDir = cacheDir.resolve("info");
+        Files.createDirectories(imageDir);
+        Files.createDirectories(infoDir);
 
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
         config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
-        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
-                cacheDir.getAbsolutePath());
+        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME, cacheDir.toString());
         config.setProperty(Key.CACHE_SERVER_TTL, "1");
 
-        File.createTempFile("bla1", "tmp", imageDir);
-        File.createTempFile("bla1", "tmp", infoDir);
+        Files.createTempFile(imageDir, "bla1", "tmp");
+        Files.createTempFile(infoDir, "bla1", "tmp");
         Thread.sleep(2500);
-        File.createTempFile("bla2", "tmp", imageDir);
-        File.createTempFile("bla2", "tmp", infoDir);
+        Files.createTempFile(imageDir, "bla2", "tmp");
+        Files.createTempFile(infoDir, "bla2", "tmp");
 
-        System.setProperty(ApplicationInitializer.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT, "");
-        StandaloneEntry.main(new String[] {});
+        System.setProperty(StandaloneEntry.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT, "");
+        StandaloneEntry.main("");
 
-        // Cause the Servlet to be loaded
-        try {
-            getClientResource().get();
-        } catch (ResourceException e) {
-            // This is expected, as the server has called System.exit() before
-            // it could generate a response.
-        }
+        assertRecursiveFileCount(imageDir, 1);
+        assertRecursiveFileCount(infoDir, 1);
+    }
 
-        Thread.sleep(5000);
+    /**
+     * Tests startup with the -Dcantaloupe.cache.purge_expired VM option.
+     */
+    @Test
+    public void mainWithPurgeExpiredCacheArgExits() throws Exception {
+        exit.expectSystemExitWithStatus(0);
+        System.clearProperty(StandaloneEntry.TEST_VM_ARGUMENT);
 
-        assertEquals(1, TestUtil.countFiles(imageDir));
-        assertEquals(1, TestUtil.countFiles(infoDir));
+        System.setProperty(StandaloneEntry.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT, "");
+        StandaloneEntry.main("");
     }
 
 }

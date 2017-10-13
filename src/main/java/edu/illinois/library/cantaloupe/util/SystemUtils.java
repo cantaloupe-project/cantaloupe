@@ -1,7 +1,8 @@
 package edu.illinois.library.cantaloupe.util;
 
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.server.NegotiatingServerConnectionFactory;
+
+import java.util.regex.Pattern;
 
 public final class SystemUtils {
 
@@ -13,7 +14,7 @@ public final class SystemUtils {
         // Beginning in Java 9, it will be an integer like 9.
         final String versionStr = System.getProperty("java.version");
         if (versionStr.contains(".")) {
-            String[] parts = StringUtils.split(versionStr, ".");
+            String[] parts = versionStr.split(Pattern.quote("."));
             if (parts.length > 1) {
                 return Integer.parseInt(parts[1]);
             }

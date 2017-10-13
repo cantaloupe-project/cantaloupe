@@ -186,7 +186,8 @@ public enum Key {
     SLASH_SUBSTITUTE("slash_substitute"),
     SOURCE_CACHE("cache.server.source"),
     SOURCE_CACHE_ENABLED("cache.server.source.enabled"),
-    STREAMPROCESSOR_RETRIEVAL_STRATEGY("StreamProcessor.retrieval_strategy");
+    STREAMPROCESSOR_RETRIEVAL_STRATEGY("StreamProcessor.retrieval_strategy"),
+    TEMP_PATHNAME("temp_pathname");
 
     private String key;
 

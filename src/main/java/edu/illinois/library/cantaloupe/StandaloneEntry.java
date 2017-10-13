@@ -1,7 +1,11 @@
 package edu.illinois.library.cantaloupe;
 
+import edu.illinois.library.cantaloupe.cache.Cache;
+import edu.illinois.library.cantaloupe.cache.CacheException;
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.image.Identifier;
 
 import java.awt.GraphicsEnvironment;
 import java.io.File;
@@ -26,13 +30,18 @@ public class StandaloneEntry {
      * have as few dependencies as possible. All of the other would-be
      * arguments are VM options too, so let's preserve uniformity.</p>
      */
-    static String LIST_FONTS_VM_OPTION = "cantaloupe.list_fonts";
+    static final String LIST_FONTS_VM_ARGUMENT = "cantaloupe.list_fonts";
+
+    static final String CLEAN_CACHE_VM_ARGUMENT = "cantaloupe.cache.clean";
+    static final String PURGE_CACHE_VM_ARGUMENT = "cantaloupe.cache.purge";
+    static final String PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT =
+            "cantaloupe.cache.purge_expired";
 
     /**
      * When set to "true", calls to {@link System#exit} will be disabled,
      * necessary for testing output-to-console-followed-by-exit.
      */
-    static String TEST_VM_OPTION = "cantaloupe.test";
+    static final String TEST_VM_ARGUMENT = "cantaloupe.test";
 
     private static WebServer webServer;
 
@@ -46,18 +55,18 @@ public class StandaloneEntry {
      *
      * @param status Process return status.
      */
-    private static void exitUnlessTesting(int status) {
+    static void exitUnlessTesting(int status) {
         if (!isTesting()) {
             System.exit(status);
         }
     }
 
     /**
-     * @return Whether the value of the {@link #TEST_VM_OPTION} VM option is
+     * @return Whether the value of the {@link #TEST_VM_ARGUMENT} VM option is
      *         <code>true</code>.
      */
     private static boolean isTesting() {
-        return "true".equals(System.getProperty(TEST_VM_OPTION));
+        return "true".equals(System.getProperty(TEST_VM_ARGUMENT));
     }
 
     /**
@@ -76,16 +85,7 @@ public class StandaloneEntry {
      * @param args Ignored.
      * @throws Exception If there is a problem starting the web server.
      */
-    public static void main(String[] args) throws Exception {
-        if (System.getProperty(LIST_FONTS_VM_OPTION) != null) {
-            GraphicsEnvironment ge =
-                    GraphicsEnvironment.getLocalGraphicsEnvironment();
-            for (String family : ge.getAvailableFontFamilyNames()) {
-                System.out.println(family);
-            }
-            exitUnlessTesting(0);
-        }
-
+    public static void main(String... args) throws Exception {
         final Configuration config = Configuration.getInstance();
         if (config == null) {
             printUsage();
@@ -145,15 +145,15 @@ public class StandaloneEntry {
                 "VM options:\n" +
                 "-D" + ConfigurationFactory.CONFIG_VM_ARGUMENT + "=<config>" +
                 "           Configuration file (REQUIRED)\n" +
-                "-D" + ApplicationInitializer.PURGE_CACHE_VM_ARGUMENT +
+                "-D" + PURGE_CACHE_VM_ARGUMENT +
                 "               Purge the cache\n" +
-                "-D" + ApplicationInitializer.PURGE_CACHE_VM_ARGUMENT + "=<identifier>" +
+                "-D" + PURGE_CACHE_VM_ARGUMENT + "=<identifier>" +
                 "  Purge items related to an identifier from the cache\n" +
-                "-D" + ApplicationInitializer.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT +
+                "-D" + PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT +
                 "       Purge expired items from the cache\n" +
-                "-D" + ApplicationInitializer.CLEAN_CACHE_VM_ARGUMENT +
+                "-D" + CLEAN_CACHE_VM_ARGUMENT +
                 "               Clean the cache\n" +
-                "-D" + StandaloneEntry.LIST_FONTS_VM_OPTION +
+                "-D" + LIST_FONTS_VM_ARGUMENT +
                 "                List fonts\n";
     }
 

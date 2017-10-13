@@ -18,7 +18,14 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import java.awt.GraphicsEnvironment;
 import java.io.FileNotFoundException;
+
+import static edu.illinois.library.cantaloupe.StandaloneEntry.CLEAN_CACHE_VM_ARGUMENT;
+import static edu.illinois.library.cantaloupe.StandaloneEntry.LIST_FONTS_VM_ARGUMENT;
+import static edu.illinois.library.cantaloupe.StandaloneEntry.PURGE_CACHE_VM_ARGUMENT;
+import static edu.illinois.library.cantaloupe.StandaloneEntry.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT;
+import static edu.illinois.library.cantaloupe.StandaloneEntry.exitUnlessTesting;
 
 /**
  * <p>Performs application initialization that cannot be performed
@@ -29,11 +36,6 @@ public class ApplicationInitializer implements ServletContextListener {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ApplicationInitializer.class);
-
-    static final String CLEAN_CACHE_VM_ARGUMENT = "cantaloupe.cache.clean";
-    static final String PURGE_CACHE_VM_ARGUMENT = "cantaloupe.cache.purge";
-    static final String PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT =
-            "cantaloupe.cache.purge_expired";
 
     static {
         // Suppress a Dock icon in OS X
@@ -47,7 +49,14 @@ public class ApplicationInitializer implements ServletContextListener {
 
     private void handleVmArguments() {
         try {
-            if (System.getProperty(CLEAN_CACHE_VM_ARGUMENT) != null) {
+            if (System.getProperty(LIST_FONTS_VM_ARGUMENT) != null) {
+                GraphicsEnvironment ge =
+                        GraphicsEnvironment.getLocalGraphicsEnvironment();
+                for (String family : ge.getAvailableFontFamilyNames()) {
+                    System.out.println(family);
+                }
+                exitUnlessTesting(0);
+            } else if (System.getProperty(CLEAN_CACHE_VM_ARGUMENT) != null) {
                 Cache cache = CacheFactory.getSourceCache();
                 if (cache != null) {
                     System.out.println("Cleaning the source cache...");
@@ -63,7 +72,7 @@ public class ApplicationInitializer implements ServletContextListener {
                     System.out.println("Derivative cache is disabled.");
                 }
                 System.out.println("Done.");
-                System.exit(0);
+                exitUnlessTesting(0);
             } else if (System.getProperty(PURGE_CACHE_VM_ARGUMENT) != null) {
                 // Two variants of this argument are supported:
                 // -Dcantaloupe.cache.purge (purge everything)
@@ -106,7 +115,7 @@ public class ApplicationInitializer implements ServletContextListener {
                     }
                 }
                 System.out.println("Done.");
-                System.exit(0);
+                exitUnlessTesting(0);
             } else if (System.getProperty(PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT) != null) {
                 Cache cache = CacheFactory.getSourceCache();
                 if (cache != null) {
@@ -123,10 +132,11 @@ public class ApplicationInitializer implements ServletContextListener {
                     System.out.println("Derivative cache is disabled.");
                 }
                 System.out.println("Done.");
-                System.exit(0);
+                exitUnlessTesting(0);
             }
         } catch (CacheException e) {
             System.out.println(e.getMessage());
+            exitUnlessTesting(-1);
             System.exit(-1);
         }
     }

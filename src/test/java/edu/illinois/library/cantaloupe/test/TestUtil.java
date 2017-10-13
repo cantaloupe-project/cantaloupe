@@ -18,9 +18,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 
 public final class TestUtil {
 
@@ -63,13 +65,35 @@ public final class TestUtil {
         return getFixture("images/" + name);
     }
 
-    public static Integer getOpenPort() {
-        try (ServerSocket socket = new ServerSocket(0)) {
-            return socket.getLocalPort();
-        } catch (IOException e) {
-            e.printStackTrace();
+    public static int getOpenPort() {
+        return getOpenPorts(1)[0];
+    }
+
+    public static Integer[] getOpenPorts(int howMany) {
+        final Set<ServerSocket> triedSockets = new HashSet<>();
+        final Integer[] ports = new Integer[howMany];
+
+        for (int i = 0; i < howMany; i++) {
+            try {
+                ServerSocket socket = new ServerSocket(0);
+                ports[i] = socket.getLocalPort();
+                triedSockets.add(socket);
+                // Leave it open for now so it isn't returned again on the next
+                // iteration.
+            } catch (IOException e) {
+                System.err.println("TestUtil.getOpenPorts(): " + e.getMessage());
+            }
         }
-        return null;
+
+        for (ServerSocket socket : triedSockets) {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                System.err.println("TestUtil.getOpenPort(): " + e.getMessage());
+            }
+        }
+
+        return ports;
     }
 
     public static File getTempFolder() throws IOException {

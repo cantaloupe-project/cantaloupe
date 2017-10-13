@@ -10,6 +10,9 @@
 # marked with "!!".
 ###########################################################################
 
+# !! Leave blank to use the JVM default temporary directory.
+temp_pathname =
+
 # !! Configures the HTTP server. (Standalone mode only.)
 http.enabled = true
 http.host = 0.0.0.0

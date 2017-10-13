@@ -23,6 +23,9 @@ import org.eclipse.jetty.webapp.WebAppContext;
  */
 public class WebServer {
 
+    // N.B.: Due to the way the application is packaged, this class does not
+    // have access to a logger.
+
     private static final int IDLE_TIMEOUT = 30000;
 
     private int acceptQueueLimit = 0;
@@ -79,6 +82,9 @@ public class WebServer {
         final WebAppContext context = new WebAppContext();
         context.setContextPath("/");
         context.setServer(server);
+        // http://www.eclipse.org/jetty/documentation/current/ref-temporary-directories.html
+        context.setAttribute("org.eclipse.jetty.webapp.basetempdir",
+                Application.getTempPath().toString());
         server.setHandler(context);
 
         // Give the WebAppContext a different WAR to use depending on
