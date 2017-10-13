@@ -13,7 +13,6 @@ import org.junit.Test;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.font.TextAttribute;
-import java.io.File;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,7 +48,7 @@ public class DelegateOverlayServiceTest extends BaseTest {
         final ImageOverlay overlay = (ImageOverlay) instance.getOverlay(
                 opList, fullSize, requestURI, requestHeaders, clientIP,
                 cookies);
-        assertEquals(new File("/dev/cats"), overlay.getFile());
+        assertEquals(new URI("file:///dev/cats"), overlay.getURI());
         assertEquals((long) 5, overlay.getInset());
         assertEquals(Position.BOTTOM_LEFT, overlay.getPosition());
     }

@@ -151,36 +151,36 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Test
-    public void getIMOverlayGeometry() {
+    public void getIMOverlayGeometry() throws Exception {
         ImageMagickProcessor instance = newInstance();
+        URI uri = new URI("http://example.org/cats");
 
         // top left
-        ImageOverlay overlay = new ImageOverlay(
-                new File("/"), Position.TOP_LEFT, 2);
+        ImageOverlay overlay = new ImageOverlay(uri, Position.TOP_LEFT, 2);
         assertEquals("+2+2", instance.getIMOverlayGeometry(overlay));
         // top center
-        overlay = new ImageOverlay(new File("/"), Position.TOP_CENTER, 2);
+        overlay = new ImageOverlay(uri, Position.TOP_CENTER, 2);
         assertEquals("+0+2", instance.getIMOverlayGeometry(overlay));
         // top right
-        overlay = new ImageOverlay(new File("/"), Position.TOP_RIGHT, 2);
+        overlay = new ImageOverlay(uri, Position.TOP_RIGHT, 2);
         assertEquals("+2+2", instance.getIMOverlayGeometry(overlay));
         // left center
-        overlay = new ImageOverlay(new File("/"), Position.LEFT_CENTER, 2);
+        overlay = new ImageOverlay(uri, Position.LEFT_CENTER, 2);
         assertEquals("+2+0", instance.getIMOverlayGeometry(overlay));
         // center
-        overlay = new ImageOverlay(new File("/"), Position.CENTER, 2);
+        overlay = new ImageOverlay(uri, Position.CENTER, 2);
         assertEquals("+0+0", instance.getIMOverlayGeometry(overlay));
         // right center
-        overlay = new ImageOverlay(new File("/"), Position.RIGHT_CENTER, 2);
+        overlay = new ImageOverlay(uri, Position.RIGHT_CENTER, 2);
         assertEquals("+2+0", instance.getIMOverlayGeometry(overlay));
         // bottom left
-        overlay = new ImageOverlay(new File("/"), Position.BOTTOM_LEFT, 2);
+        overlay = new ImageOverlay(uri, Position.BOTTOM_LEFT, 2);
         assertEquals("+2+2", instance.getIMOverlayGeometry(overlay));
         // bottom center
-        overlay = new ImageOverlay(new File("/"), Position.BOTTOM_CENTER, 2);
+        overlay = new ImageOverlay(uri, Position.BOTTOM_CENTER, 2);
         assertEquals("+0+2", instance.getIMOverlayGeometry(overlay));
         // bottom right
-        overlay = new ImageOverlay(new File("/"), Position.BOTTOM_RIGHT, 2);
+        overlay = new ImageOverlay(uri, Position.BOTTOM_RIGHT, 2);
         assertEquals("+2+2", instance.getIMOverlayGeometry(overlay));
     }
 

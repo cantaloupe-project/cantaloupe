@@ -12,7 +12,6 @@ import org.junit.Test;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.io.File;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,7 +58,7 @@ public class OverlayServiceTest extends BaseTest {
 
         ImageOverlay overlay = (ImageOverlay) instance.newOverlay(
                 opList, fullSize, requestURI, requestHeaders, clientIp, cookies);
-        assertEquals(new File("/dev/null"), overlay.getFile());
+        assertEquals(new URI("file:///dev/null"), overlay.getURI());
         assertEquals(10, overlay.getInset());
         assertEquals(Position.TOP_LEFT, overlay.getPosition());
     }
@@ -103,7 +102,7 @@ public class OverlayServiceTest extends BaseTest {
 
         ImageOverlay overlay = (ImageOverlay) instance.newOverlay(
                 opList, fullSize, requestURI, requestHeaders, clientIp, cookies);
-        assertEquals(new File("/dev/cats"), overlay.getFile());
+        assertEquals(new URI("file:///dev/cats"), overlay.getURI());
         assertEquals(5, overlay.getInset());
         assertEquals(Position.BOTTOM_LEFT, overlay.getPosition());
     }

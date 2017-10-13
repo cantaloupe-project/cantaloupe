@@ -437,12 +437,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             } else if (op instanceof ImageOverlay) {
                 try {
                     final ImageOverlay overlay = (ImageOverlay) op;
-                    // If the overlay is a file, use that.
-                    File file = overlay.getFile();
-                    // If it instead resides at a URL, use that instead.
-                    if (file == null && overlay.getURI() != null) {
-                        file = getOverlayTempFile(overlay);
-                    }
+                    File file = getOverlayTempFile(overlay);
                     if (file != null) {
                         args.add(file.getAbsolutePath());
                         args.add("-compose");
@@ -453,10 +448,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                         args.add(getIMOverlayGeometry(overlay));
                         args.add("-composite");
                     } else {
-                        if (overlay.getFile() != null) {
-                            LOGGER.warn("getConvertArguments(): overlay not found: {}",
-                                    overlay.getFile());
-                        } else if (overlay.getURI() != null) {
+                        if (overlay.getURI() != null) {
                             LOGGER.warn("getConvertArguments(): overlay not found: {}",
                                     overlay.getURI());
                         } else {

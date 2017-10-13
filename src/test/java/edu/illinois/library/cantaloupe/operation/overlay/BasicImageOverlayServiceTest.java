@@ -7,7 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.awt.Dimension;
-import java.io.File;
+import java.net.URI;
 
 import static org.junit.Assert.*;
 
@@ -31,9 +31,9 @@ public class BasicImageOverlayServiceTest extends BaseTest {
     }
 
     @Test
-    public void testGetOverlay() {
+    public void testGetOverlay() throws Exception {
         final ImageOverlay overlay = instance.getOverlay();
-        assertEquals(new File("/dev/null"), overlay.getFile());
+        assertEquals(new URI("file:///dev/null"), overlay.getURI());
         assertEquals((long) 10, overlay.getInset());
         assertEquals(Position.TOP_LEFT, overlay.getPosition());
     }

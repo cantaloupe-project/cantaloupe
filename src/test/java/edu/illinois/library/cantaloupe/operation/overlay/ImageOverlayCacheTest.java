@@ -8,7 +8,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
@@ -35,60 +34,38 @@ public class ImageOverlayCacheTest extends BaseTest {
         instance = new ImageOverlayCache();
     }
 
-    // putAndGet(File)
-
-    @Test
-    public void testPutAndGetWithPresentFile() throws IOException {
-        File file = TestUtil.getImage("jpg");
-        byte[] bytes = instance.putAndGet(file);
-        assertEquals(5439, bytes.length);
-    }
-
-    @Test
-    public void testPutAndGetWithMissingFile() throws IOException {
-        try {
-            File file = TestUtil.getImage("blablabla");
-            instance.putAndGet(file);
-            fail("Expected exception");
-        } catch (IOException e) {
-            // pass
-        }
-    }
-
-    // putAndGet(String)
-
-    @Test
-    public void testPutAndGetWithPresentString() throws IOException {
-        File file = TestUtil.getImage("jpg");
-        byte[] bytes = instance.putAndGet(file.getAbsolutePath());
-        assertEquals(5439, bytes.length);
-    }
-
-    @Test
-    public void testPutAndGetWithMissingString() throws IOException {
-        try {
-            File file = TestUtil.getImage("blablabla");
-            instance.putAndGet(file.getAbsolutePath());
-            fail("Expected exception");
-        } catch (IOException e) {
-            // pass
-        }
-    }
-
     // putAndGet(URI)
 
     @Test
-    public void testPutAndGetWithPresentURI() throws Exception {
-        URI uri = new URI(webServer.getHTTPURI() + "/jpg");
-        byte[] bytes = instance.putAndGet(uri.toString());
+    public void testPutAndGetWithPresentFileURI() throws IOException {
+        URI uri = TestUtil.getImage("jpg").toURI();
+        byte[] bytes = instance.putAndGet(uri);
         assertEquals(5439, bytes.length);
     }
 
     @Test
-    public void testPutAndGetWithMissingURI() throws Exception {
+    public void testPutAndGetWithMissingFileURI() throws IOException {
+        try {
+            URI uri = TestUtil.getImage("blablabla").toURI();
+            instance.putAndGet(uri);
+            fail("Expected exception");
+        } catch (IOException e) {
+            // pass
+        }
+    }
+
+    @Test
+    public void testPutAndGetWithPresentRemoteURI() throws Exception {
+        URI uri = new URI(webServer.getHTTPURI() + "/jpg");
+        byte[] bytes = instance.putAndGet(uri);
+        assertEquals(5439, bytes.length);
+    }
+
+    @Test
+    public void testPutAndGetWithMissingRemoteURI() throws Exception {
         try {
             URI uri = new URI(webServer.getHTTPURI() + "/blablabla");
-            instance.putAndGet(uri.toString());
+            instance.putAndGet(uri);
             fail("Expected exception");
         } catch (IOException e) {
             // pass

@@ -93,7 +93,7 @@ public class Java2DUtilTest extends BaseTest {
 
         // create a Overlay
         final ImageOverlay overlay = new ImageOverlay(
-                TestUtil.getImage("png-rgb-1x1x8.png"),
+                TestUtil.getImage("png-rgb-1x1x8.png").toURI(),
                 Position.TOP_LEFT, 0);
 
         // apply it
@@ -123,7 +123,8 @@ public class Java2DUtilTest extends BaseTest {
         // create a Overlay
         final int inset = 2;
         final ImageOverlay overlay = new ImageOverlay(
-                TestUtil.getImage("png-rgb-1x1x8.png"), Position.BOTTOM_RIGHT,
+                TestUtil.getImage("png-rgb-1x1x8.png").toURI(),
+                Position.BOTTOM_RIGHT,
                 inset);
 
         // apply it
@@ -252,7 +253,7 @@ public class Java2DUtilTest extends BaseTest {
     @Test
     public void testGetOverlayImage() throws Exception {
         ImageOverlay overlay = new ImageOverlay(
-                TestUtil.getImage("png"), Position.BOTTOM_RIGHT, 0);
+                TestUtil.getImage("png").toURI(), Position.BOTTOM_RIGHT, 0);
         assertNotNull(Java2DUtil.getOverlayImage(overlay));
     }
 

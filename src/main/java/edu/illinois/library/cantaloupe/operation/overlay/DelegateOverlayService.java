@@ -5,6 +5,8 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
 import java.awt.Dimension;
@@ -12,14 +14,16 @@ import java.awt.Font;
 import java.awt.font.TextAttribute;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
 class DelegateOverlayService {
+
+    private static final Logger LOGGER = LoggerFactory.
+            getLogger(DelegateOverlayService.class);
 
     /**
      * @param opList
@@ -47,10 +51,20 @@ class DelegateOverlayService {
             final String location = (String) defs.get("image");
             if (location != null) {
                 try {
-                    URL url = new URL(location);
-                    return new ImageOverlay(url.toURI(), position, inset);
-                } catch (MalformedURLException | URISyntaxException e) {
-                    return new ImageOverlay(new File(location), position, inset);
+                    URI overlayURI;
+                    // If the location in the configuration starts with a
+                    // supported URI scheme, create a new URI for it.
+                    // Otherwise, get its absolute path and convert that to a
+                    // file: URI.
+                    if (ImageOverlay.SUPPORTED_URI_SCHEMES.stream().anyMatch(location::startsWith)) {
+                        overlayURI = new URI(location);
+                    } else {
+                        overlayURI = Paths.get(location).toUri();
+                    }
+                    return new ImageOverlay(overlayURI, position, inset);
+                } catch (URISyntaxException e) {
+                    LOGGER.error("getOverlay(): {}", e.getMessage());
+                    return null;
                 }
             } else {
                 final String string = (String) defs.get("string");
