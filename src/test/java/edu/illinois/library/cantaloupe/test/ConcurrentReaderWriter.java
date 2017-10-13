@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.test;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -9,8 +10,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ConcurrentReaderWriter {
 
     private final AtomicBoolean anyFailures = new AtomicBoolean(false);
-    private final Runnable reader;
-    private final Runnable writer;
+    private final Callable<Void> reader;
+    private final Callable<Void> writer;
     private final AtomicInteger readCount = new AtomicInteger(0);
     private final AtomicInteger writeCount = new AtomicInteger(0);
 
@@ -20,7 +21,7 @@ public class ConcurrentReaderWriter {
      * N.B.: Reader and writer exception handlers should call
      * {@link org.junit.Assert#fail}.
      */
-    public ConcurrentReaderWriter(Runnable writer, Runnable reader) {
+    public ConcurrentReaderWriter(Callable<Void> writer, Callable<Void> reader) {
         this.writer = writer;
         this.reader = reader;
     }
@@ -29,8 +30,9 @@ public class ConcurrentReaderWriter {
         for (int i = 0; i < numThreads / 2f; i++) {
             new Thread(() -> { // writer thread
                 try {
-                    writer.run();
+                    writer.call();
                 } catch (Exception e) {
+                    e.printStackTrace();
                     anyFailures.set(true);
                 } finally {
                     writeCount.incrementAndGet();
@@ -42,8 +44,9 @@ public class ConcurrentReaderWriter {
                     // Spin until we have something to read.
                     if (writeCount.get() > 0) {
                         try {
-                            reader.run();
+                            reader.call();
                         } catch (Exception e) {
+                            e.printStackTrace();
                             anyFailures.set(true);
                         } finally {
                             readCount.incrementAndGet();

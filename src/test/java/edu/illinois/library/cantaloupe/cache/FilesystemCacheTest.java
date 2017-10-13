@@ -406,15 +406,11 @@ public class FilesystemCacheTest extends BaseTest {
             try (OutputStream os =
                          instance.newSourceImageOutputStream(identifier)) {
                 Files.copy(TestUtil.getImage("jpg").toPath(), os);
-            } catch (Exception e) {
-                fail(e.getMessage());
             }
+            return null;
         }, () -> {
-            try {
-                instance.getSourceImageFile(identifier);
-            } catch (Exception e) {
-                fail(e.getMessage());
-            }
+            instance.getSourceImageFile(identifier);
+            return null;
         }).run();
     }
 
@@ -464,18 +460,17 @@ public class FilesystemCacheTest extends BaseTest {
             try (OutputStream os =
                          instance.newDerivativeImageOutputStream(ops)) {
                 Files.copy(TestUtil.getImage("jpg").toPath(), os);
-            } catch (Exception e) {
-                fail(e.getMessage());
             }
+            return null;
         }, () -> {
-            try (InputStream is =
-                         instance.newDerivativeImageInputStream(ops)) {
-                while (is.read() != -1) {
-                    // consume the stream fully
+            try (InputStream is = instance.newDerivativeImageInputStream(ops)) {
+                if (is != null) {
+                    while (is.read() != -1) {
+                        // consume the stream fully
+                    }
                 }
-            } catch (Exception e) {
-                fail(e.getMessage());
             }
+            return null;
         }).run();
     }
 
@@ -663,20 +658,14 @@ public class FilesystemCacheTest extends BaseTest {
         final Info info = new Info(52, 42);
 
         new ConcurrentReaderWriter(() -> {
-            try {
-                instance.put(identifier, info);
-            } catch (Exception e) {
-                fail(e.getMessage());
-            }
+            instance.put(identifier, info);
+            return null;
         }, () -> {
-            try {
-                Info otherInfo = instance.getImageInfo(identifier);
-                if (otherInfo != null && !info.equals(otherInfo)) {
-                    fail();
-                }
-            } catch (Exception e) {
-                fail(e.getMessage());
+            Info otherInfo = instance.getImageInfo(identifier);
+            if (otherInfo != null && !info.equals(otherInfo)) {
+                fail();
             }
+            return null;
         }).run();
     }
 

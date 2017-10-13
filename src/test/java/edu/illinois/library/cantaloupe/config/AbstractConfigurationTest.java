@@ -32,10 +32,13 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         final Configuration instance = getInstance();
         final String key = "cats";
 
-        new ConcurrentReaderWriter(
-                () -> instance.clear(),
-                () -> instance.setProperty(key, "dogs"))
-            .numThreads(NUM_CONCURRENT_THREADS).run();
+        new ConcurrentReaderWriter(() -> {
+            instance.clear();
+            return null;
+        }, () -> {
+            instance.setProperty(key, "dogs");
+            return null;
+        }).numThreads(NUM_CONCURRENT_THREADS).run();
     }
 
     /* clearProperty(Key) */
@@ -67,10 +70,13 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         final Configuration instance = getInstance();
         final String key = "cats";
 
-        new ConcurrentReaderWriter(
-                () -> instance.setProperty(key, "dogs"),
-                () -> instance.clearProperty(key))
-                .numThreads(NUM_CONCURRENT_THREADS).run();
+        new ConcurrentReaderWriter(() -> {
+            instance.setProperty(key, "dogs");
+            return null;
+        }, () -> {
+            instance.clearProperty(key);
+            return null;
+        }).numThreads(NUM_CONCURRENT_THREADS).run();
     }
 
     /* getBoolean(Key) */
@@ -146,10 +152,13 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         final Configuration instance = getInstance();
         final String key = "cats";
 
-        new ConcurrentReaderWriter(
-                () -> instance.setProperty(key, true),
-                () -> instance.getBoolean(key))
-                .numThreads(NUM_CONCURRENT_THREADS).run();
+        new ConcurrentReaderWriter(() -> {
+            instance.setProperty(key, true);
+            return null;
+        }, () -> {
+            instance.getBoolean(key);
+            return null;
+        }).numThreads(NUM_CONCURRENT_THREADS).run();
     }
 
     /* getBoolean(Key, boolean) */
@@ -294,10 +303,13 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         final Configuration instance = getInstance();
         final String key = "cats";
 
-        new ConcurrentReaderWriter(
-                () -> instance.setProperty(key, Double.MAX_VALUE),
-                () -> instance.getDouble(key))
-                .numThreads(NUM_CONCURRENT_THREADS).run();
+        new ConcurrentReaderWriter(() -> {
+            instance.setProperty(key, Double.MAX_VALUE);
+            return null;
+        }, () -> {
+            instance.getDouble(key);
+            return null;
+        }).numThreads(NUM_CONCURRENT_THREADS).run();
     }
 
     /* getDouble(Key, double) */
@@ -425,10 +437,13 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         final Configuration instance = getInstance();
         final String key = "cats";
 
-        new ConcurrentReaderWriter(
-                () -> instance.setProperty(key, Float.MAX_VALUE),
-                () -> instance.getFloat(key))
-                .numThreads(NUM_CONCURRENT_THREADS).run();
+        new ConcurrentReaderWriter(() -> {
+            instance.setProperty(key, Float.MAX_VALUE);
+            return null;
+        }, () -> {
+            instance.getFloat(key);
+            return null;
+        }).numThreads(NUM_CONCURRENT_THREADS).run();
     }
 
     /* getFloat(Key, float) */
@@ -554,10 +569,13 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         final Configuration instance = getInstance();
         final String key = "cats";
 
-        new ConcurrentReaderWriter(
-                () -> instance.setProperty(key, 12312),
-                () -> instance.getInt(key))
-                .numThreads(NUM_CONCURRENT_THREADS).run();
+        new ConcurrentReaderWriter(() -> {
+            instance.setProperty(key, 12312);
+            return null;
+        }, () -> {
+            instance.getInt(key);
+            return null;
+        }).numThreads(NUM_CONCURRENT_THREADS).run();
     }
 
     /* getInt(Key, int) */
@@ -627,10 +645,13 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         final Configuration instance = getInstance();
         final AtomicInteger id = new AtomicInteger();
 
-        new ConcurrentReaderWriter(
-                () -> instance.setProperty(String.valueOf(id.incrementAndGet()), 234234),
-                () -> instance.getKeys())
-                .numThreads(NUM_CONCURRENT_THREADS).run();
+        new ConcurrentReaderWriter(() -> {
+            instance.setProperty(String.valueOf(id.incrementAndGet()), 234234);
+            return null;
+        }, () -> {
+            instance.getKeys();
+            return null;
+        }).numThreads(NUM_CONCURRENT_THREADS).run();
     }
 
     /* getLong(Key) */
@@ -706,10 +727,13 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         final Configuration instance = getInstance();
         final String key = "cats";
 
-        new ConcurrentReaderWriter(
-                () -> instance.setProperty(key, 32234),
-                () -> instance.getLong(key))
-                .numThreads(NUM_CONCURRENT_THREADS).run();
+        new ConcurrentReaderWriter(() -> {
+            instance.setProperty(key, 32234);
+            return null;
+        }, () -> {
+            instance.getLong(key);
+            return null;
+        }).numThreads(NUM_CONCURRENT_THREADS).run();
     }
 
     /* getLong(Key, int) */
@@ -797,10 +821,13 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         final Configuration instance = getInstance();
         final String key = "cats";
 
-        new ConcurrentReaderWriter(
-                () -> instance.setProperty(key, "dogs"),
-                () -> instance.getProperty(key))
-                .numThreads(NUM_CONCURRENT_THREADS).run();
+        new ConcurrentReaderWriter(() -> {
+            instance.setProperty(key, "dogs");
+            return null;
+        }, () -> {
+            instance.getProperty(key);
+            return null;
+        }).numThreads(NUM_CONCURRENT_THREADS).run();
     }
 
     /* getString(Key) */
@@ -838,10 +865,13 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         final Configuration instance = getInstance();
         final String key = "cats";
 
-        new ConcurrentReaderWriter(
-                () -> instance.setProperty(key, "dogs"),
-                () -> instance.getString(key))
-                .numThreads(NUM_CONCURRENT_THREADS).run();
+        new ConcurrentReaderWriter(() -> {
+            instance.setProperty(key, "dogs");
+            return null;
+        }, () -> {
+            instance.getString(key);
+            return null;
+        }).numThreads(NUM_CONCURRENT_THREADS).run();
     }
 
     /* getString(Key, String) */
