@@ -242,7 +242,8 @@ public class WebServer {
             }
 
             // Initialize the HTTPS server.
-            // N.B. HTTP/2 support requires an ALPN JAR on the boot classpath,
+            // N.B.: HTTP/2 support requires ALPN, which requires either Java 9,
+            // or an ALPN JAR on the boot classpath,
             // e.g.: -Xbootclasspath/p:/path/to/alpn-boot-8.1.5.v20150921.jar
             // https://www.eclipse.org/jetty/documentation/9.3.x/alpn-chapter.html
             if (isHTTPSEnabled()) {
@@ -256,28 +257,36 @@ public class WebServer {
                 contextFactory.setKeyStorePassword(getHTTPSKeyStorePassword());
                 contextFactory.setKeyManagerPassword(getHTTPSKeyPassword());
 
-                ServerConnector connector;
+                ServerConnector connector = null;
 
-                if (isSecureHTTP2Enabled() && SystemUtils.isALPNAvailable()) {
-                    HttpConnectionFactory http1 =
-                            new HttpConnectionFactory(config);
-                    HTTP2ServerConnectionFactory http2 =
-                            new HTTP2ServerConnectionFactory(config);
+                if (isSecureHTTP2Enabled()) {
+                    if (SystemUtils.isALPNAvailable()) {
+                        HttpConnectionFactory http1 =
+                                new HttpConnectionFactory(config);
+                        HTTP2ServerConnectionFactory http2 =
+                                new HTTP2ServerConnectionFactory(config);
 
-                    ALPNServerConnectionFactory alpn =
-                            new ALPNServerConnectionFactory();
-                    alpn.setDefaultProtocol(http1.getProtocol());
+                        ALPNServerConnectionFactory alpn =
+                                new ALPNServerConnectionFactory();
+                        alpn.setDefaultProtocol(http1.getProtocol());
 
-                    contextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
-                    contextFactory.setUseCipherSuitesOrder(true);
+                        contextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
+                        contextFactory.setUseCipherSuitesOrder(true);
 
-                    SslConnectionFactory connectionFactory =
-                            new SslConnectionFactory(contextFactory,
-                                    alpn.getProtocol());
+                        SslConnectionFactory connectionFactory =
+                                new SslConnectionFactory(contextFactory,
+                                        alpn.getProtocol());
 
-                    connector = new ServerConnector(server, connectionFactory,
-                            alpn, http2, http1);
-                } else {
+                        connector = new ServerConnector(server,
+                                connectionFactory, alpn, http2, http1);
+                    } else {
+                        System.err.println("WebServer.start(): unable to " +
+                                "initialize secure HTTP/2 (JRE <9 or no ALPN " +
+                                "JAR on boot classpath)");
+                    }
+                }
+
+                if (connector == null) { // Fall back to HTTP/1.1.
                     connector = new ServerConnector(server,
                             new SslConnectionFactory(contextFactory, "HTTP/1.1"),
                             new HttpConnectionFactory(config));
