@@ -64,6 +64,23 @@ public class ObjectCacheTest extends BaseTest {
     }
 
     @Test
+    public void testRemove() {
+        instance.put("1", "1");
+        instance.put("2", "2");
+        instance.remove("1");
+        assertNull(instance.get("1"));
+        assertNotNull(instance.get("2"));
+    }
+
+    @Test
+    public void testRemoveAll() {
+        instance.put("1", "1");
+        instance.put("2", "2");
+        instance.removeAll();
+        assertEquals(0, instance.size());
+    }
+
+    @Test
     public void testSize() {
         assertEquals(0, instance.size());
         instance.put("1", "1");

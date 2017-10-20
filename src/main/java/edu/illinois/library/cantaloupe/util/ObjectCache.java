@@ -40,6 +40,14 @@ public final class ObjectCache<K, V> {
         store.put(key, value);
     }
 
+    public void remove(K key) {
+        store.invalidate(key);
+    }
+
+    public void removeAll() {
+        store.invalidateAll();
+    }
+
     public long size() {
         return store.estimatedSize();
     }
