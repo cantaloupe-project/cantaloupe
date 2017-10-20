@@ -36,7 +36,8 @@ abstract class FileConfiguration extends AbstractConfiguration {
      */
     public synchronized void startWatching() {
         watcher = new FileConfigurationWatcher(getFile());
-        watcherFuture = ThreadPool.getInstance().submit(watcher);
+        watcherFuture = ThreadPool.getInstance().submit(watcher,
+                ThreadPool.Priority.LOW);
     }
 
     /**

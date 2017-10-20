@@ -24,7 +24,8 @@ abstract class HeritableFileConfiguration extends FileConfiguration {
         for (File file : getFiles()) {
             FileConfigurationWatcher watcher = new FileConfigurationWatcher(file);
             watchers.put(file, watcher);
-            ThreadPool.getInstance().submit(watcher);
+            ThreadPool.getInstance().submit(watcher,
+                    ThreadPool.Priority.LOW);
         }
     }
 

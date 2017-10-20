@@ -411,7 +411,8 @@ class HeapCache implements DerivativeCache {
 
         // Start a worker thread to manage the size.
         try {
-            ThreadPool.getInstance().submit(new Worker());
+            ThreadPool.getInstance().submit(new Worker(),
+                    ThreadPool.Priority.LOW);
         } catch (RejectedExecutionException e) {
             logger.error("initialize(): {}", e.getMessage());
         }

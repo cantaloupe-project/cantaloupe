@@ -50,9 +50,28 @@ public class ThreadPoolTest extends BaseTest {
     }
 
     @Test
+    public void testSubmitCallableWithPriority() throws Exception {
+        final AtomicInteger atomicInt = new AtomicInteger(0);
+        instance.submit(() -> {
+            atomicInt.incrementAndGet();
+            return null;
+        }, ThreadPool.Priority.HIGH);
+        Thread.sleep(10); // wait for it to happen
+        assertEquals(1, atomicInt.get());
+    }
+
+    @Test
     public void testSubmitRunnable() throws Exception {
         final AtomicInteger atomicInt = new AtomicInteger(0);
         instance.submit(atomicInt::incrementAndGet);
+        Thread.sleep(10); // wait for it to happen
+        assertEquals(1, atomicInt.get());
+    }
+
+    @Test
+    public void testSubmitRunnableWithPriority() throws Exception {
+        final AtomicInteger atomicInt = new AtomicInteger(0);
+        instance.submit(atomicInt::incrementAndGet, ThreadPool.Priority.HIGH);
         Thread.sleep(10); // wait for it to happen
         assertEquals(1, atomicInt.get());
     }
