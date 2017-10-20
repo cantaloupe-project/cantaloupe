@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -34,6 +35,10 @@ public final class ThreadPool {
     public void shutdown() {
         pool.shutdown();
         isShutdown = true;
+    }
+
+    public Future<?> submit(Callable<?> task) {
+        return pool.submit(task);
     }
 
     public Future<?> submit(Runnable task) {
