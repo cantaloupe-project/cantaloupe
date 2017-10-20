@@ -5,13 +5,13 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class CaffeineInvocationCacheTest {
+public class HeapInvocationCacheTest {
 
-    private CaffeineInvocationCache instance;
+    private HeapInvocationCache instance;
 
     @Before
     public void setUp() {
-        instance = new CaffeineInvocationCache();
+        instance = new HeapInvocationCache();
     }
 
     @Test

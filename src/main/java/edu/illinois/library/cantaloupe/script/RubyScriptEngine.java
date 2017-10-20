@@ -30,7 +30,7 @@ class RubyScriptEngine extends AbstractScriptEngine
     static final String TOP_MODULE = "Cantaloupe";
 
     private final InvocationCache invocationCache =
-            new CaffeineInvocationCache();
+            new HeapInvocationCache();
     private javax.script.ScriptEngine scriptEngine;
     private final StampedLock stampedLock = new StampedLock();
 
