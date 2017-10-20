@@ -184,7 +184,7 @@ public class ProcessorConnectorTest extends BaseTest {
                     server.getHTTPURI() + "/");
 
             final Resolver resolver = new ResolverFactory().newResolver(identifier);
-            final Processor processor = new FakeStreamProcessor();
+            final Processor processor = new MockStreamProcessor();
 
             new ProcessorConnector(resolver, processor, identifier).connect();
 
@@ -219,7 +219,7 @@ public class ProcessorConnectorTest extends BaseTest {
                     cacheFolder.getAbsolutePath());
 
             final Resolver resolver = new ResolverFactory().newResolver(identifier);
-            final Processor processor = new FakeStreamProcessor();
+            final Processor processor = new MockStreamProcessor();
 
             new ProcessorConnector(resolver, processor, identifier).connect();
 
@@ -256,7 +256,7 @@ public class ProcessorConnectorTest extends BaseTest {
                     cacheFolder.getAbsolutePath());
 
             final Resolver resolver = new ResolverFactory().newResolver(identifier);
-            final Processor processor = new FakeStreamProcessor();
+            final Processor processor = new MockStreamProcessor();
 
             try {
                 new ProcessorConnector(resolver, processor, identifier).connect();
