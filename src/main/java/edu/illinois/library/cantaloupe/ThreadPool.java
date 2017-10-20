@@ -25,6 +25,14 @@ public final class ThreadPool {
         return instance;
     }
 
+    /**
+     * For testing.
+     */
+    static synchronized void clearInstance() {
+        instance.shutdown();
+        instance = null;
+    }
+
     private ThreadPool() {
     }
 
