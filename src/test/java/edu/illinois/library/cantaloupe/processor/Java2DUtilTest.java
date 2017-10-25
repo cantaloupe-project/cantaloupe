@@ -448,9 +448,9 @@ public class Java2DUtilTest extends BaseTest {
         final Rectangle rightHalf = new Rectangle(50, 0, 50, 100);
 
         final Graphics2D g2d = image.createGraphics();
-        g2d.setColor(Color.DARK_GRAY);
+        g2d.setColor(java.awt.Color.DARK_GRAY);
         g2d.fill(leftHalf);
-        g2d.setColor(Color.LIGHT_GRAY);
+        g2d.setColor(java.awt.Color.LIGHT_GRAY);
         g2d.fill(rightHalf);
 
         image = Java2DUtil.stretchContrast(image);
@@ -468,7 +468,7 @@ public class Java2DUtilTest extends BaseTest {
 
         // Create a cyan image.
         Graphics2D g2d = inImage.createGraphics();
-        g2d.setColor(Color.CYAN);
+        g2d.setColor(java.awt.Color.CYAN);
         g2d.fill(new Rectangle(0, 0, 100, 100));
         g2d.dispose();
 
@@ -481,7 +481,7 @@ public class Java2DUtilTest extends BaseTest {
 
         // Create a red image.
         g2d = inImage.createGraphics();
-        g2d.setColor(Color.RED);
+        g2d.setColor(java.awt.Color.RED);
         g2d.fill(new Rectangle(0, 0, 100, 100));
         g2d.dispose();
 
@@ -499,7 +499,7 @@ public class Java2DUtilTest extends BaseTest {
 
         // Start with a red image.
         Graphics2D g2d = inImage.createGraphics();
-        g2d.setColor(Color.RED);
+        g2d.setColor(java.awt.Color.RED);
         g2d.fill(new Rectangle(0, 0, 100, 100));
         g2d.dispose();
 

@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Color extends java.awt.Color {
+public final class Color {
 
     public static final Color BLACK = new Color(0, 0, 0);
     public static final Color BLUE = new Color(0, 0, 255);
@@ -19,6 +19,9 @@ public class Color extends java.awt.Color {
             Pattern.compile("rgb *\\( *([0-9]+), *([0-9]+), *([0-9]+) *\\)");
     private static final Pattern rgbaPattern =
             Pattern.compile("rgba *\\( *([0-9]+), *([0-9]+), *([0-9]+), *([0-9]+) *\\)");
+
+    private int red, green, blue;
+    private int alpha = 255;
 
     static {
         // CSS Level 1 colors
@@ -264,40 +267,118 @@ public class Color extends java.awt.Color {
         return builder.toString().toUpperCase();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public Color(int rgb) {
-        super(rgb);
+        setRed((rgb >> 16) & 0xff);
+        setGreen((rgb >> 8) & 0xff);
+        setBlue((rgb) & 0xff);
+        setAlpha(255);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public Color(int r, int g, int b) {
-        super(r, g, b);
+        setRed(r);
+        setGreen(g);
+        setBlue(b);
+        setAlpha(255);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public Color(int r, int g, int b, int a) {
-        super(r, g, b, a);
+        setRed(r);
+        setGreen(g);
+        setBlue(b);
+        setAlpha(a);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        } else if (obj instanceof Color) {
+            final Color color = (Color) obj;
+            return (color.getRed() == getRed() &&
+                    color.getGreen() == getGreen() &&
+                    color.getBlue() == getBlue() &&
+                    color.getAlpha() == getAlpha());
+        }
+        return super.equals(obj);
     }
 
     /**
-     * @return RGB hexadecimal value of the instance.
+     * @return Alpha value in the range (0-255).
+     */
+    public int getAlpha() {
+        return alpha;
+    }
+
+    /**
+     * @return Blue value in the range (0-255).
+     */
+    public int getBlue() {
+        return blue;
+    }
+
+    /**
+     * @return Green value in the range (0-255).
+     */
+    public int getGreen() {
+        return green;
+    }
+
+    /**
+     * @return Red value in the range (0-255).
+     */
+    public int getRed() {
+        return red;
+    }
+
+    @Override
+    public int hashCode() {
+        return toRGBAHex().hashCode();
+    }
+
+    private void setAlpha(int alpha) {
+        validateComponent(alpha);
+        this.alpha = alpha;
+    }
+
+    private void setBlue(int blue) {
+        validateComponent(blue);
+        this.blue = blue;
+    }
+
+    private void setGreen(int green) {
+        validateComponent(green);
+        this.green = green;
+    }
+
+    private void setRed(int red) {
+        validateComponent(red);
+        this.red = red;
+    }
+
+    public java.awt.Color toColor() {
+        return new java.awt.Color(red, green, blue, alpha);
+    }
+
+    /**
+     * @return String RGB hexadecimal value of the instance.
      */
     public String toRGBHex() {
         return "#" + toHex(getRed()) + toHex(getGreen()) + toHex(getBlue());
     }
 
     /**
-     * @return RGBA hexadecimal value of the color.
+     * @return String RGBA hexadecimal value of the color.
      */
     public String toRGBAHex() {
         return "#" + toHex(getRed()) + toHex(getGreen()) + toHex(getBlue()) +
                 toHex(getAlpha());
+    }
+
+    private void validateComponent(int component) {
+        if (component < 0 || component > 255) {
+            throw new IllegalArgumentException(
+                    "Component must be in the range (0-255).");
+        }
     }
 
 }

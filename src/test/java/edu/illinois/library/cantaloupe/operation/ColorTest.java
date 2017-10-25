@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.operation;
 
-import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
 
@@ -274,6 +273,18 @@ public class ColorTest extends BaseTest {
     }
 
     @Test
+    public void testEquals() {
+        Color color = new Color(1, 2, 3, 4);
+        assertTrue(color.equals(new Color(1, 2, 3, 4)));
+        assertFalse(color.equals(new Color(1, 2, 3)));
+        assertFalse(color.equals(new Color(2, 3, 4, 5)));
+
+        color = new Color(1, 2, 3, 255);
+        assertTrue(color.equals(new Color(1, 2, 3)));
+        assertFalse(color.equals(new Color(1, 2, 3, 4)));
+    }
+
+    @Test
     public void testGetRGBHex() {
         assertEquals("#C01722", new Color(12, 23, 34, 45).toRGBHex());
     }
@@ -281,6 +292,12 @@ public class ColorTest extends BaseTest {
     @Test
     public void testGetRGBAHex() {
         assertEquals("#C017222D", new Color(12, 23, 34, 45).toRGBAHex());
+    }
+
+    @Test
+    public void testToColor() {
+        assertEquals(new java.awt.Color(1, 2, 3, 4),
+                new Color(1, 2, 3, 4).toColor());
     }
 
 }

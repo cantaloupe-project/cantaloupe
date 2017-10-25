@@ -374,7 +374,7 @@ public final class Java2DUtil {
 
                 // Draw the background, if it is not transparent.
                 if (overlay.getBackgroundColor().getAlpha() > 0) {
-                    g2d.setPaint(overlay.getBackgroundColor());
+                    g2d.setPaint(overlay.getBackgroundColor().toColor());
                     g2d.fillRect(bgBox.x, bgBox.y, bgBox.width,
                             bgBox.height);
                 }
@@ -431,12 +431,12 @@ public final class Java2DUtil {
                         final GlyphVector gv = font.createGlyphVector(frc, lines[i]);
                         final Shape shape = gv.getOutline(x, y);
                         g2d.setStroke(new BasicStroke(overlay.getStrokeWidth()));
-                        g2d.setPaint(overlay.getStrokeColor());
+                        g2d.setPaint(overlay.getStrokeColor().toColor());
                         g2d.draw(shape);
                     }
 
                     // Draw the string.
-                    g2d.setPaint(overlay.getColor());
+                    g2d.setPaint(overlay.getColor().toColor());
                     g2d.drawString(lines[i], x, y);
                 }
                 logger.debug("overlayString() executed in {} msec",
@@ -575,7 +575,7 @@ public final class Java2DUtil {
             Graphics2D g = outImage.createGraphics();
 
             if (bgColor != null) {
-                g.setBackground(bgColor);
+                g.setBackground(bgColor.toColor());
                 g.clearRect(0, 0, inImage.getWidth(), inImage.getHeight());
             }
 

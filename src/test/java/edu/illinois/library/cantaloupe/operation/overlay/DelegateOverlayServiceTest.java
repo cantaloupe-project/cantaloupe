@@ -4,13 +4,13 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.font.TextAttribute;
 import java.net.URI;
@@ -74,8 +74,8 @@ public class DelegateOverlayServiceTest extends BaseTest {
         assertEquals(0.1f, overlay.getFont().getAttributes().get(TextAttribute.TRACKING));
         assertEquals((long) 5, overlay.getInset());
         assertEquals(Position.BOTTOM_LEFT, overlay.getPosition());
-        assertEquals(Color.red, overlay.getColor());
-        assertEquals(Color.blue, overlay.getStrokeColor());
+        assertEquals(Color.RED, overlay.getColor());
+        assertEquals(Color.BLUE, overlay.getStrokeColor());
         assertEquals(new Color(12, 23, 34, 45), overlay.getBackgroundColor());
         assertEquals(3, overlay.getStrokeWidth(), 0.00001f);
     }
