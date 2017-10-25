@@ -1,11 +1,11 @@
 package edu.illinois.library.cantaloupe;
 
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Global application thread pool Singleton.
@@ -18,14 +18,21 @@ public final class ThreadPool {
 
     private static abstract class AbstractThreadFactory {
 
-        private final AtomicInteger counter = new AtomicInteger();
+        private static final int maxID = 99999999;
+        private static final Random rng = new Random();
+
+        private String getThreadID() {
+            // Get a random number
+            final int id = rng.nextInt(maxID + 1);
+            // Left-pad it with zeroes
+            return String.format("%010d", id);
+        }
 
         abstract String getThreadNamePrefix();
 
         public Thread newThread(Runnable runnable) {
             Thread thread = new Thread(runnable);
-            thread.setName(getThreadNamePrefix() + "-" +
-                    counter.incrementAndGet());
+            thread.setName(getThreadNamePrefix() + "-" + getThreadID());
             thread.setDaemon(true);
             return thread;
         }
@@ -35,7 +42,7 @@ public final class ThreadPool {
             extends AbstractThreadFactory implements ThreadFactory {
         @Override
         String getThreadNamePrefix() {
-            return "cid-lp";
+            return "cl-lp";
         }
     }
 
@@ -43,7 +50,7 @@ public final class ThreadPool {
             extends AbstractThreadFactory implements ThreadFactory {
         @Override
         String getThreadNamePrefix() {
-            return "cid-np";
+            return "cl-np";
         }
     }
 
@@ -51,7 +58,7 @@ public final class ThreadPool {
             extends AbstractThreadFactory implements ThreadFactory {
         @Override
         String getThreadNamePrefix() {
-            return "cid-hp";
+            return "cl-hp";
         }
     }
 
