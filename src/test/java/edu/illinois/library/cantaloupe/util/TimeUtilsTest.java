@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resource.admin;
+package edu.illinois.library.cantaloupe.util;
 
 import org.junit.Test;
 

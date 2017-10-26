@@ -12,6 +12,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import edu.illinois.library.cantaloupe.util.TimeUtils;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.Header;
 import org.restlet.representation.Representation;

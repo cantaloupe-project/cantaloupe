@@ -1,12 +1,12 @@
-package edu.illinois.library.cantaloupe.resource.admin;
+package edu.illinois.library.cantaloupe.util;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-final class TimeUtils {
+public final class TimeUtils {
 
-    static String millisecondsToHumanTime(long msec) {
+    public static String millisecondsToHumanTime(long msec) {
         final long days = TimeUnit.MILLISECONDS.toDays(msec);
         msec -= TimeUnit.DAYS.toMillis(days);
         final long hours = TimeUnit.MILLISECONDS.toHours(msec);
