@@ -6,7 +6,17 @@ import java.io.File;
 import java.io.OutputStream;
 
 /**
- * Interface to be implemented by caches that cache source images.
+ * <p>Interface to be implemented by caches that cache source images.</p>
+ *
+ * <p>A source cache has two purposes:</p>
+ *
+ * <ol>
+ *     <li>To cache source images to be read by processors that only implement
+ *     {@link edu.illinois.library.cantaloupe.processor.FileProcessor} and not
+ *     {@link edu.illinois.library.cantaloupe.processor.StreamProcessor};</li>
+ *     <li>To cache source images from unsuitably slow sources to enable faster
+ *     subsequent reading.</li>
+ * </ol>
  */
 public interface SourceCache extends Cache {
 
