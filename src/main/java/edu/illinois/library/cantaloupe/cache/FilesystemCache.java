@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import edu.illinois.library.cantaloupe.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -618,14 +619,17 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 LOGGER.info("getImageInfo(): hit: {}", cacheFile);
                 return Info.fromJSON(cacheFile.toFile());
             } else {
-                LOGGER.info("getImageInfo(): deleting stale file: {}",
-                        cacheFile);
-                try {
-                    Files.deleteIfExists(cacheFile);
-                } catch (IOException e) {
-                    LOGGER.warn("getImageInfo(): unable to delete {}",
+                // Delete it asynchronously.
+                ThreadPool.getInstance().submit(() -> {
+                    LOGGER.info("getImageInfo(): deleting stale file: {}",
                             cacheFile);
-                }
+                    try {
+                        Files.deleteIfExists(cacheFile);
+                    } catch (IOException e) {
+                        LOGGER.warn("getImageInfo(): unable to delete {}",
+                                cacheFile);
+                    }
+                });
             }
         } catch (NoSuchFileException | FileNotFoundException e) {
             LOGGER.info("getImageInfo(): not found: {}", e.getMessage());
@@ -662,14 +666,17 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                             identifier, cacheFile);
                     file = cacheFile.toFile();
                 } else {
-                    LOGGER.info("getSourceImageFile(): deleting stale file: {}",
-                            cacheFile);
-                    try {
-                        Files.deleteIfExists(cacheFile);
-                    } catch (IOException e) {
-                        LOGGER.warn("getSourceImageFile(): unable to delete {}",
+                    // Delete it asynchronously.
+                    ThreadPool.getInstance().submit(() -> {
+                        LOGGER.info("getSourceImageFile(): deleting stale file: {}",
                                 cacheFile);
-                    }
+                        try {
+                            Files.deleteIfExists(cacheFile);
+                        } catch (IOException e) {
+                            LOGGER.warn("getSourceImageFile(): unable to delete {}",
+                                    cacheFile);
+                        }
+                    });
                 }
             }
         } catch (IOException e) {
@@ -695,14 +702,17 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                         LOGGER.error(e.getMessage(), e);
                     }
                 } else {
-                    LOGGER.info("newDerivativeImageInputStream(): " +
-                                    "deleting stale file: {}", cacheFile);
-                    try {
-                        Files.deleteIfExists(cacheFile);
-                    } catch (IOException e) {
-                        LOGGER.warn("newDerivativeImageInputStream(): " +
-                                        "unable to delete {}", cacheFile);
-                    }
+                    // Delete it asynchronously.
+                    ThreadPool.getInstance().submit(() -> {
+                        LOGGER.info("newDerivativeImageInputStream(): " +
+                                "deleting stale file: {}", cacheFile);
+                        try {
+                            Files.deleteIfExists(cacheFile);
+                        } catch (IOException e) {
+                            LOGGER.warn("newDerivativeImageInputStream(): " +
+                                    "unable to delete {}", cacheFile);
+                        }
+                    });
                 }
             }
         } catch (IOException e) {
@@ -1034,7 +1044,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             // When this method runs concurrently with an equal Identifier
             // argument, all of the other invocations of Files.move() will
             // throw this, which is fine.
-            LOGGER.debug("put(): failed to move file: {}", e.getMessage());
+            LOGGER.debug("put(): file already exists: {}", e.getMessage());
         } catch (IOException e) {
             try {
                 Files.deleteIfExists(tempFile);

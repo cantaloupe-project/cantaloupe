@@ -395,6 +395,9 @@ public class FilesystemCacheTest extends BaseTest {
         sleep(1100);
 
         assertNull(instance.getSourceImageFile(identifier));
+
+        sleep(1000);
+
         assertFalse(Files.exists(cacheFile));
     }
 
@@ -448,6 +451,9 @@ public class FilesystemCacheTest extends BaseTest {
         try (InputStream is = instance.newDerivativeImageInputStream(ops)) {
             assertNull(is);
         }
+
+        sleep(1000);
+
         assertFalse(Files.exists(cacheFile));
     }
 
