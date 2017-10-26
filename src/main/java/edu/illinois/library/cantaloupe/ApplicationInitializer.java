@@ -1,8 +1,7 @@
 package edu.illinois.library.cantaloupe;
 
-import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheException;
-import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.cache.CacheWorkerRunner;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -48,6 +47,11 @@ public class ApplicationInitializer implements ServletContextListener {
     }
 
     private void handleVmArguments() {
+        final CacheFacade cacheFacade = new CacheFacade();
+        final boolean isAnyCacheAvailable =
+                cacheFacade.isSourceCacheAvailable() ||
+                cacheFacade.isDerivativeCacheAvailable();
+
         try {
             if (System.getProperty(LIST_FONTS_VM_ARGUMENT) != null) {
                 GraphicsEnvironment ge =
@@ -57,21 +61,14 @@ public class ApplicationInitializer implements ServletContextListener {
                 }
                 exitUnlessTesting(0);
             } else if (System.getProperty(CLEAN_CACHE_VM_ARGUMENT) != null) {
-                Cache cache = CacheFactory.getSourceCache();
-                if (cache != null) {
-                    System.out.println("Cleaning the source cache...");
-                    cache.cleanUp();
+                if (isAnyCacheAvailable) {
+                    System.out.println("Cleaning the source and/or derivative caches...");
+                    cacheFacade.cleanUp();
+                    System.out.println("Done.");
                 } else {
-                    System.out.println("Source cache is disabled.");
+                    System.out.println("Source and derivative caches are " +
+                            "disabled. Nothing to do.");
                 }
-                cache = CacheFactory.getDerivativeCache();
-                if (cache != null) {
-                    System.out.println("Cleaning the derivative cache...");
-                    cache.cleanUp();
-                } else {
-                    System.out.println("Derivative cache is disabled.");
-                }
-                System.out.println("Done.");
                 exitUnlessTesting(0);
             } else if (System.getProperty(PURGE_CACHE_VM_ARGUMENT) != null) {
                 // Two variants of this argument are supported:
@@ -82,62 +79,42 @@ public class ApplicationInitializer implements ServletContextListener {
                         System.getProperty(PURGE_CACHE_VM_ARGUMENT);
                 if (purgeArg.length() > 0) {
                     Identifier identifier = new Identifier(purgeArg);
-                    Cache cache = CacheFactory.getSourceCache();
-                    if (cache != null) {
+                    if (isAnyCacheAvailable) {
                         System.out.println("Purging " + identifier +
-                                " from the source cache...");
-                        cache.purge(identifier);
+                                " from the source and/or derivative caches...");
+                        cacheFacade.purge(identifier);
+                        System.out.println("Done.");
                     } else {
-                        System.out.println("Source cache is disabled.");
-                    }
-                    cache = CacheFactory.getDerivativeCache();
-                    if (cache != null) {
-                        System.out.println("Purging " + identifier +
-                                " from the derivative cache...");
-                        cache.purge(identifier);
-                    } else {
-                        System.out.println("Derivative cache is disabled.");
+                        System.out.println("Source and derivative caches are " +
+                                "disabled. Nothing to do.");
                     }
                 } else {
-                    Cache cache = CacheFactory.getSourceCache();
-                    if (cache != null) {
-                        System.out.println("Purging the source cache...");
-                        cache.purge();
+                    if (isAnyCacheAvailable) {
+                        System.out.println("Purging the source and/or " +
+                                "derivative caches...");
+                        cacheFacade.purge();
+                        System.out.println("Done.");
                     } else {
-                        System.out.println("Source cache is disabled.");
-                    }
-                    cache = CacheFactory.getDerivativeCache();
-                    if (cache != null) {
-                        System.out.println("Purging the derivative cache...");
-                        cache.purge();
-                    } else {
-                        System.out.println("Derivative cache is disabled.");
+                        System.out.println("Source and derivative caches are " +
+                                "disabled. Nothing to do.");
                     }
                 }
-                System.out.println("Done.");
                 exitUnlessTesting(0);
             } else if (System.getProperty(PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT) != null) {
-                Cache cache = CacheFactory.getSourceCache();
-                if (cache != null) {
-                    System.out.println("Purging expired items from the source cache...");
-                    cache.purgeExpired();
+                if (isAnyCacheAvailable) {
+                    System.out.println("Purging expired items from the " +
+                            "source and/or derivative caches...");
+                    cacheFacade.purgeExpired();
+                    System.out.println("Done.");
                 } else {
-                    System.out.println("Source cache is disabled.");
+                    System.out.println("Source and derivative caches are " +
+                            "disabled. Nothing to do.");
                 }
-                cache = CacheFactory.getDerivativeCache();
-                if (cache != null) {
-                    System.out.println("Purging expired items from the derivative cache...");
-                    cache.purgeExpired();
-                } else {
-                    System.out.println("Derivative cache is disabled.");
-                }
-                System.out.println("Done.");
                 exitUnlessTesting(0);
             }
         } catch (CacheException e) {
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
             exitUnlessTesting(-1);
-            System.exit(-1);
         }
     }
 

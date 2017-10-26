@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
  */
 class CacheWorker implements Runnable {
 
-    private static final Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(CacheWorker.class);
 
     /**
@@ -16,43 +16,19 @@ class CacheWorker implements Runnable {
      */
     @Override
     public void run() {
-        // Disabled caches will be null.
-        final Cache sourceCache = CacheFactory.getSourceCache();
-        final Cache derivativeCache = CacheFactory.getDerivativeCache();
-        logger.info("Working...");
-
-        if (sourceCache != null) {
-            // Purge expired items from the source cache.
-            try {
-                sourceCache.purgeExpired();
-            } catch (CacheException e) {
-                logger.error(e.getMessage());
-            }
-            // Clean up the source cache.
-            try {
-                sourceCache.cleanUp();
-            } catch (CacheException e) {
-                logger.error(e.getMessage());
-            }
+        LOGGER.info("Working...");
+        CacheFacade cacheFacade = new CacheFacade();
+        try {
+            cacheFacade.purgeExpired();
+        } catch (CacheException e) {
+            LOGGER.error(e.getMessage());
         }
-        if (derivativeCache != null) {
-            // Purge expired items from the derivative cache.
-            try {
-                derivativeCache.purgeExpired();
-            } catch (CacheException e) {
-                logger.error(e.getMessage());
-            }
-            // Clean up the derivative cache.
-            try {
-                derivativeCache.cleanUp();
-            } catch (CacheException e) {
-                logger.error(e.getMessage());
-            }
-        } else {
-            logger.info("Caching is disabled. Nothing to do.");
+        try {
+            cacheFacade.cleanUp();
+        } catch (CacheException e) {
+            LOGGER.error(e.getMessage());
         }
-
-        logger.info("Done working.");
+        LOGGER.info("Done working.");
     }
 
 }

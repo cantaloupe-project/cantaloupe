@@ -4,8 +4,7 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.auth.AuthInfo;
 import edu.illinois.library.cantaloupe.auth.Authorizer;
 import edu.illinois.library.cantaloupe.cache.CacheException;
-import edu.illinois.library.cantaloupe.cache.CacheFactory;
-import edu.illinois.library.cantaloupe.cache.DerivativeCache;
+import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Info;
@@ -14,7 +13,6 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
-import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.Request;
 import org.restlet.data.CacheDirective;
@@ -48,12 +46,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * N.B. Subclasses should add custom response headers to the Series returned by
- * {@link #getBufferedResponseHeaders()}.
+ * N.B. If subclasses need to send custom response headers, they should add
+ * them to the {@link Series} returned by {@link #getBufferedResponseHeaders}.
  */
 public abstract class AbstractResource extends ServerResource {
 
-    private static Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(AbstractResource.class);
 
     protected static final String RESPONSE_CONTENT_DISPOSITION_QUERY_ARG =
@@ -115,7 +113,7 @@ public abstract class AbstractResource extends ServerResource {
             }
             rootRef.setPath(StringUtils.stripEnd(baseRef.getPath(), "/"));
 
-            logger.debug("Base URI from assembled from configuration ({}): {}",
+            LOGGER.debug("Base URI from assembled from configuration ({}): {}",
                     Key.BASE_URI, rootRef);
         } else {
             // Try to use X-Forwarded-* headers.
@@ -131,7 +129,7 @@ public abstract class AbstractResource extends ServerResource {
                 final String pathHeader = requestHeaders.getFirstValue(
                         "X-Forwarded-Path", true, "");
 
-                logger.debug("X-Forwarded headers: Proto: {}; Host: {}; " +
+                LOGGER.debug("X-Forwarded headers: Proto: {}; Host: {}; " +
                                 "Port: {}; Path: {}",
                         protocolHeader, hostHeader, portHeader, pathHeader);
 
@@ -153,10 +151,10 @@ public abstract class AbstractResource extends ServerResource {
                 rootRef.setProtocol(protocol);
                 rootRef.setHostPort(port);
 
-                logger.debug("Base URI assembled from X-Forwarded headers: {}",
+                LOGGER.debug("Base URI assembled from X-Forwarded headers: {}",
                                 rootRef);
             } else {
-                logger.debug("Base URI assembled from request: {}", rootRef);
+                LOGGER.debug("Base URI assembled from request: {}", rootRef);
             }
         }
         return rootRef;
@@ -171,7 +169,7 @@ public abstract class AbstractResource extends ServerResource {
         getResponse().getDimensions().add(org.restlet.data.Dimension.ORIGIN);
         getResponse().getHeaders().add("X-Powered-By",
                 "Cantaloupe/" + Application.getVersion());
-        logger.info("doInit(): handling {} {}", getMethod(), getReference());
+        LOGGER.info("doInit(): handling {} {}", getMethod(), getReference());
     }
 
     /**
@@ -199,7 +197,7 @@ public abstract class AbstractResource extends ServerResource {
         if (info.getRedirectURI() != null) {
             final URL location = info.getRedirectURI();
             final int code = info.getRedirectStatus();
-            logger.info("checkAuthorization(): redirecting to {} via HTTP {}",
+            LOGGER.info("checkAuthorization(): redirecting to {} via HTTP {}",
                     location, code);
             final Status status = Status.valueOf(code);
             final StringRepresentation rep =
@@ -219,7 +217,7 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * Some web servers have issues dealing with encoded slashes (%2F) in URLs.
+     * Some web servers have issues dealing with encoded slashes (%2F) in URIs.
      * This method enables the use of an alternate string to represent a slash
      * via {@link Key#SLASH_SUBSTITUTE}.
      *
@@ -286,7 +284,7 @@ public abstract class AbstractResource extends ServerResource {
                 }
             }
         } catch (NoSuchElementException e) {
-            logger.warn("Cache-Control headers are invalid: {}",
+            LOGGER.warn("Cache-Control headers are invalid: {}",
                     e.getMessage());
         }
         return directives;
@@ -322,7 +320,7 @@ public abstract class AbstractResource extends ServerResource {
         // Decode slash substitutes.
         final String identifier = decodeSlashes(decodedIdentifier);
 
-        logger.debug("getIdentifier(): requested: {} / decoded: {} / " +
+        LOGGER.debug("getIdentifier(): requested: {} / decoded: {} / " +
                         "slashes substituted: {}",
                 urlIdentifier, decodedIdentifier, identifier);
 
@@ -330,39 +328,23 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * Gets the image info corresponding to the given identifier, first by
-     * checking the cache and then, if necessary, by reading it from the image
-     * and caching the result.
+     * <p>Returns the image info for the source image corresponding to the
+     * given identifier as efficiently as possible.</p>
      *
      * @param identifier
-     * @param proc
-     * @return Info for the image with the given identifier, retrieved
-     *         from the given processor.
-     * @throws ProcessorException
-     * @throws CacheException
+     * @param proc       Processor from which to read the info, if it can't be
+     *                   retrieved from a cache.
+     * @return           Info for the image with the given identifier.
      */
     protected final Info getOrReadInfo(final Identifier identifier,
                                        final Processor proc)
             throws ProcessorException, CacheException {
-        Info info = null;
+        Info info;
         if (!isBypassingCache()) {
-            DerivativeCache cache = CacheFactory.getDerivativeCache();
-            if (cache != null) {
-                final Stopwatch watch = new Stopwatch();
-                info = cache.getImageInfo(identifier);
-                if (info != null) {
-                    logger.debug("getOrReadInfo(): retrieved dimensions of {} from cache in {} msec",
-                            identifier, watch.timeElapsed());
-                } else {
-                    info = readInfo(identifier, proc);
-                    cache.put(identifier, info);
-                }
-            }
+            info = new CacheFacade().getOrReadInfo(identifier, proc);
         } else {
-            logger.debug("getOrReadInfo(): bypassing the cache, as requested");
-        }
-        if (info == null) {
-            info = readInfo(identifier, proc);
+            LOGGER.debug("getOrReadInfo(): bypassing the cache, as requested");
+            info = proc.readImageInfo();
         }
         return info;
     }
@@ -450,23 +432,6 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * Reads the information of the source image.
-     *
-     * @param identifier
-     * @param proc
-     * @return
-     * @throws ProcessorException
-     */
-    private Info readInfo(final Identifier identifier,
-                          final Processor proc) throws ProcessorException {
-        final Stopwatch watch = new Stopwatch();
-        final Info info = proc.readImageInfo();
-        logger.debug("readInfo(): read from {} in {} msec", identifier,
-                watch.timeElapsed());
-        return info;
-    }
-
-    /**
      * @param name Template pathname, with leading slash.
      * @return Representation using the given template and the common template
      *         variables.
@@ -489,7 +454,7 @@ public abstract class AbstractResource extends ServerResource {
                         new StringRepresentation(template), vars,
                         MediaType.TEXT_HTML);
             } catch (IOException e) {
-                logger.error(e.getMessage());
+                LOGGER.error(e.getMessage());
                 return new StringRepresentation(e.getMessage());
             }
         }

@@ -12,11 +12,11 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -104,7 +104,7 @@ public class AmazonS3CacheTest extends BaseTest {
     @Test
     public void testGetImageInfo() throws Exception {
         instance.put(identifier, imageInfo);
-        Thread.sleep(UPLOAD_WAIT);
+
         Info actualInfo = instance.getImageInfo(identifier);
         assertEquals(imageInfo.toString(), actualInfo.toString());
     }
@@ -336,8 +336,6 @@ public class AmazonS3CacheTest extends BaseTest {
     @Test
     public void testPut() throws Exception {
         instance.put(identifier, imageInfo);
-
-        Thread.sleep(UPLOAD_WAIT); // TODO: should put() return a Future?
 
         Info actualInfo = instance.getImageInfo(identifier);
         assertEquals(imageInfo.toString(), actualInfo.toString());

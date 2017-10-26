@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.*;
 import static org.junit.Assert.*;
 
 /**
@@ -265,25 +266,32 @@ public class InformationResourceTest extends ResourceTest {
         try {
             Identifier identifier = new Identifier(IMAGE);
 
-            assertEquals(0, FileUtils.listFiles(cacheDir, null, true).size());
+            assertRecursiveFileCount(cacheDir.toPath(), 0);
 
-            // request an image to cache it
+            // Request an image to cache its info.
             getClientForUriPath("/" + IMAGE + "/info.json").get();
 
-            // assert that it has been cached
-            assertEquals(1, FileUtils.listFiles(cacheDir, null, true).size());
+            // The info may write asynchronously, so wait.
+            Thread.sleep(1000);
+
+            // Assert that it's been cached.
+            assertRecursiveFileCount(cacheDir.toPath(), 1);
             DerivativeCache cache = CacheFactory.getDerivativeCache();
             assertNotNull(cache.getImageInfo(identifier));
 
             // Delete the source image.
-            sourceImage.delete();
+            assertTrue(sourceImage.delete());
 
-            // request the same image which is now cached but underlying is gone
+            // Request the same image which is now cached but underlying is
+            // gone.
             try {
                 getClientForUriPath("/" + IMAGE + "/info.json").get();
             } catch (ResourceException e) {
                 // noop
             }
+
+            // Stuff may be deleted asynchronously, so wait.
+            Thread.sleep(1000);
 
             if (purgeMissing) {
                 assertNull(cache.getImageInfo(identifier));

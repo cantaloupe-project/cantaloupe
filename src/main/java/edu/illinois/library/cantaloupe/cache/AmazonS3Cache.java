@@ -350,7 +350,7 @@ class AmazonS3Cache implements DerivativeCache {
     }
 
     /**
-     * Uploads the given info to S3 asynchronously and returns immediately.
+     * Uploads the given info to S3.
      *
      * @param identifier Image identifier.
      * @param info       Info to upload to S3.
@@ -370,10 +370,7 @@ class AmazonS3Cache implements DerivativeCache {
             metadata.setContentEncoding("UTF-8");
             metadata.setContentLength(os.size());
 
-            ThreadPool.getInstance().submit(new AmazonS3Upload(
-                    s3, os, bucketName, objectKey, metadata));
-        } catch (IllegalStateException e) {
-            LOGGER.warn("put(): the upload queue is full.");
+            new AmazonS3Upload(s3, os, bucketName, objectKey, metadata).run();
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);
         }

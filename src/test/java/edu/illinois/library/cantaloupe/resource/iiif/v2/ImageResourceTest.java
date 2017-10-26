@@ -21,12 +21,13 @@ import org.restlet.resource.ResourceException;
 import java.awt.Dimension;
 import java.io.File;
 import java.net.URI;
-import java.net.URL;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
+import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.*;
 
 public class ImageResourceTest extends ResourceTest {
 
@@ -238,13 +239,13 @@ public class ImageResourceTest extends ResourceTest {
         config.setProperty(Key.CACHE_SERVER_TTL, 10);
         config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, true);
 
-        assertEquals(0, FileUtils.listFiles(cacheFolder, null, true).size());
+        assertRecursiveFileCount(cacheFolder.toPath(), 0);
 
         // request an image to cache it
         getClientForUriPath("/" + IMAGE + "/full/full/0/default.png").get();
 
         // assert that it has been cached
-        assertEquals(1, FileUtils.listFiles(imageCacheFolder, null, true).size());
+        assertRecursiveFileCount(imageCacheFolder.toPath(), 1);
     }
 
     @Test
@@ -267,7 +268,7 @@ public class ImageResourceTest extends ResourceTest {
         config.setProperty(Key.CACHE_SERVER_TTL, 10);
         config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, true);
 
-        assertEquals(0, FileUtils.listFiles(cacheFolder, null, true).size());
+        assertRecursiveFileCount(cacheFolder.toPath(), 0);
 
         // request an image
         getClientForUriPath("/" + IMAGE + "/full/full/0/default.png?cache=false").get();
@@ -424,8 +425,8 @@ public class ImageResourceTest extends ResourceTest {
 
     private void doPurgeFromCacheWhenSourceIsMissing(boolean purgeMissing)
             throws Exception {
-        // Create a directory that will contain a source image. Don't want to
-        // use the image fixtures dir because we'll need to delete one.
+        // Create a directory that will contain a source image. We don't want
+        // to use the image fixtures dir because we'll need to delete one.
         File sourceDir = TestUtil.getTempFolder();
         sourceDir = new File(sourceDir.getAbsolutePath() + "/source");
         if (sourceDir.exists()) {
@@ -472,20 +473,23 @@ public class ImageResourceTest extends ResourceTest {
                     new HashMap<>(),
                     new HashMap<>());
 
-            assertEquals(0, FileUtils.listFiles(cacheDir, null, true).size());
+            assertRecursiveFileCount(cacheDir.toPath(), 0);
 
-            // request an image to cache it
+            // Request an image to cache it. This will cache both a derivative
+            // and an info.
             getClientForUriPath(imagePath).get();
-            getClientForUriPath("/" + IMAGE + "/info.json").get();
 
-            // assert that it has been cached (there should be both an image
-            // and an info)
-            assertEquals(2, FileUtils.listFiles(cacheDir, null, true).size());
+            // The info may write asynchronously, so wait.
+            Thread.sleep(1000);
+
+            // Assert that they've been cached.
+            assertRecursiveFileCount(cacheDir.toPath(), 2);
 
             // Delete the source image.
-            sourceImage.delete();
+            assertTrue(sourceImage.delete());
 
-            // request the same image which is now cached but underlying is 404
+            // Request the same image which is now cached but underlying is
+            // 404.
             try {
                 getClientForUriPath("/" + IMAGE + "/full/full/0/default.jpg").get();
                 fail("Expected exception");
@@ -493,10 +497,13 @@ public class ImageResourceTest extends ResourceTest {
                 // noop
             }
 
+            // Stuff may be deleted asynchronously, so wait.
+            Thread.sleep(1000);
+
             if (purgeMissing) {
-                assertEquals(0, FileUtils.listFiles(cacheDir, null, true).size());
+                assertRecursiveFileCount(cacheDir.toPath(), 0);
             } else {
-                assertEquals(2, FileUtils.listFiles(cacheDir, null, true).size());
+                assertRecursiveFileCount(cacheDir.toPath(), 2);
             }
         } finally {
             FileUtils.deleteDirectory(sourceDir);
@@ -507,8 +514,6 @@ public class ImageResourceTest extends ResourceTest {
     /**
      * Checks that the server responds with HTTP 500 when a non-FileResolver is
      * used with a non-StreamProcessor.
-     *
-     * @throws Exception
      */
     @Test
     public void testResolverProcessorCompatibility() throws Exception {

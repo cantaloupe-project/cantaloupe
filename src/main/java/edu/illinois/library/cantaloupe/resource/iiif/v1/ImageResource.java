@@ -1,8 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.cache.Cache;
-import edu.illinois.library.cantaloupe.cache.CacheFactory;
-import edu.illinois.library.cantaloupe.cache.DerivativeCache;
+import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -70,11 +68,8 @@ public class ImageResource extends IIIF1Resource {
             sourceFormat = resolver.getSourceFormat();
         } catch (FileNotFoundException e) { // this needs to be rethrown
             if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
-                // if the image was not found, purge it from the cache
-                final Cache cache = CacheFactory.getDerivativeCache();
-                if (cache != null) {
-                    cache.purge(identifier);
-                }
+                // If the image was not found, purge it from the cache.
+                new CacheFacade().purgeAsync(identifier);
             }
             throw e;
         }
@@ -134,15 +129,16 @@ public class ImageResource extends IIIF1Resource {
         // If we don't need to resolve first, and are using a cache, and the
         // cache contains an image matching the request, skip all the setup and
         // just return the cached image.
-        final DerivativeCache cache = CacheFactory.getDerivativeCache();
-        if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)) {
-            if (cache != null) {
-                InputStream inputStream = cache.newDerivativeImageInputStream(ops);
-                if (inputStream != null) {
-                    return new CachedImageRepresentation(
-                            ops.getOutputFormat().getPreferredMediaType(),
-                            disposition, inputStream);
-                }
+        final CacheFacade cacheFacade = new CacheFacade();
+
+        if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true) &&
+                cacheFacade.isDerivativeCacheAvailable()) {
+            InputStream inputStream =
+                    cacheFacade.newDerivativeImageInputStream(ops);
+            if (inputStream != null) {
+                return new CachedImageRepresentation(
+                        ops.getOutputFormat().getPreferredMediaType(),
+                        disposition, inputStream);
             }
         }
 

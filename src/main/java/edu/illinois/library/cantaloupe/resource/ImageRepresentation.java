@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import edu.illinois.library.cantaloupe.cache.CacheFactory;
-import edu.illinois.library.cantaloupe.cache.DerivativeCache;
+import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
@@ -71,11 +70,11 @@ public class ImageRepresentation extends OutputRepresentation {
         // Restlet will take care of that.
         if (!bypassCache) {
             // The cache will be null if caching is disabled.
-            final DerivativeCache cache = CacheFactory.getDerivativeCache();
-            if (cache != null) {
+            final CacheFacade cacheFacade = new CacheFacade();
+            if (cacheFacade.isDerivativeCacheAvailable()) {
                 // Try to get the image from the cache.
                 try (InputStream cacheInputStream =
-                             cache.newDerivativeImageInputStream(opList)) {
+                             cacheFacade.newDerivativeImageInputStream(opList)) {
                     if (cacheInputStream != null) {
                         // The image is available in the cache; write it to the
                         // response output stream.
@@ -83,7 +82,7 @@ public class ImageRepresentation extends OutputRepresentation {
                         IOUtils.copy(cacheInputStream, responseOutputStream);
 
                         LOGGER.debug("Streamed from {} in {} msec: {}",
-                                cache.getClass().getSimpleName(),
+                                cacheFacade.getDerivativeCache().getClass().getSimpleName(),
                                 watch.timeElapsed(),
                                 opList);
                     } else {
@@ -101,8 +100,7 @@ public class ImageRepresentation extends OutputRepresentation {
                         // streams' close() methods can deal with being called
                         // twice.
                         try (OutputStream cacheOutputStream =
-                                     cache.newDerivativeImageOutputStream(opList)) {
-
+                                     cacheFacade.newDerivativeImageOutputStream(opList)) {
                             OutputStream teeStream = new TeeOutputStream(
                                     responseOutputStream, cacheOutputStream);
                             doWrite(teeStream);
@@ -113,7 +111,7 @@ public class ImageRepresentation extends OutputRepresentation {
                             // image has been incompletely written and is
                             // corrupt, so it must be purged.
                             LOGGER.info("write(): {}", e.getMessage());
-                            cache.purge(opList);
+                            cacheFacade.purge(opList);
                         }
                     }
                 } catch (Exception e) {

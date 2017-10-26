@@ -16,12 +16,11 @@ title: Change Log
       <li>The maximum size in IIIF Image API 2.x <code>info.json</code> responses is the full image size, rather than half size. (Thanks to @cbeer)</li>
       <li>Image requests may include a <code>?response-content-disposition</code> query argument to suggest a response <code>Content-Disposition</code>.</li>
       <li>Added a REST API method for purging the delegate method invocation cache.</li>
-      <li>Added a "Warnings" section in the "Processors" section of the Control Panel.</li>
     </ul>
   </li>
   <li>Resolvers
     <ul>
-      <li>Changed the HTTP client used by HttpResolver from Restlet to Jetty.</li>
+      <li>HttpResolver uses the Jetty HTTP client.</li>
       <li>HttpResolver supports HTTP/2.</li>
       <li>The <code>HttpResolver::get_url()</code> delegate method may return a hash containing HTTP authentication info.</li>
       <li>Added an option to HttpResolver to trust invalid SSL certificates.</li>
@@ -35,17 +34,19 @@ title: Change Log
       <li>Added an option that enables Java2dProcessor, JaiProcessor, KakaduProcessor, and PdfBoxProcessor to preserve the sample depth of &gt;8-bits-per-sample source images.</li>
       <li>GraphicsMagickProcessor and ImageMagickProcessor support PSD images.</li>
       <li>GraphicsMagickProcessor and ImageMagickProcessor support SGI images.</li>
+      <li>GraphicsMagickProcessor and ImageMagickProcessor respect the <code>processor.dpi</code> configuration key.</li>
       <li>GraphicsMagickProcessor supports the GIF output format.</li>
       <li>ImageMagickProcessor supports image overlays.</li>
       <li>The <code>processor.background_color</code> configuration key affects alpha blending as well as non-90&deg;-multiple rotations. (Thanks to @Algae666)</li>
-      <li>The configurable DPI used when reading PDFs is shared across PdfBoxProcessor, GraphicsMagickProcessor, and ImageMagickProcessor.</li>
       <li>ImageMagickProcessor's support for ImageMagick versions prior to 7 is deprecated.</li>
       <li>OpenJpegProcessor's support for OpenJPEG versions prior to 2.2.0 is deprecated.</li>
-      <li>Initialization failures (related to missing dependencies, for example) are displayed in the Control Panel.</li>
+      <li>Initialization warnings (related to missing dependencies, for example) are displayed in the Control Panel.</li>
     </ul>
   </li>
   <li>Caching
     <ul>
+      <li>Image info is cached in memory in addition to the derivative cache (when enabled).</li>
+      <li>Image info is written to caches asynchronously to enable faster responses.</li>
       <li>Added RedisCache.</li>
       <li>Added HeapCache.</li>
       <li>AmazonS3Cache uses asynchronous uploads for better performance.</li>

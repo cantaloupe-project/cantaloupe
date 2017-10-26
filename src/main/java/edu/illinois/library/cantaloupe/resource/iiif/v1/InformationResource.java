@@ -4,8 +4,7 @@ import java.io.FileNotFoundException;
 import java.util.List;
 
 import edu.illinois.library.cantaloupe.RestletApplication;
-import edu.illinois.library.cantaloupe.cache.Cache;
-import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -79,11 +78,8 @@ public class InformationResource extends IIIF1Resource {
         } catch (FileNotFoundException e) { // this needs to be rethrown
             if (Configuration.getInstance().
                     getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
-                // if the image was not found, purge it from the cache
-                final Cache cache = CacheFactory.getDerivativeCache();
-                if (cache != null) {
-                    cache.purge(identifier);
-                }
+                // If the image was not found, purge it from the cache.
+                new CacheFacade().purgeAsync(identifier);
             }
             throw e;
         }

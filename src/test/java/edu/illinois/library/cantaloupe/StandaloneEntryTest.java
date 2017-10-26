@@ -302,7 +302,7 @@ public class StandaloneEntryTest extends BaseTest {
         System.setProperty(StandaloneEntry.PURGE_CACHE_VM_ARGUMENT, "");
         StandaloneEntry.main("");
 
-        assertTrue(redirectedOutput.toString().contains("Purging the derivative cache"));
+        assertTrue(redirectedOutput.toString().contains("Purging the"));
 
         Thread.sleep(100);
 
@@ -390,7 +390,7 @@ public class StandaloneEntryTest extends BaseTest {
 
         Files.createTempFile(imageDir, "bla1", "tmp");
         Files.createTempFile(infoDir, "bla1", "tmp");
-        Thread.sleep(2500);
+        Thread.sleep(3000);
         Files.createTempFile(imageDir, "bla2", "tmp");
         Files.createTempFile(infoDir, "bla2", "tmp");
 

@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.*;
 import static org.junit.Assert.*;
 
 public class ImageResourceTest extends ResourceTest {
@@ -388,8 +389,8 @@ public class ImageResourceTest extends ResourceTest {
 
     private void doPurgeFromCacheWhenSourceIsMissing(boolean purgeMissing)
             throws Exception {
-        // Create a directory that will contain a source image. Don't want to
-        // use the image fixtures dir because we'll need to delete one.
+        // Create a directory that will contain a source image. We don't want
+        // to use the image fixtures dir because we'll need to delete one.
         File sourceDir = TestUtil.getTempFolder();
         sourceDir = new File(sourceDir.getAbsolutePath() + "/source");
         if (sourceDir.exists()) {
@@ -436,20 +437,23 @@ public class ImageResourceTest extends ResourceTest {
                     new HashMap<>(),
                     new HashMap<>());
 
-            assertEquals(0, FileUtils.listFiles(cacheDir, null, true).size());
+            assertRecursiveFileCount(cacheDir.toPath(), 0);
 
-            // request an image to cache it
+            // Request an image to cache it. This will cache both a derivative
+            // and an info.
             getClientForUriPath(imagePath).get();
-            getClientForUriPath("/" + IMAGE + "/info.json").get();
 
-            // assert that it has been cached (there should be both an image
-            // and an info)
-            assertEquals(2, FileUtils.listFiles(cacheDir, null, true).size());
+            // The info may write asynchronously, so wait.
+            Thread.sleep(1000);
+
+            // Assert that they've been cached.
+            assertRecursiveFileCount(cacheDir.toPath(), 2);
 
             // Delete the source image.
-            sourceImage.delete();
+            assertTrue(sourceImage.delete());
 
-            // request the same image which is now cached but underlying is 404
+            // Request the same image which is now cached but underlying is
+            // 404.
             try {
                 getClientForUriPath("/" + IMAGE + "/full/full/0/native.jpg").get();
                 fail("Expected exception");
@@ -457,10 +461,13 @@ public class ImageResourceTest extends ResourceTest {
                 // noop
             }
 
+            // Stuff may be deleted asynchronously, so wait.
+            Thread.sleep(1000);
+
             if (purgeMissing) {
-                assertEquals(0, FileUtils.listFiles(cacheDir, null, true).size());
+                assertRecursiveFileCount(cacheDir.toPath(), 0);
             } else {
-                assertEquals(2, FileUtils.listFiles(cacheDir, null, true).size());
+                assertRecursiveFileCount(cacheDir.toPath(), 2);
             }
         } finally {
             FileUtils.deleteDirectory(sourceDir);
@@ -471,8 +478,6 @@ public class ImageResourceTest extends ResourceTest {
     /**
      * Checks that the server responds with HTTP 500 when a non-FileResolver is
      * used with a non-StreamProcessor.
-     *
-     * @throws Exception
      */
     @Test
     public void testResolverProcessorCompatibility() throws Exception {
