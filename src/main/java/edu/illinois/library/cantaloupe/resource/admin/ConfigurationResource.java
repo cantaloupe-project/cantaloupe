@@ -19,7 +19,7 @@ import java.util.Map;
  * Resource for retrieving and updating the application configuration object
  * via XHR in the Control Panel.
  */
-public class ConfigurationResource extends AbstractResource {
+public class ConfigurationResource extends AbstractAdminResource {
 
     private static final Logger LOGGER = LoggerFactory.
             getLogger(ConfigurationResource.class);

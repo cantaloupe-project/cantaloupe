@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 /**
  * Handles the web-based Control Panel.
  */
-public class AdminResource extends AbstractResource {
+public class AdminResource extends AbstractAdminResource {
 
     /**
      * <p>Resolvers, caches, etc. can't be accessed from the templates, so

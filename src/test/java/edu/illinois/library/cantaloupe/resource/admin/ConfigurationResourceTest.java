@@ -69,7 +69,7 @@ public class ConfigurationResourceTest extends ResourceTest {
     public void testEnabled() throws Exception {
         Configuration config = Configuration.getInstance();
         // enabled
-        config.setProperty(AbstractResource.CONTROL_PANEL_ENABLED_CONFIG_KEY, true);
+        config.setProperty(AbstractAdminResource.CONTROL_PANEL_ENABLED_CONFIG_KEY, true);
 
         ClientResource client = getClientForUriPath(
                 RestletApplication.ADMIN_CONFIG_PATH, USERNAME, SECRET);
@@ -77,7 +77,7 @@ public class ConfigurationResourceTest extends ResourceTest {
         assertEquals(Status.SUCCESS_OK, client.getStatus());
 
         // disabled
-        config.setProperty(AbstractResource.CONTROL_PANEL_ENABLED_CONFIG_KEY, false);
+        config.setProperty(AbstractAdminResource.CONTROL_PANEL_ENABLED_CONFIG_KEY, false);
         try {
             client.get();
             fail("Expected exception");
