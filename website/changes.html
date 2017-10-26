@@ -48,7 +48,7 @@ title: Change Log
     <ul>
       <li>Added RedisCache.</li>
       <li>Added HeapCache.</li>
-      <li>AmazonS3Cache uses a threaded upload queue for better performance.</li>
+      <li>AmazonS3Cache uses asynchronous uploads for better performance.</li>
       <li>AmazonS3Cache falls back to obtaining credentials from various other sources (see the user manual) when they are not set in the config file. (Thanks to @jweisman)</li>
     </ul>
   </li>

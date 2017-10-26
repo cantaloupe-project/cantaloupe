@@ -9,6 +9,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import edu.illinois.library.cantaloupe.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -65,14 +66,11 @@ class AmazonS3Cache implements DerivativeCache {
      * <p>Since it is therefore not possible to write an OutputStream of
      * unknown length to the S3 client as the {@link Cache} interface requires,
      * this class buffers written data in a byte array before uploading it to
-     * S3 upon closure. (The upload is submitted to a
-     * {@link QueuedRunnableRunner} in order to allow {@link #close()} to
-     * return immediately.)</p>
+     * S3 upon closure. (The upload is submitted to the
+     * {@link ThreadPool} in order to allow {@link #close()} to return
+     * immediately.)</p>
      */
     private class AmazonS3OutputStream extends OutputStream {
-
-        private final Logger logger = LoggerFactory.
-                getLogger(AmazonS3OutputStream.class);
 
         private final ByteArrayOutputStream bufferStream =
                 new ByteArrayOutputStream();
@@ -101,14 +99,10 @@ class AmazonS3Cache implements DerivativeCache {
         public void close() {
             // At this point, the client has received all image data, but its
             // progress indicator is still spinning while it waits for the
-            // connection to close. Uploading in a separate thread using
-            // AmazonS3Uploader will allow this to happen immediately.
-            try {
-                uploader.submit(new AmazonS3Upload(
-                        s3, bufferStream, bucketName, objectKey, metadata));
-            } catch (IllegalStateException e) {
-                logger.warn("The upload queue is full.");
-            }
+            // connection to close. Uploading in a separate thread will allow
+            // this to happen immediately.
+            ThreadPool.getInstance().submit(new AmazonS3Upload(
+                    s3, bufferStream, bucketName, objectKey, metadata));
         }
 
         @Override
@@ -182,19 +176,11 @@ class AmazonS3Cache implements DerivativeCache {
 
     }
 
-    private static final Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(AmazonS3Cache.class);
-
-    /** This many uploads will be allowed in the upload queue. This should be
-     * set high enough to handle a reasonable number of concurrent requests,
-     * but low enough to bump up against when choking. */
-    private static final int UPLOAD_QUEUE_LIMIT = 100;
 
     /** Lazy-initialized by {@link #getClientInstance} */
     private static AmazonS3 client;
-
-    private final QueuedRunnableRunner uploader =
-            new QueuedRunnableRunner(UPLOAD_QUEUE_LIMIT);
 
     static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
@@ -223,7 +209,7 @@ class AmazonS3Cache implements DerivativeCache {
         try {
             final String jsonStr = s3.getObjectAsString(bucketName, objectKey);
             final Info info = Info.fromJSON(jsonStr);
-            logger.info("getImageInfo(): read {} from bucket {} in {} msec",
+            LOGGER.info("getImageInfo(): read {} from bucket {} in {} msec",
                     objectKey, bucketName, watch.timeElapsed());
             return info;
         } catch (AmazonS3Exception e) {
@@ -237,17 +223,12 @@ class AmazonS3Cache implements DerivativeCache {
     }
 
     @Override
-    public void initialize() {
-        uploader.start();
-    }
-
-    @Override
     public InputStream newDerivativeImageInputStream(OperationList opList)
             throws CacheException {
         final AmazonS3 s3 = getClientInstance();
         final String bucketName = getBucketName();
         final String objectKey = getObjectKey(opList);
-        logger.info("newDerivativeImageInputStream(): bucket: {}; key: {}",
+        LOGGER.info("newDerivativeImageInputStream(): bucket: {}; key: {}",
                 bucketName, objectKey);
         try {
             final S3Object object = s3.getObject(
@@ -313,7 +294,7 @@ class AmazonS3Cache implements DerivativeCache {
             s3.deleteObject(getBucketName(), summary.getKey());
             count++;
         }
-        logger.info("purge(): deleted {} items", count);
+        LOGGER.info("purge(): deleted {} items", count);
     }
 
     @Override
@@ -346,7 +327,7 @@ class AmazonS3Cache implements DerivativeCache {
                 s3.deleteObject(bucketName, summary.getKey());
             }
         }
-        logger.info("purgeExpired(): deleted {} of {} items",
+        LOGGER.info("purgeExpired(): deleted {} of {} items",
                 deletedCount, count);
     }
 
@@ -365,7 +346,7 @@ class AmazonS3Cache implements DerivativeCache {
             count++;
             s3.deleteObject(bucketName, summary.getKey());
         }
-        logger.info("purge(Identifier): deleted {} items", count);
+        LOGGER.info("purge(Identifier): deleted {} items", count);
     }
 
     /**
@@ -389,18 +370,13 @@ class AmazonS3Cache implements DerivativeCache {
             metadata.setContentEncoding("UTF-8");
             metadata.setContentLength(os.size());
 
-            uploader.submit(new AmazonS3Upload(
+            ThreadPool.getInstance().submit(new AmazonS3Upload(
                     s3, os, bucketName, objectKey, metadata));
         } catch (IllegalStateException e) {
-            logger.warn("put(): the upload queue is full.");
+            LOGGER.warn("put(): the upload queue is full.");
         } catch (IOException e) {
             throw new CacheException(e.getMessage(), e);
         }
-    }
-
-    @Override
-    public void shutdown() {
-        uploader.interrupt();
     }
 
 }
