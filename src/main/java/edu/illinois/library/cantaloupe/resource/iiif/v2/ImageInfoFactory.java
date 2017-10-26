@@ -176,7 +176,7 @@ class ImageInfoFactory {
                     invoke(SERVICE_DELEGATE_METHOD, identifier.toString());
             imageInfo.putAll(keyMap);
         } catch (DelegateScriptDisabledException e) {
-            LOGGER.info("Delegate script disabled; skipping service " +
+            LOGGER.debug("Delegate script disabled; skipping service " +
                     "information.");
         } catch (ScriptException | IOException e) {
             LOGGER.error(e.getMessage());
