@@ -21,6 +21,7 @@ import org.restlet.util.Series;
 
 import java.awt.GraphicsEnvironment;
 import java.io.File;
+import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.Arrays;
@@ -77,7 +78,7 @@ public class AdminResource extends AbstractResource {
     }
 
     private static class ObjectProxyComparator
-            implements Comparator<ObjectProxy> {
+            implements Comparator<ObjectProxy>, Serializable {
         public int compare(ObjectProxy o1, ObjectProxy o2) {
             return o1.getName().compareTo(o2.getName());
         }
