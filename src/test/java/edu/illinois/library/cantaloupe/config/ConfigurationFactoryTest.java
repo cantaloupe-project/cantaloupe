@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.config;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -10,6 +11,11 @@ import java.nio.file.Paths;
 import static org.junit.Assert.*;
 
 public class ConfigurationFactoryTest extends BaseTest {
+
+    @Before
+    public void setUp() {
+        ConfigurationFactory.clearInstance();
+    }
 
     @Test
     public void testGetInstanceReturnsMemoryConfiguration() throws Exception {
