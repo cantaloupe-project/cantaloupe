@@ -60,6 +60,29 @@ public class TaskQueueTest extends BaseTest {
     }
 
     @Test
+    public void testSubmitSetsInstantQueued() throws Exception {
+        MockTask task = new MockTask();
+        instance.submit(task);
+        assertNotNull(task.getInstantQueued());
+    }
+
+    @Test
+    public void testSubmitSetsInstantStarted() throws Exception {
+        MockTask task = new MockTask();
+        instance.submit(task);
+        Thread.sleep(50);
+        assertNotNull(task.getInstantStarted());
+    }
+
+    @Test
+    public void testSubmitSetsInstantStopped() throws Exception {
+        MockTask task = new MockTask();
+        instance.submit(task);
+        Thread.sleep(150);
+        assertNotNull(task.getInstantStopped());
+    }
+
+    @Test
     public void testSubmitSetsSuccessfulTaskStatus() throws Exception {
         MockTask task = new MockTask();
         instance.submit(task);

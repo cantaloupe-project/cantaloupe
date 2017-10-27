@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.async;
 
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -8,9 +9,24 @@ import java.util.UUID;
  */
 public abstract class AbstractTask {
 
+    private volatile Instant dateQueued;
+    private volatile Instant dateStarted;
+    private volatile Instant dateStopped;
     private volatile Exception failureException;
     private volatile Task.Status status = Task.Status.QUEUED;
     private final UUID uuid = UUID.randomUUID();
+
+    public final synchronized Instant getInstantQueued() {
+        return dateQueued;
+    }
+
+    public final synchronized Instant getInstantStarted() {
+        return dateStarted;
+    }
+
+    public final synchronized Instant getInstantStopped() {
+        return dateStopped;
+    }
 
     public final synchronized Exception getFailureException() {
         return failureException;
@@ -22,6 +38,18 @@ public abstract class AbstractTask {
 
     public final UUID getUUID() {
         return uuid;
+    }
+
+    public final synchronized void setInstantQueued(Instant queued) {
+        this.dateQueued = queued;
+    }
+
+    public final synchronized void setInstantStarted(Instant started) {
+        this.dateStarted = started;
+    }
+
+    public final synchronized void setInstantStopped(Instant stopped) {
+        this.dateStopped = stopped;
     }
 
     public final synchronized void setFailureException(Exception e) {

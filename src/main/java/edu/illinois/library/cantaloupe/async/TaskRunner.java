@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.async;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +38,7 @@ final class TaskRunner implements Runnable {
                 task = queue.take();
 
                 LOGGER.debug("run(): running {}", task);
+                task.setInstantStarted(Instant.now());
                 task.setStatus(Task.Status.RUNNING);
                 task.run();
                 task.setStatus(Task.Status.SUCCEEDED);
@@ -44,6 +46,10 @@ final class TaskRunner implements Runnable {
                 if (task != null) {
                     task.setStatus(Task.Status.FAILED);
                     task.setFailureException(e);
+                }
+            } finally {
+                if (task != null) {
+                    task.setInstantStopped(Instant.now());
                 }
             }
         }
@@ -56,6 +62,7 @@ final class TaskRunner implements Runnable {
     void submit(Task task) {
         LOGGER.debug("submit(): {} (queue size: {})", task, queue.size());
         queue.add(task);
+        task.setInstantQueued(Instant.now());
         task.setStatus(Task.Status.QUEUED);
     }
 

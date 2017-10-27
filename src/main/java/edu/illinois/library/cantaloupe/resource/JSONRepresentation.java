@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.restlet.data.CharacterSet;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
@@ -28,6 +29,13 @@ public class JSONRepresentation extends OutputRepresentation {
     @Override
     public void write(OutputStream outputStream) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
+        // Make ObjectMapper aware of JDK8 date/time objects
+        // See: https://github.com/FasterXML/jackson-modules-java8
+        mapper.registerModule(new JavaTimeModule());
+        // And tell it to serialize dates as ISO-8601 strings rather than
+        // timestamps.
+        mapper.configure(com.fasterxml.jackson.databind.SerializationFeature.
+                WRITE_DATES_AS_TIMESTAMPS, false);
         // Add a config override to omit keys with empty or null values.
         //
         // (It would be better not to do this, and to instead use @JsonInclude
