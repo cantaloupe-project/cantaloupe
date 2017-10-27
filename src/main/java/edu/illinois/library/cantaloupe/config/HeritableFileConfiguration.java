@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.config;
 
-import edu.illinois.library.cantaloupe.ThreadPool;
+import edu.illinois.library.cantaloupe.async.ThreadPool;
 
 import java.io.File;
 import java.util.Collection;

@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.async;
 
-import edu.illinois.library.cantaloupe.ThreadPool;
-
 import java.util.List;
 
 public final class TaskQueue {

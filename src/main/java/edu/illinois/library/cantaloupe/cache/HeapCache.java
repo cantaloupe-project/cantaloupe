@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import com.google.protobuf.ByteString;
-import edu.illinois.library.cantaloupe.ThreadPool;
+import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Identifier;

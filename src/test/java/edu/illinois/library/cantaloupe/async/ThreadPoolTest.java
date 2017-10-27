@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe;
+package edu.illinois.library.cantaloupe.async;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.After;
