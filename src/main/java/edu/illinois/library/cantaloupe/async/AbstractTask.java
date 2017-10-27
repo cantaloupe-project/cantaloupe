@@ -13,7 +13,7 @@ public abstract class AbstractTask {
     private volatile Instant dateStarted;
     private volatile Instant dateStopped;
     private volatile Exception failureException;
-    private volatile Task.Status status = Task.Status.QUEUED;
+    private volatile Task.Status status = Task.Status.NEW;
     private final UUID uuid = UUID.randomUUID();
 
     public final synchronized Instant getInstantQueued() {

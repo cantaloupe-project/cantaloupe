@@ -52,8 +52,15 @@ public class TaskQueueTest extends BaseTest {
     }
 
     @Test
+    public void testSubmitSetsQueuedTaskStatus() throws Exception {
+        // This is too hard to test so we'll skip it.
+    }
+
+    @Test
     public void testSubmitSetsRunningTaskStatus() throws Exception {
         MockTask task = new MockTask();
+        assertEquals(Task.Status.NEW, task.getStatus());
+
         instance.submit(task);
         Thread.sleep(50);
         assertEquals(Task.Status.RUNNING, task.getStatus());
@@ -85,6 +92,8 @@ public class TaskQueueTest extends BaseTest {
     @Test
     public void testSubmitSetsSuccessfulTaskStatus() throws Exception {
         MockTask task = new MockTask();
+        assertEquals(Task.Status.NEW, task.getStatus());
+
         instance.submit(task);
         Thread.sleep(150);
         assertEquals(Task.Status.SUCCEEDED, task.getStatus());
@@ -93,6 +102,8 @@ public class TaskQueueTest extends BaseTest {
     @Test
     public void testSubmitSetsFailedTaskStatus() throws Exception {
         MockFailingTask task = new MockFailingTask();
+        assertEquals(Task.Status.NEW, task.getStatus());
+
         instance.submit(task);
         Thread.sleep(150);
         assertEquals(Task.Status.FAILED, task.getStatus());

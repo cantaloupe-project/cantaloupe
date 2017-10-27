@@ -14,7 +14,7 @@ import java.util.UUID;
 public interface Task {
 
     enum Status {
-        QUEUED, RUNNING, SUCCEEDED, FAILED
+        NEW, QUEUED, RUNNING, SUCCEEDED, FAILED
     }
 
     @JsonGetter("exception")
