@@ -58,6 +58,8 @@ public class ApplicationInitializer implements ServletContextListener {
                 }
                 exitUnlessTesting(0);
             } else if (System.getProperty(CLEAN_CACHE_VM_ARGUMENT) != null) {
+                System.err.println("DEPRECATION NOTICE: this VM argument will "+
+                        "be removed in version 4.0. Use the HTTP API instead.");
                 if (isAnyCacheAvailable) {
                     System.out.println("Cleaning the source and/or derivative caches...");
                     cacheFacade.cleanUp();
@@ -72,6 +74,8 @@ public class ApplicationInitializer implements ServletContextListener {
                 // -Dcantaloupe.cache.purge (purge everything)
                 // -Dcantaloupe.cache.purge=identifier (purge all content
                 // related to the given identifier)
+                System.err.println("DEPRECATION NOTICE: this VM argument will "+
+                        "be removed in version 4.0. Use the HTTP API instead.");
                 final String purgeArg =
                         System.getProperty(PURGE_CACHE_VM_ARGUMENT);
                 if (purgeArg.length() > 0) {
@@ -98,6 +102,8 @@ public class ApplicationInitializer implements ServletContextListener {
                 }
                 exitUnlessTesting(0);
             } else if (System.getProperty(PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT) != null) {
+                System.err.println("DEPRECATION NOTICE: this VM argument will "+
+                        "be removed in version 4.0. Use the HTTP API instead.");
                 if (isAnyCacheAvailable) {
                     System.out.println("Purging expired items from the " +
                             "source and/or derivative caches...");
