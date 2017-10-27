@@ -3166,9 +3166,9 @@
 
 </div>
 
-<script type="text/javascript" src="static/scripts/jquery.min.js"></script>
-<script type="text/javascript" src="static/scripts/bootstrap.min.js"></script>
-<script type="text/javascript" src="static/scripts/admin.js"></script>
+<script type="text/javascript" src="$adminUri/../static/scripts/jquery.min.js"></script>
+<script type="text/javascript" src="$adminUri/../static/scripts/bootstrap.min.js"></script>
+<script type="text/javascript" src="$adminUri/../static/scripts/admin.js"></script>
 
 </body>
 </html>
