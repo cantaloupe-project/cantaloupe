@@ -15,11 +15,7 @@ title: Overlays
     </ul>
   </li>
   <li><a href="#Positioning">Positioning</a></li>
-  <li><a href="#Implications">Implications</a>
-    <ul>
-      <li><a href="#Zooming%20Image%20Viewers">Zooming Image Viewers</a></li>
-    </ul>
-  </li>
+  <li><a href="#Implications%20for%20Zooming%20Viewers">Implications for Zooming Viewers</a></li>
 </ul>
 
 <p>The overlay feature overlays an image or text string on top of a derivative (output) image. This can be useful for description, branding, attribution, copyright notices, and so on.</p>
@@ -171,10 +167,11 @@ end
 
 <hr>
 
-<h2 id="Implications">Implications</h2>
+<h2 id="Implications for Zooming Viewers">Implications for Zooming Viewers</h2>
 
-<h3 id="Zooming Image Viewers">Zooming Image Viewers</h3>
+<p>Zooming image viewers display a mosaic of cropped image tiles. When overlays are enabled, each tile will have one, which is bound to look strange. A couple of ways to work around this are:</p>
 
-<p>Zooming image viewers display a mosaic of cropped image tiles. When overlays are enabled, each tile will have one, which is bound to look strange.</p>
-
-<p>One way of working around this might be to set the <code>overlays.BasicStrategy.output_width_threshold</code> and <code>overlays.BasicStrategy.output_height_threshold</code> configuration options to values that are slightly larger than the tile size used by the image viewer. This will disable overlays for images the size of image viewer tiles, and enable them for anything larger. Unfortunately, the tile size used by the viewer may differ depending on the source image, as the recommended tile sizes in <a href="endpoints.html">information responses</a> will vary on a per-image basis.</p>
+<ul>
+  <li>Set the <code>overlays.BasicStrategy.output_width_threshold</code> and <code>overlays.BasicStrategy.output_height_threshold</code> configuration options to values that are slightly larger than the tile size used by the image viewer. This will disable overlays for images the size of image viewer tiles, and enable them for anything larger. Bear in mind, though, that the tile size used by the viewer may differ depending on the source image, as the recommended tile sizes in <a href="endpoints.html">information responses</a> will vary on a per-image basis.</li>
+  <li>Have the zooming viewer supply a URI query argument, and check for it in the <code>overlay()</code> delegate method. Of course, a user could figure this out and supply the same argument in other image requests to bypass overlays arbitrarily.</li>
+</ul>
