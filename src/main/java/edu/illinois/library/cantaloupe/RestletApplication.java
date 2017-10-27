@@ -10,7 +10,8 @@ import edu.illinois.library.cantaloupe.resource.LandingResource;
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
 import edu.illinois.library.cantaloupe.resource.admin.ConfigurationResource;
 import edu.illinois.library.cantaloupe.resource.api.CacheResource;
-import edu.illinois.library.cantaloupe.resource.api.DMICResource;
+import edu.illinois.library.cantaloupe.resource.api.TaskResource;
+import edu.illinois.library.cantaloupe.resource.api.TasksResource;
 import org.restlet.Application;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -114,11 +115,11 @@ public class RestletApplication extends Application {
     public static final String ADMIN_CONFIG_PATH = "/admin/configuration";
     public static final String CACHE_PATH = "/cache";
     public static final String CONFIGURATION_PATH = "/configuration";
-    public static final String DELEGATE_METHOD_INVOCATION_CACHE_PATH = "/dmic";
     public static final String IIIF_PATH = "/iiif";
     public static final String IIIF_1_PATH = "/iiif/1";
     public static final String IIIF_2_PATH = "/iiif/2";
     public static final String STATIC_ROOT_PATH = "/static";
+    public static final String TASKS_PATH = "/tasks";
 
     public RestletApplication() {
         super();
@@ -221,7 +222,7 @@ public class RestletApplication extends Application {
         final Router router = new Router(getContext());
         router.setDefaultMatchingMode(Template.MODE_EQUALS);
 
-        /****************** IIIF Image API 1.1 routes *******************/
+        //////////////////// IIIF Image API 1.x routes /////////////////////
 
         // landing page
         router.attach(IIIF_1_PATH,
@@ -242,7 +243,7 @@ public class RestletApplication extends Application {
         router.attach(IIIF_1_PATH + "/{identifier}/info.json",
                 edu.illinois.library.cantaloupe.resource.iiif.v1.InformationResource.class);
 
-        /****************** IIIF Image API 2.0 routes *******************/
+        //////////////////// IIIF Image API 2.x routes /////////////////////
 
         // landing page
         router.attach(IIIF_2_PATH,
@@ -268,7 +269,7 @@ public class RestletApplication extends Application {
                 Redirector.MODE_CLIENT_SEE_OTHER);
         router.attach(IIIF_PATH, redirector);
 
-        /****************** Admin routes ********************/
+        ////////////////////////// Admin routes ///////////////////////////
 
         try {
             ChallengeAuthenticator adminAuth = createAdminAuthenticator();
@@ -282,7 +283,7 @@ public class RestletApplication extends Application {
             getLogger().log(Level.INFO, e.getMessage());
         }
 
-        /****************** API routes ********************/
+        /////////////////////////// API routes ////////////////////////////
 
         try {
             ChallengeAuthenticator apiAuth = createApiAuthenticator();
@@ -294,13 +295,17 @@ public class RestletApplication extends Application {
             router.attach(CACHE_PATH + "/{identifier}", apiAuth);
 
             apiAuth = createApiAuthenticator();
-            apiAuth.setNext(DMICResource.class);
-            router.attach(DELEGATE_METHOD_INVOCATION_CACHE_PATH, apiAuth);
+            apiAuth.setNext(TasksResource.class);
+            router.attach(TASKS_PATH, apiAuth);
+
+            apiAuth = createApiAuthenticator();
+            apiAuth.setNext(TaskResource.class);
+            router.attach(TASKS_PATH + "/{uuid}", apiAuth);
         } catch (ConfigurationException e) {
             getLogger().log(Level.INFO, e.getMessage());
         }
 
-        /****************** Other routes *******************/
+        ////////////////////////// Other routes ///////////////////////////
 
         // landing page
         router.attach("/", LandingResource.class);

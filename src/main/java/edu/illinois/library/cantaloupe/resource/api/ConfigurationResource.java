@@ -14,7 +14,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class ConfigurationResource extends APIResource {
+public class ConfigurationResource extends AbstractAPIResource {
 
     private static org.slf4j.Logger logger = LoggerFactory.
             getLogger(ConfigurationResource.class);

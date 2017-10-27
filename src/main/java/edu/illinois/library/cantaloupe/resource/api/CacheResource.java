@@ -5,7 +5,13 @@ import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 
-public class CacheResource extends APIResource {
+/**
+ * @since 3.3
+ * @deprecated To be replaced by {@link PurgeItemFromCacheTask} in conjunction
+ *             with {@link TasksResource} in version 4.0.
+ */
+@Deprecated
+public class CacheResource extends AbstractAPIResource {
 
     @Delete
     public Representation doPurge() throws Exception {

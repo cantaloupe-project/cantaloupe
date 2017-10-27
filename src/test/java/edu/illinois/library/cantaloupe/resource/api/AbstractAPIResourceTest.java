@@ -1,8 +1,9 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
-import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.resource.ResourceTest;
+import org.junit.Before;
 import org.junit.Test;
 import org.restlet.data.Status;
 import org.restlet.resource.ClientResource;
@@ -10,22 +11,32 @@ import org.restlet.resource.ResourceException;
 
 import static org.junit.Assert.*;
 
-/**
- * Functional test of DMICResource.
- */
-public class DMICResourceTest extends APIResourceTest {
+abstract class AbstractAPIResourceTest extends ResourceTest {
 
-    /* doPurge() */
+    static final String USERNAME = "admin";
+    static final String SECRET = "secret";
+
+    @Before
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.API_ENABLED, true);
+        config.setProperty(Key.API_USERNAME, USERNAME);
+        config.setProperty(Key.API_SECRET, SECRET);
+    }
+
+    abstract String getURIPath();
 
     @Test
-    public void testDoPurgeWithEndpointDisabled() {
+    public void testEndpointDisabled() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.API_ENABLED, false);
         ClientResource client = getClientForUriPath(
-                RestletApplication.DELEGATE_METHOD_INVOCATION_CACHE_PATH,
-                USERNAME, SECRET);
+                getURIPath(), USERNAME, SECRET);
         try {
-            client.delete();
+            client.options();
             fail("Expected exception");
         } catch (ResourceException e) {
             assertEquals(Status.CLIENT_ERROR_FORBIDDEN, client.getStatus());
@@ -33,11 +44,10 @@ public class DMICResourceTest extends APIResourceTest {
     }
 
     @Test
-    public void testDoPurgeWithNoCredentials() throws Exception {
-        ClientResource client = getClientForUriPath(
-                RestletApplication.DELEGATE_METHOD_INVOCATION_CACHE_PATH);
+    public void testNoCredentials() throws Exception {
+        ClientResource client = getClientForUriPath(getURIPath());
         try {
-            client.delete();
+            client.options();
             fail("Expected exception");
         } catch (ResourceException e) {
             assertEquals(Status.CLIENT_ERROR_UNAUTHORIZED, client.getStatus());
@@ -45,25 +55,15 @@ public class DMICResourceTest extends APIResourceTest {
     }
 
     @Test
-    public void testDoPurgeWithInvalidCredentials() throws Exception {
+    public void testInvalidCredentials() throws Exception {
         ClientResource client = getClientForUriPath(
-                RestletApplication.DELEGATE_METHOD_INVOCATION_CACHE_PATH,
-                "invalid", "invalid");
+                getURIPath(), "invalid", "invalid");
         try {
-            client.delete();
+            client.options();
             fail("Expected exception");
         } catch (ResourceException e) {
             assertEquals(Status.CLIENT_ERROR_UNAUTHORIZED, client.getStatus());
         }
-    }
-
-    @Test
-    public void testDoPurgeWithValidCredentials() throws Exception {
-        ClientResource client = getClientForUriPath(
-                RestletApplication.DELEGATE_METHOD_INVOCATION_CACHE_PATH,
-                USERNAME, SECRET);
-        client.delete();
-        assertEquals(Status.SUCCESS_NO_CONTENT, client.getStatus());
     }
 
 }

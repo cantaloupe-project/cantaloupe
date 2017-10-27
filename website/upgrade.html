@@ -37,7 +37,9 @@ title: Upgrading
       <li><code>metadata.*</code> to <code>processor.metadata.*</code></li>
     </ul>
   </li>
-  <li>Add the new context argument to function signature of any existing processor delegates. As seen in delegates.rb.sample.</li>
+  <li>If you are using the delegate script, add a <code>context</code> argument to the method signature of any existing resolver delegates. See <span class="filename">delegates.rb.sample</span> for examples.</li>
+  <li>Note that the <code>DELETE /cache/:identifier</code> HTTP API method is deprecated and will be removed in version 4.0. Begin migrating now to the updated version in the HTTP API.</li>
+  <li>Note that managing the cache on the command line with VM arguments is deprecated and will be removed in version 4.0. Begin migrating now to the cache management methods in the HTTP API.</li>
 </ul>
 
 <h2>From 3.3 to 3.3.3</h2>

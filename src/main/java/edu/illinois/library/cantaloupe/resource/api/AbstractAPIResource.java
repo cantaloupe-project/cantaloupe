@@ -6,7 +6,7 @@ import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import org.restlet.resource.ResourceException;
 
-abstract class APIResource extends AbstractResource {
+abstract class AbstractAPIResource extends AbstractResource {
 
     @Override
     protected void doInit() throws ResourceException {

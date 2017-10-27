@@ -149,26 +149,23 @@ cache.client.no_transform = true
 
 <h3 id="Maintenance">Maintenance</h3>
 
-<p>Because cached content is not automatically deleted after expiring, there is likely to be a certain amount of expired content taking up space in the cache at any given time. Without periodic maintenance, the amount can only grow. If this is a problem, it can be dealt with manually or automatically.</p>
+<p>Because cached content is not automatically deleted after becoming invalid, there will likely be a certain amount of invalid content taking up space in the cache at any given time. Without periodic maintenance, the amount can only grow. If this is a problem, it can be dealt with manually or automatically.</p>
 
-<h4 id="Manual Maintenance">Manual</h4>
+<h4 id="Manual Command Line Maintenance">Manual (Command Line)</h4>
+
+<div class="alert alert-warning">Command-line maintenance is deprecated in verison 3.4 and will be removed in version 4.0. Use the <a href="#Manual%20HTTP%20API%20Maintenance">HTTP API</a> instead.</div>
 
 <p>To purge all expired content, launch with the <code>-Dcantaloupe.cache.purge_expired</code> option.</p>
 
 <p>To purge all content, expired or not, launch with the <code>-Dcantaloupe.cache.purge</code> option.</p>
 
-<p>To purge all content related to a given identifier, expired or not, there are two options:</p>
+<p>To purge all content related to a given identifier, expired or not launch with the <code>-Dcantaloupe.cache.purge=<em>identifier</em></code> option.</p>
 
-<ol>
-  <li>Launch with the <code>-Dcantaloupe.cache.purge=<em>identifier</em></code> option.</li>
-  <li>Use the <a href="remote-management.html#REST%20API">REST API</a>.</li>
-</ol>
+<p>When any of these arguments are present at launch, the application will run in a special mode in which the web server will not be started, and exit when done. Any of these tasks can be run in a separate process, on the live cache store, while the main server instance remains running.</p>
 
-<p>(Both of these were added in 3.3.)</p>
+<h4 id="Manual HTTP API Maintenance">Manual (HTTP API)</h4>
 
-<p>Caches are careful not to leave miscellaneous detritus (like temp files) lying around. In case anything slips through, the above commands will take care of it. To <strong>only</strong> clean the cache while leaving all content alone, expired or not, launch with the <code>-Dcantaloupe.cache.clean</code> option.</p>
-
-<p>When Cantaloupe is launched with any of these arguments, it will run in a special mode in which the web server will not be started, and exit when done. Thus, any of these tasks can be run in a separate process, on the live cache store, while the main server instance remains running.</p>
+<p>See the <a href="remote-management.html#HTTP%20API">HTTP API</a> documentation for more information.</p>
 
 <h4 id="Automatic Maintenance">Automatic</h4>
 
@@ -178,7 +175,7 @@ cache.client.no_transform = true
 
 <h3 id="Limiting">Limiting</h3>
 
-<p>Most caches (with the exception of <a href="#HeapCache">HeapCache</a>) age-limit their content based on last-accessed or last-modified time. Depending on the amount of source content served, the varieties of derivatives generated, the time-to-live setting, and how often <a href="#Maintenance">maintenance</a> is performed, the cache may grow very large. The image server does not track its size, as this would be either expensive, or, for some cache implementations, impossible. Managing the cache size is therefore the responsibility of the administrator, and it can be accomplished by any combination of:</p>
+<p>Most caches (with the exception of <a href="#HeapCache">HeapCache</a>) age-limit their content based on last-accessed or last-modified time. Depending on the amount of source content served, the varieties of derivatives generated, the time-to-live setting, and how often <a href="#Maintenance">maintenance</a> is performed, the cache may grow very large. Its size is not tracked, as this would be either expensive, or, for some cache implementations, impossible. Managing the cache size is therefore the responsibility of the administrator, and it can be accomplished by any combination of:</p>
 
 <ol>
   <li>Performing maintenance more often;</li>
@@ -253,7 +250,7 @@ cache.client.no_transform = true
 
 <p>Unlike most of the other caches, this one size-limits content rather than time-limiting it. When the target size (<code>HeapCache.target_size</code>) has been exceeded, the minimum number of least-recently-accessed items are purged that will reduce it back down to this size. (The configured target size may be safely changed while the application is running.)</p>
 
-<p>Because this cache is not time-limited, <code>cache.server.ttl_seconds</code> does not apply, and, if enabled, the <a href="#Automatic%20Maintenance">cache worker</a> thread will have nothing to do, so will remain idle.</p>
+<p>Because this cache is not time-limited, <code>cache.server.ttl_seconds</code> does not apply, and, if enabled, the <a href="#Automatic%20Maintenance">cache worker</a> will have nothing to do, so will remain idle.</p>
 
 <p>When using this cache, ensure that your JVM heap is able to grow large enough to accommodate the desired target size (using the <code>-Xmx</code> VM option), and that you have enough RAM to accommodate this heap size.</p>
 
@@ -378,4 +375,4 @@ CREATE INDEX identifier_idx ON {JdbcCache.info_table} (identifier);
   <li><code>RedisCache.database</code></li>
 </ul>
 
-<p>Note that unlike the other caches, cache policy is configured on the Redis side, and <code>cache.server.ttl_seconds</code> will have no effect with this cache. Likewise, if enabled, the <a href="#Automatic%20Maintenance">cache worker</a> thread will run as usual, but will have nothing to do.</p>
+<p>Note that unlike the other caches, cache policy is configured on the Redis side, and <code>cache.server.ttl_seconds</code> will have no effect with this cache. Likewise, if enabled, the <a href="#Automatic%20Maintenance">cache worker</a> will have nothing to do so will remain idle.</p>
