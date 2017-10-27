@@ -43,23 +43,23 @@ public class ConfigurationResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testDoGetAsJson() throws Exception {
+    public void testGetConfigurationAsJson() throws Exception {
         Configuration.getInstance().setProperty("test", "cats");
 
-        Representation rep = instance.doGet();
+        Representation rep = instance.getConfiguration();
 
         assertTrue(rep.getText().contains("\"test\":\"cats\""));
     }
 
     @Test
-    public void testDoPut() throws Exception {
+    public void testPutConfiguration() throws Exception {
         Map<String,Object> entityMap = new HashMap<>();
         entityMap.put("test", "cats");
         String entityStr = new ObjectMapper().writer().writeValueAsString(entityMap);
         Representation rep = new StringRepresentation(
                 entityStr, MediaType.APPLICATION_JSON);
 
-        instance.doPut(rep);
+        instance.putConfiguration(rep);
 
 
         assertEquals("cats", Configuration.getInstance().getString("test"));
