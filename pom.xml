@@ -485,12 +485,15 @@
               <goal>unpack-dependencies</goal>
             </goals>
             <configuration>
-              <excludes>**/META-INF/*.MF,**/META-INF/*.txt</excludes>
+              <excludes>**/META-INF/*.DSA, **/META-INF/*.MF,
+                  **/META-INF/*.RSA, **/META-INF/*.SF,
+                  **/META-INF/*.txt</excludes>
               <includeGroupIds>
-                <!-- direct dependencies -->
-                commons-configuration, org.eclipse.jetty,javax.servlet
-                <!-- dependencies of dependencies-->
-                commons-lang, commons-logging
+                commons-configuration,
+                    commons-lang,
+                    commons-logging,
+                javax.servlet,
+                org.eclipse.jetty
               </includeGroupIds>
               <outputDirectory>
                 ${project.build.directory}/${project.artifactId}-${project.version}
