@@ -32,7 +32,7 @@ import java.util.Iterator;
  */
 class JPEGImageWriter extends AbstractImageWriter {
 
-    private static final Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(JPEGImageWriter.class);
 
     JPEGImageWriter(OperationList opList,
@@ -90,7 +90,10 @@ class JPEGImageWriter extends AbstractImageWriter {
         final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
                 Format.JPG.getPreferredMediaType().toString());
         if (writers.hasNext()) {
-            return writers.next();
+            ImageWriter writer = writers.next();
+            if (writer instanceof com.sun.imageio.plugins.jpeg.JPEGImageWriter) {
+                return writer;
+            }
         }
         return null;
     }
@@ -111,7 +114,7 @@ class JPEGImageWriter extends AbstractImageWriter {
             writeParam.setProgressiveMode(interlace ?
                     ImageWriteParam.MODE_DEFAULT : ImageWriteParam.MODE_DISABLED);
 
-            logger.debug("Quality: {}; progressive: {}", quality, interlace);
+            LOGGER.debug("Quality: {}; progressive: {}", quality, interlace);
         }
         return writeParam;
     }
@@ -122,7 +125,7 @@ class JPEGImageWriter extends AbstractImageWriter {
      * account, if available.
      *
      * @param image Image to remove alpha from.
-     * @return Flattened image.
+     * @return      Flattened image.
      */
     private BufferedImage removeAlpha(BufferedImage image) {
         boolean haveBGColor = false;
@@ -194,7 +197,7 @@ class JPEGImageWriter extends AbstractImageWriter {
      * @param image        Image to write
      * @param outputStream Stream to write the image to
      */
-    @SuppressWarnings({"deprecation"})
+    @SuppressWarnings("deprecation")
     private void write(PlanarImage image,
                        OutputStream outputStream) throws IOException {
         final ImageWriter writer = getImageIOWriter();
