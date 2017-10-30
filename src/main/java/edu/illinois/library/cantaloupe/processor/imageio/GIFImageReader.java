@@ -12,7 +12,6 @@ class GIFImageReader extends AbstractImageReader {
 
     /**
      * @param sourceFile Source file to read.
-     * @throws IOException
      */
     GIFImageReader(File sourceFile) throws IOException {
         super(sourceFile, Format.GIF);
@@ -20,7 +19,6 @@ class GIFImageReader extends AbstractImageReader {
 
     /**
      * @param streamSource Source of streams to read.
-     * @throws IOException
      */
     GIFImageReader(StreamSource streamSource) throws IOException {
         super(streamSource, Format.GIF);
@@ -31,6 +29,7 @@ class GIFImageReader extends AbstractImageReader {
         return Compression.LZW;
     }
 
+    @Override
     Metadata getMetadata(int imageIndex) throws IOException {
         if (iioReader == null) {
             createReader();
@@ -38,6 +37,11 @@ class GIFImageReader extends AbstractImageReader {
         final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
         final String metadataFormat = metadata.getNativeMetadataFormatName();
         return new GIFMetadata(metadata, metadataFormat);
+    }
+
+    @Override
+    Class<? extends javax.imageio.ImageReader> preferredIIOImplementation() {
+        return null;
     }
 
 }

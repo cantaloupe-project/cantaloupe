@@ -12,7 +12,6 @@ class PNGImageReader extends AbstractImageReader {
 
     /**
      * @param sourceFile Source file to read.
-     * @throws IOException
      */
     PNGImageReader(File sourceFile) throws IOException {
         super(sourceFile, Format.PNG);
@@ -20,7 +19,6 @@ class PNGImageReader extends AbstractImageReader {
 
     /**
      * @param streamSource Source of streams to read.
-     * @throws IOException
      */
     PNGImageReader(StreamSource streamSource) throws IOException {
         super(streamSource, Format.PNG);
@@ -31,6 +29,7 @@ class PNGImageReader extends AbstractImageReader {
         return Compression.DEFLATE;
     }
 
+    @Override
     Metadata getMetadata(int imageIndex) throws IOException {
         if (iioReader == null) {
             createReader();
@@ -38,6 +37,11 @@ class PNGImageReader extends AbstractImageReader {
         final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
         final String metadataFormat = metadata.getNativeMetadataFormatName();
         return new PNGMetadata(metadata, metadataFormat);
+    }
+
+    @Override
+    Class<? extends javax.imageio.ImageReader> preferredIIOImplementation() {
+        return null;
     }
 
 }

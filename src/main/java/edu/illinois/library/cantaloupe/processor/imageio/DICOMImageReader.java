@@ -12,7 +12,6 @@ class DICOMImageReader extends AbstractImageReader {
 
     /**
      * @param sourceFile Source file to read.
-     * @throws IOException
      */
     DICOMImageReader(File sourceFile) throws IOException {
         super(sourceFile, Format.DCM);
@@ -20,7 +19,6 @@ class DICOMImageReader extends AbstractImageReader {
 
     /**
      * @param streamSource Source of streams to read.
-     * @throws IOException
      */
     DICOMImageReader(StreamSource streamSource) throws IOException {
         super(streamSource, Format.DCM);
@@ -31,6 +29,7 @@ class DICOMImageReader extends AbstractImageReader {
         return Compression.UNCOMPRESSED; // TODO: fix
     }
 
+    @Override
     Metadata getMetadata(int imageIndex) throws IOException {
         if (iioReader == null) {
             createReader();
@@ -38,6 +37,11 @@ class DICOMImageReader extends AbstractImageReader {
         final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
         final String metadataFormat = metadata.getNativeMetadataFormatName();
         return new NullMetadata(metadata, metadataFormat);
+    }
+
+    @Override
+    Class<? extends javax.imageio.ImageReader> preferredIIOImplementation() {
+        return null;
     }
 
 }

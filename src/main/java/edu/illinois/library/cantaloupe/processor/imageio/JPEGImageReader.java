@@ -12,7 +12,6 @@ class JPEGImageReader extends AbstractImageReader {
 
     /**
      * @param sourceFile Source file to read.
-     * @throws IOException
      */
     JPEGImageReader(File sourceFile) throws IOException {
         super(sourceFile, Format.JPG);
@@ -20,7 +19,6 @@ class JPEGImageReader extends AbstractImageReader {
 
     /**
      * @param streamSource Source of streams to read.
-     * @throws IOException
      */
     JPEGImageReader(StreamSource streamSource) throws IOException {
         super(streamSource, Format.JPG);
@@ -31,6 +29,7 @@ class JPEGImageReader extends AbstractImageReader {
         return Compression.JPEG;
     }
 
+    @Override
     Metadata getMetadata(int imageIndex) throws IOException {
         if (iioReader == null) {
             createReader();
@@ -38,6 +37,11 @@ class JPEGImageReader extends AbstractImageReader {
         final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
         final String metadataFormat = metadata.getNativeMetadataFormatName();
         return new JPEGMetadata(metadata, metadataFormat);
+    }
+
+    @Override
+    Class<? extends javax.imageio.ImageReader> preferredIIOImplementation() {
+        return null;
     }
 
 }

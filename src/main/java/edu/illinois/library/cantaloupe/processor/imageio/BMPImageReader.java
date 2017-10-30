@@ -12,7 +12,6 @@ class BMPImageReader extends AbstractImageReader {
 
     /**
      * @param sourceFile Source file to read.
-     * @throws IOException
      */
     BMPImageReader(File sourceFile) throws IOException {
         super(sourceFile, Format.BMP);
@@ -20,7 +19,6 @@ class BMPImageReader extends AbstractImageReader {
 
     /**
      * @param streamSource Source of streams to read.
-     * @throws IOException
      */
     BMPImageReader(StreamSource streamSource) throws IOException {
         super(streamSource, Format.BMP);
@@ -39,6 +37,11 @@ class BMPImageReader extends AbstractImageReader {
         final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
         final String metadataFormat = metadata.getNativeMetadataFormatName();
         return new NullMetadata(metadata, metadataFormat);
+    }
+
+    @Override
+    Class<? extends javax.imageio.ImageReader> preferredIIOImplementation() {
+        return null;
     }
 
 }

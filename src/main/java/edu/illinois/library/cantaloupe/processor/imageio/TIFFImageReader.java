@@ -11,28 +11,20 @@ import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
 
-import javax.imageio.ImageIO;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Set;
 
 class TIFFImageReader extends AbstractImageReader {
 
-    private static Logger logger = LoggerFactory.
-            getLogger(TIFFImageReader.class);
-
     /**
      * @param sourceFile Source file to read.
-     * @throws IOException
      */
     TIFFImageReader(File sourceFile) throws IOException {
         super(sourceFile, Format.TIF);
@@ -40,35 +32,9 @@ class TIFFImageReader extends AbstractImageReader {
 
     /**
      * @param streamSource Source of streams to read.
-     * @throws IOException
      */
     TIFFImageReader(StreamSource streamSource) throws IOException {
         super(streamSource, Format.TIF);
-    }
-
-    @Override
-    protected void createReader() throws IOException {
-        if (inputStream == null) {
-            throw new IOException("No source set.");
-        }
-
-        Iterator<javax.imageio.ImageReader> it = ImageIO.getImageReadersByMIMEType(
-                Format.TIF.getPreferredMediaType().toString());
-        while (it.hasNext()) {
-            iioReader = it.next();
-            // This version contains improvements over the Sun version,
-            // namely support for BigTIFF.
-            if (iioReader instanceof it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader) {
-                break;
-            }
-        }
-        if (iioReader != null) {
-            iioReader.setInput(inputStream);
-            logger.debug("createReader(): using {}", iioReader.getClass().getName());
-        } else {
-            throw new IOException("Unable to determine the format of the " +
-                    "source image.");
-        }
     }
 
     @Override
@@ -109,6 +75,11 @@ class TIFFImageReader extends AbstractImageReader {
         final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
         final String metadataFormat = metadata.getNativeMetadataFormatName();
         return new TIFFMetadata(metadata, metadataFormat);
+    }
+
+    @Override
+    Class<? extends javax.imageio.ImageReader> preferredIIOImplementation() {
+        return it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.class;
     }
 
     ////////////////////////////////////////////////////////////////////////

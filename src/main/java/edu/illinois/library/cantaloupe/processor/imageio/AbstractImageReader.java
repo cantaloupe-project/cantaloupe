@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Orientation;
@@ -60,7 +59,6 @@ abstract class AbstractImageReader {
      * Initializes an instance.
      *
      * @param inputFile Image file to read.
-     * @throws IOException
      */
     AbstractImageReader(File inputFile, Format format)
             throws IOException {
@@ -72,7 +70,6 @@ abstract class AbstractImageReader {
      * Initializes an instance.
      *
      * @param streamSource Source of streams to read.
-     * @throws IOException
      */
     AbstractImageReader(StreamSource streamSource,
                         Format format) throws IOException {
@@ -92,7 +89,11 @@ abstract class AbstractImageReader {
         return (!preserveMetadata && !respectOrientation);
     }
 
-    protected void createReader() throws IOException {
+    void createReader() throws IOException {
+        if (inputStream == null) {
+            throw new IOException("No source set.");
+        }
+
         Iterator<javax.imageio.ImageReader> it;
         if (format != null) {
             it = ImageIO.getImageReadersByMIMEType(
@@ -100,7 +101,19 @@ abstract class AbstractImageReader {
         } else {
             it = ImageIO.getImageReaders(inputStream);
         }
-        if (it.hasNext()) {
+        while (it.hasNext()) {
+            iioReader = it.next();
+            Class<?> preferredImpl = preferredIIOImplementation();
+            if (preferredImpl != null) {
+                if (preferredImpl.isInstance(iioReader)) {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+
+        if (iioReader != null) {
             /*
             http://docs.oracle.com/javase/8/docs/api/javax/imageio/ImageReader.html#setInput(java.lang.Object,%20boolean,%20boolean)
             The ignoreMetadata parameter, if set to true, allows the reader
@@ -115,7 +128,6 @@ abstract class AbstractImageReader {
             logger.debug("createReader(): ignoring metadata? {}",
                     ignoreMetadata);
 
-            iioReader = it.next();
             iioReader.setInput(inputStream, false, ignoreMetadata);
             logger.debug("createReader(): using {}",
                     iioReader.getClass().getName());
@@ -203,6 +215,13 @@ abstract class AbstractImageReader {
         final int height = iioReader.getTileHeight(imageIndex);
         return new Dimension(width, height);
     }
+
+    /**
+     * @return Preferred reader implementation class, or <code>null</code> if
+     *         there is no preference.
+     */
+    abstract Class<? extends javax.imageio.ImageReader>
+    preferredIIOImplementation();
 
     private void reset() throws IOException {
         if (source instanceof File) {
