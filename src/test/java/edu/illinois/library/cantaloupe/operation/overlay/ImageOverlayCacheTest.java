@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
+import edu.illinois.library.cantaloupe.test.ConcurrentReaderWriter;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import org.junit.AfterClass;
@@ -10,6 +11,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.concurrent.Callable;
 
 import static org.junit.Assert.*;
 
@@ -70,6 +72,17 @@ public class ImageOverlayCacheTest extends BaseTest {
         } catch (IOException e) {
             // pass
         }
+    }
+
+    @Test
+    public void testPutAndGetConcurrently() throws Exception {
+        Callable<Void> callable = () -> {
+            URI uri = new URI(webServer.getHTTPURI() + "/jpg");
+            byte[] bytes = instance.putAndGet(uri);
+            assertEquals(5439, bytes.length);
+            return null;
+        };
+        new ConcurrentReaderWriter(callable, callable, 5000).run();
     }
 
 }
