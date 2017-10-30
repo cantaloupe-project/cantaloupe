@@ -55,12 +55,11 @@ final class ImageOverlayCache {
 
         // It's not being downloaded and isn't cached, so download and cache it.
         downloadingOverlays.add(uri);
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        try (InputStream is = uri.toURL().openStream()) {
+        try (InputStream is = uri.toURL().openStream();
+             ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             IOUtils.copy(is, os);
             overlays.put(uri, os.toByteArray());
         } finally {
-            IOUtils.closeQuietly(os);
             downloadingOverlays.remove(uri);
             synchronized (this) {
                 notifyAll();
