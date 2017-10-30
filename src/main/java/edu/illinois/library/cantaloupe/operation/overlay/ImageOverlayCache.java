@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 /**
  * Thread-safe, in-memory image overlay cache.
  */
-class ImageOverlayCache {
+final class ImageOverlayCache {
 
     private static final Logger LOGGER = LoggerFactory.
             getLogger(ImageOverlayCache.class);
