@@ -26,6 +26,12 @@ public class ConcurrentReaderWriter {
         this.reader = reader;
     }
 
+    public ConcurrentReaderWriter(Callable<Void> writer, Callable<Void> reader,
+                                  int numThreads) {
+        this(writer, reader);
+        this.numThreads = numThreads;
+    }
+
     public void run() throws Exception {
         for (int i = 0; i < numThreads / 2f; i++) {
             new Thread(() -> { // writer thread
