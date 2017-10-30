@@ -56,7 +56,8 @@ public class VelocityRepresentation extends OutputRepresentation {
 
         Template template = Velocity.getTemplate(templateName);
 
-        try (OutputStreamWriter writer = new OutputStreamWriter(outputStream)) {
+        try (OutputStreamWriter writer =
+                     new OutputStreamWriter(outputStream, "UTF-8")) {
             template.merge(context, writer);
         }
     }

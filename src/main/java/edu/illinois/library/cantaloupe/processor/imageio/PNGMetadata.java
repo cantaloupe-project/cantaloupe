@@ -1,10 +1,13 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.operation.Orientation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
 
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +18,9 @@ import java.util.Map;
  *      PNG Tags</a>
  */
 class PNGMetadata extends AbstractMetadata implements Metadata {
+
+    private static final Logger LOGGER = LoggerFactory.
+            getLogger(PNGMetadata.class);
 
     private static final Map<String,String> recognizedTags = new HashMap<>();
 
@@ -142,11 +148,15 @@ class PNGMetadata extends AbstractMetadata implements Metadata {
     public String getXMPRDF() {
         final byte[] xmpData = getXMP();
         if (xmpData != null) {
-            final String xmp = new String(xmpData);
-            // Trim off the junk
-            final int start = xmp.indexOf("<rdf:RDF");
-            final int end = xmp.indexOf("</rdf:RDF");
-            return xmp.substring(start, end + 10);
+            try {
+                final String xmp = new String(xmpData, "UTF-8");
+                // Trim off the junk
+                final int start = xmp.indexOf("<rdf:RDF");
+                final int end = xmp.indexOf("</rdf:RDF");
+                return xmp.substring(start, end + 10);
+            } catch (UnsupportedEncodingException e) {
+                LOGGER.error("getXMPRDF(): {}", e.getMessage());
+            }
         }
         return null;
     }

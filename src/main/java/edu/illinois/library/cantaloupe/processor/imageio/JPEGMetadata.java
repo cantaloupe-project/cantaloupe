@@ -1,16 +1,22 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.operation.Orientation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
 
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
+import java.io.UnsupportedEncodingException;
 
 /**
  * @see <a href="http://docs.oracle.com/javase/7/docs/api/javax/imageio/metadata/doc-files/jpeg_metadata.html">
  *      JPEG Metadata Format Specification and Usage Notes</a>
  */
 class JPEGMetadata extends AbstractMetadata implements Metadata {
+
+    private static final Logger LOGGER = LoggerFactory.
+            getLogger(JPEGMetadata.class);
 
     private boolean checkedForExif = false;
     private boolean checkedForIptc = false;
@@ -153,11 +159,15 @@ class JPEGMetadata extends AbstractMetadata implements Metadata {
     public String getXMPRDF() {
         final byte[] xmpData = getXMP();
         if (xmpData != null) {
-            final String xmp = new String(xmpData);
-            // Trim off the junk
-            final int start = xmp.indexOf("<rdf:RDF");
-            final int end = xmp.indexOf("</rdf:RDF");
-            return xmp.substring(start, end + 10);
+            try {
+                final String xmp = new String(xmpData, "UTF-8");
+                // Trim off the junk
+                final int start = xmp.indexOf("<rdf:RDF");
+                final int end = xmp.indexOf("</rdf:RDF");
+                return xmp.substring(start, end + 10);
+            } catch (UnsupportedEncodingException e) {
+                LOGGER.error("getXMPRDF(): {}", e.getMessage());
+            }
         }
         return null;
     }

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.imageio.metadata.IIOInvalidTreeException;
 import javax.imageio.metadata.IIOMetadata;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -22,7 +23,8 @@ import java.util.Set;
  */
 class TIFFMetadata extends AbstractMetadata implements Metadata {
 
-    private static Logger logger = LoggerFactory.getLogger(TIFFMetadata.class);
+    private static final Logger LOGGER = LoggerFactory.
+            getLogger(TIFFMetadata.class);
 
     /**
      * Native TIFF tags to preserve from the baseline IFD by
@@ -65,7 +67,7 @@ class TIFFMetadata extends AbstractMetadata implements Metadata {
         try {
             ifd = TIFFDirectory.createFromMetadata(getIIOMetadata());
         } catch (IIOInvalidTreeException e) {
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         }
     }
 
@@ -145,11 +147,15 @@ class TIFFMetadata extends AbstractMetadata implements Metadata {
     public String getXMPRDF() {
         final byte[] xmpData = getXMP();
         if (xmpData != null) {
-            final String xmp = new String(xmpData);
-            // Trim off the junk
-            final int start = xmp.indexOf("<rdf:RDF");
-            final int end = xmp.indexOf("</rdf:RDF");
-            return xmp.substring(start, end + 10);
+            try {
+                final String xmp = new String(xmpData, "UTF-8");
+                // Trim off the junk
+                final int start = xmp.indexOf("<rdf:RDF");
+                final int end = xmp.indexOf("</rdf:RDF");
+                return xmp.substring(start, end + 10);
+            } catch (UnsupportedEncodingException e) {
+                LOGGER.error("getXMPRDF(): {}", e.getMessage());
+            }
         }
         return null;
     }

@@ -101,7 +101,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
                 Process process = pb.start();
                 InputStream processInputStream = process.getInputStream();
                 try (BufferedReader reader =
-                             new BufferedReader(new InputStreamReader(processInputStream))) {
+                             new BufferedReader(new InputStreamReader(processInputStream, "UTF-8"))) {
                     int width = Integer.parseInt(reader.readLine());
                     int height = Integer.parseInt(reader.readLine());
                     try {

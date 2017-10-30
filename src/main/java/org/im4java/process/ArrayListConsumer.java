@@ -52,7 +52,7 @@ public abstract class ArrayListConsumer {
      @since 1.4.0
   */
 
-  private ArrayList<String> iOutputLines = new ArrayList<String>();
+  private ArrayList<String> iOutputLines = new ArrayList<>();
 
   //////////////////////////////////////////////////////////////////////////////
 
@@ -126,7 +126,7 @@ public abstract class ArrayListConsumer {
   protected void consume(InputStream pInputStream) throws IOException {
     InputStreamReader isr = null;
     if (iCharset == null) {
-      isr = new InputStreamReader(pInputStream);
+      isr = new InputStreamReader(pInputStream, "UTF-8");
     } else {
       isr = new InputStreamReader(pInputStream,iCharset);
     }

@@ -1,14 +1,20 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.operation.Orientation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.metadata.IIOMetadata;
+import java.io.UnsupportedEncodingException;
 
 /**
  * @see <a href="https://docs.oracle.com/javase/7/docs/api/javax/imageio/metadata/doc-files/gif_metadata.html">
  *      GIF Metadata Format Specification</a>
  */
 class GIFMetadata extends AbstractMetadata implements Metadata {
+
+    private static final Logger LOGGER = LoggerFactory.
+            getLogger(GIFMetadata.class);
 
     private boolean checkedForXmp = false;
 
@@ -112,11 +118,15 @@ class GIFMetadata extends AbstractMetadata implements Metadata {
     public String getXMPRDF() {
         final byte[] xmpData = getXMP();
         if (xmpData != null) {
-            final String xmp = new String(xmpData);
-            // Trim off the junk
-            final int start = xmp.indexOf("<rdf:RDF");
-            final int end = xmp.indexOf("</rdf:RDF");
-            return xmp.substring(start, end + 10);
+            try {
+                final String xmp = new String(xmpData, "UTF-8");
+                // Trim off the junk
+                final int start = xmp.indexOf("<rdf:RDF");
+                final int end = xmp.indexOf("</rdf:RDF");
+                return xmp.substring(start, end + 10);
+            } catch (UnsupportedEncodingException e) {
+                LOGGER.error("getXMPRDF(): {}", e.getMessage());
+            }
         }
         return null;
     }

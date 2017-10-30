@@ -2,6 +2,8 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
 
 import javax.imageio.IIOImage;
@@ -15,6 +17,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 import java.util.List;
 
@@ -27,6 +30,9 @@ import java.util.List;
  *     PNG Specification, Version 1.2</a>
  */
 class PNGImageWriter extends AbstractImageWriter {
+
+    private static final Logger LOGGER = LoggerFactory.
+            getLogger(PNGImageWriter.class);
 
     PNGImageWriter(OperationList opList,
                    Metadata sourceMetadata) {
@@ -63,24 +69,28 @@ class PNGImageWriter extends AbstractImageWriter {
             // Add XMP metadata.
             final byte[] xmp = sourceMetadata.getXMP();
             if (xmp != null) {
-                // Get the /iTXt node, creating it if it does not already exist.
-                final NodeList itxtNodes = baseTree.getElementsByTagName("iTXt");
-                IIOMetadataNode itxtNode;
-                if (itxtNodes.getLength() > 0) {
-                    itxtNode = (IIOMetadataNode) itxtNodes.item(0);
-                } else {
-                    itxtNode = new IIOMetadataNode("iTXt");
-                    baseTree.appendChild(itxtNode);
+                try {
+                    // Get the /iTXt node, creating it if it does not already exist.
+                    final NodeList itxtNodes = baseTree.getElementsByTagName("iTXt");
+                    IIOMetadataNode itxtNode;
+                    if (itxtNodes.getLength() > 0) {
+                        itxtNode = (IIOMetadataNode) itxtNodes.item(0);
+                    } else {
+                        itxtNode = new IIOMetadataNode("iTXt");
+                        baseTree.appendChild(itxtNode);
+                    }
+                    // Append the XMP.
+                    final IIOMetadataNode xmpNode = new IIOMetadataNode("iTXtEntry");
+                    xmpNode.setAttribute("keyword", "XML:com.adobe.xmp");
+                    xmpNode.setAttribute("compressionFlag", "FALSE");
+                    xmpNode.setAttribute("compressionMethod", "0");
+                    xmpNode.setAttribute("languageTag", "");
+                    xmpNode.setAttribute("translatedKeyword", "");
+                    xmpNode.setAttribute("text", new String(xmp, "UTF-8"));
+                    itxtNode.appendChild(xmpNode);
+                } catch (UnsupportedEncodingException e) {
+                    LOGGER.error("addMetadata(): {}", e.getMessage());
                 }
-                // Append the XMP.
-                final IIOMetadataNode xmpNode = new IIOMetadataNode("iTXtEntry");
-                xmpNode.setAttribute("keyword", "XML:com.adobe.xmp");
-                xmpNode.setAttribute("compressionFlag", "FALSE");
-                xmpNode.setAttribute("compressionMethod", "0");
-                xmpNode.setAttribute("languageTag", "");
-                xmpNode.setAttribute("translatedKeyword", "");
-                xmpNode.setAttribute("text", new String(xmp));
-                itxtNode.appendChild(xmpNode);
             }
         }
     }
