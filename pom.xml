@@ -547,7 +547,8 @@
             </goals>
             <configuration>
               <tasks>
-                <concat destfile="${project.build.directory}/${project.artifactId}-${project.version}/META-INF/services/combined">
+                <concat destfile="${project.build.directory}/${project.artifactId}-${project.version}/META-INF/services/combined"
+                        fixlastline="yes">
                   <fileset dir="${project.build.directory}/${project.artifactId}-${project.version}/META-INF/services"/>
                 </concat>
                 <delete>
