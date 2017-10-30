@@ -28,148 +28,182 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
+/**
+ * N.B.: {@link com.sun.imageio.plugins.jpeg.JPEGImageReader} strictly
+ * interprets the JFIF spec, which requires that the JFIF application marker
+ * be placed immediately after SOI in the header. But EXIF requires that its
+ * own marker be immediately after SOI, so there is no way to produce a strict
+ * JFIF file with embedded EXIF info, thus all EXIF JPEGs are noncompliant and
+ * JPEGImageReader won't read them.
+ */
 public class JPEGImageWriterTest extends BaseTest {
 
     @Test
     public void testWriteWithBufferedImage() throws Exception {
         final File fixture = TestUtil.getImage("jpg-xmp.jpg");
         final JPEGImageReader reader = new JPEGImageReader(fixture);
-        final Metadata metadata = reader.getMetadata(0);
-        final BufferedImage image = reader.read();
+        try {
+            final Metadata metadata = reader.getMetadata(0);
+            final BufferedImage image = reader.read();
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter(metadata).write(image, os);
-        ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            getWriter(metadata).write(image, os);
+            os.close();
+            ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
+        } finally {
+            reader.dispose();
+        }
     }
 
     @Test
-    @Ignore
-    // TODO: JPEGImageWriter is writing JPEGs that JPEGImageReader thinks are
-    // invalid, even though other readers have no problems. Maybe they are
-    // invalid and other readers are more lenient.
+    @Ignore // see N.B. in class doc
     public void testWriteWithBufferedImageAndExifMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
+
         final File fixture = TestUtil.getImage("jpg-exif.jpg");
         final JPEGImageReader reader = new JPEGImageReader(fixture);
-        final Metadata metadata = reader.getMetadata(0);
-        final BufferedImage image = reader.read();
+        try {
+            final Metadata metadata = reader.getMetadata(0);
+            final BufferedImage image = reader.read();
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter(metadata).write(image, os);
-        checkForExifMetadata(os.toByteArray());
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            getWriter(metadata).write(image, os);
+            os.close();
+            checkForExifMetadata(os.toByteArray());
+        } finally {
+            reader.dispose();
+        }
     }
 
     @Test
-    @Ignore
-    // TODO: JPEGImageWriter is writing JPEGs that JPEGImageReader thinks are
-    // invalid, even though other readers have no problems. Maybe they are
-    // invalid and other readers are more lenient.
+    @Ignore // see N.B. in class doc
     public void testWriteWithBufferedImageAndIptcMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
+
         final File fixture = TestUtil.getImage("jpg-iptc.jpg");
         final JPEGImageReader reader = new JPEGImageReader(fixture);
-        final Metadata metadata = reader.getMetadata(0);
-        final BufferedImage image = reader.read();
+        try {
+            final Metadata metadata = reader.getMetadata(0);
+            final BufferedImage image = reader.read();
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter(metadata).write(image, os);
-        checkForIptcMetadata(os.toByteArray());
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            getWriter(metadata).write(image, os);
+            os.close();
+            checkForIptcMetadata(os.toByteArray());
+        } finally {
+            reader.dispose();
+        }
     }
 
     @Test
-    @Ignore
-    // TODO: JPEGImageWriter is writing JPEGs that JPEGImageReader thinks are
-    // invalid, even though other readers have no problems. Maybe they are
-    // invalid and other readers are more lenient.
+    @Ignore // see N.B. in class doc
     public void testWriteWithBufferedImageAndXmpMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
+
         final File fixture = TestUtil.getImage("jpg-xmp.jpg");
         final JPEGImageReader reader = new JPEGImageReader(fixture);
-        final Metadata metadata = reader.getMetadata(0);
-        final BufferedImage image = reader.read();
+        try {
+            final Metadata metadata = reader.getMetadata(0);
+            final BufferedImage image = reader.read();
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter(metadata).write(image, os);
-        checkForXmpMetadata(os.toByteArray());
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            getWriter(metadata).write(image, os);
+            os.close();
+            checkForXmpMetadata(os.toByteArray());
+        } finally {
+            reader.dispose();
+        }
     }
 
     @Test
     public void testWriteWithPlanarImage() throws Exception {
         final File fixture = TestUtil.getImage("jpg-xmp.jpg");
         final JPEGImageReader reader = new JPEGImageReader(fixture);
-        final Metadata metadata = reader.getMetadata(0);
-        final PlanarImage image =  PlanarImage.wrapRenderedImage(
-                reader.readRendered());
+        try {
+            final Metadata metadata = reader.getMetadata(0);
+            final PlanarImage image = PlanarImage.wrapRenderedImage(
+                    reader.readRendered());
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter(metadata).write(image, os);
-        ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            getWriter(metadata).write(image, os);
+            os.close();
+            ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
+        } finally {
+            reader.dispose();
+        }
     }
 
     @Test
-    @Ignore
-    // TODO: JPEGImageWriter is writing JPEGs that JPEGImageReader thinks are
-    // invalid, even though other readers have no problems. Maybe they are
-    // invalid and other readers are more lenient.
+    @Ignore // see N.B. in class doc
     public void testWriteWithPlanarImageAndExifMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
+
         final File fixture = TestUtil.getImage("jpg-exif.jpg");
         final JPEGImageReader reader = new JPEGImageReader(fixture);
-        final Metadata metadata = reader.getMetadata(0);
-        final PlanarImage image =  PlanarImage.wrapRenderedImage(
-                reader.readRendered());
+        try {
+            final Metadata metadata = reader.getMetadata(0);
+            final PlanarImage image = PlanarImage.wrapRenderedImage(
+                    reader.readRendered());
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter(metadata).write(image, os);
-        checkForExifMetadata(os.toByteArray());
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            getWriter(metadata).write(image, os);
+            os.close();
+            checkForExifMetadata(os.toByteArray());
+        } finally {
+            reader.dispose();
+        }
     }
 
     @Test
-    @Ignore
-    // TODO: JPEGImageWriter is writing JPEGs that JPEGImageReader thinks are
-    // invalid, even though other readers have no problems. Maybe they are
-    // invalid and other readers are more lenient.
+    @Ignore // see N.B. in class doc
     public void testWriteWithPlanarImageAndIptcMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
+
         final File fixture = TestUtil.getImage("jpg-iptc.jpg");
         final JPEGImageReader reader = new JPEGImageReader(fixture);
-        final Metadata metadata = reader.getMetadata(0);
-        final PlanarImage image =  PlanarImage.wrapRenderedImage(
-                reader.readRendered());
+        try {
+            final Metadata metadata = reader.getMetadata(0);
+            final PlanarImage image = PlanarImage.wrapRenderedImage(
+                    reader.readRendered());
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter(metadata).write(image, os);
-        checkForIptcMetadata(os.toByteArray());
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            getWriter(metadata).write(image, os);
+            os.close();
+            checkForIptcMetadata(os.toByteArray());
+        } finally {
+            reader.dispose();
+        }
     }
 
     @Test
-    @Ignore
-    // TODO: JPEGImageWriter is writing JPEGs that JPEGImageReader thinks are
-    // invalid, even though other readers have no problems. Maybe they are
-    // invalid and other readers are more lenient.
+    @Ignore // see N.B. in class doc
     public void testWriteWithPlanarImageAndXmpMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
+
         final File fixture = TestUtil.getImage("jpg-xmp.jpg");
         final JPEGImageReader reader = new JPEGImageReader(fixture);
-        final Metadata metadata = reader.getMetadata(0);
-        final PlanarImage image =  PlanarImage.wrapRenderedImage(
-                reader.readRendered());
+        try {
+            final Metadata metadata = reader.getMetadata(0);
+            final PlanarImage image = PlanarImage.wrapRenderedImage(
+                    reader.readRendered());
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter(metadata).write(image, os);
-        checkForXmpMetadata(os.toByteArray());
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            getWriter(metadata).write(image, os);
+            os.close();
+            checkForXmpMetadata(os.toByteArray());
+        } finally {
+            reader.dispose();
+        }
     }
 
     private void checkForIccProfile(byte[] imageData) throws Exception {
-        final Iterator<ImageReader> readers =
-                ImageIO.getImageReadersByFormatName("JPEG");
-        final ImageReader reader = readers.next();
+        final ImageReader reader = getIIOReader();
         try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             reader.setInput(iis);
             // Check for the profile in its metadata
@@ -184,9 +218,7 @@ public class JPEGImageWriterTest extends BaseTest {
     }
 
     private void checkForExifMetadata(byte[] imageData) throws Exception {
-        final Iterator<ImageReader> readers =
-                ImageIO.getImageReadersByFormatName("JPEG");
-        final ImageReader reader = readers.next();
+        final ImageReader reader = getIIOReader();
         try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             reader.setInput(iis);
             final IIOMetadata metadata = reader.getImageMetadata(0);
@@ -207,9 +239,7 @@ public class JPEGImageWriterTest extends BaseTest {
     }
 
     private void checkForIptcMetadata(byte[] imageData) throws Exception {
-        final Iterator<ImageReader> readers =
-                ImageIO.getImageReadersByFormatName("JPEG");
-        final ImageReader reader = readers.next();
+        final ImageReader reader = getIIOReader();
         try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             reader.setInput(iis);
             final IIOMetadata metadata = reader.getImageMetadata(0);
@@ -230,9 +260,7 @@ public class JPEGImageWriterTest extends BaseTest {
     }
 
     private void checkForXmpMetadata(byte[] imageData) throws Exception {
-        final Iterator<ImageReader> readers =
-                ImageIO.getImageReadersByFormatName("JPEG");
-        final ImageReader reader = readers.next();
+        final ImageReader reader = getIIOReader();
         try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             reader.setInput(iis);
             final IIOMetadata metadata = reader.getImageMetadata(0);
@@ -251,6 +279,18 @@ public class JPEGImageWriterTest extends BaseTest {
         } finally {
             reader.dispose();
         }
+    }
+
+    private ImageReader getIIOReader() {
+        final Iterator<ImageReader> readers =
+                ImageIO.getImageReadersByFormatName("JPEG");
+        while (readers.hasNext()) {
+            ImageReader reader = readers.next();
+            if (reader instanceof com.sun.imageio.plugins.jpeg.JPEGImageReader) {
+                return reader;
+            }
+        }
+        return null;
     }
 
     private JPEGImageWriter getWriter(Metadata metadata) throws IOException {
