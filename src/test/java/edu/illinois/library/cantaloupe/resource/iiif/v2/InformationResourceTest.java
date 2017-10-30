@@ -157,13 +157,15 @@ public class InformationResourceTest extends ResourceTest {
         config.setProperty(Key.CACHE_SERVER_TTL, 10);
         config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, true);
 
-        assertEquals(0, FileUtils.listFiles(cacheFolder, null, true).size());
+        assertRecursiveFileCount(cacheFolder.toPath(), 0);
 
         // request an info to cache it
         getClientForUriPath("/" + IMAGE + "/info.json").get();
 
+        Thread.sleep(1000);
+
         // assert that it has been cached
-        assertEquals(1, FileUtils.listFiles(infoCacheFolder, null, true).size());
+        assertRecursiveFileCount(infoCacheFolder.toPath(), 1);
     }
 
     @Test
@@ -186,10 +188,12 @@ public class InformationResourceTest extends ResourceTest {
         config.setProperty(Key.CACHE_SERVER_TTL, 10);
         config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, true);
 
-        assertEquals(0, FileUtils.listFiles(cacheFolder, null, true).size());
+        assertRecursiveFileCount(cacheFolder.toPath(), 0);
 
         // request an info
         getClientForUriPath("/" + IMAGE + "/info.json?cache=false").get();
+
+        Thread.sleep(1000);
 
         // assert that it has NOT been cached
         assertFalse(infoCacheFolder.exists());
