@@ -28,10 +28,10 @@ import static edu.illinois.library.cantaloupe.StandaloneEntry.exitUnlessTesting;
  * in {@link StandaloneEntry} as that class is not available in a Servlet
  * container context.</p>
  */
-public class ApplicationInitializer implements ServletContextListener {
+public class ApplicationContextListener implements ServletContextListener {
 
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(ApplicationInitializer.class);
+            LoggerFactory.getLogger(ApplicationContextListener.class);
 
     static {
         // Suppress a Dock icon in OS X
