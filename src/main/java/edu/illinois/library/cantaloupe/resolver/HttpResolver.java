@@ -13,7 +13,6 @@ import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpClientTransport;
 import org.eclipse.jetty.client.api.AuthenticationStore;
-import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
 import org.eclipse.jetty.client.util.BasicAuthentication;
@@ -349,11 +348,17 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         Format format = Format.UNKNOWN;
         try {
             final ResourceInfo info = getResourceInfo();
-            Request request = getHTTPClient(info).
-                    newRequest(info.getURI()).
+            final HttpClient client = getHTTPClient(info);
+            InputStreamResponseListener listener =
+                    new InputStreamResponseListener();
+            client.newRequest(info.getURI()).
                     timeout(REQUEST_TIMEOUT, TimeUnit.SECONDS).
-                    method(HttpMethod.HEAD);
-            Response response = request.send();
+                    method(HttpMethod.HEAD).
+                    send(listener);
+
+            // Wait for the response headers to arrive.
+            Response response = listener.get(REQUEST_TIMEOUT,
+                    TimeUnit.SECONDS);
 
             if (response.getStatus() >= 200 && response.getStatus() < 300) {
                 HttpField field = response.getHeaders().getField("Content-Type");
