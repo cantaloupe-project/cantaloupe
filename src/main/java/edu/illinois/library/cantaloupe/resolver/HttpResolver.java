@@ -99,7 +99,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                     return listener.getInputStream();
                 }
             } catch (Exception e) {
-                logger.error(e.getMessage(), e);
+                LOGGER.error(e.getMessage(), e);
             }
             return null;
         }
@@ -141,7 +141,8 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
     }
 
-    private static Logger logger = LoggerFactory.getLogger(HttpResolver.class);
+    private static final Logger LOGGER = LoggerFactory.
+            getLogger(HttpResolver.class);
 
     private static final String GET_URL_DELEGATE_METHOD =
             "HttpResolver::get_url";
@@ -177,7 +178,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                     try {
                         httpsClient.start();
                     } catch (Exception e) {
-                        logger.error("getHTTPClient(): {}", e.getMessage());
+                        LOGGER.error("getHTTPClient(): {}", e.getMessage());
                     }
                 }
 
@@ -197,7 +198,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                     try {
                         httpClient.start();
                     } catch (Exception e) {
-                        logger.error("getHTTPClient(): {}", e.getMessage());
+                        LOGGER.error("getHTTPClient(): {}", e.getMessage());
                     }
                 }
 
@@ -218,12 +219,12 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         try {
             info = getResourceInfo();
         } catch (Exception e) {
-            logger.error("newStreamSource(): {}", e.getMessage());
+            LOGGER.error("newStreamSource(): {}", e.getMessage());
             throw new IOException(e.getMessage(), e);
         }
 
         if (info != null) {
-            logger.info("Resolved {} to {}", identifier, info.getURI());
+            LOGGER.info("Resolved {} to {}", identifier, info.getURI());
 
             // Send an HTTP HEAD request to check whether the underlying
             // resource is accessible.
@@ -256,7 +257,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                 // and there are different causes depending on HTTP or HTTPS
                 throw new AccessDeniedException(info.getURI().toString());
             } catch (InterruptedException | TimeoutException e) {
-                logger.error(e.getMessage(), e);
+                LOGGER.error(e.getMessage(), e);
                 throw new IOException(e.getMessage(), e);
             }
         }
@@ -359,15 +360,15 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                 if (field != null && field.getValue() != null) {
                     format = new MediaType(field.getValue()).toFormat();
                 } else {
-                    logger.warn("No Content-Type header for HEAD {}",
+                    LOGGER.warn("No Content-Type header for HEAD {}",
                             info.getURI());
                 }
             } else {
-                logger.warn("HEAD returned status {} for {}",
+                LOGGER.warn("HEAD returned status {} for {}",
                         response.getStatus(), info.getURI());
             }
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         }
         return format;
     }
