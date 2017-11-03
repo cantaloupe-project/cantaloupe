@@ -322,7 +322,10 @@
     <dependency>
       <groupId>org.restlet.jee</groupId>
       <artifactId>org.restlet.ext.velocity</artifactId>
-      <version>${restlet.version}</version>
+      <!-- N.B.: 2.3.11 causes an AbstractMethodError in Tomcat 7:
+      https://github.com/medusa-project/cantaloupe/issues/160
+      -->
+      <version>2.3.10</version>
       <exclusions>
         <!-- divert log messages to the log4j-over-slf4j bridge -->
         <exclusion>
