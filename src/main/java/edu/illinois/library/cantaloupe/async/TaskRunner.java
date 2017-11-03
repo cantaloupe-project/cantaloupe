@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 
 final class TaskRunner implements Runnable {
@@ -15,7 +16,7 @@ final class TaskRunner implements Runnable {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(TaskRunner.class);
 
-    private final BlockingQueue<Runnable> queue =
+    private final BlockingQueue<Object> queue =
             new LinkedBlockingQueue<>();
 
     /**
@@ -24,26 +25,39 @@ final class TaskRunner implements Runnable {
      *         Tasks may change from moment to moment, but the returned list
      *         is fixed.
      */
-    List<Runnable> queuedTasks() {
-        Runnable[] tasks = new Runnable[] {};
+    List<Object> queuedTasks() {
+        Object[] tasks = new Object[] {};
         return Collections.unmodifiableList(Arrays.asList(queue.toArray(tasks)));
     }
 
     @Override
     public void run() {
         while (true) {
-            Runnable runnable;
+            Object object;
             try {
                 // This will block while the queue is empty.
-                LOGGER.debug("run(): blocking for a task...");
-                runnable = queue.take();
+                LOGGER.debug("run(): waiting for a task...");
+                object = queue.take();
 
-                LOGGER.debug("run(): running {}", runnable);
-                runnable.run();
+                LOGGER.debug("run(): running {}", object);
+                if (object instanceof Runnable) {
+                    ((Runnable) object).run();
+                } else if (object instanceof Callable) {
+                    ((Callable<?>) object).call();
+                }
             } catch (Exception e) {
                 LOGGER.error("run(): {}", e.getMessage());
             }
         }
+    }
+
+    /**
+     * @param callable Object to submit to the queue.
+     * @throws IllegalStateException If the queue is full.
+     */
+    boolean submit(Callable<?> callable) {
+        LOGGER.debug("submit(): {} (queue size: {})", callable, queue.size());
+        return queue.add(callable);
     }
 
     /**
@@ -56,6 +70,7 @@ final class TaskRunner implements Runnable {
 
         if (runnable instanceof AuditableFutureTask) {
             AuditableFutureTask<?> aTask = (AuditableFutureTask<?>) runnable;
+            aTask.setStatus(TaskStatus.QUEUED);
             aTask.setInstantQueued(Instant.now());
         }
         return result;

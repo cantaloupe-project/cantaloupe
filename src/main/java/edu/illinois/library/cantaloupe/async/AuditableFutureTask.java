@@ -106,7 +106,7 @@ public class AuditableFutureTask<T> extends FutureTask<T> {
     }
 
     @JsonIgnore
-    private void setStatus(TaskStatus status) {
+    void setStatus(TaskStatus status) {
         this.status = status;
     }
 

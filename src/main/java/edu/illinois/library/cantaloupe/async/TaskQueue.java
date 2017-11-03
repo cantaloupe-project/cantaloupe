@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.async;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
 public final class TaskQueue {
 
@@ -43,8 +44,12 @@ public final class TaskQueue {
      *         Tasks may change from moment to moment, but the returned list
      *         is fixed and immutable.
      */
-    List<Runnable> queuedTasks() {
+    List<Object> queuedTasks() {
         return runner.queuedTasks();
+    }
+
+    public void submit(Callable<?> callable) {
+        runner.submit(callable);
     }
 
     public void submit(Runnable runnable) {
