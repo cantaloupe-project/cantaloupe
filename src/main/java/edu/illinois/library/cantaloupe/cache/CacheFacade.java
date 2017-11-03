@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import edu.illinois.library.cantaloupe.async.ThreadPool;
+import edu.illinois.library.cantaloupe.async.TaskQueue;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -130,10 +130,10 @@ public final class CacheFacade {
      * Invokes {@link #purge(Identifier)} asynchronously.
      */
     public void purgeAsync(Identifier identifier) throws CacheException {
-        ThreadPool.getInstance().submit(() -> {
+        TaskQueue.getInstance().submit(() -> {
             purge(identifier);
             return null;
-        }, ThreadPool.Priority.LOW);
+        });
     }
 
     /**
