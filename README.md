@@ -17,10 +17,8 @@
 * `mvn exec:java -Dcantaloupe.config=...` will build the project and run in
   standalone mode, using the embedded Servlet container listening on the
   port(s) specified in `cantaloupe.properties`.
-* `mvn tomcat:run -Dcantaloupe.config=...` will build the project and run in
-  Servlet mode, using a Tomcat container listening on port 8080.
-* `mvn package` will build a release WAR in the `target` folder, which
-  can be run like any other.
+* `mvn clean package -DskipTests` will build a release WAR in the `target`
+  folder, which can be run like any other.
 
 ### IDE
 
