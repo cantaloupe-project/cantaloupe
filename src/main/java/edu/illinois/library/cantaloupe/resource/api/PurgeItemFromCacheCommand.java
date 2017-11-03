@@ -1,13 +1,21 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
-import edu.illinois.library.cantaloupe.async.Task;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.image.Identifier;
 
-final class PurgeItemFromCacheTask extends APITask implements Task {
+import java.util.concurrent.Callable;
+
+final class PurgeItemFromCacheCommand<T> extends Command
+        implements Callable<T> {
 
     private Identifier identifier;
+
+    @Override
+    public T call() throws Exception {
+        new CacheFacade().purge(getIdentifier());
+        return null;
+    }
 
     /**
      * @return Image identifier.
@@ -18,7 +26,12 @@ final class PurgeItemFromCacheTask extends APITask implements Task {
 
     @JsonGetter("identifier")
     public String getIdentifierAsString() {
-        return getUUID().toString();
+        return getIdentifier().toString();
+    }
+
+    @Override
+    String getVerb() {
+        return "PurgeItemFromCache";
     }
 
     /**
@@ -30,11 +43,6 @@ final class PurgeItemFromCacheTask extends APITask implements Task {
 
     public void setIdentifier(String identifier) {
         this.identifier = new Identifier(identifier);
-    }
-
-    @Override
-    public void run() throws Exception {
-        new CacheFacade().purge(getIdentifier());
     }
 
 }

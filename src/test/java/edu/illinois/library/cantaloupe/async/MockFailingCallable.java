@@ -1,9 +1,11 @@
 package edu.illinois.library.cantaloupe.async;
 
-class MockFailingTask extends MockTask implements Task {
+import java.util.concurrent.Callable;
+
+class MockFailingCallable<T> implements Callable<T> {
 
     @Override
-    public void run() throws Exception {
+    public T call() throws Exception {
         Thread.sleep(100);
         throw new Exception("Failed, as requested");
     }

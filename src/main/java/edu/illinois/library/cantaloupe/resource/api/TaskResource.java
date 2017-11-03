@@ -22,8 +22,9 @@ public class TaskResource extends AbstractAPIResource {
         final String uuidStr = (String) attrs.get("uuid");
 
         try {
+            TaskMonitor monitor = TasksResource.getTaskMonitor();
             final UUID uuid = UUID.fromString(uuidStr);
-            APITask task = TasksResource.getTaskMonitor().get(uuid);
+            APITask<?> task = TasksResource.getTaskMonitor().get(uuid);
 
             if (task != null) {
                 return new JSONRepresentation(task);

@@ -43,12 +43,12 @@ public final class TaskQueue {
      *         Tasks may change from moment to moment, but the returned list
      *         is fixed and immutable.
      */
-    public List<Task> queuedTasks() {
+    List<Runnable> queuedTasks() {
         return runner.queuedTasks();
     }
 
-    public void submit(Task task) {
-        runner.submit(task);
+    public void submit(Runnable runnable) {
+        runner.submit(runnable);
     }
 
 }

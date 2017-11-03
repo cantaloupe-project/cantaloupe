@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.resource.JSONRepresentation;
 import org.junit.Test;
 import org.restlet.data.MediaType;
+import org.restlet.data.Reference;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
@@ -37,9 +38,11 @@ public class TaskResourceTest extends AbstractAPIResourceTest {
     @Test
     public void testDoGetWithValidID() throws Exception {
         // Create a task
-        APITask submittedTask = new PurgeInvalidFromCacheTask();
+        APITask<?> submittedTask =
+                new APITask<>(new PurgeInvalidFromCacheCommand<>());
         // Get its JSON representation
         Representation submittedRep = new JSONRepresentation(submittedTask);
+
         // Submit it to TasksResource
         String tasksURIPath = RestletApplication.TASKS_PATH;
         ClientResource client = getClientForUriPath(
@@ -47,9 +50,8 @@ public class TaskResourceTest extends AbstractAPIResourceTest {
         client.post(submittedRep, MediaType.APPLICATION_JSON);
 
         // Retrieve it by its UUID from TaskResource
-        String taskURIPath = RestletApplication.TASKS_PATH + "/" +
-                submittedTask.getUUID();
-        client = getClientForUriPath(taskURIPath, USERNAME, SECRET);
+        Reference location = client.getResponse().getLocationRef();
+        client = getClientForUriPath(location.getPath(), USERNAME, SECRET);
         Representation rep = client.get();
 
         assertEquals(Status.SUCCESS_OK, client.getStatus());

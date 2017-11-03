@@ -86,6 +86,7 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
 
         client.post(rep);
         assertEquals(Status.SUCCESS_ACCEPTED, client.getStatus());
+        assertNotNull(client.getLocationRef());
     }
 
     @Test
@@ -98,6 +99,7 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
 
         client.post(rep);
         assertEquals(Status.SUCCESS_ACCEPTED, client.getStatus());
+        assertNotNull(client.getLocationRef());
     }
 
     @Test
@@ -110,6 +112,7 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
 
         client.post(rep);
         assertEquals(Status.SUCCESS_ACCEPTED, client.getStatus());
+        assertNotNull(client.getLocationRef());
     }
 
 }

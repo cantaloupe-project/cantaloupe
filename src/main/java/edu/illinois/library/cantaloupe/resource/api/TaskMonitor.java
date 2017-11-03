@@ -13,14 +13,14 @@ import java.util.UUID;
  */
 final class TaskMonitor {
 
-    private final List<APITask> tasks = new ArrayList<>();
+    private final List<APITask<?>> tasks = new ArrayList<>();
 
-    synchronized void add(APITask task) {
+    synchronized void add(APITask<?> task) {
         tasks.add(task);
     }
 
-    synchronized APITask get(final UUID uuid) {
-        Optional<APITask> task = tasks.stream().
+    synchronized APITask<?> get(final UUID uuid) {
+        Optional<APITask<?>> task = tasks.stream().
                 filter(t -> t.getUUID().equals(uuid)).
                 findFirst();
         return task.orElse(null);

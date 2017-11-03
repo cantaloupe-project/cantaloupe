@@ -15,7 +15,8 @@ final class TaskRunner implements Runnable {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(TaskRunner.class);
 
-    private final BlockingQueue<Task> queue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<Runnable> queue =
+            new LinkedBlockingQueue<>();
 
     /**
      * @return Unmodifiable list of all queued tasks, including the one
@@ -23,47 +24,41 @@ final class TaskRunner implements Runnable {
      *         Tasks may change from moment to moment, but the returned list
      *         is fixed.
      */
-    List<Task> queuedTasks() {
-        Task[] tasks = new Task[] {};
+    List<Runnable> queuedTasks() {
+        Runnable[] tasks = new Runnable[] {};
         return Collections.unmodifiableList(Arrays.asList(queue.toArray(tasks)));
     }
 
     @Override
     public void run() {
         while (true) {
-            Task task = null;
+            Runnable runnable;
             try {
                 // This will block while the queue is empty.
                 LOGGER.debug("run(): blocking for a task...");
-                task = queue.take();
+                runnable = queue.take();
 
-                LOGGER.debug("run(): running {}", task);
-                task.setInstantStarted(Instant.now());
-                task.setStatus(Task.Status.RUNNING);
-                task.run();
-                task.setStatus(Task.Status.SUCCEEDED);
+                LOGGER.debug("run(): running {}", runnable);
+                runnable.run();
             } catch (Exception e) {
-                if (task != null) {
-                    task.setStatus(Task.Status.FAILED);
-                    task.setFailureException(e);
-                }
-            } finally {
-                if (task != null) {
-                    task.setInstantStopped(Instant.now());
-                }
+                LOGGER.error("run(): {}", e.getMessage());
             }
         }
     }
 
     /**
-     * @param task Task to submit to the queue.
+     * @param runnable Object to submit to the queue.
      * @throws IllegalStateException If the queue is full.
      */
-    void submit(Task task) {
-        LOGGER.debug("submit(): {} (queue size: {})", task, queue.size());
-        queue.add(task);
-        task.setInstantQueued(Instant.now());
-        task.setStatus(Task.Status.QUEUED);
+    boolean submit(Runnable runnable) {
+        LOGGER.debug("submit(): {} (queue size: {})", runnable, queue.size());
+        final boolean result = queue.add(runnable);
+
+        if (runnable instanceof AuditableFutureTask) {
+            AuditableFutureTask<?> aTask = (AuditableFutureTask<?>) runnable;
+            aTask.setInstantQueued(Instant.now());
+        }
+        return result;
     }
 
 }

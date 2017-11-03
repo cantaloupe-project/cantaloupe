@@ -7,7 +7,7 @@ import org.restlet.resource.Delete;
 
 /**
  * @since 3.3
- * @deprecated To be replaced by {@link PurgeItemFromCacheTask} in conjunction
+ * @deprecated To be replaced by {@link PurgeItemFromCacheCommand} in conjunction
  *             with {@link TasksResource} in version 4.0.
  */
 @Deprecated
