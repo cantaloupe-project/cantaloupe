@@ -585,7 +585,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     new HashSet<>(Collections.singletonList(FileVisitOption.FOLLOW_LINKS)),
                     Integer.MAX_VALUE,
                     visitor);
-            LOGGER.info("cleanUp(): cleaned {} item(s) totaling {}",
+            LOGGER.info("cleanUp(): cleaned {} item(s) totaling {} bytes",
                     visitor.getDeletedFileCount(),
                     visitor.getDeletedFileSize());
         } catch (IOException e) {
@@ -842,7 +842,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     new HashSet<>(Collections.singletonList(FileVisitOption.FOLLOW_LINKS)),
                     Integer.MAX_VALUE,
                     visitor);
-            LOGGER.info("purge(): purged {} item(s) totaling {}",
+            LOGGER.info("purge(): purged {} item(s) totaling {} bytes",
                     visitor.getDeletedFileCount(),
                     visitor.getDeletedFileSize());
         } catch (IOException e) {
@@ -997,7 +997,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     new HashSet<>(Collections.singletonList(FileVisitOption.FOLLOW_LINKS)),
                     Integer.MAX_VALUE,
                     visitor);
-            LOGGER.info("purgeExpired(): purged {} item(s) totaling {}",
+            LOGGER.info("purgeExpired(): purged {} item(s) totaling {} bytes",
                     visitor.getDeletedFileCount(),
                     visitor.getDeletedFileSize());
         } catch (IOException e) {
