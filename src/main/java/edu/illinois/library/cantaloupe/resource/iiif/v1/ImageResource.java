@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Handles IIIF Image API 1.1 image requests.
@@ -49,6 +50,7 @@ public class ImageResource extends IIIF1Resource {
      * Responds to image requests.
      */
     @Get
+    @SuppressWarnings("unused")
     public Representation doGet() throws Exception {
         final Configuration config = Configuration.getInstance();
         final Identifier identifier = getIdentifier();
@@ -175,19 +177,21 @@ public class ImageResource extends IIIF1Resource {
     /**
      * @param limitToFormats Set of OutputFormats to limit the result to.
      * @return The best output format based on the URI extension, Accept
-     * header, or default, as outlined by the Image API 1.1 spec.
+     *         header, or default, as outlined by the Image API 1.1 spec.
      */
     private Format getOutputFormat(Set<Format> limitToFormats) {
-        // check the URI for a format in the extension
+        // Check for a format extension in the URI.
         Format format = null;
-        for (Format f : Format.values()) {
-            if (f.getPreferredExtension().
-                    equals(this.getReference().getExtensions())) {
-                format = f;
-                break;
+        if (getReference().getExtensions() != null) {
+            for (Format f : Format.values()) {
+                if (f.getPreferredExtension().
+                        equals(getReference().getExtensions())) {
+                    format = f;
+                    break;
+                }
             }
         }
-        if (format == null) { // if none, check the Accept header
+        if (format == null) { // if none, check the Accept header.
             format = getPreferredOutputFormat(limitToFormats);
             if (format == null) {
                 format = DEFAULT_FORMAT;
@@ -199,14 +203,29 @@ public class ImageResource extends IIIF1Resource {
     /**
      * @param limitToFormats Set of OutputFormats to limit the result to.
      * @return Best OutputFormat for the client preferences as specified in the
-     * Accept header.
+     *         Accept header.
      */
     private Format getPreferredOutputFormat(Set<Format> limitToFormats) {
-        List<Variant> variants = new ArrayList<>();
-        for (Format format : limitToFormats) {
-            variants.add(new Variant(new org.restlet.data.MediaType(
-                    format.getPreferredMediaType().toString())));
-        }
+        // Transform limitToFormats into a list in order of the application's
+        // format preference, in case the client supplies something like */*.
+        final List<Format> appPreferredFormats = new ArrayList<>();
+        appPreferredFormats.addAll(limitToFormats);
+        appPreferredFormats.sort((Format o1, Format o2) -> {
+            // Default format goes first.
+            if (DEFAULT_FORMAT.equals(o1)) {
+                return -1;
+            } else if (DEFAULT_FORMAT.equals(o2)) {
+                return 1;
+            }
+            return 0;
+        });
+
+        // Transform the list of Formats into a list of Variants.
+        final List<Variant> variants = appPreferredFormats.stream().
+                map(f -> new Variant(new org.restlet.data.MediaType(
+                        f.getPreferredMediaType().toString()))).
+                collect(Collectors.toList());
+
         Variant preferred = getPreferredVariant(variants);
         if (preferred != null) {
             String mediaTypeStr = preferred.getMediaType().toString();

@@ -23,8 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -48,8 +46,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * 2.2. "It is recommended that if the image’s base URI is dereferenced,
      * then the client should either redirect to the information request using
      * a 303 status code (see Section 6.1), or return the same result."
-     *
-     * @throws IOException
      */
     @Test
     public void testBaseUriReturnsImageInfoViaHttp303() throws IOException {
@@ -67,8 +63,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * behaviors. The URL syntax relies upon slash (/) separators so any
      * slashes in the identifier MUST be URI encoded (aka. percent-encoded,
      * replace / with %2F )."
-     *
-     * @throws IOException
      */
     @Test
     public void testIdentifierWithEncodedCharacters() throws IOException {
@@ -94,8 +88,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
 
     /**
      * 4.1
-     *
-     * @throws IOException
      */
     @Test
     public void testFullRegion() throws IOException {
@@ -111,8 +103,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
 
     /**
      * 4.1
-     *
-     * @throws IOException
      */
     @Test
     public void testAbsolutePixelRegion() throws IOException {
@@ -128,8 +118,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
 
     /**
      * 4.1
-     *
-     * @throws IOException
      */
     @Test
     public void testPercentageRegion() throws IOException {
@@ -158,8 +146,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * 4.1. "If the request specifies a region which extends beyond the
      * dimensions of the source image, then the service should return an image
      * cropped at the boundary of the source image."
-     *
-     * @throws IOException
      */
     @Test
     public void testAbsolutePixelRegionLargerThanSource() throws IOException {
@@ -177,8 +163,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * 4.1. "If the requested region's height or width is zero, or if the
      * region is entirely outside the bounds of the source image, then the
      * server MUST return a 400 (bad request) status code."
-     *
-     * @throws IOException
      */
     @Test
     public void testPixelRegionOutOfBounds() throws IOException {
@@ -203,8 +187,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
 
     /**
      * 4.2
-     *
-     * @throws IOException
      */
     @Test
     public void testFullSize() throws IOException {
@@ -222,8 +204,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * 4.2. "The extracted region should be scaled so that its width is
      * exactly equal to w, and the height will be a calculated value that
      * maintains the aspect ratio of the requested region."
-     *
-     * @throws IOException
      */
     @Test
     public void testSizeScaledToFitWidth() throws IOException {
@@ -241,8 +221,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * 4.2. "The extracted region should be scaled so that its height is
      * exactly equal to h, and the width will be a calculated value that
      * maintains the aspect ratio of the requested region."
-     *
-     * @throws IOException
      */
     @Test
     public void testSizeScaledToFitHeight() throws IOException {
@@ -260,8 +238,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * 4.2. "The width and height of the returned image is scaled to n% of the
      * width and height of the extracted region. The aspect ratio of the
      * returned image is the same as that of the extracted region."
-     *
-     * @throws IOException
      */
     @Test
     public void testSizeScaledToPercent() throws IOException {
@@ -280,8 +256,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * 4.2. "The width and height of the returned image are exactly w and h.
      * The aspect ratio of the returned image MAY be different than the
      * extracted region, resulting in a distorted image."
-     *
-     * @throws IOException
      */
     @Test
     public void testAbsoluteWidthAndHeight() throws IOException {
@@ -302,8 +276,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * based on characteristics including image quality and system performance.
      * The dimensions of the returned image content are calculated to maintain
      * the aspect ratio of the extracted region."
-     *
-     * @throws IOException
      */
     @Test
     public void testSizeScaledToFitInside() throws IOException {
@@ -318,8 +290,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
     /**
      * 4.2. "If the resulting height or width is zero, then the server MUST
      * return a 400 (bad request) status code."
-     *
-     * @throws IOException
      */
     @Test
     public void testResultingWidthOrHeightIsZero() throws IOException {
@@ -343,8 +313,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
     /**
      * IIIF Image API 1.1 doesn't say anything about an invalid size
      * parameter, so we will check for an HTTP 400.
-     *
-     * @throws IOException
      */
     @Test
     public void testInvalidSize() throws IOException {
@@ -414,8 +382,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * rotation from the original, and may be any floating point number from 0
      * to 360. Initially most services will only support 0, 90, 180 or 270 as
      * valid values."
-     *
-     * @throws IOException
      */
     @Test
     public void testRotation() throws IOException {
@@ -427,8 +393,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
     /**
      * IIIF Image API 1.1 doesn't say anything about an invalid rotation
      * parameter, so we will check for an HTTP 400.
-     *
-     * @throws IOException
      */
     @Test
     public void testInvalidRotation() throws IOException {
@@ -451,8 +415,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
 
     /**
      * 4.4. "The image is returned at an unspecified bit-depth."
-     *
-     * @throws IOException
      */
     @Test
     public void testNativeQuality() throws IOException {
@@ -464,8 +426,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
     /**
      * 4.4. "The image is returned in full color, typically using 24 bits per
      * pixel."
-     *
-     * @throws IOException
      */
     @Test
     public void testColorQuality() throws IOException {
@@ -478,8 +438,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * 4.4. "The image is returned in greyscale, where each pixel is black,
      * white or any degree of grey in between, typically using 8 bits per
      * pixel."
-     *
-     * @throws IOException
      */
     @Test
     public void testGrayQuality() throws IOException {
@@ -491,8 +449,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
     /**
      * 4.4. "The image returned is bitonal, where each pixel is either black or
      * white, using 1 bit per pixel when the format permits."
-     *
-     * @throws IOException
      */
     @Test
     public void testBitonalQuality() throws IOException {
@@ -504,8 +460,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
     /**
      * The IIIF Image API 1.1 doesn't say anything about unsupported qualities,
      * so we will check for an HTTP 400.
-     *
-     * @throws IOException
      */
     @Test
     public void testUnsupportedQuality() throws IOException {
@@ -520,8 +474,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
 
     /**
      * 4.5
-     *
-     * @throws IOException
      */
     @Test
     public void testFormats() throws Exception {
@@ -557,8 +509,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
 
     /**
      * 4.5
-     *
-     * @throws IOException
      */
     @Test
     public void testUnsupportedFormat() throws IOException {
@@ -598,21 +548,13 @@ public class Version1_1ConformanceTest extends ResourceTest {
         client.accept(MediaType.ALL);
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
-        // TODO: this is kind of brittle
-        List<String> mediaTypes = new ArrayList<>();
-        mediaTypes.add("image/gif");
-        mediaTypes.add("image/jpeg");
-        mediaTypes.add("image/png");
-        mediaTypes.add("image/tiff");
-        assertTrue(mediaTypes.contains(
-                client.getResponse().getHeaders().getFirst("Content-Type").getValue()));
+        assertEquals("image/jpeg",
+                client.getResponse().getHeaders().getFirst("Content-Type").getValue());
     }
 
     /**
      * 5. "The service MUST return technical information about the requested
      * image in the JSON format."
-     *
-     * @throws IOException
      */
     @Test
     public void testInformationRequest() throws IOException {
@@ -624,8 +566,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
     /**
      * 5. "The content-type of the response must be either “application/json”,
      * (regular JSON), or “application/ld+json” (JSON-LD)."
-     *
-     * @throws IOException
      */
     @Test
     public void testInformationRequestContentType() throws IOException {
@@ -638,8 +578,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
 
     /**
      * 5.
-     *
-     * @throws IOException
      */
     @Test
     public void testInformationRequestJson() throws IOException {
@@ -648,8 +586,6 @@ public class Version1_1ConformanceTest extends ResourceTest {
 
     /**
      * 6.2 "Requests are limited to 1024 characters."
-     *
-     * @throws IOException
      */
     @Test
     public void testUriTooLong() throws IOException {
