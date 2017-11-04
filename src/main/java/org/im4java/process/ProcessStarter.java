@@ -21,6 +21,8 @@
 
 package org.im4java.process;
 
+import edu.illinois.library.cantaloupe.async.ThreadPool;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -354,7 +356,7 @@ public class ProcessStarter {
           return null;
         }
       });
-      new Thread(outTask).start();
+      ThreadPool.getInstance().submit(outTask);
     }
     if (iErrorConsumer != null) {
       errTask = new FutureTask<>(new Callable<Object>() {
@@ -363,7 +365,7 @@ public class ProcessStarter {
           return null;
         }
       });
-      new Thread(errTask).start();
+      ThreadPool.getInstance().submit(errTask);
     }
 
     // Wait and check IO exceptions (FutureTask.get() blocks).
