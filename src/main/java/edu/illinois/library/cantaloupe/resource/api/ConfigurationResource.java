@@ -12,8 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ConfigurationResource extends AbstractAPIResource {
@@ -27,7 +25,8 @@ public class ConfigurationResource extends AbstractAPIResource {
      */
     @Get("json")
     public Representation getConfiguration() throws Exception {
-        return new JSONRepresentation(configurationAsMap());
+        Configuration config = Configuration.getInstance();
+        return new JSONRepresentation(config.toMap());
     }
 
     /**
@@ -52,21 +51,6 @@ public class ConfigurationResource extends AbstractAPIResource {
         config.save();
 
         return new EmptyRepresentation();
-    }
-
-    /**
-     * @return Map representation of the application configuration.
-     */
-    private Map<String,Object> configurationAsMap() { // TODO: add Configuration.toMap()
-        final Configuration config = Configuration.getInstance();
-        final Map<String,Object> configMap = new LinkedHashMap<>();
-        final Iterator<String> it = config.getKeys();
-        while (it.hasNext()) {
-            final String key = it.next();
-            final Object value = config.getProperty(key);
-            configMap.put(key, value);
-        }
-        return configMap;
     }
 
 }
