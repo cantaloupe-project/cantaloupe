@@ -2,7 +2,10 @@ package edu.illinois.library.cantaloupe.config;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public interface Configuration {
 
@@ -166,5 +169,23 @@ public interface Configuration {
      * don't support watching should just do nothing.
      */
     void stopWatching();
+
+    /**
+     * This default implementation uses the Iterator returned by
+     * {@link #getKeys} in conjunction with {@link #getProperty(String)} to
+     * build a map. Implementations should override it if they can do it more
+     * efficiently.
+     *
+     * @return Configuration keys and values in a read-only map.
+     */
+    default Map<String,Object> toMap() {
+        final Map<String,Object> map = new LinkedHashMap<>();
+        final Iterator<String> keys = getKeys();
+        while (keys.hasNext()) {
+            final String key = keys.next();
+            map.put(key, getProperty(key));
+        }
+        return Collections.unmodifiableMap(map);
+    }
 
 }

@@ -6,6 +6,8 @@ import org.apache.commons.configuration.ConversionException;
 import org.junit.Test;
 
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -903,5 +905,21 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         final Configuration instance = getInstance();
         assertEquals("cats", instance.getString("test1", "cats"));
     }
+
+    /* toMap() */
+
+    @Test
+    public void testToMap() {
+        final Configuration instance = getInstance();
+        Map<String,Object> expected = new LinkedHashMap<>();
+        Iterator<String> keys = instance.getKeys();
+        while (keys.hasNext()) {
+            String key = keys.next();
+            expected.put(key, instance.getProperty(key));
+        }
+
+        assertEquals(expected, instance.toMap());
+    }
+
 
 }

@@ -3,7 +3,9 @@ package edu.illinois.library.cantaloupe.config;
 import org.apache.commons.configuration.ConversionException;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -207,5 +209,10 @@ class MemoryConfiguration extends AbstractConfiguration
      */
     @Override
     public void stopWatching() {}
+
+    @Override
+    public Map<String, Object> toMap() {
+        return Collections.unmodifiableMap(configuration);
+    }
 
 }
