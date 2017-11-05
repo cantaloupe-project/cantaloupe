@@ -90,10 +90,7 @@ class JPEGImageWriter extends AbstractImageWriter {
         final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
                 Format.JPG.getPreferredMediaType().toString());
         if (writers.hasNext()) {
-            ImageWriter writer = writers.next();
-            if (writer instanceof com.sun.imageio.plugins.jpeg.JPEGImageWriter) {
-                return writer;
-            }
+            return writers.next();
         }
         return null;
     }
