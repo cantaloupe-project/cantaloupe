@@ -264,7 +264,8 @@
       <artifactId>janino</artifactId>
       <version>2.7.8</version>
     </dependency>
-    <!-- Provides HTTP/2 support for Jetty (see org.eclipse.jetty.jetty-server) -->
+    <!-- Provides HTTP/2 support in the Jetty client.
+    N.B.: ALPN support is in a different module. -->
     <dependency>
       <groupId>org.eclipse.jetty.http2</groupId>
       <artifactId>http2-client</artifactId>
@@ -275,22 +276,37 @@
       <artifactId>http2-http-client-transport</artifactId>
       <version>${jetty.version}</version>
     </dependency>
+    <!-- Provides HTTP/2 support in the Jetty server.
+    N.B.: ALPN support is in a different module. -->
     <dependency>
       <groupId>org.eclipse.jetty.http2</groupId>
       <artifactId>http2-server</artifactId>
       <version>${jetty.version}</version>
     </dependency>
-    <!-- Provides ALPN support for Jetty.
-    N.B. This doesn't include ALPN support for Java 8, which requires a JAR
-    on the boot classpath. -->
+    <!-- Enables support for ALPN in Jetty client.
+    N.B.: in Java 8, this requires an alpn-boot JAR on the boot classpath. -->
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-alpn-client</artifactId>
       <version>${jetty.version}</version>
     </dependency>
+    <!-- Enables support for ALPN in Jetty server.
+    N.B.: in Java 8, this requires an alpn-boot JAR on the boot classpath. -->
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-alpn-server</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+    <!-- Enables Jetty client to support the ALPN built into Java 9 -->
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-alpn-java-client</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+    <!-- Enables Jetty server to support the ALPN built into Java 9 -->
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-alpn-java-server</artifactId>
       <version>${jetty.version}</version>
     </dependency>
     <!-- Used by HttpResolver -->
@@ -485,8 +501,18 @@
         </configuration>
       </plugin>
 
-      <!-- Unpack dependencies needed in standalone mode into the root, for
-      compatibility with `java -jar` invocation. -->
+      <!-- About the build: it's easy to build a JAR using the Maven Shade
+      plugin, and it's easy to build a WAR using the Maven WAR plugin. However,
+      this application is packaged as a special WAR that can also be run like a
+      JAR, and there's no all-in-one Maven plugin for that. So, from here, we
+      have to go through a sequence of steps to build the custom WAR. -->
+
+      <!-- The first step is to unpack dependencies (direct and transient)
+      needed in standalone mode into the root, for compatibility with
+      `java -jar` invocation. Note that this plugin is not smart about handling
+      dependencies with the same filename, which mainly is a problem with
+      same-named META-INF/services files from e.g. Jetty, so we will have to
+      work around that in a later step. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -517,8 +543,8 @@
         </executions>
       </plugin>
 
-      <!-- Copy the classes needed for standalone mode into the root of the
-      war file for compatibility with `java -jar` invocation. -->
+      <!-- The previous step copied only dependencies. Now we copy the
+      application classes needed for standalone mode into the root. -->
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
@@ -532,15 +558,7 @@
               <tasks>
                 <copy todir="${project.build.directory}/${project.artifactId}-${project.version}/">
                   <fileset dir="${project.build.directory}/classes/">
-                    <include name="edu/illinois/library/cantaloupe/config/AbstractConfiguration.class" />
-                    <include name="edu/illinois/library/cantaloupe/config/Configuration.class" />
-                    <include name="edu/illinois/library/cantaloupe/config/ConfigurationException.class" />
-                    <include name="edu/illinois/library/cantaloupe/config/ConfigurationFactory.class" />
-                    <include name="edu/illinois/library/cantaloupe/config/ConfigurationWatcher.class" />
-                    <include name="edu/illinois/library/cantaloupe/config/FileConfiguration.class" />
-                    <include name="edu/illinois/library/cantaloupe/config/HeritableFileConfiguration.class" />
-                    <include name="edu/illinois/library/cantaloupe/config/HeritablePropertiesConfiguration.class" />
-                    <include name="edu/illinois/library/cantaloupe/config/Key.class" />
+                    <include name="edu/illinois/library/cantaloupe/config/*" />
                     <include name="edu/illinois/library/cantaloupe/util/FilesystemWatcher.class" />
                     <include name="edu/illinois/library/cantaloupe/util/FilesystemWatcher$Callback.class" />
                     <include name="edu/illinois/library/cantaloupe/util/SystemUtils.class" />
@@ -553,34 +571,26 @@
             </configuration>
           </execution>
 
-          <!-- Merge files in META-INF/services into one. Failure to do this
-          causes a Jetty exception at startup in standalone mode:
-          https://github.com/medusa-project/cantaloupe/issues/129 -->
+          <!-- And also add back a missing Jetty service that didn't get
+          copied in the unpack-dependencies execution. -->
           <execution>
-            <id>merge-services</id>
+            <id>finalize-services</id>
             <phase>prepare-package</phase>
             <goals>
               <goal>run</goal>
             </goals>
             <configuration>
               <tasks>
-                <concat destfile="${project.build.directory}/${project.artifactId}-${project.version}/META-INF/services/combined"
-                        fixlastline="yes">
-                  <fileset dir="${project.build.directory}/${project.artifactId}-${project.version}/META-INF/services"/>
-                </concat>
-                <delete>
-                  <!-- TODO: this is brittle -->
-                  <fileset dir="${project.build.directory}/${project.artifactId}-${project.version}/META-INF/services"
-                           includes="org*"/>
-                </delete>
+                <echo file="${project.build.directory}/${project.artifactId}-${project.version}/META-INF/services/org.eclipse.jetty.http.HttpFieldPreEncoder" append="true">
+                  ${line.separator}org.eclipse.jetty.http2.hpack.HpackFieldPreEncoder
+                </echo>
               </tasks>
             </configuration>
           </execution>
         </executions>
       </plugin>
 
-      <!-- Create the war file, excluding the Servlet API jar, which the
-      Servlet container will provide. -->
+      <!-- Create the war file from the stuff we just unpacked. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
