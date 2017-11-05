@@ -12,6 +12,7 @@ import edu.illinois.library.cantaloupe.resource.admin.ConfigurationResource;
 import edu.illinois.library.cantaloupe.resource.api.CacheResource;
 import edu.illinois.library.cantaloupe.resource.api.TaskResource;
 import edu.illinois.library.cantaloupe.resource.api.TasksResource;
+import edu.illinois.library.cantaloupe.resource.iiif.RedirectingResource;
 import org.restlet.Application;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -21,7 +22,6 @@ import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Directory;
 import org.restlet.resource.ResourceException;
-import org.restlet.routing.Redirector;
 import org.restlet.routing.Router;
 import org.restlet.routing.Template;
 import org.restlet.security.ChallengeAuthenticator;
@@ -222,6 +222,11 @@ public class RestletApplication extends Application {
         final Router router = new Router(getContext());
         router.setDefaultMatchingMode(Template.MODE_EQUALS);
 
+        ////////////////////// IIIF Image API routes ///////////////////////
+
+        // redirecting resource
+        router.attach(IIIF_PATH, RedirectingResource.class);
+
         //////////////////// IIIF Image API 1.x routes /////////////////////
 
         // landing page
@@ -263,11 +268,6 @@ public class RestletApplication extends Application {
                 edu.illinois.library.cantaloupe.resource.iiif.v2.InformationResource.RedirectingResource.class);
         router.attach(IIIF_2_PATH + "/{identifier}/info.json",
                 edu.illinois.library.cantaloupe.resource.iiif.v2.InformationResource.class);
-
-        // 303-redirect IIIF_PATH to IIIF_2_PATH
-        redirector = new Redirector(getContext(), IIIF_2_PATH,
-                Redirector.MODE_CLIENT_SEE_OTHER);
-        router.attach(IIIF_PATH, redirector);
 
         ////////////////////////// Admin routes ///////////////////////////
 
