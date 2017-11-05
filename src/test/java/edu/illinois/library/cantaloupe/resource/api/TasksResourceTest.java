@@ -27,10 +27,10 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
     public void testDoPostWithIncorrectContentType() throws Exception {
         ClientResource client = getClientForUriPath(
                 getURIPath(), USERNAME, SECRET);
-        Representation rep = new StringRepresentation("{ \"cats\": \"yes\" }",
-                MediaType.TEXT_PLAIN);
+        Representation rep = new StringRepresentation(
+                "{ \"verb\": \"PurgeCache\" }", MediaType.TEXT_PLAIN);
         try {
-            client.post(rep);
+            client.post(rep, MediaType.TEXT_PLAIN);
         } catch (ResourceException e) {
             assertEquals(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE,
                     e.getStatus());
