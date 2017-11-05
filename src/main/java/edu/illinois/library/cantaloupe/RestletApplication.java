@@ -233,11 +233,6 @@ public class RestletApplication extends Application {
         router.attach(IIIF_1_PATH,
                 edu.illinois.library.cantaloupe.resource.iiif.v1.LandingResource.class);
 
-        // Redirect IIIF_1_PATH/ to IIIF_1_PATH
-        Redirector redirector = new Redirector(getContext(), IIIF_1_PATH,
-                Redirector.MODE_CLIENT_PERMANENT);
-        router.attach(IIIF_1_PATH + "/", redirector);
-
         // image request
         router.attach(IIIF_1_PATH + "/{identifier}/{region}/{size}/{rotation}/{quality_format}",
                 edu.illinois.library.cantaloupe.resource.iiif.v1.ImageResource.class);
@@ -253,11 +248,6 @@ public class RestletApplication extends Application {
         // landing page
         router.attach(IIIF_2_PATH,
                 edu.illinois.library.cantaloupe.resource.iiif.v2.LandingResource.class);
-
-        // Redirect IIIF_2_PATH/ to IIIF_2_PATH
-        redirector = new Redirector(getContext(), IIIF_2_PATH,
-                Redirector.MODE_CLIENT_PERMANENT);
-        router.attach(IIIF_2_PATH + "/", redirector);
 
         // image request
         router.attach(IIIF_2_PATH + "/{identifier}/{region}/{size}/{rotation}/{quality}.{format}",
