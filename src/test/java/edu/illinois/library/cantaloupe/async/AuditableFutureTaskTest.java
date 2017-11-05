@@ -55,14 +55,20 @@ public class AuditableFutureTaskTest extends BaseTest {
     public void testRunSetsInstantStarted() {
         AuditableFutureTask<?> task = new AuditableFutureTask<>(() -> "");
         task.run();
-        assertEquals(Instant.now(), task.getInstantStarted());
+
+        final long delta = Instant.now().toEpochMilli() -
+                task.getInstantStarted().toEpochMilli();
+        assertTrue(delta < 10);
     }
 
     @Test
     public void testRunSetsInstantStoppedUponSuccess() {
         AuditableFutureTask<?> task = new AuditableFutureTask<>(() -> "");
         task.run();
-        assertEquals(Instant.now(), task.getInstantStopped());
+
+        final long delta = Instant.now().toEpochMilli() -
+                task.getInstantStopped().toEpochMilli();
+        assertTrue(delta < 10);
     }
 
     @Test
@@ -71,7 +77,10 @@ public class AuditableFutureTaskTest extends BaseTest {
             throw new Exception("fail");
         });
         task.run();
-        assertEquals(Instant.now(), task.getInstantStopped());
+
+        final long delta = Instant.now().toEpochMilli() -
+                task.getInstantStopped().toEpochMilli();
+        assertTrue(delta < 10);
     }
 
     @Test
