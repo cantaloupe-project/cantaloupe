@@ -666,46 +666,6 @@
         </configuration>
       </plugin>
 
-      <!-- Build dependency check -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.3.1</version>
-        <dependencies>
-          <!-- See: https://github.com/ImmobilienScout24/illegal-transitive-dependency-check -->
-          <dependency>
-            <groupId>de.is24.maven.enforcer.rules</groupId>
-            <artifactId>illegal-transitive-dependency-check</artifactId>
-            <version>1.7.4</version>
-          </dependency>
-        </dependencies>
-        <executions>
-          <execution>
-            <id>enforce</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <illegalTransitiveDependencyCheck implementation="de.is24.maven.enforcer.rules.IllegalTransitiveDependencyCheck">
-                  <reportOnly>false</reportOnly>
-                  <useClassesFromLastBuild>true</useClassesFromLastBuild>
-                  <suppressTypesFromJavaRuntime>true</suppressTypesFromJavaRuntime>
-                  <!-- TODO: I don't know if this plugin plays well with JDK 9.
-                  These rules are needed there. -->
-                  <regexIgnoredClasses>
-                    <regexIgnoredClass>javax\..+</regexIgnoredClass>
-                    <regexIgnoredClass>org.w3c\..+</regexIgnoredClass>
-                    <regexIgnoredClass>org.xml.sax\..+</regexIgnoredClass>
-                  </regexIgnoredClasses>
-                </illegalTransitiveDependencyCheck>
-              </rules>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
     </plugins>
   </build>
 
