@@ -17,13 +17,15 @@ temp_pathname =
 http.enabled = true
 http.host = 0.0.0.0
 http.port = 8182
-http.http2.enabled = true
+# HTTP/2 requires Java 9 or later.
+http.http2.enabled = false
 
 # !! Configures the HTTPS server. (Standalone mode only.)
 https.enabled = false
 https.host = 0.0.0.0
 https.port = 8183
-https.http2.enabled = true
+# HTTP/2 requires Java 9 or later.
+https.http2.enabled = false
 
 # !! Available values are `JKS` and `PKCS12`. (Standalone mode only.)
 https.key_store_type = JKS
@@ -31,7 +33,7 @@ https.key_store_password = myPassword
 https.key_store_path = /path/to/keystore.jks
 https.key_password = myPassword
 
-# !! Maximum size of the HTTP(S) request queue. 0 will use the OS default.
+# !! Maximum size of the HTTP(S) request queue. 0 will use the default.
 http.accept_queue_limit = 0
 
 # Enables the Control Panel, at /admin.
