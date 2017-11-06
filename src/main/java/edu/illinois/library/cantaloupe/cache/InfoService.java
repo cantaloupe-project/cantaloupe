@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.async.ThreadPool;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -141,9 +143,13 @@ class InfoService {
      * Adds an info to the object cache synchronously.
      */
     private void put(Identifier identifier, Info info) {
-        LOGGER.debug("put(): adding info to object cache: {} (new size: {})",
-                identifier, objectCache.size() + 1);
-        objectCache.put(identifier, info);
+        if (Configuration.getInstance().getBoolean(Key.INFO_CACHE_ENABLED, true)) {
+            LOGGER.debug("put(): adding info to object cache: {} (new size: {})",
+                    identifier, objectCache.size() + 1);
+            objectCache.put(identifier, info);
+        } else {
+            LOGGER.debug("put(): info cache is disabled; doing nothing");
+        }
     }
 
     /**

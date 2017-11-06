@@ -510,6 +510,7 @@ public class ControlPanelTest extends ResourceTest {
         inputNamed(Key.SOURCE_CACHE_ENABLED).click();
         selectNamed(Key.DERIVATIVE_CACHE).selectByVisibleText("FilesystemCache");
         inputNamed(Key.DERIVATIVE_CACHE_ENABLED).click();
+        inputNamed(Key.INFO_CACHE_ENABLED).click();
         inputNamed(Key.CACHE_SERVER_PURGE_MISSING).click();
         inputNamed(Key.CACHE_SERVER_RESOLVE_FIRST).click();
         inputNamed(Key.CACHE_SERVER_TTL).sendKeys("10");
@@ -575,6 +576,7 @@ public class ControlPanelTest extends ResourceTest {
         assertTrue(config.getBoolean(Key.SOURCE_CACHE_ENABLED));
         assertEquals("FilesystemCache", config.getString(Key.DERIVATIVE_CACHE));
         assertTrue(config.getBoolean(Key.DERIVATIVE_CACHE_ENABLED));
+        assertTrue(config.getBoolean(Key.INFO_CACHE_ENABLED));
         assertTrue(config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING));
         assertTrue(config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST));
         assertEquals(10, config.getInt(Key.CACHE_SERVER_TTL));

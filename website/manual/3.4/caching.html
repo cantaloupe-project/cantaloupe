@@ -14,6 +14,8 @@ title: Caching
         <ul>
           <li><a href="#Derivative Cache Bypassing">Bypassing</a></li>
         </ul>
+      </li>
+      <li><a href="#Info Cache">Info Cache</a></li>
       <li><a href="#Modes of Operation">Modes of Operation</a></li>
       <li><a href="#Maintenance">Maintenance</a>
         <ul>
@@ -132,6 +134,26 @@ cache.client.no_transform = true
   <li>When derivative caching is enabled, "miss" responses are streamed to the client and cache simultaneously. If the cache I/O is slower than the connection to the client, response times may be adversely affected.</li>
   <li>The derivative cache is shared across endpoints. Requests for the same image from different endpoints will return the same cached image.</li>
 </ul>
+
+<hr>
+
+<h3 id="Info Cache">Info Cache</h3>
+
+<p>The info cache (added in version 3.4) caches image info in the Java heap. It operates independently of the derivative cache. When both are enabled, the info cache acts as a "level 1" cache in front of the "level 2" derivative cache:</p>
+
+<ol>
+  <li>Requested image infos are retrieved from the info cache, if available;</li>
+  <li>If not, they are retrieved from the derivative cache, if available, and added to the info cache;</li>
+  <li>If not available in any cache, they are retrieved from a processor, and added to both the info and derivative caches&mdash;whichever are enabled.</li>
+</ol>
+
+<p>The info cache can be enabled or disabled via the <code>cache.server.info.enabled</code> configuration key.</p>
+
+<p>The info cache is cluster-safe: when multiple instances are sharing the same derivative cache, there will never be an info in an instance's info cache that isn't also present in the derivative cache.</p>
+
+<p>The info cache has no maximum size. This shouldn't typically be a problem, but if you are serving huge numbers of distinct images and not restarting often, keep an eye on memory usage and be prepared to increase your JVM's maximum heap.</p>
+
+<p>The info cache is not persisted; its contents will be lost when the appliction is stopped.</p>
 
 <hr>
 

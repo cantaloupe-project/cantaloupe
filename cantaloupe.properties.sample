@@ -394,6 +394,10 @@ cache.server.derivative.enabled = false
 # `HeapCache`, `AmazonS3Cache`, and `AzureStorageCache`.
 cache.server.derivative =
 
+# Whether to use the Java heap as a "level 1" cache for image infos, in
+# front of a "level 2" derivative cache (if enabled).
+cache.server.info.enabled = true
+
 # Time before a cached image becomes stale and needs to be reloaded. Set to
 # blank or 0 for infinite.
 cache.server.ttl_seconds = 2592000

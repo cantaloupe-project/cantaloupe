@@ -130,6 +130,7 @@ public enum Key {
     IIIF_MIN_SIZE("endpoint.iiif.min_size"),
     IIIF_MIN_TILE_SIZE("endpoint.iiif.min_tile_size"),
     IMAGEMAGICKPROCESSOR_PATH_TO_BINARIES("ImageMagickProcessor.path_to_binaries"),
+    INFO_CACHE_ENABLED("cache.server.info.enabled"),
     JDBCCACHE_CONNECTION_TIMEOUT("JdbcCache.connection_timeout"),
     JDBCCACHE_DERIVATIVE_IMAGE_TABLE("JdbcCache.derivative_image_table"),
     JDBCCACHE_INFO_TABLE("JdbcCache.info_table"),
