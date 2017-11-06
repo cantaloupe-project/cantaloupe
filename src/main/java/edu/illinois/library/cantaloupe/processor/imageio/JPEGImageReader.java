@@ -41,7 +41,7 @@ class JPEGImageReader extends AbstractImageReader {
 
     @Override
     Class<? extends javax.imageio.ImageReader> preferredIIOImplementation() {
-        return com.sun.imageio.plugins.jpeg.JPEGImageReader.class;
+        return null;
     }
 
 }

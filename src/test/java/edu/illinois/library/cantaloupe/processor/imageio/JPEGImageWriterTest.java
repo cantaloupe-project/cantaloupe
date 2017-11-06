@@ -285,10 +285,7 @@ public class JPEGImageWriterTest extends BaseTest {
         final Iterator<ImageReader> readers =
                 ImageIO.getImageReadersByFormatName("JPEG");
         while (readers.hasNext()) {
-            ImageReader reader = readers.next();
-            if (reader instanceof com.sun.imageio.plugins.jpeg.JPEGImageReader) {
-                return reader;
-            }
+            return readers.next();
         }
         return null;
     }
