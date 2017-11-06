@@ -58,7 +58,7 @@ endpoint.public.auth.basic.secret = mypassword
   <li><a href="#example-4">Allow only requests for images set as "public" in a MySQL database</a></li>
   <li><a href="#example-5">Allow only JPEG output</a></li>
   <li><a href="#example-6">Allow only certain user agents</a></li>
-  <li><a href="#example-7">Allow only requests from clients that have an authorization cookie</a></li>
+  <li><a href="#example-7">Allow only requests from clients that supply a valid token in a header</a></li>
   <li><a href="#example-8">Restrict a region of an image</a></li>
   <li><a href="#example-9">Redirect to another URL</a></li>
 </ul>
@@ -190,16 +190,14 @@ module Cantaloupe
 end
 {% endhighlight %}
 
-<h4 id="example-7">Allow only requests from clients that have an authorization cookie</h4>
-
-<p>If you have an authorization service that sets a cookie, you can check for it. Cookies can't be shared across domains, but this could still work if you can set the cookie on a parent domain.</p>
+<h4 id="example-7">Allow only requests that supply a valid token in a header</h4>
 
 {% highlight ruby %}
 module Cantaloupe
   def self.authorized?(identifier, full_size, operations, resulting_size,
                        output_format, request_uri, request_headers, client_ip,
                        cookies)
-    cookies.select{ |c| c['authcookie'] }.any?
+    headers['X-MyToken'] == ... # write code to authorize the token
   end
 end
 {% endhighlight %}

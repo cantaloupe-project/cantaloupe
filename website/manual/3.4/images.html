@@ -25,6 +25,8 @@ title: Images
       </li>
     </ul>
   </li>
+  <li><a href="#Color%20Profiles">Color Profiles</a></li>
+  <li><a href="#Metadata">Metadata</a></li>
 </ul>
 
 <h2 id="Size Considerations">Size Considerations</h2>
@@ -106,3 +108,25 @@ title: Images
 <h4 id="Processor Considerations">Processor Considerations</h4>
 
 <p>To reiterate: most processors can "read the TIFF format," but not all can read it efficiently. Currently, <a href="processors.html#Java2dProcessor">Java2dProcessor</a> and <a href="processors.html#JaiProcessor">JaiProcessor</a> both support multi-resolution TIFF, which is to say that they actually do read the embedded sub-images and choose the smallest one that can fulfill the request. Additionally, both exploit tiled sub-images. JaiProcessor, however, is able to use the JAI processing pipeline to do this more efficiently, so it is currently the best-performing processor for suitably-encoded high-resolution TIFF images.</p>
+
+<hr>
+
+<h2 id="Color Profiles">Color Profiles</h2>
+
+<p>Image files may have embedded color profiles, which map the color space in which an image was produced to its internal color data. This enables viewers to reproduce image colors accurately, as they were seen by the producer. By embedding a profile, the producer need not know anything about the displays on which an image will be viewed, and need not destructively modify the color values within the image data itself.</p>
+
+<p>Most processors support embedded color profiles and will automatically copy them into derivative images; see the <a href="processors.html#Supported%20Features">table of processor-supported features</a>.</p>
+
+<p>There is typically no need to embed a profile into profile-less images, as viewers will tend to automatically assume that these map to an sRGB space, and apply the conversion themselves. There is therefore no provision for embedding profiles into profile-less images.</p>
+
+<hr>
+
+<h2 id="Metadata">Metadata</h2>
+
+<p>Many image file formats are capable of storing supplementary technical and/or descriptive metadata alongside the actual image data. Formats may be able to store standard metadata formats like EXIF, IPTC IIM, and XMP, and they may also define their own metadata formats. More than one such format may be present even within the same file.</p>
+
+<p>When an image request is received&mdash;unless it calls for the full-sized unmodified source image&mdash;the image server will have to dynamically create and return a derivative image. As this is a whole new image, distinct from the source image, populating it with metadata would require an additional step.</p>
+
+<p>When <code>processor.metadata.preserve</code> is set to <code>true</code> in the configuration file, an effort will be made to copy metadata from source images into derivative images.</p>
+
+<p>This currently does not work in all processors; see the <a href="processors.html#Supported%20Features">Supported Features</a> table for a breakdown. It also does not generally work across formats.</p>
