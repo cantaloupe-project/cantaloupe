@@ -21,7 +21,7 @@ before_install:
   - sudo apt-get install -y libav-tools graphicsmagick imagemagick ffmpeg libopenjp2-tools
 
 script:
-  - mvn clean test -Pfreedeps
+  - mvn clean verify -Pfreedeps
 
 services:
   - redis-server
