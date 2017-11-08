@@ -23,7 +23,6 @@ import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Directory;
 import org.restlet.resource.ResourceException;
-import org.restlet.routing.Redirector;
 import org.restlet.routing.Router;
 import org.restlet.routing.Template;
 import org.restlet.security.ChallengeAuthenticator;
@@ -226,7 +225,10 @@ public class RestletApplication extends Application {
 
         ////////////////////// IIIF Image API routes ///////////////////////
 
-        // redirecting resource
+        // Redirect IIIF_PATH/ to IIIF_PATH
+        router.attach(IIIF_PATH + "/", TrailingSlashRemovingResource.class);
+
+        // Redirect IIIF_PATH to IIIF_2_PATH
         router.attach(IIIF_PATH, RedirectingResource.class);
 
         //////////////////// IIIF Image API 1.x routes /////////////////////
@@ -266,14 +268,6 @@ public class RestletApplication extends Application {
                 edu.illinois.library.cantaloupe.resource.iiif.v2.InformationResource.RedirectingResource.class);
         router.attach(IIIF_2_PATH + "/{identifier}/info.json",
                 edu.illinois.library.cantaloupe.resource.iiif.v2.InformationResource.class);
-
-        // Redirect IIIF_PATH/ to IIIF_PATH
-        router.attach(IIIF_PATH + "/", TrailingSlashRemovingResource.class);
-
-        // 303-redirect IIIF_PATH to IIIF_2_PATH
-        Redirector redirector = new Redirector(getContext(), IIIF_2_PATH,
-                Redirector.MODE_CLIENT_SEE_OTHER);
-        router.attach(IIIF_PATH, redirector);
 
         ////////////////////////// Admin routes ///////////////////////////
 
