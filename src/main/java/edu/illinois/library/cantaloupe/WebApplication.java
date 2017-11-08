@@ -12,6 +12,7 @@ import edu.illinois.library.cantaloupe.resource.TrailingSlashRemovingResource;
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
 import edu.illinois.library.cantaloupe.resource.admin.ConfigurationResource;
 import edu.illinois.library.cantaloupe.resource.api.APIResource;
+import edu.illinois.library.cantaloupe.resource.iiif.RedirectingResource;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
@@ -24,7 +25,6 @@ import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Directory;
 import org.restlet.resource.ResourceException;
-import org.restlet.routing.Redirector;
 import org.restlet.routing.Router;
 import org.restlet.routing.Template;
 import org.restlet.security.ChallengeAuthenticator;
@@ -232,6 +232,12 @@ public class WebApplication extends Application {
         final Router router = new Router(getContext());
         router.setDefaultMatchingMode(Template.MODE_EQUALS);
 
+        // Redirect IIIF_PATH/ to IIIF_PATH
+        router.attach(IIIF_PATH + "/", TrailingSlashRemovingResource.class);
+
+        // Redirect IIIF_PATH to IIIF_2_PATH
+        router.attach(IIIF_PATH, RedirectingResource.class);
+
         /****************** IIIF Image API 1.1 routes *******************/
 
         // landing page
@@ -269,14 +275,6 @@ public class WebApplication extends Application {
                 edu.illinois.library.cantaloupe.resource.iiif.v2.InformationResource.RedirectingResource.class);
         router.attach(IIIF_2_PATH + "/{identifier}/info.json",
                 edu.illinois.library.cantaloupe.resource.iiif.v2.InformationResource.class);
-
-        // Redirect IIIF_PATH/ to IIIF_PATH
-        router.attach(IIIF_PATH + "/", TrailingSlashRemovingResource.class);
-
-        // 303-redirect IIIF_PATH to IIIF_2_PATH
-        Redirector redirector = new Redirector(getContext(), IIIF_2_PATH,
-                Redirector.MODE_CLIENT_SEE_OTHER);
-        router.attach(IIIF_PATH, redirector);
 
         /****************** Admin routes ********************/
 
