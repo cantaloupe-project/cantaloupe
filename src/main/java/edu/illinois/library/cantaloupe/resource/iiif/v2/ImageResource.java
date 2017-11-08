@@ -19,11 +19,9 @@ import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import org.restlet.data.Disposition;
-import org.restlet.data.Header;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
-import org.restlet.util.Series;
 
 import java.awt.Dimension;
 import java.io.FileNotFoundException;
@@ -170,14 +168,13 @@ public class ImageResource extends IIIF2Resource {
     }
 
     private void addLinkHeader(Parameters params) {
-        final Series<Header> requestHeaders = getRequest().getHeaders();
         final Identifier identifier = params.getIdentifier();
         final String paramsStr = params.toString().replaceFirst(
                 identifier.toString(), getPublicIdentifier());
 
         getBufferedResponseHeaders().add("Link",
                 String.format("<%s%s/%s>;rel=\"canonical\"",
-                getPublicRootRef(getRequest().getRootRef(), requestHeaders),
+                getPublicRootReference(),
                 RestletApplication.IIIF_2_PATH, paramsStr));
     }
 

@@ -33,6 +33,7 @@ public class TasksResource extends AbstractAPIResource {
      * @return    Empty representation.
      */
     @Post("json")
+    @SuppressWarnings("unused")
     public Representation doPost(Representation rep) throws Exception {
         // N.B.: ObjectMapper will deserialize into the correct subclass.
         ObjectReader reader = new ObjectMapper().readerFor(Command.class);
@@ -58,7 +59,7 @@ public class TasksResource extends AbstractAPIResource {
             // URI.
             final Request request = getRequest();
             final String taskURI =
-                    getPublicRootRef(request.getRootRef(), request.getHeaders()) +
+                    getPublicRootReference() +
                             RestletApplication.TASKS_PATH + "/" +
                             task.getUUID().toString();
 

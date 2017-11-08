@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
+import edu.illinois.library.cantaloupe.resource.TrailingSlashRemovingResource;
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
 import edu.illinois.library.cantaloupe.resource.admin.ConfigurationResource;
 import edu.illinois.library.cantaloupe.resource.api.CacheResource;
@@ -22,6 +23,7 @@ import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Directory;
 import org.restlet.resource.ResourceException;
+import org.restlet.routing.Redirector;
 import org.restlet.routing.Router;
 import org.restlet.routing.Template;
 import org.restlet.security.ChallengeAuthenticator;
@@ -233,6 +235,9 @@ public class RestletApplication extends Application {
         router.attach(IIIF_1_PATH,
                 edu.illinois.library.cantaloupe.resource.iiif.v1.LandingResource.class);
 
+        // Redirect IIIF_1_PATH/ to IIIF_1_PATH
+        router.attach(IIIF_1_PATH + "/", TrailingSlashRemovingResource.class);
+
         // image request
         router.attach(IIIF_1_PATH + "/{identifier}/{region}/{size}/{rotation}/{quality_format}",
                 edu.illinois.library.cantaloupe.resource.iiif.v1.ImageResource.class);
@@ -249,6 +254,9 @@ public class RestletApplication extends Application {
         router.attach(IIIF_2_PATH,
                 edu.illinois.library.cantaloupe.resource.iiif.v2.LandingResource.class);
 
+        // Redirect IIIF_2_PATH/ to IIIF_2_PATH
+        router.attach(IIIF_2_PATH + "/", TrailingSlashRemovingResource.class);
+
         // image request
         router.attach(IIIF_2_PATH + "/{identifier}/{region}/{size}/{rotation}/{quality}.{format}",
                 edu.illinois.library.cantaloupe.resource.iiif.v2.ImageResource.class);
@@ -258,6 +266,14 @@ public class RestletApplication extends Application {
                 edu.illinois.library.cantaloupe.resource.iiif.v2.InformationResource.RedirectingResource.class);
         router.attach(IIIF_2_PATH + "/{identifier}/info.json",
                 edu.illinois.library.cantaloupe.resource.iiif.v2.InformationResource.class);
+
+        // Redirect IIIF_PATH/ to IIIF_PATH
+        router.attach(IIIF_PATH + "/", TrailingSlashRemovingResource.class);
+
+        // 303-redirect IIIF_PATH to IIIF_2_PATH
+        Redirector redirector = new Redirector(getContext(), IIIF_2_PATH,
+                Redirector.MODE_CLIENT_SEE_OTHER);
+        router.attach(IIIF_PATH, redirector);
 
         ////////////////////////// Admin routes ///////////////////////////
 

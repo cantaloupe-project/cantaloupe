@@ -5,8 +5,11 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.junit.Test;
 import org.restlet.data.Status;
+import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
+
+import java.io.IOException;
 
 import static org.junit.Assert.*;
 
@@ -41,6 +44,20 @@ public class LandingResourceTest extends ResourceTest {
         client.get();
         assertEquals(Status.SUCCESS_OK, client.getStatus());
         assertTrue(client.get().getText().contains("Cantaloupe Image"));
+    }
+
+    @Test
+    public void testGetWithTrailingSlashRedirectsToWithout()
+            throws IOException {
+        ClientResource client = getClientForUriPath(
+                RestletApplication.IIIF_1_PATH + "/");
+        client.setFollowingRedirects(false);
+        Representation responseRep = client.get();
+
+        assertEquals(Status.REDIRECTION_PERMANENT, client.getStatus());
+        assertTrue(client.getLocationRef().toString().
+                endsWith(RestletApplication.IIIF_1_PATH));
+        assertTrue(responseRep.isEmpty());
     }
 
 }
