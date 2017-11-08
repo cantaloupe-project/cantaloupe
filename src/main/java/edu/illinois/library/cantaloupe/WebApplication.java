@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
+import edu.illinois.library.cantaloupe.resource.TrailingSlashRemovingResource;
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
 import edu.illinois.library.cantaloupe.resource.admin.ConfigurationResource;
 import edu.illinois.library.cantaloupe.resource.api.APIResource;
@@ -238,9 +239,7 @@ public class WebApplication extends Application {
                 edu.illinois.library.cantaloupe.resource.iiif.v1.LandingResource.class);
 
         // Redirect IIIF_1_PATH/ to IIIF_1_PATH
-        Redirector redirector = new Redirector(getContext(), IIIF_1_PATH,
-                Redirector.MODE_CLIENT_PERMANENT);
-        router.attach(IIIF_1_PATH + "/", redirector);
+        router.attach(IIIF_1_PATH + "/", TrailingSlashRemovingResource.class);
 
         // image request
         router.attach(IIIF_1_PATH + "/{identifier}/{region}/{size}/{rotation}/{quality_format}",
@@ -259,9 +258,7 @@ public class WebApplication extends Application {
                 edu.illinois.library.cantaloupe.resource.iiif.v2.LandingResource.class);
 
         // Redirect IIIF_2_PATH/ to IIIF_2_PATH
-        redirector = new Redirector(getContext(), IIIF_2_PATH,
-                Redirector.MODE_CLIENT_PERMANENT);
-        router.attach(IIIF_2_PATH + "/", redirector);
+        router.attach(IIIF_2_PATH + "/", TrailingSlashRemovingResource.class);
 
         // image request
         router.attach(IIIF_2_PATH + "/{identifier}/{region}/{size}/{rotation}/{quality}.{format}",
@@ -273,8 +270,11 @@ public class WebApplication extends Application {
         router.attach(IIIF_2_PATH + "/{identifier}/info.json",
                 edu.illinois.library.cantaloupe.resource.iiif.v2.InformationResource.class);
 
+        // Redirect IIIF_PATH/ to IIIF_PATH
+        router.attach(IIIF_PATH + "/", TrailingSlashRemovingResource.class);
+
         // 303-redirect IIIF_PATH to IIIF_2_PATH
-        redirector = new Redirector(getContext(), IIIF_2_PATH,
+        Redirector redirector = new Redirector(getContext(), IIIF_2_PATH,
                 Redirector.MODE_CLIENT_SEE_OTHER);
         router.attach(IIIF_PATH, redirector);
 
