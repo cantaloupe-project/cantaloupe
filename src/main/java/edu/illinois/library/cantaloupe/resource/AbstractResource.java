@@ -90,6 +90,8 @@ public abstract class AbstractResource extends ServerResource {
             "endpoint.iiif.content_disposition";
     public static final String MAX_PIXELS_CONFIG_KEY =
             "max_pixels";
+    public static final String PUBLIC_IDENTIFIER_HEADER =
+            "X-IIIF-ID";
     public static final String SLASH_SUBSTITUTE_CONFIG_KEY =
             "slash_substitute";
 
@@ -564,6 +566,28 @@ public abstract class AbstractResource extends ServerResource {
             addr = getRequest().getClientInfo().getAddress();
         }
         return addr;
+    }
+
+    /**
+     * @return Value of the {@link #PUBLIC_IDENTIFIER_HEADER} header, if
+     *         available, or else the <code>identifier</code> URI path
+     *         component.
+     */
+    protected String getPublicIdentifier() {
+        final Map<String,Object> attrs = getRequest().getAttributes();
+        final String uriID = (String) attrs.get("identifier");
+        final String decodedID = Reference.decode(uriID);
+        final String reSlashedID = decodeSlashes(decodedID);
+        final String headerID = getRequest().getHeaders().getFirstValue(
+                PUBLIC_IDENTIFIER_HEADER, true);
+
+        logger.debug("Identifier requested: {} -> decoded: {} -> " +
+                        "slashes substituted: {} | {} header: {}",
+                uriID, decodedID, reSlashedID, PUBLIC_IDENTIFIER_HEADER,
+                headerID);
+
+        return (headerID != null && !headerID.isEmpty()) ?
+                headerID : reSlashedID;
     }
 
     protected ImageRepresentation getRepresentation(OperationList ops,

@@ -348,7 +348,8 @@ public class ImageResourceTest extends ResourceTest {
         header = client.getResponse().getHeaders().getFirst("Link");
         assertTrue(header.getValue().startsWith("<https://example.org/"));
 
-        client.getRequest().getHeaders().add("X-IIIF-ID", "originalID");
+        client.getRequest().getHeaders().add(
+                AbstractResource.PUBLIC_IDENTIFIER_HEADER, "originalID");
         client.get();
         header = client.getResponse().getHeaders().getFirst("Link");
         assertTrue(header.getValue().contains("/originalID/"));

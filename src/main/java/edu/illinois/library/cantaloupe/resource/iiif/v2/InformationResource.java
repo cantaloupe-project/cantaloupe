@@ -27,8 +27,6 @@ import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.util.Series;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Handles IIIF Image API 2.x information requests.
@@ -38,22 +36,18 @@ import org.slf4j.LoggerFactory;
  */
 public class InformationResource extends IIIF2Resource {
 
-    private static final Logger logger = LoggerFactory.
-            getLogger(InformationResource.class);
-
     /**
      * Redirects /{identifier} to /{identifier}/info.json, respecting the
-     * Servlet context root.
+     * Servlet context root and {@link #PUBLIC_IDENTIFIER_HEADER} header.
      */
     public static class RedirectingResource extends IIIF2Resource {
         @Get
         public Representation doGet() {
             final Request request = getRequest();
-            final String identifier =
-                    (String) request.getAttributes().get("identifier");
             final Reference newRef = new Reference(
                     getPublicRootRef(request.getRootRef(), request.getHeaders()) +
-                            WebApplication.IIIF_2_PATH + "/" + identifier +
+                            WebApplication.IIIF_2_PATH + "/" +
+                            getPublicIdentifier() +
                             "/info.json");
             redirectSeeOther(newRef);
             return new EmptyRepresentation();
@@ -73,10 +67,6 @@ public class InformationResource extends IIIF2Resource {
         final String decodedIdentifier = Reference.decode(urlIdentifier);
         final String reSlashedIdentifier = decodeSlashes(decodedIdentifier);
         final Identifier identifier = new Identifier(reSlashedIdentifier);
-
-        logger.debug("Identifier requested: {} / decoded: {} / " +
-                        "slashes substituted: {}",
-                urlIdentifier, decodedIdentifier, identifier);
 
         // Get the resolver
         Resolver resolver = ResolverFactory.getResolver(identifier);
@@ -104,7 +94,7 @@ public class InformationResource extends IIIF2Resource {
 
         // Get an Info instance corresponding to the source image
         ImageInfo imageInfo = ImageInfoFactory.newImageInfo(
-                identifier, getImageUri(identifier), processor,
+                identifier, getImageUri(), processor,
                 getOrReadInfo(identifier, processor));
 
         JacksonRepresentation rep = new JacksonRepresentation<>(imageInfo);
@@ -134,17 +124,15 @@ public class InformationResource extends IIIF2Resource {
     }
 
     /**
-     * @param identifier
      * @return Full image URI corresponding to the given identifier, respecting
-     *         the X-Forwarded-* and X-IIIF-ID reverse proxy headers.
+     *         the X-Forwarded-* and {@link #PUBLIC_IDENTIFIER_HEADER}
+     *         reverse proxy headers.
      */
-    private String getImageUri(Identifier identifier) {
+    private String getImageUri() {
         final Series<Header> headers = getRequest().getHeaders();
-        final String identifierStr = headers.getFirstValue(
-                "X-IIIF-ID", true, identifier.toString());
         return getPublicRootRef(getRequest().getRootRef(), headers) +
                 WebApplication.IIIF_2_PATH + "/" +
-                Reference.encode(identifierStr);
+                Reference.encode(getPublicIdentifier());
     }
 
 }

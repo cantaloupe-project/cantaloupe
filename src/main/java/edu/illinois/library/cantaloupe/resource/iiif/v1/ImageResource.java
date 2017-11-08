@@ -23,8 +23,6 @@ import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Variant;
 import org.restlet.resource.Get;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.io.FileNotFoundException;
@@ -41,9 +39,6 @@ import java.util.Set;
  * Request Operations</a>
  */
 public class ImageResource extends IIIF1Resource {
-
-    private static final Logger logger = LoggerFactory.
-            getLogger(ImageResource.class);
 
     /**
      * Format to assume when no extension is present in the URI.
@@ -62,10 +57,6 @@ public class ImageResource extends IIIF1Resource {
         final String decodedIdentifier = Reference.decode(urlIdentifier);
         final String reSlashedIdentifier = decodeSlashes(decodedIdentifier);
         final Identifier identifier = new Identifier(reSlashedIdentifier);
-
-        logger.debug("Identifier requested: {} / decoded: {} / " +
-                        "slashes substituted: {}",
-                urlIdentifier, decodedIdentifier, identifier);
 
         final Resolver resolver = ResolverFactory.getResolver(identifier);
 

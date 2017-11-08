@@ -24,8 +24,6 @@ import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.util.Series;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.io.FileNotFoundException;
@@ -41,9 +39,6 @@ import java.util.Set;
  * Request Operations</a>
  */
 public class ImageResource extends IIIF2Resource {
-
-    private static final Logger logger = LoggerFactory.
-            getLogger(ImageResource.class);
 
     public static final String CONTENT_DISPOSITION_CONFIG_KEY =
             "endpoint.iiif.content_disposition";
@@ -62,10 +57,6 @@ public class ImageResource extends IIIF2Resource {
         final String decodedIdentifier = Reference.decode(urlIdentifier);
         final String reSlashedIdentifier = decodeSlashes(decodedIdentifier);
         final Identifier identifier = new Identifier(reSlashedIdentifier);
-
-        logger.debug("Identifier requested: {} / decoded: {} / " +
-                        "slashes substituted: {}",
-                urlIdentifier, decodedIdentifier, identifier);
 
         // Assemble the URI parameters into a Parameters object
         final Parameters params = new Parameters(
@@ -178,16 +169,14 @@ public class ImageResource extends IIIF2Resource {
     }
 
     private void addLinkHeader(Parameters params) {
-        final Series<Header> headers = getRequest().getHeaders();
+        final Series<Header> requestHeaders = getRequest().getHeaders();
         final Identifier identifier = params.getIdentifier();
-        final String canonicalIdentifierStr = headers.getFirstValue(
-                "X-IIIF-ID", true, identifier.toString());
         final String paramsStr = params.toString().replaceFirst(
-                identifier.toString(), canonicalIdentifierStr);
+                identifier.toString(), getPublicIdentifier());
 
         getResponse().getHeaders().add("Link",
                 String.format("<%s%s/%s>;rel=\"canonical\"",
-                getPublicRootRef(getRequest().getRootRef(), headers),
+                getPublicRootRef(getRequest().getRootRef(), requestHeaders),
                 WebApplication.IIIF_2_PATH, paramsStr));
     }
 
