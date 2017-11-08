@@ -170,16 +170,14 @@ public class ImageResource extends IIIF2Resource {
     }
 
     private void addLinkHeader(Parameters params) {
-        final Series<Header> headers = getRequest().getHeaders();
+        final Series<Header> requestHeaders = getRequest().getHeaders();
         final Identifier identifier = params.getIdentifier();
-        final String canonicalIdentifierStr = headers.getFirstValue(
-                "X-IIIF-ID", true, identifier.toString());
         final String paramsStr = params.toString().replaceFirst(
-                identifier.toString(), canonicalIdentifierStr);
+                identifier.toString(), getPublicIdentifier());
 
         getBufferedResponseHeaders().add("Link",
                 String.format("<%s%s/%s>;rel=\"canonical\"",
-                getPublicRootRef(getRequest().getRootRef(), headers),
+                getPublicRootRef(getRequest().getRootRef(), requestHeaders),
                 RestletApplication.IIIF_2_PATH, paramsStr));
     }
 

@@ -153,7 +153,7 @@ public class AdminResource extends AbstractAdminResource {
         vars.put("xForwardedForHeader",
                 headers.getFirstValue("X-Forwarded-For", true, ""));
         vars.put("xIiifIdHeader",
-                headers.getFirstValue("X-IIIF-ID", true, ""));
+                headers.getFirstValue(PUBLIC_IDENTIFIER_HEADER, true, ""));
 
         final File configFile = Configuration.getInstance().getFile();
         vars.put("configFilePath", (configFile != null) ?

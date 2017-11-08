@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.FileUtils;
@@ -319,11 +320,32 @@ public class InformationResourceTest extends ResourceTest {
         }
     }
 
+    @Test
+    public void testRedirectToInfoJSON() {
+        ClientResource client = getClientForUriPath("/" + IMAGE);
+        client.setFollowingRedirects(false);
+        client.get();
+        assertEquals(Status.REDIRECTION_SEE_OTHER,
+                client.getResponse().getStatus());
+        assertEquals("info.json",
+                client.getResponse().getLocationRef().getLastSegment());
+    }
+
+    @Test
+    public void testRedirectToInfoJSONWithDifferentPublicIdentifier() {
+        ClientResource client = getClientForUriPath("/" + IMAGE);
+        client.setFollowingRedirects(false);
+        client.getRequest().getHeaders().
+                add(AbstractResource.PUBLIC_IDENTIFIER_HEADER, "foxes");
+        client.get();
+        assertEquals(Status.REDIRECTION_SEE_OTHER,
+                client.getResponse().getStatus());
+        assertTrue(client.getResponse().getLocationRef().toString().endsWith("/foxes/info.json"));
+    }
+
     /**
      * Checks that the server responds with HTTP 500 when a non-FileResolver is
      * used with a non-StreamProcessor.
-     *
-     * @throws Exception
      */
     @Test
     public void testResolverProcessorCompatibility() throws Exception {
@@ -401,7 +423,8 @@ public class InformationResourceTest extends ResourceTest {
         client.getRequest().getHeaders().add("X-Forwarded-Host", "example.org");
         client.getRequest().getHeaders().add("X-Forwarded-Port", "8080");
         client.getRequest().getHeaders().add("X-Forwarded-Path", "/cats/");
-        client.getRequest().getHeaders().add("X-IIIF-ID", "originalID");
+        client.getRequest().getHeaders().add(
+                AbstractResource.PUBLIC_IDENTIFIER_HEADER, "originalID");
         client.get();
         String json = client.getResponse().getEntityAsText();
         ObjectMapper mapper = new ObjectMapper();

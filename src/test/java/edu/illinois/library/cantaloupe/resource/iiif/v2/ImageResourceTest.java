@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Orientation;
+import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.FileUtils;
@@ -340,7 +341,8 @@ public class ImageResourceTest extends ResourceTest {
         header = client.getResponse().getHeaders().getFirst("Link");
         assertTrue(header.getValue().startsWith("<https://example.org/"));
 
-        client.getRequest().getHeaders().add("X-IIIF-ID", "originalID");
+        client.getRequest().getHeaders().add(
+                AbstractResource.PUBLIC_IDENTIFIER_HEADER, "originalID");
         client.get();
         header = client.getResponse().getHeaders().getFirst("Link");
         assertTrue(header.getValue().contains("/originalID/"));

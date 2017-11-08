@@ -35,18 +35,18 @@ import org.restlet.util.Series;
 public class InformationResource extends IIIF1Resource {
 
     /**
-     * Redirects /{identifier} to /{identifier}/info.json, respecting the
-     * Servlet context root.
+     * Redirects <code>/{identifier}</code> to
+     * <code>/{identifier}/info.json</code>, respecting the Servlet context
+     * root and {@link #PUBLIC_IDENTIFIER_HEADER} header.
      */
     public static class RedirectingResource extends IIIF1Resource {
         @Get
         public Representation doGet() {
             final Request request = getRequest();
-            final String identifier = (String) request.getAttributes().
-                    get("identifier");
             final Reference newRef = new Reference(
                     getPublicRootRef(request.getRootRef(), request.getHeaders()) +
-                            RestletApplication.IIIF_1_PATH + "/" + identifier +
+                            RestletApplication.IIIF_1_PATH + "/" +
+                            getPublicIdentifier() +
                             "/info.json");
             redirectSeeOther(newRef);
             return new EmptyRepresentation();
@@ -91,8 +91,7 @@ public class InformationResource extends IIIF1Resource {
         new ProcessorConnector(resolver, processor, identifier).connect();
 
         final ImageInfo imageInfo = new ImageInfoFactory().newImageInfo(
-                getImageUri(identifier), processor,
-                getOrReadInfo(identifier, processor));
+                getImageURI(), processor, getOrReadInfo(identifier, processor));
 
         getBufferedResponseHeaders().add("Link",
                 String.format("<%s>;rel=\"profile\";", imageInfo.profile));
@@ -103,17 +102,15 @@ public class InformationResource extends IIIF1Resource {
     }
 
     /**
-     * @param identifier
      * @return Full image URI corresponding to the given identifier, respecting
-     *         the X-Forwarded-* and X-IIIF-ID reverse proxy headers.
+     *         the X-Forwarded-* and {@link #PUBLIC_IDENTIFIER_HEADER} reverse
+     *         proxy headers.
      */
-    private String getImageUri(Identifier identifier) {
+    private String getImageURI() {
         final Series<Header> headers = getRequest().getHeaders();
-        final String identifierStr = headers.getFirstValue(
-                "X-IIIF-ID", true, identifier.toString());
         return getPublicRootRef(getRequest().getRootRef(), headers) +
                 RestletApplication.IIIF_1_PATH + "/" +
-                Reference.encode(identifierStr);
+                Reference.encode(getPublicIdentifier());
     }
 
     private MediaType getNegotiatedMediaType() {

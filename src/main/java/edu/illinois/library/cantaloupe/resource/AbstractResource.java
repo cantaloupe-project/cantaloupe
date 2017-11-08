@@ -51,6 +51,8 @@ public abstract class AbstractResource extends ServerResource {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(AbstractResource.class);
 
+    public static final String PUBLIC_IDENTIFIER_HEADER = "X-IIIF-ID";
+
     protected static final String RESPONSE_CONTENT_DISPOSITION_QUERY_ARG =
             "response-content-disposition";
 
@@ -304,7 +306,10 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * @return Identifier component of the URI, decoded and ready for use.
+     * @return Decoded identifier component of the URI. N.B.: This may not be
+     *         the identifier the user supplies or sees; for that, use
+     *         {@link #getPublicIdentifier()}.
+     * @see #getPublicIdentifier()
      */
     protected Identifier getIdentifier() {
         final Map<String,Object> attrs = getRequest().getAttributes();
@@ -342,6 +347,28 @@ public abstract class AbstractResource extends ServerResource {
             info = proc.readImageInfo();
         }
         return info;
+    }
+
+    /**
+     * @return Value of the {@link #PUBLIC_IDENTIFIER_HEADER} header, if
+     *         available, or else the <code>identifier</code> URI path
+     *         component.
+     */
+    protected String getPublicIdentifier() {
+        final Map<String,Object> attrs = getRequest().getAttributes();
+        final String urlID = (String) attrs.get("identifier");
+        final String decodedID = Reference.decode(urlID);
+        final String reSlashedID = decodeSlashes(decodedID);
+        final String headerID = getRequest().getHeaders().getFirstValue(
+                PUBLIC_IDENTIFIER_HEADER, true);
+
+        LOGGER.debug("Identifier requested: {} -> decoded: {} -> " +
+                        "slashes substituted: {} | {} header: {}",
+                urlID, decodedID, reSlashedID, PUBLIC_IDENTIFIER_HEADER,
+                headerID);
+
+        return (headerID != null && !headerID.isEmpty()) ?
+                headerID : reSlashedID;
     }
 
     /**
