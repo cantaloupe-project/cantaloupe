@@ -17,6 +17,7 @@ import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
+import org.restlet.Request;
 import org.restlet.data.Disposition;
 import org.restlet.data.Header;
 import org.restlet.data.Reference;
@@ -158,7 +159,7 @@ public class ImageResource extends IIIF2Resource {
             throw new UnsupportedOutputFormatException(msg);
         }
 
-        this.addLinkHeader(params);
+        addLinkHeader(params);
 
         // Add client cache header(s) if configured to do so. We do this later
         // rather than sooner to prevent them from being sent along with an
@@ -169,14 +170,13 @@ public class ImageResource extends IIIF2Resource {
     }
 
     private void addLinkHeader(Parameters params) {
-        final Series<Header> requestHeaders = getRequest().getHeaders();
         final Identifier identifier = params.getIdentifier();
         final String paramsStr = params.toString().replaceFirst(
                 identifier.toString(), getPublicIdentifier());
 
         getResponse().getHeaders().add("Link",
                 String.format("<%s%s/%s>;rel=\"canonical\"",
-                getPublicRootRef(getRequest().getRootRef(), requestHeaders),
+                getPublicRootReference(),
                 WebApplication.IIIF_2_PATH, paramsStr));
     }
 

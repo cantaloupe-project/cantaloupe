@@ -107,7 +107,9 @@ public abstract class AbstractResource extends ServerResource {
         Map<String,Object> vars = new HashMap<>();
         vars.put("version", Application.getVersion());
         if (request != null) { // this will be null when testing
-            Reference publicRef = getPublicRootRef(request.getRootRef(),
+            Reference publicRef = getPublicReference(
+                    request.getRootRef(),
+                    request.getRootRef(),
                     request.getHeaders());
             vars.put("baseUri", publicRef.toString());
         }
@@ -115,44 +117,58 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * <p>Returns a root reference (URI) that can be used in public for the
-     * purposes of display or internal linking.</p>
+     * <p>Returns a root reference (URI) that can be used in public for display
+     * or internal linking.</p>
      *
      * <p>The URI respects the <code>base_uri</code> option in the application
      * configuration, if set. Otherwise, it respects the
      * <code>X-Forwarded-*</code> request headers, if available. Finally, the
      * server hostname etc. otherwise.</p>
      *
-     * @param requestRootRef
-     * @param requestHeaders
-     * @return Root reference usable in public.
+     * @param requestRootRef Application root URI.
+     * @param requestRef     Request URI.
+     * @param requestHeaders Request headers.
+     * @return Reference usable in public.
      */
-    protected static Reference getPublicRootRef(Reference requestRootRef,
-                                                Series<Header> requestHeaders) {
-        if (requestHeaders == null) {
-            requestHeaders = new Series<>(Header.class);
+    protected static Reference getPublicReference(Reference requestRootRef,
+                                                  Reference requestRef,
+                                                  Series<Header> requestHeaders) {
+        String appRootRelativePath =
+                requestRef.getRelativeRef(requestRootRef).getPath();
+        if (".".equals(appRootRelativePath)) { // when the paths are the same
+            appRootRelativePath = "";
         }
-        final Reference rootRef = new Reference(requestRootRef);
+        Reference newRef;
 
         // If base_uri is set in the configuration, build a URI based on that.
         final String baseUri = ConfigurationFactory.getInstance().
                 getString(BASE_URI_CONFIG_KEY);
         if (baseUri != null && baseUri.length() > 0) {
             final Reference baseRef = new Reference(baseUri);
-            rootRef.setScheme(baseRef.getScheme());
-            rootRef.setHostDomain(baseRef.getHostDomain());
+            newRef = new Reference(requestRootRef);
+            newRef.setScheme(baseRef.getScheme());
+            newRef.setHostDomain(baseRef.getHostDomain());
             // if the "port" is a local socket, Reference will serialize it
             // as -1, so avoid that.
             if (baseRef.getHostPort() < 0) {
-                rootRef.setHostPort(null);
+                newRef.setHostPort(null);
             } else {
-                rootRef.setHostPort(baseRef.getHostPort());
+                newRef.setHostPort(baseRef.getHostPort());
             }
-            rootRef.setPath(StringUtils.stripEnd(baseRef.getPath(), "/"));
 
-            logger.debug("Base URI from assembled from configuration ({}): {}",
-                    BASE_URI_CONFIG_KEY, rootRef);
+            String pathStr = StringUtils.stripEnd(baseRef.getPath(), "/");
+            if (!appRootRelativePath.isEmpty()) {
+                pathStr = StringUtils.stripEnd(pathStr, "/") + "/" +
+                        StringUtils.stripStart(appRootRelativePath, "/");
+            }
+            newRef.setPath(pathStr);
+
+            logger.debug("Base URI from assembled from {} key: {}",
+                    BASE_URI_CONFIG_KEY, newRef);
         } else {
+            if (requestHeaders == null) {
+                requestHeaders = new Series<>(Header.class);
+            }
             // Try to use X-Forwarded-* headers.
             // N.B. Header values here may be comma-separated lists when
             // operating behind a chain of reverse proxies.
@@ -175,7 +191,6 @@ public abstract class AbstractResource extends ServerResource {
                         protocolHeader.split(",")[0].trim().toUpperCase();
                 final Protocol protocol = protocolStr.equals("HTTPS") ?
                         Protocol.HTTPS : Protocol.HTTP;
-                final String pathStr = pathHeader.split(",")[0].trim();
                 final String portStr = portHeader.split(",")[0].trim();
                 Integer port = Integer.parseInt(portStr);
                 if ((port == 80 && protocol.equals(Protocol.HTTP)) ||
@@ -183,18 +198,27 @@ public abstract class AbstractResource extends ServerResource {
                     port = null;
                 }
 
-                rootRef.setHostDomain(hostStr);
-                rootRef.setPath(StringUtils.stripEnd(pathStr, "/"));
-                rootRef.setProtocol(protocol);
-                rootRef.setHostPort(port);
+                String pathStr = pathHeader.split(",")[0].trim();
+                if (!appRootRelativePath.isEmpty()) {
+                    pathStr = StringUtils.stripEnd(pathStr, "/") + "/" +
+                            StringUtils.stripStart(appRootRelativePath, "/");
+                }
+
+                newRef = new Reference(requestRootRef);
+                newRef.setPath(pathStr);
+                newRef.setHostDomain(hostStr);
+                newRef.setPath(StringUtils.stripEnd(pathStr, "/"));
+                newRef.setProtocol(protocol);
+                newRef.setHostPort(port);
 
                 logger.debug("Base URI assembled from X-Forwarded headers: {}",
-                                rootRef);
+                                newRef);
             } else {
-                logger.debug("Base URI assembled from request: {}", rootRef);
+                newRef = requestRef;
+                logger.debug("Base URI assembled from request: {}", newRef);
             }
         }
-        return rootRef;
+        return newRef;
     }
 
     /**
@@ -588,6 +612,24 @@ public abstract class AbstractResource extends ServerResource {
 
         return (headerID != null && !headerID.isEmpty()) ?
                 headerID : reSlashedID;
+    }
+
+    /**
+     * @see #getPublicRootReference()
+     */
+    protected Reference getPublicReference() {
+        final Request request = getRequest();
+        return getPublicReference(request.getRootRef(),
+                request.getResourceRef(), request.getHeaders());
+    }
+
+    /**
+     * @see #getPublicReference()
+     */
+    protected Reference getPublicRootReference() {
+        final Request request = getRequest();
+        return getPublicReference(request.getRootRef(),
+                request.getRootRef(), request.getHeaders());
     }
 
     protected ImageRepresentation getRepresentation(OperationList ops,

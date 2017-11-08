@@ -147,22 +147,24 @@ public class AbstractResourceTest extends BaseTest {
     }
 
     @Test
-    public void testGetPublicRootRefUsingConfiguration() {
-        final String uri1 = "http://example.net/cats";
-        final String uri2 = "http://example.org/dogs";
+    public void testGetPublicReferenceUsingConfiguration() {
+        final String baseURI = "http://example.net/cats";
+        final String rootURI = "http://example.org/dogs";
+        final String resourceURI = "http://example.org/dogs/llamas";
         Configuration.getInstance().setProperty(
-                AbstractResource.BASE_URI_CONFIG_KEY, uri1);
+                AbstractResource.BASE_URI_CONFIG_KEY, baseURI);
 
         Series<Header> headers = new Series<>(Header.class);
 
-        Reference ref = AbstractResource.getPublicRootRef(
-                new Reference(uri2), headers);
-        assertEquals(uri1, ref.toString());
+        Reference ref = AbstractResource.getPublicReference(
+                new Reference(rootURI), new Reference(resourceURI), headers);
+        assertEquals(baseURI + "/llamas", ref.toString());
     }
 
     @Test
-    public void testGetPublicRootRefUsingXForwardedHeaders() {
+    public void testGetPublicReferenceUsingXForwardedHeaders() {
         Reference rootRef = new Reference("http://bogus");
+        Reference resourceRef = new Reference("http://bogus/cats");
 
         // HTTP & port 80
         Series<Header> headers = new Series<>(Header.class);
@@ -170,51 +172,52 @@ public class AbstractResourceTest extends BaseTest {
         headers.set("X-Forwarded-Host", "example.org");
         headers.set("X-Forwarded-Port", "80");
         headers.set("X-Forwarded-Path", "/");
-        Reference ref = AbstractResource.getPublicRootRef(rootRef, headers);
-        assertEquals("http://example.org", ref.toString());
+        Reference ref = AbstractResource.getPublicReference(rootRef, resourceRef, headers);
+        assertEquals("http://example.org/cats", ref.toString());
 
         // HTTP & port != 80
         headers.set("X-Forwarded-Proto", "HTTP");
         headers.set("X-Forwarded-Host", "example.org");
         headers.set("X-Forwarded-Port", "85");
         headers.set("X-Forwarded-Path", "/");
-        ref = AbstractResource.getPublicRootRef(rootRef, headers);
-        assertEquals("http://example.org:85", ref.toString());
+        ref = AbstractResource.getPublicReference(rootRef, resourceRef, headers);
+        assertEquals("http://example.org:85/cats", ref.toString());
 
         // HTTPS & port 443
         headers.set("X-Forwarded-Proto", "HTTPS");
         headers.set("X-Forwarded-Host", "example.org");
         headers.set("X-Forwarded-Port", "443");
         headers.set("X-Forwarded-Path", "/");
-        ref = AbstractResource.getPublicRootRef(rootRef, headers);
-        assertEquals("https://example.org", ref.toString());
+        ref = AbstractResource.getPublicReference(rootRef, resourceRef, headers);
+        assertEquals("https://example.org/cats", ref.toString());
 
         // HTTPS & port != 443
         headers.set("X-Forwarded-Proto", "HTTPS");
         headers.set("X-Forwarded-Host", "example.org");
         headers.set("X-Forwarded-Port", "450");
         headers.set("X-Forwarded-Path", "/");
-        ref = AbstractResource.getPublicRootRef(rootRef, headers);
-        assertEquals("https://example.org:450", ref.toString());
+        ref = AbstractResource.getPublicReference(rootRef, resourceRef, headers);
+        assertEquals("https://example.org:450/cats", ref.toString());
 
         // Multiple values
         headers.set("X-Forwarded-Proto", "http,http");
         headers.set("X-Forwarded-Host", "example.org,example.mil");
         headers.set("X-Forwarded-Port", "80,8080");
-        headers.set("X-Forwarded-Path", "/cats,/dogs");
-        ref = AbstractResource.getPublicRootRef(rootRef, headers);
-        assertEquals("http://example.org/cats", ref.toString());
+        headers.set("X-Forwarded-Path", "/foxes,/dogs");
+        ref = AbstractResource.getPublicReference(rootRef, resourceRef, headers);
+        assertEquals("http://example.org/foxes/cats", ref.toString());
     }
 
     @Test
-    public void testGetPublicRootRefFallsBackToRequest() {
-        final String uri = "http://example.net/cats";
+    public void testGetPublicReferenceFallsBackToRequest() {
+        final String rootURI = "http://example.net/cats";
+        final String resourceURI = "http://example.net/cats/dogs";
 
         Series<Header> headers = new Series<>(Header.class);
 
-        Reference ref = AbstractResource.getPublicRootRef(
-                new Reference(uri), headers);
-        assertEquals(uri, ref.toString());
+        Reference ref = AbstractResource.getPublicReference(
+                new Reference(rootURI), new Reference(resourceURI), headers);
+        assertEquals(resourceURI, ref.toString());
     }
 
     @Test

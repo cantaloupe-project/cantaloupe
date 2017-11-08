@@ -18,7 +18,6 @@ import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import org.restlet.Request;
 import org.restlet.data.CharacterSet;
-import org.restlet.data.Header;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
@@ -26,7 +25,6 @@ import org.restlet.ext.jackson.JacksonRepresentation;
 import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
-import org.restlet.util.Series;
 
 /**
  * Handles IIIF Image API 1.x information requests.
@@ -43,9 +41,8 @@ public class InformationResource extends IIIF1Resource {
     public static class RedirectingResource extends IIIF1Resource {
         @Get
         public Representation doGet() {
-            final Request request = getRequest();
             final Reference newRef = new Reference(
-                    getPublicRootRef(request.getRootRef(), request.getHeaders()) +
+                    getPublicRootReference() +
                             WebApplication.IIIF_1_PATH + "/" +
                             getPublicIdentifier() +
                             "/info.json");
@@ -131,9 +128,7 @@ public class InformationResource extends IIIF1Resource {
      *         reverse proxy headers.
      */
     private String getImageUri() {
-        final Series<Header> requestHeaders = getRequest().getHeaders();
-        return getPublicRootRef(getRequest().getRootRef(), requestHeaders) +
-                WebApplication.IIIF_1_PATH + "/" +
+        return getPublicRootReference() + WebApplication.IIIF_1_PATH + "/" +
                 Reference.encode(getPublicIdentifier());
     }
 
