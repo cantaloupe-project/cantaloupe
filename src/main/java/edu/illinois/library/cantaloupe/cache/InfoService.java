@@ -101,7 +101,7 @@ class InfoService {
 
                     // Add it to the object cache (which it may already exist
                     // in, but it doesn't matter).
-                    put(identifier, info);
+                    putInObjectCache(identifier, info);
                 } else {
                     watch = new Stopwatch();
 
@@ -117,7 +117,7 @@ class InfoService {
                             watch.timeElapsed());
 
                     // Add it to the derivative and object caches.
-                    putAsync(identifier, info, derivCache);
+                    putInObjectCacheAsync(identifier, info, derivCache);
                 }
             } else {
                 // There is no derivative cache available, so fall back to
@@ -125,7 +125,7 @@ class InfoService {
                 info = readInfo(identifier, proc);
 
                 // Add it to the object cache.
-                put(identifier, info);
+                putInObjectCache(identifier, info);
             }
         }
         return info;
@@ -142,24 +142,24 @@ class InfoService {
     /**
      * Adds an info to the object cache synchronously.
      */
-    private void put(Identifier identifier, Info info) {
+    void putInObjectCache(Identifier identifier, Info info) {
         if (Configuration.getInstance().getBoolean(Key.INFO_CACHE_ENABLED, true)) {
-            LOGGER.debug("put(): adding info to object cache: {} (new size: {})",
+            LOGGER.debug("putInObjectCache(): adding info to object cache: {} (new size: {})",
                     identifier, objectCache.size() + 1);
             objectCache.put(identifier, info);
         } else {
-            LOGGER.debug("put(): info cache is disabled; doing nothing");
+            LOGGER.debug("putInObjectCache(): info cache is disabled; doing nothing");
         }
     }
 
     /**
      * Adds an info to the object and derivative caches asynchronously.
      */
-    private void putAsync(Identifier identifier,
-                          Info info,
-                          DerivativeCache derivCache) {
+    private void putInObjectCacheAsync(Identifier identifier,
+                                       Info info,
+                                       DerivativeCache derivCache) {
         ThreadPool.getInstance().submit(() -> {
-            put(identifier, info);
+            putInObjectCache(identifier, info);
             if (derivCache != null) {
                 derivCache.put(identifier, info);
             }
