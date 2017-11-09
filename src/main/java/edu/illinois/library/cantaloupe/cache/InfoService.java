@@ -131,11 +131,11 @@ class InfoService {
         return info;
     }
 
-    void purge() {
+    void purgeObjectCache() {
         objectCache.removeAll();
     }
 
-    void purge(Identifier identifier) {
+    void purgeObjectCache(Identifier identifier) {
         objectCache.remove(identifier);
     }
 

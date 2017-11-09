@@ -91,7 +91,7 @@ public final class CacheFacade {
      */
     public void purge() throws CacheException {
         // Purge the info service.
-        InfoService.getInstance().purge();
+        InfoService.getInstance().purgeObjectCache();
 
         // Purge the derivative cache.
         DerivativeCache derivativeCache = getDerivativeCache();
@@ -111,7 +111,7 @@ public final class CacheFacade {
      */
     public void purge(Identifier identifier) throws CacheException {
         // Purge it from the info service.
-        InfoService.getInstance().purge(identifier);
+        InfoService.getInstance().purgeObjectCache(identifier);
 
         // Purge it from the derivative cache.
         DerivativeCache derivativeCache = getDerivativeCache();
