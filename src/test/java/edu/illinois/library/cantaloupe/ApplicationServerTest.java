@@ -14,12 +14,12 @@ import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
-public class WebServerTest extends BaseTest {
+public class ApplicationServerTest extends BaseTest {
 
     private static int HTTP_PORT;
     private static int HTTPS_PORT;
 
-    private WebServer instance;
+    private ApplicationServer instance;
 
     @BeforeClass
     public static void beforeClass() {
@@ -31,7 +31,7 @@ public class WebServerTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new WebServer();
+        instance = new ApplicationServer();
     }
 
     @After

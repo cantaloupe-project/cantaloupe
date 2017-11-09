@@ -115,7 +115,7 @@ public class StandaloneEntryTest extends BaseTest {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        StandaloneEntry.getWebServer().stop();
+        StandaloneEntry.getAppServer().stop();
         httpClient.stop();
         deleteCacheDir();
         System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);

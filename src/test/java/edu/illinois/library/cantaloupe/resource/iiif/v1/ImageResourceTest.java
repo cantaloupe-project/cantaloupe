@@ -74,8 +74,8 @@ public class ImageResourceTest extends ResourceTest {
             config.setProperty(Key.BASIC_AUTH_ENABLED, true);
             config.setProperty(Key.BASIC_AUTH_USERNAME, username);
             config.setProperty(Key.BASIC_AUTH_SECRET, secret);
-            webServer.stop();
-            webServer.start();
+            appServer.stop();
+            appServer.start();
 
             // no credentials
             ClientResource client = getClientForUriPath(
@@ -104,8 +104,8 @@ public class ImageResourceTest extends ResourceTest {
             assertEquals(Status.SUCCESS_OK, client.getStatus());
         } finally {
             config.setProperty(Key.BASIC_AUTH_ENABLED, false);
-            webServer.stop();
-            webServer.start();
+            appServer.stop();
+            appServer.start();
         }
     }
 
@@ -486,7 +486,7 @@ public class ImageResourceTest extends ResourceTest {
         config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
         config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
-                webServer.getHTTPHost() + ":" + webServer.getHTTPPort() + "/");
+                appServer.getHTTPHost() + ":" + appServer.getHTTPPort() + "/");
         config.setProperty("processor.jp2", "KakaduProcessor");
         config.setProperty(Key.PROCESSOR_FALLBACK, "KakaduProcessor");
 

@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.StandaloneEntry;
-import edu.illinois.library.cantaloupe.WebServer;
+import edu.illinois.library.cantaloupe.ApplicationServer;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -21,7 +21,7 @@ public abstract class ResourceTest extends BaseTest {
     protected static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";
     protected static final Integer PORT = TestUtil.getOpenPort();
 
-    protected static WebServer webServer;
+    protected static ApplicationServer appServer;
 
     protected Client client;
 
@@ -44,17 +44,17 @@ public abstract class ResourceTest extends BaseTest {
         client = new Client(new Context(), Protocol.HTTP);
         client.start();
 
-        webServer = StandaloneEntry.getWebServer();
-        webServer.setHTTPEnabled(true);
-        webServer.setHTTPPort(PORT);
-        webServer.start();
+        appServer = StandaloneEntry.getAppServer();
+        appServer.setHTTPEnabled(true);
+        appServer.setHTTPPort(PORT);
+        appServer.start();
     }
 
     @After
     public void tearDown() throws Exception {
         super.tearDown();
         client.stop();
-        webServer.stop();
+        appServer.stop();
     }
 
     protected ClientResource getClientForUriPath(String path) {

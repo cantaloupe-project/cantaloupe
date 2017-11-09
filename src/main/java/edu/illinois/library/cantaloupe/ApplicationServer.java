@@ -21,7 +21,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
  *
  * <p>This class is not used when running in a Servlet container.</p>
  */
-public class WebServer {
+public class ApplicationServer {
 
     // N.B.: Due to the way the application is packaged, this class does not
     // have access to a logger.
@@ -47,13 +47,13 @@ public class WebServer {
     /**
      * Initializes the instance with arbitrary defaults.
      */
-    public WebServer() {
+    public ApplicationServer() {
     }
 
     /**
      * Initializes the instance with defaults from a Configuration object.
      */
-    public WebServer(Configuration config) {
+    public ApplicationServer(Configuration config) {
         this();
 
         setAcceptQueueLimit(config.getInt(Key.HTTP_ACCEPT_QUEUE_LIMIT, 0));
@@ -280,7 +280,7 @@ public class WebServer {
                         connector = new ServerConnector(server,
                                 connectionFactory, alpn, http2, http1);
                     } else {
-                        System.err.println("WebServer.start(): unable to " +
+                        System.err.println("ApplicationServer.start(): unable to " +
                                 "initialize secure HTTP/2 (JRE <9 or no ALPN " +
                                 "JAR on boot classpath)");
                     }

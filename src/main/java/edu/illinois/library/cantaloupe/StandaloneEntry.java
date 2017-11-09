@@ -1,13 +1,8 @@
 package edu.illinois.library.cantaloupe;
 
-import edu.illinois.library.cantaloupe.cache.Cache;
-import edu.illinois.library.cantaloupe.cache.CacheException;
-import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.image.Identifier;
 
-import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.net.URL;
 import java.security.ProtectionDomain;
@@ -43,7 +38,7 @@ public class StandaloneEntry {
      */
     static final String TEST_VM_ARGUMENT = "cantaloupe.test";
 
-    private static WebServer webServer;
+    private static ApplicationServer appServer;
 
     static {
         System.setProperty("java.awt.headless", "true");
@@ -109,12 +104,12 @@ public class StandaloneEntry {
                 exitUnlessTesting(-1);
             }
         }
-        getWebServer().start();
+        getAppServer().start();
     }
 
     static File getWarFile() {
         ProtectionDomain protectionDomain =
-                WebServer.class.getProtectionDomain();
+                ApplicationServer.class.getProtectionDomain();
         URL location = protectionDomain.getCodeSource().getLocation();
         return new File(location.getFile());
     }
@@ -122,11 +117,11 @@ public class StandaloneEntry {
     /**
      * @return Application web server instance.
      */
-    public static synchronized WebServer getWebServer() {
-        if (webServer == null) {
-            webServer = new WebServer(Configuration.getInstance());
+    public static synchronized ApplicationServer getAppServer() {
+        if (appServer == null) {
+            appServer = new ApplicationServer(Configuration.getInstance());
         }
-        return webServer;
+        return appServer;
     }
 
     /**
