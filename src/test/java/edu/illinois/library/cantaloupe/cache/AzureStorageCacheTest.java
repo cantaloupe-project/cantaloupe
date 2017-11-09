@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 
@@ -76,11 +77,10 @@ public class AzureStorageCacheTest extends BaseTest {
         CloudBlobClient client = AzureStorageCache.getClientInstance();
         final CloudBlobContainer container =
                 client.getContainerReference(AzureStorageCache.getContainerName());
-        int i = 0;
-        for (ListBlobItem item : container.listBlobs(instance.getObjectKeyPrefix(), true)) {
-            i++;
-        }
-        assertEquals(count, i);
+        final AtomicInteger atint = new AtomicInteger(0);
+        container.listBlobs(instance.getObjectKeyPrefix(), true).
+                forEach(t -> atint.incrementAndGet());
+        assertEquals(count, atint.get());
     }
 
     /* getContainerName() */

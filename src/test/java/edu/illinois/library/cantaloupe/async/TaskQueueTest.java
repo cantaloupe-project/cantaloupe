@@ -99,7 +99,7 @@ public class TaskQueueTest extends BaseTest {
         instance.submit(future1);
         instance.submit(future2);
 
-        Thread.sleep(50);
+        Thread.sleep(80);
         assertEquals(TaskStatus.RUNNING, future1.getStatus());
         assertEquals(TaskStatus.QUEUED, future2.getStatus());
     }

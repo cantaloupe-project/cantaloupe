@@ -21,8 +21,9 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * HTTP(S) server that serves static content using the fixture path as its root.
- * Call {@link #start()} and then {@link #getHTTPURI()} to get its root URL.
+ * HTTP(S) server that serves static content using the fixture images path as
+ * its root. Call {@link #start()} and then {@link #getHTTPURI()} to get its
+ * root URI.
  *
  * @see <a href="http://www.eclipse.org/jetty/documentation/current/embedded-examples.html">
  *     Embedded Examples</a>
@@ -35,10 +36,8 @@ public class WebServer {
     private Server server;
 
     /**
-     * Initializes a static file HTTP(S) server using the fixture path as its
-     * root.
-     *
-     * @throws IOException
+     * Initializes a static file HTTP(S) server using the image fixture path as
+     * its root.
      */
     public WebServer() throws IOException {
         httpPort = TestUtil.getOpenPort();

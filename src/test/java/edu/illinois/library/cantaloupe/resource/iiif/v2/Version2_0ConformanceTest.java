@@ -48,8 +48,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
      * 2. "When the base URI is dereferenced, the interaction should result in
      * the Image Information document. It is recommended that the response be a
      * 303 status redirection to the Image Information document’s URI."
-     *
-     * @throws IOException
      */
     @Test
     public void testBaseUriReturnsImageInfoViaHttp303() throws IOException {
@@ -66,8 +64,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
      * encoded to avoid unpredictable client behaviors. The URI syntax relies
      * upon slash (/) separators so any slashes in the identifier must be URI
      * encoded (also called “percent encoded”).
-     *
-     * @throws IOException
      */
     @Test
     public void testIdentifierWithEncodedCharacters() throws IOException {
@@ -93,8 +89,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
 
     /**
      * 4.1
-     *
-     * @throws IOException
      */
     @Test
     public void testFullRegion() throws IOException {
@@ -110,8 +104,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
 
     /**
      * 4.1
-     *
-     * @throws IOException
      */
     @Test
     public void testAbsolutePixelRegion() throws IOException {
@@ -127,8 +119,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
 
     /**
      * 4.1
-     *
-     * @throws IOException
      */
     @Test
     public void testPercentageRegion() throws IOException {
@@ -158,8 +148,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
      * dimensions reported in the Image Information document, then the service
      * should return an image cropped at the image’s edge, rather than adding
      * empty space."
-     *
-     * @throws IOException
      */
     @Test
     public void testAbsolutePixelRegionLargerThanSource() throws IOException {
@@ -177,8 +165,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
      * 4.1. "If the requested region’s height or width is zero, or if the
      * region is entirely outside the bounds of the reported dimensions, then
      * the server should return a 400 status code."
-     *
-     * @throws IOException
      */
     @Test
     public void testPixelRegionOutOfBounds() throws IOException {
@@ -204,8 +190,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
     /**
      * The IIIF API Validator wants the server to return 400 for a bogus
      * (junk characters) region.
-     *
-     * @throws IOException
      */
     @Test
     public void testBogusRegion() throws IOException {
@@ -220,8 +204,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
 
     /**
      * 4.2
-     *
-     * @throws IOException
      */
     @Test
     public void testFullSize() throws IOException {
@@ -239,8 +221,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
      * 4.2. "The extracted region should be scaled so that its width is
      * exactly equal to w, and the height will be a calculated value that
      * maintains the aspect ratio of the extracted region."
-     *
-     * @throws IOException
      */
     @Test
     public void testSizeScaledToFitWidth() throws IOException {
@@ -258,8 +238,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
      * 4.2. "The extracted region should be scaled so that its height is
      * exactly equal to h, and the width will be a calculated value that
      * maintains the aspect ratio of the extracted region."
-     *
-     * @throws IOException
      */
     @Test
     public void testSizeScaledToFitHeight() throws IOException {
@@ -277,8 +255,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
      * 4.2. "The width and height of the returned image is scaled to n% of the
      * width and height of the extracted region. The aspect ratio of the
      * returned image is the same as that of the extracted region."
-     *
-     * @throws IOException
      */
     @Test
     public void testSizeScaledToPercent() throws IOException {
@@ -296,8 +272,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
      * 4.2. "The width and height of the returned image are exactly w and h.
      * The aspect ratio of the returned image may be different than the
      * extracted region, resulting in a distorted image."
-     *
-     * @throws IOException
      */
     @Test
     public void testAbsoluteWidthAndHeight() throws IOException {
@@ -318,8 +292,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
      * provider, based on characteristics including image quality and system
      * performance. The dimensions of the returned image content are
      * calculated to maintain the aspect ratio of the extracted region."
-     *
-     * @throws IOException
      */
     @Test
     public void testSizeScaledToFitInside() throws IOException {
@@ -334,8 +306,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
     /**
      * 4.2. "If the resulting height or width is zero, then the server should
      * return a 400 (bad request) status code."
-     *
-     * @throws IOException
      */
     @Test
     public void testResultingWidthOrHeightIsZero() throws IOException {
@@ -359,8 +329,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
     /**
      * IIIF Image API 2.0 doesn't say anything about an invalid size
      * parameter, so we will check for an HTTP 400.
-     *
-     * @throws IOException
      */
     @Test
     public void testInvalidSize() throws IOException {
@@ -427,8 +395,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
 
     /**
      * 4.3. "The degrees of clockwise rotation from 0 up to 360."
-     *
-     * @throws IOException
      */
     @Test
     public void testRotation() throws IOException {
@@ -439,8 +405,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
 
     /**
      * 4.3. "The image should be mirrored and then rotated as above."
-     *
-     * @throws IOException
      */
     @Test
     public void testMirroredRotation() throws IOException {
@@ -452,8 +416,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
     /**
      * 4.3. "A rotation value that is out of range or unsupported should result
      * in a 400 status code."
-     *
-     * @throws IOException
      */
     @Test
     public void testInvalidRotation() throws IOException {
@@ -476,8 +438,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
 
     /**
      * 4.4. "The image is returned in full color."
-     *
-     * @throws IOException
      */
     @Test
     public void testColorQuality() throws IOException {
@@ -489,8 +449,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
     /**
      * 4.4. "The image is returned in grayscale, where each pixel is black,
      * white or any shade of gray in between."
-     *
-     * @throws IOException
      */
     @Test
     public void testGrayQuality() throws IOException {
@@ -502,8 +460,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
     /**
      * 4.4. "The image returned is bitonal, where each pixel is either black or
      * white."
-     *
-     * @throws IOException
      */
     @Test
     public void testBitonalQuality() throws IOException {
@@ -515,8 +471,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
     /**
      * 4.4. "The image is returned using the server’s default quality (e.g.
      * color, gray or bitonal) for the image."
-     *
-     * @throws IOException
      */
     @Test
     public void testDefaultQuality() throws IOException {
@@ -528,8 +482,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
     /**
      * 4.4. "A quality value that is unsupported should result in a 400 status
      * code."
-     *
-     * @throws IOException
      */
     @Test
     public void testUnsupportedQuality() throws IOException {
@@ -544,8 +496,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
 
     /**
      * 4.5
-     *
-     * @throws IOException
      */
     @Test
     public void testFormats() throws Exception {
@@ -583,8 +533,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
 
     /**
      * 4.5
-     *
-     * @throws IOException
      */
     @Test
     public void testUnsupportedFormat() throws IOException {
@@ -601,8 +549,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
      * 4.7. "When the client requests an image, the server may add a link
      * header to the response that indicates the canonical URI for that
      * request."
-     *
-     * @throws IOException
      */
     @Test
     public void testCanonicalUriLinkHeader() throws IOException {
@@ -615,8 +561,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
 
     /**
      * 5. "The service must return this information about the image."
-     *
-     * @throws IOException
      */
     @Test
     public void testInformationRequest() throws IOException {
@@ -628,8 +572,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
     /**
      * 5. "The content-type of the response must be either “application/json”,
      * (regular JSON), or “application/ld+json” (JSON-LD)."
-     *
-     * @throws IOException
      */
     @Test
     public void testInformationRequestContentType() throws IOException {
@@ -644,8 +586,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
      * 5. "If the client explicitly wants the JSON-LD content-type, then it
      * must specify this in an Accept header, otherwise the server must return
      * the regular JSON content-type."
-     *
-     * @throws IOException
      */
     @Test
     public void testInformationRequestContentTypeJsonLd() throws IOException {
@@ -666,8 +606,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
     /**
      * 5. "Servers should send the Access-Control-Allow-Origin header with the
      * value * in response to information requests."
-     *
-     * @throws IOException
      */
     @Test
     @Ignore // TODO: possibly a restlet bug: http://restlet-discuss.1400322.n2.nabble.com/How-can-I-set-Origin-and-Access-Control-Request-Method-when-doing-a-request-td7579398.html
@@ -680,8 +618,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
 
     /**
      * 5.1
-     *
-     * @throws IOException
      */
     @Test
     public void testInformationRequestJson() throws IOException {
@@ -693,8 +629,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
      * values beyond those specified in the referenced compliance level, then
      * the property should be omitted from the response rather than being
      * present with an empty list."
-     *
-     * @throws IOException
      */
     @Test
     public void testInformationRequestEmptyJsonProperties() throws IOException {
@@ -705,8 +639,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
     /**
      * 6. "The Image Information document must ... include a compliance level
      * URI as the first entry in the profile property."
-     *
-     * @throws IOException
      */
     @Test
     public void testComplianceLevel() throws IOException {

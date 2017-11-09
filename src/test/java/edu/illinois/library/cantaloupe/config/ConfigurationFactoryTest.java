@@ -4,10 +4,6 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import static org.junit.Assert.*;
 
 public class ConfigurationFactoryTest extends BaseTest {
@@ -25,12 +21,7 @@ public class ConfigurationFactoryTest extends BaseTest {
 
     @Test
     public void testGetInstanceReturnsPropertiesConfiguration() throws Exception {
-        File directory = new File(".");
-        String cwd = directory.getCanonicalPath();
-        Path testPath = Paths.get(cwd, "src", "test", "java", "edu",
-                "illinois", "library", "cantaloupe", "test");
-        String opt = testPath + File.separator + "cantaloupe.properties";
-        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, opt);
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "bogus");
 
         Configuration config = Configuration.getInstance();
         assertTrue(config instanceof HeritablePropertiesConfiguration);

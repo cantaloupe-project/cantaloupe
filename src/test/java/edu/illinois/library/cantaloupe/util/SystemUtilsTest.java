@@ -29,4 +29,14 @@ public class SystemUtilsTest {
         assertTrue(new HashSet<>(Arrays.asList(8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)).contains(actual));
     }
 
+    @Test
+    public void testIsALPNAvailable() {
+        boolean result = SystemUtils.isALPNAvailable();
+        if (SystemUtils.getJavaVersion() >= 9) {
+            assertTrue(result);
+        } else {
+            assertFalse(result);
+        }
+    }
+
 }

@@ -54,6 +54,10 @@ class InfoService {
         objectCache = new ObjectCache<>(maxSize);
     }
 
+    long getObjectCacheSize() {
+        return objectCache.size();
+    }
+
     /**
      * <p>Returns an {@link Info} for the source image corresponding to the
      * given identifier.</p>

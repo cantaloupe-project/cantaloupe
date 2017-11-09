@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 
@@ -83,11 +84,9 @@ public class AmazonS3CacheTest extends BaseTest {
         S3Objects objects = S3Objects.inBucket(
                 AmazonS3Cache.getClientInstance(),
                 instance.getBucketName());
-        int i = 0;
-        for (S3ObjectSummary summary : objects) {
-            i++;
-        }
-        assertEquals(count, i);
+        final AtomicInteger atint = new AtomicInteger(0);
+        objects.iterator().forEachRemaining(t -> atint.incrementAndGet());
+        assertEquals(count, atint.get());
     }
 
     /* getBucketName() */

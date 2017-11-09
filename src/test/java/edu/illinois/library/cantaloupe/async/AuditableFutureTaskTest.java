@@ -38,7 +38,7 @@ public class AuditableFutureTaskTest extends BaseTest {
 
     @Test
     public void testGetStatus() {
-        // TODO: write this
+        // This will be tested in other test methods.
     }
 
     @Test

@@ -22,8 +22,6 @@ public class Version2_1ConformanceTest extends Version2_0ConformanceTest {
 
     /**
      * 4.1
-     *
-     * @throws IOException
      */
     @Test
     public void testSquareRegion() throws IOException {
@@ -39,8 +37,6 @@ public class Version2_1ConformanceTest extends Version2_0ConformanceTest {
 
     /**
      * 4.2
-     *
-     * @throws IOException
      */
     @Test
     public void testMaxSize() throws IOException {
