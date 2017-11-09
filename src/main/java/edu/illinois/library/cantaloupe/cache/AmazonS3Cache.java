@@ -46,6 +46,7 @@ import java.util.Date;
  *
  * @see <a href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/welcome.html">
  *     AWS SDK for Java</a>
+ * @since 3.0
  */
 class AmazonS3Cache implements DerivativeCache {
 
@@ -70,7 +71,7 @@ class AmazonS3Cache implements DerivativeCache {
      * {@link ThreadPool} in order to allow {@link #close()} to return
      * immediately.)</p>
      */
-    private class AmazonS3OutputStream extends OutputStream {
+    private static class AmazonS3OutputStream extends OutputStream {
 
         private final ByteArrayOutputStream bufferStream =
                 new ByteArrayOutputStream();
@@ -127,7 +128,7 @@ class AmazonS3Cache implements DerivativeCache {
 
     }
 
-    private class AmazonS3Upload implements Runnable {
+    private static class AmazonS3Upload implements Runnable {
 
         private Logger logger = LoggerFactory.getLogger(AmazonS3Upload.class);
 
