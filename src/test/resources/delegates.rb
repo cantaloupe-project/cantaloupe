@@ -59,6 +59,10 @@ module Cantaloupe
 
   module HttpResolver
     def self.get_url(identifier, context)
+      if identifier.start_with?('http://localhost')
+        return identifier
+      end
+
       if context['clientIP'] == '1.2.3.4' && context['headers']['x-test-header'] == 'foo'
         return 'http://other-example.org/bleh/' + URI.escape(identifier)
       end

@@ -217,6 +217,8 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         ResourceInfo info;
         try {
             info = getResourceInfo();
+        } catch (IOException e) {
+            throw e;
         } catch (Exception e) {
             LOGGER.error("newStreamSource(): {}", e.getMessage());
             throw new IOException(e.getMessage(), e);
@@ -308,10 +310,11 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     }
 
     /**
-     * @throws URISyntaxException If {@link #GET_URL_DELEGATE_METHOD} returns
-     *                            an invalid URI.
+     * @throws FileNotFoundException If the remote resource was not found.
+     * @throws URISyntaxException    If {@link #GET_URL_DELEGATE_METHOD}
+     *                               returns an invalid URI.
      * @throws IOException
-     * @throws ScriptException If the script fails to execute.
+     * @throws ScriptException       If the script fails to execute.
      * @throws DelegateScriptDisabledException
      */
     private ResourceInfo getResourceInfoUsingScriptStrategy()
