@@ -19,6 +19,8 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * HTTP(S) server that serves static content using the fixture images path as
@@ -117,12 +119,22 @@ public class WebServer {
         return this.httpsPort;
     }
 
-    public String getHTTPURI() {
-        return "http://localhost:" + getHTTPPort();
+    public URI getHTTPURI() {
+        try {
+            return new URI("http://localhost:" + getHTTPPort());
+        } catch (URISyntaxException e) {
+            // This should never happen.
+        }
+        return null;
     }
 
-    public String getHTTPSURI() {
-        return "https://localhost:" + getHTTPSPort();
+    public URI getHTTPSURI() {
+        try {
+            return new URI("https://localhost:" + getHTTPSPort());
+        } catch (URISyntaxException e) {
+            // This should never happen.
+        }
+        return null;
     }
 
     public void start() throws Exception {
