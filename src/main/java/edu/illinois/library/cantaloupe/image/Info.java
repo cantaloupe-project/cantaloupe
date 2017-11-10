@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.image;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -28,6 +29,7 @@ import java.util.List;
  */
 @JsonPropertyOrder({ "mediaType", "images" })
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class Info {
 
     @JsonPropertyOrder({ "width", "height", "tileWidth", "tileHeight",
