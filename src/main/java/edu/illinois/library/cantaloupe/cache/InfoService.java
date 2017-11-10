@@ -195,8 +195,10 @@ class InfoService {
                                        DerivativeCache derivCache) {
         ThreadPool.getInstance().submit(() -> {
             putInObjectCache(identifier, info);
-            if (derivCache != null) {
+            try {
                 derivCache.put(identifier, info);
+            } catch (CacheException e) {
+                LOGGER.error("putInCachesAsync(): {}", e.getMessage());
             }
             return null;
         }, ThreadPool.Priority.LOW);

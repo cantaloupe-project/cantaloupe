@@ -6,6 +6,8 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,6 +16,9 @@ import java.io.OutputStream;
  * Simplified interface to the caching architecture.
  */
 public final class CacheFacade {
+
+    private static final Logger LOGGER = LoggerFactory.
+            getLogger(CacheFacade.class);
 
     /**
      * @see Cache#cleanUp
@@ -135,7 +140,11 @@ public final class CacheFacade {
      */
     public void purgeAsync(Identifier identifier) throws CacheException {
         TaskQueue.getInstance().submit(() -> {
-            purge(identifier);
+            try {
+                purge(identifier);
+            } catch (CacheException e) {
+                LOGGER.error("purgeAsync(): {}", e.getMessage());
+            }
             return null;
         });
     }
