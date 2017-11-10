@@ -1,8 +1,10 @@
 package edu.illinois.library.cantaloupe.image;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.operation.Orientation;
@@ -16,8 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <p>Contains JSON-serializable information about an image, such as dimensions,
- * orientation, its subimages, and tile sizes.</p>
+ * <p>Contains JSON-serializable information about an image, such as its
+ * format, dimensions, orientation, subimages, and tile sizes.</p>
  *
  * <p>All sizes are raw pixel data sizes, disregarding orientation.</p>
  *
@@ -165,7 +167,7 @@ public final class Info {
      * Ordered list of subimages. The main image is at index 0.
      */
     private List<Image> images = new ArrayList<>();
-    private String mediaType;
+    private MediaType mediaType;
 
     public static Info fromJSON(File jsonFile) throws IOException {
         return new ObjectMapper().readValue(jsonFile, Info.class);
@@ -270,6 +272,17 @@ public final class Info {
     }
 
     /**
+     * For convenient serialization.
+     *
+     * @see #getSourceFormat()
+     * @since 3.4
+     */
+    @JsonGetter
+    public MediaType getMediaType() {
+        return mediaType;
+    }
+
+    /**
      * @return Orientatino of the main image.
      */
     @JsonIgnore
@@ -319,9 +332,26 @@ public final class Info {
     @JsonIgnore
     public Format getSourceFormat() {
         if (mediaType != null) {
-            return new MediaType(mediaType).toFormat();
+            return mediaType.toFormat();
         }
         return Format.UNKNOWN;
+    }
+
+    @Override
+    public int hashCode() {
+        return new Long(getImages().hashCode() + mediaType.hashCode() +
+                getSourceFormat().hashCode()).hashCode();
+    }
+
+    /**
+     * For convenient deserialization.
+     *
+     * @see #setSourceFormat(Format)
+     * @since 3.4
+     */
+    @JsonSetter
+    public void setMediaType(MediaType mediaType) {
+        this.mediaType = mediaType;
     }
 
     @JsonIgnore
@@ -329,14 +359,8 @@ public final class Info {
         if (sourceFormat == null) {
             mediaType = null;
         } else {
-            mediaType = sourceFormat.getPreferredMediaType().toString();
+            mediaType = sourceFormat.getPreferredMediaType();
         }
-    }
-
-    @Override
-    public int hashCode() {
-        return new Long(getImages().hashCode() + mediaType.hashCode() +
-                getSourceFormat().hashCode()).hashCode();
     }
 
     /**

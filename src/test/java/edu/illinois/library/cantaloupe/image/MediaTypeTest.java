@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.image;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -7,6 +8,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,6 +34,22 @@ public class MediaTypeTest {
     @Before
     public void setUp() {
         instance = new MediaType("image/jpeg");
+    }
+
+    @Test
+    public void testSerialization() throws IOException {
+        MediaType type = new MediaType("image/jpeg");
+        try (StringWriter writer = new StringWriter()) {
+            new ObjectMapper().writeValue(writer, type);
+            assertEquals("\"image/jpeg\"", writer.toString());
+        }
+    }
+
+    @Test
+    public void testDeserialization() throws IOException {
+        MediaType type = new ObjectMapper().readValue("\"image/jpeg\"",
+                MediaType.class);
+        assertEquals("image/jpeg", type.toString());
     }
 
     /* detectMediaTypes(File) */

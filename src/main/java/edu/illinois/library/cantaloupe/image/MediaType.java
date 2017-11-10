@@ -1,5 +1,13 @@
 package edu.illinois.library.cantaloupe.image;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.io.TikaInputStream;
@@ -14,7 +22,32 @@ import java.util.List;
 /**
  * Encapsulates an IANA media (a.k.a. MIME) type.
  */
+@JsonSerialize(using = MediaType.MediaTypeSerializer.class)
+@JsonDeserialize(using = MediaType.MediaTypeDeserializer.class)
 public final class MediaType {
+
+    /**
+     * Deserializes a type/subtype string into a {@link MediaType}.
+     */
+    static class MediaTypeDeserializer extends JsonDeserializer<MediaType> {
+        @Override
+        public MediaType deserialize(JsonParser jsonParser,
+                             DeserializationContext deserializationContext) throws IOException {
+            return new MediaType(jsonParser.getValueAsString());
+        }
+    }
+
+    /**
+     * Serializes a {@link MediaType} as a type/subtype string.
+     */
+    static class MediaTypeSerializer extends JsonSerializer<MediaType> {
+        @Override
+        public void serialize(MediaType mediaType,
+                              JsonGenerator jsonGenerator,
+                              SerializerProvider serializerProvider) throws IOException {
+            jsonGenerator.writeString(mediaType.toString());
+        }
+    }
 
     private String subtype;
     private String type;
