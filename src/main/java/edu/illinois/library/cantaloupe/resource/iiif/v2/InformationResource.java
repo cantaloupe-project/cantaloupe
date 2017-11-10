@@ -3,13 +3,15 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 import java.io.FileNotFoundException;
 import java.util.List;
 
+import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.Processor;
+import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
@@ -52,13 +54,33 @@ public class InformationResource extends IIIF2Resource {
     /**
      * Responds to information requests.
      *
-     * @return {@link ImageInfo} instance serializedto JSON.
+     * @return {@link ImageInfo} instance serialized as JSON.
      */
     @Get
     public Representation doGet() throws Exception {
+        final Configuration config = Configuration.getInstance();
         final Identifier identifier = getIdentifier();
+        final CacheFacade cacheFacade = new CacheFacade();
+
+        // If we don't need to resolve first, and are using a cache, and the
+        // cache contains an info matching the request, skip all the setup and
+        // just return the cached info.
+        if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, false)) {
+            final Info info = cacheFacade.getInfo(identifier);
+            if (info != null) {
+                // The source format will be null or UNKNOWN if the info was
+                // serialized in version < 3.4.
+                final Format format = info.getSourceFormat();
+                if (format != null && !Format.UNKNOWN.equals(format)) {
+                    final Processor processor = new ProcessorFactory().
+                            newProcessor(format);
+                    commitCustomResponseHeaders();
+                    return newRepresentation(identifier, info, processor);
+                }
+            }
+        }
+
         final Resolver resolver = new ResolverFactory().newResolver(identifier);
-        final MediaType mediaType = getNegotiatedMediaType();
 
         // Setup the resolver context.
         final RequestContext requestContext = new RequestContext();
@@ -73,10 +95,9 @@ public class InformationResource extends IIIF2Resource {
         try {
             format = resolver.getSourceFormat();
         } catch (FileNotFoundException e) { // this needs to be rethrown
-            if (Configuration.getInstance().
-                    getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
+            if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                 // If the image was not found, purge it from the cache.
-                new CacheFacade().purgeAsync(identifier);
+                cacheFacade.purgeAsync(identifier);
             }
             throw e;
         }
@@ -87,14 +108,10 @@ public class InformationResource extends IIIF2Resource {
         // Connect it to the resolver.
         new ProcessorConnector(resolver, processor, identifier).connect();
 
-        final ImageInfo<String, Object> imageInfo =
-                new ImageInfoFactory().newImageInfo(
-                        identifier, getImageURI(), processor,
-                        getOrReadInfo(identifier, processor));
+        final Info info = getOrReadInfo(identifier, processor);
 
         commitCustomResponseHeaders();
-
-        return new JSONRepresentation(imageInfo, mediaType);
+        return newRepresentation(identifier, info, processor);
     }
 
     /**
@@ -120,6 +137,17 @@ public class InformationResource extends IIIF2Resource {
             mediaType = new MediaType("application/json");
         }
         return mediaType;
+    }
+
+    private Representation newRepresentation(Identifier identifier,
+                                             Info info,
+                                             Processor processor)
+            throws ProcessorException {
+        final ImageInfo<String, Object> imageInfo =
+                new ImageInfoFactory().newImageInfo(
+                        identifier, getImageURI(), processor, info);
+        final MediaType mediaType = getNegotiatedMediaType();
+        return new JSONRepresentation(imageInfo, mediaType);
     }
 
 }

@@ -46,8 +46,8 @@ title: Change Log
   </li>
   <li>Caching
     <ul>
-      <li>Image info is cached in memory in addition to the derivative cache (when enabled).</li>
       <li>Image info is written to caches asynchronously to enable faster responses.</li>
+      <li>Added an optional in-memory image info cache.</li>
       <li>Added RedisCache.</li>
       <li>Added HeapCache.</li>
       <li>AmazonS3Cache uses asynchronous uploads for better performance.</li>

@@ -50,10 +50,25 @@ public class ImageResource extends IIIF1Resource {
      * Responds to image requests.
      */
     @Get
-    @SuppressWarnings("unused")
     public Representation doGet() throws Exception {
         final Configuration config = Configuration.getInstance();
         final Identifier identifier = getIdentifier();
+        final CacheFacade cacheFacade = new CacheFacade();
+
+        // If we don't need to resolve first, and are using a cache, see if we
+        // can pluck an info from it. This will be more efficient than getting
+        // it from a resolver.
+        Format sourceFormat = Format.UNKNOWN;
+        if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)) {
+            Info info = cacheFacade.getInfo(identifier);
+            if (info != null) {
+                Format infoFormat = info.getSourceFormat();
+                if (infoFormat != null) {
+                    sourceFormat = infoFormat;
+                }
+            }
+        }
+
         final Resolver resolver = new ResolverFactory().newResolver(identifier);
 
         // Setup the resolver context.
@@ -64,16 +79,17 @@ public class ImageResource extends IIIF1Resource {
         requestContext.setCookies(getRequest().getCookies().getValuesMap());
         resolver.setContext(requestContext);
 
-        // Determine the format of the source image.
-        Format sourceFormat;
-        try {
-            sourceFormat = resolver.getSourceFormat();
-        } catch (FileNotFoundException e) { // this needs to be rethrown
-            if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
-                // If the image was not found, purge it from the cache.
-                new CacheFacade().purgeAsync(identifier);
+        // If we don't have the format yet, get it from the resolver.
+        if (Format.UNKNOWN.equals(sourceFormat)) {
+            try {
+                sourceFormat = resolver.getSourceFormat();
+            } catch (FileNotFoundException e) { // this needs to be rethrown
+                if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
+                    // If the image was not found, purge it from the cache.
+                    cacheFacade.purgeAsync(identifier);
+                }
+                throw e;
             }
-            throw e;
         }
 
         // Obtain an instance of the processor assigned to that format.
@@ -128,28 +144,21 @@ public class ImageResource extends IIIF1Resource {
                         .getFirstValue(RESPONSE_CONTENT_DISPOSITION_QUERY_ARG),
                 ops.getIdentifier(), ops.getOutputFormat());
 
-        // If we don't need to resolve first, and are using a cache, and the
-        // cache contains an image matching the request, skip all the setup and
-        // just return the cached image.
-        final CacheFacade cacheFacade = new CacheFacade();
+        addLinkHeader(processor);
 
-        if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true) &&
-                cacheFacade.isDerivativeCacheAvailable()) {
+        // If we don't need to resolve first, and are using a cache, and the
+        // cache contains an image matching the request, skip the rest of the
+        // setup and return the cached image.
+        if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)) {
             InputStream inputStream =
                     cacheFacade.newDerivativeImageInputStream(ops);
             if (inputStream != null) {
+                commitCustomResponseHeaders();
                 return new CachedImageRepresentation(
                         ops.getOutputFormat().getPreferredMediaType(),
                         disposition, inputStream);
             }
         }
-
-        final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
-                processor.getSupportedFeatures(),
-                processor.getSupportedIIIF1Qualities(),
-                processor.getAvailableOutputFormats());
-        getBufferedResponseHeaders().add("Link",
-                String.format("<%s>;rel=\"profile\";", complianceLevel.getUri()));
 
         ops.applyNonEndpointMutations(fullSize,
                 info.getOrientation(),
@@ -169,9 +178,17 @@ public class ImageResource extends IIIF1Resource {
         }
 
         commitCustomResponseHeaders();
-
         return new ImageRepresentation(info, processor, ops, disposition,
                 isBypassingCache());
+    }
+
+    private void addLinkHeader(Processor processor) {
+        final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
+                processor.getSupportedFeatures(),
+                processor.getSupportedIIIF1Qualities(),
+                processor.getAvailableOutputFormats());
+        getBufferedResponseHeaders().add("Link",
+                String.format("<%s>;rel=\"profile\";", complianceLevel.getUri()));
     }
 
     /**

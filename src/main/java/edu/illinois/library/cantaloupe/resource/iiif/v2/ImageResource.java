@@ -39,13 +39,15 @@ import java.util.Set;
 public class ImageResource extends IIIF2Resource {
 
     /**
-     * Responds to IIIF Image requests.
+     * Responds to image requests.
      */
     @Get
     public Representation doGet() throws Exception {
         final Configuration config = Configuration.getInstance();
         final Map<String,Object> attrs = getRequest().getAttributes();
         final Identifier identifier = getIdentifier();
+        final CacheFacade cacheFacade = new CacheFacade();
+
         // Assemble the URI parameters into a Parameters object.
         final Parameters params = new Parameters(
                 identifier,
@@ -58,30 +60,38 @@ public class ImageResource extends IIIF2Resource {
         ops.getOptions().putAll(
                 getReference().getQueryAsForm(true).getValuesMap());
 
-        addLinkHeader(params);
-
         final Disposition disposition = getRepresentationDisposition(
                 getReference().getQueryAsForm()
                         .getFirstValue(RESPONSE_CONTENT_DISPOSITION_QUERY_ARG),
                 ops.getIdentifier(), ops.getOutputFormat());
 
-        // If we don't need to resolve first, and are using a cache, and the
-        // cache contains an image matching the request, skip all the setup and
-        // just return the cached image.
-        final CacheFacade cacheFacade = new CacheFacade();
-        if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true) &&
-                cacheFacade.isDerivativeCacheAvailable()) {
+        Format sourceFormat = Format.UNKNOWN;
+        // If we don't need to resolve first, and are using a cache:
+        // 1. If the cache contains an image matching the request, skip all the
+        //    setup and just return the cached image.
+        // 2. Otherwise, if the cache contains a relevant info, get it to avoid
+        //    having to get it from a resolver later.
+        if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)) {
             InputStream inputStream =
                     cacheFacade.newDerivativeImageInputStream(ops);
             if (inputStream != null) {
+                addLinkHeader(params);
                 commitCustomResponseHeaders();
                 return new CachedImageRepresentation(
                         params.getOutputFormat().getPreferredMediaType(),
                         disposition, inputStream);
+            } else {
+                Info info = cacheFacade.getInfo(identifier);
+                if (info != null) {
+                    Format infoFormat = info.getSourceFormat();
+                    if (infoFormat != null) {
+                        sourceFormat = infoFormat;
+                    }
+                }
             }
         }
 
-        Resolver resolver = new ResolverFactory().newResolver(identifier);
+        final Resolver resolver = new ResolverFactory().newResolver(identifier);
 
         // Setup the resolver context.
         final RequestContext requestContext = new RequestContext();
@@ -91,16 +101,17 @@ public class ImageResource extends IIIF2Resource {
         requestContext.setCookies(getRequest().getCookies().getValuesMap());
         resolver.setContext(requestContext);
 
-        // Determine the format of the source image.
-        Format sourceFormat;
-        try {
-            sourceFormat = resolver.getSourceFormat();
-        } catch (FileNotFoundException e) { // this needs to be rethrown
-            if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
-                // If the image was not found, purge it from the cache.
-                cacheFacade.purgeAsync(ops.getIdentifier());
+        // If we don't have the format yet, get it from the resolver.
+        if (Format.UNKNOWN.equals(sourceFormat)) {
+            try {
+                sourceFormat = resolver.getSourceFormat();
+            } catch (FileNotFoundException e) { // this needs to be rethrown
+                if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
+                    // If the image was not found, purge it from the cache.
+                    cacheFacade.purgeAsync(ops.getIdentifier());
+                }
+                throw e;
             }
-            throw e;
         }
 
         // Obtain an instance of the processor assigned to that format.
@@ -161,8 +172,8 @@ public class ImageResource extends IIIF2Resource {
             throw new UnsupportedOutputFormatException(msg);
         }
 
+        addLinkHeader(params);
         commitCustomResponseHeaders();
-
         return new ImageRepresentation(info, processor, ops, disposition,
                 isBypassingCache());
     }

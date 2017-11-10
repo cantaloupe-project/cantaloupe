@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
@@ -56,7 +57,29 @@ public class InformationResource extends IIIF1Resource {
      */
     @Get
     public Representation doGet() throws Exception {
+        Configuration config = Configuration.getInstance();
         final Identifier identifier = getIdentifier();
+        final CacheFacade cacheFacade = new CacheFacade();
+
+        // If we don't need to resolve first, and are using a cache, and the
+        // cache contains an info matching the request, skip all the setup and
+        // just return the cached info.
+        if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, false)) {
+            final Info info = cacheFacade.getInfo(identifier);
+            if (info != null) {
+                final Format format = info.getSourceFormat();
+                if (format != null && !Format.UNKNOWN.equals(format)) {
+                    final Processor processor = new ProcessorFactory().
+                            newProcessor(format);
+                    final ImageInfo imageInfo = new ImageInfoFactory().newImageInfo(
+                            getImageURI(), processor, info);
+                    addLinkHeader(imageInfo);
+                    commitCustomResponseHeaders();
+                    return newRepresentation(imageInfo);
+                }
+            }
+        }
+
         final Resolver resolver = new ResolverFactory().newResolver(identifier);
 
         // Setup the resolver context.
@@ -68,12 +91,11 @@ public class InformationResource extends IIIF1Resource {
         resolver.setContext(requestContext);
 
         // Determine the format of the source image.
-        Format format = Format.UNKNOWN;
+        Format format;
         try {
             format = resolver.getSourceFormat();
         } catch (FileNotFoundException e) { // this needs to be rethrown
-            if (Configuration.getInstance().
-                    getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
+            if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                 // If the image was not found, purge it from the cache.
                 new CacheFacade().purgeAsync(identifier);
             }
@@ -86,15 +108,18 @@ public class InformationResource extends IIIF1Resource {
         // Connect it to the resolver.
         new ProcessorConnector(resolver, processor, identifier).connect();
 
+        final Info info = getOrReadInfo(identifier, processor);
         final ImageInfo imageInfo = new ImageInfoFactory().newImageInfo(
-                getImageURI(), processor, getOrReadInfo(identifier, processor));
+                getImageURI(), processor, info);
 
-        getBufferedResponseHeaders().add("Link",
-                String.format("<%s>;rel=\"profile\";", imageInfo.profile));
-
+        addLinkHeader(imageInfo);
         commitCustomResponseHeaders();
+        return newRepresentation(imageInfo);
+    }
 
-        return new JSONRepresentation(imageInfo, getNegotiatedMediaType());
+    private void addLinkHeader(ImageInfo info) {
+        getBufferedResponseHeaders().add("Link",
+                String.format("<%s>;rel=\"profile\";", info.profile));
     }
 
     /**
@@ -120,6 +145,11 @@ public class InformationResource extends IIIF1Resource {
             mediaType = new MediaType("application/json");
         }
         return mediaType;
+    }
+
+    private Representation newRepresentation(ImageInfo imageInfo) {
+        final MediaType mediaType = getNegotiatedMediaType();
+        return new JSONRepresentation(imageInfo, mediaType);
     }
 
 }
