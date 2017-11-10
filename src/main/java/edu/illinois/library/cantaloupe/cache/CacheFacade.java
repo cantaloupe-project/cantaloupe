@@ -16,7 +16,7 @@ import java.io.OutputStream;
 public final class CacheFacade {
 
     /**
-     * See {@link Cache#cleanUp}.
+     * @see Cache#cleanUp
      */
     public void cleanUp() throws CacheException {
         // Clean up the derivative cache.
@@ -33,14 +33,14 @@ public final class CacheFacade {
     }
 
     /**
-     * See {@link CacheFactory#getDerivativeCache}.
+     * @see CacheFactory#getDerivativeCache
      */
     public DerivativeCache getDerivativeCache() {
         return CacheFactory.getDerivativeCache();
     }
 
     /**
-     * See {@link InfoService#getOrReadInfo(Identifier, Processor)}.
+     * @see InfoService#getOrReadInfo(Identifier, Processor)
      */
     public Info getOrReadInfo(Identifier identifier, Processor processor)
             throws CacheException, ProcessorException {
@@ -48,7 +48,7 @@ public final class CacheFacade {
     }
 
     /**
-     * See {@link CacheFactory#getSourceCache}.
+     * @see CacheFactory#getSourceCache
      */
     public SourceCache getSourceCache() {
         return CacheFactory.getSourceCache();
@@ -58,12 +58,16 @@ public final class CacheFacade {
         return getDerivativeCache() != null;
     }
 
+    public boolean isInfoCacheAvailable() {
+        return InfoService.getInstance().isObjectCacheEnabled();
+    }
+
     public boolean isSourceCacheAvailable() {
         return getSourceCache() != null;
     }
 
     /**
-     * See {@link DerivativeCache#newDerivativeImageInputStream(OperationList)}.
+     * @see DerivativeCache#newDerivativeImageInputStream(OperationList)
      */
     public InputStream newDerivativeImageInputStream(OperationList opList)
             throws CacheException {
@@ -75,7 +79,7 @@ public final class CacheFacade {
     }
 
     /**
-     * See {@link DerivativeCache#newDerivativeImageOutputStream(OperationList)}.
+     * @see DerivativeCache#newDerivativeImageOutputStream(OperationList)
      */
     public OutputStream newDerivativeImageOutputStream(OperationList opList)
             throws CacheException {
@@ -87,7 +91,7 @@ public final class CacheFacade {
     }
 
     /**
-     * See {@link Cache#purge}.
+     * @see Cache#purge
      */
     public void purge() throws CacheException {
         // Purge the info service.
@@ -107,7 +111,7 @@ public final class CacheFacade {
     }
 
     /**
-     * See {@link Cache#purge(Identifier)}.
+     * @see Cache#purge(Identifier)
      */
     public void purge(Identifier identifier) throws CacheException {
         // Purge it from the info service.
@@ -137,7 +141,7 @@ public final class CacheFacade {
     }
 
     /**
-     * See {@link DerivativeCache#purge(OperationList)}.
+     * @see DerivativeCache#purge(OperationList)
      */
     public void purge(OperationList opList) throws CacheException {
         DerivativeCache derivativeCache = getDerivativeCache();
@@ -147,7 +151,7 @@ public final class CacheFacade {
     }
 
     /**
-     * See {@link Cache#purgeExpired()}.
+     * @see Cache#purgeExpired
      */
     public void purgeExpired() throws CacheException {
         // Purge the derivative cache.

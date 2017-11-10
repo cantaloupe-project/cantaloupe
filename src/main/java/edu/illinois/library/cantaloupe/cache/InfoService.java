@@ -13,7 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Obtains {@link Info} instances in an efficient, cache-aware way.
+ * <p>Used to obtain {@link Info} instances in an efficient way, utilizing
+ * (optionally) several tiers of caching.</p>
  */
 class InfoService {
 
@@ -135,6 +136,11 @@ class InfoService {
         return info;
     }
 
+    boolean isObjectCacheEnabled() {
+        return Configuration.getInstance().
+                getBoolean(Key.INFO_CACHE_ENABLED, false);
+    }
+
     void purgeObjectCache() {
         objectCache.removeAll();
     }
@@ -147,12 +153,14 @@ class InfoService {
      * Adds an info to the object cache synchronously.
      */
     void putInObjectCache(Identifier identifier, Info info) {
-        if (Configuration.getInstance().getBoolean(Key.INFO_CACHE_ENABLED, true)) {
-            LOGGER.debug("putInObjectCache(): adding info to object cache: {} (new size: {})",
-                    identifier, objectCache.size() + 1);
+        if (isObjectCacheEnabled()) {
+            LOGGER.debug("putInObjectCache(): adding info: {} (new size: {})",
+                    identifier,
+                    objectCache.size() + 1);
             objectCache.put(identifier, info);
         } else {
-            LOGGER.debug("putInObjectCache(): info cache is disabled; doing nothing");
+            LOGGER.debug("putInObjectCache(): {} is disabled; doing nothing",
+                    objectCache.getClass().getSimpleName());
         }
     }
 

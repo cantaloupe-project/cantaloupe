@@ -25,6 +25,10 @@ public class InfoServiceTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
+
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.INFO_CACHE_ENABLED, true);
+
         InfoService.clearInstance();
         instance = InfoService.getInstance();
     }
@@ -101,6 +105,16 @@ public class InfoServiceTest extends BaseTest {
 
         Info info = instance.getOrReadInfo(identifier, newMockProcessor());
         assertTrue(info.getImages().isEmpty());
+    }
+
+    @Test
+    public void testIsObjectCacheEnabled() {
+        Configuration config = Configuration.getInstance();
+        config.getBoolean(Key.INFO_CACHE_ENABLED, true);
+        assertTrue(instance.isObjectCacheEnabled());
+
+        config.getBoolean(Key.INFO_CACHE_ENABLED, false);
+        assertFalse(instance.isObjectCacheEnabled());
     }
 
     @Test
