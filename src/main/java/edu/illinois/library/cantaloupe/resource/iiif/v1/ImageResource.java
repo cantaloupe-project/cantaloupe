@@ -97,7 +97,7 @@ public class ImageResource extends IIIF1Resource {
                 newProcessor(sourceFormat);
 
         // Connect it to the resolver.
-        new ProcessorConnector(resolver, processor, identifier).connect();
+        new ProcessorConnector().connect(resolver, processor, identifier);
 
         final Set<Format> availableOutputFormats =
                 processor.getAvailableOutputFormats();

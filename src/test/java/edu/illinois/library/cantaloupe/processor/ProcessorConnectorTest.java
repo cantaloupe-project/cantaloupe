@@ -34,7 +34,10 @@ import static org.junit.Assert.*;
 
 public class ProcessorConnectorTest extends BaseTest {
 
-    private Identifier identifier = new Identifier("jpg-rgb-64x56x8-baseline.jpg");
+    private static final Identifier IDENTIFIER =
+            new Identifier("jpg-rgb-64x56x8-baseline.jpg");
+
+    private ProcessorConnector instance;
 
     private static void recursiveDeleteOnExit(File dir) throws IOException {
         Path path = dir.toPath();
@@ -57,6 +60,8 @@ public class ProcessorConnectorTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
+
+        instance = new ProcessorConnector();
 
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.RESOLVER_STATIC, "FilesystemResolver");
@@ -85,10 +90,10 @@ public class ProcessorConnectorTest extends BaseTest {
 
     @Test
     public void connectWithFileResolverAndFileProcessor() throws Exception {
-        final Resolver resolver = new ResolverFactory().newResolver(identifier);
+        final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER);
         final Processor processor = new ProcessorFactory().newProcessor(Format.JPG);
 
-        new ProcessorConnector(resolver, processor, identifier).connect();
+        instance.connect(resolver, processor, IDENTIFIER);
 
         assertEquals(
                 ((FileResolver) resolver).getFile(),
@@ -100,10 +105,10 @@ public class ProcessorConnectorTest extends BaseTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_FALLBACK, "ImageMagickProcessor");
 
-        final Resolver resolver = new ResolverFactory().newResolver(identifier);
+        final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER);
         final Processor processor = new ProcessorFactory().newProcessor(Format.JPG);
 
-        new ProcessorConnector(resolver, processor, identifier).connect();
+        instance.connect(resolver, processor, IDENTIFIER);
 
         StreamSource ss1 = ((StreamResolver) resolver).newStreamSource();
         StreamSource ss2 = ((StreamProcessor) processor).getStreamSource();
@@ -114,7 +119,7 @@ public class ProcessorConnectorTest extends BaseTest {
     @Test
     public void connectWithStreamResolverAndFileProcessorWithSourceCacheDisabled()
             throws Exception {
-        identifier = new Identifier("jp2");
+        final Identifier identifier = new Identifier("jp2");
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
         config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
@@ -123,7 +128,7 @@ public class ProcessorConnectorTest extends BaseTest {
         final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
 
         try {
-            new ProcessorConnector(resolver, processor, identifier).connect();
+            instance.connect(resolver, processor, identifier);
             fail("Expected exception");
         } catch (IncompatibleResolverException e) {
             // pass
@@ -134,7 +139,7 @@ public class ProcessorConnectorTest extends BaseTest {
     public void connectWithStreamResolverAndFileProcessor() throws Exception {
         final WebServer server = new WebServer();
         final File cacheFolder = TestUtil.getTempFolder();
-        identifier = new Identifier("jp2");
+        final Identifier identifier = new Identifier("jp2");
 
         try {
             server.start();
@@ -154,7 +159,7 @@ public class ProcessorConnectorTest extends BaseTest {
             final Resolver resolver = new ResolverFactory().newResolver(identifier);
             final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
 
-            new ProcessorConnector(resolver, processor, identifier).connect();
+            instance.connect(resolver, processor, identifier);
 
             assertEquals(
                     CacheFactory.getSourceCache().getSourceImageFile(identifier),
@@ -183,10 +188,10 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                     server.getHTTPURI() + "/");
 
-            final Resolver resolver = new ResolverFactory().newResolver(identifier);
+            final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER);
             final Processor processor = new MockStreamProcessor();
 
-            new ProcessorConnector(resolver, processor, identifier).connect();
+            instance.connect(resolver, processor, IDENTIFIER);
 
             StreamSource ss1 = ((StreamResolver) resolver).newStreamSource();
             StreamSource ss2 = ((StreamProcessor) processor).getStreamSource();
@@ -218,13 +223,13 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     cacheFolder.getAbsolutePath());
 
-            final Resolver resolver = new ResolverFactory().newResolver(identifier);
+            final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER);
             final Processor processor = new MockStreamProcessor();
 
-            new ProcessorConnector(resolver, processor, identifier).connect();
+            instance.connect(resolver, processor, IDENTIFIER);
 
             assertEqualSources(
-                    CacheFactory.getSourceCache().getSourceImageFile(identifier),
+                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER),
                     ((StreamProcessor) processor).getStreamSource());
         } finally {
             server.stop();
@@ -255,11 +260,11 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     cacheFolder.getAbsolutePath());
 
-            final Resolver resolver = new ResolverFactory().newResolver(identifier);
+            final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER);
             final Processor processor = new MockStreamProcessor();
 
             try {
-                new ProcessorConnector(resolver, processor, identifier).connect();
+                instance.connect(resolver, processor, IDENTIFIER);
                 fail("Expected exception");
             } catch (CacheDisabledException e) {
                 // pass

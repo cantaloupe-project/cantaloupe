@@ -119,7 +119,7 @@ public class ImageResource extends IIIF2Resource {
                 newProcessor(sourceFormat);
 
         // Connect it to the resolver.
-        new ProcessorConnector(resolver, processor, identifier).connect();
+        new ProcessorConnector().connect(resolver, processor, identifier);
 
         final Info info = getOrReadInfo(ops.getIdentifier(), processor);
         final Dimension fullSize = info.getSize();

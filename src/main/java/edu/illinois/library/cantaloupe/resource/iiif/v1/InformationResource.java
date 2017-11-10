@@ -106,7 +106,7 @@ public class InformationResource extends IIIF1Resource {
         final Processor processor = new ProcessorFactory().newProcessor(format);
 
         // Connect it to the resolver.
-        new ProcessorConnector(resolver, processor, identifier).connect();
+        new ProcessorConnector().connect(resolver, processor, identifier);
 
         final Info info = getOrReadInfo(identifier, processor);
         final ImageInfo imageInfo = new ImageInfoFactory().newImageInfo(
