@@ -21,6 +21,17 @@ class InfoService {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(InfoService.class);
 
+    /**
+     * It's not known in advance how much space a typical info is going to
+     * consume. This is a reasonable estimate (in bytes).
+     */
+    private static final int EXPECTED_AVERAGE_INFO_SIZE = 200;
+
+    /**
+     * Cached infos will consume, at most, this much of max heap.
+     */
+    private static final float MAX_HEAP_PERCENT = 0.2f;
+
     private static volatile InfoService instance;
 
     private final ObjectCache<Identifier, Info> objectCache;
@@ -50,9 +61,17 @@ class InfoService {
     }
 
     private InfoService() {
-        final Runtime runtime = Runtime.getRuntime();
-        final long maxSize = Math.round(runtime.maxMemory() / 1024f);
-        objectCache = new ObjectCache<>(maxSize);
+        final long maxByteSize =
+                Math.round(Runtime.getRuntime().maxMemory() * MAX_HEAP_PERCENT);
+        final long maxCount = Math.round(maxByteSize /
+                (float) EXPECTED_AVERAGE_INFO_SIZE);
+
+        LOGGER.info("Max {} capacity: {} ({}% max heap / {}-byte expected average info size)",
+                ObjectCache.class.getSimpleName(),
+                maxCount,
+                Math.round(MAX_HEAP_PERCENT * 100),
+                EXPECTED_AVERAGE_INFO_SIZE);
+        objectCache = new ObjectCache<>(maxCount);
     }
 
     long getObjectCacheSize() {
@@ -67,10 +86,12 @@ class InfoService {
      * most to least efficient:</p>
      *
      * <ol>
-     *     <li>A local in-memory heap cache;</li>
-     *     <li>The current derivative cache;</li>
+     *     <li>An internal {@link ObjectCache}, if enabled by the
+     *     {@link Key#INFO_CACHE_ENABLED} configuration key;</li>
+     *     <li>The derivative cache returned by
+     *     {@link CacheFactory#getDerivativeCache()};</li>
      *     <li>The given processor. If this is the case, it will also be cached
-     *     in the current derivative cache, if available. (This may happen
+     *     in whichever of the above caches are available. (This may happen
      *     asynchronously.)</li>
      * </ol>
      *
@@ -142,10 +163,12 @@ class InfoService {
     }
 
     void purgeObjectCache() {
+        LOGGER.debug("purgeObjectCache()");
         objectCache.removeAll();
     }
 
     void purgeObjectCache(Identifier identifier) {
+        LOGGER.debug("purgeObjectCache(): purging {}", identifier);
         objectCache.remove(identifier);
     }
 

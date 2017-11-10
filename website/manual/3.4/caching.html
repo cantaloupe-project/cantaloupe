@@ -139,7 +139,7 @@ cache.client.no_transform = true
 
 <h3 id="Info Cache">Info Cache</h3>
 
-<p>The info cache (added in version 3.4) caches image info in the Java heap. It operates independently of the derivative cache. When both are enabled, the info cache acts as a "level 1" cache in front of the "level 2" derivative cache:</p>
+<p>The info cache (added in version 3.4) caches image info objects in the Java heap. It operates independently of the derivative cache. When both are enabled, the info cache acts as a "level 1" cache in front of the "level 2" derivative cache:</p>
 
 <ol>
   <li>Requested image infos are retrieved from the info cache, if available;</li>
@@ -149,11 +149,13 @@ cache.client.no_transform = true
 
 <p>The info cache can be enabled or disabled via the <code>cache.server.info.enabled</code> configuration key.</p>
 
-<p>The info cache is cluster-safe: when multiple instances are sharing the same derivative cache, there will never be an info in an instance's info cache that isn't also present in the derivative cache.</p>
+<p>The info cache is cluster-safe: when multiple instances are sharing the same derivative cache, there will never (for more than a brief instant) be an info in an instance's info cache that isn't also present in the derivative cache.</p>
 
-<p>The info cache has no maximum size. This shouldn't typically be a problem, but if you are serving huge numbers of distinct images and not restarting often, keep an eye on memory usage and be prepared to increase your JVM's maximum heap.</p>
+<p>The info cache does not respect the <code>cache.server.ttl_seconds</code> configuration key. Its content never expires.</p>
 
-<p>The info cache is not persisted; its contents will be lost when the appliction is stopped.</p>
+<p>The maximum size of the info cache is hard-coded to a reasonable percentage of the maximum heap size, and is not configurable.</p>
+
+<p>The info cache is not persisted; its contents will be lost when the application is stopped.</p>
 
 <hr>
 
