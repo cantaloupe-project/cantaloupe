@@ -82,8 +82,56 @@ class InfoService {
      * <p>Returns an {@link Info} for the source image corresponding to the
      * given identifier.</p>
      *
-     * <p>The following sources are consulted in order of preference from
-     * most to least efficient:</p>
+     * <p>The following sources are consulted in order of preference:</p>
+     *
+     * <ol>
+     *     <li>An internal {@link ObjectCache}, if enabled by the
+     *     {@link Key#INFO_CACHE_ENABLED} configuration key;</li>
+     *     <li>The derivative cache returned by
+     *     {@link CacheFactory#getDerivativeCache()};</li>
+     * </ol>
+     *
+     * @param identifier Identifier of the source image for which to retrieve
+     *                   the info.
+     * @return           Info for the image with the given identifier.
+     * @throws CacheException     If there is an error reading or writing to or
+     *                            from the cache.
+     * @see #getOrReadInfo(Identifier, Processor)
+     */
+    Info getInfo(final Identifier identifier) throws CacheException {
+        // Check the local object cache.
+        Info info = objectCache.get(identifier);
+
+        if (info != null) {
+            LOGGER.debug("getInfo(): retrieved info of {} from {}",
+                    identifier, objectCache.getClass().getSimpleName());
+        } else {
+            // Check the derivative cache.
+            final DerivativeCache derivCache = CacheFactory.getDerivativeCache();
+            if (derivCache != null) {
+                Stopwatch watch = new Stopwatch();
+                info = derivCache.getImageInfo(identifier);
+                if (info != null) {
+                    LOGGER.debug("getInfo(): retrieved info of {} from " +
+                                    "{} in {} msec",
+                            identifier,
+                            derivCache.getClass().getSimpleName(),
+                            watch.timeElapsed());
+
+                    // Add it to the object cache (which it may already exist
+                    // in, but it doesn't matter).
+                    putInObjectCache(identifier, info);
+                }
+            }
+        }
+        return info;
+    }
+
+    /**
+     * <p>Returns an {@link Info} for the source image corresponding to the
+     * given identifier.</p>
+     *
+     * <p>The following sources are consulted in order of preference:</p>
      *
      * <ol>
      *     <li>An internal {@link ObjectCache}, if enabled by the
@@ -103,56 +151,28 @@ class InfoService {
      *                            from the cache.
      * @throws ProcessorException If there is an error reading the info from
      *                            the processor.
+     * @see #getInfo(Identifier)
      */
     Info getOrReadInfo(final Identifier identifier, final Processor proc)
             throws CacheException, ProcessorException {
-        // Check the local object cache.
-        Info info = objectCache.get(identifier);
+        // Try to retrieve it from an object or derivative cache.
+        Info info = getInfo(identifier);
+        if (info == null) {
+            Stopwatch watch = new Stopwatch();
 
-        if (info != null) {
-            LOGGER.debug("getOrReadInfo(): retrieved info of {} from {}",
-                    identifier, objectCache.getClass().getSimpleName());
-        } else {
-            // Check the derivative cache.
+            // Read it from the processor and then add it to both the
+            // derivative and object caches.
+            info = readInfo(identifier, proc);
+
+            LOGGER.debug("getOrReadInfo(): read info of {} from {} " +
+                            "in {} msec",
+                    identifier,
+                    proc.getClass().getSimpleName(),
+                    watch.timeElapsed());
+
+            // Add it to the derivative and object caches.
             final DerivativeCache derivCache = CacheFactory.getDerivativeCache();
-            if (derivCache != null) {
-                Stopwatch watch = new Stopwatch();
-                info = derivCache.getImageInfo(identifier);
-                if (info != null) {
-                    LOGGER.debug("getOrReadInfo(): retrieved info of {} from " +
-                                    "{} in {} msec",
-                            identifier,
-                            derivCache.getClass().getSimpleName(),
-                            watch.timeElapsed());
-
-                    // Add it to the object cache (which it may already exist
-                    // in, but it doesn't matter).
-                    putInObjectCache(identifier, info);
-                } else {
-                    watch = new Stopwatch();
-
-                    // The derivative cache does not contain the info, so read
-                    // it from the processor and then add it to both the
-                    // derivative and object caches.
-                    info = readInfo(identifier, proc);
-
-                    LOGGER.debug("getOrReadInfo(): read info of {} from {} " +
-                                    "in {} msec",
-                            identifier,
-                            proc.getClass().getSimpleName(),
-                            watch.timeElapsed());
-
-                    // Add it to the derivative and object caches.
-                    putInObjectCacheAsync(identifier, info, derivCache);
-                }
-            } else {
-                // There is no derivative cache available, so fall back to
-                // reading it from the processor.
-                info = readInfo(identifier, proc);
-
-                // Add it to the object cache.
-                putInObjectCache(identifier, info);
-            }
+            putInCachesAsync(identifier, info, derivCache);
         }
         return info;
     }
@@ -190,9 +210,9 @@ class InfoService {
     /**
      * Adds an info to the object and derivative caches asynchronously.
      */
-    private void putInObjectCacheAsync(Identifier identifier,
-                                       Info info,
-                                       DerivativeCache derivCache) {
+    private void putInCachesAsync(Identifier identifier,
+                                  Info info,
+                                  DerivativeCache derivCache) {
         ThreadPool.getInstance().submit(() -> {
             putInObjectCache(identifier, info);
             try {

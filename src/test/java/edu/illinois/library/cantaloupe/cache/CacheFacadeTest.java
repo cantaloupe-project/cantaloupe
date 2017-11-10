@@ -82,6 +82,17 @@ public class CacheFacadeTest extends BaseTest {
         assertNull(instance.getDerivativeCache());
     }
 
+    /* getInfo() */
+
+    @Test
+    public void testGetInfo() throws Exception {
+        final Identifier identifier = new Identifier("jpg");
+
+        Info expected = InfoService.getInstance().getInfo(identifier);
+        Info actual = instance.getInfo(identifier);
+        assertEquals(expected, actual);
+    }
+
     /* getOrReadInfo() */
 
     @Test

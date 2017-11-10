@@ -45,7 +45,21 @@ public final class CacheFacade {
     }
 
     /**
-     * @see InfoService#getOrReadInfo(Identifier, Processor)
+     * Retrieves an info corresponding to the given identifier from the info
+     * or derivative cache.
+     *
+     * @see #getOrReadInfo(Identifier, Processor)
+     */
+    public Info getInfo(Identifier identifier) throws CacheException {
+        return InfoService.getInstance().getInfo(identifier);
+    }
+
+    /**
+     * Retrieves an info corresponding to the given identifier from the info
+     * or derivative cache, falling back to reading it from a processor, if
+     * necessary.
+     *
+     * @see #getInfo(Identifier)
      */
     public Info getOrReadInfo(Identifier identifier, Processor processor)
             throws CacheException, ProcessorException {

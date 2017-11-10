@@ -63,6 +63,42 @@ public class InfoServiceTest extends BaseTest {
         }
     }
 
+    /* getInfo() */
+
+    @Test
+    public void testGetInfoWithHitInMemoryCache() throws Exception {
+        final Identifier identifier = new Identifier("jpg");
+        final Info info = new Info(500, 300);
+        instance.putInObjectCache(identifier, info);
+
+        Info actualInfo = instance.getInfo(identifier);
+        assertEquals(info, actualInfo);
+    }
+
+    @Test
+    public void testGetInfoWithHitInDerivativeCache() throws Exception {
+        useFilesystemCache();
+
+        final Identifier identifier = new Identifier("jpg");
+        final Info info = new Info(500, 300);
+
+        DerivativeCache cache = CacheFactory.getDerivativeCache();
+        cache.put(identifier, info);
+
+        Info actualInfo = instance.getInfo(identifier);
+        assertEquals(info, actualInfo);
+    }
+
+    @Test
+    public void testGetInfoWithMissEverywhere() throws Exception {
+        final Identifier identifier = new Identifier("jpg");
+
+        Info info = instance.getInfo(identifier);
+        assertNull(info);
+    }
+
+    /* getOrReadInfo() */
+
     @Test
     public void testGetOrReadInfoWithHitInMemoryCache() throws Exception {
         final Identifier identifier = new Identifier("jpg");
@@ -107,15 +143,19 @@ public class InfoServiceTest extends BaseTest {
         assertTrue(info.getImages().isEmpty());
     }
 
+    /* isObjectCacheEnabled() */
+
     @Test
     public void testIsObjectCacheEnabled() {
         Configuration config = Configuration.getInstance();
-        config.getBoolean(Key.INFO_CACHE_ENABLED, true);
+        config.setProperty(Key.INFO_CACHE_ENABLED, true);
         assertTrue(instance.isObjectCacheEnabled());
 
-        config.getBoolean(Key.INFO_CACHE_ENABLED, false);
+        config.setProperty(Key.INFO_CACHE_ENABLED, false);
         assertFalse(instance.isObjectCacheEnabled());
     }
+
+    /* purgeObjectCache() */
 
     @Test
     public void testPurgeObjectCache() throws Exception {
@@ -127,6 +167,8 @@ public class InfoServiceTest extends BaseTest {
         instance.purgeObjectCache();
         assertEquals(0, instance.getObjectCacheSize());
     }
+
+    /* purgeObjectCache(Identifier) */
 
     @Test
     public void testPurgeObjectCacheWithIdentifier() {
