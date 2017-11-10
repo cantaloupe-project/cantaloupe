@@ -185,7 +185,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     // Otherwise, delete it.
                     if (Files.size(tempFile) > 0) {
                         CFOS_LOGGER.debug("close(): moving {} to {}",
-                                tempFile, destinationFile.toFile().getName());
+                                tempFile, destinationFile);
                         Files.move(tempFile, destinationFile);
                     } else {
                         CFOS_LOGGER.debug("close(): deleting zero-byte file: {}",
@@ -1020,7 +1020,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         final Path tempFile = infoTempFile(identifier);
 
         try {
-            LOGGER.info("put(): caching: {}", identifier);
+            LOGGER.info("put(): writing {} to {}", identifier, tempFile);
 
             try {
                 // Create the containing directory.
@@ -1037,8 +1037,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 info.writeAsJSON(os);
             }
 
-            LOGGER.debug("put(): moving {} to {}",
-                    tempFile, destFile.toFile().getName());
+            LOGGER.debug("put(): moving {} to {}", tempFile, destFile);
             Files.move(tempFile, destFile);
         } catch (FileAlreadyExistsException e) {
             // When this method runs concurrently with an equal Identifier
