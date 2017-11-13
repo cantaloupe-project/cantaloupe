@@ -140,6 +140,7 @@ public class ApplicationContextListener implements ServletContextListener {
         LOGGER.info("Heap total: {}MB; max: {}MB",
                 runtime.totalMemory() / mb,
                 runtime.maxMemory() / mb);
+        LOGGER.info("Temp directory: {}", Application.getTempPath());
         LOGGER.info("\uD83C\uDF48 Starting Cantaloupe {}",
                 Application.getVersion());
 
