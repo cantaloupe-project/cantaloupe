@@ -5,22 +5,27 @@ import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http2.HTTP2Cipher;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
-import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.security.UserStore;
+import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
-import org.eclipse.jetty.server.handler.DefaultHandler;
-import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.util.security.Constraint;
+import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 
 /**
  * HTTP(S) server that serves static content using the fixture images path as
@@ -32,8 +37,13 @@ import java.net.URISyntaxException;
  */
 public class WebServer {
 
+    public static final String BASIC_REALM = "Test Realm";
+    public static final String BASIC_USER = "user";
+    public static final String BASIC_SECRET = "secret";
+
     private int httpPort;
     private int httpsPort;
+    private boolean isBasicAuthEnabled = false;
     private File root;
     private Server server;
 
@@ -49,6 +59,9 @@ public class WebServer {
 
         String path = TestUtil.getFixturePath().toAbsolutePath() + "/images";
         this.root = new File(path);
+    }
+
+    private void initializeServer() throws IOException {
         server = new Server();
 
         // Initialize the HTTP connector.
@@ -106,9 +119,35 @@ public class WebServer {
         handler.setDirectoriesListed(false);
         handler.setResourceBase(root.getAbsolutePath());
 
-        HandlerList handlers = new HandlerList();
-        handlers.setHandlers(new Handler[] { handler, new DefaultHandler() });
-        server.setHandler(handlers);
+        if (isBasicAuthEnabled) {
+            final String[] roles = new String[] { "user" };
+
+            HashLoginService loginService = new HashLoginService(BASIC_REALM);
+            UserStore userStore = new UserStore();
+            userStore.addUser(BASIC_USER, new Password(BASIC_SECRET), roles);
+            loginService.setUserStore(userStore);
+            server.addBean(loginService);
+
+            Constraint constraint = new Constraint();
+            constraint.setName("auth");
+            constraint.setAuthenticate(true);
+            constraint.setRoles(roles);
+
+            ConstraintMapping mapping = new ConstraintMapping();
+            mapping.setPathSpec("/*");
+            mapping.setConstraint(constraint);
+
+            ConstraintSecurityHandler security = new ConstraintSecurityHandler();
+            server.setHandler(security);
+
+            security.setConstraintMappings(Collections.singletonList(mapping));
+            security.setAuthenticator(new BasicAuthenticator());
+            security.setLoginService(loginService);
+
+            security.setHandler(handler);
+        } else {
+            server.setHandler(handler);
+        }
     }
 
     public int getHTTPPort() {
@@ -137,12 +176,19 @@ public class WebServer {
         return null;
     }
 
+    public void setBasicAuthEnabled(boolean enabled) {
+        this.isBasicAuthEnabled = enabled;
+    }
+
     public void start() throws Exception {
+        initializeServer();
         server.start();
     }
 
     public void stop() throws Exception {
-        server.stop();
+        if (server != null) {
+            server.stop();
+        }
     }
 
 }
