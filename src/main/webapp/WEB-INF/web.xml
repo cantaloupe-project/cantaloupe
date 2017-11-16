@@ -18,7 +18,7 @@
 
     <servlet>
         <servlet-name>ServerServlet</servlet-name>
-        <servlet-class>edu.illinois.library.cantaloupe.EntryServlet</servlet-class>
+        <servlet-class>org.restlet.ext.servlet.ServerServlet</servlet-class>
         <init-param>
             <param-name>org.restlet.clients</param-name>
             <param-value>CLAP HTTP HTTPS</param-value>
