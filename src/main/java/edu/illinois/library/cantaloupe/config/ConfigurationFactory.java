@@ -14,7 +14,14 @@ public final class ConfigurationFactory {
     }
 
     /**
+     * Returns the shared application configuration instance. The
+     * {@link #CONFIG_VM_ARGUMENT} VM argument must be set to an absolute or
+     * relative pathname of a configuration file. It may also be set to the
+     * string <code>memory</code> to use an in-memory configuration.
+     *
      * @return Shared application configuration instance.
+     * @throws RuntimeException If the {@link #CONFIG_VM_ARGUMENT} VM argument
+     *                          is not set.
      */
     static Configuration getInstance() {
         Configuration config = instance;
@@ -37,8 +44,8 @@ public final class ConfigurationFactory {
                         }
                         instance = config;
                     } else {
-                        throw new RuntimeException("ConfigurationFactory.getInstance(): " +
-                                "missing " + CONFIG_VM_ARGUMENT + " VM option.");
+                        throw new RuntimeException("Missing " +
+                                CONFIG_VM_ARGUMENT + " VM option.");
                     }
                 }
             }
