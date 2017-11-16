@@ -472,6 +472,24 @@ public class OperationListTest extends BaseTest {
         assertEquals(Compression.LZW, encode.getCompression());
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void applyNonEndpointMutationsWhileFrozen()
+            throws Exception {
+        final Dimension fullSize = new Dimension(2000,1000);
+        final OperationList opList = new OperationList(new Identifier("cats"),
+                Format.JPG, new Crop(0, 0, 70, 30));
+
+        opList.freeze();
+
+        opList.applyNonEndpointMutations(
+                fullSize,
+                Orientation.ROTATE_90,
+                "127.0.0.1",
+                new URI("http://example.org/"),
+                new HashMap<>(),
+                new HashMap<>());
+    }
+
     @Test
     public void clear() {
         int opCount = 0;

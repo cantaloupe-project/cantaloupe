@@ -154,6 +154,8 @@ public final class OperationList implements Comparable<OperationList>,
                                           final URI requestURI,
                                           final Map<String,String> requestHeaders,
                                           final Map<String,String> cookies) {
+        checkFrozen();
+
         if (getOutputFormat() == null
                 || Format.UNKNOWN.equals(getOutputFormat())) {
             throw new IllegalArgumentException(
