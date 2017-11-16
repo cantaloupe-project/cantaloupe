@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
 import edu.illinois.library.cantaloupe.resource.TrailingSlashRemovingResource;
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
-import edu.illinois.library.cantaloupe.resource.admin.ConfigurationResource;
 import edu.illinois.library.cantaloupe.resource.api.CacheResource;
 import edu.illinois.library.cantaloupe.resource.api.TaskResource;
 import edu.illinois.library.cantaloupe.resource.api.TasksResource;
@@ -42,10 +41,10 @@ import java.util.logging.Level;
 
 /**
  * Restlet Application implementation. Creates endpoint routes and connects
- * them to Resources.
+ * them to {@link org.restlet.resource.Resource resources}.
  *
  * @see <a href="https://restlet.com/open-source/documentation/jdocs/2.3/jse">
- *     Restlet JSE Javadoc</a>
+ *     Restlet 2.3 JSE Javadoc</a>
  * @see <a href="https://restlet.com/open-source/documentation/2.3/changelog">
  *     Restlet Change Log</a>
  */
@@ -122,39 +121,42 @@ public class RestletApplication extends Application {
     public static final String STATIC_ROOT_PATH = "/static";
     public static final String TASKS_PATH = "/tasks";
 
+    public static final String ADMIN_REALM = "Cantaloupe Control Panel";
+    public static final String API_REALM = "Cantaloupe API Realm";
+    public static final String PUBLIC_REALM = "Image Realm";
+
     public RestletApplication() {
         super();
-        this.setStatusService(new CustomStatusService());
+        setStatusService(new CustomStatusService());
         // http://restlet.com/blog/2015/12/15/understanding-and-using-cors/
         CorsService corsService = new CorsService();
         corsService.setAllowedOrigins(new HashSet<>(Collections.singletonList("*")));
         corsService.setAllowedCredentials(true);
-        this.getServices().add(corsService);
+        getServices().add(corsService);
     }
 
-    private ChallengeAuthenticator createAdminAuthenticator()
+    private ChallengeAuthenticator newAdminAuthenticator()
             throws ConfigurationException {
         final Configuration config = Configuration.getInstance();
         final String secret = config.getString(Key.ADMIN_SECRET);
-        if (secret == null || secret.length() < 1) {
+        if (secret == null || secret.isEmpty()) {
             throw new ConfigurationException(Key.ADMIN_SECRET +
-                    " is not set. The control panel will be unavailable.");
+                    " is not set. The Control Panel will be unavailable.");
         }
 
         final MapVerifier verifier = new MapVerifier();
         verifier.getLocalSecrets().put("admin", secret.toCharArray());
         final ChallengeAuthenticator auth = new ChallengeAuthenticator(
-                getContext(), ChallengeScheme.HTTP_BASIC,
-                "Cantaloupe Control Panel");
+                getContext(), ChallengeScheme.HTTP_BASIC, ADMIN_REALM);
         auth.setVerifier(verifier);
         return auth;
     }
 
-    private ChallengeAuthenticator createApiAuthenticator()
+    private ChallengeAuthenticator newAPIAuthenticator()
             throws ConfigurationException {
         final Configuration config = Configuration.getInstance();
         final String secret = config.getString(Key.API_SECRET);
-        if (secret == null || secret.length() < 1) {
+        if (secret == null || secret.isEmpty()) {
             throw new ConfigurationException(Key.API_SECRET +
                     " is not set. The API will be unavailable.");
         }
@@ -163,13 +165,12 @@ public class RestletApplication extends Application {
         verifier.getLocalSecrets().put(config.getString(Key.API_USERNAME),
                 secret.toCharArray());
         final ChallengeAuthenticator auth = new ChallengeAuthenticator(
-                getContext(), ChallengeScheme.HTTP_BASIC,
-                "Cantaloupe API Realm");
+                getContext(), ChallengeScheme.HTTP_BASIC, API_REALM);
         auth.setVerifier(verifier);
         return auth;
     }
 
-    private ChallengeAuthenticator createEndpointAuthenticator()
+    private ChallengeAuthenticator newPublicEndpointAuthenticator()
             throws ConfigurationException {
         final Configuration config = Configuration.getInstance();
 
@@ -180,34 +181,34 @@ public class RestletApplication extends Application {
             if (username != null && !username.isEmpty() && secret != null
                     && !secret.isEmpty()) {
                 getLogger().log(Level.INFO,
-                        "Enabling HTTP Basic authentication for all endpoints");
-                final MapVerifier verifier = new MapVerifier();
-                verifier.getLocalSecrets().put(username, secret.toCharArray());
+                        "Enabling HTTP Basic authentication for public endpoints");
 
                 final ChallengeAuthenticator auth = new ChallengeAuthenticator(
-                        getContext(), ChallengeScheme.HTTP_BASIC, "Image Realm") {
+                        getContext(), ChallengeScheme.HTTP_BASIC, PUBLIC_REALM) {
                     @Override
                     protected int beforeHandle(Request request, Response response) {
                         final String path = request.getResourceRef().getPath();
-                        if (path.startsWith(IIIF_PATH)
-                                || path.startsWith(IIIF_1_PATH)
-                                || path.startsWith(IIIF_2_PATH)) {
+                        if (path.startsWith(IIIF_PATH)) {
                             return super.beforeHandle(request, response);
                         }
                         response.setStatus(Status.SUCCESS_OK);
                         return CONTINUE;
                     }
                 };
+
+                final MapVerifier verifier = new MapVerifier();
+                verifier.getLocalSecrets().put(username, secret.toCharArray());
+
                 auth.setVerifier(verifier);
                 return auth;
             } else {
-                throw new ConfigurationException("Endpoint authentication is " +
-                        "enabled in the configuration, but " +
+                throw new ConfigurationException("Public endpoint " +
+                        "authentication is enabled in the configuration, but " +
                         Key.BASIC_AUTH_USERNAME + " and/or " +
-                        Key.BASIC_AUTH_SECRET + " are empty");
+                        Key.BASIC_AUTH_SECRET + " are not set");
             }
         } else {
-            getLogger().info("Endpoint authentication is disabled (" +
+            getLogger().info("Public endpoint authentication is disabled (" +
                     Key.BASIC_AUTH_ENABLED + " = false)");
         }
         return null;
@@ -272,12 +273,12 @@ public class RestletApplication extends Application {
         ////////////////////////// Admin routes ///////////////////////////
 
         try {
-            ChallengeAuthenticator adminAuth = createAdminAuthenticator();
+            ChallengeAuthenticator adminAuth = newAdminAuthenticator();
             adminAuth.setNext(AdminResource.class);
             router.attach(ADMIN_PATH, adminAuth);
 
-            adminAuth = createAdminAuthenticator();
-            adminAuth.setNext(ConfigurationResource.class);
+            adminAuth = newAdminAuthenticator();
+            adminAuth.setNext(edu.illinois.library.cantaloupe.resource.admin.ConfigurationResource.class);
             router.attach(ADMIN_CONFIG_PATH, adminAuth);
         } catch (ConfigurationException e) {
             getLogger().log(Level.INFO, e.getMessage());
@@ -286,19 +287,19 @@ public class RestletApplication extends Application {
         /////////////////////////// API routes ////////////////////////////
 
         try {
-            ChallengeAuthenticator apiAuth = createApiAuthenticator();
-            apiAuth.setNext(ConfigurationResource.class);
+            ChallengeAuthenticator apiAuth = newAPIAuthenticator();
+            apiAuth.setNext(edu.illinois.library.cantaloupe.resource.api.ConfigurationResource.class);
             router.attach(CONFIGURATION_PATH, apiAuth);
 
-            apiAuth = createApiAuthenticator();
+            apiAuth = newAPIAuthenticator();
             apiAuth.setNext(CacheResource.class);
             router.attach(CACHE_PATH + "/{identifier}", apiAuth);
 
-            apiAuth = createApiAuthenticator();
+            apiAuth = newAPIAuthenticator();
             apiAuth.setNext(TasksResource.class);
             router.attach(TASKS_PATH, apiAuth);
 
-            apiAuth = createApiAuthenticator();
+            apiAuth = newAPIAuthenticator();
             apiAuth.setNext(TaskResource.class);
             router.attach(TASKS_PATH + "/{uuid}", apiAuth);
         } catch (ConfigurationException e) {
@@ -307,10 +308,12 @@ public class RestletApplication extends Application {
 
         ////////////////////////// Other routes ///////////////////////////
 
-        // landing page
+        // Application landing page
         router.attach("/", LandingResource.class);
 
-        // Hook up the static file server (for CSS & images)
+        // Hook up the static file server (for images, CSS, & scripts)
+        // This uses Restlet's "CLAP" (Class Loader Access Protocol) mechanism
+        // which must be enabled in web.xml.
         final Directory dir = new Directory(
                 getContext(), "clap://resources/public_html/");
         dir.setDeeplyAccessible(true);
@@ -318,9 +321,9 @@ public class RestletApplication extends Application {
         dir.setNegotiatingContent(false);
         router.attach(STATIC_ROOT_PATH, dir);
 
-        // Hook up endpoint authentication
+        // Hook up IIIF endpoint authentication
         try {
-            ChallengeAuthenticator endpointAuth = createEndpointAuthenticator();
+            ChallengeAuthenticator endpointAuth = newPublicEndpointAuthenticator();
             if (endpointAuth != null) {
                 endpointAuth.setNext(router);
                 return endpointAuth;
