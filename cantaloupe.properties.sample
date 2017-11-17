@@ -41,8 +41,8 @@ admin.enabled = false
 # Password to access the Control Panel. (The username is "admin".)
 admin.password =
 
-# Base URI to use for internal links, such as Link headers and JSON-LD @id
-# values, in a reverse-proxy context. This should only be used when
+# Base URI to use for internal links, such as Link headers and JSON-LD
+# @id values, in a reverse-proxy context. This should only be used when
 # X-Forwarded-* headers cannot be used instead. (See the user manual.)
 base_uri =
 
@@ -69,13 +69,13 @@ print_stack_trace_on_error_pages = true
 # methods. (See the user manual.)
 delegate_script.enabled = false
 
-# !! This can be an absolute path, or a filename; if only a
-# filename is specified, it will be searched for in the same folder as this
-# file, and then the current working directory.
+# !! This can be an absolute path, or a filename; if only a filename is
+# specified, it will be searched for in the same folder as this file, and
+# then the current working directory.
 delegate_script.pathname = delegates.rb
 
-# Enables the invocation cache, which caches method invocations and
-# return values in memory. See the user manual for more information.
+# Enables the invocation cache, which caches method invocations and return
+# values in memory. See the user manual for more information.
 delegate_script.cache.enabled = false
 
 ###########################################################################
@@ -202,8 +202,7 @@ AmazonS3Resolver.secret_key =
 # !! Name of the bucket containing images to be served.
 AmazonS3Resolver.bucket.name =
 
-# !! Can be left blank.
-# See: http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
+# !! See: http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
 AmazonS3Resolver.bucket.region =
 
 # Tells AmazonS3Resolver how to look up objects. Allowed values are
@@ -303,7 +302,7 @@ processor.metadata.respect_orientation = false
 # processors respect this setting; see the user manual.
 processor.limit_to_8_bits = true
 
-# Progressive JPEGs are generally more space-efficient.
+# Progressive JPEGs are generally more compact.
 processor.jpg.progressive = true
 
 # JPEG output quality (1-100).
@@ -400,8 +399,8 @@ cache.server.derivative =
 # front of a "level 2" derivative cache (if enabled).
 cache.server.info.enabled = true
 
-# Time before a cached image becomes stale and needs to be reloaded. Set to
-# blank or 0 for infinite.
+# Time before cached content (excluding info cache content) becomes invalid.
+# Set to blank or 0 for infinite.
 cache.server.ttl_seconds = 2592000
 
 # If true, when a resolver reports that the requested source image has gone
@@ -419,7 +418,7 @@ cache.server.resolve_first = false
 # items in the background.
 cache.server.worker.enabled = false
 
-# !! The cache worker will wait this many seconds between shifts.
+# !! The cache worker will start its shifts this many seconds apart.
 cache.server.worker.interval = 86400
 
 #----------------------------------------
@@ -602,8 +601,7 @@ overlays.BasicStrategy.output_height_threshold = 300
 # REDACTIONS
 ###########################################################################
 
-# Whether to enable redactions. See the user manual for information about
-# how these work.
+# See the user manual for information about how redactions work.
 redaction.enabled = false
 
 ###########################################################################

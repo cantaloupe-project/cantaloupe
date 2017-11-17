@@ -10,7 +10,7 @@ title: Change Log
 <ul>
   <li>Endpoints
     <ul>
-      <li>HTTP/2 can be enabled in standalone mode (requires Java 9).</li>
+      <li>HTTP/2 can be enabled in standalone mode. (H2 requires Java 9, but H2C works in Java 8.)</li>
       <li>The accept queue limit of the standalone HTTP &amp; HTTPS servers is configurable.</li>
       <li>The minimum size in IIIF Image API 2.x <code>info.json</code> responses is configurable. (Thanks to @cbeer)</li>
       <li>The maximum size in IIIF Image API 2.x <code>info.json</code> responses is the full image size, rather than half size. (Thanks to @cbeer)</li>
@@ -22,7 +22,7 @@ title: Change Log
   <li>Resolvers
     <ul>
       <li>HttpResolver uses the Jetty HTTP client.</li>
-      <li>HttpResolver supports HTTP/2 (requires Java 9).</li>
+      <li>HttpResolver supports HTTP/2. (H2 requires Java 9, but H2C works in Java 8.)</li>
       <li>The <code>HttpResolver::get_url()</code> delegate method may return a hash containing HTTP authentication info.</li>
       <li>Added an option to HttpResolver to trust invalid SSL certificates.</li>
       <li>AmazonS3Resolver and AzureStorageResolver attempt to infer a source format from the object/blob key if not able to do so from the identifier or from object/blob metadata.</li>
@@ -50,7 +50,7 @@ title: Change Log
       <li>Added an optional in-memory image info cache.</li>
       <li>Added RedisCache.</li>
       <li>Added HeapCache.</li>
-      <li>AmazonS3Cache uses asynchronous uploads for better performance.</li>
+      <li>AmazonS3Cache uploads images to S3 asynchronously, enabling faster responses.</li>
       <li>AmazonS3Cache falls back to obtaining credentials from various other sources (see the user manual) when they are not set in the config file. (Thanks to @jweisman)</li>
     </ul>
   </li>
@@ -58,7 +58,7 @@ title: Change Log
     <ul>
       <li>Configuration files support inheritance via an <code>extends</code> key.</li>
       <li>The temporary directory is configurable.</li>
-      <li>Added an optional separate error log.</li>
+      <li>Added an optional error log.</li>
       <li>A logger is accessible from the delegate script.</li>
     </ul>
   </li>

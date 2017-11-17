@@ -17,7 +17,7 @@ title: Access Control
 
 <h2 id="Authentication">Authentication</h2>
 
-<p>In standalone mode, Cantaloupe has built-in support for HTTP Basic authentication. To enable it, set the following keys in the configuration file:</p>
+<p>HTTP Basic authentication can be enabled on image and information endpoints. To enable this, set the following keys in the configuration file:</p>
 
 {% highlight properties %}
 endpoint.public.auth.basic.enabled = true
@@ -25,13 +25,11 @@ endpoint.public.auth.basic.username = myusername
 endpoint.public.auth.basic.secret = mypassword
 {% endhighlight %}
 
-<p>When enabled, the entire website and all endpoints will be restricted.</p>
-
 <hr>
 
 <h2 id="Authorization">Authorization</h2>
 
-<p>A custom <a href="delegate-script.html">delegate method</a> can be used to implement authorization logic ranging from simple to complex. The image server will invoke this method upon every image request and, depending on its return value, either:</p>
+<p>A custom <a href="delegate-script.html">delegate method</a> can be used to implement authorization logic ranging from simple to complex. The method will be invoked upon every image request. Depending on its return value, it can either:</p>
 
 <ul>
   <li>Authorize the request (by returning HTTP 200 OK);</li>
@@ -39,14 +37,14 @@ endpoint.public.auth.basic.secret = mypassword
   <li>Redirect to a different URL via a response code returned from the method.</li>
 </ul>
 
-<p>The delegate method in question is called <code>authorized?</code>. A skeleton with documented parameters and return values is present in the <span class="filename">delegates.rb.sample</span> file. By default, it just returns <code>true</code>, authorizing all requests.</p>
+<p>The delegate method is named <code>authorized?()</code>. A skeleton with documented parameters and return values is present in the <span class="filename">delegates.rb.sample</span> file. By default, it just returns <code>true</code>, authorizing all requests.</p>
 
 <h3 id="Authorization Notes">Notes</h3>
 
 <ul>
   <li>The authorization method will be called on every image request and should therefore be written to be efficient.</li>
   <li>The authorization method will be called upon requests to all image endpoints, <strong>but not information endpoints</strong>.</li>
-  <li>Implementations should not assume that the underlying source image actually exists, but they should not try to check for it regardless&mdash;the image server will handle that. (But, the check may occur after the delegate method is invoked.)</li>
+  <li>Implementations should assume that the underlying source image exists, even though it may not. The image server will check for existence, but the check may occur after the delegate method is invoked.</li>
 </ul>
 
 <h3 id="Authorization Examples">Examples</h3>
