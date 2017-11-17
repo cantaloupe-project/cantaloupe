@@ -1,9 +1,9 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
 import edu.illinois.library.cantaloupe.RestletApplication;
+import edu.illinois.library.cantaloupe.http.Method;
+import org.eclipse.jetty.client.api.ContentResponse;
 import org.junit.Test;
-import org.restlet.data.Status;
-import org.restlet.resource.ClientResource;
 
 import static org.junit.Assert.*;
 
@@ -15,7 +15,7 @@ public class CacheResourceTest extends AbstractAPIResourceTest {
     private static final String IDENTIFIER = "jpg";
 
     @Override
-    String getURIPath() {
+    protected String getEndpointPath() {
         return RestletApplication.CACHE_PATH + "/" + IDENTIFIER;
     }
 
@@ -23,10 +23,9 @@ public class CacheResourceTest extends AbstractAPIResourceTest {
 
     @Test
     public void testDoPurgeWithValidCredentials() throws Exception {
-        ClientResource client = getClientForUriPath(
-                RestletApplication.CACHE_PATH + "/" + IDENTIFIER, USERNAME, SECRET);
-        client.delete();
-        assertEquals(Status.SUCCESS_NO_CONTENT, client.getStatus());
+        client.setMethod(Method.DELETE);
+        ContentResponse response = client.send();
+        assertEquals(204, response.getStatus());
 
         // TODO: assert that relevant cache files have been deleted
     }

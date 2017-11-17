@@ -15,6 +15,7 @@ title: Change Log
       <li>The minimum size in IIIF Image API 2.x <code>info.json</code> responses is configurable. (Thanks to @cbeer)</li>
       <li>The maximum size in IIIF Image API 2.x <code>info.json</code> responses is the full image size, rather than half size. (Thanks to @cbeer)</li>
       <li>The IIIF Image API 1.x endpoint returns a JPEG image, rather than GIF, when no client preference is expressed in the URI or <code>Accept</code> header.</li>
+      <li>Image and information endpoints return HTTP 501, rather than 500, when the selected processor does not support the requested source format.</li>
       <li>Image requests may include a <code>?response-content-disposition</code> query argument to suggest a response <code>Content-Disposition</code>.</li>
       <li>Added several HTTP API methods for cache management.</li>
     </ul>
@@ -102,7 +103,7 @@ title: Change Log
 
 <ul>
     <li>Fixed caches failing to take URL query arguments into account.</li>
-    <li>Fixed a potentially incorrect <code>Cache-Control</code> header being sent in HTTP &gte; 400 responses.</li>
+    <li>Fixed a potentially incorrect <code>Cache-Control</code> header being sent in HTTP &ge; 400 responses.</li>
     <li>Fixed parsing of comma-separated <code>X-Forwarded-*</code> header values.</li>
     <li>Improved the reliability of the value of the <code>client_ip</code> argument to the <code>authorized?()</code> delegate method when behind a reverse proxy.</li>
     <li>Fixed a connection leak in AmazonS3Resolver.</li>

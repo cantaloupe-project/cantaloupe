@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
+import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
 import edu.illinois.library.cantaloupe.resource.TrailingSlashRemovingResource;
@@ -103,6 +104,8 @@ public class RestletApplication extends Application {
                 status = new Status(Status.CLIENT_ERROR_NOT_FOUND, t);
             } else if (t instanceof AccessDeniedException) {
                 status = new Status(Status.CLIENT_ERROR_FORBIDDEN, t);
+            } else if (t instanceof UnsupportedSourceFormatException) {
+                status = new Status(Status.SERVER_ERROR_NOT_IMPLEMENTED, t);
             } else {
                 status = new Status(Status.SERVER_ERROR_INTERNAL, t);
             }

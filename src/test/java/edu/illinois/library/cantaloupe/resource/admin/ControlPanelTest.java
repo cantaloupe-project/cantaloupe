@@ -14,6 +14,9 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.Select;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import static org.junit.Assert.*;
 
 /**
@@ -21,23 +24,12 @@ import static org.junit.Assert.*;
  */
 public class ControlPanelTest extends ResourceTest {
 
-    private static final int WAIT_AFTER_SUBMIT = 1000;
-    private static final String USERNAME = "admin";
+    private static final int WAIT_AFTER_SUBMIT = 1200;
     private static final String SECRET = "secret";
 
     private static WebDriver webDriver;
 
-    private WebElement css(String selector) {
-        return webDriver.findElement(By.cssSelector(selector));
-    }
-
-    private String getAdminUri() {
-        return String.format("http://%s:%s@localhost:%d%s",
-                USERNAME, SECRET,
-                appServer.getHTTPPort(),
-                RestletApplication.ADMIN_PATH);
-    }
-
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -52,13 +44,34 @@ public class ControlPanelTest extends ResourceTest {
         DesiredCapabilities capabilities = DesiredCapabilities.htmlUnitWithJs();
         webDriver = new HtmlUnitDriver(capabilities);
         ((HtmlUnitDriver) webDriver).setJavascriptEnabled(true);
-        webDriver.get(getAdminUri());
+        webDriver.get(getHTTPURI("").toString());
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
         webDriver.close();
+    }
+
+    @Override
+    protected String getEndpointPath() {
+        return RestletApplication.ADMIN_PATH;
+    }
+
+    @Override
+    protected URI getHTTPURI(String path) {
+        try {
+            return new URI("http://admin:" + SECRET + "@localhost:" +
+                    appServer.getHTTPPort() + getEndpointPath() + path);
+        } catch (URISyntaxException e) {
+            fail(e.getMessage());
+        }
+        return null;
+    }
+
+    private WebElement css(String selector) {
+        return webDriver.findElement(By.cssSelector(selector));
     }
 
     private WebElement inputNamed(Key key) {
@@ -247,7 +260,7 @@ public class ControlPanelTest extends ResourceTest {
         assertTrue(config.getBoolean(Key.HTTPS_ENABLED));
         assertEquals("2.3.4.5", config.getString(Key.HTTPS_HOST));
         assertEquals(8990, config.getInt(Key.HTTPS_PORT));
-        //assertEquals("PKCS12", config.getString(Key.HTTPS_KEY_STORE_TYPE)); // TODO: why does this not work?
+        assertEquals("PKCS12", config.getString(Key.HTTPS_KEY_STORE_TYPE));
         assertEquals("/something", config.getString(Key.HTTPS_KEY_STORE_PATH));
         assertEquals("cats", config.getString(Key.HTTPS_KEY_STORE_PASSWORD));
         assertTrue(config.getBoolean(Key.HTTPS_HTTP2_ENABLED));

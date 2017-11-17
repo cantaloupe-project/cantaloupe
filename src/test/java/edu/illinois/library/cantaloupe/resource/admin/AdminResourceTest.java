@@ -3,20 +3,11 @@ package edu.illinois.library.cantaloupe.resource.admin;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
+import org.eclipse.jetty.client.api.ContentResponse;
 import org.junit.Before;
 import org.junit.Test;
-import org.restlet.data.CacheDirective;
-import org.restlet.data.ChallengeResponse;
-import org.restlet.data.ChallengeScheme;
-import org.restlet.data.MediaType;
-import org.restlet.data.Status;
-import org.restlet.resource.ClientResource;
-import org.restlet.resource.ResourceException;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -35,10 +26,18 @@ public class AdminResourceTest extends ResourceTest {
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.ADMIN_SECRET, SECRET);
+
+        client = newClient("", USERNAME, SECRET,
+                RestletApplication.ADMIN_REALM);
+    }
+
+    @Override
+    protected String getEndpointPath() {
+        return RestletApplication.ADMIN_PATH;
     }
 
     @Test
-    public void testCacheHeaders() {
+    public void testCacheHeaders() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.CLIENT_CACHE_ENABLED, "true");
         config.setProperty(Key.CLIENT_CACHE_MAX_AGE, "1234");
@@ -50,73 +49,56 @@ public class AdminResourceTest extends ResourceTest {
         config.setProperty(Key.CLIENT_CACHE_MUST_REVALIDATE, "false");
         config.setProperty(Key.CLIENT_CACHE_PROXY_REVALIDATE, "false");
 
-        Map<String, String> expectedDirectives = new HashMap<>();
-        expectedDirectives.put("no-cache", null);
-
-        ClientResource client = getClientForUriPath(RestletApplication.ADMIN_PATH,
-                USERNAME, SECRET);
-        client.get();
-        List<CacheDirective> actualDirectives = client.getResponse().getCacheDirectives();
-        for (CacheDirective d : actualDirectives) {
-            if (d.getName() != null) {
-                assertTrue(expectedDirectives.keySet().contains(d.getName()));
-                if (d.getValue() != null) {
-                    assertTrue(expectedDirectives.get(d.getName()).equals(d.getValue()));
-                } else {
-                    assertNull(expectedDirectives.get(d.getName()));
-                }
-            }
-        }
+        ContentResponse response = client.send();
+        assertEquals("no-cache", response.getHeaders().get("Cache-Control"));
     }
 
     @Test
     public void testDoGet() throws Exception {
         // no credentials
-        ClientResource client = getClientForUriPath(RestletApplication.ADMIN_PATH);
         try {
-            client.get();
+            client.setUsername(null);
+            client.setSecret(null);
+            client.send();
             fail("Expected exception");
         } catch (ResourceException e) {
-            assertEquals(Status.CLIENT_ERROR_UNAUTHORIZED, client.getStatus());
+            assertEquals(401, e.getStatusCode());
         }
 
         // invalid credentials
-        client.setChallengeResponse(
-                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, "invalid", "invalid"));
         try {
-            client.get();
+            client.setUsername("invalid");
+            client.setSecret("invalid");
+            client.send();
             fail("Expected exception");
         } catch (ResourceException e) {
-            assertEquals(Status.CLIENT_ERROR_UNAUTHORIZED, client.getStatus());
+            assertEquals(401, e.getStatusCode());
         }
 
         // valid credentials
-        client.setChallengeResponse(
-                new ChallengeResponse(ChallengeScheme.HTTP_BASIC, USERNAME, SECRET));
-        client.get(MediaType.TEXT_HTML);
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
-        assertTrue(client.getResponse().getEntityAsText().
-                contains("Cantaloupe Image Server"));
+        client.setUsername(USERNAME);
+        client.setSecret(SECRET);
+        ContentResponse response = client.send();
+        assertEquals(200, response.getStatus());
+        assertTrue(response.getContentAsString().contains("Cantaloupe Image Server"));
     }
 
     @Test
-    public void testEnabled() {
+    public void testEnabled() throws Exception {
         Configuration config = Configuration.getInstance();
         // enabled
         config.setProperty(Key.ADMIN_ENABLED, true);
 
-        ClientResource client = getClientForUriPath(
-                RestletApplication.ADMIN_PATH, USERNAME, SECRET);
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
+        ContentResponse response = client.send();
+        assertEquals(200, response.getStatus());
 
         // disabled
         config.setProperty(Key.ADMIN_ENABLED, false);
         try {
-            client.get();
+            client.send();
             fail("Expected exception");
         } catch (ResourceException e) {
-            assertEquals(Status.CLIENT_ERROR_FORBIDDEN, client.getStatus());
+            assertEquals(403, e.getStatusCode());
         }
     }
 

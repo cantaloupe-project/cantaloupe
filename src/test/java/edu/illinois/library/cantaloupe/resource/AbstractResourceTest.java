@@ -177,13 +177,8 @@ public class AbstractResourceTest extends BaseTest {
     /* template() */
 
     @Test
-    public void testTemplateWithValidTemplate() {
+    public void testTemplate() {
         assertNotNull(resource.template("/error.vm"));
-    }
-
-    @Test
-    public void testTemplateWithInvalidTemplate() {
-        assertNotNull(resource.template("/bogus.vm"));
     }
 
 }

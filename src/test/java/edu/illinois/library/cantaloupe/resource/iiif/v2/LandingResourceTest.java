@@ -5,59 +5,40 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.junit.Test;
-import org.restlet.data.Status;
-import org.restlet.representation.Representation;
-import org.restlet.resource.ClientResource;
-import org.restlet.resource.ResourceException;
 
-import java.io.IOException;
+import java.net.URI;
 
-import static org.junit.Assert.*;
+import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
 
 /**
  * Functional test of LandingResource.
  */
 public class LandingResourceTest extends ResourceTest {
 
+    @Override
+    protected String getEndpointPath() {
+        return RestletApplication.IIIF_2_PATH;
+    }
+
     @Test
-    public void testEndpointDisabled() {
+    public void testWithEndpointEnabled() {
         Configuration config = Configuration.getInstance();
-        ClientResource client = getClientForUriPath(
-                RestletApplication.IIIF_2_PATH);
-
         config.setProperty(Key.IIIF_2_ENDPOINT_ENABLED, true);
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
+        assertStatus(200, getHTTPURI(""));
+        assertRepresentationContains("Cantaloupe Image", getHTTPURI(""));
+    }
 
+    @Test
+    public void testWithEndpointDisabled() {
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.IIIF_2_ENDPOINT_ENABLED, false);
-        try {
-            client.get();
-            fail("Expected exception");
-        } catch (ResourceException e) {
-            assertEquals(Status.CLIENT_ERROR_FORBIDDEN, client.getStatus());
-        }
+        assertStatus(403, getHTTPURI(""));
     }
 
     @Test
-    public void testGet() throws IOException {
-        ClientResource client = getClientForUriPath(RestletApplication.IIIF_2_PATH);
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
-        assertTrue(client.get().getText().contains("Cantaloupe Image"));
-    }
-
-    @Test
-    public void testGetWithTrailingSlashRedirectsToWithout()
-            throws IOException {
-        ClientResource client = getClientForUriPath(
-                RestletApplication.IIIF_2_PATH + "/");
-        client.setFollowingRedirects(false);
-        Representation responseRep = client.get();
-
-        assertEquals(Status.REDIRECTION_PERMANENT, client.getStatus());
-        assertTrue(client.getLocationRef().toString().
-                endsWith(RestletApplication.IIIF_2_PATH));
-        assertTrue(responseRep.isEmpty());
+    public void testGetWithTrailingSlashRedirectsToWithout() throws Exception {
+        final URI uri = getHTTPURI("");
+        assertRedirect(new URI(uri + "/"), uri, 301);
     }
 
 }

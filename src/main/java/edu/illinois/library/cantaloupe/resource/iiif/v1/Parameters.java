@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Reference;
 
@@ -62,13 +63,18 @@ class Parameters implements Comparable<Parameters> {
      * @param format From URI
      */
     public Parameters(Identifier identifier, String region, String size,
-                      String rotation, String quality, String format) {
-        this.setIdentifier(identifier);
-        this.setRegion(Region.fromUri(region));
-        this.setSize(Size.fromUri(size));
-        this.setRotation(Rotation.fromUri(rotation));
-        this.setQuality(Quality.valueOf(quality.toUpperCase()));
-        this.setOutputFormat(Format.valueOf(format.toUpperCase()));
+                      String rotation, String quality, String format)
+            throws UnsupportedOutputFormatException {
+        setIdentifier(identifier);
+        setRegion(Region.fromUri(region));
+        setSize(Size.fromUri(size));
+        setRotation(Rotation.fromUri(rotation));
+        setQuality(Quality.valueOf(quality.toUpperCase()));
+        try {
+            setOutputFormat(Format.valueOf(format.toUpperCase()));
+        } catch (IllegalArgumentException e) {
+            throw new UnsupportedOutputFormatException(format);
+        }
     }
 
     @Override

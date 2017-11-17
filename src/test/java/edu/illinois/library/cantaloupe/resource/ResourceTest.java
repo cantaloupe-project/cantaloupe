@@ -2,29 +2,40 @@ package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.StandaloneEntry;
 import edu.illinois.library.cantaloupe.ApplicationServer;
+import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Client;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.junit.After;
 import org.junit.Before;
-import org.restlet.Client;
-import org.restlet.Context;
-import org.restlet.data.ChallengeResponse;
-import org.restlet.data.ChallengeScheme;
-import org.restlet.data.Protocol;
-import org.restlet.data.Reference;
-import org.restlet.resource.ClientResource;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import static org.junit.Assert.fail;
+
+/**
+ * Abstract base class for functional HTTP endpoint tests.
+ */
 public abstract class ResourceTest extends BaseTest {
 
-    protected static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";
-    protected static final Integer PORT = TestUtil.getOpenPort();
+    protected static int HTTP_PORT = TestUtil.getOpenPort();
+    protected static int HTTPS_PORT;
 
     protected static ApplicationServer appServer;
 
     protected Client client;
 
+    static {
+        do {
+            HTTPS_PORT = TestUtil.getOpenPort();
+        } while (HTTPS_PORT == HTTP_PORT);
+    }
+
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -41,36 +52,97 @@ public abstract class ResourceTest extends BaseTest {
         config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX,
                 TestUtil.getFixturePath() + "/images/");
 
-        client = new Client(new Context(), Protocol.HTTP);
-        client.start();
+        new CacheFacade().purge();
 
+        // Enable HTTP and HTTPS over HTTP/1.1 and HTTP/2
         appServer = StandaloneEntry.getAppServer();
         appServer.setHTTPEnabled(true);
-        appServer.setHTTPPort(PORT);
+        appServer.setHTTPPort(HTTP_PORT);
+        appServer.setInsecureHTTP2Enabled(true);
+
+        appServer.setHTTPSEnabled(true);
+        appServer.setHTTPSPort(HTTPS_PORT);
+        appServer.setHTTPSKeyStoreType("JKS");
+        appServer.setHTTPSKeyStorePath(
+                TestUtil.getFixture("keystore.jks").getAbsolutePath());
+        appServer.setHTTPSKeyStorePassword("password");
+        appServer.setHTTPSKeyPassword("password");
+        appServer.setSecureHTTP2Enabled(SystemUtils.isALPNAvailable());
+
         appServer.start();
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        client.stop();
         appServer.stop();
+
+        if (client != null) {
+            client.stop();
+        }
     }
 
-    protected ClientResource getClientForUriPath(String path) {
-        Reference url = new Reference("http://localhost:" + PORT + path);
-        ClientResource resource = new ClientResource(url);
-        resource.setNext(client);
-        return resource;
+    abstract protected String getEndpointPath();
+
+    /**
+     * @param path URI path relative to {@link #getEndpointPath()}.
+     * @return HTTP URI. Subclasses should override if they need an HTTPS URI.
+     */
+    protected URI getHTTPURI(String path) {
+        try {
+            return new URI("http://localhost:" + appServer.getHTTPPort() +
+                    getEndpointPath() + path);
+        } catch (URISyntaxException e) {
+            fail(e.getMessage());
+        }
+        return null;
     }
 
-    protected ClientResource getClientForUriPath(String path,
-                                                 String username,
-                                                 String secret) {
-        ClientResource resource = getClientForUriPath(path);
-        resource.setChallengeResponse(new ChallengeResponse(
-                ChallengeScheme.HTTP_BASIC, username, secret));
-        return resource;
+    /**
+     * @param path URI path relative to {@link #getEndpointPath()}.
+     * @return HTTPS URI.
+     */
+    protected URI getHTTPSURI(String path) {
+        try {
+            URI uri = getHTTPURI(path);
+            return new URI("https", uri.getUserInfo(), uri.getHost(),
+                    appServer.getHTTPSPort(), uri.getPath(), uri.getQuery(),
+                    uri.getFragment());
+        } catch (URISyntaxException e) {
+            fail(e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * @param subpath URI path to use, relative to {@link #getEndpointPath()}.
+     * @return New client instance. Clients should call {@link Client#stop()}
+     *         on it when they are done with it. Or, if they assign it to
+     *         {@link #client}, {@link #tearDown()} will take care of it.
+     */
+    protected Client newClient(String subpath) {
+        return new Client().builder().uri(getHTTPURI(subpath)).build();
+    }
+
+    /**
+     * @param subpath URI path to use, relative to {@link #getEndpointPath()}.
+     * @param user
+     * @param secret
+     * @param realm
+     * @return New client instance, initialized to use HTTP Basic
+     *         authentication. Clients should call {@link Client#stop()}
+     *         on it when they are done. Or, if they assign it to
+     *         {@link #client}, {@link #tearDown()} will take care of it.
+     */
+    protected Client newClient(String subpath, String user, String secret,
+                               String realm) {
+        return new Client().builder().
+                uri(getHTTPURI(subpath)).
+                realm(realm).
+                username(user).
+                secret(secret).
+                build();
     }
 
 }

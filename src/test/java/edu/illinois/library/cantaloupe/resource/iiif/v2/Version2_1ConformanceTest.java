@@ -1,13 +1,12 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
+import org.eclipse.jetty.client.api.ContentResponse;
 import org.junit.Test;
-import org.restlet.data.Status;
-import org.restlet.representation.Representation;
-import org.restlet.resource.ClientResource;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 import static org.junit.Assert.*;
 
@@ -24,30 +23,32 @@ public class Version2_1ConformanceTest extends Version2_0ConformanceTest {
      * 4.1
      */
     @Test
-    public void testSquareRegion() throws IOException {
-        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/full/0/default.jpg");
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
+    public void testSquareRegion() throws Exception {
+        client = newClient("/" + IMAGE + "/full/full/0/default.jpg");
+        ContentResponse response = client.send();
+        assertEquals(200, response.getStatus());
 
-        Representation rep = client.getResponseEntity();
-        BufferedImage image = ImageIO.read(rep.getStream());
-        assertEquals(64, image.getWidth());
-        assertEquals(56, image.getHeight());
+        try (InputStream is = new ByteArrayInputStream(response.getContent())) {
+            BufferedImage image = ImageIO.read(is);
+            assertEquals(64, image.getWidth());
+            assertEquals(56, image.getHeight());
+        }
     }
 
     /**
      * 4.2
      */
     @Test
-    public void testMaxSize() throws IOException {
-        ClientResource client = getClientForUriPath("/iiif/2/" + IMAGE + "/full/max/0/color.jpg");
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
+    public void testMaxSize() throws Exception {
+        client = newClient("/" + IMAGE + "/full/max/0/color.jpg");
+        ContentResponse response = client.send();
+        assertEquals(200, response.getStatus());
 
-        Representation rep = client.getResponseEntity();
-        BufferedImage image = ImageIO.read(rep.getStream());
-        assertEquals(64, image.getWidth());
-        assertEquals(56, image.getHeight());
+        try (InputStream is = new ByteArrayInputStream(response.getContent())) {
+            BufferedImage image = ImageIO.read(is);
+            assertEquals(64, image.getWidth());
+            assertEquals(56, image.getHeight());
+        }
     }
 
 }

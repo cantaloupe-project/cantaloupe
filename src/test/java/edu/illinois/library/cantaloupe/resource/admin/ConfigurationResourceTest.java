@@ -4,18 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Method;
+import edu.illinois.library.cantaloupe.http.ResourceException;
+import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
+import org.eclipse.jetty.client.api.ContentResponse;
 import org.junit.Before;
 import org.junit.Test;
-import org.restlet.Context;
-import org.restlet.Request;
-import org.restlet.Response;
-import org.restlet.data.MediaType;
-import org.restlet.data.Status;
-import org.restlet.representation.Representation;
-import org.restlet.representation.StringRepresentation;
-import org.restlet.resource.ClientResource;
-import org.restlet.resource.ResourceException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,8 +22,6 @@ public class ConfigurationResourceTest extends ResourceTest {
     private static final String USERNAME = "admin";
     private static final String SECRET = "secret";
 
-    private ConfigurationResource instance;
-
     @Before
     @Override
     public void setUp() throws Exception {
@@ -37,18 +30,22 @@ public class ConfigurationResourceTest extends ResourceTest {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.ADMIN_SECRET, SECRET);
 
-        instance = new ConfigurationResource();
-        Request request = new Request();
-        instance.init(new Context(), request, new Response(request));
+        client = newClient("", USERNAME, SECRET,
+                RestletApplication.ADMIN_REALM);
+    }
+
+    @Override
+    protected String getEndpointPath() {
+        return RestletApplication.ADMIN_CONFIG_PATH;
     }
 
     @Test
-    public void testGetConfigurationAsJson() throws Exception {
+    public void testGetConfiguration() throws Exception {
         Configuration.getInstance().setProperty("test", "cats");
 
-        Representation rep = instance.getConfiguration();
+        ContentResponse response = client.send();
 
-        assertTrue(rep.getText().contains("\"test\":\"cats\""));
+        assertTrue(response.getContentAsString().contains("\"test\":\"cats\""));
     }
 
     @Test
@@ -56,11 +53,11 @@ public class ConfigurationResourceTest extends ResourceTest {
         Map<String,Object> entityMap = new HashMap<>();
         entityMap.put("test", "cats");
         String entityStr = new ObjectMapper().writer().writeValueAsString(entityMap);
-        Representation rep = new StringRepresentation(
-                entityStr, MediaType.APPLICATION_JSON);
 
-        instance.putConfiguration(rep);
-
+        client.setMethod(Method.PUT);
+        client.setEntity(entityStr);
+        client.setContentType(new MediaType("application/json"));
+        client.send();
 
         assertEquals("cats", Configuration.getInstance().getString("test"));
     }
@@ -71,18 +68,16 @@ public class ConfigurationResourceTest extends ResourceTest {
         // enabled
         config.setProperty(AbstractAdminResource.CONTROL_PANEL_ENABLED_CONFIG_KEY, true);
 
-        ClientResource client = getClientForUriPath(
-                RestletApplication.ADMIN_CONFIG_PATH, USERNAME, SECRET);
-        client.get();
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
+        ContentResponse response = client.send();
+        assertEquals(200, response.getStatus());
 
         // disabled
         config.setProperty(AbstractAdminResource.CONTROL_PANEL_ENABLED_CONFIG_KEY, false);
         try {
-            client.get();
+            client.send();
             fail("Expected exception");
         } catch (ResourceException e) {
-            assertEquals(Status.CLIENT_ERROR_FORBIDDEN, client.getStatus());
+            assertEquals(403, e.getStatusCode());
         }
     }
 

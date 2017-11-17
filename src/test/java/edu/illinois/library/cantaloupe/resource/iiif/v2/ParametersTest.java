@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
+import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,6 +51,13 @@ public class ParametersTest extends BaseTest {
         } catch (IllegalArgumentException e) {
             // pass
         }
+    }
+
+    @Test(expected = UnsupportedOutputFormatException.class)
+    public void testConstructorThrowsUnsupportedOutputFormatException()
+            throws Exception {
+        new Parameters(new Identifier("identifier"), "0,0,200,200", "pct:50",
+                "5", "default", "bogus");
     }
 
     @Test

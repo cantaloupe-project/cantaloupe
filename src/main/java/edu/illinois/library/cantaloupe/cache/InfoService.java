@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
  * <p>Used to obtain {@link Info} instances in an efficient way, utilizing
  * (optionally) several tiers of caching.</p>
  */
-class InfoService {
+public class InfoService {
 
     private static final Logger LOGGER = LoggerFactory.
             getLogger(InfoService.class);
@@ -46,7 +46,7 @@ class InfoService {
     /**
      * @return Shared instance.
      */
-    static InfoService getInstance() {
+    public static InfoService getInstance() {
         InfoService service = instance;
         if (service == null) {
             synchronized (InfoService.class) {
@@ -74,7 +74,7 @@ class InfoService {
         objectCache = new ObjectCache<>(maxCount);
     }
 
-    long getObjectCacheSize() {
+    public long getObjectCacheSize() {
         return objectCache.size();
     }
 

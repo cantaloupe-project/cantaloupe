@@ -10,10 +10,10 @@ import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
-import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
@@ -26,7 +26,6 @@ import org.restlet.resource.Get;
 
 import java.awt.Dimension;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +46,11 @@ public class ImageResource extends IIIF1Resource {
     private static final Format DEFAULT_FORMAT = Format.JPG;
 
     /**
-     * Responds to image requests.
+     * <p>Responds to image requests.</p>
+     *
+     * <p>N.B.: This method only respects
+     * {@link Key#CACHE_SERVER_RESOLVE_FIRST} for infos, as doing so with
+     * images is not really possible with current API.</p>
      */
     @Get
     public Representation doGet() throws Exception {
@@ -83,7 +86,7 @@ public class ImageResource extends IIIF1Resource {
         if (Format.UNKNOWN.equals(sourceFormat)) {
             try {
                 sourceFormat = resolver.getSourceFormat();
-            } catch (FileNotFoundException e) { // this needs to be rethrown
+            } catch (FileNotFoundException e) { // this needs to be rethrown!
                 if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                     // If the image was not found, purge it from the cache.
                     cacheFacade.purgeAsync(identifier);
@@ -102,30 +105,12 @@ public class ImageResource extends IIIF1Resource {
         final Set<Format> availableOutputFormats =
                 processor.getAvailableOutputFormats();
 
-        // Extract the quality and format from the URI.
-        final Map<String,Object> attrs = getRequest().getAttributes();
-        String[] qualityAndFormat = StringUtils.
-                split((String) attrs.get("quality_format"), ".");
-        // If a format is present, try to use that. Otherwise, guess it based
-        // on the Accept header per Image API 1.1 spec section 4.5.
-        String outputFormat;
-        if (qualityAndFormat.length > 1) {
-            outputFormat = qualityAndFormat[qualityAndFormat.length - 1];
-        } else {
-            outputFormat = getOutputFormat(availableOutputFormats).
-                    getPreferredExtension();
-        }
+        final OperationList ops = getOperationList(availableOutputFormats);
 
-        // Assemble the URI parameters into an OperationList instance.
-        final OperationList ops = new Parameters(
-                identifier,
-                (String) attrs.get("region"),
-                (String) attrs.get("size"),
-                (String) attrs.get("rotation"),
-                qualityAndFormat[0],
-                outputFormat).toOperationList();
-        ops.getOptions().putAll(
-                getReference().getQueryAsForm(true).getValuesMap());
+        final Disposition disposition = getRepresentationDisposition(
+                getReference().getQueryAsForm()
+                        .getFirstValue(RESPONSE_CONTENT_DISPOSITION_QUERY_ARG),
+                ops.getIdentifier(), ops.getOutputFormat());
 
         final Info info = getOrReadInfo(identifier, processor);
         final Dimension fullSize = info.getSize();
@@ -139,26 +124,7 @@ public class ImageResource extends IIIF1Resource {
 
         processor.validate(ops, fullSize);
 
-        final Disposition disposition = getRepresentationDisposition(
-                getReference().getQueryAsForm()
-                        .getFirstValue(RESPONSE_CONTENT_DISPOSITION_QUERY_ARG),
-                ops.getIdentifier(), ops.getOutputFormat());
-
         addLinkHeader(processor);
-
-        // If we don't need to resolve first, and are using a cache, and the
-        // cache contains an image matching the request, skip the rest of the
-        // setup and return the cached image.
-        if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)) {
-            InputStream inputStream =
-                    cacheFacade.newDerivativeImageInputStream(ops);
-            if (inputStream != null) {
-                commitCustomResponseHeaders();
-                return new CachedImageRepresentation(
-                        ops.getOutputFormat().getPreferredMediaType(),
-                        disposition, inputStream);
-            }
-        }
 
         ops.applyNonEndpointMutations(fullSize,
                 info.getOrientation(),
@@ -169,12 +135,16 @@ public class ImageResource extends IIIF1Resource {
 
         // Find out whether the processor supports the source format by asking
         // it whether it offers any output formats for it.
-        if (!availableOutputFormats.contains(ops.getOutputFormat())) {
-            String msg = String.format("%s does not support the \"%s\" output format",
-                    processor.getClass().getSimpleName(),
-                    ops.getOutputFormat().getPreferredExtension());
-            getLogger().warning(msg + ": " + this.getReference());
-            throw new UnsupportedSourceFormatException(msg);
+        if (!availableOutputFormats.isEmpty()) {
+            if (!availableOutputFormats.contains(ops.getOutputFormat())) {
+                String msg = String.format("%s does not support the \"%s\" output format",
+                        processor.getClass().getSimpleName(),
+                        ops.getOutputFormat().getPreferredExtension());
+                getLogger().warning(msg + ": " + getReference());
+                throw new UnsupportedOutputFormatException(msg);
+            }
+        } else {
+            throw new UnsupportedSourceFormatException(sourceFormat);
         }
 
         commitCustomResponseHeaders();
@@ -191,12 +161,42 @@ public class ImageResource extends IIIF1Resource {
                 String.format("<%s>;rel=\"profile\";", complianceLevel.getUri()));
     }
 
+    private OperationList getOperationList(Set<Format> availableOutputFormats)
+            throws UnsupportedOutputFormatException {
+        final Map<String,Object> attrs = getRequest().getAttributes();
+        final String[] qualityAndFormat = StringUtils.
+                split((String) attrs.get("quality_format"), ".");
+        // If a format is present, try to use that. Otherwise, guess it based
+        // on the Accept header per Image API 1.1 spec section 4.5.
+        String outputFormat;
+        if (qualityAndFormat.length > 1) {
+            outputFormat = qualityAndFormat[qualityAndFormat.length - 1];
+        } else {
+            outputFormat = getEffectiveOutputFormat(availableOutputFormats).
+                    getPreferredExtension();
+        }
+
+        final Identifier identifier = getIdentifier();
+        final Parameters params = new Parameters(
+                identifier,
+                (String) attrs.get("region"),
+                (String) attrs.get("size"),
+                (String) attrs.get("rotation"),
+                qualityAndFormat[0],
+                outputFormat);
+
+        final OperationList ops = params.toOperationList();
+        ops.getOptions().putAll(
+                getReference().getQueryAsForm(true).getValuesMap());
+        return ops;
+    }
+
     /**
      * @param limitToFormats Set of OutputFormats to limit the result to.
      * @return The best output format based on the URI extension, Accept
      *         header, or default, as outlined by the Image API 1.1 spec.
      */
-    private Format getOutputFormat(Set<Format> limitToFormats) {
+    private Format getEffectiveOutputFormat(Set<Format> limitToFormats) {
         // Check for a format extension in the URI.
         Format format = null;
         if (getReference().getExtensions() != null) {
@@ -209,7 +209,7 @@ public class ImageResource extends IIIF1Resource {
             }
         }
         if (format == null) { // if none, check the Accept header.
-            format = getPreferredOutputFormat(limitToFormats);
+            format = negotiateOutputFormat(limitToFormats);
             if (format == null) {
                 format = DEFAULT_FORMAT;
             }
@@ -222,7 +222,7 @@ public class ImageResource extends IIIF1Resource {
      * @return Best OutputFormat for the client preferences as specified in the
      *         Accept header.
      */
-    private Format getPreferredOutputFormat(Set<Format> limitToFormats) {
+    private Format negotiateOutputFormat(Set<Format> limitToFormats) {
         // Transform limitToFormats into a list in order of the application's
         // format preference, in case the client supplies something like */*.
         final List<Format> appPreferredFormats = new ArrayList<>();

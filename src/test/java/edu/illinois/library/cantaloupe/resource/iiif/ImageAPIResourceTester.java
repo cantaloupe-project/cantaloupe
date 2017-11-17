@@ -1,0 +1,319 @@
+package edu.illinois.library.cantaloupe.resource.iiif;
+
+import edu.illinois.library.cantaloupe.ApplicationServer;
+import edu.illinois.library.cantaloupe.RestletApplication;
+import edu.illinois.library.cantaloupe.cache.InfoService;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Client;
+import edu.illinois.library.cantaloupe.http.ResourceException;
+import edu.illinois.library.cantaloupe.http.Transport;
+import edu.illinois.library.cantaloupe.test.TestUtil;
+import edu.illinois.library.cantaloupe.util.SystemUtils;
+import org.apache.commons.io.FileUtils;
+import org.eclipse.jetty.client.api.ContentResponse;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+
+import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.assertStatus;
+import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.assertRecursiveFileCount;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
+/**
+ * Collection of tests shareable between major versions of IIIF Image and
+ * Information endpoints.
+ */
+public class ImageAPIResourceTester {
+
+    static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";
+
+    private static final String BASIC_AUTH_USER = "user";
+    private static final String BASIC_AUTH_SECRET = "secret";
+
+    Client newClient(URI uri) {
+        return new Client().builder().uri(uri).build();
+    }
+
+    public void testBasicAuthWithNoCredentials(ApplicationServer appServer,
+                                               URI uri) throws Exception {
+        initializeBasicAuth(appServer);
+        try {
+            assertStatus(401, uri);
+        } finally {
+            uninitializeBasicAuth(appServer);
+        }
+    }
+
+    public void testBasicAuthWithInvalidCredentials(ApplicationServer appServer,
+                                                    URI uri) throws Exception {
+        initializeBasicAuth(appServer);
+        try {
+            Client client = newClient(uri);
+            client.setRealm(RestletApplication.PUBLIC_REALM);
+            client.setUsername("invalid");
+            client.setSecret("invalid");
+            try {
+                client.send();
+                fail("Expected exception");
+            } catch (ResourceException e) {
+                assertEquals(401, e.getStatusCode());
+            } finally {
+                client.stop();
+            }
+        } finally {
+            uninitializeBasicAuth(appServer);
+        }
+    }
+
+    public void testBasicAuthWithValidCredentials(ApplicationServer appServer,
+                                                  URI uri) throws Exception {
+        initializeBasicAuth(appServer);
+        try {
+            Client client = newClient(uri);
+            client.setRealm(RestletApplication.PUBLIC_REALM);
+            client.setUsername(BASIC_AUTH_USER);
+            client.setSecret(BASIC_AUTH_SECRET);
+            try {
+                ContentResponse response = client.send();
+                assertEquals(200, response.getStatus());
+            } finally {
+                client.stop();
+            }
+        } finally {
+            uninitializeBasicAuth(appServer);
+        }
+    }
+
+    public void testCacheHeadersWhenClientCachingIsEnabledAndResponseIsCacheable(URI uri)
+            throws Exception {
+        enableCacheControlHeaders();
+
+        Client client = newClient(uri);
+        try {
+            ContentResponse response = client.send();
+
+            String header = response.getHeaders().get("Cache-Control");
+            assertTrue(header.contains("max-age=1234"));
+            assertTrue(header.contains("s-maxage=4567"));
+            assertTrue(header.contains("public"));
+            assertTrue(header.contains("no-transform"));
+        } finally {
+            client.stop();
+        }
+    }
+
+    public void testCacheHeadersWhenClientCachingIsEnabledAndResponseIsNotCacheable(URI uri)
+            throws Exception {
+        enableCacheControlHeaders();
+
+        Client client = newClient(uri);
+        try {
+            client.send();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertNull(e.getResponse().getHeaders().get("Cache-Control"));
+        } finally {
+            client.stop();
+        }
+    }
+
+    /**
+     * Tests that there is no Cache-Control header returned when
+     * cache.httpClient.enabled = true but a cache=false argument is present in the
+     * URL query.
+     */
+    public void testCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL(URI uri)
+            throws Exception {
+        enableCacheControlHeaders();
+
+        Client client = newClient(uri);
+        try {
+            ContentResponse response = client.send();
+            assertNull(response.getHeaders().get("Cache-Control"));
+        } finally {
+            client.stop();
+        }
+    }
+
+    public void testCacheHeadersWhenClientCachingIsDisabled(URI uri)
+            throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.CLIENT_CACHE_ENABLED, false);
+
+        Client client = newClient(uri);
+        try {
+            ContentResponse response = client.send();
+            assertNull(response.getHeaders().get("Cache-Control"));
+        } finally {
+            client.stop();
+        }
+    }
+
+    public void testCachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied(URI uri)
+            throws Exception {
+        File cacheFolder = initializeFilesystemCache();
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.INFO_CACHE_ENABLED, true);
+
+        // request an info
+        Client client = newClient(uri);
+        try {
+            client.send();
+
+            Thread.sleep(1000); // it may write asynchronously
+
+            // assert that neither the image nor the info exists in the
+            // derivative cache
+            assertRecursiveFileCount(cacheFolder.toPath(), 0);
+
+            // assert that the info does NOT exist in the info cache
+            assertEquals(0, InfoService.getInstance().getObjectCacheSize());
+        } finally {
+            client.stop();
+        }
+    }
+
+    public void testHTTP2(URI uri) throws Exception {
+        Client client = newClient(uri);
+        try {
+            client.setTransport(Transport.HTTP2_0);
+            client.send(); // should throw an exception if anything goes wrong
+        } finally {
+            client.stop();
+        }
+    }
+
+    public void testHTTPS1_1(URI uri) throws Exception {
+        Client client = newClient(uri);
+        try {
+            client.setTrustAll(true);
+            client.send(); // should throw an exception if anything goes wrong
+        } finally {
+            client.stop();
+        }
+    }
+
+    public void testHTTPS2(URI uri) throws Exception {
+        assumeTrue(SystemUtils.isALPNAvailable());
+        Client client = newClient(uri);
+        try {
+            client.setTransport(Transport.HTTP2_0);
+            client.setTrustAll(true);
+            client.send(); // should throw an exception if anything goes wrong
+        } finally {
+            client.stop();
+        }
+    }
+
+    public void testNotFound(URI uri) {
+        assertStatus(404, uri);
+    }
+
+    /**
+     * Tests that the server responds with HTTP 500 when a non-
+     * {@link edu.illinois.library.cantaloupe.resolver.FileResolver} is
+     * used with a non-
+     * {@link edu.illinois.library.cantaloupe.processor.StreamProcessor}.
+     */
+    public void testResolverProcessorCompatibility(URI uri,
+                                                   String appServerHost,
+                                                   int appServerPort)
+            throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
+        config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
+                "BasicLookupStrategy");
+        config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
+                appServerHost + ":" + appServerPort + "/");
+        config.setProperty("processor.jp2", "KakaduProcessor");
+        config.setProperty(Key.PROCESSOR_FALLBACK, "KakaduProcessor");
+
+        assertStatus(500, uri);
+    }
+
+    /**
+     * @param uri URI containing <code>CATS</code> as the slash substitute.
+     */
+    public void testSlashSubstitution(URI uri) {
+        Configuration.getInstance().setProperty(Key.SLASH_SUBSTITUTE, "CATS");
+
+        assertStatus(200, uri);
+    }
+
+    public void testUnavailableSourceFormat(URI uri) {
+        assertStatus(501, uri);
+    }
+
+    public void testXPoweredByHeader(URI uri) throws Exception {
+        Client client = newClient(uri);
+        try {
+            ContentResponse response = client.send();
+            String value = response.getHeaders().get("X-Powered-By");
+            assertEquals("Cantaloupe/Unknown", value);
+        } finally {
+            client.stop();
+        }
+    }
+
+    private void enableCacheControlHeaders() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.CLIENT_CACHE_ENABLED, "true");
+        config.setProperty(Key.CLIENT_CACHE_MAX_AGE, "1234");
+        config.setProperty(Key.CLIENT_CACHE_SHARED_MAX_AGE, "4567");
+        config.setProperty(Key.CLIENT_CACHE_PUBLIC, "true");
+        config.setProperty(Key.CLIENT_CACHE_PRIVATE, "false");
+        config.setProperty(Key.CLIENT_CACHE_NO_CACHE, "false");
+        config.setProperty(Key.CLIENT_CACHE_NO_STORE, "false");
+        config.setProperty(Key.CLIENT_CACHE_MUST_REVALIDATE, "false");
+        config.setProperty(Key.CLIENT_CACHE_PROXY_REVALIDATE, "false");
+        config.setProperty(Key.CLIENT_CACHE_NO_TRANSFORM, "true");
+    }
+
+    private void initializeBasicAuth(ApplicationServer appServer)
+            throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.BASIC_AUTH_ENABLED, true);
+        config.setProperty(Key.BASIC_AUTH_USERNAME, BASIC_AUTH_USER);
+        config.setProperty(Key.BASIC_AUTH_SECRET, BASIC_AUTH_SECRET);
+        // To enable auth, the app server needs to be restarted.
+        // It will need to be restarted again to disable it.
+        appServer.stop();
+        appServer.start();
+    }
+
+    private void uninitializeBasicAuth(ApplicationServer appServer)
+            throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.BASIC_AUTH_ENABLED, false);
+        appServer.stop();
+        appServer.start();
+    }
+
+    File initializeFilesystemCache() throws IOException {
+        File cacheFolder = TestUtil.getTempFolder();
+        cacheFolder = new File(cacheFolder.getAbsolutePath() + "/cache");
+        if (cacheFolder.exists()) {
+            FileUtils.cleanDirectory(cacheFolder);
+        } else {
+            cacheFolder.mkdir();
+        }
+
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
+        config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
+        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
+                cacheFolder.getAbsolutePath());
+        config.setProperty(Key.CACHE_SERVER_TTL, 10);
+
+        assertRecursiveFileCount(cacheFolder.toPath(), 0);
+
+        return cacheFolder;
+    }
+
+}

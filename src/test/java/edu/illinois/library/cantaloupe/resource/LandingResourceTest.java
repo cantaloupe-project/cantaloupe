@@ -9,18 +9,19 @@ import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
  */
 public class LandingResourceTest extends ResourceTest {
 
-    private String getURI() {
-        return "http://localhost:" + PORT;
+    @Override
+    protected String getEndpointPath() {
+        return "";
     }
 
     @Test
-    public void rootURIStatus() throws Exception {
-        assertStatus(200, getURI());
+    public void testRootURIStatus() throws Exception {
+        assertStatus(200, getHTTPURI(""));
     }
 
     @Test
-    public void rootURIRepresentation() throws Exception {
-        assertRepresentationContains("<body", getURI());
+    public void testRootURIRepresentation() throws Exception {
+        assertRepresentationContains("<body", getHTTPURI(""));
     }
 
 }

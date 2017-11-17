@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.http;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
+import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.eclipse.jetty.client.api.ContentResponse;
@@ -9,6 +10,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.net.ConnectException;
 import java.net.URI;
 
 import static org.junit.Assert.*;
@@ -60,6 +62,20 @@ public class ClientTest extends BaseTest {
     }
 
     /* send() */
+
+    @Test(expected = ConnectException.class)
+    public void testSendWithConnectionFailureThrowsException()
+            throws Exception {
+        instance.setURI(new URI("http://localhost:" + TestUtil.getOpenPort()));
+        instance.send();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSendWithInvalidPortThrowsException()
+            throws Exception {
+        instance.setURI(new URI("http://localhost:9999999"));
+        instance.send();
+    }
 
     @Test
     public void testSendWithValidBasicAuthCredentialsAndCorrectRealm()

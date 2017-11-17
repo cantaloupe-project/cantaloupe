@@ -14,9 +14,11 @@ import org.eclipse.jetty.http2.client.http.HttpClientTransportOverHTTP2;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import java.io.File;
+import java.net.ConnectException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * <p>Thinly wraps a Jetty HTTP client with support for HTTP/2 and convenient
@@ -182,12 +184,23 @@ public final class Client {
             request.content(new StringContentProvider(entity));
         }
 
-        ContentResponse response = request.send();
-        if (response.getStatus() >= 400) {
-            throw new ResourceException(response);
+        ContentResponse response;
+        try {
+            response = request.send();
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof ConnectException) {
+                throw (Exception) e.getCause();
+            }
+            throw (Exception) e.getCause();
         }
 
-        return response;
+        if (response != null) {
+            if (response.getStatus() >= 400) {
+                throw new ResourceException(response);
+            }
+            return response;
+        }
+        return null;
     }
 
     /**

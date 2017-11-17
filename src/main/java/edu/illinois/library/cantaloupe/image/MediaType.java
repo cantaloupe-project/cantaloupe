@@ -49,6 +49,11 @@ public final class MediaType {
         }
     }
 
+    public static final MediaType APPLICATION_JSON =
+            new MediaType("application/json");
+    public static final MediaType TEXT_PLAIN =
+            new MediaType("text/plain");
+
     private String subtype;
     private String type;
 

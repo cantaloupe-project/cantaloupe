@@ -1,14 +1,14 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.RestletApplication;
-import edu.illinois.library.cantaloupe.resource.JSONRepresentation;
+import edu.illinois.library.cantaloupe.http.Method;
+import edu.illinois.library.cantaloupe.http.ResourceException;
+import edu.illinois.library.cantaloupe.image.MediaType;
+import org.eclipse.jetty.client.api.ContentResponse;
 import org.junit.Test;
-import org.restlet.data.MediaType;
-import org.restlet.data.Reference;
-import org.restlet.data.Status;
-import org.restlet.representation.Representation;
-import org.restlet.resource.ClientResource;
-import org.restlet.resource.ResourceException;
+
+import java.net.URI;
 
 import static org.junit.Assert.*;
 
@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
 public class TaskResourceTest extends AbstractAPIResourceTest {
 
     @Override
-    String getURIPath() {
+    protected String getEndpointPath() {
         return RestletApplication.TASKS_PATH + "/some-uuid";
     }
 
@@ -26,12 +26,11 @@ public class TaskResourceTest extends AbstractAPIResourceTest {
 
     @Test
     public void testDoGetWithInvalidID() throws Exception {
-        ClientResource client = getClientForUriPath(
-                getURIPath(), USERNAME, SECRET);
         try {
-            client.get();
+            client.setMethod(Method.GET);
+            client.send();
         } catch (ResourceException e) {
-            assertEquals(Status.CLIENT_ERROR_NOT_FOUND, e.getStatus());
+            assertEquals(404, e.getStatusCode());
         }
     }
 
@@ -41,21 +40,25 @@ public class TaskResourceTest extends AbstractAPIResourceTest {
         APITask<?> submittedTask =
                 new APITask<>(new PurgeInvalidFromCacheCommand<>());
         // Get its JSON representation
-        Representation submittedRep = new JSONRepresentation(submittedTask);
+        String entityStr = new ObjectMapper().writer().
+                writeValueAsString(submittedTask);
 
         // Submit it to TasksResource
-        String tasksURIPath = RestletApplication.TASKS_PATH;
-        ClientResource client = getClientForUriPath(
-                tasksURIPath, USERNAME, SECRET);
-        client.post(submittedRep, MediaType.APPLICATION_JSON);
+        client.setMethod(Method.POST);
+        client.setURI(new URI("http://localhost:" + appServer.getHTTPPort() +
+                RestletApplication.TASKS_PATH));
+        client.setEntity(entityStr);
+        client.setContentType(new MediaType("application/json"));
+        ContentResponse response = client.send();
 
         // Retrieve it by its UUID from TaskResource
-        Reference location = client.getResponse().getLocationRef();
-        client = getClientForUriPath(location.getPath(), USERNAME, SECRET);
-        Representation rep = client.get();
+        String location = response.getHeaders().get("Location");
+        client.setURI(new URI(location));
+        client.setMethod(Method.GET);
+        response = client.send();
 
-        assertEquals(Status.SUCCESS_OK, client.getStatus());
-        String responseBody = rep.getText();
+        assertEquals(200, response.getStatus());
+        String responseBody = response.getContentAsString();
 
         assertTrue(responseBody.contains("PurgeInvalidFromCache"));
     }

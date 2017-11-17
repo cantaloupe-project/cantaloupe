@@ -11,10 +11,11 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
+import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
-import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
+import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
@@ -66,23 +67,30 @@ public class ImageResource extends IIIF2Resource {
                 ops.getIdentifier(), ops.getOutputFormat());
 
         Format sourceFormat = Format.UNKNOWN;
+
         // If we don't need to resolve first, and are using a cache:
         // 1. If the cache contains an image matching the request, skip all the
         //    setup and just return the cached image.
         // 2. Otherwise, if the cache contains a relevant info, get it to avoid
         //    having to get it from a resolver later.
         if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)) {
-            InputStream inputStream =
-                    cacheFacade.newDerivativeImageInputStream(ops);
-            if (inputStream != null) {
-                addLinkHeader(params);
-                commitCustomResponseHeaders();
-                return new CachedImageRepresentation(
-                        params.getOutputFormat().getPreferredMediaType(),
-                        disposition, inputStream);
-            } else {
-                Info info = cacheFacade.getInfo(identifier);
-                if (info != null) {
+            final Info info = cacheFacade.getInfo(identifier);
+            if (info != null) {
+                ops.applyNonEndpointMutations(info.getSize(),
+                        info.getOrientation(),
+                        getCanonicalClientIpAddress(),
+                        getReference().toUri(),
+                        getRequest().getHeaders().getValuesMap(),
+                        getCookies().getValuesMap());
+                InputStream inputStream =
+                        cacheFacade.newDerivativeImageInputStream(ops);
+                if (inputStream != null) {
+                    addLinkHeader(params);
+                    commitCustomResponseHeaders();
+                    return new CachedImageRepresentation(
+                            params.getOutputFormat().getPreferredMediaType(),
+                            disposition, inputStream);
+                } else {
                     Format infoFormat = info.getSourceFormat();
                     if (infoFormat != null) {
                         sourceFormat = infoFormat;
@@ -105,7 +113,7 @@ public class ImageResource extends IIIF2Resource {
         if (Format.UNKNOWN.equals(sourceFormat)) {
             try {
                 sourceFormat = resolver.getSourceFormat();
-            } catch (FileNotFoundException e) { // this needs to be rethrown
+            } catch (FileNotFoundException e) { // this needs to be rethrown!
                 if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                     // If the image was not found, purge it from the cache.
                     cacheFacade.purgeAsync(ops.getIdentifier());
@@ -154,22 +162,31 @@ public class ImageResource extends IIIF2Resource {
             }
         }
 
-        ops.applyNonEndpointMutations(fullSize,
-                info.getOrientation(),
-                getCanonicalClientIpAddress(),
-                getReference().toUri(),
-                getRequest().getHeaders().getValuesMap(),
-                getCookies().getValuesMap());
+        try {
+            ops.applyNonEndpointMutations(fullSize,
+                    info.getOrientation(),
+                    getCanonicalClientIpAddress(),
+                    getReference().toUri(),
+                    getRequest().getHeaders().getValuesMap(),
+                    getCookies().getValuesMap());
+        } catch (IllegalStateException e) {
+            // applyNonEndpointMutations() will freeze the instance, and it
+            // may have already been called. That's fine.
+        }
 
         // Find out whether the processor supports the source format by asking
         // it whether it offers any output formats for it.
         Set<Format> availableOutputFormats = processor.getAvailableOutputFormats();
-        if (!availableOutputFormats.contains(ops.getOutputFormat())) {
-            String msg = String.format("%s does not support the \"%s\" output format",
-                    processor.getClass().getSimpleName(),
-                    ops.getOutputFormat().getPreferredExtension());
-            getLogger().warning(msg + ": " + this.getReference());
-            throw new UnsupportedOutputFormatException(msg);
+        if (!availableOutputFormats.isEmpty()) {
+            if (!availableOutputFormats.contains(ops.getOutputFormat())) {
+                String msg = String.format("%s does not support the \"%s\" output format",
+                        processor.getClass().getSimpleName(),
+                        ops.getOutputFormat().getPreferredExtension());
+                getLogger().warning(msg + ": " + getReference());
+                throw new UnsupportedOutputFormatException(msg);
+            }
+        } else {
+            throw new UnsupportedSourceFormatException(sourceFormat);
         }
 
         addLinkHeader(params);
