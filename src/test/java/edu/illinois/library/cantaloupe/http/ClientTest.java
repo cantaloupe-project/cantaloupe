@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.http;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
+import edu.illinois.library.cantaloupe.util.SocketUtils;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.http.HttpVersion;
@@ -66,7 +66,7 @@ public class ClientTest extends BaseTest {
     @Test(expected = ConnectException.class)
     public void testSendWithConnectionFailureThrowsException()
             throws Exception {
-        instance.setURI(new URI("http://localhost:" + TestUtil.getOpenPort()));
+        instance.setURI(new URI("http://localhost:" + SocketUtils.getOpenPort()));
         instance.send();
     }
 

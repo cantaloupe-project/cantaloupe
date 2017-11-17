@@ -12,6 +12,7 @@ import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.DeletingFileVisitor;
+import edu.illinois.library.cantaloupe.util.SocketUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -41,7 +42,7 @@ public class StandaloneEntryTest extends BaseTest {
 
     private static final PrintStream CONSOLE_OUTPUT = System.out;
     private static final PrintStream CONSOLE_ERROR = System.err;
-    private static final int HTTP_PORT = TestUtil.getOpenPort();
+    private static final int HTTP_PORT = SocketUtils.getOpenPort();
 
     private Client httpClient;
 

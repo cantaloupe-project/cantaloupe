@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import edu.illinois.library.cantaloupe.util.SocketUtils;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -23,7 +24,7 @@ public class ApplicationServerTest extends BaseTest {
 
     @BeforeClass
     public static void beforeClass() {
-        Integer[] ports = TestUtil.getOpenPorts(2);
+        int[] ports = SocketUtils.getOpenPorts(2);
         HTTP_PORT = ports[0];
         HTTPS_PORT = ports[1];
     }

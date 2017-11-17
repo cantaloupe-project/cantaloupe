@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.test;
 
+import edu.illinois.library.cantaloupe.util.SocketUtils;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http2.HTTP2Cipher;
@@ -52,9 +53,9 @@ public class WebServer {
      * its root.
      */
     public WebServer() throws IOException {
-        httpPort = TestUtil.getOpenPort();
+        httpPort = SocketUtils.getOpenPort();
         do {
-            httpsPort = TestUtil.getOpenPort();
+            httpsPort = SocketUtils.getOpenPort();
         } while (httpPort == httpsPort);
 
         String path = TestUtil.getFixturePath().toAbsolutePath() + "/images";

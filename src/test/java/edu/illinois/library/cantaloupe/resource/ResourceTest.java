@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Client;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import edu.illinois.library.cantaloupe.util.SocketUtils;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -22,7 +23,7 @@ import static org.junit.Assert.fail;
  */
 public abstract class ResourceTest extends BaseTest {
 
-    protected static int HTTP_PORT = TestUtil.getOpenPort();
+    protected static int HTTP_PORT = SocketUtils.getOpenPort();
     protected static int HTTPS_PORT;
 
     protected static ApplicationServer appServer;
@@ -31,7 +32,7 @@ public abstract class ResourceTest extends BaseTest {
 
     static {
         do {
-            HTTPS_PORT = TestUtil.getOpenPort();
+            HTTPS_PORT = SocketUtils.getOpenPort();
         } while (HTTPS_PORT == HTTP_PORT);
     }
 
