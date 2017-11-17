@@ -13,7 +13,7 @@ title: Deployment
 <h1>Deployment</h1>
 
 <ul>
-  <li><a href="#OS">Operating System</a></li>
+  <li><a href="#Temporary%20Files">Temporary Files</a></li>
   <li><a href="#Hardware">Hardware</a>
     <ul>
       <li><a href="#HardwareCPU">CPU</a></li>
@@ -35,9 +35,9 @@ title: Deployment
 
 <hr>
 
-<h2 id="OS">Operating System</h2>
+<h2 id="Temporary Files">Temporary Files</h2>
 
-<p>When running in standalone mode, the embedded Jetty server caches class files in the system temp directory. Most operating systems will automatically delete temp files older than <i>n</i> days. If Cantaloupe has been running for longer than that, and its cached classes disappear from underneath it, it can lead to <code>NoClassDefFoundError</code>s. Consider reconfiguring your OS's temp-cleaning strategy to clean up only at boot.</p>
+<p>When running in standalone mode, the embedded Jetty server unpacks application files into the system temp directory. Most operating systems will periodically clean out temp files based on their last-accessed time. If any of these cached resources disappear while the application is running, it can cause a variety of errors. Consider configuring your OS's temp-cleaning strategy to clean up only at boot.</p>
 
 <hr>
 
