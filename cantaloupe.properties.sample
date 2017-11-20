@@ -17,14 +17,13 @@ temp_pathname =
 http.enabled = true
 http.host = 0.0.0.0
 http.port = 8182
-# HTTP/2 requires Java 9 or later.
 http.http2.enabled = false
 
 # !! Configures the HTTPS server. (Standalone mode only.)
 https.enabled = false
 https.host = 0.0.0.0
 https.port = 8183
-# HTTP/2 requires Java 9 or later.
+# Secure HTTP/2 requires Java 9 or later.
 https.http2.enabled = false
 
 # !! Available values are `JKS` and `PKCS12`. (Standalone mode only.)
@@ -33,7 +32,7 @@ https.key_store_password = myPassword
 https.key_store_path = /path/to/keystore.jks
 https.key_password = myPassword
 
-# !! Maximum size of the HTTP(S) request queue. 0 will use the default.
+# !! Maximum size of the HTTP(S) request queue. Set to 0 to use the default.
 http.accept_queue_limit = 0
 
 # Enables the Control Panel, at /admin.
@@ -47,10 +46,10 @@ admin.password =
 base_uri =
 
 # Normally, slashes in a URI path component must be percent-encoded as
-# "%2F". If your proxy is incapable of passing these through without
-# decoding, you can define an alternate character or character sequence
-# to substitute for a slash. Supply the non-percent-encoded version here,
-# and use the percent-encoded version in URLs.
+# "%2F". If your proxy is not able to pass these through without decoding,
+# you can define an alternate character or character sequence to substitute
+# for a slash. Supply the non-percent-encoded version here, and use the
+# percent-encoded version in URLs.
 slash_substitute =
 
 # Maximum number of pixels to return in a response, to prevent overloading
@@ -106,10 +105,10 @@ endpoint.iiif.min_tile_size = 1024
 # response will be denied.
 endpoint.iiif.2.restrict_to_sizes = false
 
-# Enables the administrative REST API. (See the user manual.)
+# Enables the administrative HTTP API. (See the user manual.)
 endpoint.api.enabled = false
 
-# HTTP Basic credentials to access the REST API.
+# HTTP Basic credentials to access the HTTP API.
 endpoint.api.username =
 endpoint.api.secret =
 
@@ -192,10 +191,10 @@ JdbcResolver.connection_timeout = 10
 # AmazonS3Resolver
 #----------------------------------------
 
-# !! Access key ID and secret key associated with your AWS account.
+# !! Credentials for your AWS account.
 # See: http://aws.amazon.com/security-credentials
-# Note that credentials can be obtained from elsewhere rather than setting
-# them here; see the user manual.
+# Note that this info can be obtained from elsewhere rather than setting
+# it here; see the user manual.
 AmazonS3Resolver.access_key_id =
 AmazonS3Resolver.secret_key =
 
@@ -215,10 +214,8 @@ AmazonS3Resolver.lookup_strategy = BasicLookupStrategy
 # AzureStorageResolver
 #----------------------------------------
 
-# !! Name of your Azure account.
+# !! Credentials for your Azure account.
 AzureStorageResolver.account_name =
-
-# !! Key of your Azure account.
 AzureStorageResolver.account_key =
 
 # !! Name of the container containing images to be served.
@@ -282,7 +279,7 @@ processor.normalize = false
 processor.background_color = black
 
 # Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
-# `lanczos3`, `mitchell`, `triangle`. (These are ignored by JaiProcessor.)
+# `lanczos3`, `mitchell`, `triangle`. (JaiProcessor ignores these.)
 processor.downscale_filter = bicubic
 processor.upscale_filter = bicubic
 
@@ -302,7 +299,7 @@ processor.metadata.respect_orientation = false
 # processors respect this setting; see the user manual.
 processor.limit_to_8_bits = true
 
-# Progressive JPEGs are generally more compact.
+# Progressive JPEGs are usually more compact.
 processor.jpg.progressive = true
 
 # JPEG output quality (1-100).
@@ -339,7 +336,7 @@ GraphicsMagickProcessor.path_to_binaries =
 #----------------------------------------
 
 # !! Optional absolute path of the directory containing the ImageMagick
-# binaries. Overrides the PATH.
+# binary. Overrides the PATH.
 ImageMagickProcessor.path_to_binaries = /usr/local/bin
 
 #----------------------------------------
@@ -395,12 +392,12 @@ cache.server.derivative.enabled = false
 # `HeapCache`, `AmazonS3Cache`, and `AzureStorageCache`.
 cache.server.derivative =
 
-# Whether to use the Java heap as a "level 1" cache for image infos, in
-# front of a "level 2" derivative cache (if enabled).
+# Whether to use the Java heap as a "level 1" cache for image infos, either
+# independently or in front of a "level 2" derivative cache (if enabled).
 cache.server.info.enabled = true
 
 # Time before cached content (excluding info cache content) becomes invalid.
-# Set to blank or 0 for infinite.
+# Set to blank or 0 for never.
 cache.server.ttl_seconds = 2592000
 
 # If true, when a resolver reports that the requested source image has gone
@@ -478,17 +475,16 @@ JdbcCache.info_table = info_cache
 # AmazonS3Cache
 #----------------------------------------
 
-# !! Access key ID and secret key associated with your AWS account.
+# !! Credentials for your AWS account.
 # See: http://aws.amazon.com/security-credentials
-# Note that credentials can be obtained from elsewhere rather than setting
-# them here; see the user manual.
+# Note that this info can be obtained from elsewhere rather than setting it
+# here; see the user manual.
 AmazonS3Cache.access_key_id =
 AmazonS3Cache.secret_key =
 
 # !! Name of a bucket to use to hold cached data.
 AmazonS3Cache.bucket.name =
 
-# !! Can be left blank.
 # See: http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
 AmazonS3Cache.bucket.region =
 
@@ -499,10 +495,8 @@ AmazonS3Cache.object_key_prefix =
 # AzureStorageCache
 #----------------------------------------
 
-# !! Name of your Azure account.
+# !! Credentials for your Azure account.
 AzureStorageCache.account_name =
-
-# !! Key of your Azure account.
 AzureStorageCache.account_key =
 
 # !! Name of the container containing cached images.
@@ -515,19 +509,11 @@ AzureStorageCache.object_key_prefix =
 # RedisCache
 #----------------------------------------
 
-# !! Redis host.
+# !! Redis connection info.
 RedisCache.host = localhost
-
-# !! Redis port.
 RedisCache.port = 6379
-
-# !! Whether to connect via SSL.
 RedisCache.ssl = false
-
-# !! Redis connection password. Leave blank for no password.
 RedisCache.password =
-
-# !! Database to use.
 RedisCache.database = 0
 
 ###########################################################################
@@ -537,7 +523,7 @@ RedisCache.database = 0
 # Whether to enable overlays.
 overlays.enabled = false
 
-# Specifies how overlays are configured. `BasicStrategy` will use the
+# Controls how overlays are configured. `BasicStrategy` will use the
 # `overlays.BasicStrategy.*` keys in this section. `ScriptStrategy` will
 # use the `overlay` delegate method. See the user manual for more
 # information.
@@ -578,7 +564,7 @@ overlays.BasicStrategy.string.stroke.color = black
 # Stroke width in pixels.
 overlays.BasicStrategy.string.stroke.width = 1
 
-# Color of a background to draw under the string.
+# Color of a rectangular background to draw under the string.
 # CSS color syntax and alpha are supported.
 overlays.BasicStrategy.string.background.color = rgba(0, 0, 0, 100)
 

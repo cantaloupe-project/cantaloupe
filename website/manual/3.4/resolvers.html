@@ -224,7 +224,7 @@ end
 
 <p>HttpResolver maps a URL identifier to an HTTP or HTTPS resource, for retrieving images from a web server.</p>
 
-<p>Prior to version 3.4, HttpResolver used the HTTP client bundled with the <a href="https://restlet.com/open-source/">Restlet Framework</a>. In version 3.4, the implementation changed to use the <a href="http://www.eclipse.org/jetty/documentation/current/http-client.html">Jetty HTTP client</a>, which is more configurable and supports HTTP/2. (HTTP/2 support requires some extra configuration; see <a href="getting-started.html#HTTP2">Getting Started</a>.)</p>
+<p>Prior to version 3.4, HttpResolver used the HTTP client bundled with <a href="https://restlet.com/open-source/">Restlet Framework</a>. In version 3.4, the implementation changed to use the <a href="http://www.eclipse.org/jetty/documentation/current/http-client.html">Jetty HTTP client</a>, which is more robust and supports HTTP/2 in Java 9 and later.</p>
 
 <p>It is preferable to use this resolver with source images with recognizable file extensions. For images with an extension that is missing or unrecognizable, it will issue an HTTP HEAD request to the server to check the <code>Content-Type</code> header. If the type cannot be inferred from that, an error response will be returned.</p>
 
