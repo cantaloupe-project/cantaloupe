@@ -367,6 +367,10 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                 HttpField field = response.getHeaders().getField("Content-Type");
                 if (field != null && field.getValue() != null) {
                     format = new MediaType(field.getValue()).toFormat();
+                    if (Format.UNKNOWN.equals(format)) {
+                        LOGGER.warn("Unrecognized Content-Type header value for HEAD {}",
+                                info.getURI());
+                    }
                 } else {
                     LOGGER.warn("No Content-Type header for HEAD {}",
                             info.getURI());
