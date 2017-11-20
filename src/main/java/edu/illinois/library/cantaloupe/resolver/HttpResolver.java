@@ -166,6 +166,16 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
     private static HttpClient jettyClient;
 
+    /**
+     * Cached HTTP HEAD response.
+     */
+    private Response headResponse;
+
+    /**
+     * Lazy-loaded by {@link #getResourceInfo()}.
+     */
+    private ResourceInfo resourceInfo;
+
     private static synchronized HttpClient getHTTPClient(ResourceInfo info) {
         if (jettyClient == null) {
             HttpClientTransport transport;
@@ -203,59 +213,6 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public StreamSource newStreamSource() throws IOException {
-        ResourceInfo info;
-        try {
-            info = getResourceInfo();
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {
-            LOGGER.error("newStreamSource(): {}", e.getMessage());
-            throw new IOException(e.getMessage(), e);
-        }
-
-        if (info != null) {
-            LOGGER.info("Resolved {} to {}", identifier, info.getURI());
-
-            // Send an HTTP HEAD request to check whether the underlying
-            // resource is accessible.
-            final HttpClient client = getHTTPClient(info);
-            try {
-                InputStreamResponseListener listener =
-                        new InputStreamResponseListener();
-                client.newRequest(info.getURI()).
-                        timeout(REQUEST_TIMEOUT, TimeUnit.SECONDS).
-                        method(HttpMethod.HEAD).send(listener);
-
-                // Wait for the response headers to arrive.
-                Response response = listener.get(REQUEST_TIMEOUT,
-                        TimeUnit.SECONDS);
-
-                if (response.getStatus() >= HttpStatus.BAD_REQUEST_400) {
-                    final String statusLine = "HTTP " + response.getStatus() +
-                            ": " + response.getReason();
-
-                    if (response.getStatus() == HttpStatus.NOT_FOUND_404
-                            || response.getStatus() == HttpStatus.GONE_410) {
-                        throw new FileNotFoundException(statusLine);
-                    } else if (response.getStatus() == HttpStatus.UNAUTHORIZED_401) {
-                        throw new AccessDeniedException(statusLine);
-                    } else {
-                        throw new IOException(statusLine);
-                    }
-                }
-                return new HTTPStreamSource(client, info.getURI());
-            } catch (ExecutionException e) {
-                throw new AccessDeniedException(info.getURI().toString());
-            } catch (InterruptedException | TimeoutException e) {
-                LOGGER.error(e.getMessage(), e);
-                throw new IOException(e.getMessage(), e);
-            }
-        }
-        return null;
-    }
-
-    @Override
     public Format getSourceFormat() throws IOException {
         if (sourceFormat == null) {
             sourceFormat = Format.inferFormat(identifier);
@@ -270,17 +227,132 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         return sourceFormat;
     }
 
-    ResourceInfo getResourceInfo() throws Exception {
-        final Configuration config = Configuration.getInstance();
-        switch (config.getString(Key.HTTPRESOLVER_LOOKUP_STRATEGY)) {
-            case "BasicLookupStrategy":
-                return getResourceInfoUsingBasicStrategy();
-            case "ScriptLookupStrategy":
-                return getResourceInfoUsingScriptStrategy();
-            default:
-                throw new ConfigurationException(Key.HTTPRESOLVER_LOOKUP_STRATEGY +
-                        " is invalid or not set");
+    /**
+     * Issues an HTTP <code>HEAD</code> request and checks the response
+     * <code>Content-Type</code> header to determine the source format.
+     *
+     * @return Inferred source format, or {@link Format#UNKNOWN} if unknown.
+     */
+    private Format inferSourceFormatFromContentTypeHeader() {
+        Format format = Format.UNKNOWN;
+        try {
+            final ResourceInfo info = getResourceInfo();
+            final Response response = retrieveHEADResponse();
+
+            if (response.getStatus() >= 200 && response.getStatus() < 300) {
+                HttpField field = response.getHeaders().getField("Content-Type");
+                if (field != null && field.getValue() != null) {
+                    format = new MediaType(field.getValue()).toFormat();
+                    if (Format.UNKNOWN.equals(format)) {
+                        LOGGER.warn("Unrecognized Content-Type header value for HEAD {}",
+                                info.getURI());
+                    }
+                } else {
+                    LOGGER.warn("No Content-Type header for HEAD {}",
+                            info.getURI());
+                }
+            } else {
+                LOGGER.warn("HEAD returned status {} for {}",
+                        response.getStatus(), info.getURI());
+            }
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
         }
+        return format;
+    }
+
+
+    @Override
+    public StreamSource newStreamSource() throws IOException {
+        ResourceInfo info;
+        try {
+            info = getResourceInfo();
+        } catch (IOException e) {
+            throw e;
+        } catch (Exception e) {
+            LOGGER.error("newStreamSource(): {}", e.getMessage());
+            throw new IOException(e.getMessage(), e);
+        }
+
+        if (info != null) {
+            LOGGER.info("Resolved {} to {}", identifier, info.getURI());
+
+            checkHEADResponse();
+
+            return new HTTPStreamSource(getHTTPClient(info), info.getURI());
+        }
+        return null;
+    }
+
+    private Response retrieveHEADResponse() throws IOException {
+        if (headResponse == null) {
+            ResourceInfo info;
+            try {
+                info = getResourceInfo();
+            } catch (InterruptedException | TimeoutException e) {
+                LOGGER.error(e.getMessage(), e);
+                throw new IOException(e.getMessage(), e);
+            } catch (Exception e) {
+                LOGGER.error("retrieveHEADResponse(): {}", e.getMessage());
+                throw new IOException(e.getMessage(), e);
+            }
+
+            try {
+                final HttpClient client = getHTTPClient(info);
+
+                InputStreamResponseListener listener =
+                        new InputStreamResponseListener();
+                client.newRequest(info.getURI()).
+                        timeout(REQUEST_TIMEOUT, TimeUnit.SECONDS).
+                        method(HttpMethod.HEAD).send(listener);
+
+                // Wait for the response headers to arrive.
+                headResponse = listener.get(REQUEST_TIMEOUT, TimeUnit.SECONDS);
+            } catch (ExecutionException e ) {
+                throw new AccessDeniedException(info.getURI().toString());
+            } catch (InterruptedException | TimeoutException e) {
+                throw new IOException(e.getMessage(), e);
+            }
+        }
+        return headResponse;
+    }
+
+    private void checkHEADResponse() throws IOException {
+        Response response = retrieveHEADResponse();
+        if (response.getStatus() >= HttpStatus.BAD_REQUEST_400) {
+            final String statusLine = "HTTP " + headResponse.getStatus() +
+                    ": " + headResponse.getReason();
+
+            if (response.getStatus() == HttpStatus.NOT_FOUND_404
+                    || response.getStatus() == HttpStatus.GONE_410) {
+                throw new FileNotFoundException(statusLine);
+            } else if (response.getStatus() == HttpStatus.UNAUTHORIZED_401) {
+                throw new AccessDeniedException(statusLine);
+            } else {
+                throw new IOException(statusLine);
+            }
+        }
+    }
+
+    /**
+     * @return Info corresponding to {@link #identifier}. The result is cached.
+     */
+    ResourceInfo getResourceInfo() throws Exception {
+        if (resourceInfo == null) {
+            final Configuration config = Configuration.getInstance();
+            switch (config.getString(Key.HTTPRESOLVER_LOOKUP_STRATEGY)) {
+                case "BasicLookupStrategy":
+                    resourceInfo = getResourceInfoUsingBasicStrategy();
+                    break;
+                case "ScriptLookupStrategy":
+                    resourceInfo = getResourceInfoUsingScriptStrategy();
+                    break;
+                default:
+                    throw new ConfigurationException(Key.HTTPRESOLVER_LOOKUP_STRATEGY +
+                            " is invalid or not set");
+            }
+        }
+        return resourceInfo;
     }
 
     private ResourceInfo getResourceInfoUsingBasicStrategy()
@@ -330,48 +402,12 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         }
     }
 
-    /**
-     * Issues an HTTP HEAD request and checks the response
-     * <code>Content-Type</code> header to determine the source format.
-     *
-     * @return Inferred source format, or {@link Format#UNKNOWN} if unknown.
-     */
-    private Format inferSourceFormatFromContentTypeHeader() {
-        Format format = Format.UNKNOWN;
-        try {
-            final ResourceInfo info = getResourceInfo();
-            final HttpClient client = getHTTPClient(info);
-            InputStreamResponseListener listener =
-                    new InputStreamResponseListener();
-            client.newRequest(info.getURI()).
-                    timeout(REQUEST_TIMEOUT, TimeUnit.SECONDS).
-                    method(HttpMethod.HEAD).
-                    send(listener);
-
-            // Wait for the response headers to arrive.
-            Response response = listener.get(REQUEST_TIMEOUT,
-                    TimeUnit.SECONDS);
-
-            if (response.getStatus() >= 200 && response.getStatus() < 300) {
-                HttpField field = response.getHeaders().getField("Content-Type");
-                if (field != null && field.getValue() != null) {
-                    format = new MediaType(field.getValue()).toFormat();
-                    if (Format.UNKNOWN.equals(format)) {
-                        LOGGER.warn("Unrecognized Content-Type header value for HEAD {}",
-                                info.getURI());
-                    }
-                } else {
-                    LOGGER.warn("No Content-Type header for HEAD {}",
-                            info.getURI());
-                }
-            } else {
-                LOGGER.warn("HEAD returned status {} for {}",
-                        response.getStatus(), info.getURI());
-            }
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return format;
+    @Override
+    public void setIdentifier(Identifier identifier) {
+        headResponse = null;
+        resourceInfo = null;
+        sourceFormat = null;
+        this.identifier = identifier;
     }
 
 }
