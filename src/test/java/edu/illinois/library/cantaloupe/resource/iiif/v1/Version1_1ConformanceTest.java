@@ -4,13 +4,13 @@ import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.ResourceException;
+import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jetty.client.api.ContentResponse;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
@@ -51,7 +51,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
     @Test
     public void testBaseURIReturnsImageInfoViaHttp303() throws Exception {
         client = newClient("/" + IMAGE);
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         assertEquals(303, response.getStatus());
         assertEquals(getHTTPURI("/" + IMAGE + "/info.json").toString(),
@@ -90,11 +90,11 @@ public class Version1_1ConformanceTest extends ResourceTest {
     @Test
     public void testFullRegion() throws Exception {
         client = newClient("/" + IMAGE + "/full/full/0/native.jpg");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         assertEquals(200, response.getStatus());
 
-        try (InputStream is = new ByteArrayInputStream(response.getContent())) {
+        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(64, image.getWidth());
             assertEquals(56, image.getHeight());
@@ -107,11 +107,11 @@ public class Version1_1ConformanceTest extends ResourceTest {
     @Test
     public void testAbsolutePixelRegion() throws Exception {
         client = newClient("/" + IMAGE + "/20,20,100,100/full/0/color.jpg");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         assertEquals(200, response.getStatus());
 
-        try (InputStream is = new ByteArrayInputStream(response.getContent())) {
+        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(44, image.getWidth());
             assertEquals(36, image.getHeight());
@@ -124,10 +124,10 @@ public class Version1_1ConformanceTest extends ResourceTest {
     @Test
     public void testPercentageRegionWithIntegers() throws Exception {
         client = newClient("/" + IMAGE + "/pct:20,20,50,50/full/0/color.jpg");
-        ContentResponse response = client.send();
+        Response response = client.send();
         assertEquals(200, response.getStatus());
 
-        try (InputStream is = new ByteArrayInputStream(response.getContent())) {
+        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(32, image.getWidth());
             assertEquals(28, image.getHeight());
@@ -140,10 +140,10 @@ public class Version1_1ConformanceTest extends ResourceTest {
     @Test
     public void testPercentageRegionWithFloats() throws Exception {
         client = newClient("/" + IMAGE + "/pct:20.2,20.6,50.2,50.6/full/0/color.jpg");
-        ContentResponse response = client.send();
+        Response response = client.send();
         assertEquals(200, response.getStatus());
 
-        try (InputStream is = new ByteArrayInputStream(response.getContent())) {
+        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(32, image.getWidth());
             assertEquals(28, image.getHeight());
@@ -158,11 +158,11 @@ public class Version1_1ConformanceTest extends ResourceTest {
     @Test
     public void testAbsolutePixelRegionLargerThanSource() throws Exception {
         client = newClient("/" + IMAGE + "/0,0,99999,99999/full/0/color.jpg");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         assertEquals(200, response.getStatus());
 
-        try (InputStream is = new ByteArrayInputStream(response.getContent())) {
+        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(64, image.getWidth());
             assertEquals(56, image.getHeight());
@@ -205,11 +205,11 @@ public class Version1_1ConformanceTest extends ResourceTest {
     @Test
     public void testFullSize() throws Exception {
         client = newClient("/" + IMAGE + "/full/full/0/color.jpg");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         assertEquals(200, response.getStatus());
 
-        try (InputStream is = new ByteArrayInputStream(response.getContent())) {
+        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(64, image.getWidth());
             assertEquals(56, image.getHeight());
@@ -224,11 +224,11 @@ public class Version1_1ConformanceTest extends ResourceTest {
     @Test
     public void testSizeScaledToFitWidth() throws Exception {
         client = newClient("/" + IMAGE + "/full/50,/0/color.jpg");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         assertEquals(200, response.getStatus());
 
-        try (InputStream is = new ByteArrayInputStream(response.getContent())) {
+        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(50, image.getWidth());
             assertEquals(44, image.getHeight());
@@ -243,11 +243,11 @@ public class Version1_1ConformanceTest extends ResourceTest {
     @Test
     public void testSizeScaledToFitHeight() throws Exception {
         client = newClient("/" + IMAGE + "/full/,50/0/color.jpg");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         assertEquals(200, response.getStatus());
 
-        try (InputStream is = new ByteArrayInputStream(response.getContent())) {
+        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(57, image.getWidth());
             assertEquals(50, image.getHeight());
@@ -262,11 +262,11 @@ public class Version1_1ConformanceTest extends ResourceTest {
     @Test
     public void testSizeScaledToPercent() throws Exception {
         client = newClient("/" + IMAGE + "/full/pct:50/0/color.jpg");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         assertEquals(200, response.getStatus());
 
-        try (InputStream is = new ByteArrayInputStream(response.getContent())) {
+        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(32, image.getWidth());
             assertEquals(28, image.getHeight());
@@ -281,11 +281,11 @@ public class Version1_1ConformanceTest extends ResourceTest {
     @Test
     public void testAbsoluteWidthAndHeight() throws Exception {
         client = newClient("/" + IMAGE + "/full/50,50/0/color.jpg");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         assertEquals(200, response.getStatus());
 
-        try (InputStream is = new ByteArrayInputStream(response.getContent())) {
+        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(50, image.getWidth());
             assertEquals(50, image.getHeight());
@@ -303,9 +303,9 @@ public class Version1_1ConformanceTest extends ResourceTest {
     @Test
     public void testSizeScaledToFitInside() throws Exception {
         client = newClient("/" + IMAGE + "/full/20,20/0/native.jpg");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
-        try (InputStream is = new ByteArrayInputStream(response.getContent())) {
+        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(20, image.getWidth());
             assertEquals(20, image.getHeight());
@@ -435,7 +435,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
         if (!outputFormats.isEmpty()) {
             // If the processor supports this OUTPUT format
             if (outputFormats.contains(outputFormat)) {
-                ContentResponse response = client.send();
+                Response response = client.send();
                 assertEquals(200, response.getStatus());
                 assertEquals(outputFormat.getPreferredMediaType().toString(),
                         response.getHeaders().get("Content-Type"));
@@ -476,7 +476,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
     public void testFormatInAcceptHeader() throws Exception {
         client = newClient("/" + IMAGE + "/full/full/0/native");
         client.getHeaders().put("Accept", "image/png");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         assertEquals(200, response.getStatus());
         assertEquals("image/png", response.getHeaders().get("Content-Type"));
@@ -490,7 +490,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
     public void testNoFormat() throws Exception {
         client = newClient("/" + IMAGE + "/full/full/0/native");
         client.getHeaders().put("Accept", "*/*");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         assertEquals(200, response.getStatus());
         assertEquals("image/jpeg", response.getHeaders().get("Content-Type"));
@@ -512,7 +512,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
     @Test
     public void testInformationRequestContentType() throws Exception {
         client = newClient("/" + IMAGE + "/info.json");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         assertEquals(200, response.getStatus());
         assertEquals("application/json;charset=utf-8",
@@ -553,7 +553,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
     public void testComplianceLevelLinkHeaderInInformationResponse()
             throws Exception {
         client = newClient("/" + IMAGE + "/info.json");
-        ContentResponse response = client.send();
+        Response response = client.send();
         assertEquals("<http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2>;rel=\"profile\";",
                 response.getHeaders().get("Link"));
     }
@@ -568,7 +568,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
     public void testComplianceLevelLinkHeaderInImageResponse()
             throws Exception {
         client = newClient("/" + IMAGE + "/full/full/0/native.jpg");
-        ContentResponse response = client.send();
+        Response response = client.send();
         assertEquals("<http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2>;rel=\"profile\";",
                 response.getHeaders().get("Link"));
     }

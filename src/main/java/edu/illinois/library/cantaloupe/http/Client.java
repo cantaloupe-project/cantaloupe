@@ -155,7 +155,7 @@ public final class Client {
         return cf;
     }
 
-    public ContentResponse send() throws Exception {
+    public Response send() throws Exception {
         HttpClientTransport transport = getJettyTransport();
         SslContextFactory sslContextFactory = newSSLContextFactory();
         client = new HttpClient(transport, sslContextFactory);
@@ -198,7 +198,7 @@ public final class Client {
             if (response.getStatus() >= 400) {
                 throw new ResourceException(response);
             }
-            return response;
+            return Response.fromJettyResponse(response);
         }
         return null;
     }

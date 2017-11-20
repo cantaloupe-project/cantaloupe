@@ -7,11 +7,11 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Client;
 import edu.illinois.library.cantaloupe.http.ResourceException;
+import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jetty.client.api.ContentResponse;
 
 import java.io.File;
 import java.net.URI;
@@ -404,7 +404,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         Client client = newClient(uri);
         client.getHeaders().put(AbstractResource.PUBLIC_IDENTIFIER_HEADER, "foxes");
         try {
-            ContentResponse response = client.send();
+            Response response = client.send();
             assertEquals(303, response.getStatus());
             assertTrue(response.getHeaders().get("Location").endsWith("/foxes/info.json"));
         } finally {

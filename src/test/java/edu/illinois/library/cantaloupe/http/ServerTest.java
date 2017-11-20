@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.http;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
-import org.eclipse.jetty.client.api.ContentResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,7 +52,7 @@ public class ServerTest extends BaseTest {
         client.setUsername(user);
         client.setSecret(secret);
 
-        ContentResponse response = client.send();
+        Response response = client.send();
         assertEquals(200, response.getStatus());
     }
 
@@ -84,7 +83,7 @@ public class ServerTest extends BaseTest {
         server.setHTTP2Enabled(false);
         server.start();
 
-        ContentResponse response = client.send();
+        Response response = client.send();
         assertEquals(200, response.getStatus());
     }
 
@@ -95,7 +94,7 @@ public class ServerTest extends BaseTest {
 
         client.setTransport(Transport.HTTP2_0);
 
-        ContentResponse response = client.send();
+        Response response = client.send();
         assertEquals(200, response.getStatus());
     }
 
@@ -110,7 +109,7 @@ public class ServerTest extends BaseTest {
 
         client.setTransport(Transport.HTTP1_1);
 
-        ContentResponse response = client.send();
+        Response response = client.send();
         assertEquals(200, response.getStatus());
     }
 
@@ -127,7 +126,7 @@ public class ServerTest extends BaseTest {
 
         client.setTransport(Transport.HTTP2_0);
 
-        ContentResponse response = client.send();
+        Response response = client.send();
         assertEquals(200, response.getStatus());
     }
 

@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.resource.api;
 
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.http.Method;
-import org.eclipse.jetty.client.api.ContentResponse;
+import edu.illinois.library.cantaloupe.http.Response;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -24,7 +24,7 @@ public class CacheResourceTest extends AbstractAPIResourceTest {
     @Test
     public void testDoPurgeWithValidCredentials() throws Exception {
         client.setMethod(Method.DELETE);
-        ContentResponse response = client.send();
+        Response response = client.send();
         assertEquals(204, response.getStatus());
 
         // TODO: assert that relevant cache files have been deleted

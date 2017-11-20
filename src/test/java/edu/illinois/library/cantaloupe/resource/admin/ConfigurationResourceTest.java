@@ -6,9 +6,9 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.ResourceException;
+import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
-import org.eclipse.jetty.client.api.ContentResponse;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,9 +43,9 @@ public class ConfigurationResourceTest extends ResourceTest {
     public void testGetConfiguration() throws Exception {
         Configuration.getInstance().setProperty("test", "cats");
 
-        ContentResponse response = client.send();
+        Response response = client.send();
 
-        assertTrue(response.getContentAsString().contains("\"test\":\"cats\""));
+        assertTrue(response.getBodyAsString().contains("\"test\":\"cats\""));
     }
 
     @Test
@@ -68,7 +68,7 @@ public class ConfigurationResourceTest extends ResourceTest {
         // enabled
         config.setProperty(AbstractAdminResource.CONTROL_PANEL_ENABLED_CONFIG_KEY, true);
 
-        ContentResponse response = client.send();
+        Response response = client.send();
         assertEquals(200, response.getStatus());
 
         // disabled

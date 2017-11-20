@@ -4,12 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.resource.iiif.InformationResourceTester;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
-import org.eclipse.jetty.client.api.ContentResponse;
 import org.junit.Test;
 
 import java.net.URI;
@@ -260,9 +260,9 @@ public class InformationResourceTest extends ResourceTest {
     @Test
     public void testURIsInJSON() throws Exception {
         client = newClient("/" + IMAGE + "/info.json");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
-        String json = response.getContentAsString();
+        String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("http://localhost:" + HTTP_PORT +
@@ -275,9 +275,9 @@ public class InformationResourceTest extends ResourceTest {
         config.setProperty(Key.BASE_URI, "http://example.org/");
 
         client = newClient("/" + IMAGE + "/info.json");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
-        String json = response.getContentAsString();
+        String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("http://example.org" +
@@ -293,9 +293,9 @@ public class InformationResourceTest extends ResourceTest {
         client.getHeaders().put("X-Forwarded-Path", "/cats");
         client.getHeaders().put(
                 AbstractResource.PUBLIC_IDENTIFIER_HEADER, "originalID");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
-        String json = response.getContentAsString();
+        String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("http://example.org:8080/cats" +
@@ -312,9 +312,9 @@ public class InformationResourceTest extends ResourceTest {
         client.getHeaders().put("X-Forwarded-Host", "example.org");
         client.getHeaders().put("X-Forwarded-Port", "8080");
         client.getHeaders().put("X-Forwarded-Path", "/cats");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
-        String json = response.getContentAsString();
+        String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("https://example.net" +

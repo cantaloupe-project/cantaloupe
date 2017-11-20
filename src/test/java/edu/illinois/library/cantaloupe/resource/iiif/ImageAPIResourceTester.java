@@ -7,22 +7,19 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Client;
 import edu.illinois.library.cantaloupe.http.ResourceException;
+import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.http.Transport;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jetty.client.api.ContentResponse;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
-import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.assertStatus;
-import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.assertRecursiveFileCount;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
+import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.*;
+import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -80,7 +77,7 @@ public class ImageAPIResourceTester {
             client.setUsername(BASIC_AUTH_USER);
             client.setSecret(BASIC_AUTH_SECRET);
             try {
-                ContentResponse response = client.send();
+                Response response = client.send();
                 assertEquals(200, response.getStatus());
             } finally {
                 client.stop();
@@ -96,7 +93,7 @@ public class ImageAPIResourceTester {
 
         Client client = newClient(uri);
         try {
-            ContentResponse response = client.send();
+            Response response = client.send();
 
             String header = response.getHeaders().get("Cache-Control");
             assertTrue(header.contains("max-age=1234"));
@@ -134,7 +131,7 @@ public class ImageAPIResourceTester {
 
         Client client = newClient(uri);
         try {
-            ContentResponse response = client.send();
+            Response response = client.send();
             assertNull(response.getHeaders().get("Cache-Control"));
         } finally {
             client.stop();
@@ -148,7 +145,7 @@ public class ImageAPIResourceTester {
 
         Client client = newClient(uri);
         try {
-            ContentResponse response = client.send();
+            Response response = client.send();
             assertNull(response.getHeaders().get("Cache-Control"));
         } finally {
             client.stop();
@@ -253,7 +250,7 @@ public class ImageAPIResourceTester {
     public void testXPoweredByHeader(URI uri) throws Exception {
         Client client = newClient(uri);
         try {
-            ContentResponse response = client.send();
+            Response response = client.send();
             String value = response.getHeaders().get("X-Powered-By");
             assertEquals("Cantaloupe/Unknown", value);
         } finally {

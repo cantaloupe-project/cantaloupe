@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import org.eclipse.jetty.client.api.ContentResponse;
+import edu.illinois.library.cantaloupe.http.Response;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
@@ -25,10 +25,10 @@ public class Version2_1ConformanceTest extends Version2_0ConformanceTest {
     @Test
     public void testSquareRegion() throws Exception {
         client = newClient("/" + IMAGE + "/full/full/0/default.jpg");
-        ContentResponse response = client.send();
+        Response response = client.send();
         assertEquals(200, response.getStatus());
 
-        try (InputStream is = new ByteArrayInputStream(response.getContent())) {
+        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(64, image.getWidth());
             assertEquals(56, image.getHeight());
@@ -41,10 +41,10 @@ public class Version2_1ConformanceTest extends Version2_0ConformanceTest {
     @Test
     public void testMaxSize() throws Exception {
         client = newClient("/" + IMAGE + "/full/max/0/color.jpg");
-        ContentResponse response = client.send();
+        Response response = client.send();
         assertEquals(200, response.getStatus());
 
-        try (InputStream is = new ByteArrayInputStream(response.getContent())) {
+        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(64, image.getWidth());
             assertEquals(56, image.getHeight());

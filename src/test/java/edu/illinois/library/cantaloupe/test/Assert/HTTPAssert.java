@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.test.Assert;
 
 import edu.illinois.library.cantaloupe.http.Client;
 import edu.illinois.library.cantaloupe.http.ResourceException;
-import org.eclipse.jetty.client.api.ContentResponse;
+import edu.illinois.library.cantaloupe.http.Response;
 
 import java.net.ConnectException;
 import java.net.URI;
@@ -30,7 +30,7 @@ public final class HTTPAssert {
         Client client = newClient();
         try {
             client.setURI(fromURI);
-            ContentResponse response = client.send();
+            Response response = client.send();
             assertEquals(toURI.toString(), response.getHeaders().get("Location"));
             assertEquals(status, response.getStatus());
         } catch (Exception e) {
@@ -45,8 +45,8 @@ public final class HTTPAssert {
         Client client = newClient();
         try {
             client.setURI(new URI(uri));
-            ContentResponse response = client.send();
-            assertTrue(response.getContentAsString().contains(contains));
+            Response response = client.send();
+            assertTrue(response.getBodyAsString().contains(contains));
         } catch (Exception e) {
             fail(e.getMessage());
         } finally {
@@ -62,7 +62,7 @@ public final class HTTPAssert {
         Client client = newClient();
         try {
             client.setURI(new URI(uri));
-            ContentResponse response = client.send();
+            Response response = client.send();
             assertEquals(expectedCode, response.getStatus());
         } catch (ResourceException e) {
             assertEquals(expectedCode, e.getStatusCode());

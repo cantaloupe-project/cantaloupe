@@ -3,8 +3,8 @@ package edu.illinois.library.cantaloupe.resource.api;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.ResourceException;
+import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.image.MediaType;
-import org.eclipse.jetty.client.api.ContentResponse;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -79,7 +79,7 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
             throws Exception {
         client.setEntity("{ \"verb\": \"PurgeDelegateMethodInvocationCache\" }");
         client.setContentType(MediaType.APPLICATION_JSON);
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         assertEquals(202, response.getStatus());
         assertNotNull(response.getHeaders().get("Location"));
@@ -89,7 +89,7 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
     public void testDoPostWithPurgeInvalidFromCacheVerb() throws Exception {
         client.setEntity("{ \"verb\": \"PurgeInvalidFromCache\" }");
         client.setContentType(MediaType.APPLICATION_JSON);
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         assertEquals(202, response.getStatus());
         assertNotNull(response.getHeaders().get("Location"));
@@ -99,7 +99,7 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
     public void testDoPostWithPurgeItemFromCacheVerb() throws Exception {
         client.setEntity("{ \"verb\": \"PurgeItemFromCache\", \"identifier\": \"cats\" }");
         client.setContentType(MediaType.APPLICATION_JSON);
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         assertEquals(202, response.getStatus());
         assertNotNull(response.getHeaders().get("Location"));

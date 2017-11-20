@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import org.eclipse.jetty.client.api.ContentResponse;
+import edu.illinois.library.cantaloupe.http.Response;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -18,11 +18,11 @@ public class TrailingSlashRemovingResourceTest extends ResourceTest {
     @Test
     public void testDoGet() throws Exception {
         client = newClient("/");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         assertEquals(301, response.getStatus());
         assertFalse(response.getHeaders().get("Location").endsWith("/"));
-        assertTrue(response.getContentAsString().isEmpty());
+        assertTrue(response.getBodyAsString().isEmpty());
     }
 
     @Test
@@ -31,12 +31,12 @@ public class TrailingSlashRemovingResourceTest extends ResourceTest {
         config.setProperty(Key.BASE_URI, "http://example.org/cats");
 
         client = newClient("/");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         assertEquals(301, response.getStatus());
         assertTrue(response.getHeaders().get("Location").
                 endsWith("/cats" + getEndpointPath()));
-        assertTrue(response.getContentAsString().isEmpty());
+        assertTrue(response.getBodyAsString().isEmpty());
     }
 
     @Test
@@ -46,12 +46,12 @@ public class TrailingSlashRemovingResourceTest extends ResourceTest {
         client.getHeaders().put("X-Forwarded-Proto", "HTTP");
         client.getHeaders().put("X-Forwarded-Port", "80");
         client.getHeaders().put("X-Forwarded-Path", "/cats");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         assertEquals(301, response.getStatus());
         assertTrue(response.getHeaders().get("Location").
                 endsWith("/cats" + getEndpointPath()));
-        assertTrue(response.getContentAsString().isEmpty());
+        assertTrue(response.getBodyAsString().isEmpty());
     }
 
 }

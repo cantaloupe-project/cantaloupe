@@ -6,8 +6,8 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.ResourceException;
+import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.image.MediaType;
-import org.eclipse.jetty.client.api.ContentResponse;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -33,7 +33,7 @@ public class ConfigurationResourceTest extends AbstractAPIResourceTest {
 
         try {
             client.setMethod(Method.GET);
-            ContentResponse r = client.send();
+            Response r = client.send();
             fail("Expected exception");
         } catch (ResourceException e) {
             assertEquals(403, e.getStatusCode());
@@ -47,8 +47,8 @@ public class ConfigurationResourceTest extends AbstractAPIResourceTest {
         System.setProperty("cats", "yes");
 
         client.setMethod(Method.GET);
-        ContentResponse response = client.send();
-        assertTrue(response.getContentAsString().startsWith("{"));
+        Response response = client.send();
+        assertTrue(response.getBodyAsString().startsWith("{"));
     }
 
     /* putConfiguration() */

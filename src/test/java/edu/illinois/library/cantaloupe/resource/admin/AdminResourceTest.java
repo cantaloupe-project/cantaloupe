@@ -4,8 +4,8 @@ import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.ResourceException;
+import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
-import org.eclipse.jetty.client.api.ContentResponse;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -49,7 +49,7 @@ public class AdminResourceTest extends ResourceTest {
         config.setProperty(Key.CLIENT_CACHE_MUST_REVALIDATE, "false");
         config.setProperty(Key.CLIENT_CACHE_PROXY_REVALIDATE, "false");
 
-        ContentResponse response = client.send();
+        Response response = client.send();
         assertEquals("no-cache", response.getHeaders().get("Cache-Control"));
     }
 
@@ -78,9 +78,9 @@ public class AdminResourceTest extends ResourceTest {
         // valid credentials
         client.setUsername(USERNAME);
         client.setSecret(SECRET);
-        ContentResponse response = client.send();
+        Response response = client.send();
         assertEquals(200, response.getStatus());
-        assertTrue(response.getContentAsString().contains("Cantaloupe Image Server"));
+        assertTrue(response.getBodyAsString().contains("Cantaloupe Image Server"));
     }
 
     @Test
@@ -89,7 +89,7 @@ public class AdminResourceTest extends ResourceTest {
         // enabled
         config.setProperty(Key.ADMIN_ENABLED, true);
 
-        ContentResponse response = client.send();
+        Response response = client.send();
         assertEquals(200, response.getStatus());
 
         // disabled

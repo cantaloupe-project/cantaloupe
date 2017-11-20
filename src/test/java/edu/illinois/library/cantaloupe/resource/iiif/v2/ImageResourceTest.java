@@ -3,12 +3,12 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.resource.iiif.ImageResourceTester;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
-import org.eclipse.jetty.client.api.ContentResponse;
 import org.junit.Test;
 
 import java.net.URI;
@@ -233,7 +233,7 @@ public class ImageResourceTest extends ResourceTest {
     @Test
     public void testLinkHeader() throws Exception {
         client = newClient("/" + IMAGE + "/full/full/0/color.jpg");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         String value = response.getHeaders().get("Link");
         assertTrue(value.startsWith("<http://localhost"));
@@ -245,7 +245,7 @@ public class ImageResourceTest extends ResourceTest {
         config.setProperty(Key.BASE_URI, "http://example.org/");
 
         client = newClient("/" + IMAGE + "/full/full/0/color.jpg");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         String value = response.getHeaders().get("Link");
         assertTrue(value.startsWith("<http://example.org/"));
@@ -258,7 +258,7 @@ public class ImageResourceTest extends ResourceTest {
         client.getHeaders().put("X-Forwarded-Host", "example.org");
         client.getHeaders().put("X-Forwarded-Port", "8080");
         client.getHeaders().put("X-Forwarded-Path", "/cats");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         assertEquals("<http://example.org:8080/cats/iiif/2/jpg-rgb-64x56x8-baseline.jpg/full/full/0/color.jpg>;rel=\"canonical\"",
                 response.getHeaders().get("Link"));
@@ -274,7 +274,7 @@ public class ImageResourceTest extends ResourceTest {
         client.getHeaders().put("X-Forwarded-Host", "example.org");
         client.getHeaders().put("X-Forwarded-Port", "8080");
         client.getHeaders().put("X-Forwarded-Path", "/cats");
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         assertEquals("<https://example.net/iiif/2/jpg-rgb-64x56x8-baseline.jpg/full/full/0/color.jpg>;rel=\"canonical\"",
                 response.getHeaders().get("Link"));

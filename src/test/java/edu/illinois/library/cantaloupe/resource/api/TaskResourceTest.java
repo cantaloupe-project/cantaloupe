@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.ResourceException;
+import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.image.MediaType;
-import org.eclipse.jetty.client.api.ContentResponse;
 import org.junit.Test;
 
 import java.net.URI;
@@ -49,7 +49,7 @@ public class TaskResourceTest extends AbstractAPIResourceTest {
                 RestletApplication.TASKS_PATH));
         client.setEntity(entityStr);
         client.setContentType(new MediaType("application/json"));
-        ContentResponse response = client.send();
+        Response response = client.send();
 
         // Retrieve it by its UUID from TaskResource
         String location = response.getHeaders().get("Location");
@@ -58,7 +58,7 @@ public class TaskResourceTest extends AbstractAPIResourceTest {
         response = client.send();
 
         assertEquals(200, response.getStatus());
-        String responseBody = response.getContentAsString();
+        String responseBody = response.getBodyAsString();
 
         assertTrue(responseBody.contains("PurgeInvalidFromCache"));
     }

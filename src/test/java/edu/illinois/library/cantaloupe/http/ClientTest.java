@@ -4,8 +4,6 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import edu.illinois.library.cantaloupe.util.SocketUtils;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.http.HttpVersion;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -88,7 +86,7 @@ public class ClientTest extends BaseTest {
         webServer.setBasicAuthEnabled(true);
         webServer.start();
 
-        ContentResponse response = instance.send();
+        Response response = instance.send();
         assertEquals(200, response.getStatus());
     }
 
@@ -156,9 +154,9 @@ public class ClientTest extends BaseTest {
         instance.setTransport(Transport.HTTP1_1);
         instance.setURI(getValidHTTPURI());
 
-        ContentResponse response = instance.send();
+        Response response = instance.send();
         assertEquals(200, response.getStatus());
-        assertEquals(HttpVersion.HTTP_1_1, response.getVersion());
+        assertEquals(Transport.HTTP1_1, response.getTransport());
     }
 
     @Test
@@ -168,9 +166,9 @@ public class ClientTest extends BaseTest {
         instance.setTransport(Transport.HTTP2_0);
         instance.setURI(getValidHTTPURI());
 
-        ContentResponse response = instance.send();
+        Response response = instance.send();
         assertEquals(200, response.getStatus());
-        assertEquals(HttpVersion.HTTP_2, response.getVersion());
+        assertEquals(Transport.HTTP2_0, response.getTransport());
     }
 
     @Test
@@ -180,9 +178,9 @@ public class ClientTest extends BaseTest {
         instance.setTransport(Transport.HTTP1_1);
         instance.setURI(getValidHTTPSURI());
 
-        ContentResponse response = instance.send();
+        Response response = instance.send();
         assertEquals(200, response.getStatus());
-        assertEquals(HttpVersion.HTTP_1_1, response.getVersion());
+        assertEquals(Transport.HTTP1_1, response.getTransport());
     }
 
     @Test
@@ -194,9 +192,9 @@ public class ClientTest extends BaseTest {
         instance.setTransport(Transport.HTTP2_0);
         instance.setURI(getValidHTTPSURI());
 
-        ContentResponse response = instance.send();
+        Response response = instance.send();
         assertEquals(200, response.getStatus());
-        assertEquals(HttpVersion.HTTP_2, response.getVersion());
+        assertEquals(Transport.HTTP2_0, response.getTransport());
     }
 
 }

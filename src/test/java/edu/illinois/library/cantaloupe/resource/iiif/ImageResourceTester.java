@@ -5,11 +5,11 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Client;
 import edu.illinois.library.cantaloupe.http.ResourceException;
+import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jetty.client.api.ContentResponse;
 
 import java.awt.Dimension;
 import java.io.File;
@@ -38,7 +38,7 @@ public class ImageResourceTester extends ImageAPIResourceTester {
             throws Exception {
         Client client = newClient(uri);
         try {
-            ContentResponse response = client.send();
+            Response response = client.send();
             assertEquals(303, response.getStatus());
             assertEquals("http://example.org/", response.getHeaders().get("Location"));
         } finally {
@@ -332,7 +332,7 @@ public class ImageResourceTester extends ImageAPIResourceTester {
             throws Exception {
         Client client = newClient(uri);
         try {
-            ContentResponse response = client.send();
+            Response response = client.send();
             assertNull(response.getHeaders().get("Content-Disposition"));
         } finally {
             client.stop();
@@ -346,7 +346,7 @@ public class ImageResourceTester extends ImageAPIResourceTester {
 
         Client client = newClient(uri);
         try {
-            ContentResponse response = client.send();
+            Response response = client.send();
             assertEquals("inline", response.getHeaders().get("Content-Disposition"));
         } finally {
             client.stop();
@@ -360,7 +360,7 @@ public class ImageResourceTester extends ImageAPIResourceTester {
 
         Client client = newClient(uri);
         try {
-            ContentResponse response = client.send();
+            Response response = client.send();
             assertEquals("attachment; filename=" + IMAGE + ".jpg",
                     response.getHeaders().get("Content-Disposition"));
         } finally {
