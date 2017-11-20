@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
  */
 public class ControlPanelTest extends ResourceTest {
 
-    private static final int WAIT_AFTER_SUBMIT = 1200;
+    private static final int WAIT_AFTER_SUBMIT = 2000;
     private static final String SECRET = "secret";
 
     private static WebDriver webDriver;
