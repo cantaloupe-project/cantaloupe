@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpClientTransport;
 import org.eclipse.jetty.client.api.AuthenticationStore;
@@ -20,8 +19,6 @@ import org.eclipse.jetty.client.util.InputStreamResponseListener;
 import org.eclipse.jetty.http.HttpField;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpStatus;
-import org.eclipse.jetty.http2.client.HTTP2Client;
-import org.eclipse.jetty.http2.client.http.HttpClientTransportOverHTTP2;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,9 +42,9 @@ import java.util.concurrent.TimeoutException;
  *
  * <h1>Protocol Support</h1>
  *
- * <p>HTTP/1.1, HTTPS/1.1, and HTTP/2 (H2) are supported.</p>
+ * <p>HTTP/1.1 and HTTPS/1.1 are supported.</p>
  *
- * <p>Insecure HTTP/2 (H2C) is not supported.</p>
+ * <p>HTTP/2 is not supported.</p>
  *
  * <h1>Format Determination</h1>
  *
@@ -178,13 +175,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
     private static synchronized HttpClient getHTTPClient(ResourceInfo info) {
         if (jettyClient == null) {
-            HttpClientTransport transport;
-            if (SystemUtils.isALPNAvailable()) {
-                HTTP2Client h2Client = new HTTP2Client();
-                transport = new HttpClientTransportOverHTTP2(h2Client);
-            } else {
-                transport = new HttpClientTransportOverHTTP();
-            }
+            HttpClientTransport transport = new HttpClientTransportOverHTTP();
 
             Configuration config = Configuration.getInstance();
             final boolean trustInvalidCerts = config.getBoolean(
