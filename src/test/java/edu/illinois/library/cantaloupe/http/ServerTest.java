@@ -120,6 +120,7 @@ public class ServerTest extends BaseTest {
 
         Response response = client.send();
         assertEquals(200, response.getStatus());
+        assertEquals(Transport.HTTP1_1, response.getTransport());
     }
 
     @Test
@@ -131,6 +132,7 @@ public class ServerTest extends BaseTest {
 
         Response response = client.send();
         assertEquals(200, response.getStatus());
+        assertEquals(Transport.HTTP2_0, response.getTransport());
     }
 
     @Test
@@ -146,6 +148,7 @@ public class ServerTest extends BaseTest {
 
         Response response = client.send();
         assertEquals(200, response.getStatus());
+        assertEquals(Transport.HTTP1_1, response.getTransport());
     }
 
     @Test
@@ -163,6 +166,7 @@ public class ServerTest extends BaseTest {
 
         Response response = client.send();
         assertEquals(200, response.getStatus());
+        assertEquals(Transport.HTTP2_0, response.getTransport());
     }
 
 }
