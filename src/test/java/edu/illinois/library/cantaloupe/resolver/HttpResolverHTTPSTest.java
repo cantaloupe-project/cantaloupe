@@ -2,23 +2,11 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.test.WebServer;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 
-public class HttpResolverHTTPSTest extends HttpResolverTest {
+import java.net.URI;
 
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        server = new WebServer();
-        server.start();
-    }
-
-    @AfterClass
-    public static void afterClass() throws Exception {
-        server.stop();
-    }
+abstract class HttpResolverHTTPSTest extends HttpResolverTest {
 
     @Before
     @Override
@@ -28,6 +16,16 @@ public class HttpResolverHTTPSTest extends HttpResolverTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_URL_PREFIX, server.getHTTPSURI() + "/");
         config.setProperty(Key.HTTPRESOLVER_TRUST_INVALID_CERTS, true);
+    }
+
+    @Override
+    String getScheme() {
+        return "https";
+    }
+
+    @Override
+    URI getServerURI() {
+        return server.getHTTPSURI();
     }
 
 }

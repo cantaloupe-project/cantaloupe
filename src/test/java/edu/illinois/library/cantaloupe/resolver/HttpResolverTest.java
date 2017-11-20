@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,7 +29,7 @@ abstract class HttpResolverTest extends BaseTest {
     private static final Identifier PRESENT_READABLE_IDENTIFIER =
             new Identifier("jpg-rgb-64x56x8-baseline.jpg");
 
-    static WebServer server;
+    WebServer server;
 
     private HttpResolver instance;
     private RequestContext context;
@@ -50,13 +51,25 @@ abstract class HttpResolverTest extends BaseTest {
         useBasicLookupStrategy();
     }
 
-    private void useBasicLookupStrategy() {
+    @Override
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+
+        server.stop();
+    }
+
+    abstract String getScheme();
+
+    abstract URI getServerURI();
+
+    void useBasicLookupStrategy() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
     }
 
-    private void useScriptLookupStrategy() throws IOException {
+    void useScriptLookupStrategy() throws IOException {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
                 "ScriptLookupStrategy");
@@ -66,6 +79,47 @@ abstract class HttpResolverTest extends BaseTest {
     }
 
     /* newStreamSource() */
+
+    @Test
+    public void testNewStreamSourceUsingBasicLookupStrategyWithValidAuthentication()
+            throws Exception {
+        useBasicLookupStrategy();
+
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME,
+                WebServer.BASIC_USER);
+        config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_SECRET,
+                WebServer.BASIC_SECRET);
+
+        server.setBasicAuthEnabled(true);
+        server.start();
+
+        instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
+        assertNotNull(instance.newStreamSource());
+    }
+
+    @Test
+    public void testNewStreamSourceUsingBasicLookupStrategyWithInvalidAuthentication()
+            throws Exception {
+        useBasicLookupStrategy();
+
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME,
+                WebServer.BASIC_USER);
+        config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_SECRET,
+                "bogus");
+
+        server.setBasicAuthEnabled(true);
+        server.start();
+
+        instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
+        try {
+            instance.newStreamSource();
+            fail("Expected exception");
+        } catch (AccessDeniedException e) {
+            // pass
+        }
+    }
 
     @Test
     public void testNewStreamSourceUsingBasicLookupStrategyWithPresentReadableImage() {
@@ -87,10 +141,44 @@ abstract class HttpResolverTest extends BaseTest {
     }
 
     @Test
+    public void testNewStreamSourceUsingScriptLookupStrategyWithValidAuthentication()
+            throws Exception {
+        useScriptLookupStrategy();
+
+        Identifier identifier = new Identifier("valid-auth-" +
+                getServerURI() + "/" + PRESENT_READABLE_IDENTIFIER);
+
+        server.setBasicAuthEnabled(true);
+        server.start();
+
+        instance.setIdentifier(identifier);
+        assertNotNull(instance.newStreamSource());
+    }
+
+    @Test
+    public void testNewStreamSourceUsingScriptLookupStrategyWithInvalidAuthentication()
+            throws Exception {
+        useScriptLookupStrategy();
+
+        Identifier identifier = new Identifier("invalid-auth-" +
+                getServerURI() + "/" + PRESENT_READABLE_IDENTIFIER);
+
+        server.setBasicAuthEnabled(true);
+        server.start();
+
+        instance.setIdentifier(identifier);
+        try {
+            instance.newStreamSource();
+        } catch (AccessDeniedException e) {
+            // pass
+        }
+    }
+
+    @Test
     public void testNewStreamSourceUsingScriptLookupStrategyWithPresentReadableImage()
             throws Exception {
         useScriptLookupStrategy();
-        Identifier identifier = new Identifier(server.getHTTPURI() + "/" +
+        Identifier identifier = new Identifier(getServerURI() + "/" +
                 PRESENT_READABLE_IDENTIFIER);
         doTestNewStreamSourceWithPresentReadableImage(identifier);
     }
@@ -99,7 +187,7 @@ abstract class HttpResolverTest extends BaseTest {
     public void testNewStreamSourceUsingScriptLookupStrategyWithMissingImage()
             throws Exception {
         useScriptLookupStrategy();
-        Identifier identifier = new Identifier(server.getHTTPURI() + "/bogus");
+        Identifier identifier = new Identifier(getServerURI() + "/bogus");
         doTestNewStreamSourceWithMissingImage(identifier);
     }
 
@@ -107,22 +195,26 @@ abstract class HttpResolverTest extends BaseTest {
     public void testNewStreamSourceUsingScriptLookupStrategyWithPresentUnreadableImage()
             throws Exception {
         useScriptLookupStrategy();
-        Identifier identifier = new Identifier(server.getHTTPURI() + "/gif");
+        Identifier identifier = new Identifier(getServerURI() + "/gif");
         doTestNewStreamSourceWithPresentUnreadableImage(identifier);
     }
 
     private void doTestNewStreamSourceWithPresentReadableImage(
             Identifier identifier) {
         try {
+            server.start();
+
             instance.setIdentifier(identifier);
             assertNotNull(instance.newStreamSource());
-        } catch (IOException e) {
+        } catch (Exception e) {
             fail();
         }
     }
 
     private void doTestNewStreamSourceWithPresentUnreadableImage(Identifier identifier) {
         try {
+            server.start();
+
             File image = TestUtil.getImage("gif");
             try {
                 image.setReadable(false);
@@ -139,19 +231,61 @@ abstract class HttpResolverTest extends BaseTest {
         }
     }
 
-    private void doTestNewStreamSourceWithMissingImage(Identifier identifier) {
+    void doTestNewStreamSourceWithMissingImage(Identifier identifier) {
         try {
+            server.start();
+
             instance.setIdentifier(identifier);
             instance.newStreamSource();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
-        } catch (IOException e) {
+        } catch (Exception e) {
             fail("Expected FileNotFoundException");
         }
     }
 
     /* getSourceFormat() */
+
+    @Test
+    public void testGetSourceFormatUsingBasicLookupStrategyWithValidAuthentication()
+            throws Exception {
+        useBasicLookupStrategy();
+
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME,
+                WebServer.BASIC_USER);
+        config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_SECRET,
+                WebServer.BASIC_SECRET);
+
+        server.setBasicAuthEnabled(true);
+        server.start();
+
+        instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
+        assertEquals(Format.JPG, instance.getSourceFormat());
+    }
+
+    @Test
+    public void testGetSourceFormatUsingBasicLookupStrategyWithInvalidAuthentication()
+            throws Exception {
+        useBasicLookupStrategy();
+
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME,
+                WebServer.BASIC_USER);
+        config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_SECRET,
+                "bogus");
+
+        server.setBasicAuthEnabled(true);
+        server.start();
+
+        instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
+        try {
+            instance.newStreamSource();
+        } catch (AccessDeniedException e) {
+            // pass
+        }
+    }
 
     @Test
     public void testGetSourceFormatUsingBasicLookupStrategyWithPresentReadableImage()
@@ -178,7 +312,7 @@ abstract class HttpResolverTest extends BaseTest {
     public void testGetSourceFormatUsingScriptLookupStrategyWithPresentReadableImage()
             throws Exception {
         useScriptLookupStrategy();
-        Identifier identifier = new Identifier(server.getHTTPURI() + "/" +
+        Identifier identifier = new Identifier(getServerURI() + "/" +
                 PRESENT_READABLE_IDENTIFIER);
         doTestGetSourceFormatWithPresentReadableImage(identifier);
     }
@@ -187,7 +321,7 @@ abstract class HttpResolverTest extends BaseTest {
     public void testGetSourceFormatUsingScriptLookupStrategyWithPresentUnreadableImage()
             throws Exception {
         useScriptLookupStrategy();
-        Identifier identifier = new Identifier(server.getHTTPURI() + "/gif");
+        Identifier identifier = new Identifier(getServerURI() + "/gif");
         doTestGetSourceFormatWithPresentUnreadableImage(identifier);
     }
 
@@ -201,6 +335,8 @@ abstract class HttpResolverTest extends BaseTest {
     private void doTestGetSourceFormatWithPresentReadableImage(
             Identifier identifier) {
         try {
+            server.start();
+
             instance.setIdentifier(identifier);
             assertEquals(Format.JPG, instance.getSourceFormat());
         } catch (Exception e) {
@@ -211,6 +347,8 @@ abstract class HttpResolverTest extends BaseTest {
     private void doTestGetSourceFormatWithPresentUnreadableImage(
             Identifier identifier) {
         try {
+            server.start();
+
             File image = TestUtil.getImage("gif");
             try {
                 image.setReadable(false);
@@ -229,13 +367,15 @@ abstract class HttpResolverTest extends BaseTest {
 
     private void doTestGetSourceFormatWithMissingImage(Identifier identifier) {
         try {
+            server.start();
+
             assertEquals(Format.JPG, instance.getSourceFormat());
             instance.setIdentifier(identifier);
             instance.getSourceFormat();
             fail("Expected exception");
         } catch (FileNotFoundException e) {
             // pass
-        } catch (IOException e) {
+        } catch (Exception e) {
             fail("Expected FileNotFoundException");
         }
     }
@@ -248,9 +388,12 @@ abstract class HttpResolverTest extends BaseTest {
         useBasicLookupStrategy();
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
-                "http://example.org/prefix/");
+                getScheme() + "://example.org/prefix/");
+
+        server.start();
+
         instance.setIdentifier(new Identifier("id"));
-        assertEquals("http://example.org/prefix/id",
+        assertEquals(getScheme() + "://example.org/prefix/id",
                 instance.getResourceInfo().getURI().toString());
     }
 
@@ -260,10 +403,13 @@ abstract class HttpResolverTest extends BaseTest {
         useBasicLookupStrategy();
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
-                "http://example.org/prefix/");
+                getScheme() + "://example.org/prefix/");
         config.setProperty(Key.HTTPRESOLVER_URL_SUFFIX, "/suffix");
+
+        server.start();
+
         instance.setIdentifier(new Identifier("id"));
-        assertEquals("http://example.org/prefix/id/suffix",
+        assertEquals(getScheme() + "://example.org/prefix/id/suffix",
                 instance.getResourceInfo().toString());
     }
 
@@ -274,8 +420,11 @@ abstract class HttpResolverTest extends BaseTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_URL_PREFIX, "");
         config.setProperty(Key.HTTPRESOLVER_URL_SUFFIX, "");
-        instance.setIdentifier(new Identifier("http://example.org/images/image.jpg"));
-        assertEquals("http://example.org/images/image.jpg",
+
+        server.start();
+
+        instance.setIdentifier(new Identifier(getScheme() + "://example.org/images/image.jpg"));
+        assertEquals(getScheme() + "://example.org/images/image.jpg",
                 instance.getResourceInfo().toString());
     }
 
@@ -283,7 +432,11 @@ abstract class HttpResolverTest extends BaseTest {
     public void testGetResourceInfoUsingScriptLookupStrategyReturningString()
             throws Exception {
         useScriptLookupStrategy();
-        assertEquals(new URI("http://example.org/bla/" + PRESENT_READABLE_IDENTIFIER),
+
+        server.start();
+
+        instance.setIdentifier(new Identifier(getScheme() + "-" + PRESENT_READABLE_IDENTIFIER));
+        assertEquals(new URI(getScheme() + "://example.org/bla/" + getScheme() + "-" + PRESENT_READABLE_IDENTIFIER),
                 instance.getResourceInfo().getURI());
     }
 
@@ -293,11 +446,13 @@ abstract class HttpResolverTest extends BaseTest {
         useScriptLookupStrategy();
 
         final Map<String, String> headers = new HashMap<>();
-        headers.put("x-test-header", "foo");
+        headers.put("X-Forwarded-Proto", getScheme());
         context.setClientIP("1.2.3.4");
         context.setRequestHeaders(headers);
 
-        assertEquals(new URI("http://other-example.org/bleh/" + PRESENT_READABLE_IDENTIFIER),
+        server.start();
+
+        assertEquals(new URI(getScheme() + "://other-example.org/bleh/" + PRESENT_READABLE_IDENTIFIER),
                 instance.getResourceInfo().getURI());
     }
 
@@ -306,10 +461,13 @@ abstract class HttpResolverTest extends BaseTest {
             throws Exception {
         useScriptLookupStrategy();
 
-        Identifier identifier = new Identifier("jpg-rgb-64x56x8-plane.jpg");
+        Identifier identifier = new Identifier(getScheme() + "-jpg-rgb-64x56x8-plane.jpg");
         instance.setIdentifier(identifier);
+
+        server.start();
+
         HttpResolver.ResourceInfo actual = instance.getResourceInfo();
-        assertEquals(new URI("http://example.org/bla/" + identifier),
+        assertEquals(new URI(getScheme() + "://example.org/bla/" + identifier),
                 actual.getURI());
         assertEquals("username", actual.getUsername());
         assertEquals("secret", actual.getSecret());
@@ -322,6 +480,9 @@ abstract class HttpResolverTest extends BaseTest {
 
         Identifier identifier = new Identifier("bogus");
         instance.setIdentifier(identifier);
+
+        server.start();
+
         try {
             instance.getResourceInfo();
             fail("Expected exception");

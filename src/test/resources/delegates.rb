@@ -58,21 +58,54 @@ module Cantaloupe
   end
 
   module HttpResolver
+    ##
+    # Used by HttpResolverTest
+    #
     def self.get_url(identifier, context)
-      if identifier.start_with?('http://localhost')
+      # Supply a localhost URL to return the same URL.
+      if identifier.start_with?('http://localhost') or
+          identifier.start_with?('https://localhost')
         return identifier
+      # Supply a valid URL prefixed with "valid-auth-" to return a valid URL
+      # with valid auth info.
+      elsif identifier.start_with?('valid-auth-')
+        return {
+            'uri' => identifier.gsub('valid-auth-', ''),
+            'username' => 'user',
+            'secret' => 'secret'
+        }
+      # Supply a valid URL prefixed with "invalid-auth-" to return a valid URL
+      # with invalid auth info.
+      elsif identifier.start_with?('invalid-auth-')
+        return {
+            'uri' => identifier.gsub('invalid-auth-', ''),
+            'username' => 'user',
+            'secret' => 'bogus'
+        }
       end
 
-      if context['clientIP'] == '1.2.3.4' && context['headers']['x-test-header'] == 'foo'
-        return 'http://other-example.org/bleh/' + URI.escape(identifier)
+      if context['clientIP'] == '1.2.3.4'
+        if context['headers']['X-Forwarded-Proto'] == 'https'
+          return 'https://other-example.org/bleh/' + URI.escape(identifier)
+        else
+          return 'http://other-example.org/bleh/' + URI.escape(identifier)
+        end
       end
 
       case identifier
-        when 'jpg-rgb-64x56x8-baseline.jpg'
+        when 'http-jpg-rgb-64x56x8-baseline.jpg'
           return 'http://example.org/bla/' + URI.escape(identifier)
-        when 'jpg-rgb-64x56x8-plane.jpg'
+        when 'https-jpg-rgb-64x56x8-baseline.jpg'
+          return 'https://example.org/bla/' + URI.escape(identifier)
+        when 'http-jpg-rgb-64x56x8-plane.jpg'
           return {
               'uri' => 'http://example.org/bla/' + URI.escape(identifier),
+              'username' => 'username',
+              'secret' => 'secret'
+          }
+        when 'https-jpg-rgb-64x56x8-plane.jpg'
+          return {
+              'uri' => 'https://example.org/bla/' + URI.escape(identifier),
               'username' => 'username',
               'secret' => 'secret'
           }
