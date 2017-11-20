@@ -178,7 +178,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
             Configuration config = Configuration.getInstance();
             final boolean trustInvalidCerts = config.getBoolean(
-                    Key.HTTPRESOLVER_TRUST_INVALID_CERTS, false);
+                    Key.HTTPRESOLVER_TRUST_ALL_CERTS, false);
             SslContextFactory sslContextFactory =
                     new SslContextFactory(trustInvalidCerts);
 

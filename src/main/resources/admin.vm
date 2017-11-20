@@ -1411,14 +1411,14 @@
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Whether to trust invalid certificates when
+                                                   data-content="Whether to trust all certificates when
                                                    making HTTPS connections.">?</a>
                                             </td>
                                             <td>
                                                 <div class="checkbox">
                                                     <label>
                                                         <input type="checkbox"
-                                                               name="HttpResolver.trust_invalid_certs"
+                                                               name="HttpResolver.trust_all_certs"
                                                                value="true"
                                                                data-requires-restart="false">
                                                         Trust Invalid Certificates
