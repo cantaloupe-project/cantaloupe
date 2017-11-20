@@ -3,9 +3,16 @@ package edu.illinois.library.cantaloupe.http;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
@@ -75,6 +82,34 @@ public class ServerTest extends BaseTest {
             client.send();
         } catch (ResourceException e) {
             assertEquals(401, e.getStatusCode());
+        }
+    }
+
+    @Test
+    public void testHandler() throws Exception {
+        final String path = "/unauthorized";
+
+        server.setHandler(new DefaultHandler() {
+            @Override
+            public void handle(String target,
+                               Request baseRequest,
+                               HttpServletRequest request,
+                               HttpServletResponse response)
+                    throws IOException, ServletException {
+                if (baseRequest.getPathInfo().startsWith(path)) {
+                    response.setStatus(500);
+                }
+                baseRequest.setHandled(true);
+            }
+        });
+        server.start();
+
+        client.setURI(server.getHTTPURI().resolve(path));
+        try {
+            client.send();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(500, e.getStatusCode());
         }
     }
 

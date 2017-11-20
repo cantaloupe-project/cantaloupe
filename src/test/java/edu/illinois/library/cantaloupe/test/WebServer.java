@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.test;
 
 import edu.illinois.library.cantaloupe.http.Server;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
+import org.eclipse.jetty.server.Handler;
 
 import java.io.IOException;
 import java.net.URI;
@@ -43,6 +44,10 @@ public final class WebServer {
         wrappedServer.setAuthUser(BASIC_USER);
         wrappedServer.setAuthSecret(BASIC_SECRET);
         wrappedServer.setBasicAuthEnabled(enabled);
+    }
+
+    public void setHandler(Handler handler) {
+        wrappedServer.setHandler(handler);
     }
 
     public void setHTTP1Enabled(boolean enabled) {

@@ -10,6 +10,7 @@ import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.UserStore;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
@@ -27,8 +28,11 @@ import java.nio.file.Path;
 import java.util.Collections;
 
 /**
- * HTTP server that serves filesystem content. Supports HTTP and HTTPS and
- * protocol version 1.1 and 2.
+ * <p>Simple HTTP server wrapping a Jetty server. Supports HTTP and HTTPS and
+ * protocol versions 1.1 and 2.</p>
+ *
+ * <p>The default handler serves static filesystem content, but can be
+ * overridden via {@link #setHandler(Handler)}.</p>
  *
  * @see <a href="http://www.eclipse.org/jetty/documentation/current/embedded-examples.html">
  *     Embedded Examples</a>
@@ -40,6 +44,7 @@ public final class Server {
     private String authUser;
     private String authSecret;
 
+    private Handler handler;
     private int httpPort;
     private int httpsPort;
     private boolean isHTTP1Enabled = true;
@@ -140,10 +145,13 @@ public final class Server {
             server.addConnector(connector);
         }
 
-        // Initialize the static file server.
-        ResourceHandler handler = new ResourceHandler();
-        handler.setDirectoriesListed(false);
-        handler.setResourceBase(root.toString());
+        // If a custom handler has not been set, use a static file server.
+        if (handler == null) {
+            ResourceHandler handler = new ResourceHandler();
+            handler.setDirectoriesListed(false);
+            handler.setResourceBase(root.toString());
+            this.handler = handler;
+        }
 
         if (isBasicAuthEnabled) {
             final String[] roles = new String[] { "user" };
@@ -208,6 +216,10 @@ public final class Server {
 
     public void setBasicAuthEnabled(boolean enabled) {
         this.isBasicAuthEnabled = enabled;
+    }
+
+    public void setHandler(Handler handler) {
+        this.handler = handler;
     }
 
     public void setHTTP1Enabled(boolean enabled) {
