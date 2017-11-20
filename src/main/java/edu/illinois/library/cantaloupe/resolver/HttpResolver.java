@@ -43,22 +43,39 @@ import java.util.concurrent.TimeoutException;
 /**
  * <p>Provides access to source content located on an HTTP(S) server.</p>
  *
+ * <h1>Protocol Support</h1>
+ *
+ * <p>HTTP/1.1, HTTPS/1.1, and HTTP/2 (H2) are supported.</p>
+ *
+ * <p>Insecure HTTP/2 (H2C) is not supported.</p>
+ *
  * <h1>Format Determination</h1>
  *
- * <p>For images with extensions, the extension will be assumed to correctly
- * denote the image format, based on the return value of
- * {@link Format#inferFormat(Identifier)}. For images with extensions that are
- * missing or unrecognized, the <code>Content-Type</code> header will be
- * checked to determine their format, which will incur a penalty of an extra
- * request. It is therefore more efficient to serve images with extensions.</p>
+ * <p>For images with recognized name extensions, the format will be inferred
+ * by {@link Format#inferFormat(Identifier)}. For images with unrecognized or
+ * missing extensions, the <code>Content-Type</code> header will be checked to
+ * determine their format, which will incur an extra <code>HEAD</code> request.
+ * It is therefore more efficient to serve images with extensions.</p>
  *
  * <h1>Lookup Strategies</h1>
  *
  * <p>Two distinct lookup strategies are supported, defined by
  * {@link Key#HTTPRESOLVER_LOOKUP_STRATEGY}. BasicLookupStrategy locates
  * images by concatenating a pre-defined URL prefix and/or suffix.
- * ScriptLookupStrategy invokes a delegate method to retrieve a URL
- * dynamically.</p>
+ * ScriptLookupStrategy invokes a delegate method to retrieve a URL (and
+ * optional auth info) dynamically.</p>
+ *
+ * <h1>Authentication Support</h1>
+ *
+ * <p>HTTP Basic authentication is supported.</p>
+ *
+ * <ul>
+ *     <li>When using BasicLookupStrategy, auth info is set globally in the
+ *     {@link Key#HTTPRESOLVER_BASIC_AUTH_USERNAME} and
+ *     {@link Key#HTTPRESOLVER_BASIC_AUTH_SECRET} configuration keys.</li>
+ *     <li>When using ScriptLookupStrategy, auth info can be returned from a
+ *     delegate method.</li>
+ * </ul>
  *
  * @see <a href="http://www.eclipse.org/jetty/documentation/current/http-client.html">
  *     Jetty HTTP Client</a>
@@ -147,69 +164,42 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
             "HttpResolver::get_url";
     private static final int REQUEST_TIMEOUT = 10;
 
-    private static HttpClient httpClient; // TODO: stop this at app shutdown
-    private static HttpClient httpsClient; // TODO: stop this at app shutdown
+    private static HttpClient jettyClient;
 
     private static synchronized HttpClient getHTTPClient(ResourceInfo info) {
-        // We use separate Jetty clients for HTTP and HTTPS because an
-        // HTTPS/1.1 client can connect to HTTP/1.1 servers, but an HTTPS/2
-        // client can't.
-        switch (info.getURI().getScheme().toUpperCase()) {
-            case "HTTPS":
-                if (httpsClient == null) {
-                    HttpClientTransport transport;
-                    if (SystemUtils.isALPNAvailable()) {
-                        HTTP2Client h2Client = new HTTP2Client();
-                        transport = new HttpClientTransportOverHTTP2(h2Client);
-                    } else {
-                        transport = new HttpClientTransportOverHTTP();
-                    }
+        if (jettyClient == null) {
+            HttpClientTransport transport;
+            if (SystemUtils.isALPNAvailable()) {
+                HTTP2Client h2Client = new HTTP2Client();
+                transport = new HttpClientTransportOverHTTP2(h2Client);
+            } else {
+                transport = new HttpClientTransportOverHTTP();
+            }
 
-                    Configuration config = Configuration.getInstance();
-                    final boolean trustInvalidCerts = config.getBoolean(
-                            Key.HTTPRESOLVER_TRUST_INVALID_CERTS, false);
-                    SslContextFactory sslContextFactory =
-                            new SslContextFactory(trustInvalidCerts);
+            Configuration config = Configuration.getInstance();
+            final boolean trustInvalidCerts = config.getBoolean(
+                    Key.HTTPRESOLVER_TRUST_INVALID_CERTS, false);
+            SslContextFactory sslContextFactory =
+                    new SslContextFactory(trustInvalidCerts);
 
-                    httpsClient = new HttpClient(transport, sslContextFactory);
-                    httpsClient.setFollowRedirects(true);
+            jettyClient = new HttpClient(transport, sslContextFactory);
+            jettyClient.setFollowRedirects(true);
 
-                    try {
-                        httpsClient.start();
-                    } catch (Exception e) {
-                        LOGGER.error("getHTTPClient(): {}", e.getMessage());
-                    }
-                }
-
-                // Add Basic auth credentials to the authentication store.
-                // https://www.eclipse.org/jetty/documentation/9.4.x/http-client-authentication.html
-                if (info.getUsername() != null && info.getSecret() != null) {
-                    AuthenticationStore auth = httpsClient.getAuthenticationStore();
-                    auth.addAuthenticationResult(new BasicAuthentication.BasicResult(
-                            info.getURI(), info.getUsername(), info.getSecret()));
-                }
-                return httpsClient;
-            default:
-                if (httpClient == null) {
-                    httpClient = new HttpClient();
-                    httpClient.setFollowRedirects(true);
-
-                    try {
-                        httpClient.start();
-                    } catch (Exception e) {
-                        LOGGER.error("getHTTPClient(): {}", e.getMessage());
-                    }
-                }
-
-                // Add Basic auth credentials to the authentication store.
-                // https://www.eclipse.org/jetty/documentation/9.4.x/http-client-authentication.html
-                if (info.getUsername() != null && info.getSecret() != null) {
-                    AuthenticationStore auth = httpClient.getAuthenticationStore();
-                    auth.addAuthenticationResult(new BasicAuthentication.BasicResult(
-                            info.getURI(), info.getUsername(), info.getSecret()));
-                }
-                return httpClient;
+            try {
+                jettyClient.start();
+            } catch (Exception e) {
+                LOGGER.error("getHTTPClient(): {}", e.getMessage());
+            }
         }
+
+        // Add Basic auth credentials to the authentication store.
+        // https://www.eclipse.org/jetty/documentation/9.4.x/http-client-authentication.html
+        if (info.getUsername() != null && info.getSecret() != null) {
+            AuthenticationStore auth = jettyClient.getAuthenticationStore();
+            auth.addAuthenticationResult(new BasicAuthentication.BasicResult(
+                    info.getURI(), info.getUsername(), info.getSecret()));
+        }
+        return jettyClient;
     }
 
     @Override
