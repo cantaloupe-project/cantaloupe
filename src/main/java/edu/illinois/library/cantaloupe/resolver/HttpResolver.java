@@ -248,14 +248,16 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                     if (response.getStatus() == HttpStatus.NOT_FOUND_404
                             || response.getStatus() == HttpStatus.GONE_410) {
                         throw new FileNotFoundException(statusLine);
-                    } else if (response.getStatus() >= HttpStatus.BAD_REQUEST_400) {
+                    } else if (response.getStatus() == HttpStatus.UNAUTHORIZED_401) {
+                        throw new AccessDeniedException(statusLine);
+                    } else {
                         throw new IOException(statusLine);
                     }
                 }
                 return new HTTPStreamSource(client, info.getURI());
             } catch (ExecutionException e) {
                 // Jetty does not throw a clear "access denied" exception,
-                // and there are different causes depending on HTTP or HTTPS
+                // and there are different causes depending on HTTP or HTTPS.
                 throw new AccessDeniedException(info.getURI().toString());
             } catch (InterruptedException | TimeoutException e) {
                 LOGGER.error(e.getMessage(), e);
