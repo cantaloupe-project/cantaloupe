@@ -8,10 +8,15 @@ import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -20,9 +25,7 @@ import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 abstract class HttpResolverTest extends BaseTest {
 
@@ -63,13 +66,13 @@ abstract class HttpResolverTest extends BaseTest {
 
     abstract URI getServerURI();
 
-    void useBasicLookupStrategy() {
+    private void useBasicLookupStrategy() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
     }
 
-    void useScriptLookupStrategy() throws IOException {
+    private void useScriptLookupStrategy() throws IOException {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
                 "ScriptLookupStrategy");
@@ -231,7 +234,7 @@ abstract class HttpResolverTest extends BaseTest {
         }
     }
 
-    void doTestNewStreamSourceWithMissingImage(Identifier identifier) {
+    private void doTestNewStreamSourceWithMissingImage(Identifier identifier) {
         try {
             server.start();
 
@@ -330,6 +333,102 @@ abstract class HttpResolverTest extends BaseTest {
             throws Exception {
         useScriptLookupStrategy();
         doTestGetSourceFormatWithMissingImage(new Identifier("bogus"));
+    }
+
+    @Test
+    public void testGetSourceFormatFollowsRedirect() throws Exception {
+        server.setHandler(new DefaultHandler() {
+            @Override
+            public void handle(String target,
+                               Request baseRequest,
+                               HttpServletRequest request,
+                               HttpServletResponse response)
+                    throws IOException, ServletException {
+                if (baseRequest.getPathInfo().startsWith("/" + PRESENT_READABLE_IDENTIFIER)) {
+                    response.setStatus(301);
+                    response.setHeader("Location",
+                            getServerURI().resolve("/jpg-rgb-64x56x8-line.jpg").toString());
+                }
+                baseRequest.setHandled(true);
+            }
+        });
+        server.start();
+
+        instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
+        assertEquals(Format.JPG, instance.getSourceFormat());
+    }
+
+    @Test
+    public void testGetSourceFormatWithErrorResponse() throws Exception {
+        server.setHandler(new DefaultHandler() {
+            @Override
+            public void handle(String target,
+                               Request baseRequest,
+                               HttpServletRequest request,
+                               HttpServletResponse response)
+                    throws IOException, ServletException {
+                response.setStatus(500);
+                baseRequest.setHandled(true);
+            }
+        });
+        server.start();
+
+        try {
+            instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
+            instance.getSourceFormat();
+            fail("Expected exception");
+        } catch (IOException e) {
+            assertTrue(e.getMessage().contains("500"));
+        }
+    }
+
+    @Test
+    public void testGetSourceFormatWithNoIdentifierExtensionAndContentTypeHeader()
+            throws Exception {
+        server.setHandler(new DefaultHandler() {
+            @Override
+            public void handle(String target,
+                               Request baseRequest,
+                               HttpServletRequest request,
+                               HttpServletResponse response)
+                    throws IOException, ServletException {
+                response.setHeader("Content-Type", "image/jpeg");
+                baseRequest.setHandled(true);
+            }
+        });
+        server.start();
+
+        instance.setIdentifier(new Identifier("jpg"));
+        assertEquals(Format.JPG, instance.getSourceFormat());
+    }
+
+    @Test
+    public void testGetSourceFormatWithNoIdentifierExtensionAndNoContentTypeHeader()
+            throws Exception {
+        server.start();
+
+        instance.setIdentifier(new Identifier("jpg"));
+        assertEquals(Format.UNKNOWN, instance.getSourceFormat());
+    }
+
+    @Test
+    public void testGetSourceFormatWithNoIdentifierExtensionAndUnrecognizedContentTypeHeaderValue()
+            throws Exception {
+        server.setHandler(new DefaultHandler() {
+            @Override
+            public void handle(String target,
+                               Request baseRequest,
+                               HttpServletRequest request,
+                               HttpServletResponse response)
+                    throws IOException, ServletException {
+                response.setHeader("Content-Type", "image/bogus");
+                baseRequest.setHandled(true);
+            }
+        });
+        server.start();
+
+        instance.setIdentifier(new Identifier("jpg"));
+        assertEquals(Format.UNKNOWN, instance.getSourceFormat());
     }
 
     private void doTestGetSourceFormatWithPresentReadableImage(

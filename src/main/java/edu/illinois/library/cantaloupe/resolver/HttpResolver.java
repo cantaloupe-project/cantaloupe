@@ -246,8 +246,6 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                 }
                 return new HTTPStreamSource(client, info.getURI());
             } catch (ExecutionException e) {
-                // Jetty does not throw a clear "access denied" exception,
-                // and there are different causes depending on HTTP or HTTPS.
                 throw new AccessDeniedException(info.getURI().toString());
             } catch (InterruptedException | TimeoutException e) {
                 LOGGER.error(e.getMessage(), e);
