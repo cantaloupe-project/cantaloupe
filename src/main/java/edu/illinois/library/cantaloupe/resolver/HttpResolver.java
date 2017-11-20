@@ -272,11 +272,10 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
             if (Format.UNKNOWN.equals(sourceFormat)) {
                 sourceFormat = inferSourceFormatFromContentTypeHeader();
             }
-            // This could throw a variety of exceptions if inaccessible, not
-            // found, etc.
-            try (InputStream is = newStreamSource().newInputStream()) {
-                // no-op
-            }
+            // This will throw a variety of exceptions if the source is
+            // inaccessible, not found, etc., in order to comply with the
+            // StreamResolver contract.
+            newStreamSource();
         }
         return sourceFormat;
     }
