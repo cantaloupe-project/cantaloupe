@@ -43,111 +43,110 @@ public class FilesystemResolverTest extends BaseTest {
     }
 
     @Test
-    public void newStreamSourceWithPresentReadableFile() {
-        try {
-            assertNotNull(instance.newStreamSource());
-        } catch (IOException e) {
-            fail();
-        }
+    public void newStreamSourceWithPresentReadableFile() throws Exception {
+        assertNotNull(instance.newStreamSource());
     }
 
-    @Test
+    @Test(expected = AccessDeniedException.class)
     public void newStreamSourceWithPresentUnreadableFile() throws Exception {
-        File file = new File(instance.getPathname(File.separator));
+        File file = new File(instance.getPathname());
         try {
             file.setReadable(false);
             instance.newStreamSource();
             fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            fail();
-        } catch (AccessDeniedException e) {
-            // pass
         } finally {
             file.setReadable(true);
         }
     }
 
-    @Test
-    public void newStreamSourceWithMissingFile() {
-        try {
-            instance.setIdentifier(new Identifier("bogus"));
-            instance.newStreamSource();
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        } catch (IOException e) {
-            fail("Expected FileNotFoundException");
-        }
+    @Test(expected = FileNotFoundException.class)
+    public void newStreamSourceWithMissingFile() throws Exception {
+        instance.setIdentifier(new Identifier("bogus"));
+        instance.newStreamSource();
     }
 
     @Test
     public void getFileWithPresentReadableFile() throws Exception {
-        try {
-            assertNotNull(instance.getFile());
-        } catch (FileNotFoundException e) {
-            fail();
-        }
+        assertNotNull(instance.getFile());
     }
 
-    @Test
+    @Test(expected = AccessDeniedException.class)
     public void getFileWithPresentUnreadableFile() throws Exception {
-        File file = new File(instance.getPathname(File.separator));
+        File file = new File(instance.getPathname());
         try {
             file.setReadable(false);
             instance.getFile();
             fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            fail();
-        } catch (AccessDeniedException e) {
-            // pass
         } finally {
             file.setReadable(true);
         }
     }
 
-    @Test
+    @Test(expected = FileNotFoundException.class)
     public void getFileWithMissingFile() throws Exception {
-        try {
-            instance.setIdentifier(new Identifier("bogus"));
-            instance.getFile();
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        } catch (IOException e) {
-            fail("Expected FileNotFoundException");
-        }
+        instance.setIdentifier(new Identifier("bogus"));
+        instance.getFile();
     }
 
     // getPathname(Identifier)
 
     @Test
-    public void getPathnameWithBasicLookupStrategy() throws IOException {
+    public void getPathnameWithBasicLookupStrategyWithPrefix()
+            throws IOException {
         Configuration config = Configuration.getInstance();
-
         config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
-        // with prefix
+
         config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX, "/prefix/");
+        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_SUFFIX, "");
         instance.setIdentifier(new Identifier("id"));
-        assertEquals("/prefix/id", instance.getPathname(File.separator));
-        // with suffix
+        assertEquals("/prefix/id", instance.getPathname());
+    }
+
+    @Test
+    public void getPathnameWithBasicLookupStrategyWithSuffix()
+            throws IOException {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
+                "BasicLookupStrategy");
+
+        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX, "/prefix/");
         config.setProperty(Key.FILESYSTEMRESOLVER_PATH_SUFFIX, "/suffix");
-        assertEquals("/prefix/id/suffix", instance.getPathname(File.separator));
-        // without prefix or suffix
+        instance.setIdentifier(new Identifier("id"));
+        assertEquals("/prefix/id/suffix", instance.getPathname());
+    }
+
+    @Test
+    public void getPathnameWithBasicLookupStrategyWithoutPrefixOrSuffix()
+            throws IOException {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
+                "BasicLookupStrategy");
+
         config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX, "");
         config.setProperty(Key.FILESYSTEMRESOLVER_PATH_SUFFIX, "");
-        assertEquals("id", instance.getPathname(File.separator));
-        // test sanitization
-        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX, "");
-        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_SUFFIX, "");
+        instance.setIdentifier(new Identifier("id"));
+        assertEquals("id", instance.getPathname());
+    }
+
+    @Test
+    public void getPathnameSanitization() throws IOException {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
+                "BasicLookupStrategy");
+
+        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX, "/prefix/");
+        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_SUFFIX, "/suffix");
         instance.setIdentifier(new Identifier("id/../"));
-        assertEquals("id/", instance.getPathname("/"));
+        assertEquals("/prefix/id//suffix", instance.getPathname());
         instance.setIdentifier(new Identifier("/../id"));
-        assertEquals("/id", instance.getPathname("/"));
+        assertEquals("/prefix//id/suffix", instance.getPathname());
         instance.setIdentifier(new Identifier("id\\..\\"));
-        assertEquals("id\\", instance.getPathname("\\"));
+        assertEquals("/prefix/id\\/suffix", instance.getPathname());
         instance.setIdentifier(new Identifier("\\..\\id"));
-        assertEquals("\\id", instance.getPathname("\\"));
+        assertEquals("/prefix/\\id/suffix", instance.getPathname());
+        instance.setIdentifier(new Identifier("/id/../cats\\..\\dogs/../..\\foxes/.\\...\\/....\\.."));
+        assertEquals("/prefix//id/cats\\dogs\\foxes/suffix", instance.getPathname());
     }
 
     @Test
@@ -158,8 +157,7 @@ public class FilesystemResolverTest extends BaseTest {
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
-        assertEquals("/bla/" + IDENTIFIER,
-                instance.getPathname(File.separator));
+        assertEquals("/bla/" + IDENTIFIER, instance.getPathname());
     }
 
     @Test
@@ -213,16 +211,11 @@ public class FilesystemResolverTest extends BaseTest {
         assertEquals(Format.TIF, instance.getSourceFormat());
     }
 
-    @Test
+    @Test(expected = FileNotFoundException.class)
     public void getSourceFormatThrowsExceptionWhenResourceIsMissing()
             throws IOException {
-        try {
-            instance.setIdentifier(new Identifier("bogus"));
-            instance.getSourceFormat();
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        }
+        instance.setIdentifier(new Identifier("bogus"));
+        instance.getSourceFormat();
     }
 
 }
