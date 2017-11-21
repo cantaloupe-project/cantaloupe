@@ -8,6 +8,8 @@ import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.Dimension;
@@ -15,9 +17,14 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * <p>Image reader wrapping an ImageIO {@link javax.imageio.ImageReader}
@@ -46,6 +53,9 @@ public class ImageReader {
         IGNORE_CROP
     }
 
+    private static final Logger LOGGER = LoggerFactory.
+            getLogger(ImageReader.class);
+
     private static final Set<Format> SUPPORTED_FORMATS =
             Collections.unmodifiableSet(EnumSet.of(Format.BMP, Format.DCM,
                     Format.GIF, Format.JPG, Format.PNG, Format.TIF));
@@ -63,6 +73,28 @@ public class ImageReader {
         // ImageIO-using app in a container, any additional plugins bundled
         // within our app won't be picked up unless we scan again.
         ImageIO.scanForPlugins();
+    }
+
+    public static void logImageIOReaders() {
+        final List<Format> imageFormats = Arrays.stream(Format.values()).
+                filter(f -> Format.Type.IMAGE.equals(f.getType())).
+                collect(Collectors.toList());
+
+        for (Format format : imageFormats) {
+            Iterator<javax.imageio.ImageReader> it =
+                    ImageIO.getImageReadersByMIMEType(format.getPreferredMediaType().toString());
+            List<String> readerClasses = new ArrayList<>();
+
+            while (it.hasNext()) {
+                javax.imageio.ImageReader reader = it.next();
+                readerClasses.add(reader.getClass().getName());
+            }
+
+            LOGGER.info("ImageIO readers for {}.{}: {}",
+                    Format.class.getSimpleName(),
+                    format.getName(),
+                    readerClasses.stream().collect(Collectors.joining(", ")));
+        }
     }
 
     /**

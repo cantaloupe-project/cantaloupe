@@ -7,6 +7,8 @@ import edu.illinois.library.cantaloupe.cache.CacheWorkerRunner;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.logging.LoggerUtil;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.slf4j.Logger;
@@ -140,11 +142,14 @@ public class ApplicationContextListener implements ServletContextListener {
         LOGGER.info("Heap total: {}MB; max: {}MB",
                 runtime.totalMemory() / mb,
                 runtime.maxMemory() / mb);
-        LOGGER.info("Temp directory: {}", Application.getTempPath());
+        LOGGER.info("Effective temp directory: {}", Application.getTempPath());
         LOGGER.info("\uD83C\uDF48 Starting Cantaloupe {}",
                 Application.getVersion());
 
         handleVmArguments();
+
+        ImageReader.logImageIOReaders();
+        ImageWriter.logImageIOWriters();
 
         Configuration.getInstance().startWatching();
         CacheWorkerRunner.start();

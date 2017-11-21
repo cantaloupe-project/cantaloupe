@@ -2,15 +2,22 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
 import javax.media.jai.PlanarImage;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Image writer using ImageIO, capable of writing both Java 2D
@@ -18,12 +25,38 @@ import java.util.Set;
  */
 public class ImageWriter {
 
+    private static final Logger LOGGER = LoggerFactory.
+            getLogger(ImageWriter.class);
+
     private static final Set<Format> SUPPORTED_FORMATS =
             Collections.unmodifiableSet(EnumSet.of(Format.GIF, Format.JPG,
                     Format.PNG, Format.TIF));
 
     private OperationList opList;
     private Metadata sourceMetadata;
+
+    public static void logImageIOWriters() {
+        // TODO: get this info from somewhere else
+        final Format[] iiifOutputFormats = new Format[] {
+                Format.JPG, Format.PNG, Format.TIF, Format.GIF, Format.PDF,
+                Format.JP2, Format.WEBP };
+
+        for (Format format : iiifOutputFormats) {
+            Iterator<javax.imageio.ImageWriter> it =
+                    ImageIO.getImageWritersByMIMEType(format.getPreferredMediaType().toString());
+            List<String> writerClasses = new ArrayList<>();
+
+            while (it.hasNext()) {
+                javax.imageio.ImageWriter writer = it.next();
+                writerClasses.add(writer.getClass().getName());
+            }
+
+            LOGGER.info("ImageIO writers for {}.{}: {}",
+                    Format.class.getSimpleName(),
+                    format.getName(),
+                    writerClasses.stream().collect(Collectors.joining(", ")));
+        }
+    }
 
     /**
      * @return Set of supported output formats.
