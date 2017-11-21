@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -211,21 +212,13 @@ class FilesystemResolver extends AbstractResolver
      * @return Sanitized identifier.
      */
     private Identifier sanitizedIdentifier() {
-        String idStr = identifier.toString();
-
-        final String pattern1 = UNIX_PATH_SEPARATOR + "..";
-        final String pattern2 = ".." + UNIX_PATH_SEPARATOR;
-        final String pattern3 = WINDOWS_PATH_SEPARATOR + "..";
-        final String pattern4 = ".." + WINDOWS_PATH_SEPARATOR;
-
-        while (idStr.contains(pattern1) || idStr.contains(pattern2) ||
-                idStr.contains(pattern3) || idStr.contains(pattern4)) {
-            idStr = idStr.replace(pattern1, "");
-            idStr = idStr.replace(pattern2, "");
-            idStr = idStr.replace(pattern3, "");
-            idStr = idStr.replace(pattern4, "");
-        }
-        return new Identifier(idStr);
+        final String sanitized = StringUtil.sanitize(
+                identifier.toString(),
+                UNIX_PATH_SEPARATOR + "..",
+                ".." + UNIX_PATH_SEPARATOR,
+                WINDOWS_PATH_SEPARATOR + "..",
+                ".." + WINDOWS_PATH_SEPARATOR);
+        return new Identifier(sanitized);
     }
 
     @Override

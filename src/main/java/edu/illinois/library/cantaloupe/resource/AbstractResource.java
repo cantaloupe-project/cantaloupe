@@ -13,6 +13,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
+import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.Request;
 import org.restlet.data.CacheDirective;
@@ -451,8 +452,9 @@ public abstract class AbstractResource extends ServerResource {
                 String filename;
                 if (m.matches()) {
                     // Filter out filename-unsafe characters as well as ".."
-                    filename = m.group(1).replace("..", "_")
-                            .replaceAll(FILENAME_CHARACTERS, "_");
+                    filename = StringUtil.sanitize(m.group(1),
+                            Pattern.compile("\\.\\."),
+                            Pattern.compile(FILENAME_CHARACTERS));
                 } else {
                     filename = getContentDispositionFilename(identifier,
                             outputFormat);

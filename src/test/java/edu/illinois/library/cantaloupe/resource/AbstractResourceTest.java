@@ -125,11 +125,17 @@ public class AbstractResourceTest extends BaseTest {
         assertEquals(Disposition.TYPE_ATTACHMENT, disposition.getType());
         assertEquals("dogs.jpg", disposition.getFilename());
 
-        // attachment; filename="unsafe../\.jpg"
+        // attachment; filename="unsafe_path../\.jpg"
         disposition = resource.getRepresentationDisposition(
-                "attachment; filename=\"unsafe../\\.jpg\"", identifier, outputFormat);
+                "attachment; filename=\"unsafe_path../\\.jpg\"", identifier, outputFormat);
         assertEquals(Disposition.TYPE_ATTACHMENT, disposition.getType());
-        assertEquals("unsafe___.jpg", disposition.getFilename());
+        assertEquals("unsafe_path.jpg", disposition.getFilename());
+
+        // attachment; filename="unsafe_injection_.....//./.jpg"
+        disposition = resource.getRepresentationDisposition(
+                "attachment; filename=\"unsafe_injection_.....//./.jpg\"", identifier, outputFormat);
+        assertEquals(Disposition.TYPE_ATTACHMENT, disposition.getType());
+        assertEquals("unsafe_injection_.jpg", disposition.getFilename());
     }
 
     @Test
