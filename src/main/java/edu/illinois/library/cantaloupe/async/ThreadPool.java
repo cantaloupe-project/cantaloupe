@@ -98,9 +98,9 @@ public final class ThreadPool {
     }
 
     public void shutdown() {
-        lowPriorityPool.shutdown();
-        normalPriorityPool.shutdown();
-        highPriorityPool.shutdown();
+        lowPriorityPool.shutdownNow();
+        normalPriorityPool.shutdownNow();
+        highPriorityPool.shutdownNow();
         isShutdown = true;
     }
 
