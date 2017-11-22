@@ -6,7 +6,7 @@ title: Images
 <h1>Images</h1>
 
 <ul>
-  <li><a href="#Size%20Considerations">Size Considerations</a></li>
+  <li><a href="#Considerations">Considerations</a></li>
   <li><a href="#Sample%20Sizes">Sample Sizes</a></li>
   <li><a href="#Normalization">Normalization</a></li>
   <li><a href="#Source%20Formats">Source Formats</a>
@@ -29,19 +29,25 @@ title: Images
   <li><a href="#Metadata">Metadata</a></li>
 </ul>
 
-<h2 id="Size Considerations">Size Considerations</h2>
+<h2 id="Considerations">Considerations</h2>
 
-<p>Most requests to an image server will call for cropped tiles and/or downscaled derivatives of a source image. Both of these will contain fewer pixels than the entire source image. A basic image reader, disregarding efficiency, will try to read the entire source image into memory before the cropping and scaling operations are carried out. This works fine for small images, because they can be read quickly and won't consume much memory. But as the pixel count increases, an increasing burden is placed on the server, and requests take longer and longer to complete.</p>
+<p>Most requests to an image server will be for cropped tiles and/or downscaled derivatives of a source image. Both of these will contain fewer pixels than the entire source image. A basic image reader, disregarding efficiency, will try to read the entire source image into memory before the cropping and scaling operations are carried out. This works fine for small images, because they can be read quickly and won't consume much memory. But as pixel count increases, read time and memory consumption also increases; an increasing burden is placed on the server; and requests take longer to fulfill.</p>
 
-<p>It would be better if the image reader could read only the requested region, and even employ subsampling to read only the pixels within that region that are needed to satisfy the requested scale factor. This strategy would require a reader that is written to support it, as well as an image format capable of facilitating it. Two such formats&mdash;<a href="#JPEG2000">JPEG2000</a> and <a href="#TIFF">multi-resolution tiled TIFF</a>&mdash;are detailed later in this section.</p>
+<p>It would be better if the image reader could read only the requested region, and even employ subsampling to read only the pixels within that region that are needed to satisfy the requested scale factor. This would require three things:</p>
 
-<p>Cantaloupe tries to do the best it can with whatever source formats it is asked to serve. However, some image formats are inherently better suited for large sizes and some <a href="processors.html#Supported%20Source%20Formats">processor/format combinations</a> will perform better than others.</p>
+<ol>
+  <li>An image format that can be selectively read. Two such formats&mdash;<a href="#JPEG2000">JPEG2000</a> and <a href="#TIFF">multi-resolution tiled TIFF</a>&mdash;are detailed later in this section.</p></li>
+  <li>A reader capable of reading one of these formats selectively.</li>
+  <li>A data source capable of facilitating selective reads. Local filesystems are great for reading and seeking through arbitrary byte ranges, and most readers work best with them. (Some even require them.) Other sources may not be able to provide this kind of control.</li>
+</ol>
+
+<p>Cantaloupe tries to do the best it can with whatever source formats it is asked to serve, and from whatever data source. However, some image formats are inherently better suited for large sizes and some <a href="processors.html#Supported%20Source%20Formats">processor/format combinations</a> will perform better than others.</p>
 
 <hr>
 
 <h2 id="Sample Sizes">Sample Sizes</h2>
 
-<p>Most processors can read images that have more than 8 bits per sample. However, as most clients are incapable of making use of more than 8 bits per sample, version 3.4 introduces a <code>processor.limit_to_8_bits</code> configuration option that will cause all images with more than 8 bits per sample to be rescaled to 8 bits.</p>
+<p>Most processors can read images that have more than 8 bits per sample. However, as most web clients can't display more than 8 bits per sample, version 3.4 introduces a <code>processor.limit_to_8_bits</code> configuration option that will cause all images with more than 8 bits per sample to be rescaled to 8 bits.</p>
 
 <h2 id="Normalization">Normalization</h2>
 
@@ -61,7 +67,7 @@ title: Images
 
 <p>Most processors that support image sources support this format, some perhaps more efficiently than others, though this is untested.</p>
 
-<p>JPEG is not an ideal format for delivery of high-resolution images because the entire source image data must be read into memory before being decoded.</p>
+<p>JPEG is not an ideal format for delivery of high-resolution images because most readers need to read the entire image data into memory before decoding any part of it.</p>
 
 <h3 id="JPEG2000">JPEG2000</h3>
 
@@ -69,11 +75,11 @@ title: Images
 
 <p><a href="processors.html#KakaduProcessor">KakaduProcessor</a> is the most efficient processor for this format, and it performs very well, even with huge images. Unfortunately, Kakadu is not free.</p>
 
-<p><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> uses the <a href="http://www.openjpeg.org">OpenJPEG</a> decoder, which is one of the faster open-source JPEG2000 decoders. Another option to look at would be <a href="https://github.com/GrokImageCompression/grok">Grok</a>, which might work with this processor, but is untested.</p>
+<p><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> uses the <a href="http://www.openjpeg.org">OpenJPEG</a> decoder, which is one of the faster open-source JPEG2000 decoders. Another option to look at is <a href="https://github.com/GrokImageCompression/grok">Grok</a>, which might work with this processor, but is untested.</p>
 
 <p><a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a>'s JPEG2000 delegate, if installed, will also use the OpenJPEG library, but less efficiently as it won't use its region-extraction or level-reduction features.</p>
 
-<p><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> can read and write JPEG2000 using JasPer, if the necessary plugin is installed. This will probably not be fast enough to be usable for most purposes.</p>
+<p><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> can read and write JPEG2000 using JasPer, if the necessary plugin is installed. This will probably be too slow to be usable for most purposes.</p>
 
 <p>There is an ImageIO plugin for JPEG2000 based on JJ2000 which would bring support to Java2dProcessor and JaiProcessor, but it is not included because it is too slow to be usable.</p>
 
@@ -97,7 +103,7 @@ title: Images
 
 <h4 id="Multi-Resolution">Multi-Resolution (Pyramidal) TIFF</h4>
 
-<p>Multi-resolution TIFF is a special type of TIFF file that can be read more efficiently at reduced scales. In addition to the main image, a multi-resolution TIFF file will contain a sequence of progressively half-sized sub-images: for example, a 10000&times;10000 pixel main image would include derivatives of 5000&times;5000 pixels, 2500&times;2500 pixels, and so on, all in the same file.</p>
+<p>Multi-resolution TIFF is a special type of TIFF file that can be read more efficiently at reduced scales. In addition to the main image, a multi-resolution TIFF file will contain a sequence of progressively half-sized sub-images: for example, a 10000&times;10000 pixel main image would include versions of 5000&times;5000 pixels, 2500&times;2500 pixels, and so on, in the same file.</p>
 
 <p>Each of the levels in a multi-resolution TIFF file can be striped or tiled, just as in a mono-resolution file. Tiled and pyramidal encodings are complementary: the former improves efficiency with reduced regions at large scales, and the latter improves efficiency at reduced scales. For efficient deep zooming, TIFF images need to be pyramidal, and each level of the pyramid should be tiled.</p>
 
@@ -107,7 +113,7 @@ title: Images
 
 <h4 id="Processor Considerations">Processor Considerations</h4>
 
-<p>To reiterate: most processors can "read the TIFF format," but not all can read it efficiently. Currently, <a href="processors.html#Java2dProcessor">Java2dProcessor</a> and <a href="processors.html#JaiProcessor">JaiProcessor</a> both support multi-resolution TIFF, which is to say that they actually do read the embedded sub-images and choose the smallest one that can fulfill the request. Additionally, both exploit tiled sub-images. JaiProcessor, however, is able to use the JAI processing pipeline to do this more efficiently, so it is currently the best-performing processor for suitably-encoded high-resolution TIFF images.</p>
+<p>Most processors can "read the TIFF format," but not all can read it efficiently. Currently, <a href="processors.html#Java2dProcessor">Java2dProcessor</a> and <a href="processors.html#JaiProcessor">JaiProcessor</a> both support multi-resolution TIFF, which is to say that they read the embedded sub-images and choose the smallest one that can fulfill the request. Additionally, both exploit tiled sub-images. JaiProcessor, however, is able to use the JAI processing pipeline to do this more efficiently, so it is currently the best-performing processor for suitably-encoded high-resolution TIFF images.</p>
 
 <hr>
 

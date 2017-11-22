@@ -24,9 +24,9 @@ title: Resolvers
   </li>
 </ul>
 
-<p>Resolvers locate and provide access to source images. A resolver translates an identifier in a request URL to an image locator, such as a pathname, in the particular type of underlying storage it is written to interface with. It can then check whether the underlying object exists and is accessible, and if so, provide access to it to other image server components. The rest of the image server does not need to know where an image resides, be it on the filesystem, in a database, on a remote web server, or in cloud storage&mdash;it can simply ask the current resolver, whatever it may be, to provide a generic interface from which an image can be read.</p>
+<p>Resolvers locate and provide access to source images. A resolver translates an identifier in a request URL to an image locator, such as a pathname, in the particular type of underlying storage it is written to interface with. It can then check whether the underlying object exists and is accessible, and if so, provide access to it to other image server components. The rest of the image server does not need to know where an image resides, be it on the filesystem, on a remote web server, or wherver&mdash;it can just ask the resolver, whatever it may be, to provide a generic interface from which an image can be read.</p>
 
-<p>The interface in question may be a stream or a file. All resolvers can provide stream access, but only <a href="#FilesystemResolver">FilesystemResolver</a> can provide file access. This distinction is important because <a href="processors.html#Resolver%20Compatibility">not all processors can read from streams</a>.</p>
+<p>The interface in question may be a stream or a file. All resolvers can provide stream access, but only <a href="#FilesystemResolver">FilesystemResolver</a> can provide file access. This distinction is important because <a href="processors.html#Resolver%20Compatibility">not all processors can read from streams</a>. See <a href="images.html#Considerations">Image Considerations</a> for background on why this is an issue.</p>
 
 <h2 id="Selection">Selection</h2>
 
@@ -40,7 +40,7 @@ title: Resolvers
 
 <p>When a static resolver is not flexible enough, it is also possible to serve images from different sources simultaneously. For example, you may have some images stored on a filesystem, and others stored on Amazon S3. <em>If you can differentiate their sources based on their identifier in code</em>&mdash;either by analyzing the identifier string, or performing some kind of service request&mdash;you can use the <a href="delegate-script.html">delegate script</a> mechanism to write a simple Ruby method to tell the image server which resolver to use for a given request.</p>
 
-<p>To enable dynamic resolver selection, set the <code>resolver.delegate</code> configuration key to <code>true</code>. Then, implement the <code>get_resolver(identifier)</code> method in the delegate script, which takes in an identifier and returns a resolver name (like FilesystemResolver, HttpResolver, etc.) For example:</p>
+<p>To enable dynamic resolver selection, set the <code>resolver.delegate</code> configuration key to <code>true</code>. Then, implement the <code>get_resolver(identifier)</code> method in the delegate script, which takes an identifier argument and returns a resolver name. For example:</p>
 
 {% highlight ruby %}
 module Cantaloupe
@@ -91,7 +91,7 @@ end
 
 <h3 id="FilesystemResolver">FilesystemResolver</h3>
 
-<p>FilesystemResolver maps a URL identifier to a filesystem path, for retrieving images on a local or attached filesystem. In addition to being the most compatible resolver, <strong>this is also the most efficient resolver</strong> and may or may not be the only option for serving very large source images.</p>
+<p>FilesystemResolver maps a URL identifier to a filesystem path, for retrieving images on a local or attached filesystem. In addition to being the most compatible resolver, <strong>this is also the most efficient resolver</strong> and may be the only option for serving very large source images.</p>
 
 <p>For images with extensions that are missing or unrecognized, this resolver will check the "magic number" to determine type, which will add some overhead. It is therefore slightly more efficient to serve images with extensions.</p>
 
@@ -114,9 +114,9 @@ FilesystemResolver.BasicLookupStrategy.path_suffix =
 
 <div class="alert alert-info">If you are operating behind a reverse proxy that is not capable of passing encoded URL characters through without decoding them, see the <code>slash_substitude</code> configuration key.</div>
 
-<p>To prevent arbitrary directory traversal, BasicLookupStrategy will strip out <code>..{path separator}</code> and <code>{path separator}..</code> from identifiers before resolving the path.</p>
+<p>To prevent arbitrary directory traversal, BasicLookupStrategy will strip out <code>../</code>, <code>/..</code>, <code>..\</code>, and <code>\..</code> from identifiers before resolving the path.</p>
 
-<div class="alert alert-danger">Note: it may be dangerous to <strong>not</strong> use <code>path_prefix</code>. The shallower the path, the more of the filesystem that will be exposed.</div>
+<div class="alert alert-warning">It may be dangerous to <strong>not</strong> use <code>path_prefix</code>. The shallower the path, the more of the filesystem that will be exposed.</div>
 
 <h4 id="FilesystemResolverScriptLookupStrategy">ScriptLookupStrategy</h4>
 
@@ -190,34 +190,6 @@ module Cantaloupe
 end
 {% endhighlight %}
 
-<h5>Example 3: Query Solr to find the pathname corresponding to a given identifier</h5>
-
-<p>In this variation on the previous example, our web service is Solr, and instead of parsing a text string out of the response body, we treat the body as Ruby code.</p>
-
-{% highlight ruby %}
-require 'net/http'
-require 'cgi'
-
-module Cantaloupe
-  module FilesystemResolver
-    def self.get_pathname(identifier, context)
-      uri = 'http://localhost:8983/solr/collection1/select?q=' +
-          CGI.escape('id:"' + identifier + '"') +
-          '&amp;fl=pathname_si&amp;wt=ruby'
-      uri = URI.parse(uri)
-
-      http = Net::HTTP.new(uri.host, uri.port)
-      request = Net::HTTP::Get.new(uri.request_uri)
-      response = http.request(request)
-      return nil if response.code.to_i >= 400
-
-      results = eval(response.body)['response']['docs']
-      results.any? ? results.first['pathname_si'] : nil
-    end
-  end
-end
-{% endhighlight %}
-
 <hr>
 
 <h3 id="HttpResolver">HttpResolver</h3>
@@ -257,7 +229,7 @@ HttpResolver.url_suffix =
 
 <h3 id="JdbcResolver">JdbcResolver</h3>
 
-<p>JdbcResolver maps a URL identifier to an RDBMS BLOB field, for retrieving images from a relational database. It does not require a custom schema and can adapt to any schema. The downside of that is that some <a href="delegate-script.html">delegate script</a> methods must be implemented in order to obtain the information needed to run the SQL queries.</p>
+<p>JdbcResolver maps a URL identifier to a BLOB field, for retrieving images from a relational database. It does not require a custom schema and can adapt to any schema. The downside of that is that some <a href="delegate-script.html">delegate script</a> methods must be implemented in order to obtain the information needed to run the SQL queries.</p>
 
 <p>Cantaloupe does not include any JDBC drivers, so a driver JAR for the desired database must be obtained separately and saved somewhere on the classpath.</p>
 

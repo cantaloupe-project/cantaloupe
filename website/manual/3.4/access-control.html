@@ -17,7 +17,7 @@ title: Access Control
 
 <h2 id="Authentication">Authentication</h2>
 
-<p>HTTP Basic authentication can be enabled on image and information endpoints. To enable this, set the following keys in the configuration file:</p>
+<p>To enable HTTP Basic authentication on image and information endpoints, set the following configuration keys:</p>
 
 {% highlight properties %}
 endpoint.public.auth.basic.enabled = true
@@ -32,8 +32,8 @@ endpoint.public.auth.basic.secret = mypassword
 <p>A custom <a href="delegate-script.html">delegate method</a> can be used to implement authorization logic ranging from simple to complex. The method will be invoked upon every image request. Depending on its return value, it can either:</p>
 
 <ul>
-  <li>Authorize the request (by returning HTTP 200 OK);</li>
-  <li>Forbid the request (by returning HTTP 403 Forbidden); or</li>
+  <li>Authorize the request (by returning <code>HTTP 200 OK</code>);</li>
+  <li>Forbid the request (by returning <code>HTTP 403 Forbidden</code>); or</li>
   <li>Redirect to a different URL via a response code returned from the method.</li>
 </ul>
 
@@ -50,7 +50,7 @@ endpoint.public.auth.basic.secret = mypassword
 <h3 id="Authorization Examples">Examples</h3>
 
 <ul>
-  <li><a href="#example-1">Inspect the parameters</a></li>
+  <li><a href="#example-1">Inspect the arguments</a></li>
   <li><a href="#example-2">Allow only requests for half-scale images or smaller</a></li>
   <li><a href="#example-3">Allow only requests for identifiers matching a certain pattern</a></li>
   <li><a href="#example-4">Allow only requests for images set as "public" in a MySQL database</a></li>
@@ -63,7 +63,7 @@ endpoint.public.auth.basic.secret = mypassword
 
 <h4 id="example-1">Inspect the parameters</h4>
 
-<p>This method will print the parameters to the console.</p>
+<p>This method will print the method arguments to the console.</p>
 
 {% highlight ruby %}
 module Cantaloupe
@@ -123,7 +123,7 @@ end
 
 <p>(You will need to install the <a href="https://dev.mysql.com/downloads/connector/j/">MySQL JDBC driver</a> first.)</p>
 
-<div class="alert alert-danger">Note: The parameters passed to <code>authorized?</code> are not guaranteed to be safe. <code>identifier</code>, for example, will be exactly as supplied in the URL. Always prefer prepared statements over string concatenation in order to reduce susceptibility to SQL injection attacks.</div>
+<div class="alert alert-danger">Note: The parameters passed to <code>authorized?</code> are not guaranteed to be safe. <code>identifier</code>, for example, will be exactly as the application receives it. Prefer prepared statements over string concatenation in order to reduce vulnerability to injection attacks.</div>
 
 {% highlight ruby %}
 module Cantaloupe
@@ -183,7 +183,7 @@ module Cantaloupe
                        output_format, request_uri, request_headers, client_ip,
                        cookies)
     agent = request_headers.select{ |h, v| h.downcase == 'user-agent' }.first
-    agent == 'MyAllowedUserAgent/1.0'
+    agent.start_with?('MyAllowedUserAgent/')
   end
 end
 {% endhighlight %}

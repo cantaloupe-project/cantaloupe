@@ -38,11 +38,12 @@ title: Caching
   </li>
 </ul>
 
-<p>Cantaloupe offers a sophisticated and customizable caching subsystem that is capable of meeting a variety of needs while remaining easy to use. Three tiers of cache are available:</p>
+<p>Cantaloupe offers a sophisticated and customizable caching subsystem that is capable of meeting a variety of needs while remaining easy to use. Several tiers of cache are available:</p>
 
 <ol>
   <li><a href="#Client-Side Caching">Client-side caches</a>, which it has no control over but can provide hints to;</li>
   <li>A <a href="#Source%20Cache">source cache</a>, which caches source images locally on-demand (if they are not already local) for faster reading;</li>
+  <li>An <a href="#Info%20Cache">info cache</a>, which caches source image metadata in memory;</li>
   <li>A <a href="#Derivative%20Cache">derivative cache</a>, which caches processed images and source image metadata such as dimensions.</li>
 </ol>
 
@@ -67,34 +68,11 @@ cache.client.proxy_revalidate = false
 cache.client.no_transform = true
 {% endhighlight %}
 
-<p>These are reasonable defaults that tell clients they can keep cached images for 30 days (2592000 seconds).</p>
+<p>These are reasonable defaults that tell clients they can keep cached images for 2,592,000 seconds (30 days).</p>
 
 <div class="alert alert-info">Note: the Cache-Control header must have a particular structure&mdash;not just any combination of the above will work.</div>
 
-<p>The <code>Cache-Control</code> header works as follows:</p>
-
-<dl>
-  <dt><code>cache.client.enabled = true</code></dt>
-  <dd>
-    <dl>
-      <dt>HTTP 2xx responses</dt>
-      <dd>The <code>Cache-Control</code> header is returned according to the <code>cache.client.*</code> keys in the configuration.</dd>
-      <dt>HTTP 3xx responses</dt>
-      <dd>No <code>Cache-Control</code> header.</dd>
-      <dt>HTTP 4xx &amp; 5xx responses</dt>
-      <dd><code>Cache-Control: must-revalidate,no-cache,no-store</code></dd>
-    </dl>
-  </dd>
-  <dt><code>cache.client.enabled = false</code></dt>
-  <dd>
-    <dl>
-      <dt>HTTP 2xx &amp; 3xx responses</dt>
-      <dd>No <code>Cache-Control</code> header.</dd>
-      <dt>HTTP 4xx &amp; 5xx responses</dt>
-      <dd><code>Cache-Control: must-revalidate,no-cache,no-store</code></dd>
-    </dl>
-  </dd>
-</dl>
+<p>The <code>Cache-Control</code> header will be returned only in HTTP 2xx responses.</p>
 
 <hr>
 
@@ -102,13 +80,13 @@ cache.client.no_transform = true
 
 <h3 id="Source Cache">Source Cache</h3>
 
-<p>In a typical image server configuration, source images will be served from a local filesystem using <a href="resolvers.html#FilesystemResolver">FilesystemResolver</a>. There, they are already as local as they can be, so there would be no point in caching them (although a <a href="#Derivative%20Cache">derivative cache</a> could still be of great benefit).</p>
+<p>Commonly, source images will be served from a local filesystem using <a href="resolvers.html#FilesystemResolver">FilesystemResolver</a>. There, they are already as local as they can be, so there would be no point in caching them (although a <a href="#Derivative%20Cache">derivative cache</a> could still be of great benefit).</p>
 
-<p>As explained in the <a href="resolvers.html">Resolvers</a> section, though, images do not have to be served from a local filesystem&mdash;they can also be served from a remote web server, cloud storage, or what have you. The source cache can be beneficial when one of these non-filesystem sources performs poorer than ideal. Setting <code>cache.server.source</code> to <code>FilesystemCache</code> will cause all source images from non-FilesystemResolvers to be automatically downloaded and stored in the source cache.</p>
+<p>As explained in the <a href="resolvers.html">Resolvers</a> section, though, images do not have to be served from a local filesystem&mdash;they can also be served from a remote web server, cloud storage, or wherever. The source cache can be beneficial when one of these non-filesystem sources performs poorer than ideal. Setting <code>cache.server.source</code> to <code>FilesystemCache</code> will cause all source images from non-FilesystemResolvers to be automatically downloaded and stored in the source cache.</p>
 
 <p>Another reason for a source cache is to work around the <a href="processors.html#Resolver%20Compatibility">incompatibility between certain processors and resolvers</a>. Some processors are only capable of reading source images located on the filesystem. By setting <code>StreamProcessor.retrieval_strategy</code> to <code>CacheStrategy</code>, and then <a href="#FilesystemCache">configuring FilesystemCache</a>, the source cache will be utilized to deal with incompatible processor/resolver situations by automatically pre-downloading source images, This makes it possible to use something like <a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> with <a href="resolvers.html#AmazonS3Resolver">AmazonS3Resolver</a>.</p>
 
-<p>Idealy, all cloud services and so on would offer faster-than-light-latency seekable-stream access, all image readers would be able to read from them as efficiently as from the local filesystem, and there would be no need to deal with the added complexity of a source cache. But, that is not the reality. Cantaloupe tries to keep things simple by integrating the source cache into the larger caching architecture, so all of the information about <a href="#Modes%20of%20Operation">modes of operation</a> and <a href="#Maintenance">maintenance</a> is applicable to both the source and derivative caches.</p>
+<p>The source cache is integrated into the larger caching architecture, so all of the information about <a href="#Modes%20of%20Operation">modes of operation</a> and <a href="#Maintenance">maintenance</a> is applicable to both the source and derivative caches.</p>
 
 <p>Note that unlike the derivative cache, there is only one available source cache implementation&mdash;<a href="#FilesystemCache">FilesystemCache</a>&mdash;and it will be used independently of the derivative cache.</p>
 
@@ -131,7 +109,7 @@ cache.client.no_transform = true
 <ul>
   <li>Requests for full-sized, unaltered source images are not cached, and are instead streamed through with no processing.</li>
   <li>IIIF information response representations are not cached&mdash;only image metadata, which is the only expensive part to acquire. This means it is possible to change other configuration options that would affect the contents of information responses without invalidating the cache.</li>
-  <li>When derivative caching is enabled, "miss" responses are streamed to the client and cache simultaneously. If the cache I/O is slower than the connection to the client, response times may be adversely affected.</li>
+  <li>When derivative caching is enabled, "miss" responses are streamed to the client and cache simultaneously. If the cache I/O is slower than the connection to the client, response times may be impaired.</li>
   <li>The derivative cache is shared across endpoints. Requests for the same image from different endpoints will return the same cached image.</li>
 </ul>
 
@@ -139,7 +117,7 @@ cache.client.no_transform = true
 
 <h3 id="Info Cache">Info Cache</h3>
 
-<p>The info cache (added in version 3.4) caches image info objects in the Java heap. It operates independently of the derivative cache. When both are enabled, the info cache acts as a "level 1" cache in front of the "level 2" derivative cache:</p>
+<p>The info cache (added in version 3.4) caches image info objects in the Java heap, independently of the derivative cache. When both are enabled, the info cache acts as a "level 1" cache in front of the "level 2" derivative cache:</p>
 
 <ol>
   <li>Requested image infos are retrieved from the info cache, if available;</li>
@@ -149,7 +127,7 @@ cache.client.no_transform = true
 
 <p>The info cache can be enabled or disabled via the <code>cache.server.info.enabled</code> configuration key.</p>
 
-<p>The info cache is cluster-safe: when multiple instances are sharing the same derivative cache, there will never (for more than a brief instant) be an info in an instance's info cache that isn't also present in the derivative cache.</p>
+<p>The info cache is cluster-safe: when multiple instances are sharing the same derivative cache, there will never (for more than a short period of time) be an info in an instance's info cache that isn't also present in the derivative cache.</p>
 
 <p>The info cache does not respect the <code>cache.server.ttl_seconds</code> configuration key. Its content never expires.</p>
 
@@ -270,21 +248,19 @@ cache.client.no_transform = true
 
 <h4 id="HeapCache">HeapCache</h4>
 
-<p>HeapCache, available since version 3.4, caches derivative images and metadata in the Java heap, which is the main area of RAM available to the Java VM. This is the fastest of the caches, with the main drawbacks being that it is limited to the amount of available heap and cannot be shared across instances.</p>
+<p>HeapCache, available since version 3.4, caches derivative images and metadata in the Java heap, which is the main area of RAM available to the JVM. This is the fastest of the caches, with the main drawbacks being that it is limited to the amount of available heap and cannot be shared across instances.</p>
 
 <p>Unlike most of the other caches, this one size-limits content rather than time-limiting it. When the target size (<code>HeapCache.target_size</code>) has been exceeded, the minimum number of least-recently-accessed items are purged that will reduce it back down to this size. (The configured target size may be safely changed while the application is running.)</p>
 
 <p>Because this cache is not time-limited, <code>cache.server.ttl_seconds</code> does not apply, and, if enabled, the <a href="#Automatic%20Maintenance">cache worker</a> will have nothing to do, so will remain idle.</p>
 
-<p>When using this cache, ensure that your JVM heap is able to grow large enough to accommodate the desired target size (using the <code>-Xmx</code> VM option), and that you have enough RAM to accommodate this heap size.</p>
+<p>When using this cache, ensure that your heap is able to grow large enough to accommodate the desired target size (using the <code>-Xmx</code> VM option), and that you have enough RAM to accommodate this heap size.</p>
 
 <h5>Persistence</h5>
 
-<p>This cache can persist its contents to disk using the <code>HeapCache.persist</code> and <code>HeapCache.persist.filesystem.pathname</code> configuration keys. When persistence is enabled, the contents of the cache will be written to a file at shutdown, and loaded back in at startup.</p>
+<p>This cache can persist its contents to disk using the <code>HeapCache.persist</code> and <code>HeapCache.persist.filesystem.pathname</code> configuration keys. When persistence is enabled, the contents of the cache will be written to a file at shutdown, and loaded back in at startup. If persistence is disabled, the cache contents will be lost when the application exits.</p>
 
 <p>Some thought was given to storing cached data using the same on-disk format used by <a href="#FilesystemCache">FilesystemCache</a>, so that persisted data would be compatible between these caches. Unfortunately, this is currently not possible because of the one-way hashing used in the FilesystemCache format. Instead, the cache contents are serialized to a binary file.</p>
-
-<p>If persistence is disabled, the cache contents will be lost when the application exits.</p>
 
 <hr>
 
@@ -292,7 +268,7 @@ cache.client.no_transform = true
 
 <p>JdbcCache caches derivative images and metadata in relational database tables. To use this cache, a JDBC driver for your database must be installed on the classpath.</p>
 
-<p>JdbcCache has been tested with H2 1.4. It is known to <strong>not</strong> work with the official PostgreSQL driver, as of version 9.4.1207. Other databases may work, but are untested.</p>
+<p>JdbcCache is tested with the H2 database. It is known to <strong>not</strong> work with the official PostgreSQL driver, as of version 9.4.1207. Other databases may work, but are untested.</p>
 
 <p>JdbcCache can be configured with the following options:</p>
 
@@ -399,4 +375,4 @@ CREATE INDEX identifier_idx ON {JdbcCache.info_table} (identifier);
   <li><code>RedisCache.database</code></li>
 </ul>
 
-<p>Note that unlike the other caches, cache policy is configured on the Redis side, and <code>cache.server.ttl_seconds</code> will have no effect with this cache. Likewise, if enabled, the <a href="#Automatic%20Maintenance">cache worker</a> will have nothing to do so will remain idle.</p>
+<p>Note that unlike the other caches, cache policy is configured on the Redis side, and <code>cache.server.ttl_seconds</code> will have no effect with this cache. Likewise, if enabled, the <a href="#Automatic%20Maintenance">cache worker</a> will have nothing to do, so will remain idle.</p>

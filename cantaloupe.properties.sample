@@ -603,13 +603,14 @@ log.application.level = debug
 
 log.application.ConsoleAppender.enabled = true
 
+# N.B.: Don't enable FileAppender and RollingFileAppender simultaneously!
 log.application.FileAppender.enabled = false
-log.application.FileAppender.pathname = /path/to/logs/combined-application.log
+log.application.FileAppender.pathname = /path/to/logs/application.log
 
 log.application.RollingFileAppender.enabled = false
-log.application.RollingFileAppender.pathname = /path/to/logs/rolling-application.log
+log.application.RollingFileAppender.pathname = /path/to/logs/application.log
 log.application.RollingFileAppender.policy = TimeBasedRollingPolicy
-log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/rolling-application-%d{yyyy-MM-dd}.log
+log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/application-%d{yyyy-MM-dd}.log
 log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30
 
 # See the "SyslogAppender" section for a list of facilities:
@@ -626,13 +627,14 @@ log.application.SyslogAppender.facility = LOCAL0
 # Application log messages with a severity of WARN or greater can be copied
 # into a dedicated error log, which may make them easier to spot.
 
+# N.B.: Don't enable FileAppender and RollingFileAppender simultaneously!
 log.error.FileAppender.enabled = false
-log.error.FileAppender.pathname = /path/to/logs/combined-error.log
+log.error.FileAppender.pathname = /path/to/logs/error.log
 
 log.error.RollingFileAppender.enabled = false
-log.error.RollingFileAppender.pathname = /path/to/logs/rolling-app.log
+log.error.RollingFileAppender.pathname = /path/to/logs/error.log
 log.error.RollingFileAppender.policy = TimeBasedRollingPolicy
-log.error.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/rolling-app-%d{yyyy-MM-dd}.log
+log.error.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/error-%d{yyyy-MM-dd}.log
 log.error.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30
 
 #----------------------------------------
@@ -641,6 +643,7 @@ log.error.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30
 
 log.access.ConsoleAppender.enabled = false
 
+# N.B.: Don't enable FileAppender and RollingFileAppender simultaneously!
 log.access.FileAppender.enabled = false
 log.access.FileAppender.pathname = /path/to/logs/access.log
 

@@ -24,15 +24,15 @@ title: Processors
   </li>
 </ul>
 
-<p>Processors are responsible for reading source images from <a href="resolvers.html">resolvers</a> and transforming them according to request parameters. Processors are modular and pluggable. Particular processors can be assigned to handle particular source formats, and a fallback processor can be assigned to all others.</p>
+<p>Processors read source images from <a href="resolvers.html">resolvers</a> and transform them according to request parameters. Particular processors can be assigned to handle particular source formats, and a fallback processor can be assigned to all others.</p>
 
 <p>Different processors have different quality, compatibility, dependency, and performance characteristics. The ability to choose among different processors is intended to make it easy to add support for new image formats; improve support for existing image formats via the substitution of better codecs; and decouple the image server implementation from any one codec.</p>
 
-<p>In terms of format support, a distinction is made between the concepts of source format and output format. Available output formats may differ on a per-platform or per-instance basis depending on the source format.</p>
+<p>In terms of format support, a distinction is made between the concepts of source format and output format. Available output formats may differ on a per-processor basis depending on the source format.</p>
 
 <p>Supported source formats depend on the processor, and possibly installed
 libraries/delegates, etc., as well. Lists of these are displayed on the
-landing page, as well as in one of the tables below. A list of output formats supported <em>for a given source format</em> is contained within the response to an information request (such as <span class="filename">/iiif/2/{identifier}/info.json</span>).</p>
+landing page, as well as in one of the tables below. A list of output formats supported <em>for a given source format</em> is contained within the response to an information request (such as <span class="filename">/iiif/2/:identifier/info.json</span>).</p>
 
 <hr>
 

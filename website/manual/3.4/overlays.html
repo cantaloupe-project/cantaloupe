@@ -40,7 +40,7 @@ title: Overlays
 
 <p>An image overlay must be a 24-bit PNG image, either RGB or RGBA. It will be blended pixel-for-pixel into the output image.</p>
 
-<p>Overlay images can be located on the filesystem, and also, as of version 3.3, on a web server. Regardless, they are cached in memory after being loaded the first time, so there is no performance penalty for using web-hosted overlay images.</p>
+<p>Overlay images can be located on the filesystem, and also, since version 3.3, on a web server. Regardless, they are cached in memory after being loaded the first time, so there is no performance penalty for using web-hosted overlay images.</p>
 
 <div class="alert alert-info">Note: when using multiple image overlays, their filenames must all be different, regardless of where they reside.</div>
 
@@ -50,7 +50,7 @@ title: Overlays
 
 <h2 id="String Overlays">String Overlays</h2>
 
-<p>String overlays are dynamically rendered onto an image using Java 2D. The font, font size, font weight, color, stroke color, background color and opacity, etc., are configurable.</p>
+<p>String overlays are dynamically rendered onto an image using Java 2D. The font family, size, weight, color, stroke color, background color and opacity, etc., are configurable.</p>
 
 <p>Line breaks within the string (<code>\n</code>) are respected, enabling multi-line strings. Each line is auto-aligned to the edge of the image according to the <a href="#Positioning">overlay position</a>.</p>
 
@@ -70,7 +70,7 @@ title: Overlays
 
 <p>Perhaps you want to apply an image overlay to some of your images, and to others, you want to apply a string overlay, or no overlay. Perhaps you want to control overlays based on the client's IP address or user agent. Or, perhaps you only want to apply overlays to JPEG output images, and not GIFs. Or, perhaps you don't want to apply an overlay to images that have been rotated. All of this is possible by writing just a few lines of code.</p>
 
-<p>With the <code>Cantaloupe::overlay()</code> delegate method, you can tell the image server whether to apply an overlay in response to a particular request, and what its properties should be. An example of how this can be accomplished appears below:</p>
+<p>With the <code>overlay()</code> delegate method, you can tell the image server whether to apply an overlay in response to a particular request, and what its properties should be. As an example:</p>
 
 {% highlight ruby %}
 module Cantaloupe
@@ -106,7 +106,7 @@ module Cantaloupe
 
     # Render a string overlay for all other clients.
     {
-      'string' => "This dynamic string\nhas multiple lines",
+      'string' => "This string\nhas multiple lines",
       'position' => 'bottom left',
       'inset' => 5,
       'font' => 'Helvetica',

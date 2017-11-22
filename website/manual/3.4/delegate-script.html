@@ -16,7 +16,7 @@ title: Delegate Script
 
 <p>The delegate script mechanism enables the use of custom Ruby methods as "hooks" to provide dynamic information back to the image server. A truly customized image server can be created with minimal code.</p>
 
-<p>Delegate methods are invoked by a JRuby interpreter bundled into the image server. There is no need to install an external Ruby environment and no need to know Java or any of the image server's internal API; just type some code into a file, and go.</p>
+<p>Delegate methods are invoked by a JRuby interpreter bundled into the image server. There is no need to install an external Ruby environment and no need to know Java or any of the image server's internal API.</p>
 
 <p>Prior to version 3.2, the JRuby interpreter was compatible with Ruby 2.2. Since version 3.2, it has been compatible with version 2.3.</p>
 
@@ -38,7 +38,7 @@ title: Delegate Script
 
 <p>Because delegate methods will be called frequently, they should be written with efficiency in mind.</p>
 
-<div class="alert alert-danger">Note: generally, neither method arguments nor return values are sanitized or validated. <strong>Be very careful to write defensive, injection-aware code.</strong></div>
+<div class="alert alert-danger">Note: generally, neither method arguments nor return values are sanitized or validated. <strong>Be very careful to write defensive, injection-safe code.</strong></div>
 
 <h2 id="Gems">Gems</h2>
 
@@ -52,7 +52,7 @@ title: Delegate Script
 
 <p>Since version 3.3, the <code>delegate_script.cache.enabled</code> option is available to cache the results of delegate method invocations. The cache is an in-memory least-recently-used (LRU) cache with infinite time-to-live and a maximum size auto-computed based on the maximum JVM heap size. When the limit is approached, the oldest invocations will be purged automatically.</p>
 
-<p>Because the cache is in memory and not persisted, it will be cleared when the application is stopped.</p>
+<p>The cache is not persisted. It will be lost when the application is stopped.</p>
 
 <p>Note that cached invocations are <strong>not</strong> purged when the script file is edited and auto-reloaded.</p>
 
@@ -68,11 +68,11 @@ title: Delegate Script
 require 'java'
 
 logger = Java::edu.illinois.library.cantaloupe.script.Logger
-logger.trace('Trace-level message')
-logger.debug('Debug-level message')
-logger.info('Info-level message')
-logger.warn('Warning-level message')
-logger.error('Error-level message')
+logger.trace('Hello world')
+logger.debug('Hello world')
+logger.info('Hello world')
+logger.warn('Hello world')
+logger.error('Hello world')
 {% endhighlight %}
 
 <hr>
@@ -122,9 +122,9 @@ end
 <p>Using the example above, <code>get_pathname()</code> could be tested by adding the following line to the end of the script:
 
 {% highlight ruby %}
-puts Cantaloupe::FilesystemResolver::get_pathname('identifier-to-test')
+puts Cantaloupe::FilesystemResolver::get_pathname('identifier-to-test', {})
 {% endhighlight %}
 
 And running it on the command line with a command like: <code>ruby delegates.rb</code>. The method output will appear in the console.</p>
 
-<p>A catch, however, is that the <code>ruby</code> command will normally invoke the standard ("MRI") Ruby interpreter, and not the JRuby interpreter. While they mostly work the same, one thing to be aware of is that <em>gems with platform-native extensions will not work in JRuby</em>. For that reason, you might want to install a standalone <a href="http://jruby.org">JRuby interpreter</a> and test with that instead. (Something like <a href="http://rvm.io/">RVM</a> can make it easier to switch between different versions of the Ruby interpreter.)</p>
+<p>Note that the <code>ruby</code> command will normally invoke the standard ("MRI") Ruby interpreter, and not the JRuby interpreter. While they mostly work the same, one thing to be aware of is that <em>gems with platform-native extensions will not work in JRuby</em>. For that reason, you might want to install a standalone <a href="http://jruby.org">JRuby interpreter</a> and test with that instead. (Something like <a href="http://rvm.io/">RVM</a> can make it easier to switch between different versions of the Ruby interpreter.)</p>

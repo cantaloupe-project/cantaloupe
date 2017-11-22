@@ -6,7 +6,7 @@ title: Deployment
 <h1>Deployment</h1>
 
 <ul>
-  <li><a href="#OS">Operating System</a></li>
+  <li><a href="#Temporary%20Directory">Temporary Directory</a></li>
   <li><a href="#Hardware">Hardware</a>
     <ul>
       <li><a href="#HardwareCPU">CPU</a></li>
@@ -22,15 +22,18 @@ title: Deployment
     </ul>
   </li>
   <li><a href="#SSL/TLS">SSL/TLS</a></li>
+  <li><a href="#HTTP/2">HTTP/2</a></li>
 </ul>
 
-<p>This page gathers some miscellaneous notes on production deployment. It is not intended to be comprehensive, and there is plenty of relevant information in other sections as well.</p>
+<p>This page gathers some miscellaneous notes on production deployment.</p>
 
 <hr>
 
-<h2 id="OS">Operating System</h2>
+<h2 id="Temporary Directory">Temporary Directory</h2>
 
-<p>When running in standalone mode, the embedded Jetty server caches class files in the system temp directory. Most operating systems will automatically delete temp files older than <i>n</i> days. If Cantaloupe has been running for longer than that, and its cached classes disappear from underneath it, it can lead to <code>NoClassDefFoundError</code>s. Consider reconfiguring your OS's temp-cleaning strategy to clean up only at boot.</p>
+<p>When running in standalone mode, the embedded Jetty server, by default, caches class files in the system temp directory, which most operating systems will periodically clean out. If this happens while Cantaloupe is running, it can lead to <code>NoClassDefFoundError</code>s that can only be remedied by restarting the application.</p>
+
+<p>Consider either reconfiguring your OS's temp-cleaning strategy to work only at boot or shutdown, or using the <code>temp_pathname</code> configuration key (since version 3.4) to use a different location for temporary data.</p>
 
 <hr>
 
@@ -38,17 +41,17 @@ title: Deployment
 
 <h3 id="HardwareCPU">CPU</h3>
 
-<p>Response times tend to benefit from multiple fast CPU cores. Even if a particular processor doesn't support multithreading, the operating system is at least likely to schedule different processing threads (from simultaneous requests) on different cores.</p>
+<p>Cantaloupe uses the thread-per-request model, and maintains a thread pool to carry out certain tasks asynchronously. Also, some processors are able to spread image decoding work across multiple threads. As the operating system will schedule different threads on different cores, response times will benefit from multiple fast CPU cores, especially as load increases.</p>
 
 <p>That said, some source formats are more CPU-intensive than others. JPEG2000 via <a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a>, for example, will put a lot more pressure on the CPU than uncompressed TIFF via <a href="processors.html#Java2dProcessor">Java2dProcessor</a>.</p>
 
 <h3 id="HardwareMemory">Memory</h3>
 
-<p>Memory requirements will vary greatly depending on source format, source image size, request image size, and the number of concurrent requests. Ideally, it is best to serve only source formats that support tiling or that can be selectively decoded (like TIFF or JPEG2000). Images in other formats will have to be fully loaded into memory before being processed, at great cost.</p>
+<p>Memory requirements will vary greatly depending on source format, source image size, request image size, and the number of concurrent requests. Ideally, it is best to serve only source formats that support tiling or that can be selectively decoded (see <a href="images.html#Considerations">Image Considerations</a>).</p>
 
 <h3 id="HardwareStorage">Storage</h3>
 
-<p>Most source formats benefit from fast read performance&mdash;in terms of both latency and throughput&mdash;in the underlying storage system. Throughput is more important for less efficient source formats&mdash;like JPEG, PNG, and mono-resolution TIFF&mdash;especially as source image size increases. <a href="resolvers.html#FilesystemResolver">Local filesystem storage</a> is usually fastest, and often by a lot.</p>
+<p>Most source formats benefit from fast read performance&mdash;in terms of both latency and throughput&mdash;in the underlying storage system. Throughput is more important for less efficient source formats&mdash;like JPEG, PNG, and mono-resolution TIFF&mdash;especially as source image size increases. <a href="resolvers.html#FilesystemResolver">Local filesystem storage</a> usually performs best.</p>
 
 <hr>
 
@@ -56,7 +59,7 @@ title: Deployment
 
 <p>A <code>max_pixels</code> configuration option is available to limit the maximum returned size of processed images. This is a "safety net" to prevent clients from bogging down the server. It does not affect requests for full-sized unmodified images, which do not significantly load the server because they are streamed through with no processing.</p>
 
-<p>Note that the <code><a href="access-control.html#Authorization">authorized?</a></code> delegate script method can perform the same function as <code>max_pixels</code>, with more options for fine-grained control.</p>
+<p>Note that the <code><a href="access-control.html#Authorization">authorized?</a></code> delegate script method can perform the same function as <code>max_pixels</code>, with more granular control.</p>
 
 <hr>
 
@@ -152,3 +155,7 @@ title: Deployment
 <p>In standalone mode, Cantaloupe supports TLS connections over HTTPS, configurable via the <code>https.*</code> keys in the configuration file. The general process for getting this working is to add a signed x.509 certificate to either a Java KeyStore (JKS) or PKCS#12 key store, and then refer to the key store file with the <code>https.key_store_path</code> configuration option.</p>
 
 <p>HTTPS can also be enabled on a Servlet container or <a href="#Reverse-Proxying">reverse-proxying web server</a>, in which case Cantaloupe would require no special configuration.</p>
+
+<h2 id="HTTP/2">HTTP/2</h2>
+
+<p>HTTP/2 is supported since version 3.4 via the <code>http.http2.enabled</code> and <code>https.http2.enabled</code> configuration keys. H2C (unencrypted) works in Java 8 and 9, but H2S (encrypted) requires Java 9.</p>

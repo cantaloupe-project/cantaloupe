@@ -48,8 +48,7 @@ module Cantaloupe
   ##
   # Used to add additional keys to an information JSON response, including
   # `attribution`, `license`, `logo`, `service`, and other custom keys. See
-  # the [Image API specification]
-  # (http://iiif.io/api/image/2.1/#image-information).
+  # the [Image API specification](http://iiif.io/api/image/2.1/#image-information).
   #
   # @param identifier [String] Image identifier
   # @return [Hash] Hash that will be merged into IIIF Image API 2.x
