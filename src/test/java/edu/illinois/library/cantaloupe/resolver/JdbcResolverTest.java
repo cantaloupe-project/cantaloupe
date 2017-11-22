@@ -13,7 +13,6 @@ import org.junit.Test;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
@@ -45,22 +44,25 @@ public class JdbcResolverTest extends BaseTest {
                     "filename VARCHAR(255)," +
                     "media_type VARCHAR(255)," +
                     "image BLOB);";
-            PreparedStatement statement = conn.prepareStatement(sql);
-            statement.execute();
+            try (PreparedStatement statement = conn.prepareStatement(sql)) {
+                statement.execute();
+            }
 
             // insert some images
             sql = "INSERT INTO items (filename, media_type, image) VALUES (?, ?, ?)";
-            statement = conn.prepareStatement(sql);
-            statement.setString(1, "jpg.jpg");
-            statement.setString(2, "image/jpeg");
-            statement.setBinaryStream(3,
-                    new FileInputStream(TestUtil.getImage(IDENTIFIER.toString())));
-            statement.executeUpdate();
 
-            instance = new JdbcResolver();
-            instance.setIdentifier(IDENTIFIER);
-            instance.setContext(new RequestContext());
+            try (PreparedStatement statement = conn.prepareStatement(sql)) {
+                statement.setString(1, "jpg.jpg");
+                statement.setString(2, "image/jpeg");
+                statement.setBinaryStream(3,
+                        new FileInputStream(TestUtil.getImage(IDENTIFIER.toString())));
+                statement.executeUpdate();
+            }
         }
+
+        instance = new JdbcResolver();
+        instance.setIdentifier(IDENTIFIER);
+        instance.setContext(new RequestContext());
     }
 
     @After
@@ -68,40 +70,41 @@ public class JdbcResolverTest extends BaseTest {
         super.tearDown();
         try (Connection conn = JdbcResolver.getConnection()) {
             String sql = "DROP TABLE items;";
-            PreparedStatement statement = conn.prepareStatement(sql);
-            statement.execute();
+            try (PreparedStatement statement = conn.prepareStatement(sql)) {
+                statement.execute();
+            }
         }
     }
 
+    /* getSourceFormat() */
+
     @Test
-    public void testGetSourceFormat() throws IOException {
-        // get_media_type returns SQL
+    public void testGetSourceFormatWithPresentImage() throws Exception {
         instance.setIdentifier(new Identifier("jpg.jpg"));
         assertEquals(Format.JPG, instance.getSourceFormat());
+    }
+
+    @Test
+    public void testGetSourceFormatWithMissingImage() throws Exception {
         instance.setIdentifier(new Identifier("bogus"));
         assertEquals(Format.UNKNOWN, instance.getSourceFormat());
     }
 
+    /* newStreamSource() */
+
     @Test
-    public void testNewStreamSource() throws IOException {
-        // present, readable image
-        try {
-            instance.setIdentifier(new Identifier("jpg.jpg"));
-            assertNotNull(instance.newStreamSource());
-        } catch (IOException e) {
-            fail();
-        }
-        // missing image
-        try {
-            instance.setIdentifier(new Identifier("bogus"));
-            instance.newStreamSource();
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        } catch (IOException e) {
-            fail("Expected FileNotFoundException");
-        }
+    public void testNewStreamSourceWithPresentImage() throws Exception {
+        instance.setIdentifier(new Identifier("jpg.jpg"));
+        assertNotNull(instance.newStreamSource());
     }
+
+    @Test(expected = FileNotFoundException.class)
+    public void testNewStreamSourceWithMissingImage() throws Exception {
+        instance.setIdentifier(new Identifier("bogus"));
+        instance.newStreamSource();
+    }
+
+    /* getDatabaseIdentifier() */
 
     @Test
     public void testGetDatabaseIdentifier() throws Exception {
@@ -110,11 +113,15 @@ public class JdbcResolverTest extends BaseTest {
         assertEquals("cats.jpg", result);
     }
 
+    /* getLookupSql() */
+
     @Test
     public void testGetLookupSql() throws Exception {
         String result = instance.getLookupSql();
         assertEquals("SELECT image FROM items WHERE filename = ?", result);
     }
+
+    /* getMediaType() */
 
     @Test
     public void testGetMediaType() throws Exception {

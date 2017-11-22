@@ -14,7 +14,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 
 public class FilesystemResolverTest extends BaseTest {
@@ -42,6 +41,8 @@ public class FilesystemResolverTest extends BaseTest {
         instance.setContext(new RequestContext());
     }
 
+    /* newStreamSource() */
+
     @Test
     public void newStreamSourceWithPresentReadableFile() throws Exception {
         assertNotNull(instance.newStreamSource());
@@ -64,6 +65,8 @@ public class FilesystemResolverTest extends BaseTest {
         instance.setIdentifier(new Identifier("bogus"));
         instance.newStreamSource();
     }
+
+    /* getFile() */
 
     @Test
     public void getFileWithPresentReadableFile() throws Exception {
@@ -88,11 +91,11 @@ public class FilesystemResolverTest extends BaseTest {
         instance.getFile();
     }
 
-    // getPathname(Identifier)
+    /* getPathname(Identifier) */
 
     @Test
     public void getPathnameWithBasicLookupStrategyWithPrefix()
-            throws IOException {
+            throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
@@ -105,7 +108,7 @@ public class FilesystemResolverTest extends BaseTest {
 
     @Test
     public void getPathnameWithBasicLookupStrategyWithSuffix()
-            throws IOException {
+            throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
@@ -118,7 +121,7 @@ public class FilesystemResolverTest extends BaseTest {
 
     @Test
     public void getPathnameWithBasicLookupStrategyWithoutPrefixOrSuffix()
-            throws IOException {
+            throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
@@ -130,7 +133,7 @@ public class FilesystemResolverTest extends BaseTest {
     }
 
     @Test
-    public void getPathnameSanitization() throws IOException {
+    public void getPathnameSanitization() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
@@ -150,7 +153,7 @@ public class FilesystemResolverTest extends BaseTest {
     }
 
     @Test
-    public void getPathnameWithScriptLookupStrategy() throws IOException {
+    public void getPathnameWithScriptLookupStrategy() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
                 "ScriptLookupStrategy");
@@ -160,8 +163,10 @@ public class FilesystemResolverTest extends BaseTest {
         assertEquals("/bla/" + IDENTIFIER, instance.getPathname());
     }
 
+    /* getSourceFormat() */
+
     @Test
-    public void getSourceFormatByDetection() throws IOException {
+    public void getSourceFormatByDetection() throws Exception {
         instance.setIdentifier(new Identifier("bmp"));
         assertEquals(Format.BMP, instance.getSourceFormat());
 
@@ -188,7 +193,7 @@ public class FilesystemResolverTest extends BaseTest {
     }
 
     @Test
-    public void getSourceFormatByInference() throws IOException {
+    public void getSourceFormatByInference() throws Exception {
         instance.setIdentifier(new Identifier("bmp-rgb-64x56x8.bmp"));
         assertEquals(Format.BMP, instance.getSourceFormat());
 
@@ -211,9 +216,25 @@ public class FilesystemResolverTest extends BaseTest {
         assertEquals(Format.TIF, instance.getSourceFormat());
     }
 
+    @Test
+    public void getSourceFormatWithPresentReadableFile() throws Exception {
+        assertEquals(Format.JPG, instance.getSourceFormat());
+    }
+
+    @Test(expected = AccessDeniedException.class)
+    public void getSourceFormatWithPresentUnreadableFile() throws Exception {
+        File file = new File(instance.getPathname());
+        try {
+            file.setReadable(false);
+            instance.getSourceFormat();
+            fail("Expected exception");
+        } finally {
+            file.setReadable(true);
+        }
+    }
+
     @Test(expected = FileNotFoundException.class)
-    public void getSourceFormatThrowsExceptionWhenResourceIsMissing()
-            throws IOException {
+    public void getSourceFormatWithMissingFile() throws Exception {
         instance.setIdentifier(new Identifier("bogus"));
         instance.getSourceFormat();
     }
