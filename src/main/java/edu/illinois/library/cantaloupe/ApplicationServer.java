@@ -17,9 +17,9 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 
 /**
- * <p>Provides the web server in standalone mode.</p>
+ * <p>Provides the embedded Servlet container in standalone mode.</p>
  *
- * <p>This class is not used when running in a Servlet container.</p>
+ * <p>This class is not used when running in an external Servlet container.</p>
  */
 public class ApplicationServer {
 
@@ -77,24 +77,34 @@ public class ApplicationServer {
     }
 
     private void createServer() {
-        server = new Server();
-
         final WebAppContext context = new WebAppContext();
         context.setContextPath("/");
-        context.setServer(server);
-        // http://www.eclipse.org/jetty/documentation/current/ref-temporary-directories.html
+
+        // Jetty will extract the app into a temp directory that is, by
+        // default, the same as java.io.tmpdir. The OS may periodically clean
+        // out this directory, which will cause havoc if it happens while the
+        // application is running, so here we can override Jetty's temp
+        // directory location.
+        // See: http://www.eclipse.org/jetty/documentation/current/ref-temporary-directories.html
         context.setAttribute("org.eclipse.jetty.webapp.basetempdir",
                 Application.getTempPath().toString());
-        server.setHandler(context);
 
-        // Give the WebAppContext a different WAR to use depending on
-        // whether we are running standalone or from a WAR file.
+        // We also set it to NOT persist to avoid accumulating a bunch of
+        // stale exploded apps.
+        context.setPersistTempDirectory(false);
+
+        // Give the WebAppContext a different "WAR" to use depending on
+        // whether we are running from a WAR file or an IDE.
         final String warPath = StandaloneEntry.getWarFile().getAbsolutePath();
         if (warPath.endsWith(".war")) {
             context.setWar(warPath);
         } else {
             context.setWar("src/main/webapp");
         }
+
+        server = new Server();
+        context.setServer(server);
+        server.setHandler(context);
     }
 
     public int getAcceptQueueLimit() {
@@ -280,9 +290,9 @@ public class ApplicationServer {
                         connector = new ServerConnector(server,
                                 connectionFactory, alpn, http2, http1);
                     } else {
-                        System.err.println("ApplicationServer.start(): unable to " +
-                                "initialize secure HTTP/2 (JRE <9 or no ALPN " +
-                                "JAR on boot classpath)");
+                        System.err.println(getClass().getSimpleName() +
+                                ".start(): unable to initialize secure " +
+                                "HTTP/2 (JRE <9 or no ALPN JAR on boot classpath)");
                     }
                 }
 
