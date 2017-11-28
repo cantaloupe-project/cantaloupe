@@ -114,10 +114,14 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
     @Override
     public StreamSource newStreamSource() throws IOException {
-        getObject(); // This may throw a FileNotFoundException etc.
+        getObject().close(); // This may throw a FileNotFoundException etc.
         return new AmazonS3StreamSource();
     }
 
+    /**
+     * N.B.: Either the returned instance, or the return value of
+     * {@link S3Object#getObjectContent()}, must be closed.
+     */
     private S3Object getObject() throws IOException {
         AmazonS3 s3 = getClientInstance();
 
