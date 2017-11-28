@@ -183,7 +183,7 @@ class HeapCache implements DerivativeCache {
 
         @Override
         public void close() throws IOException {
-            logger.debug("Closing stream for {}", opList);
+            LOGGER.debug("Closing stream for {}", opList);
             Key key = itemKey(opList);
             Item item = new Item(wrappedStream.toByteArray());
             cache.put(key, item);
@@ -218,7 +218,7 @@ class HeapCache implements DerivativeCache {
 
         private final Logger logger = LoggerFactory.getLogger(Worker.class);
 
-        private static final int INTERVAL_SECONDS = 5;
+        private static final int INTERVAL_SECONDS = 10;
 
         @Override
         public void run() {
@@ -243,7 +243,7 @@ class HeapCache implements DerivativeCache {
 
     }
 
-    private static final Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(HeapCache.class);
 
     private final ConcurrentMap<Key, Item> cache = new ConcurrentHashMap<>();
@@ -268,7 +268,7 @@ class HeapCache implements DerivativeCache {
             // Create any necessary directories up to the parent.
             Files.createDirectories(path.getParent());
             // Write out the contents.
-            logger.info("dumpToPersistentStore(): dumping to {}...", path);
+            LOGGER.info("dumpToPersistentStore(): dumping to {}...", path);
 
             final long size = size();
             final long byteSize = getByteSize();
@@ -308,7 +308,7 @@ class HeapCache implements DerivativeCache {
                 cacheBuilder.build().writeTo(fos);
             }
 
-            logger.info("dumpToPersistentStore(): dumped {} items ({} bytes)",
+            LOGGER.info("dumpToPersistentStore(): dumped {} items ({} bytes)",
                     size, byteSize);
         } else {
             throw new IOException("dumpToPersistentStore(): " +
@@ -345,7 +345,7 @@ class HeapCache implements DerivativeCache {
         Info info = null;
         Item item = get(itemKey(identifier));
         if (item != null) {
-            logger.info("getImageInfo(): hit for {}", identifier);
+            LOGGER.info("getImageInfo(): hit for {}", identifier);
             try {
                 info = Info.fromJSON(new String(item.getData(), "UTF-8"));
             } catch (IOException e) {
@@ -414,7 +414,7 @@ class HeapCache implements DerivativeCache {
             ThreadPool.getInstance().submit(new Worker(),
                     ThreadPool.Priority.LOW);
         } catch (RejectedExecutionException e) {
-            logger.error("initialize(): {}", e.getMessage());
+            LOGGER.error("initialize(): {}", e.getMessage());
         }
     }
 
@@ -446,7 +446,7 @@ class HeapCache implements DerivativeCache {
         final Path path = Paths.get(pathname);
 
         if (Files.exists(path)) {
-            logger.info("loadFromPersistentStore(): reading {}...", path);
+            LOGGER.info("loadFromPersistentStore(): reading {}...", path);
 
             try (FileInputStream fis = new FileInputStream(path.toFile())) {
                 final HeapCacheProtos.Cache protoCache =
@@ -469,16 +469,16 @@ class HeapCache implements DerivativeCache {
                     cache.put(key, item);
                 }
 
-                logger.info("loadFromPersistentStore(): loaded {} items ({} bytes)",
+                LOGGER.info("loadFromPersistentStore(): loaded {} items ({} bytes)",
                         size(), getByteSize());
             } catch (FileNotFoundException e) {
-                logger.error("loadFromPersistentStore(): file not found: {}",
+                LOGGER.error("loadFromPersistentStore(): file not found: {}",
                         e.getMessage());
             } catch (IOException e) {
-                logger.error("loadFromPersistentStore(): {}", e.getMessage());
+                LOGGER.error("loadFromPersistentStore(): {}", e.getMessage());
             }
         } else {
-            logger.info("loadFromPersistentStore(): does not exist: {}", path);
+            LOGGER.info("loadFromPersistentStore(): does not exist: {}", path);
         }
     }
 
@@ -497,11 +497,11 @@ class HeapCache implements DerivativeCache {
         final Key key = itemKey(opList);
         final Item item = cache.get(key);
         if (item != null) {
-            logger.info("newDerivativeImageOutputStream(): hit for {}", opList);
+            LOGGER.info("newDerivativeImageOutputStream(): hit for {}", opList);
             touch(item);
             return new NullOutputStream();
         } else {
-            logger.info("newDerivativeImageOutputStream(): miss; caching {}",
+            LOGGER.info("newDerivativeImageOutputStream(): miss; caching {}",
                     opList);
             isDirty.lazySet(true);
             return new HeapCacheOutputStream(opList);
@@ -510,20 +510,20 @@ class HeapCache implements DerivativeCache {
 
     @Override
     public void purge() throws CacheException {
-        logger.info("purge(): purging {} items", cache.size());
+        LOGGER.info("purge(): purging {} items", cache.size());
         cache.clear();
     }
 
     @Override
     public void purge(Identifier identifier) {
-        logger.info("purge(Identifier): purging {}...", identifier);
+        LOGGER.info("purge(Identifier): purging {}...", identifier);
         final String imageId = itemKey(identifier).getIdentifier();
         cache.keySet().removeIf(k -> k.getIdentifier().equals(imageId));
     }
 
     @Override
     public void purge(OperationList opList) {
-        logger.info("purge(OperationList): purging {}...", opList.toString());
+        LOGGER.info("purge(OperationList): purging {}...", opList.toString());
         cache.remove(itemKey(opList));
     }
 
@@ -537,7 +537,7 @@ class HeapCache implements DerivativeCache {
             final long targetSize = getTargetByteSize();
             long excess = size - targetSize;
             excess = (excess < 0) ? 0 : excess;
-            logger.debug("purgeExcess(): cache size: {}; target: {}; excess: {}",
+            LOGGER.debug("purgeExcess(): cache size: {}; target: {}; excess: {}",
                     size, targetSize, excess);
             if (excess > 0) {
                 long purgedItems = 0;
@@ -554,7 +554,7 @@ class HeapCache implements DerivativeCache {
                     }
                 }
                 isDirty.lazySet(true);
-                logger.info("purgeExcess(): purged {} items ({} bytes)",
+                LOGGER.info("purgeExcess(): purged {} items ({} bytes)",
                         purgedItems, purgedSize);
             }
         }
@@ -565,13 +565,13 @@ class HeapCache implements DerivativeCache {
      */
     @Override
     public void purgeExpired() {
-        logger.info("purgeExpired() is not supported by this cache; aborting");
+        LOGGER.info("purgeExpired() is not supported by this cache; aborting");
     }
 
     @Override
     public void put(Identifier identifier, Info imageInfo)
             throws CacheException {
-        logger.info("put(): caching info for {}", identifier);
+        LOGGER.info("put(): caching info for {}", identifier);
         isDirty.lazySet(true);
         Key key = itemKey(identifier);
         try {
@@ -602,7 +602,7 @@ class HeapCache implements DerivativeCache {
             try {
                 dumpToPersistentStore();
             } catch (IOException e) {
-                logger.error(e.getMessage());
+                LOGGER.error(e.getMessage());
             }
         }
     }
