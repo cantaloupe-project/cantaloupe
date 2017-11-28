@@ -20,7 +20,7 @@ public class ProcessorFactoryTest extends BaseTest {
     }
 
     @Test
-    public void getAllProcessors() {
+    public void testGetAllProcessors() {
         assertEquals(8, ProcessorFactory.getAllProcessors().size());
     }
 
@@ -29,7 +29,7 @@ public class ProcessorFactoryTest extends BaseTest {
      * <code>processor.jpg = Java2dProcessor</code>.
      */
     @Test
-    public void newProcessorWithSupportedAssignedFormat() throws Exception {
+    public void testNewProcessorWithSupportedAssignedFormat() throws Exception {
         Configuration.getInstance().setProperty("processor.jpg",
                 Java2dProcessor.class.getSimpleName());
         assertTrue(instance.newProcessor(Format.JPG) instanceof Java2dProcessor);
@@ -44,7 +44,7 @@ public class ProcessorFactoryTest extends BaseTest {
      * </code>
      */
     @Test
-    public void newProcessorWithUnsupportedAssignedFormat() throws Exception {
+    public void testNewProcessorWithUnsupportedAssignedFormat() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty("processor.webp",
                 Java2dProcessor.class.getSimpleName());
@@ -64,7 +64,7 @@ public class ProcessorFactoryTest extends BaseTest {
      * <code>processor.fallback = Java2dProcessor</code>.
      */
     @Test
-    public void newProcessorWithFormatSupportedByFallback() throws Exception {
+    public void testNewProcessorWithFormatSupportedByFallback() throws Exception {
         Configuration.getInstance().setProperty(Key.PROCESSOR_FALLBACK,
                 Java2dProcessor.class.getSimpleName());
         assertTrue(instance.newProcessor(Format.JPG) instanceof Java2dProcessor);
@@ -73,10 +73,10 @@ public class ProcessorFactoryTest extends BaseTest {
     /**
      * Assert that an UnsupportedFormatException is thrown when we try to get
      * an unsupported format when
-     * <code>processor.fallback = GraphicsMagickProcessor</code>.
+     * <code>processor.fallback = Java2dProcessor</code>.
      */
     @Test
-    public void newProcessorWithFormatUnsupportedByFallback() throws Exception {
+    public void testNewProcessorWithFormatUnsupportedByFallback() throws Exception {
         Configuration.getInstance().setProperty(Key.PROCESSOR_FALLBACK,
                 Java2dProcessor.class.getSimpleName());
         try {
@@ -93,13 +93,13 @@ public class ProcessorFactoryTest extends BaseTest {
      * assigned to the requested format and no fallback processor defined.
      */
     @Test
-    public void newProcessorWithFormatUnsupportedByFallbackAndNoFallback()
+    public void testNewProcessorWithFormatUnsupportedByFallbackAndNoFallback()
             throws Exception {
         try {
             instance.newProcessor(Format.WEBP);
             fail("Expected exception");
         } catch (ClassNotFoundException e) {
-            assertEquals(e.getMessage(), "A fallback processor is not defined.");
+            assertEquals(e.getMessage(), "A fallback processor is not set.");
         }
     }
 
@@ -108,15 +108,14 @@ public class ProcessorFactoryTest extends BaseTest {
      * assigned to the requested format does not exist.
      */
     @Test
-    public void newProcessorWithUnknownProcessor() throws Exception {
+    public void testNewProcessorWithUnrecognizedProcessor() throws Exception {
         Configuration.getInstance().setProperty("processor.jpg",
                 "AmazingFakeProcessor");
         try {
             instance.newProcessor(Format.JPG);
             fail("Expected exception");
         } catch (ClassNotFoundException e) {
-            assertEquals(e.getMessage(),
-                    "edu.illinois.library.cantaloupe.processor.AmazingFakeProcessor");
+            assertEquals("AmazingFakeProcessor does not exist", e.getMessage());
         }
     }
 
@@ -125,32 +124,44 @@ public class ProcessorFactoryTest extends BaseTest {
      * assigned to the requested format does not exist.
      */
     @Test
-    public void newProcessorWithUnknownFallbackProcessor() throws Exception {
+    public void testNewProcessorWithUnrecognizedFallbackProcessor()
+            throws Exception {
         Configuration.getInstance().setProperty(Key.PROCESSOR_FALLBACK,
                 "AmazingFakeProcessor");
         try {
             instance.newProcessor(Format.JPG);
             fail("Expected exception");
         } catch (ClassNotFoundException e) {
-            assertEquals(e.getMessage(),
-                    "edu.illinois.library.cantaloupe.processor.AmazingFakeProcessor");
+            assertEquals("AmazingFakeProcessor does not exist", e.getMessage());
         }
     }
 
+    /**
+     * Assert that an {@link UnsupportedSourceFormatException} is thrown for
+     * {@link Format#UNKNOWN}.
+     */
     @Test
-    public void newProcessorWithMisconfiguredProcessor() throws Exception {
+    public void testNewProcessorWithUnknownFormat() throws Exception {
+        Configuration.getInstance().setProperty(Key.PROCESSOR_FALLBACK,
+                Java2dProcessor.class.getSimpleName());
+        try {
+            instance.newProcessor(Format.UNKNOWN);
+            fail("Expected exception");
+        } catch (UnsupportedSourceFormatException e) {
+            assertEquals(e.getMessage(),
+                    "Java2dProcessor does not support this source format");
+        }
+    }
+
+    @Test(expected = InitializationException.class)
+    public void testNewProcessorWithMisconfiguredProcessor() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_FALLBACK,
                 GraphicsMagickProcessor.class.getSimpleName());
         config.setProperty(Key.GRAPHICSMAGICKPROCESSOR_PATH_TO_BINARIES,
                 "/bogus/bogus/bogus");
 
-        try {
-            instance.newProcessor(Format.JPG);
-            fail("Expected InitializationException");
-        } catch (InitializationException e) {
-            // pass
-        }
+        instance.newProcessor(Format.JPG);
     }
 
 }
