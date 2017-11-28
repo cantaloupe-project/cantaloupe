@@ -42,6 +42,16 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
     }
 
     @Test
+    public void testDoPostWithEmptyRequestBody() throws Exception {
+        try {
+            client.setContentType(MediaType.APPLICATION_JSON);
+            client.send();
+        } catch (ResourceException e) {
+            assertEquals(400, e.getStatusCode());
+        }
+    }
+
+    @Test
     public void testDoPostWithMalformedRequestBody() throws Exception {
         try {
             client.setEntity("{ this is: invalid\" }");

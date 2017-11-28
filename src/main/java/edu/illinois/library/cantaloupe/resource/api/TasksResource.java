@@ -67,7 +67,7 @@ public class TasksResource extends AbstractAPIResource {
             setStatus(Status.SUCCESS_ACCEPTED);
             commitCustomResponseHeaders();
             return new EmptyRepresentation();
-        } catch (JsonProcessingException e) {
+        } catch (NullPointerException | JsonProcessingException e) {
             throw new IllegalArgumentException(e);
         }
     }
