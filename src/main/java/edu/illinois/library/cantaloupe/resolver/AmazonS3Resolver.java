@@ -68,6 +68,10 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
         return new InputStreamStreamSource(object.getObjectContent());
     }
 
+    /**
+     * N.B.: Either the returned instance, or the return value of
+     * {@link S3Object#getObjectContent()}, must be closed.
+     */
     private S3Object getObject() throws IOException {
         AmazonS3 s3 = getClientInstance();
 
