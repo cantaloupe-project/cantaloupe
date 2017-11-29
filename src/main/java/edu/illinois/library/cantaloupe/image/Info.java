@@ -69,7 +69,9 @@ public final class Info {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof Image) {
+            if (obj == this) {
+                return true;
+            } else if (obj instanceof Image) {
                 final Image other = (Image) obj;
                 if (other.width == this.width && other.height == this.height) {
                     if (this.tileWidth != null && other.tileWidth != null &&
@@ -261,7 +263,9 @@ public final class Info {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Info) {
+        if (obj == this) {
+            return true;
+        } else if (obj instanceof Info) {
             Info other = (Info) obj;
             return other.getImages().equals(getImages()) &&
                     other.getSourceFormat().equals(getSourceFormat());
