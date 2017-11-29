@@ -25,8 +25,9 @@ import org.restlet.resource.Directory;
 import org.restlet.resource.ResourceException;
 import org.restlet.routing.Router;
 import org.restlet.routing.Template;
+import org.restlet.security.Authenticator;
 import org.restlet.security.ChallengeAuthenticator;
-import org.restlet.security.MapVerifier;
+import org.restlet.security.LocalVerifier;
 import org.restlet.service.CorsService;
 import org.restlet.service.StatusService;
 
@@ -114,6 +115,48 @@ public class RestletApplication extends Application {
 
     }
 
+    /**
+     * Verifies given user credentials against a single set of stored user
+     * credentials in the application configuration.
+     */
+    private static class ConfigurationVerifier extends LocalVerifier {
+
+        private final Key userKey;
+        private final Key secretKey;
+
+        /**
+         * @param userKey   Key under which the username is stored.
+         * @param secretKey Key under which the secret is stored.
+         */
+        ConfigurationVerifier(Key userKey, Key secretKey) {
+            this.userKey = userKey;
+            this.secretKey = secretKey;
+        }
+
+        @Override
+        public char[] getLocalSecret(String givenUser) {
+            final Configuration config = Configuration.getInstance();
+            if (config.getString(userKey).equals(givenUser)) {
+                return config.getString(secretKey).toCharArray();
+            }
+            return null;
+        }
+
+        /**
+         * Overrides super to disallow an empty stored secret.
+         */
+        @Override
+        public int verify(String identifier, char[] secret) {
+            final Configuration config = Configuration.getInstance();
+            final String configSecret = config.getString(secretKey);
+            if (configSecret == null || configSecret.isEmpty()) {
+                return RESULT_INVALID;
+            }
+            return super.verify(identifier, secret);
+        }
+
+    }
+
     public static final String ADMIN_PATH = "/admin";
     public static final String ADMIN_CONFIG_PATH = "/admin/configuration";
     public static final String CACHE_PATH = "/cache";
@@ -138,78 +181,46 @@ public class RestletApplication extends Application {
         getServices().add(corsService);
     }
 
-    private ChallengeAuthenticator newAdminAuthenticator()
-            throws ConfigurationException {
-        final Configuration config = Configuration.getInstance();
-        final String secret = config.getString(Key.ADMIN_SECRET);
-        if (secret == null || secret.isEmpty()) {
-            throw new ConfigurationException(Key.ADMIN_SECRET +
-                    " is not set. The Control Panel will be unavailable.");
-        }
-
-        final MapVerifier verifier = new MapVerifier();
-        verifier.getLocalSecrets().put("admin", secret.toCharArray());
-        final ChallengeAuthenticator auth = new ChallengeAuthenticator(
+    private Authenticator newAdminAuthenticator() {
+        ChallengeAuthenticator auth = new ChallengeAuthenticator(
                 getContext(), ChallengeScheme.HTTP_BASIC, ADMIN_REALM);
-        auth.setVerifier(verifier);
+        auth.setVerifier(new ConfigurationVerifier(
+                Key.ADMIN_USERNAME, Key.ADMIN_SECRET));
         return auth;
     }
 
-    private ChallengeAuthenticator newAPIAuthenticator()
-            throws ConfigurationException {
-        final Configuration config = Configuration.getInstance();
-        final String secret = config.getString(Key.API_SECRET);
-        if (secret == null || secret.isEmpty()) {
-            throw new ConfigurationException(Key.API_SECRET +
-                    " is not set. The API will be unavailable.");
-        }
-
-        final MapVerifier verifier = new MapVerifier();
-        verifier.getLocalSecrets().put(config.getString(Key.API_USERNAME),
-                secret.toCharArray());
-        final ChallengeAuthenticator auth = new ChallengeAuthenticator(
+    private Authenticator newAPIAuthenticator() {
+        ChallengeAuthenticator auth = new ChallengeAuthenticator(
                 getContext(), ChallengeScheme.HTTP_BASIC, API_REALM);
-        auth.setVerifier(verifier);
+        auth.setVerifier(new ConfigurationVerifier(
+                Key.API_USERNAME, Key.API_SECRET));
         return auth;
     }
 
-    private ChallengeAuthenticator newPublicEndpointAuthenticator()
+    private Authenticator newPublicEndpointAuthenticator()
             throws ConfigurationException {
         final Configuration config = Configuration.getInstance();
 
         if (config.getBoolean(Key.BASIC_AUTH_ENABLED, false)) {
-            final String username = config.getString(Key.BASIC_AUTH_USERNAME, "");
-            final String secret = config.getString(Key.BASIC_AUTH_SECRET, "");
+            getLogger().log(Level.INFO,
+                    "Enabling HTTP Basic authentication for public endpoints");
 
-            if (username != null && !username.isEmpty() && secret != null
-                    && !secret.isEmpty()) {
-                getLogger().log(Level.INFO,
-                        "Enabling HTTP Basic authentication for public endpoints");
-
-                final ChallengeAuthenticator auth = new ChallengeAuthenticator(
-                        getContext(), ChallengeScheme.HTTP_BASIC, PUBLIC_REALM) {
-                    @Override
-                    protected int beforeHandle(Request request, Response response) {
-                        final String path = request.getResourceRef().getPath();
-                        if (path.startsWith(IIIF_PATH)) {
-                            return super.beforeHandle(request, response);
-                        }
-                        response.setStatus(Status.SUCCESS_OK);
-                        return CONTINUE;
+            final ChallengeAuthenticator auth = new ChallengeAuthenticator(
+                    getContext(), ChallengeScheme.HTTP_BASIC, PUBLIC_REALM) {
+                @Override
+                protected int beforeHandle(Request request, Response response) {
+                    final String path = request.getResourceRef().getPath();
+                    if (path.startsWith(IIIF_PATH)) {
+                        return super.beforeHandle(request, response);
                     }
-                };
+                    response.setStatus(Status.SUCCESS_OK);
+                    return CONTINUE;
+                }
+            };
 
-                final MapVerifier verifier = new MapVerifier();
-                verifier.getLocalSecrets().put(username, secret.toCharArray());
-
-                auth.setVerifier(verifier);
-                return auth;
-            } else {
-                throw new ConfigurationException("Public endpoint " +
-                        "authentication is enabled in the configuration, but " +
-                        Key.BASIC_AUTH_USERNAME + " and/or " +
-                        Key.BASIC_AUTH_SECRET + " are not set");
-            }
+            auth.setVerifier(new ConfigurationVerifier(
+                    Key.BASIC_AUTH_USERNAME, Key.BASIC_AUTH_SECRET));
+            return auth;
         } else {
             getLogger().info("Public endpoint authentication is disabled (" +
                     Key.BASIC_AUTH_ENABLED + " = false)");
@@ -275,39 +286,31 @@ public class RestletApplication extends Application {
 
         ////////////////////////// Admin routes ///////////////////////////
 
-        try {
-            ChallengeAuthenticator adminAuth = newAdminAuthenticator();
-            adminAuth.setNext(AdminResource.class);
-            router.attach(ADMIN_PATH, adminAuth);
+        Authenticator adminAuth = newAdminAuthenticator();
+        adminAuth.setNext(AdminResource.class);
+        router.attach(ADMIN_PATH, adminAuth);
 
-            adminAuth = newAdminAuthenticator();
-            adminAuth.setNext(edu.illinois.library.cantaloupe.resource.admin.ConfigurationResource.class);
-            router.attach(ADMIN_CONFIG_PATH, adminAuth);
-        } catch (ConfigurationException e) {
-            getLogger().log(Level.INFO, e.getMessage());
-        }
+        adminAuth = newAdminAuthenticator();
+        adminAuth.setNext(edu.illinois.library.cantaloupe.resource.admin.ConfigurationResource.class);
+        router.attach(ADMIN_CONFIG_PATH, adminAuth);
 
         /////////////////////////// API routes ////////////////////////////
 
-        try {
-            ChallengeAuthenticator apiAuth = newAPIAuthenticator();
-            apiAuth.setNext(edu.illinois.library.cantaloupe.resource.api.ConfigurationResource.class);
-            router.attach(CONFIGURATION_PATH, apiAuth);
+        Authenticator apiAuth = newAPIAuthenticator();
+        apiAuth.setNext(edu.illinois.library.cantaloupe.resource.api.ConfigurationResource.class);
+        router.attach(CONFIGURATION_PATH, apiAuth);
 
-            apiAuth = newAPIAuthenticator();
-            apiAuth.setNext(CacheResource.class);
-            router.attach(CACHE_PATH + "/{identifier}", apiAuth);
+        apiAuth = newAPIAuthenticator();
+        apiAuth.setNext(CacheResource.class);
+        router.attach(CACHE_PATH + "/{identifier}", apiAuth);
 
-            apiAuth = newAPIAuthenticator();
-            apiAuth.setNext(TasksResource.class);
-            router.attach(TASKS_PATH, apiAuth);
+        apiAuth = newAPIAuthenticator();
+        apiAuth.setNext(TasksResource.class);
+        router.attach(TASKS_PATH, apiAuth);
 
-            apiAuth = newAPIAuthenticator();
-            apiAuth.setNext(TaskResource.class);
-            router.attach(TASKS_PATH + "/{uuid}", apiAuth);
-        } catch (ConfigurationException e) {
-            getLogger().log(Level.INFO, e.getMessage());
-        }
+        apiAuth = newAPIAuthenticator();
+        apiAuth.setNext(TaskResource.class);
+        router.attach(TASKS_PATH + "/{uuid}", apiAuth);
 
         ////////////////////////// Other routes ///////////////////////////
 
@@ -324,9 +327,9 @@ public class RestletApplication extends Application {
         dir.setNegotiatingContent(false);
         router.attach(STATIC_ROOT_PATH, dir);
 
-        // Hook up IIIF endpoint authentication
+        // Hook up public endpoint authentication
         try {
-            ChallengeAuthenticator endpointAuth = newPublicEndpointAuthenticator();
+            Authenticator endpointAuth = newPublicEndpointAuthenticator();
             if (endpointAuth != null) {
                 endpointAuth.setNext(router);
                 return endpointAuth;

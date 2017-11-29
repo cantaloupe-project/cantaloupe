@@ -18,13 +18,15 @@ title: Change Log
       <li>Image and information endpoints return <code>HTTP 501 Not Implemented</code>, rather than <code>500 Internal Server Error</code>, when the selected processor does not support the requested source format.</li>
       <li>Image requests may include a <code>?response-content-disposition</code> query argument to suggest a response <code>Content-Disposition</code>.</li>
       <li>Added several HTTP API methods for cache management.</li>
+      <li>Changes to HTTP Basic authorization settings in all endpoints take effect without restarting.</li>
+      <li>The username used to access the Control Panel is configurable.</li>
     </ul>
   </li>
   <li>Resolvers
     <ul>
       <li>Efficiency improvements in HttpResolver.</li>
       <li>The <code>HttpResolver::get_url()</code> delegate method may return a hash containing authentication credentials.</li>
-      <li>Added an option to HttpResolver to trust all SSL certificates.</li>
+      <li>Added an option to HttpResolver to trust all certificates.</li>
       <li>AmazonS3Resolver and AzureStorageResolver attempt to infer a source format from the object/blob key if not able to do so from the identifier or from object/blob metadata.</li>
       <li>AmazonS3Resolver falls back to obtaining credentials from various other sources (see the user manual) when they are not set in the config file. (Thanks to @jweisman)</li>
       <li>Resolver delegates are passed an additional context parameter. (Thanks to @jonathangreen)</li>

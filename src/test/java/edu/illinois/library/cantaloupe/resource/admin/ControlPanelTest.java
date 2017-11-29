@@ -25,6 +25,7 @@ import static org.junit.Assert.*;
 public class ControlPanelTest extends ResourceTest {
 
     private static final int WAIT_AFTER_SUBMIT = 2000;
+    private static final String USERNAME = "admin";
     private static final String SECRET = "secret";
 
     private static WebDriver webDriver;
@@ -34,6 +35,7 @@ public class ControlPanelTest extends ResourceTest {
     public void setUp() throws Exception {
         super.setUp();
         Configuration config = Configuration.getInstance();
+        config.setProperty(Key.ADMIN_USERNAME, USERNAME);
         config.setProperty(Key.ADMIN_SECRET, SECRET);
         config.setProperty(Key.RESOLVER_STATIC, "FilesystemResolver");
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");

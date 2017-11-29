@@ -17,6 +17,7 @@ title: Upgrading
       <li><code>https.http2.enabled</code></li>
       <li><code>http.accept_queue_limit</code></li>
       <li><code>endpoint.iiif.min_size</code></li>
+      <li><code>endpoint.admin.username</code></li>
       <li><code>HttpResolver.trust_all_certs</code></li>
       <li><code>processor.psd</code></li>
       <li><code>processor.sgi</code></li>
@@ -32,6 +33,8 @@ title: Upgrading
   <li>Rename the following keys:
     <ul>
       <li><code>auth.*</code> to <code>endpoint.public.auth.*</code></li>
+      <li><code>admin.enabled</code> to <code>endpoint.admin.enabled</code></li>
+      <li><code>admin.password</code> to <code>endpoint.admin.secret</code></li>
       <li><code>PdfBoxProcessor.dpi</code> to <code>processor.dpi</code></li>
       <li><code>cache.source</code> to <code>cache.server.source</code></li>
       <li><code>cache.derivative</code> to <code>cache.server.derivative</code></li>

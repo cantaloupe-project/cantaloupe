@@ -25,6 +25,7 @@ public class AdminResourceTest extends ResourceTest {
         super.setUp();
 
         final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.ADMIN_USERNAME, USERNAME);
         config.setProperty(Key.ADMIN_SECRET, SECRET);
 
         client = newClient("", USERNAME, SECRET,
@@ -86,13 +87,15 @@ public class AdminResourceTest extends ResourceTest {
     @Test
     public void testEnabled() throws Exception {
         Configuration config = Configuration.getInstance();
-        // enabled
         config.setProperty(Key.ADMIN_ENABLED, true);
 
         Response response = client.send();
         assertEquals(200, response.getStatus());
+    }
 
-        // disabled
+    @Test
+    public void testDisabled() throws Exception {
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.ADMIN_ENABLED, false);
         try {
             client.send();

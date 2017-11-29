@@ -12,7 +12,7 @@ title: Remote Management
 
 <h2 id="Control Panel">Control Panel</h2>
 
-<p>The Control Panel is a web-based administrative interface with monitoring and configuration capabilities. It is disabled by default. To enable it, set <code>admin.enabled</code> to <code>true</code> and set a password in <code>admin.password</code>. Then, navigate to <span class="filename">/admin</span> in a web browser and log in with that password and a username of <code>admin</code>.</p>
+<p>The Control Panel is a web-based administrative interface with configuration and monitoring capabilities. It is disabled by default. To enable it, set <code>endpoint.admin.enabled</code> to <code>true</code> and set a password in <code>endpoint.admin.secret</code>. Then, navigate to <span class="filename">/admin</span> in a web browser and log in with those credentials.</p>
 
 <p>Changes made in the Control Panel will instantly update the application's configuration, although some configuration key changes won't take effect until the application is restarted. They will also be written to the configuration file within a few seconds.</p>
 

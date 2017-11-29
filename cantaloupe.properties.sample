@@ -35,11 +35,6 @@ https.key_password = myPassword
 # !! Maximum size of the HTTP(S) request queue. Set to 0 to use the default.
 http.accept_queue_limit = 0
 
-# Enables the Control Panel, at /admin.
-admin.enabled = false
-# Password to access the Control Panel. (The username is "admin".)
-admin.password =
-
 # Base URI to use for internal links, such as Link headers and JSON-LD
 # @id values, in a reverse-proxy context. This should only be used when
 # X-Forwarded-* headers cannot be used instead. (See the user manual.)
@@ -104,6 +99,11 @@ endpoint.iiif.min_tile_size = 1024
 # If true, requests for sizes other than those specified in an info.json
 # response will be denied.
 endpoint.iiif.2.restrict_to_sizes = false
+
+# Enables the Control Panel, at /admin.
+endpoint.admin.enabled = false
+endpoint.admin.username = admin
+endpoint.admin.secret =
 
 # Enables the administrative HTTP API. (See the user manual.)
 endpoint.api.enabled = false
