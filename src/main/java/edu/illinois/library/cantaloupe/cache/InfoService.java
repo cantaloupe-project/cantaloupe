@@ -22,15 +22,20 @@ public class InfoService {
             getLogger(InfoService.class);
 
     /**
-     * It's not known in advance how much space a typical info is going to
-     * consume. This is a reasonable estimate (in bytes).
+     * We can't know the average size of an info in advance, but 100 bytes is
+     * a reasonable estimate for an image with no other embedded subimages.
+     * Infos for multiresolution images will be bigger. It's better to
+     * overestimate this than underestimate it.
      */
-    private static final int EXPECTED_AVERAGE_INFO_SIZE = 200;
+    private static final int EXPECTED_AVERAGE_INFO_SIZE = 150;
 
     /**
      * Cached infos will consume, at most, this much of max heap.
+     *
+     * Of course, infos are tiny and in typical use they'll never consume
+     * anywhere near this much of a reasonable-sized heap.
      */
-    private static final float MAX_HEAP_PERCENT = 0.2f;
+    private static final float MAX_HEAP_PERCENT = 0.1f;
 
     private static volatile InfoService instance;
 
