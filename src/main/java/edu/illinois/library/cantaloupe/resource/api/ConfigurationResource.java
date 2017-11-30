@@ -40,12 +40,12 @@ public class ConfigurationResource extends AbstractAPIResource {
         final Map<?, ?> submittedConfig = new ObjectMapper().readValue(
                 rep.getStream(), HashMap.class);
 
+        LOGGER.info("Updating {} configuration keys", submittedConfig.size());
+
         // Copy configuration keys and values from the request JSON payload to
         // the application configuration.
         for (final Object key : submittedConfig.keySet()) {
-            final Object value = submittedConfig.get(key);
-            LOGGER.debug("Setting {} = {}", key, value);
-            config.setProperty((String) key, value);
+            config.setProperty((String) key, submittedConfig.get(key));
         }
 
         config.save();
