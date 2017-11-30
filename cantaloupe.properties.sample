@@ -66,7 +66,7 @@ delegate_script.enabled = false
 # !! This can be an absolute path, or a filename; if only a filename is
 # specified, it will be searched for in the same folder as this file, and
 # then the current working directory.
-delegate_script.pathname = delegates.rb
+delegate_script.pathname = delegates-3.4.rb
 
 # Enables the invocation cache, which caches method invocations and return
 # values in memory. See the user manual for more information.
