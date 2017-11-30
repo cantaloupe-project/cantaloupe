@@ -45,8 +45,7 @@ var Configuration = function(data) {
 
 };
 
-Configuration.ENDPOINT = window.location + '/configuration';
-
+Configuration.ENDPOINT = $('input[name=cl-admin-uri]').val() + '/configuration';
 
 /**
  * @param config {Configuration}
@@ -232,7 +231,7 @@ var Form = function(config) {
 
 var StatusUpdater = function() {
 
-    var STATUS_ENDPOINT = window.location + '/../status';
+    var STATUS_ENDPOINT = $('input[name=cl-admin-uri]').val() + '/../status';
 
     this.update = function() {
         var memoryStatusSection = $('#cl-status-memory');

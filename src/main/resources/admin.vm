@@ -16,6 +16,8 @@
 
 <body id="cl-landing">
 
+<input type="hidden" name="cl-admin-uri" value="$adminUri"/>
+
 <div class="container-fluid">
     <div class="clearfix">
         <header>
