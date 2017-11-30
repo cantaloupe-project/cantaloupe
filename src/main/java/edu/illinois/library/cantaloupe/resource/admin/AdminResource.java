@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Scale;
+import edu.illinois.library.cantaloupe.processor.InitializationException;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
@@ -171,7 +172,9 @@ public class AdminResource extends AbstractAdminResource {
                 assignments.put(format,
                         new ProcessorProxy(new ProcessorFactory().newProcessor(format)));
             } catch (UnsupportedSourceFormatException e) {
-                // noop
+                // nothing we can do
+            } catch (InitializationException e) {
+                // nothing we can do
             }
         }
         vars.put("processorAssignments", assignments);
