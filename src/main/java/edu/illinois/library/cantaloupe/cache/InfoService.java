@@ -79,10 +79,6 @@ public class InfoService {
         objectCache = new ObjectCache<>(maxCount);
     }
 
-    public long getObjectCacheSize() {
-        return objectCache.size();
-    }
-
     /**
      * <p>Returns an {@link Info} for the source image corresponding to the
      * given identifier.</p>
@@ -130,6 +126,14 @@ public class InfoService {
             }
         }
         return info;
+    }
+
+    public long getObjectCacheMaxSize() {
+        return objectCache.maxSize();
+    }
+
+    public long getObjectCacheSize() {
+        return objectCache.size();
     }
 
     /**

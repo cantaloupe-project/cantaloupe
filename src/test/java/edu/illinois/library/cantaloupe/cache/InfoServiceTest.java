@@ -97,6 +97,25 @@ public class InfoServiceTest extends BaseTest {
         assertNull(info);
     }
 
+    /* getObjectCacheSize() */
+
+    @Test
+    public void testGetObjectCacheSize() throws Exception {
+        assertEquals(0, instance.getObjectCacheSize());
+
+        final Identifier identifier = new Identifier("cats");
+        final Info info = new Info(500, 300);
+        instance.putInObjectCache(identifier, info);
+        assertEquals(1, instance.getObjectCacheSize());
+    }
+
+    /* getObjectCacheMaxSize() */
+
+    @Test
+    public void testGetObjectCacheMaxSize() {
+        assertTrue(instance.getObjectCacheMaxSize() > 1000);
+    }
+
     /* getOrReadInfo() */
 
     @Test

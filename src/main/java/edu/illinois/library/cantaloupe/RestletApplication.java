@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
 import edu.illinois.library.cantaloupe.resource.TrailingSlashRemovingResource;
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
+import edu.illinois.library.cantaloupe.resource.admin.StatusResource;
 import edu.illinois.library.cantaloupe.resource.api.CacheResource;
 import edu.illinois.library.cantaloupe.resource.api.TaskResource;
 import edu.illinois.library.cantaloupe.resource.api.TasksResource;
@@ -159,6 +160,7 @@ public class RestletApplication extends Application {
 
     public static final String ADMIN_PATH = "/admin";
     public static final String ADMIN_CONFIG_PATH = "/admin/configuration";
+    public static final String ADMIN_STATUS_PATH = "/status";
     public static final String CACHE_PATH = "/cache";
     public static final String CONFIGURATION_PATH = "/configuration";
     public static final String IIIF_PATH = "/iiif";
@@ -293,6 +295,10 @@ public class RestletApplication extends Application {
         adminAuth = newAdminAuthenticator();
         adminAuth.setNext(edu.illinois.library.cantaloupe.resource.admin.ConfigurationResource.class);
         router.attach(ADMIN_CONFIG_PATH, adminAuth);
+
+        adminAuth = newAdminAuthenticator();
+        adminAuth.setNext(StatusResource.class);
+        router.attach(ADMIN_STATUS_PATH, adminAuth);
 
         /////////////////////////// API routes ////////////////////////////
 

@@ -230,11 +230,82 @@ var Form = function(config) {
 
 };
 
+var StatusUpdater = function() {
+
+    var STATUS_ENDPOINT = window.location + '/../status';
+
+    this.update = function() {
+        var memoryStatusSection = $('#cl-status-memory');
+        var cacheStatusSection = $('#cl-status-internal-caches');
+        var vmStatusSection = $('#cl-status-vm');
+
+        $.ajax({
+            dataType: 'json',
+            url: STATUS_ENDPOINT,
+            data: null,
+            success: function(data) {
+                // Status section
+                memoryStatusSection.find('tr:nth-child(1) > td:last-child')
+                    .text(data.vm.usedHeap + ' MB');
+                memoryStatusSection.find('tr:nth-child(2) > td:last-child')
+                    .text(data.vm.freeHeap + ' MB');
+                memoryStatusSection.find('tr:nth-child(3) > td:last-child')
+                    .text(data.vm.totalHeap + ' MB');
+                memoryStatusSection.find('tr:nth-child(4) > td:last-child')
+                    .text(data.vm.maxHeap + ' MB');
+
+                var usedPercent = data.vm.usedPercent * 100;
+                var memoryBarClass = 'progress-bar-success';
+                if (usedPercent > 80) {
+                    memoryBarClass = "progress-bar-danger";
+                } else if (usedPercent > 70) {
+                    memoryBarClass = "progress-bar-warning";
+                }
+
+                memoryStatusSection.find('div.progress-bar')
+                    .attr('aria-valuenow', usedPercent)
+                    .removeClass('progress-bar-success progress-bar-warning progress-bar-danger')
+                    .addClass(memoryBarClass)
+                    .css('width', usedPercent + '%')
+                    .find('.sr-only')
+                    .text(usedPercent + '% memory used');
+
+                // Internal Caches section
+                cacheStatusSection.find('tr:nth-child(1) > td:last-child')
+                    .text(data.infoCache.size);
+                cacheStatusSection.find('tr:nth-child(2) > td:last-child')
+                    .text(data.infoCache.maxSize);
+                cacheStatusSection.find('tr:nth-child(3) > td:last-child')
+                    .text(data.delegateMethodInvocationCache.size);
+                cacheStatusSection.find('tr:nth-child(4) > td:last-child')
+                    .text(data.delegateMethodInvocationCache.maxSize);
+
+                // VM info section
+                vmStatusSection.find('tr:last-child > td:last-child')
+                    .text(data.vm.uptime);
+
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr);
+                console.error(status);
+                console.error(error);
+            }
+        });
+    };
+
+};
+
 $(document).ready(function() {
     $('.cl-help').popover({
         placement: 'auto',
         html: true
     });
+
+    var updater = new StatusUpdater();
+    updater.update();
+    setInterval(function() {
+        updater.update();
+    }, 5000);
 
     // Download configuration data into a Configuration instance, and
     // initialize a Form instance on success.
@@ -247,6 +318,7 @@ $(document).ready(function() {
         },
         error: function(xhr, status, error) {
             console.error(xhr);
+            console.error(status);
             console.error(error);
             alert('Failed to load the configuration: ' + error);
         }

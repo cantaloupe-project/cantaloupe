@@ -8,6 +8,8 @@ import com.github.benmanes.caffeine.cache.Caffeine;
  */
 public final class ObjectCache<K, V> {
 
+    private final long maxSize;
+
     // This is thread-safe.
     private Cache<K, V> store;
 
@@ -15,6 +17,7 @@ public final class ObjectCache<K, V> {
      * Creates an instance with the given max size.
      */
     public ObjectCache(long maxSize) {
+        this.maxSize = maxSize;
         store = Caffeine.newBuilder().maximumSize(maxSize).build();
     }
 
@@ -24,6 +27,10 @@ public final class ObjectCache<K, V> {
 
     public V get(K key) {
         return store.getIfPresent(key);
+    }
+
+    public long maxSize() {
+        return maxSize;
     }
 
     public void purge() {

@@ -28,6 +28,14 @@ class HeapInvocationCache implements InvocationCache {
         return store.get(key);
     }
 
+    /**
+     * @return Auto-computed max size.
+     */
+    @Override
+    public long maxSize() {
+        return store.maxSize();
+    }
+
     @Override
     public void purge() {
         store.purge();

@@ -24,6 +24,11 @@ public class HeapInvocationCacheTest {
     }
 
     @Test
+    public void testMaxSize() {
+        assertTrue(instance.maxSize() > 100);
+    }
+
+    @Test
     public void testPurge() {
         instance.put("key", "value");
         assertEquals(1, instance.size());

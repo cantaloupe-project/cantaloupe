@@ -36,6 +36,11 @@ public class ObjectCacheTest extends BaseTest {
     }
 
     @Test
+    public void testMaxSize() {
+        assertEquals(MAX_SIZE, instance.maxSize());
+    }
+
+    @Test
     public void testPurge() {
         instance.put("1", "1");
         instance.put("2", "2");

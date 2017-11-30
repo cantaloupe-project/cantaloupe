@@ -67,39 +67,39 @@
                 <div role="tabpanel" class="tab-pane active" id="cl-status">
                     <div class="row">
                         <div class="col-sm-6">
-                            <section>
+                            <section id="cl-status-memory">
                                 <h2>Memory</h2>
                                 <table class="table table-striped">
                                     <tr>
                                         <td>Used Heap</td>
-                                        <td>$usedHeap MB</td>
+                                        <td></td>
                                     </tr>
                                     <tr>
                                         <td>Available Heap</td>
-                                        <td>$freeHeap MB</td>
+                                        <td></td>
                                     </tr>
                                     <tr>
                                         <td>Total Heap</td>
-                                        <td>$totalHeap MB</td>
+                                        <td></td>
                                     </tr>
                                     <tr>
                                         <td>Max Heap</td>
-                                        <td>$maxHeap MB</td>
+                                        <td></td>
                                     </tr>
                                 </table>
 
                                 <div class="progress">
-                                    <div class="progress-bar $memoryBarClass"
-                                         aria-valuenow="$memoryBarValue"
+                                    <div class="progress-bar"
+                                         aria-valuenow="0"
                                          aria-valuemin="0" aria-valuemax="100"
-                                         style="width: $memoryBarValue%">
-                                        <span class="sr-only">$memoryBarValue% memory used</span>
+                                         style="width: 0%">
+                                        <span class="sr-only"></span>
                                     </div>
                                 </div>
                             </section>
                         </div>
                         <div class="col-sm-6">
-                            <section>
+                            <section id="cl-proxy-headers">
                                 <h2>Proxy Headers</h2>
                                 <table class="table table-striped">
                                     <tr>
@@ -131,27 +131,58 @@
                         </div>
                     </div>
 
-                    <section id="cl-status-vm">
-                        <h2>VM Info</h2>
-                        <table class="table table-striped">
-                            <tr>
-                                <td>Vendor</td>
-                                <td>$vmVendor</td>
-                            </tr>
-                            <tr>
-                                <td>Name</td>
-                                <td>$vmName</td>
-                            </tr>
-                            <tr>
-                                <td>Version</td>
-                                <td>$vmVersion</td>
-                            </tr>
-                            <tr>
-                                <td>Uptime</td>
-                                <td>$uptime</td>
-                            </tr>
-                        </table>
-                    </section>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <section id="cl-status-internal-caches">
+                                <h2>Internal Caches</h2>
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>Info Cache Size</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Info Cache Max Size</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Delegate Method Invocation Cache Size</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Delegate Method Invocation Cache Max Size</td>
+                                        <td></td>
+                                    </tr>
+                                </table>
+                            </section>
+                        </div>
+                        <div class="col-sm-6">
+                            <section id="cl-status-vm">
+                                <h2>VM Info</h2>
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>Vendor</td>
+                                        <td>$vmVendor</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Name</td>
+                                        <td>$vmName</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Version</td>
+                                        <td>$vmVersion</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Java Version</td>
+                                        <td>$javaVersion</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Uptime</td>
+                                        <td></td>
+                                    </tr>
+                                </table>
+                            </section>
+                        </div>
+                    </div>
 
                     <section>
                         <h2>VM Arguments</h2>

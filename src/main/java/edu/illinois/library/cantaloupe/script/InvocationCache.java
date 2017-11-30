@@ -14,6 +14,11 @@ public interface InvocationCache {
     Object get(Object key);
 
     /**
+     * @return Maximum number of items allowed in the cache.
+     */
+    long maxSize();
+
+    /**
      * Removes or invalidates all items in the cache.
      */
     void purge();

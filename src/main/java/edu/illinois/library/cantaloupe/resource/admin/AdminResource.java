@@ -12,7 +12,6 @@ import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
-import edu.illinois.library.cantaloupe.util.TimeUtils;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.Header;
 import org.restlet.representation.Representation;
@@ -103,8 +102,8 @@ public class AdminResource extends AbstractAdminResource {
     }
 
     /**
-     * @return Map containing variables for use in the admin interface HTML
-     *         template.
+     * @return Map containing keys that will be used as variables in the admin
+     *         interface's HTML template.
      */
     private Map<String,Object> getTemplateVars() throws Exception {
         final Map<String, Object> vars = getCommonTemplateVars(getRequest());
@@ -120,25 +119,7 @@ public class AdminResource extends AbstractAdminResource {
         vars.put("vmName", runtimeMxBean.getVmName());
         vars.put("vmVendor", runtimeMxBean.getVmVendor());
         vars.put("vmVersion", runtimeMxBean.getVmVersion());
-        vars.put("uptime", TimeUtils.millisecondsToHumanTime(runtimeMxBean.getUptime()));
-
-        // memory
-        final int mb = 1024 * 1024;
-        Runtime runtime = Runtime.getRuntime();
-        vars.put("usedHeap", (runtime.totalMemory() - runtime.freeMemory()) / mb);
-        vars.put("freeHeap", runtime.freeMemory() / mb);
-        vars.put("totalHeap", runtime.totalMemory() / mb);
-        vars.put("maxHeap", runtime.maxMemory() / mb);
-        final double usedPercent = (runtime.totalMemory() - runtime.freeMemory()) /
-                (double) runtime.maxMemory();
-        vars.put("memoryBarValue", usedPercent * 100);
-        String memoryBarClass = "progress-bar-success";
-        if (usedPercent > 0.8) {
-            memoryBarClass = "progress-bar-danger";
-        } else if (usedPercent > 0.7) {
-            memoryBarClass = "progress-bar-warning";
-        }
-        vars.put("memoryBarClass", memoryBarClass);
+        vars.put("javaVersion", runtimeMxBean.getSpecVersion());
 
         // Reverse-Proxy headers
         final Series<Header> headers = getRequest().getHeaders();
