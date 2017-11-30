@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.iterable.S3Objects;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
@@ -288,13 +287,25 @@ class AmazonS3Cache implements DerivativeCache {
     @Override
     public void purge() throws CacheException {
         final AmazonS3 s3 = getClientInstance();
-        final ObjectListing listing = s3.listObjects(getBucketName(),
+
+        ObjectListing listing = s3.listObjects(getBucketName(),
                 getObjectKeyPrefix());
         int count = 0;
-        for (S3ObjectSummary summary : listing.getObjectSummaries()) {
-            s3.deleteObject(getBucketName(), summary.getKey());
-            count++;
+
+        while (true) {
+            for (S3ObjectSummary summary : listing.getObjectSummaries()) {
+                s3.deleteObject(getBucketName(), summary.getKey());
+                count++;
+            }
+
+            if (listing.isTruncated()) {
+                LOGGER.debug("purge(): retrieving next batch");
+                listing = s3.listNextBatchOfObjects(listing);
+            } else {
+                break;
+            }
         }
+
         LOGGER.info("purge(): deleted {} items", count);
     }
 
@@ -318,16 +329,27 @@ class AmazonS3Cache implements DerivativeCache {
         c.add(Calendar.SECOND, 0 - config.getInt(Key.CACHE_SERVER_TTL));
         Date cutoffDate = c.getTime();
 
-        final S3Objects objects = S3Objects.withPrefix(s3, bucketName,
+        ObjectListing listing = s3.listObjects(getBucketName(),
                 getObjectKeyPrefix());
         int count = 0, deletedCount = 0;
-        for (S3ObjectSummary summary : objects) {
-            count++;
-            if (summary.getLastModified().before(cutoffDate)) {
-                deletedCount++;
-                s3.deleteObject(bucketName, summary.getKey());
+
+        while (true) {
+            for (S3ObjectSummary summary : listing.getObjectSummaries()) {
+                count++;
+                if (summary.getLastModified().before(cutoffDate)) {
+                    s3.deleteObject(bucketName, summary.getKey());
+                    deletedCount++;
+                }
+            }
+
+            if (listing.isTruncated()) {
+                LOGGER.debug("purgeExpired(): retrieving next batch");
+                listing = s3.listNextBatchOfObjects(listing);
+            } else {
+                break;
             }
         }
+
         LOGGER.info("purgeExpired(): deleted {} of {} items",
                 deletedCount, count);
     }
@@ -340,12 +362,23 @@ class AmazonS3Cache implements DerivativeCache {
         // purge images
         final AmazonS3 s3 = getClientInstance();
         final String bucketName = getBucketName();
-        final S3Objects objects = S3Objects.withPrefix(s3, bucketName,
+
+        ObjectListing listing = s3.listObjects(getBucketName(),
                 getObjectKeyPrefix() + "image/" + identifier.toString());
         int count = 0;
-        for (S3ObjectSummary summary : objects) {
-            count++;
-            s3.deleteObject(bucketName, summary.getKey());
+
+        while (true) {
+            for (S3ObjectSummary summary : listing.getObjectSummaries()) {
+                s3.deleteObject(bucketName, summary.getKey());
+                count++;
+            }
+
+            if (listing.isTruncated()) {
+                LOGGER.debug("purge(Identifier): retrieving next batch");
+                listing = s3.listNextBatchOfObjects(listing);
+            } else {
+                break;
+            }
         }
         LOGGER.info("purge(Identifier): deleted {} items", count);
     }
