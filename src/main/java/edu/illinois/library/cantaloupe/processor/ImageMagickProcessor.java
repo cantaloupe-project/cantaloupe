@@ -36,7 +36,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -93,7 +92,8 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     private static final Map<URI,File> overlays = new ConcurrentHashMap<>();
 
     /** Lazy-initialized by getFormats(). */
-    protected static Map<Format, Set<Format>> supportedFormats;
+    protected static final Map<Format, Set<Format>> supportedFormats =
+            new HashMap<>();
 
     /**
      * Performs one-time class-level/shared initialization.
@@ -109,7 +109,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
      * For testing purposes only.
      */
     static synchronized void resetInitialization() {
-        supportedFormats = null;
+        supportedFormats.clear();
         isInitialized = false;
     }
 
@@ -118,7 +118,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
      * based on information reported by <code>identify -list format</code>.
      */
     private static synchronized Map<Format, Set<Format>> getFormats() {
-        if (supportedFormats == null) {
+        if (supportedFormats.isEmpty()) {
             final Set<Format> sourceFormats = EnumSet.noneOf(Format.class);
             final Set<Format> outputFormats = EnumSet.noneOf(Format.class);
 
@@ -197,12 +197,9 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                     }
                     process.waitFor();
 
-                    supportedFormats = new HashMap<>();
                     for (Format format : sourceFormats) {
                         supportedFormats.put(format, outputFormats);
                     }
-                    supportedFormats =
-                            Collections.unmodifiableMap(supportedFormats);
                 } catch (InterruptedException e) {
                     initializationException = new InitializationException(e);
                     // This is safe to swallow.

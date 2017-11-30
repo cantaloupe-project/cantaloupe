@@ -68,7 +68,8 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     private static boolean isInitialized = false;
 
     /** Lazy-initialized by getFormats(). */
-    private static Map<Format, Set<Format>> supportedFormats;
+    private static final Map<Format, Set<Format>> supportedFormats =
+            new HashMap<>();
 
     /**
      * Performs one-time class-level/shared initialization.
@@ -84,7 +85,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
      * For testing purposes only.
      */
     static synchronized void resetInitialization() {
-        supportedFormats = null;
+        supportedFormats.clear();
         isInitialized = false;
     }
 
@@ -94,7 +95,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
      *         result is cached.
      */
     private static synchronized Map<Format, Set<Format>> getFormats() {
-        if (supportedFormats == null) {
+        if (supportedFormats.isEmpty()) {
             final Set<Format> sourceFormats = EnumSet.noneOf(Format.class);
             final Set<Format> outputFormats = EnumSet.noneOf(Format.class);
 
@@ -156,12 +157,9 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                     sourceFormats.add(Format.SGI);
                     outputFormats.add(Format.GIF);
 
-                    supportedFormats = new HashMap<>();
                     for (Format format : sourceFormats) {
                         supportedFormats.put(format, outputFormats);
                     }
-                    supportedFormats =
-                            Collections.unmodifiableMap(supportedFormats);
                 } catch (InterruptedException e) {
                     initializationException = new InitializationException(e);
                     // This is safe to swallow.
