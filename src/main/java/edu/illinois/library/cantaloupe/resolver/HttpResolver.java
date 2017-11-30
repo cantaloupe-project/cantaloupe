@@ -317,7 +317,8 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
             if (response.getStatus() == HttpStatus.NOT_FOUND_404
                     || response.getStatus() == HttpStatus.GONE_410) {
                 throw new FileNotFoundException(statusLine);
-            } else if (response.getStatus() == HttpStatus.UNAUTHORIZED_401) {
+            } else if (response.getStatus() == HttpStatus.UNAUTHORIZED_401
+                    || response.getStatus() == HttpStatus.FORBIDDEN_403) {
                 throw new AccessDeniedException(statusLine);
             } else {
                 throw new IOException(statusLine);

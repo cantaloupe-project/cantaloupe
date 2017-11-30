@@ -359,7 +359,31 @@ abstract class HttpResolverTest extends BaseTest {
     }
 
     @Test
-    public void testGetSourceFormatWithErrorResponse() throws Exception {
+    public void testGetSourceFormatWith403Response() throws Exception {
+        server.setHandler(new DefaultHandler() {
+            @Override
+            public void handle(String target,
+                               Request baseRequest,
+                               HttpServletRequest request,
+                               HttpServletResponse response)
+                    throws IOException, ServletException {
+                response.setStatus(403);
+                baseRequest.setHandled(true);
+            }
+        });
+        server.start();
+
+        try {
+            instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
+            instance.getSourceFormat();
+            fail("Expected exception");
+        } catch (AccessDeniedException e) {
+            assertTrue(e.getMessage().contains("403"));
+        }
+    }
+
+    @Test
+    public void testGetSourceFormatWith500Response() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
             public void handle(String target,
