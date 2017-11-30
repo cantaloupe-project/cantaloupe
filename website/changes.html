@@ -70,7 +70,8 @@ title: Change Log
 <h2>3.3.5</h2>
 
 <ul>
-  <li>Fixed AmazonS3Cache sometimes incompletely purging objects.</li>
+  <li>Fixed AmazonS3Cache sometimes purging fewer objects than it should.</li>
+  <li>Fixed failure to auto-purge incompletely-written images from derivative caches other than FilesystemCache in response to a VM error (such as <code>OutOfMemoryError</code>).</li>
 </ul>
 
 <h2>3.3.4</h2>

@@ -104,12 +104,13 @@ public class ImageRepresentation extends OutputRepresentation {
                             OutputStream teeStream = new TeeOutputStream(
                                     responseOutputStream, cacheOutputStream);
                             doWrite(teeStream);
-                        } catch (Exception e) {
-                            // This typically happens when the connection has
-                            // been closed prematurely, as in the case of e.g.
-                            // the client hitting the stop button. The cached
-                            // image has been incompletely written and is
-                            // corrupt, so it must be purged.
+                        } catch (Throwable e) {
+                            // The cached image has been incompletely written
+                            // and is corrupt, so it must be purged. This may
+                            // happen in response to an OutOfMemoryError,
+                            // or when the connection has been closed
+                            // prematurely, as in the case of e.g. the client
+                            // hitting the stop button;
                             LOGGER.info("write(): {}", e.getMessage());
                             cacheFacade.purge(opList);
                         }
