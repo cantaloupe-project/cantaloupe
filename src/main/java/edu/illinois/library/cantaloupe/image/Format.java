@@ -162,18 +162,6 @@ public enum Format {
             true),
 
     /**
-     * LizardTech MrSID image format.
-     */
-    SID("MrSID",
-            ImageType.RASTER,
-            Arrays.asList("image/x-mrsid", "image/x.mrsid",
-                    "image/x-mrsid-image"),
-            Arrays.asList("sid"),
-            Type.IMAGE,
-            16,
-            true),
-
-    /**
      * Tagged Image File Format.
      */
     TIF("TIFF",

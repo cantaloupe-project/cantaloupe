@@ -116,7 +116,6 @@ public class MediaTypeTest {
         assertEquals(Format.MPG, new MediaType("video/mpeg").toFormat());
         assertEquals(Format.PDF, new MediaType("application/pdf").toFormat());
         assertEquals(Format.PNG, new MediaType("image/png").toFormat());
-        assertEquals(Format.SID, new MediaType("image/x-mrsid").toFormat());
         assertEquals(Format.TIF, new MediaType("image/tiff").toFormat());
         assertEquals(Format.WEBM, new MediaType("video/webm").toFormat());
         assertEquals(Format.WEBP, new MediaType("image/webp").toFormat());
