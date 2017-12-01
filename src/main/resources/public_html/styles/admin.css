@@ -38,14 +38,30 @@ pre {
     overflow-x: scroll;
 }
 
+var, span.filename {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.85em;
+    font-style: normal;
+}
+
 table, .table, .checkbox label, .radio label {
     font-size: 1em;
 }
 
-.table > tbody > tr > td:first-child {
+.table td:first-child {
     text-align: right;
     vertical-align: middle;
+}
+
+#cl-status-memory td:first-child,
+#cl-proxy-headers td:first-child,
+#cl-status-vm td:first-child {
+    white-space: nowrap;
     width: 30%;
+}
+
+#cl-status-internal-caches td:first-child {
+    width: 70%;
 }
 
 .list-group-item {
@@ -59,11 +75,7 @@ table, .table, .checkbox label, .radio label {
 
 textarea.form-control {
     font-family: 'Consolas', 'Monaco', monospace;
-    font-size: 0.9em;
-}
-
-#cl-status td:first-child {
-    white-space: nowrap;
+    font-size: 0.85em;
 }
 
 .nav > li.list-group-item > a {

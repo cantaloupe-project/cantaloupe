@@ -105,24 +105,24 @@
                                 <h2>Proxy Headers</h2>
                                 <table class="table table-striped">
                                     <tr>
-                                        <td>X-Forwarded-Proto</td>
-                                        <td>$xForwardedProtoHeader</td>
+                                        <td><var>X-Forwarded-Proto</var></td>
+                                        <td><var>$xForwardedProtoHeader</var></td>
                                     </tr>
                                     <tr>
-                                        <td>X-Forwarded-Host</td>
-                                        <td>$xForwardedHostHeader</td>
+                                        <td><var>X-Forwarded-Host</var></td>
+                                        <td><var>$xForwardedHostHeader</var></td>
                                     </tr>
                                     <tr>
-                                        <td>X-Forwarded-Port</td>
-                                        <td>$xForwardedPortHeader</td>
+                                        <td><var>X-Forwarded-Port</var></td>
+                                        <td><var>$xForwardedPortHeader</var></td>
                                     </tr>
                                     <tr>
-                                        <td>X-Forwarded-Path</td>
-                                        <td>$xForwardedPathHeader</td>
+                                        <td><var>X-Forwarded-Path</var></td>
+                                        <td><var>$xForwardedPathHeader</var></td>
                                     </tr>
                                     <tr>
-                                        <td>X-Forwarded-For</td>
-                                        <td>$xForwardedForHeader</td>
+                                        <td><var>X-Forwarded-For</var></td>
+                                        <td><var>$xForwardedForHeader</var></td>
                                     </tr>
                                 </table>
                             </section>
@@ -155,7 +155,7 @@
                         </div>
                         <div class="col-sm-6">
                             <section id="cl-status-vm">
-                                <h2>VM Info</h2>
+                                <h2>VM</h2>
                                 <table class="table table-striped">
                                     <tr>
                                         <td>Vendor</td>
@@ -1065,7 +1065,7 @@
                                 </tr>
                             </table>
 
-                            <h3>IIIF Image API 1.x</h3>
+                            <h3>1.x</h3>
                             <table class="table table-striped">
                                 <tr>
                                     <td></td>
@@ -1083,7 +1083,7 @@
                                 </tr>
                             </table>
 
-                            <h3>IIIF Image API 2.x</h3>
+                            <h3>2.x</h3>
                             <table class="table table-striped">
                                 <tr>
                                     <td></td>
@@ -1115,7 +1115,7 @@
                                                        name="endpoint.iiif.2.restrict_to_sizes"
                                                        value="true"
                                                        data-requires-restart="false">
-                                                Restrict to sizes in info.json
+                                                Restrict to sizes in <span class="filename">info.json</span>
                                             </label>
                                         </div>
                                     </td>
@@ -1612,6 +1612,7 @@
                                                     </td>
                                                 #else
                                                     <td class="text-center danger">
+                                                        <span class="text-danger">&#x2717;</span>
                                                     </td>
                                                 #end
                                             #end
@@ -1639,6 +1640,7 @@
                                                     </td>
                                                 #else
                                                     <td class="text-center danger">
+                                                        <span class="text-danger">&#x2717;</span>
                                                     </td>
                                                 #end
                                             #end
@@ -3209,7 +3211,7 @@
     <footer>
         <a href="https://medusa-project.github.io/cantaloupe/"
            target="_blank">Home (GitHub)</a> |
-        <a href="https://medusa-project.github.io/cantaloupe/manual/$version/"
+        <a href="https://medusa-project.github.io/cantaloupe/manual/"
            target="_blank">User Manual</a>
     </footer>
 
