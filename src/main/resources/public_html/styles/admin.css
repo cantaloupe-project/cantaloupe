@@ -89,3 +89,8 @@ table.cl-source-format-assignments td:first-child {
 #cl-processor-warnings td {
     color: #2b3e50;
 }
+
+#cl-processor-warnings ul {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
