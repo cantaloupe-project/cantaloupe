@@ -238,20 +238,16 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
 
     @Test
     public void testGetWarningsWithNoWarnings() {
+        ImageMagickProcessor.setIMVersion(
+                ImageMagickProcessor.IMVersion.VERSION_7);
         assertEquals(0, instance.getWarnings().size());
     }
 
     @Test
     public void testGetWarningsWithDeprecationWarning() {
-        ImageMagickProcessor.IMVersion initialValue =
-                ImageMagickProcessor.getIMVersion();
-        try {
-            ImageMagickProcessor.setIMVersion(
-                    ImageMagickProcessor.IMVersion.VERSION_PRE_7);
-            assertEquals(1, instance.getWarnings().size());
-        } finally {
-            ImageMagickProcessor.setIMVersion(initialValue);
-        }
+        ImageMagickProcessor.setIMVersion(
+                ImageMagickProcessor.IMVersion.VERSION_PRE_7);
+        assertEquals(1, instance.getWarnings().size());
     }
 
     @Override
