@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,6 +44,10 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
     private static final Pattern TIME_PATTERN =
             Pattern.compile("[0-9][0-9]:[0-5][0-9]:[0-5][0-9]");
+
+    private static final AtomicBoolean initializationAttempted =
+            new AtomicBoolean(false);
+    private static InitializationException initializationException;
 
     private double durationSec = 0;
     private Info imageInfo;
@@ -63,6 +68,41 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
         return path;
     }
 
+    private static synchronized void initialize() {
+        initializationAttempted.set(true);
+        try {
+            // Check for the presence of ffprobe and ffmpeg.
+            invoke("ffprobe");
+            invoke("ffmpeg");
+        } catch (IOException e) {
+            initializationException = new InitializationException(e);
+        }
+    }
+
+    private static void invoke(String ffmpegBinary) throws IOException {
+        final ProcessBuilder pb = new ProcessBuilder();
+        List<String> command = new ArrayList<>();
+        command.add(getPath(ffmpegBinary));
+        pb.command(command);
+        String commandString = String.join(" ", pb.command());
+        LOGGER.info("invoke(): {}", commandString);
+        pb.start();
+    }
+
+    /**
+     * For testing only!
+     */
+    static synchronized void resetInitialization() {
+        initializationAttempted.set(false);
+        initializationException = null;
+    }
+
+    FfmpegProcessor() {
+        if (!initializationAttempted.get()) {
+            initialize();
+        }
+    }
+
     @Override
     public Set<Format> getAvailableOutputFormats() {
         final Set<Format> outputFormats;
@@ -72,6 +112,14 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
             outputFormats = Collections.unmodifiableSet(Collections.emptySet());
         }
         return outputFormats;
+    }
+
+    @Override
+    public InitializationException getInitializationException() {
+        if (!initializationAttempted.get()) {
+            initialize();
+        }
+        return initializationException;
     }
 
     /**

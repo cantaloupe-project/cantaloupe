@@ -89,8 +89,10 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     private static final short MAX_REDUCTION_FACTOR = 5;
 
     /** Set by {@link #initialize()} */
+    private static final AtomicBoolean initializationAttempted =
+            new AtomicBoolean(false);
+    /** Set by {@link #initialize()} */
     private static InitializationException initializationException;
-    private static AtomicBoolean isClassInitialized = new AtomicBoolean(false);
     private static Path stdoutSymlink;
 
     /** will cache the output of kdu_jp2info */
@@ -128,24 +130,48 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
         return path;
     }
 
-    private static synchronized void initialize() throws IOException {
+    private static synchronized void initialize() {
+        initializationAttempted.set(true);
+
         try {
+            // Check for the presence of kdu_jp2info.
+            invoke("kdu_jp2info");
+            invoke("kdu_expand");
+
             // Due to a quirk of kdu_expand, this processor requires access to
             // /dev/stdout.
             final Path devStdout = Paths.get("/dev/stdout");
             if (Files.exists(devStdout) && Files.isWritable(devStdout)) {
-                // Due to another quirk of kdu_expand, we need to create a symlink
-                // from {temp path}/stdout.tif to /dev/stdout, to tell kdu_expand
-                // what format to write.
+                // Due to another quirk of kdu_expand, we need to create a
+                // symlink from {temp path}/stdout.tif to /dev/stdout, to tell
+                // kdu_expand what format to write.
                 createStdoutSymlink();
             } else {
-                LOGGER.error("Sorry, but " + KakaduProcessor.class.getSimpleName() +
-                        " won't work on this platform as it requires access to " +
-                        "/dev/stdout.");
+                LOGGER.error(KakaduProcessor.class.getSimpleName() +
+                        " won't work on this platform as it requires access " +
+                        "to /dev/stdout.");
             }
-        } finally {
-            isClassInitialized.set(true);
+        } catch (IOException e) {
+            initializationException = new InitializationException(e);
         }
+    }
+
+    private static void invoke(String kduBinary) throws IOException {
+        final ProcessBuilder pb = new ProcessBuilder();
+        List<String> command = new ArrayList<>();
+        command.add(getPath(kduBinary));
+        pb.command(command);
+        String commandString = String.join(" ", pb.command());
+        LOGGER.info("invoke(): {}", commandString);
+        pb.start();
+    }
+
+    /**
+     * For testing only!
+     */
+    static synchronized void resetInitialization() {
+        initializationAttempted.set(false);
+        initializationException = null;
     }
 
     private static String toString(ByteArrayOutputStream os) {
@@ -158,12 +184,8 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     }
 
     KakaduProcessor() {
-        if (!isClassInitialized.get()) {
-            try {
-                initialize();
-            } catch (Exception e) {
-                initializationException = new InitializationException(e);
-            }
+        if (!initializationAttempted.get()) {
+            initialize();
         }
     }
 
@@ -195,6 +217,9 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
     @Override
     public InitializationException getInitializationException() {
+        if (!initializationAttempted.get()) {
+            initialize();
+        }
         return initializationException;
     }
 

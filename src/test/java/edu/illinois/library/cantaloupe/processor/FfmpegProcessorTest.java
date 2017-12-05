@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -16,7 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.EnumSet;
 
 import java.util.Set;
 
@@ -32,16 +34,21 @@ public class FfmpegProcessorTest extends ProcessorTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
+
+        Configuration.getInstance().clearProperty(
+                Key.FFMPEGPROCESSOR_PATH_TO_BINARIES);
+        FfmpegProcessor.resetInitialization();
+
         instance = newInstance();
     }
 
     @Override
-    protected Format getSupported16BitSourceFormat() throws IOException {
+    protected Format getSupported16BitSourceFormat() {
         return null;
     }
 
     @Override
-    protected File getSupported16BitImage() throws IOException {
+    protected File getSupported16BitImage() {
         return null;
     }
 
@@ -65,7 +72,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
         for (Format format : Format.values()) {
             try {
                 instance = newInstance();
-                Set<Format> expectedFormats = new HashSet<>();
+                Set<Format> expectedFormats = EnumSet.noneOf(Format.class);
                 if (format.getType() != null &&
                         format.getType().equals(Format.Type.VIDEO)) {
                     expectedFormats.addAll(ImageWriter.supportedFormats());
@@ -79,9 +86,23 @@ public class FfmpegProcessorTest extends ProcessorTest {
     }
 
     @Test
+    public void testGetInitializationExceptionWithNoException() {
+        assertNull(instance.getInitializationException());
+    }
+
+    @Test
+    public void testGetInitializationExceptionWithMissingBinaries() {
+        Configuration.getInstance().setProperty(
+                Key.FFMPEGPROCESSOR_PATH_TO_BINARIES,
+                "/bogus/bogus/bogus");
+        FfmpegProcessor.resetInitialization();
+        assertNotNull(instance.getInitializationException());
+    }
+
+    @Test
     public void testGetSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
-        Set<ProcessorFeature> expectedFeatures = new HashSet<>(Arrays.asList(
+        Set<ProcessorFeature> expectedFeatures = EnumSet.of(
                 ProcessorFeature.MIRRORING,
                 ProcessorFeature.REGION_BY_PERCENT,
                 ProcessorFeature.REGION_BY_PIXELS,
@@ -94,7 +115,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
                 ProcessorFeature.SIZE_BY_HEIGHT,
                 ProcessorFeature.SIZE_BY_PERCENT,
                 ProcessorFeature.SIZE_BY_WIDTH,
-                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
+                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
         assertEquals(expectedFeatures, instance.getSupportedFeatures());
     }
 
@@ -102,36 +123,26 @@ public class FfmpegProcessorTest extends ProcessorTest {
     @Override
     public void testGetSupportedIIIF1Qualities() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-                expectedQualities = new HashSet<>();
-        expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL);
-        expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR);
-        expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY);
-        expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE);
-        assertEquals(expectedQualities,
-                instance.getSupportedIIIF1Qualities());
+        Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality> expectedQualities =
+                EnumSet.of(
+                        edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
+                        edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
+                        edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
+                        edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE);
+        assertEquals(expectedQualities, instance.getSupportedIIIF1Qualities());
     }
 
     @Test
     @Override
     public void testGetSupportedIIIF2Qualities() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-                expectedQualities = new HashSet<>();
-        expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL);
-        expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR);
-        expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT);
-        expectedQualities.add(
-                edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY);
-        assertEquals(expectedQualities,
-                instance.getSupportedIIIF2Qualities());
+        Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality> expectedQualities =
+                EnumSet.of(
+                        edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
+                        edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
+                        edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
+                        edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY);
+        assertEquals(expectedQualities, instance.getSupportedIIIF2Qualities());
     }
 
     @Test

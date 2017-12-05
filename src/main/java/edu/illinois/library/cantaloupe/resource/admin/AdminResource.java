@@ -24,6 +24,7 @@ import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -72,8 +73,26 @@ public class AdminResource extends AbstractAdminResource {
             }
         }
 
+        /**
+         * @return List of all processor warnings, plus the message of the
+         *         return value of
+         *         {@link Processor#getInitializationException()}, if any.
+         */
         public List<String> getWarnings() {
-            return ((Processor) object).getWarnings();
+            Processor proc = (Processor) object;
+
+            List<String> warnings = new ArrayList<>();
+
+            // Add the InitializationException message
+            InitializationException e = proc.getInitializationException();
+            if (e != null) {
+                warnings.add(e.getMessage());
+            }
+
+            // Add warnings
+            warnings.addAll(proc.getWarnings());
+
+            return warnings;
         }
     }
 

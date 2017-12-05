@@ -160,6 +160,7 @@ public class ProcessorFactoryTest extends BaseTest {
                 GraphicsMagickProcessor.class.getSimpleName());
         config.setProperty(Key.GRAPHICSMAGICKPROCESSOR_PATH_TO_BINARIES,
                 "/bogus/bogus/bogus");
+        GraphicsMagickProcessor.resetInitialization();
 
         instance.newProcessor(Format.JPG);
     }

@@ -71,81 +71,147 @@ import java.util.concurrent.atomic.AtomicBoolean;
 class ImageMagickProcessor extends AbstractMagickProcessor
         implements StreamProcessor {
 
+    enum IMVersion {
+        VERSION_PRE_7, VERSION_7
+    }
+
     private static final Logger LOGGER = LoggerFactory.
             getLogger(ImageMagickProcessor.class);
 
-    static final String OVERLAY_TEMP_FILE_PREFIX = "cantaloupe-overlay";
+    static final String OVERLAY_TEMP_FILE_PREFIX =
+            "cantaloupe-" + ImageMagickProcessor.class.getSimpleName() + "-overlay";
+
+    private static AtomicBoolean initializationAttempted =
+            new AtomicBoolean(false);
+    private static InitializationException initializationException;
 
     // ImageMagick 7 uses a `magick` command. Earlier versions use `convert`
     // and `identify`. IM7 may provide aliases for these.
-    private static final AtomicBoolean hasCheckedVersion =
-            new AtomicBoolean(false);
-
-    private static InitializationException initializationException;
-
-    private static boolean isInitialized = false;
-
-    private static boolean isUsingVersion7 = false;
+    private static IMVersion imVersion;
 
     /** Map of overlay images downloaded from web servers. Files are temp files
     set to delete-on-exit. */
     private static final Map<URI,File> overlays = new ConcurrentHashMap<>();
 
-    /** Lazy-initialized by getFormats(). */
+    /** Lazy-initialized by readFormats(). */
     protected static final Map<Format, Set<Format>> supportedFormats =
             new HashMap<>();
+
+    /**
+     * <p>Checks the ImageMagick version by attempting to invoke the `magick`
+     * command. If the invocation fails, we assume that we are using version
+     * <= 6.</p>
+     *
+     * <p>The result is cached.</p>
+     *
+     * @return ImageMagick version.
+     */
+    static synchronized IMVersion getIMVersion() {
+        if (imVersion == null) {
+            // Search for the IM 7+ `magick` command
+            final ProcessBuilder pb = new ProcessBuilder();
+            List<String> command = new ArrayList<>();
+            command.add(getPath("magick"));
+            pb.command(command);
+            try {
+                final String commandString = StringUtils.join(pb.command(), " ");
+                LOGGER.debug("getIMVersion(): trying to invoke {}",
+                        commandString);
+                final Process process = pb.start();
+                process.waitFor();
+                LOGGER.info("getIMVersion(): found magick command; assuming " +
+                        "ImageMagick 7+");
+                imVersion = IMVersion.VERSION_7;
+            } catch (Exception e) {
+                LOGGER.info("getIMVersion(): couldn't find magick command; " +
+                        "checking for IM <7");
+
+                // Search for the IM <7 `identify` command
+                command = new ArrayList<>();
+                command.add(getPath("identify"));
+                pb.command(command);
+                try {
+                    final String commandString = StringUtils.join(pb.command(), " ");
+                    LOGGER.debug("getIMVersion(): trying to invoke {}",
+                            commandString);
+                    final Process process = pb.start();
+                    process.waitFor();
+                    LOGGER.info("getIMVersion(): found identify command; " +
+                            "assuming ImageMagick <7");
+                    imVersion = IMVersion.VERSION_PRE_7;
+                } catch (Exception e2) {
+                    LOGGER.error("getIMVersion(): couldn't find an " +
+                            "ImageMagick binary");
+                }
+            }
+        }
+        return imVersion;
+    }
+
+    /**
+     * @param binaryName Name of an executable.
+     */
+    private static String getPath(final String binaryName) {
+        String path = Configuration.getInstance().
+                getString(Key.IMAGEMAGICKPROCESSOR_PATH_TO_BINARIES);
+        if (path != null && path.length() > 0) {
+            path = StringUtils.stripEnd(path, File.separator) + File.separator +
+                    binaryName;
+        } else {
+            path = binaryName;
+        }
+        return path;
+    }
 
     /**
      * Performs one-time class-level/shared initialization.
      */
     private static synchronized void initialize() {
-        if (!isInitialized) {
-            getFormats();
-            isInitialized = true;
-        }
-    }
-
-    /**
-     * For testing purposes only.
-     */
-    static synchronized void resetInitialization() {
-        supportedFormats.clear();
-        isInitialized = false;
+        initializationAttempted.set(true);
+        readFormats();
     }
 
     /**
      * @return Map of available output formats for all known source formats,
-     * based on information reported by <code>identify -list format</code>.
+     *         based on information reported by
+     *         <code>identify -list format</code>.
      */
-    private static synchronized Map<Format, Set<Format>> getFormats() {
+    private static synchronized Map<Format, Set<Format>> readFormats() {
         if (supportedFormats.isEmpty()) {
             final Set<Format> sourceFormats = EnumSet.noneOf(Format.class);
             final Set<Format> outputFormats = EnumSet.noneOf(Format.class);
 
-            // Retrieve the output of the `identify -list format` command,
-            // which contains a list of all supported formats.
             final ProcessBuilder pb = new ProcessBuilder();
             final List<String> command = new ArrayList<>();
-            if (isUsingVersion7()) {
-                command.add(getPath("magick"));
-                command.add("identify");
-            } else {
-                command.add(getPath("identify"));
-            }
-            command.add("-list");
-            command.add("format");
-            pb.command(command);
-            final String commandString = String.join(" ", pb.command());
-
             try {
-                LOGGER.info("getFormats(): invoking {}", commandString);
+                IMVersion version = getIMVersion();
+                if (version != null) {
+                    switch (getIMVersion()) {
+                        case VERSION_PRE_7:
+                            command.add(getPath("identify"));
+                            break;
+                        default:
+                            command.add(getPath("magick"));
+                            command.add("identify");
+                            break;
+                    }
+                } else {
+                    throw new IOException("Can't find `magick` or `identify` binaries");
+                }
+
+                command.add("-list");
+                command.add("format");
+                pb.command(command);
+                final String commandString = String.join(" ", pb.command());
+
+                LOGGER.info("readFormats(): invoking {}", commandString);
                 final Process process = pb.start();
                 final InputStream pis = process.getInputStream();
-                final InputStreamReader reader =
+                final InputStreamReader isReader =
                         new InputStreamReader(pis, "UTF-8");
-                try (final BufferedReader buffReader = new BufferedReader(reader)) {
+                try (final BufferedReader bReader = new BufferedReader(isReader)) {
                     String s;
-                    while ((s = buffReader.readLine()) != null) {
+                    while ((s = bReader.readLine()) != null) {
                         s = s.trim();
                         if (s.startsWith("BMP")) {
                             sourceFormats.add(Format.BMP);
@@ -200,11 +266,8 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                     for (Format format : sourceFormats) {
                         supportedFormats.put(format, outputFormats);
                     }
-                } catch (InterruptedException e) {
-                    initializationException = new InitializationException(e);
-                    // This is safe to swallow.
                 }
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 initializationException = new InitializationException(e);
                 // This is safe to swallow.
             }
@@ -213,74 +276,30 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     }
 
     /**
-     * @param binaryName Name of an executable.
-     * @return
+     * For testing only!
      */
-    private static String getPath(final String binaryName) {
-        String path = Configuration.getInstance().
-                getString(Key.IMAGEMAGICKPROCESSOR_PATH_TO_BINARIES);
-        if (path != null && path.length() > 0) {
-            path = StringUtils.stripEnd(path, File.separator) + File.separator +
-                    binaryName;
-        } else {
-            path = binaryName;
-        }
-        return path;
-    }
-
-    /**
-     * <p>Checks for ImageMagick 7 by attempting to invoke the `magick`
-     * command. If the invocation fails, we assume that we are using version
-     * <= 6.</p>
-     *
-     * <p>The result is cached.</p>
-     *
-     * @return Whether we appear to be using ImageMagick 7.
-     */
-    static boolean isUsingVersion7() {
-        if (!hasCheckedVersion.get()) {
-            synchronized (ImageMagickProcessor.class) {
-                final ProcessBuilder pb = new ProcessBuilder();
-                final List<String> command = new ArrayList<>();
-                command.add(getPath("magick"));
-                pb.command(command);
-                try {
-                    isUsingVersion7 = false;
-                    final String commandString = StringUtils.join(pb.command(), " ");
-                    LOGGER.debug("isUsingVersion7(): trying to invoke {}",
-                            commandString);
-                    final Process process = pb.start();
-                    process.waitFor();
-                    LOGGER.info("isUsingVersion7(): found magick command; " +
-                            "assuming ImageMagick 7+");
-                    isUsingVersion7 = true;
-                } catch (Exception e) {
-                    LOGGER.info("isUsingVersion7(): couldn't find magick " +
-                            "command; assuming ImageMagick <7");
-                    isUsingVersion7 = false;
-                }
-            }
-        }
-        return isUsingVersion7;
+    static synchronized void resetInitialization() {
+        initializationAttempted.set(false);
+        initializationException = null;
+        supportedFormats.clear();
     }
 
     /**
      * For testing only!
      */
-    static void setHasCheckedVersion(boolean yesOrNo) {
-        hasCheckedVersion.set(yesOrNo);
+    static synchronized void setIMVersion(IMVersion version) {
+        imVersion = version;
     }
 
-    /**
-     * For testing only!
-     */
-    static synchronized void setUsingVersion7(boolean yesOrNo) {
-        isUsingVersion7 = yesOrNo;
+    ImageMagickProcessor() {
+        if (!initializationAttempted.get()) {
+            initialize();
+        }
     }
 
     @Override
     public Set<Format> getAvailableOutputFormats() {
-        Set<Format> formats = getFormats().get(format);
+        Set<Format> formats = readFormats().get(format);
         if (formats == null) {
             formats = Collections.unmodifiableSet(Collections.emptySet());
         }
@@ -291,7 +310,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                                              final Info imageInfo) {
         final List<String> args = new ArrayList<>();
 
-        if (isUsingVersion7()) {
+        if (IMVersion.VERSION_7.equals(getIMVersion())) {
             args.add(getPath("magick"));
             args.add("convert");
         } else {
@@ -652,12 +671,12 @@ class ImageMagickProcessor extends AbstractMagickProcessor
 
     @Override
     public List<String> getWarnings() {
-        List<String> warnings = new ArrayList<>();
-        if (!isUsingVersion7()) {
+        final List<String> warnings = new ArrayList<>();
+        if (IMVersion.VERSION_PRE_7.equals(getIMVersion())) {
             warnings.add("Support for ImageMagick <7 will be removed in a " +
                     "future release. Please upgrade to version 7.");
         }
-        return warnings;
+        return Collections.unmodifiableList(warnings);
     }
 
     @Override
@@ -683,7 +702,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     public Info readImageInfo() throws ProcessorException {
         try (InputStream inputStream = streamSource.newInputStream()) {
             final List<String> args = new ArrayList<>();
-            if (isUsingVersion7()) {
+            if (IMVersion.VERSION_7.equals(getIMVersion())) {
                 args.add(getPath("magick"));
                 args.add("identify");
             } else {
@@ -746,6 +765,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         StreamProcessor.super.validate(opList, fullSize);
 
         // Check the format of the "page" option, if present.
+        // TODO: move this to OperationList.validate() and remove Processor.validate()
         final String pageStr = (String) opList.getOptions().get("page");
         if (pageStr != null) {
             try {

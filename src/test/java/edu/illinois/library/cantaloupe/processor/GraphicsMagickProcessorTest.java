@@ -34,9 +34,13 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
     private GraphicsMagickProcessor instance;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
+
         Configuration.getInstance().clearProperty(
                 Key.GRAPHICSMAGICKPROCESSOR_PATH_TO_BINARIES);
+        GraphicsMagickProcessor.resetInitialization();
+
         instance = newInstance();
     }
 
@@ -125,13 +129,23 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Test
-    public void testGetInitializationException() {
+    public void testGetInitializationExceptionWithNoException() {
+        assertNull(instance.getInitializationException());
+    }
+
+    @Test
+    public void testGetInitializationExceptionWithMissingBinaries() {
         Configuration.getInstance().setProperty(
                 Key.GRAPHICSMAGICKPROCESSOR_PATH_TO_BINARIES,
                 "/bogus/bogus/bogus");
         GraphicsMagickProcessor.resetInitialization();
-        instance = newInstance();
+
         assertNotNull(instance.getInitializationException());
+    }
+
+    @Test
+    public void testGetWarnings() {
+        assertEquals(0, instance.getWarnings().size());
     }
 
     @Override

@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * <p>Processor using the GraphicsMagick <code>gm</code> command-line tool.
@@ -64,29 +65,34 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     private static final Logger LOGGER = LoggerFactory.
             getLogger(GraphicsMagickProcessor.class);
 
-    private static InitializationException initializationException;
-    private static boolean isInitialized = false;
+    private static final String BINARY_NAME = "gm";
 
-    /** Lazy-initialized by getFormats(). */
+    private static final AtomicBoolean initializationAttempted =
+            new AtomicBoolean(false);
+    private static InitializationException initializationException;
+
+    /** Initialized by readFormats(). */
     private static final Map<Format, Set<Format>> supportedFormats =
             new HashMap<>();
+
+    private static String getPath() {
+        String path = Configuration.getInstance().
+                getString(Key.GRAPHICSMAGICKPROCESSOR_PATH_TO_BINARIES);
+        if (path != null && path.length() > 0) {
+            path = StringUtils.stripEnd(path, File.separator) + File.separator +
+                    BINARY_NAME;
+        } else {
+            path = BINARY_NAME;
+        }
+        return path;
+    }
 
     /**
      * Performs one-time class-level/shared initialization.
      */
     private static synchronized void initialize() {
-        if (!isInitialized) {
-            getFormats();
-            isInitialized = true;
-        }
-    }
-
-    /**
-     * For testing purposes only.
-     */
-    static synchronized void resetInitialization() {
-        supportedFormats.clear();
-        isInitialized = false;
+        initializationAttempted.set(true);
+        readFormats();
     }
 
     /**
@@ -94,7 +100,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
      *         based on information reported by <code>gm version</code>. The
      *         result is cached.
      */
-    private static synchronized Map<Format, Set<Format>> getFormats() {
+    private static synchronized Map<Format, Set<Format>> readFormats() {
         if (supportedFormats.isEmpty()) {
             final Set<Format> sourceFormats = EnumSet.noneOf(Format.class);
             final Set<Format> outputFormats = EnumSet.noneOf(Format.class);
@@ -103,21 +109,21 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             // a list of all optional formats.
             final ProcessBuilder pb = new ProcessBuilder();
             final List<String> command = new ArrayList<>();
-            command.add(getPath("gm"));
+            command.add(getPath());
             command.add("version");
             pb.command(command);
             final String commandString = String.join(" ", pb.command());
 
             try {
-                LOGGER.info("getFormats(): invoking {}", commandString);
+                LOGGER.info("readFormats(): invoking {}", commandString);
                 final Process process = pb.start();
 
                 final InputStream processInputStream = process.getInputStream();
-                try (BufferedReader stdInput = new BufferedReader(
+                try (BufferedReader bReader = new BufferedReader(
                         new InputStreamReader(processInputStream, "UTF-8"))) {
                     String s;
                     boolean read = false;
-                    while ((s = stdInput.readLine()) != null) {
+                    while ((s = bReader.readLine()) != null) {
                         if (s.contains("Feature Support")) {
                             read = true; // start reading
                         } else if (s.contains("Host type:")) {
@@ -160,11 +166,8 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                     for (Format format : sourceFormats) {
                         supportedFormats.put(format, outputFormats);
                     }
-                } catch (InterruptedException e) {
-                    initializationException = new InitializationException(e);
-                    // This is safe to swallow.
                 }
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 initializationException = new InitializationException(e);
                 // This is safe to swallow.
             }
@@ -173,24 +176,23 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     }
 
     /**
-     * @param binaryName Name of an executable.
-     * @return
+     * For testing only!
      */
-    private static String getPath(final String binaryName) {
-        String path = Configuration.getInstance().
-                getString(Key.GRAPHICSMAGICKPROCESSOR_PATH_TO_BINARIES);
-        if (path != null && path.length() > 0) {
-            path = StringUtils.stripEnd(path, File.separator) + File.separator +
-                    binaryName;
-        } else {
-            path = binaryName;
+    static synchronized void resetInitialization() {
+        initializationAttempted.set(false);
+        initializationException = null;
+        supportedFormats.clear();
+    }
+
+    GraphicsMagickProcessor() {
+        if (!initializationAttempted.get()) {
+            initialize();
         }
-        return path;
     }
 
     @Override
     public Set<Format> getAvailableOutputFormats() {
-        Set<Format> formats = getFormats().get(format);
+        Set<Format> formats = readFormats().get(format);
         if (formats == null) {
             formats = Collections.unmodifiableSet(Collections.emptySet());
         }
@@ -200,7 +202,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     private List<String> getConvertArguments(final OperationList ops,
                                              final Info imageInfo) {
         final List<String> args = new ArrayList<>();
-        args.add(getPath("gm"));
+        args.add(getPath());
         args.add("convert");
 
         // If we need to rasterize, and the op list contains a scale operation,
@@ -440,7 +442,9 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
 
     @Override
     public InitializationException getInitializationException() {
-        initialize();
+        if (!initializationAttempted.get()) {
+            initialize();
+        }
         return initializationException;
     }
 
@@ -467,7 +471,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     public Info readImageInfo() throws ProcessorException {
         try (InputStream inputStream = streamSource.newInputStream()) {
             final List<String> args = new ArrayList<>();
-            args.add(getPath("gm"));
+            args.add(getPath());
             args.add("identify");
             args.add("-ping");
             args.add("-format");
@@ -516,6 +520,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
         StreamProcessor.super.validate(opList, fullSize);
 
         // Check the format of the "page" option, if present.
+        // TODO: move this to OperationList.validate() and remove Processor.validate()
         final String pageStr = (String) opList.getOptions().get("page");
         if (pageStr != null) {
             try {

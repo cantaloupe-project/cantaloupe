@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
@@ -9,8 +11,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -22,6 +23,11 @@ public class KakaduProcessorTest extends ProcessorTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
+
+        Configuration.getInstance().clearProperty(
+                Key.KAKADUPROCESSOR_PATH_TO_BINARIES);
+        KakaduProcessor.resetInitialization();
+
         instance = newInstance();
     }
 
@@ -44,6 +50,20 @@ public class KakaduProcessorTest extends ProcessorTest {
             fail("Huge bug");
         }
         return proc;
+    }
+
+    @Test
+    public void testGetInitializationExceptionWithNoException() {
+        assertNull(instance.getInitializationException());
+    }
+
+    @Test
+    public void testGetInitializationExceptionWithMissingBinaries() {
+        Configuration.getInstance().setProperty(
+                Key.KAKADUPROCESSOR_PATH_TO_BINARIES,
+                "/bogus/bogus/bogus");
+        KakaduProcessor.resetInitialization();
+        assertNotNull(instance.getInitializationException());
     }
 
     @Test
@@ -71,7 +91,7 @@ public class KakaduProcessorTest extends ProcessorTest {
     public void testGetSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
 
-        Set<ProcessorFeature> expectedFeatures = new HashSet<>(Arrays.asList(
+        Set<ProcessorFeature> expectedFeatures = EnumSet.of(
                 ProcessorFeature.MIRRORING,
                 ProcessorFeature.REGION_BY_PERCENT,
                 ProcessorFeature.REGION_BY_PIXELS,
@@ -84,7 +104,7 @@ public class KakaduProcessorTest extends ProcessorTest {
                 ProcessorFeature.SIZE_BY_HEIGHT,
                 ProcessorFeature.SIZE_BY_PERCENT,
                 ProcessorFeature.SIZE_BY_WIDTH,
-                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
+                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
         assertEquals(expectedFeatures, instance.getSupportedFeatures());
     }
 

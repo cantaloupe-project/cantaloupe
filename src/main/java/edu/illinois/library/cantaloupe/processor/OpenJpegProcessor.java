@@ -85,9 +85,13 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
     /** Lazy-set by {@link #isQuietModeSupported()} */
     private static boolean checkedForQuietMode = false;
+
+    /** Set by {@link #initialize()} */
+    private static final AtomicBoolean initializationAttempted =
+            new AtomicBoolean(false);
     /** Set by {@link #initialize()} */
     private static InitializationException initializationException;
-    private static AtomicBoolean isClassInitialized = new AtomicBoolean(false);
+
     /** Lazy-set by {@link #isQuietModeSupported()} */
     private static boolean isQuietModeSupported = true;
 
@@ -128,8 +132,14 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         return path;
     }
 
-    private static synchronized void initialize() throws IOException {
+    private static synchronized void initialize() {
+        initializationAttempted.set(true);
+
         try {
+            // Check for the presence of opj_dump and opj_decompress.
+            invoke("opj_dump");
+            invoke("opj_decompress");
+
             // Due to a quirk of opj_decompress, this processor requires access to
             // /dev/stdout.
             final Path devStdout = Paths.get("/dev/stdout");
@@ -139,13 +149,23 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                 // opj_decompress what format to write.
                 createStdoutSymlink();
             } else {
-                LOGGER.error("Sorry, but " + OpenJpegProcessor.class.getSimpleName() +
-                        " won't work on this platform as it requires access to " +
-                        "/dev/stdout.");
+                LOGGER.error(OpenJpegProcessor.class.getSimpleName() +
+                        " won't work on this platform as it requires access " +
+                        "to /dev/stdout.");
             }
-        } finally {
-            isClassInitialized.set(true);
+        } catch (IOException e) {
+            initializationException = new InitializationException(e);
         }
+    }
+
+    private static void invoke(String opjBinary) throws IOException {
+        final ProcessBuilder pb = new ProcessBuilder();
+        List<String> command = new ArrayList<>();
+        command.add(getPath(opjBinary));
+        pb.command(command);
+        String commandString = String.join(" ", pb.command());
+        LOGGER.info("invoke(): {}", commandString);
+        pb.start();
     }
 
     static synchronized boolean isQuietModeSupported() {
@@ -200,6 +220,14 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
     }
 
     /**
+     * For testing only!
+     */
+    static synchronized void resetInitialization() {
+        initializationAttempted.set(false);
+        initializationException = null;
+    }
+
+    /**
      * For testing only.
      */
     static synchronized void setQuietModeSupported(boolean trueOrFalse) {
@@ -216,12 +244,8 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
     }
 
     OpenJpegProcessor() {
-        if (!isClassInitialized.get()) {
-            try {
-                initialize();
-            } catch (Exception e) {
-                initializationException = new InitializationException(e);
-            }
+        if (!initializationAttempted.get()) {
+            initialize();
         }
     }
 
@@ -253,6 +277,9 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
     @Override
     public InitializationException getInitializationException() {
+        if (!initializationAttempted.get()) {
+            initialize();
+        }
         return initializationException;
     }
 

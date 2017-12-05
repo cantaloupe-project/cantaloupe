@@ -20,14 +20,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.*;
 
 /**
  * For this to work, the ImageMagick binaries must be on the PATH.
@@ -39,9 +37,13 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
     private ImageMagickProcessor instance;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
+
         Configuration.getInstance().clearProperty(
                 Key.IMAGEMAGICKPROCESSOR_PATH_TO_BINARIES);
+        ImageMagickProcessor.resetInitialization();
+
         instance = newInstance();
     }
 
@@ -209,7 +211,12 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Test
-    public void testGetInitializationException() {
+    public void testGetInitializationExceptionWithNoException() {
+        assertNull(instance.getInitializationException());
+    }
+
+    @Test
+    public void testGetInitializationExceptionWithMissingBinaries() {
         Configuration.getInstance().setProperty(
                 Key.IMAGEMAGICKPROCESSOR_PATH_TO_BINARIES,
                 "/bogus/bogus/bogus");
@@ -230,26 +237,20 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Test
-    public void getWarningsWithNoWarnings() {
-        boolean initialValue = ImageMagickProcessor.isUsingVersion7();
-        try {
-            ImageMagickProcessor.setUsingVersion7(true);
-            ImageMagickProcessor.setHasCheckedVersion(true);
-            assertEquals(0, instance.getWarnings().size());
-        } finally {
-            ImageMagickProcessor.setUsingVersion7(initialValue);
-        }
+    public void testGetWarningsWithNoWarnings() {
+        assertEquals(0, instance.getWarnings().size());
     }
 
     @Test
-    public void getWarningsWithWarnings() {
-        boolean initialValue = ImageMagickProcessor.isUsingVersion7();
+    public void testGetWarningsWithDeprecationWarning() {
+        ImageMagickProcessor.IMVersion initialValue =
+                ImageMagickProcessor.getIMVersion();
         try {
-            ImageMagickProcessor.setUsingVersion7(false);
-            ImageMagickProcessor.setHasCheckedVersion(true);
+            ImageMagickProcessor.setIMVersion(
+                    ImageMagickProcessor.IMVersion.VERSION_PRE_7);
             assertEquals(1, instance.getWarnings().size());
         } finally {
-            ImageMagickProcessor.setUsingVersion7(initialValue);
+            ImageMagickProcessor.setIMVersion(initialValue);
         }
     }
 
