@@ -90,7 +90,7 @@ public class AdminResource extends AbstractAdminResource {
      * @return HTML representation of the admin interface.
      */
     @Get("html")
-    public Representation doGet() throws Exception {
+    public Representation doGet() {
         return template("/admin.vm", getTemplateVars());
     }
 
@@ -98,7 +98,7 @@ public class AdminResource extends AbstractAdminResource {
      * @return Map containing keys that will be used as variables in the admin
      *         interface's HTML template.
      */
-    private Map<String,Object> getTemplateVars() throws Exception {
+    private Map<String,Object> getTemplateVars() {
         final Map<String, Object> vars = getCommonTemplateVars(getRequest());
         vars.put("adminUri", vars.get("baseUri") + RestletApplication.ADMIN_PATH);
 
@@ -140,8 +140,12 @@ public class AdminResource extends AbstractAdminResource {
         vars.put("resolverSelectionStrategy", selectionStrategy);
 
         if (selectionStrategy.equals(ResolverFactory.SelectionStrategy.STATIC)) {
-            vars.put("currentResolver", new ObjectProxy(
-                    new ResolverFactory().newResolver(new Identifier("irrelevant"))));
+            try {
+                vars.put("currentResolver", new ObjectProxy(
+                        new ResolverFactory().newResolver(new Identifier("irrelevant"))));
+            } catch (Exception e) {
+                // nothing we can do
+            }
         }
 
         List<ObjectProxy> sortedProxies = ResolverFactory.getAllResolvers().
@@ -161,9 +165,9 @@ public class AdminResource extends AbstractAdminResource {
             try {
                 assignments.put(format,
                         new ProcessorProxy(new ProcessorFactory().newProcessor(format)));
-            } catch (UnsupportedSourceFormatException e) {
-                // nothing we can do
-            } catch (InitializationException e) {
+            } catch (UnsupportedSourceFormatException |
+                    InitializationException |
+                    ReflectiveOperationException e) {
                 // nothing we can do
             }
         }

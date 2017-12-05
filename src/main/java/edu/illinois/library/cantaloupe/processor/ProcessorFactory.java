@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -38,8 +37,7 @@ public class ProcessorFactory {
     public Processor newProcessor(final Format sourceFormat)
             throws UnsupportedSourceFormatException,
             InitializationException,
-            ReflectiveOperationException,
-            IOException {
+            ReflectiveOperationException {
         String processorName = getAssignedProcessorName(sourceFormat);
         if (processorName == null) {
             processorName = getFallbackProcessorName();
