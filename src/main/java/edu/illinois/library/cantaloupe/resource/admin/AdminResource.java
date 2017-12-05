@@ -22,7 +22,6 @@ import org.restlet.util.Series;
 
 import java.awt.GraphicsEnvironment;
 import java.io.File;
-import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.Arrays;
@@ -75,13 +74,6 @@ public class AdminResource extends AbstractAdminResource {
 
         public List<String> getWarnings() {
             return ((Processor) object).getWarnings();
-        }
-    }
-
-    private static class ObjectProxyComparator
-            implements Comparator<ObjectProxy>, Serializable {
-        public int compare(ObjectProxy o1, ObjectProxy o2) {
-            return o1.getName().compareTo(o2.getName());
         }
     }
 
@@ -155,8 +147,8 @@ public class AdminResource extends AbstractAdminResource {
         List<ObjectProxy> sortedProxies = ResolverFactory.getAllResolvers().
                 stream().
                 map(ObjectProxy::new).
+                sorted(Comparator.comparing(ObjectProxy::getName)).
                 collect(Collectors.toList());
-        sortedProxies.sort(new ObjectProxyComparator());
         vars.put("resolvers", sortedProxies);
 
         ////////////////////////////////////////////////////////////////////
@@ -177,24 +169,18 @@ public class AdminResource extends AbstractAdminResource {
         }
         vars.put("processorAssignments", assignments);
 
-        class SourceFormatComparator implements Comparator<Format> {
-            public int compare(Format o1, Format o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        }
-
         // image source formats
         List<Format> imageFormats = Arrays.stream(Format.values()).
                 filter(f -> Format.Type.IMAGE.equals(f.getType())).
+                sorted(Comparator.comparing(Format::getName)).
                 collect(Collectors.toList());
-        imageFormats.sort(new SourceFormatComparator());
         vars.put("imageSourceFormats", imageFormats);
 
         // video source formats
         List<Format> videoFormats = Arrays.stream(Format.values()).
                 filter(f -> Format.Type.VIDEO.equals(f.getType())).
+                sorted(Comparator.comparing(Format::getName)).
                 collect(Collectors.toList());
-        videoFormats.sort(new SourceFormatComparator());
         vars.put("videoSourceFormats", videoFormats);
 
         // source format assignments
@@ -203,13 +189,13 @@ public class AdminResource extends AbstractAdminResource {
         List<ProcessorProxy> sortedProcessorProxies =
                 ProcessorFactory.getAllProcessors().stream().
                         map(ProcessorProxy::new).
+                        sorted(Comparator.comparing(ObjectProxy::getName)).
                         collect(Collectors.toList());
 
         // warnings
         vars.put("anyWarnings", sortedProcessorProxies.stream().
                 anyMatch(p -> !p.getWarnings().isEmpty()));
 
-        sortedProcessorProxies.sort(new ObjectProxyComparator());
         vars.put("processors", sortedProcessorProxies);
 
         vars.put("streamProcessorRetrievalStrategy",
@@ -231,8 +217,8 @@ public class AdminResource extends AbstractAdminResource {
 
         sortedProxies = CacheFactory.getAllSourceCaches().stream().
                 map(ObjectProxy::new).
+                sorted(Comparator.comparing(ObjectProxy::getName)).
                 collect(Collectors.toList());
-        sortedProxies.sort(new ObjectProxyComparator());
         vars.put("sourceCaches", sortedProxies);
 
         // derivative caches
@@ -245,8 +231,8 @@ public class AdminResource extends AbstractAdminResource {
 
         sortedProxies = CacheFactory.getAllDerivativeCaches().stream().
                 map(ObjectProxy::new).
+                sorted(Comparator.comparing(ObjectProxy::getName)).
                 collect(Collectors.toList());
-        sortedProxies.sort(new ObjectProxyComparator());
         vars.put("derivativeCaches", sortedProxies);
 
         ////////////////////////////////////////////////////////////////////
