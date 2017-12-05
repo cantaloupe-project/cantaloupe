@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.restlet.Client;
+import org.restlet.Response;
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
@@ -97,6 +98,9 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     private final Client client = new Client(
             Arrays.asList(Protocol.HTTP, Protocol.HTTPS));
 
+    private ResourceException headRequestException;
+    private Response headResponse;
+
     /**
      * Factory method. Be sure to call {@link ClientResource#release()} when
      * done with the instance.
@@ -119,27 +123,13 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
     @Override
     public StreamSource newStreamSource() throws IOException {
+        // Check whether the underlying resource is accessible.
+        getHEADResponse();
+
         Reference url = getUrl();
-        logger.info("Resolved {} to {}", identifier, url);
         ClientResource resource = newClientResource(url);
         resource.setNext(client);
-        try {
-            // Issue an HTTP HEAD request to check whether the underlying
-            // resource is accessible.
-            resource.head();
-            return new HttpStreamSource(client, url);
-        } catch (ResourceException e) {
-            if (e.getStatus().equals(Status.CLIENT_ERROR_NOT_FOUND) ||
-                    e.getStatus().equals(Status.CLIENT_ERROR_GONE)) {
-                throw new FileNotFoundException(e.getMessage());
-            } else if (e.getStatus().equals(Status.CLIENT_ERROR_FORBIDDEN)) {
-                throw new AccessDeniedException(e.getMessage());
-            } else {
-                throw new IOException(e.getMessage(), e);
-            }
-        } finally {
-            resource.release();
-        }
+        return new HttpStreamSource(client, url);
     }
 
     @Override
@@ -149,7 +139,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
             if (sourceFormat == Format.UNKNOWN) {
                 sourceFormat = getSourceFormatFromContentTypeHeader();
             }
-            newStreamSource().newInputStream(); // throws IOException if not found etc.
+            newStreamSource(); // throws IOException if not found etc.
         }
         return sourceFormat;
     }
@@ -183,11 +173,9 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         Format format = Format.UNKNOWN;
         String contentType = "";
         Reference url = getUrl();
-        ClientResource resource = newClientResource(url);
-        resource.setNext(client);
         try {
-            resource.head();
-            contentType = resource.getResponse().getHeaders().
+            Response response = getHEADResponse();
+            contentType = response.getHeaders().
                     getFirstValue("Content-Type", true);
             if (contentType != null) {
                 format = new MediaType(contentType).toFormat();
@@ -204,8 +192,6 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                         "include a Content-Type header with the value of " +
                         "the media (MIME) type of the source image.", url);
             }
-        } finally {
-            resource.release();
         }
         return format;
     }
@@ -235,6 +221,56 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                     " returned nil for " + identifier);
         }
         return new Reference((String) result);
+    }
+
+    /**
+     * @return HEAD response. The result is cached.
+     * @throws FileNotFoundException If the resource is not found (HTTP 404 or
+     *                               410).
+     * @throws AccessDeniedException If the resource is not accessible (HTTP
+     *                               401 or 403).
+     * @throws IOException           If there is some other error (HTTP 400 or
+     *                               above).
+     */
+    private Response getHEADResponse() throws IOException {
+        if (headResponse == null) {
+            Reference url = getUrl();
+            logger.info("Resolved {} to {}", identifier, url);
+
+            ClientResource resource = newClientResource(url);
+            resource.setNext(client);
+            try {
+                resource.head();
+                headResponse = resource.getResponse();
+            } catch (ResourceException e) {
+                headRequestException = e;
+            } finally {
+                resource.release();
+            }
+        }
+
+        if (headRequestException != null) {
+            final Status status = headRequestException.getStatus();
+            if (Status.CLIENT_ERROR_NOT_FOUND.equals(status) ||
+                    Status.CLIENT_ERROR_GONE.equals(status)) {
+                throw new FileNotFoundException(headRequestException.getMessage());
+            } else if (Status.CLIENT_ERROR_UNAUTHORIZED.equals(status) ||
+                    Status.CLIENT_ERROR_FORBIDDEN.equals(status)) {
+                throw new AccessDeniedException(headRequestException.getMessage());
+            } else {
+                throw new IOException(headRequestException.getMessage(),
+                        headRequestException);
+            }
+        }
+
+        return headResponse;
+    }
+
+    @Override
+    public void setIdentifier(Identifier identifier) {
+        super.setIdentifier(identifier);
+        headRequestException = null;
+        headResponse = null;
     }
 
 }
