@@ -10,7 +10,7 @@ import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.OutputStream;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -35,10 +35,12 @@ public interface Processor {
      * <p>Implementations may need to perform initialization (such as scanning
      * for supported formats etc.) that is more efficient to do only once, at
      * initialization time. If this fails, this method should return a
-     * non-null value.</p>
+     * non-null value, which signifies that the instance is in an unusable
+     * state.</p>
      *
      * <p>This default implementation returns <code>null</code>.</p>
      *
+     * @see #getWarnings()
      * @since 3.4
      */
     default InitializationException getInitializationException() {
@@ -71,15 +73,21 @@ public interface Processor {
     getSupportedIIIF2Qualities();
 
     /**
-     * <p>Returns a list of global (not request-specific) warnings, such as
-     * deprecation notices.</p>
+     * <p>Returns a list of global (not request-specific) non-fatal warnings,
+     * such as deprecation notices.</p>
+     *
+     * <p>An instance with warnings is still usable.</p>
+     *
+     * <p>The return value of {@link #getInitializationException()}, if not
+     * <code>null</code>, should not be duplicated here.</p>
      *
      * <p>This default implementation returns an empty list.</p>
      *
+     * @see #getInitializationException()
      * @since 3.4
      */
     default List<String> getWarnings() {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     /**
