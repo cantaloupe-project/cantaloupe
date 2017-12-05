@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 abstract class ImageIOProcessorTest extends ProcessorTest {
 
     @Test
-    public void getAvailableOutputFormats() throws Exception {
+    public void testGetAvailableOutputFormats() throws Exception {
         final HashMap<Format,Set<Format>> formats = new HashMap<>();
         for (Format format : ImageReader.supportedFormats()) {
             formats.put(format, ImageWriter.supportedFormats());
@@ -37,7 +37,7 @@ abstract class ImageIOProcessorTest extends ProcessorTest {
      */
     @Test
     @Override
-    public void readImageInfo() throws Exception {
+    public void testReadImageInfo() throws Exception {
         Info expectedInfo = new Info(64, 56, Format.TIF);
         expectedInfo.getImages().get(0).tileWidth = 16;
         expectedInfo.getImages().get(0).tileHeight = 16;
@@ -69,7 +69,7 @@ abstract class ImageIOProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void readImageInfoWithOrientation() throws Exception {
+    public void testReadImageInfoWithOrientation() throws Exception {
         Configuration.getInstance().
                 setProperty(Key.PROCESSOR_RESPECT_ORIENTATION, true);
 

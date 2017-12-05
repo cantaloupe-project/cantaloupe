@@ -110,7 +110,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Override
-    protected Format getSupported16BitSourceFormat() throws IOException {
+    protected Format getSupported16BitSourceFormat() {
         return Format.PNG;
     }
 
@@ -125,7 +125,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Test
-    public void getInitializationException() {
+    public void testGetInitializationException() {
         Configuration.getInstance().setProperty(
                 Key.GRAPHICSMAGICKPROCESSOR_PATH_TO_BINARIES,
                 "/bogus/bogus/bogus");
@@ -136,7 +136,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
 
     @Override
     @Test
-    public void processOf16BitImageWithEncodeOperationLimitingTo8Bits() {
+    public void testProcessOf16BitImageWithEncodeOperationLimitingTo8Bits() {
         // >8-bit output is not currently available in this processor.
         // GM only has a -depth argument that forces all output to that depth.
         // In order to accomplish this, we would probably need readImageInfo()
@@ -146,12 +146,12 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
 
     @Override
     @Test
-    public void processOf16BitImageWithEncodeOperationWithNoLimit() {
+    public void testProcessOf16BitImageWithEncodeOperationWithNoLimit() {
         // See above method.
     }
 
     @Test
-    public void processWithPageOption() throws Exception {
+    public void testProcessWithPageOption() throws Exception {
         // Skip if GraphicsMagick does not support PDF.
         try {
             instance.setSourceFormat(Format.PDF);
@@ -185,7 +185,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Test
-    public void validate() throws Exception {
+    public void testValidate() throws Exception {
         // Skip if GraphicsMagick does not support PDF.
         try {
             instance.setSourceFormat(Format.PDF);

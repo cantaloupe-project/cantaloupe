@@ -26,7 +26,7 @@ public class KakaduProcessorTest extends ProcessorTest {
     }
 
     @Override
-    protected Format getSupported16BitSourceFormat() throws IOException {
+    protected Format getSupported16BitSourceFormat() {
         return Format.JP2;
     }
 
@@ -48,7 +48,7 @@ public class KakaduProcessorTest extends ProcessorTest {
 
     @Test
     @Override
-    public void readImageInfo() throws Exception {
+    public void testReadImageInfo() throws Exception {
         Info expectedInfo = new Info(100, 88, 100, 88, Format.JP2);
 
         instance.setSourceFile(TestUtil.getImage("jp2"));
@@ -68,7 +68,7 @@ public class KakaduProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void getSupportedFeatures() throws Exception {
+    public void testGetSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
 
         Set<ProcessorFeature> expectedFeatures = new HashSet<>(Arrays.asList(

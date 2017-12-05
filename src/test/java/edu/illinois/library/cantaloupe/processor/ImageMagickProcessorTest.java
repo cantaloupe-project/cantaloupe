@@ -136,7 +136,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Override
-    protected Format getSupported16BitSourceFormat() throws IOException {
+    protected Format getSupported16BitSourceFormat() {
         return Format.PNG;
     }
 
@@ -151,7 +151,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Test
-    public void getIMOverlayGeometry() throws Exception {
+    public void testGetIMOverlayGeometry() throws Exception {
         ImageMagickProcessor instance = newInstance();
         URI uri = new URI("http://example.org/cats");
 
@@ -185,7 +185,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Test
-    public void getIMOverlayGravity() {
+    public void testGetIMOverlayGravity() {
         ImageMagickProcessor instance = newInstance();
 
         assertEquals("northwest",
@@ -209,7 +209,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Test
-    public void getInitializationException() {
+    public void testGetInitializationException() {
         Configuration.getInstance().setProperty(
                 Key.IMAGEMAGICKPROCESSOR_PATH_TO_BINARIES,
                 "/bogus/bogus/bogus");
@@ -219,7 +219,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Test
-    public void getOverlayTempFile() throws Exception {
+    public void testGetOverlayTempFile() throws Exception {
         URI uri = new URI("file://" + TestUtil.getImage("jpg").getAbsolutePath());
         ImageOverlay overlay = new ImageOverlay(uri, Position.TOP_LEFT, 2);
 
@@ -255,7 +255,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
 
     @Override
     @Test
-    public void processOf16BitImageWithEncodeOperationLimitingTo8Bits() {
+    public void testProcessOf16BitImageWithEncodeOperationLimitingTo8Bits() {
         // >8-bit output is not currently available in this processor.
         // IM only has a -depth argument that forces all output to that depth.
         // In order to accomplish this, we would probably need readImageInfo()
@@ -265,12 +265,12 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
 
     @Override
     @Test
-    public void processOf16BitImageWithEncodeOperationWithNoLimit() {
+    public void testProcessOf16BitImageWithEncodeOperationWithNoLimit() {
         // See above method.
     }
 
     @Test
-    public void processWithPageOption() throws Exception {
+    public void testProcessWithPageOption() throws Exception {
         // Skip if ImageMagick does not support PDF.
         try {
             instance.setSourceFormat(Format.PDF);
@@ -304,7 +304,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Test
-    public void validate() throws Exception {
+    public void testValidate() throws Exception {
         // Skip if ImageMagick does not support PDF.
         try {
             instance.setSourceFormat(Format.PDF);

@@ -61,7 +61,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void getAvailableOutputFormats() throws Exception {
+    public void testGetAvailableOutputFormats() {
         for (Format format : Format.values()) {
             try {
                 instance = newInstance();
@@ -79,7 +79,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void getSupportedFeatures() throws Exception {
+    public void testGetSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
         Set<ProcessorFeature> expectedFeatures = new HashSet<>(Arrays.asList(
                 ProcessorFeature.MIRRORING,
@@ -135,7 +135,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void processWithTimeOption() throws Exception {
+    public void testProcessWithTimeOption() throws Exception {
         final Info imageInfo = instance.readImageInfo();
 
         // time option missing
@@ -154,7 +154,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void processWithInvalidFrameOptionThrowsException()
+    public void testProcessWithInvalidFrameOptionThrowsException()
             throws Exception {
         final Info imageInfo = instance.readImageInfo();
 
@@ -171,7 +171,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
 
     @Override
     @Test
-    public void readImageInfo() throws Exception {
+    public void testReadImageInfo() throws Exception {
         instance.setSourceFile(TestUtil.getImage("mpg"));
         instance.setSourceFormat(Format.MPG);
         Info expectedInfo = new Info(640, 360, 640, 360, Format.MPG);
@@ -180,7 +180,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void validate() throws Exception {
+    public void testValidate() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         Dimension fullSize = new Dimension(1000, 1000);
         instance.validate(ops, fullSize);

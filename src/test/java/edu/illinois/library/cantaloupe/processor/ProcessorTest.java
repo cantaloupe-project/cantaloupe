@@ -39,7 +39,7 @@ public abstract class ProcessorTest extends BaseTest {
 
     protected static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";
 
-    Format getAnySupportedSourceFormat(Processor processor) throws Exception {
+    Format getAnySupportedSourceFormat(Processor processor) {
         for (Format format : Format.values()) {
             try {
                 processor.setSourceFormat(format);
@@ -72,7 +72,7 @@ public abstract class ProcessorTest extends BaseTest {
      * override it.
      */
     @Test
-    public void readImageInfo() throws Exception {
+    public void testReadImageInfo() throws Exception {
         Info expectedInfo = new Info(64, 56, 64, 56, Format.JPG);
 
         Processor proc = newInstance();
@@ -100,13 +100,13 @@ public abstract class ProcessorTest extends BaseTest {
     /* process() */
 
     @Test
-    public void processWithSupportedSourceFormatsAndNoOperations()
+    public void testProcessWithSupportedSourceFormatsAndNoOperations()
             throws Exception {
         doProcessTest(TestUtil.newOperationList());
     }
 
     @Test
-    public void processWithSupportedSourceFormatsAndNoOpOperations()
+    public void testProcessWithSupportedSourceFormatsAndNoOpOperations()
             throws Exception {
         Crop crop = new Crop();
         crop.setFull(true);
@@ -119,7 +119,7 @@ public abstract class ProcessorTest extends BaseTest {
     }
 
     @Test
-    public void processWithUnsupportedSourceFormats() throws Exception {
+    public void testProcessWithUnsupportedSourceFormats() throws Exception {
         Crop crop = new Crop();
         crop.setX(20f);
         crop.setY(20f);
@@ -165,7 +165,7 @@ public abstract class ProcessorTest extends BaseTest {
     }
 
     @Test
-    public void processWithCropOperation() throws Exception {
+    public void testProcessWithCropOperation() throws Exception {
         List<Crop> crops = new ArrayList<>();
         Crop crop = new Crop();
         crop.setFull(true);
@@ -198,12 +198,12 @@ public abstract class ProcessorTest extends BaseTest {
     }
 
     @Test
-    public void processWithNormalizeOperation() {
+    public void testProcessWithNormalizeOperation() {
         // TODO: write this
     }
 
     @Test
-    public void processWithScaleOperation() throws Exception {
+    public void testProcessWithScaleOperation() throws Exception {
         List<Scale> scales = new ArrayList<>();
         Scale scale = new Scale();
         scales.add(scale);
@@ -225,7 +225,7 @@ public abstract class ProcessorTest extends BaseTest {
     }
 
     @Test
-    public void processWithTransposeOperation() throws Exception {
+    public void testProcessWithTransposeOperation() throws Exception {
         List<Transpose> transposes = new ArrayList<>();
         transposes.add(Transpose.HORIZONTAL);
         // we aren't using this yet
@@ -238,7 +238,7 @@ public abstract class ProcessorTest extends BaseTest {
     }
 
     @Test
-    public void processWithRotateOperation() throws Exception {
+    public void testProcessWithRotateOperation() throws Exception {
         Rotate[] rotates = {
                 new Rotate(0), new Rotate(15), new Rotate(275) };
         for (Rotate rotate : rotates) {
@@ -249,7 +249,7 @@ public abstract class ProcessorTest extends BaseTest {
     }
 
     @Test
-    public void processWithFilterOperation() throws Exception {
+    public void testProcessWithFilterOperation() throws Exception {
         for (ColorTransform transform : ColorTransform.values()) {
             OperationList ops = TestUtil.newOperationList();
             ops.add(transform);
@@ -258,7 +258,7 @@ public abstract class ProcessorTest extends BaseTest {
     }
 
     @Test
-    public void processOf16BitImageWithEncodeOperationLimitingTo8Bits()
+    public void testProcessOf16BitImageWithEncodeOperationLimitingTo8Bits()
             throws Exception {
         final File fixture = getSupported16BitImage();
         assumeNotNull(fixture);
@@ -279,7 +279,7 @@ public abstract class ProcessorTest extends BaseTest {
     }
 
     @Test
-    public void processOf16BitImageWithEncodeOperationWithNoLimit()
+    public void testProcessOf16BitImageWithEncodeOperationWithNoLimit()
             throws Exception {
         final File fixture = getSupported16BitImage();
         assumeNotNull(fixture);
@@ -300,7 +300,7 @@ public abstract class ProcessorTest extends BaseTest {
     }
 
     @Test
-    public void processWithAllSupportedOutputFormats() throws Exception {
+    public void testProcessWithAllSupportedOutputFormats() throws Exception {
         Processor proc = newInstance();
         proc.setSourceFormat(getAnySupportedSourceFormat(proc));
         Set<Format> outputFormats = proc.getAvailableOutputFormats();
@@ -388,7 +388,7 @@ public abstract class ProcessorTest extends BaseTest {
     private void doProcessTest(final File fixture,
                                final Format sourceFormat,
                                final OperationList opList)
-            throws IOException, ProcessorException {
+            throws ProcessorException {
         final Processor proc = newConfiguredProcessor(fixture, sourceFormat);
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -411,7 +411,7 @@ public abstract class ProcessorTest extends BaseTest {
                                final Format sourceFormat,
                                final OperationList opList,
                                final OutputStream os)
-            throws IOException, ProcessorException {
+            throws ProcessorException {
         final Processor proc = newConfiguredProcessor(fixture, sourceFormat);
         try {
             proc.process(opList, proc.readImageInfo(), os);

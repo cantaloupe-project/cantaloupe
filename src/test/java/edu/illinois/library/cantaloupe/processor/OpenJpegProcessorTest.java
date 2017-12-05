@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -27,7 +26,7 @@ public class OpenJpegProcessorTest extends ProcessorTest {
     }
 
     @Override
-    protected Format getSupported16BitSourceFormat() throws IOException {
+    protected Format getSupported16BitSourceFormat() {
         return Format.JP2;
     }
 
@@ -48,7 +47,7 @@ public class OpenJpegProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void getSupportedFeatures() throws Exception {
+    public void testGetSupportedFeatures() {
         Set<ProcessorFeature> expectedFeatures = new HashSet<>(Arrays.asList(
                 ProcessorFeature.MIRRORING,
                 ProcessorFeature.REGION_BY_PERCENT,
@@ -68,20 +67,20 @@ public class OpenJpegProcessorTest extends ProcessorTest {
 
     @Override
     @Test
-    public void processOf16BitImageWithEncodeOperationLimitingTo8Bits() {
+    public void testProcessOf16BitImageWithEncodeOperationLimitingTo8Bits() {
         // Skipped. See OpenJpegProcessor's class doc for an explanation of why
         // it doesn't support 16-bit output.
     }
 
     @Override
     @Test
-    public void processOf16BitImageWithEncodeOperationWithNoLimit() {
+    public void testProcessOf16BitImageWithEncodeOperationWithNoLimit() {
         // Skipped. See OpenJpegProcessor's class doc for an explanation of why
         // it doesn't support 16-bit output.
     }
 
     @Test
-    public void getWarningsWithNoWarnings() {
+    public void testGetWarningsWithNoWarnings() {
         boolean initialValue = OpenJpegProcessor.isQuietModeSupported();
         try {
             OpenJpegProcessor.setQuietModeSupported(true);
@@ -92,8 +91,8 @@ public class OpenJpegProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void getWarningsWithWarnings() {
-        boolean initialValue = ImageMagickProcessor.isUsingVersion7();
+    public void testGetWarningsWithWarnings() {
+        boolean initialValue = OpenJpegProcessor.isQuietModeSupported();
         try {
             OpenJpegProcessor.setQuietModeSupported(false);
             assertEquals(1, instance.getWarnings().size());
@@ -104,7 +103,7 @@ public class OpenJpegProcessorTest extends ProcessorTest {
 
     @Test
     @Override
-    public void readImageInfo() throws Exception {
+    public void testReadImageInfo() throws Exception {
         Info expectedInfo = new Info(100, 88, 100, 88, Format.JP2);
 
         instance.setSourceFile(TestUtil.getImage("jp2"));

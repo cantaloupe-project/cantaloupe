@@ -15,7 +15,6 @@ import org.junit.Test;
 import java.awt.Dimension;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -36,12 +35,12 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     }
 
     @Override
-    protected Format getSupported16BitSourceFormat() throws IOException {
+    protected Format getSupported16BitSourceFormat() {
         return null;
     }
 
     @Override
-    protected File getSupported16BitImage() throws IOException {
+    protected File getSupported16BitImage() {
         return null;
     }
 
@@ -57,7 +56,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void getSupportedFeatures() throws Exception {
+    public void testGetSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
 
         Set<ProcessorFeature> expectedFeatures = new HashSet<>(Arrays.asList(
@@ -78,7 +77,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void processWithPageOption() throws Exception {
+    public void testProcessWithPageOption() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
         final Info imageInfo = instance.readImageInfo();
 
@@ -98,7 +97,8 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     }
 
     @Test
-    public void processWithIllegalPageOptionThrowsException() throws Exception {
+    public void testProcessWithIllegalPageOptionThrowsException()
+            throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
         final Info imageInfo = instance.readImageInfo();
 
@@ -116,7 +116,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
 
     @Test
     @Override
-    public void readImageInfo() throws Exception {
+    public void testReadImageInfo() throws Exception {
         Info expectedInfo = new Info(100, 88, 100, 88, Format.PDF);
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
         instance.setSourceFormat(Format.PDF);

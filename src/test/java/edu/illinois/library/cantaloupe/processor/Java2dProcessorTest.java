@@ -25,7 +25,7 @@ public class Java2dProcessorTest extends ImageIOProcessorTest {
     }
 
     @Override
-    protected Format getSupported16BitSourceFormat() throws IOException {
+    protected Format getSupported16BitSourceFormat() {
         return Format.PNG;
     }
 
@@ -40,7 +40,7 @@ public class Java2dProcessorTest extends ImageIOProcessorTest {
     }
 
     @Test
-    public void getSupportedFeatures() throws Exception {
+    public void testGetSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
 
         Set<ProcessorFeature> expectedFeatures = new HashSet<>(Arrays.asList(
