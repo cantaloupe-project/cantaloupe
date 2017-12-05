@@ -282,6 +282,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         initializationAttempted.set(false);
         initializationException = null;
         supportedFormats.clear();
+        imVersion = null;
     }
 
     /**
