@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.WebApplication;
 import edu.illinois.library.cantaloupe.cache.Cache;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -17,14 +18,11 @@ import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.SourceImageWrangler;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
-import org.restlet.Request;
 import org.restlet.data.Disposition;
-import org.restlet.data.Header;
 import org.restlet.data.Reference;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
-import org.restlet.util.Series;
 
 import java.awt.Dimension;
 import java.io.FileNotFoundException;
@@ -48,11 +46,10 @@ public class ImageResource extends IIIF2Resource {
 
     /**
      * Responds to image requests.
-     *
-     * @return ImageRepresentation
      */
     @Get
     public Representation doGet() throws Exception {
+        final Configuration config = ConfigurationFactory.getInstance();
         final Map<String,Object> attrs = getRequest().getAttributes();
         final String urlIdentifier = (String) attrs.get("identifier");
         final String decodedIdentifier = Reference.decode(urlIdentifier);
@@ -74,42 +71,56 @@ public class ImageResource extends IIIF2Resource {
         final Disposition disposition = getRepresentationDisposition(
                 ops.getIdentifier(), ops.getOutputFormat());
 
+        Format sourceFormat = Format.UNKNOWN;
+
         // If we don't need to resolve first, and are using a cache, and the
         // cache contains an image matching the request, skip all the setup and
         // just return the cached image.
-        if (!ConfigurationFactory.getInstance().
-                getBoolean(Cache.RESOLVE_FIRST_CONFIG_KEY, true)) {
+        if (!config.getBoolean(Cache.RESOLVE_FIRST_CONFIG_KEY, true)) {
             DerivativeCache cache = CacheFactory.getDerivativeCache();
             if (cache != null) {
-                InputStream inputStream = cache.newDerivativeImageInputStream(ops);
-                if (inputStream != null) {
-                    this.addLinkHeader(params);
-                    return new CachedImageRepresentation(
-                            params.getOutputFormat().getPreferredMediaType(),
-                            disposition, inputStream);
+                final Info info = cache.getImageInfo(identifier);
+                if (info != null) {
+                    addNonEndpointOperations(ops, info.getSize());
+                    InputStream inputStream =
+                            cache.newDerivativeImageInputStream(ops);
+                    if (inputStream != null) {
+                        addLinkHeader(params);
+                        return new CachedImageRepresentation(
+                                params.getOutputFormat().getPreferredMediaType(),
+                                disposition, inputStream);
+                    } else {
+                        Format infoFormat = info.getSourceFormat();
+                        if (infoFormat != null) {
+                            sourceFormat = infoFormat;
+                        }
+                    }
                 }
             }
         }
 
         Resolver resolver = ResolverFactory.getResolver(ops.getIdentifier());
-        // Determine the format of the source image
-        Format format = Format.UNKNOWN;
-        try {
-            format = resolver.getSourceFormat();
-        } catch (FileNotFoundException e) {
-            if (ConfigurationFactory.getInstance().
-                    getBoolean(Cache.PURGE_MISSING_CONFIG_KEY, false)) {
-                // if the image was not found, purge it from the cache
-                final Cache cache = CacheFactory.getDerivativeCache();
-                if (cache != null) {
-                    cache.purge(ops.getIdentifier());
+
+        // If we don't have the format yet, get it from the resolver.
+        if (Format.UNKNOWN.equals(sourceFormat)) {
+            try {
+                sourceFormat = resolver.getSourceFormat();
+            } catch (FileNotFoundException e) {
+                if (config.getBoolean(Cache.PURGE_MISSING_CONFIG_KEY, false)) {
+                    // if the image was not found, purge it from the cache
+                    final Cache cache = CacheFactory.getDerivativeCache();
+                    if (cache != null) {
+                        cache.purge(ops.getIdentifier());
+                    }
                 }
+                throw e;
             }
-            throw e;
         }
 
-        final Processor processor = ProcessorFactory.getProcessor(format);
+        // Obtain an instance of the processor assigned to that format.
+        final Processor processor = ProcessorFactory.getProcessor(sourceFormat);
 
+        // Connect it to the resolver.
         new SourceImageWrangler(resolver, processor, identifier).wrangle();
 
         final Info info = getOrReadInfo(ops.getIdentifier(), processor);
@@ -125,8 +136,7 @@ public class ImageResource extends IIIF2Resource {
         // Will throw an exception if anything is wrong.
         checkRequest(ops, fullSize);
 
-        if (ConfigurationFactory.getInstance().
-                getBoolean(RESTRICT_TO_SIZES_CONFIG_KEY, false)) {
+        if (config.getBoolean(RESTRICT_TO_SIZES_CONFIG_KEY, false)) {
             final ImageInfo imageInfo = ImageInfoFactory.newImageInfo(
                     identifier, null, processor, info);
             final Dimension resultingSize = ops.getResultingSize(fullSize);
@@ -146,7 +156,11 @@ public class ImageResource extends IIIF2Resource {
             }
         }
 
-        addNonEndpointOperations(ops, fullSize);
+        try {
+            addNonEndpointOperations(ops, fullSize);
+        } catch (UnsupportedOperationException e) {
+            // The instance may already be frozen, which is fine.
+        }
 
         // Find out whether the processor supports that source format by
         // asking it whether it offers any output formats for it
@@ -166,7 +180,7 @@ public class ImageResource extends IIIF2Resource {
         // error response.
         getResponseCacheDirectives().addAll(getCacheDirectives());
 
-        return getRepresentation(ops, format, info, disposition, processor);
+        return getRepresentation(ops, sourceFormat, info, disposition, processor);
     }
 
     private void addLinkHeader(Parameters params) {

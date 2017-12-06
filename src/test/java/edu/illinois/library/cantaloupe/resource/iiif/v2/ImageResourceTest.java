@@ -22,6 +22,7 @@ import org.restlet.data.ChallengeScheme;
 import org.restlet.data.Disposition;
 import org.restlet.data.Header;
 import org.restlet.data.Status;
+import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 
@@ -41,7 +42,7 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testAuthorizationDelegateWithBooleanReturnValue() throws Exception {
+    public void testAuthorizationDelegateWithBooleanReturnValue() {
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.jpg");
         client.get();
@@ -57,7 +58,7 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testAuthorizationDelegateWithHashReturnValue() throws Exception {
+    public void testAuthorizationDelegateWithHashReturnValue() {
         ClientResource client = getClientForUriPath("/redirect.jpg/full/full/0/default.jpg");
         client.setFollowingRedirects(false);
         client.get();
@@ -113,7 +114,7 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testCacheHeadersWhenClientCachingIsEnabledAndResponseIsCacheable() throws Exception {
+    public void testCacheHeadersWhenClientCachingIsEnabledAndResponseIsCacheable() {
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.CLIENT_CACHE_ENABLED_CONFIG_KEY, "true");
         config.setProperty(AbstractResource.CLIENT_CACHE_MAX_AGE_CONFIG_KEY, "1234");
@@ -149,8 +150,7 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testCacheHeadersWhenClientCachingIsEnabledAndResponseIsNotCacheable()
-            throws Exception {
+    public void testCacheHeadersWhenClientCachingIsEnabledAndResponseIsNotCacheable() {
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.CLIENT_CACHE_ENABLED_CONFIG_KEY, "true");
         config.setProperty(AbstractResource.CLIENT_CACHE_MAX_AGE_CONFIG_KEY, "1234");
@@ -177,12 +177,9 @@ public class ImageResourceTest extends ResourceTest {
      * Tests that there is no Cache-Control header returned when
      * cache.client.enabled = true but a cache=false argument is present in the
      * URL query.
-     *
-     * @throws Exception
      */
     @Test
-    public void testCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInUrl()
-            throws Exception {
+    public void testCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInUrl() {
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(AbstractResource.CLIENT_CACHE_ENABLED_CONFIG_KEY, "true");
         config.setProperty(AbstractResource.CLIENT_CACHE_MAX_AGE_CONFIG_KEY, "1234");
@@ -202,7 +199,7 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testCacheHeadersWhenClientCachingIsDisabled() throws Exception {
+    public void testCacheHeadersWhenClientCachingIsDisabled() {
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty("cache.client.enabled", "false");
 
@@ -278,7 +275,104 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testContentDispositionHeader() throws Exception {
+    public void testCacheWhenDerivativeCacheIsEnabledAndResolveFirstIsEnabled()
+            throws Exception {
+        File cacheFolder = TestUtil.getTempFolder();
+        cacheFolder = new File(cacheFolder.getAbsolutePath() + "/cache");
+        File imageCacheFolder = new File(cacheFolder.getAbsolutePath() + "/image");
+        if (cacheFolder.exists()) {
+            FileUtils.cleanDirectory(cacheFolder);
+        } else {
+            cacheFolder.mkdir();
+        }
+
+        Configuration config = ConfigurationFactory.getInstance();
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
+                "FilesystemCache");
+        config.setProperty("FilesystemCache.pathname",
+                cacheFolder.getAbsolutePath());
+        config.setProperty(Cache.TTL_CONFIG_KEY, 10);
+        config.setProperty(Cache.RESOLVE_FIRST_CONFIG_KEY, true);
+
+        OperationList ops = TestUtil.newOperationList();
+        ops.setIdentifier(new Identifier(IMAGE));
+        ops.setOutputFormat(Format.JPG);
+
+        assertEquals(0, FileUtils.listFiles(cacheFolder, null, true).size());
+
+        // request an image
+        getClientForUriPath("/" + IMAGE + "/full/full/0/default.png").get();
+
+        // assert that it has been cached
+        assertTrue(imageCacheFolder.exists());
+
+        // Move the source image out of the way
+        File tempFile = File.createTempFile("test", "test");
+        tempFile.delete();
+        File sourceFile = TestUtil.getImage(IMAGE);
+        try {
+            FileUtils.moveFile(sourceFile, tempFile);
+
+            // request it again and assert that the response is 404
+            ClientResource res = getClientForUriPath("/" + IMAGE + "/full/full/0/default.png");
+            res.get();
+        } catch (ResourceException e) {
+            assertEquals(Status.CLIENT_ERROR_NOT_FOUND, e.getStatus());
+        } finally {
+            FileUtils.moveFile(tempFile, sourceFile);
+        }
+    }
+
+    @Test
+    public void testCacheWhenDerivativeCacheIsEnabledAndResolveFirstIsDisabled()
+            throws Exception {
+        File cacheFolder = TestUtil.getTempFolder();
+        cacheFolder = new File(cacheFolder.getAbsolutePath() + "/cache");
+        File imageCacheFolder = new File(cacheFolder.getAbsolutePath() + "/image");
+        if (cacheFolder.exists()) {
+            FileUtils.cleanDirectory(cacheFolder);
+        } else {
+            cacheFolder.mkdir();
+        }
+
+        Configuration config = ConfigurationFactory.getInstance();
+        config.setProperty(CacheFactory.DERIVATIVE_CACHE_CONFIG_KEY,
+                "FilesystemCache");
+        config.setProperty("FilesystemCache.pathname",
+                cacheFolder.getAbsolutePath());
+        config.setProperty(Cache.TTL_CONFIG_KEY, 10);
+        config.setProperty(Cache.RESOLVE_FIRST_CONFIG_KEY, false);
+
+        OperationList ops = TestUtil.newOperationList();
+        ops.setIdentifier(new Identifier(IMAGE));
+        ops.setOutputFormat(Format.JPG);
+
+        assertEquals(0, FileUtils.listFiles(cacheFolder, null, true).size());
+
+        // request an image
+        getClientForUriPath("/" + IMAGE + "/full/full/0/default.png").get();
+
+        // assert that it has been cached
+        assertTrue(imageCacheFolder.exists());
+
+        // Move the source image out of the way
+        File tempFile = File.createTempFile("test", "test");
+        tempFile.delete();
+        File sourceFile = TestUtil.getImage(IMAGE);
+        try {
+            FileUtils.moveFile(sourceFile, tempFile);
+
+            // request it again and assert that the response is 200
+            ClientResource res = getClientForUriPath("/" + IMAGE + "/full/full/0/default.png");
+            res.get();
+            assertEquals(Status.SUCCESS_OK, res.getResponse().getStatus());
+        } finally {
+            FileUtils.moveFile(tempFile, sourceFile);
+        }
+    }
+
+    @Test
+    public void testContentDispositionHeader() {
         // no header
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.jpg");
@@ -304,7 +398,7 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testEndpointDisabled() throws Exception {
+    public void testEndpointDisabled() {
         Configuration config = ConfigurationFactory.getInstance();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.jpg");
@@ -332,7 +426,7 @@ public class ImageResourceTest extends ResourceTest {
      * key in the configuration.
      */
     @Test
-    public void testLinkHeader() throws Exception {
+    public void testLinkHeader() {
         Configuration config = ConfigurationFactory.getInstance();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.jpg");
@@ -356,7 +450,7 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testMaxPixels() throws Exception {
+    public void testMaxPixels() {
         Configuration config = ConfigurationFactory.getInstance();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.png");
@@ -375,7 +469,7 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testMaxPixelsIgnoredWhenStreamingSource() throws Exception {
+    public void testMaxPixelsIgnoredWhenStreamingSource() {
         Configuration config = ConfigurationFactory.getInstance();
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.jpg");
@@ -385,7 +479,7 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testNotFound() throws Exception {
+    public void testNotFound() {
         ClientResource client = getClientForUriPath("/invalid");
         try {
             client.get();
@@ -396,7 +490,7 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testProcessorValidationFailure() throws Exception {
+    public void testProcessorValidationFailure() {
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty("processor.pdf", "PdfBoxProcessor");
         ClientResource client = getClientForUriPath(
@@ -502,7 +596,7 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testGetRepresentationDisposition() throws Exception {
+    public void testGetRepresentationDisposition() {
         Configuration config = ConfigurationFactory.getInstance();
 
         final Identifier identifier = new Identifier("cats?/\\dogs");
@@ -538,11 +632,9 @@ public class ImageResourceTest extends ResourceTest {
     /**
      * Checks that the server responds with HTTP 500 when a non-FileResolver is
      * used with a non-StreamProcessor.
-     *
-     * @throws Exception
      */
     @Test
-    public void testResolverProcessorCompatibility() throws Exception {
+    public void testResolverProcessorCompatibility() {
         Configuration config = ConfigurationFactory.getInstance();
         config.setProperty(ResolverFactory.STATIC_RESOLVER_CONFIG_KEY,
                 "HttpResolver");
@@ -563,7 +655,7 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testRestrictToSizes() throws Exception {
+    public void testRestrictToSizes() {
         Configuration config = ConfigurationFactory.getInstance();
 
         // not restricted
@@ -586,7 +678,7 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testSlashSubstitution() throws Exception {
+    public void testSlashSubstitution() {
         ConfigurationFactory.getInstance().setProperty("slash_substitute", "CATS");
 
         ClientResource client = getClientForUriPath("/subfolderCATSjpg/full/full/0/default.jpg");
@@ -595,7 +687,7 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testUnavailableSourceFormat() throws Exception {
+    public void testUnavailableSourceFormat() {
         ClientResource client = getClientForUriPath("/text.txt/full/full/0/default.jpg");
         try {
             client.get();
@@ -606,7 +698,7 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testInvalidOutputFormat() throws Exception {
+    public void testInvalidOutputFormat() {
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.bogus");
         try {
@@ -618,7 +710,7 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testUnavailableOutputFormat() throws Exception {
+    public void testUnavailableOutputFormat() {
         ClientResource client = getClientForUriPath(
                 "/" + IMAGE + "/full/full/0/default.webp");
         try {
