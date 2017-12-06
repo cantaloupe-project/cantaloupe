@@ -844,44 +844,34 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 }
             }
         }
-        logger.info("purgeExpired(): purging...");
 
         try {
             globalPurgeInProgress.set(true);
-            final String imagePathname = rootDerivativeImagePathname();
-            final String infoPathname = rootInfoPathname();
 
-            long imageCount = 0;
-            final File imageDir = new File(imagePathname);
-            Iterator<File> it = FileUtils.iterateFiles(imageDir, null, true);
-            while (it.hasNext()) {
-                final File file = it.next();
-                if (isExpired(file)) {
+            final String[] pathnamesToPurge = {
+                rootSourceImagePathname(),
+                rootDerivativeImagePathname(),
+                rootInfoPathname() };
+            for (String pathname : pathnamesToPurge) {
+                logger.info("purgeExpired(): purging {}...", pathname);
+                long fileCount = 0;
+                final File fileDir = new File(pathname);
+                Iterator<File> it = FileUtils.iterateFiles(fileDir, null, true);
+                while (it.hasNext()) {
                     try {
-                        FileUtils.forceDelete(file);
-                        imageCount++;
+                        final File file = it.next();
+                        if (isExpired(file)) {
+                            FileUtils.forceDelete(file);
+                            fileCount++;
+                        }
+                    } catch (FileNotFoundException e) {
+                        logger.debug(e.getMessage(), e);
                     } catch (IOException e) {
                         logger.warn(e.getMessage());
                     }
                 }
+                logger.info("purgeExpired(): purged {} file(s)", fileCount);
             }
-
-            long infoCount = 0;
-            final File infoDir = new File(infoPathname);
-            it = FileUtils.iterateFiles(infoDir, null, true);
-            while (it.hasNext()) {
-                final File file = it.next();
-                if (isExpired(file)) {
-                    try {
-                        FileUtils.forceDelete(file);
-                        infoCount++;
-                    } catch (IOException e) {
-                        logger.warn(e.getMessage());
-                    }
-                }
-            }
-            logger.info("purgeExpired(): purged {} expired image(s) and {} " +
-                    "expired infos(s)", imageCount, infoCount);
         } finally {
             globalPurgeInProgress.set(false);
             synchronized (imagePurgeLock) {

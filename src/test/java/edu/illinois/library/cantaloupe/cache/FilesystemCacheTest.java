@@ -565,7 +565,7 @@ public class FilesystemCacheTest extends BaseTest {
         imageFile.createNewFile();
 
         instance.purgeExpired();
-        assertEquals(1, FileUtils.listFiles(sourceImagePath, null, true).size());
+        assertEquals(0, FileUtils.listFiles(sourceImagePath, null, true).size());
         assertEquals(1, FileUtils.listFiles(derivativeImagePath, null, true).size());
         assertEquals(0, FileUtils.listFiles(infoPath, null, true).size());
     }
