@@ -29,7 +29,7 @@ import java.util.Iterator;
  *     Writing GIF Images</a>
  * @see <a href="http://justsolve.archiveteam.org/wiki/GIF">GIF</a>
  */
-class GIFImageWriter extends AbstractImageWriter {
+final class GIFImageWriter extends AbstractImageWriter {
 
     GIFImageWriter(OperationList opList,
                    Metadata sourceMetadata) {

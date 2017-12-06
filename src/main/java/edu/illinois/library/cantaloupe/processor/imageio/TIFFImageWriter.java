@@ -34,7 +34,7 @@ import java.util.Iterator;
  * @see <a href="http://download.java.net/media/jai-imageio/javadoc/1.1/com/sun/media/imageio/plugins/tiff/package-summary.html">
  *     ImageIO TIFF Plugin Documentation</a>
  */
-class TIFFImageWriter extends AbstractImageWriter {
+final class TIFFImageWriter extends AbstractImageWriter {
 
     private static final Logger logger = LoggerFactory.
             getLogger(TIFFImageWriter.class);

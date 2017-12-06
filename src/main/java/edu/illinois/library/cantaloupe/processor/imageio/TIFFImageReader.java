@@ -21,7 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
-class TIFFImageReader extends AbstractImageReader {
+final class TIFFImageReader extends AbstractImageReader {
 
     /**
      * @param sourceFile Source file to read.

@@ -8,7 +8,7 @@ import javax.imageio.metadata.IIOMetadata;
 import java.io.File;
 import java.io.IOException;
 
-class DICOMImageReader extends AbstractImageReader {
+final class DICOMImageReader extends AbstractImageReader {
 
     /**
      * @param sourceFile Source file to read.

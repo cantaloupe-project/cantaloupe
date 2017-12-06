@@ -29,7 +29,7 @@ import java.util.List;
  * @see <a href="http://libpng.org/pub/png/spec/1.2/PNG-Contents.html">
  *     PNG Specification, Version 1.2</a>
  */
-class PNGImageWriter extends AbstractImageWriter {
+final class PNGImageWriter extends AbstractImageWriter {
 
     private static final Logger LOGGER = LoggerFactory.
             getLogger(PNGImageWriter.class);

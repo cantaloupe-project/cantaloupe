@@ -8,7 +8,7 @@ import javax.imageio.metadata.IIOMetadata;
 import java.io.File;
 import java.io.IOException;
 
-class BMPImageReader extends AbstractImageReader {
+final class BMPImageReader extends AbstractImageReader {
 
     /**
      * @param sourceFile Source file to read.

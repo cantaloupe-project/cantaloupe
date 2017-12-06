@@ -30,7 +30,7 @@ import java.util.Iterator;
  * JPEG image writer using ImageIO, capable of writing both Java 2D
  * {@link BufferedImage}s and JAI {@link PlanarImage}s as JPEGs.
  */
-class JPEGImageWriter extends AbstractImageWriter {
+final class JPEGImageWriter extends AbstractImageWriter {
 
     private static final Logger LOGGER = LoggerFactory.
             getLogger(JPEGImageWriter.class);
