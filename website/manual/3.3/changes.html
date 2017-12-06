@@ -15,6 +15,7 @@ title: What's New
 <h2>3.3.5</h2>
 
 <ul>
+  <li>Fixed FilesystemCache failing to purge invalid source images. (Thanks to @jhosteny)</li>
   <li>Fixed AmazonS3Cache sometimes purging fewer objects than it should.</li>
   <li>Fixed failure to auto-purge incompletely-written images from derivative caches other than FilesystemCache in response to a VM error (such as <code>OutOfMemoryError</code>).</li>
   <li>HttpResolver makes fewer HTTP requests.</li>
