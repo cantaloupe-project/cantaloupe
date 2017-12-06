@@ -189,7 +189,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
             }
         }
 
-        new ImageWriter(opList).write(image, outputFormat, outputStream);
+        new ImageWriter(opList).write(image, outputStream);
     }
 
 }

@@ -1,11 +1,11 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.image.Compression;
-import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.util.SystemUtils;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFField;
 import org.slf4j.Logger;
@@ -15,7 +15,6 @@ import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
@@ -24,7 +23,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Iterator;
 
 /**
  * TIFF image writer using ImageIO, capable of taking both Java 2D
@@ -36,7 +34,7 @@ import java.util.Iterator;
  */
 final class TIFFImageWriter extends AbstractImageWriter {
 
-    private static final Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(TIFFImageWriter.class);
 
     TIFFImageWriter(OperationList opList,
@@ -110,31 +108,17 @@ final class TIFFImageWriter extends AbstractImageWriter {
         }
     }
 
-    private ImageWriter getImageIOWriter() {
-        final Iterator<ImageWriter> it = ImageIO.getImageWritersByMIMEType(
-                Format.TIF.getPreferredMediaType().toString());
-        while (it.hasNext()) {
-            ImageWriter writer = it.next();
-            if (writer instanceof it.geosolutions.imageioimpl.plugins.tiff.TIFFImageWriter) {
-                return writer;
-            }
-        }
-        return null;
-    }
-
     /**
-     * @param writer Writer to obtain the default metadata from.
      * @param writeParam Write parameters on which to base the metadata.
      * @param image Image to apply the metadata to.
      * @return Image metadata with added metadata corresponding to any
      *         writer-specific operations applied.
-     * @throws IOException
      */
     @Override
-    protected IIOMetadata getMetadata(final ImageWriter writer,
-                                      final ImageWriteParam writeParam,
-                                      final RenderedImage image) throws IOException {
-        IIOMetadata derivativeMetadata = writer.getDefaultImageMetadata(
+    protected IIOMetadata getMetadata(final ImageWriteParam writeParam,
+                                      final RenderedImage image)
+            throws IOException {
+        IIOMetadata derivativeMetadata = iioWriter.getDefaultImageMetadata(
                 ImageTypeSpecifier.createFromRenderedImage(image),
                 writeParam);
         for (final Operation op : opList) {
@@ -147,11 +131,10 @@ final class TIFFImageWriter extends AbstractImageWriter {
     }
 
     /**
-     * @param writer Writer to abtain parameters for.
      * @return Write parameters respecting the operation list.
      */
-    private ImageWriteParam getWriteParam(ImageWriter writer) {
-        final ImageWriteParam writeParam = writer.getDefaultWriteParam();
+    private ImageWriteParam getWriteParam() {
+        final ImageWriteParam writeParam = iioWriter.getDefaultWriteParam();
 
         Encode encode = (Encode) opList.getFirst(Encode.class);
         if (encode != null) {
@@ -161,11 +144,27 @@ final class TIFFImageWriter extends AbstractImageWriter {
                 if (type != null) {
                     writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
                     writeParam.setCompressionType(type);
-                    logger.debug("Compression type: {}", type);
+                    LOGGER.debug("Compression type: {}", type);
                 }
             }
         }
         return writeParam;
+    }
+
+    @Override
+    String[] preferredIIOImplementations() {
+        // TODO: prefer a writer matching the reader
+        String[] impls = new String[2];
+        impls[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageWriter.class.getName();
+
+        // The Sun TIFF writer has moved in Java 9.
+        if (SystemUtils.getJavaVersion() >= 9) {
+            impls[1] = "com.sun.imageio.plugins.tiff.TIFFImageWriter";
+        } else {
+            impls[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageWriter";
+        }
+
+        return impls;
     }
 
     /**
@@ -174,25 +173,20 @@ final class TIFFImageWriter extends AbstractImageWriter {
      * @param image        Image to write.
      * @param outputStream Stream to write the image to.
      */
+    @Override
     void write(RenderedImage image,
                OutputStream outputStream) throws IOException {
-        final ImageWriter writer = getImageIOWriter();
-        if (writer != null) {
-            final ImageWriteParam writeParam = getWriteParam(writer);
-            final IIOMetadata metadata = getMetadata(writer, writeParam, image);
-            final IIOImage iioImage = new IIOImage(image, null, metadata);
+        final ImageWriteParam writeParam = getWriteParam();
+        final IIOMetadata metadata = getMetadata(writeParam, image);
+        final IIOImage iioImage = new IIOImage(image, null, metadata);
 
-            try (ImageOutputStream os =
-                         ImageIO.createImageOutputStream(outputStream)) {
-                writer.setOutput(os);
-                writer.write(metadata, iioImage, writeParam);
-                os.flush(); // http://stackoverflow.com/a/14489406
-            } finally {
-                writer.dispose();
-            }
-        } else {
-            throw new IOException("Unable to obtain a " +
-                    "javax.imageio.ImageWriter instance. This is a bug.");
+        try (ImageOutputStream os =
+                     ImageIO.createImageOutputStream(outputStream)) {
+            iioWriter.setOutput(os);
+            iioWriter.write(metadata, iioImage, writeParam);
+            os.flush(); // http://stackoverflow.com/a/14489406
+        } finally {
+            iioWriter.dispose();
         }
     }
 

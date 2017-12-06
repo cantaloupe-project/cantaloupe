@@ -32,6 +32,7 @@ public class ImageWriter {
             Collections.unmodifiableSet(EnumSet.of(Format.GIF, Format.JPG,
                     Format.PNG, Format.TIF));
 
+    private AbstractImageWriter wrappedWriter;
     private OperationList opList;
     private Metadata sourceMetadata;
 
@@ -67,43 +68,45 @@ public class ImageWriter {
 
     public ImageWriter(final OperationList opList) {
         this.opList = opList;
+
+        switch (opList.getOutputFormat()) {
+            case GIF:
+                wrappedWriter = new GIFImageWriter(opList, sourceMetadata);
+                break;
+            case JPG:
+                wrappedWriter = new JPEGImageWriter(opList, sourceMetadata);
+                break;
+            case PNG:
+                wrappedWriter = new PNGImageWriter(opList, sourceMetadata);
+                break;
+            case TIF:
+                wrappedWriter = new TIFFImageWriter(opList, sourceMetadata);
+                break;
+        }
     }
 
     public ImageWriter(final OperationList opList,
                        final Metadata sourceMetadata) {
-        this.opList = opList;
+        this(opList);
         this.sourceMetadata = sourceMetadata;
+    }
+
+    /**
+     * @return Wrapped ImageIO writer.
+     */
+    javax.imageio.ImageWriter getIIOWriter() {
+        return wrappedWriter.getIIOWriter();
     }
 
     /**
      * Writes the given image to the given output stream.
      *
      * @param image Image to write
-     * @param outputFormat Format of the output image
      * @param outputStream Stream to write the image to
-     * @throws IOException
      */
     public void write(final RenderedImage image,
-                      final Format outputFormat,
                       final OutputStream outputStream) throws IOException {
-        switch (outputFormat) {
-            case GIF:
-                new GIFImageWriter(opList, sourceMetadata).
-                        write(image, outputStream);
-                break;
-            case JPG:
-                new JPEGImageWriter(opList, sourceMetadata).
-                        write(image, outputStream);
-                break;
-            case PNG:
-                new PNGImageWriter(opList, sourceMetadata).
-                        write(image, outputStream);
-                break;
-            case TIF:
-                new TIFFImageWriter(opList, sourceMetadata).
-                        write(image, outputStream);
-                break;
-        }
+        wrappedWriter.write(image, outputStream);
     }
 
 }

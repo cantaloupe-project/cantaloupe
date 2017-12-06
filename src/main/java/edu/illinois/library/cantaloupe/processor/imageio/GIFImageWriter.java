@@ -1,13 +1,11 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
-import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import org.w3c.dom.NodeList;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
@@ -18,7 +16,6 @@ import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Iterator;
 
 /**
  * GIF image writer using ImageIO, capable of taking both Java 2D
@@ -68,51 +65,36 @@ final class GIFImageWriter extends AbstractImageWriter {
         }
     }
 
-    private ImageWriter getImageIOWriter() {
-        final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
-                Format.GIF.getPreferredMediaType().toString());
-        if (writers.hasNext()) {
-            return writers.next();
-        }
-        return null;
-    }
-
     /**
      * Writes the given image to the given output stream.
      *
      * @param image Image to write
      * @param outputStream Stream to write the image to
-     * @throws IOException
      */
+    @Override
     void write(RenderedImage image,
                OutputStream outputStream) throws IOException {
-        final ImageWriter writer = getImageIOWriter();
-        if (writer != null) {
-            if (image instanceof PlanarImage) {
-                // GIFImageWriter can't deal with a non-0,0 origin ("coordinate
-                // out of bounds!")
-                final ParameterBlock pb = new ParameterBlock();
-                pb.addSource(image);
-                pb.add((float) -image.getMinX());
-                pb.add((float) -image.getMinY());
-                image = JAI.create("translate", pb);
-            }
+        if (image instanceof PlanarImage) {
+            // GIFImageWriter can't deal with a non-0,0 origin ("coordinate
+            // out of bounds!")
+            final ParameterBlock pb = new ParameterBlock();
+            pb.addSource(image);
+            pb.add((float) -image.getMinX());
+            pb.add((float) -image.getMinY());
+            image = JAI.create("translate", pb);
+        }
 
-            final ImageWriteParam writeParam = writer.getDefaultWriteParam();
-            final IIOMetadata metadata = getMetadata(writer, writeParam, image);
-            final IIOImage iioImage = new IIOImage(image, null, metadata);
+        final ImageWriteParam writeParam = iioWriter.getDefaultWriteParam();
+        final IIOMetadata metadata = getMetadata(writeParam, image);
+        final IIOImage iioImage = new IIOImage(image, null, metadata);
 
-            try (ImageOutputStream os = ImageIO.
-                    createImageOutputStream(outputStream)) {
-                writer.setOutput(os);
-                writer.write(iioImage);
-                os.flush(); // http://stackoverflow.com/a/14489406
-            } finally {
-                writer.dispose();
-            }
-        } else {
-            throw new IOException("Unable to obtain a " +
-                    "javax.imageio.ImageWriter instance. This is a bug.");
+        try (ImageOutputStream os = ImageIO.
+                createImageOutputStream(outputStream)) {
+            iioWriter.setOutput(os);
+            iioWriter.write(iioImage);
+            os.flush(); // http://stackoverflow.com/a/14489406
+        } finally {
+            iioWriter.dispose();
         }
     }
 

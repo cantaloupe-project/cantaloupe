@@ -31,17 +31,14 @@ final class DICOMImageReader extends AbstractImageReader {
 
     @Override
     Metadata getMetadata(int imageIndex) throws IOException {
-        if (iioReader == null) {
-            createReader();
-        }
+        String metadataFormat;
         final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
-        final String metadataFormat = metadata.getNativeMetadataFormatName();
+        if (metadata != null) {
+            metadataFormat = metadata.getNativeMetadataFormatName();
+        } else {
+            metadataFormat = "DICOM";
+        }
         return new NullMetadata(metadata, metadataFormat);
-    }
-
-    @Override
-    Class<? extends javax.imageio.ImageReader> preferredIIOImplementation() {
-        return null;
     }
 
 }

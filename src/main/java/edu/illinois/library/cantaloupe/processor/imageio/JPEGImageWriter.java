@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
-import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -12,7 +11,6 @@ import org.w3c.dom.Node;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
@@ -24,7 +22,6 @@ import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Iterator;
 
 /**
  * JPEG image writer using ImageIO, capable of writing both Java 2D
@@ -42,7 +39,6 @@ final class JPEGImageWriter extends AbstractImageWriter {
 
     /**
      * @param baseTree Tree to embed the metadata into.
-     * @throws IOException
      */
     @Override
     protected void addMetadata(final IIOMetadataNode baseTree)
@@ -86,17 +82,8 @@ final class JPEGImageWriter extends AbstractImageWriter {
         }
     }
 
-    private ImageWriter getImageIOWriter() {
-        final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
-                Format.JPG.getPreferredMediaType().toString());
-        if (writers.hasNext()) {
-            return writers.next();
-        }
-        return null;
-    }
-
-    private ImageWriteParam getWriteParam(ImageWriter writer) {
-        final ImageWriteParam writeParam = writer.getDefaultWriteParam();
+    private ImageWriteParam getWriteParam() {
+        final ImageWriteParam writeParam = iioWriter.getDefaultWriteParam();
         writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
         writeParam.setCompressionType("JPEG");
 
@@ -146,6 +133,7 @@ final class JPEGImageWriter extends AbstractImageWriter {
      * @param image        Image to write.
      * @param outputStream Stream to write the image to.
      */
+    @Override
     void write(RenderedImage image,
                OutputStream outputStream) throws IOException {
         if (image instanceof BufferedImage) {
@@ -166,25 +154,19 @@ final class JPEGImageWriter extends AbstractImageWriter {
      */
     private void write(BufferedImage image,
                        OutputStream outputStream) throws IOException {
-        final ImageWriter writer = getImageIOWriter();
-        if (writer != null) {
-            // JPEG doesn't support alpha, so convert to RGB or else the
-            // client will interpret as CMYK
-            image = removeAlpha(image);
-            final ImageWriteParam writeParam = getWriteParam(writer);
-            final IIOMetadata metadata = getMetadata(writer, writeParam, image);
-            final IIOImage iioImage = new IIOImage(image, null, metadata);
+        // JPEG doesn't support alpha, so convert to RGB or else the
+        // client will interpret as CMYK
+        image = removeAlpha(image);
+        final ImageWriteParam writeParam = getWriteParam();
+        final IIOMetadata metadata = getMetadata(writeParam, image);
+        final IIOImage iioImage = new IIOImage(image, null, metadata);
 
-            try (ImageOutputStream os =
-                         ImageIO.createImageOutputStream(outputStream)) {
-                writer.setOutput(os);
-                writer.write(null, iioImage, writeParam);
-            } finally {
-                writer.dispose();
-            }
-        } else {
-            throw new IOException("Unable to obtain a " +
-                    "javax.imageio.ImageWriter instance. This is a bug.");
+        try (ImageOutputStream os =
+                     ImageIO.createImageOutputStream(outputStream)) {
+            iioWriter.setOutput(os);
+            iioWriter.write(null, iioImage, writeParam);
+        } finally {
+            iioWriter.dispose();
         }
     }
 
@@ -197,36 +179,31 @@ final class JPEGImageWriter extends AbstractImageWriter {
     @SuppressWarnings("deprecation")
     private void write(PlanarImage image,
                        OutputStream outputStream) throws IOException {
-        final ImageWriter writer = getImageIOWriter();
-        if (writer != null) {
-            // JPEGImageWriter will interpret a >3-band image as CMYK.
-            // So, select only the first 3 bands.
-            if (OpImage.getExpandedNumBands(image.getSampleModel(),
-                    image.getColorModel()) > 3) {
-                ParameterBlock pb = new ParameterBlock();
-                pb.addSource(image);
-                final int[] bands = {0, 1, 2};
-                pb.add(bands);
-                image = JAI.create("bandselect", pb, null);
-            }
-            final ImageWriteParam writeParam = getWriteParam(writer);
-            final IIOMetadata metadata = getMetadata(writer, writeParam, image);
-            // JPEGImageWriter doesn't like RenderedOps, so give it a
-            // BufferedImage.
-            final IIOImage iioImage = new IIOImage(
-                    image.getAsBufferedImage(), null, metadata);
-
-            try (ImageOutputStream os =
-                         ImageIO.createImageOutputStream(outputStream)) {
-                writer.setOutput(os);
-                writer.write(null, iioImage, writeParam);
-            } finally {
-                writer.dispose();
-            }
-        } else {
-            throw new IOException("Unable to obtain a " +
-                    "javax.imageio.ImageWriter instance. This is a bug.");
+        // JPEGImageWriter will interpret a >3-band image as CMYK.
+        // So, select only the first 3 bands.
+        if (OpImage.getExpandedNumBands(image.getSampleModel(),
+                image.getColorModel()) > 3) {
+            ParameterBlock pb = new ParameterBlock();
+            pb.addSource(image);
+            final int[] bands = {0, 1, 2};
+            pb.add(bands);
+            image = JAI.create("bandselect", pb, null);
         }
+        final ImageWriteParam writeParam = getWriteParam();
+        final IIOMetadata metadata = getMetadata(writeParam, image);
+        // JPEGImageWriter doesn't like RenderedOps, so give it a
+        // BufferedImage.
+        final IIOImage iioImage = new IIOImage(
+                image.getAsBufferedImage(), null, metadata);
+
+        try (ImageOutputStream os =
+                     ImageIO.createImageOutputStream(outputStream)) {
+            iioWriter.setOutput(os);
+            iioWriter.write(null, iioImage, writeParam);
+        } finally {
+            iioWriter.dispose();
+        }
+
     }
 
 }

@@ -31,17 +31,14 @@ final class JPEGImageReader extends AbstractImageReader {
 
     @Override
     Metadata getMetadata(int imageIndex) throws IOException {
-        if (iioReader == null) {
-            createReader();
-        }
         final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
         final String metadataFormat = metadata.getNativeMetadataFormatName();
         return new JPEGMetadata(metadata, metadataFormat);
     }
 
     @Override
-    Class<? extends javax.imageio.ImageReader> preferredIIOImplementation() {
-        return null;
+    String[] preferredIIOImplementations() {
+        return new String[] { "com.sun.imageio.plugins.jpeg.JPEGImageReader" };
     }
 
 }

@@ -31,17 +31,9 @@ final class PNGImageReader extends AbstractImageReader {
 
     @Override
     Metadata getMetadata(int imageIndex) throws IOException {
-        if (iioReader == null) {
-            createReader();
-        }
         final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
         final String metadataFormat = metadata.getNativeMetadataFormatName();
         return new PNGMetadata(metadata, metadataFormat);
-    }
-
-    @Override
-    Class<? extends javax.imageio.ImageReader> preferredIIOImplementation() {
-        return null;
     }
 
 }

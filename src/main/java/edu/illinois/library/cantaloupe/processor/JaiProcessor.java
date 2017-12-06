@@ -236,9 +236,9 @@ class JaiProcessor extends AbstractImageIOProcessor
                     reader.getMetadata(0));
 
             if (image != null) {
-                writer.write(image, outputFormat, outputStream);
+                writer.write(image, outputStream);
             } else {
-                writer.write(renderedOp, outputFormat, outputStream);
+                writer.write(renderedOp, outputStream);
             }
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);

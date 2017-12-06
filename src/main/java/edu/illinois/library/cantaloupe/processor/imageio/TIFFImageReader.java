@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.w3c.dom.NodeList;
 
 import javax.imageio.metadata.IIOMetadata;
@@ -69,17 +70,26 @@ final class TIFFImageReader extends AbstractImageReader {
 
     @Override
     Metadata getMetadata(int imageIndex) throws IOException {
-        if (iioReader == null) {
-            createReader();
-        }
         final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
         final String metadataFormat = metadata.getNativeMetadataFormatName();
         return new TIFFMetadata(metadata, metadataFormat);
     }
 
     @Override
-    Class<? extends javax.imageio.ImageReader> preferredIIOImplementation() {
-        return it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.class;
+    String[] preferredIIOImplementations() {
+        // N.B.: The GeoSolutions TIFF reader supports BigTIFF among other
+        // enhancements. The Sun reader will do as a fallback.
+        String[] impls = new String[2];
+        impls[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.class.getName();
+
+        // The Sun TIFF reader has moved in Java 9.
+        if (SystemUtils.getJavaVersion() >= 9) {
+            impls[1] = "com.sun.imageio.plugins.tiff.TIFFImageReader";
+        } else {
+            impls[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageReader";
+        }
+
+        return impls;
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -105,8 +115,6 @@ final class TIFFImageReader extends AbstractImageReader {
      *         not be of {@link BufferedImage#TYPE_CUSTOM}. Clients should
      *         check the hints set to see whether they need to perform
      *         additional cropping.
-     * @throws IOException
-     * @throws ProcessorException
      */
     @Override
     public BufferedImage read(final OperationList ops,
@@ -114,10 +122,6 @@ final class TIFFImageReader extends AbstractImageReader {
                               final ReductionFactor reductionFactor,
                               final Set<ImageReader.Hint> hints)
             throws IOException, ProcessorException {
-        if (iioReader == null) {
-            createReader();
-        }
-
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
@@ -161,8 +165,6 @@ final class TIFFImageReader extends AbstractImageReader {
      *                        the reader. May also contain hints for the
      *                        reader. May be <code>null</code>.
      * @return RenderedImage best matching the given parameters.
-     * @throws IOException
-     * @throws ProcessorException
      */
     @Override // TODO: I forgot why this is overridden; why isn't the parent tile-aware?
     public RenderedImage readRendered(final OperationList ops,
@@ -170,10 +172,6 @@ final class TIFFImageReader extends AbstractImageReader {
                                       final ReductionFactor reductionFactor,
                                       Set<ImageReader.Hint> hints)
             throws IOException, ProcessorException {
-        if (iioReader == null) {
-            createReader();
-        }
-
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();

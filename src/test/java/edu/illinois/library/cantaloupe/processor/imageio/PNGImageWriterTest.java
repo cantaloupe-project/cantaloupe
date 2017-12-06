@@ -56,7 +56,7 @@ public class PNGImageWriterTest extends BaseTest {
     }
 
     @Test
-    public void testWriteWithBufferedImageAndXmpMetadata()  throws Exception {
+    public void testWriteWithBufferedImageAndXMPMetadata()  throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("png-xmp.png");
@@ -66,7 +66,7 @@ public class PNGImageWriterTest extends BaseTest {
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         getWriter(metadata).write(image, os);
-        checkForXmpMetadata(os.toByteArray());
+        checkForXMPMetadata(os.toByteArray());
     }
 
     @Test
@@ -98,7 +98,7 @@ public class PNGImageWriterTest extends BaseTest {
     }
 
     @Test
-    public void testWriteWithPlanarImageAndXmpMetadata() throws Exception {
+    public void testWriteWithPlanarImageAndXMPMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final File fixture = TestUtil.getImage("png-xmp.png");
@@ -109,10 +109,10 @@ public class PNGImageWriterTest extends BaseTest {
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         getWriter(metadata).write(image, os);
-        checkForXmpMetadata(os.toByteArray());
+        checkForXMPMetadata(os.toByteArray());
     }
 
-    private void checkForIccProfile(byte[] imageData) throws Exception {
+    private void checkForICCProfile(byte[] imageData) throws Exception {
         final Iterator<ImageReader> readers =
                 ImageIO.getImageReadersByFormatName("PNG");
         final ImageReader reader = readers.next();
@@ -156,7 +156,7 @@ public class PNGImageWriterTest extends BaseTest {
         }
     }
 
-    private void checkForXmpMetadata(byte[] imageData) throws Exception {
+    private void checkForXMPMetadata(byte[] imageData) throws Exception {
         final Iterator<ImageReader> readers =
                 ImageIO.getImageReadersByFormatName("PNG");
         final ImageReader reader = readers.next();
@@ -187,7 +187,7 @@ public class PNGImageWriterTest extends BaseTest {
 
     private PNGImageWriter getWriter(Metadata metadata) throws IOException {
         OperationList opList = new OperationList(new Identifier("cats"),
-                Format.JPG);
+                Format.PNG);
         if (Configuration.getInstance().
                 getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
             opList.add(new MetadataCopy());

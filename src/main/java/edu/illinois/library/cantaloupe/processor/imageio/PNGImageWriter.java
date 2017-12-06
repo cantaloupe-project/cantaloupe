@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
-import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +7,6 @@ import org.w3c.dom.NodeList;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
@@ -18,7 +16,6 @@ import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -95,39 +92,25 @@ final class PNGImageWriter extends AbstractImageWriter {
         }
     }
 
-    private ImageWriter getImageIOWriter() {
-        final Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(
-                Format.PNG.getPreferredMediaType().toString());
-        if (writers.hasNext()) {
-            return writers.next();
-        }
-        return null;
-    }
-
     /**
      * Writes the given image to the given output stream.
      *
      * @param image        Image to write.
      * @param outputStream Stream to write the image to.
      */
+    @Override
     void write(RenderedImage image,
                OutputStream outputStream) throws IOException {
-        final ImageWriter writer = getImageIOWriter();
-        if (writer != null) {
-            final IIOMetadata metadata = getMetadata(
-                    writer, writer.getDefaultWriteParam(), image);
-            final IIOImage iioImage = new IIOImage(image, null, metadata);
+        final IIOMetadata metadata = getMetadata(
+                iioWriter.getDefaultWriteParam(), image);
+        final IIOImage iioImage = new IIOImage(image, null, metadata);
 
-            try (ImageOutputStream os =
-                         ImageIO.createImageOutputStream(outputStream)) {
-                writer.setOutput(os);
-                writer.write(iioImage);
-            } finally {
-                writer.dispose();
-            }
-        } else {
-            throw new IOException("Unable to obtain a " +
-                    "javax.imageio.ImageWriter instance. This is a bug.");
+        try (ImageOutputStream os =
+                     ImageIO.createImageOutputStream(outputStream)) {
+            iioWriter.setOutput(os);
+            iioWriter.write(iioImage);
+        } finally {
+            iioWriter.dispose();
         }
     }
 

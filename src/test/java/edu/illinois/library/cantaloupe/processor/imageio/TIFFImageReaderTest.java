@@ -10,10 +10,12 @@ import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,59 +24,102 @@ import static org.junit.Assert.*;
 
 public class TIFFImageReaderTest extends BaseTest {
 
-    private TIFFImageReader reader;
+    private TIFFImageReader instance;
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        reader = new TIFFImageReader(
+        instance = new TIFFImageReader(
                 TestUtil.getImage("tif-rgb-multires-64x56x16-tiled-uncompressed.tif"));
     }
 
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        reader.dispose();
+        instance.dispose();
     }
 
     @Test
-    public void testGetCompression() throws Exception {
-        reader.dispose();
-
-        // uncompressed
-        reader = new TIFFImageReader(
+    public void testGetCompressionWithUncompressedImage() throws Exception {
+        instance.dispose();
+        instance = new TIFFImageReader(
                 TestUtil.getImage("tif-rgb-monores-64x56x16-striped-uncompressed.tif"));
-        assertEquals(Compression.UNCOMPRESSED, reader.getCompression(0));
-        reader.dispose();
+        assertEquals(Compression.UNCOMPRESSED, instance.getCompression(0));
+    }
 
-        // JPEG
-        reader = new TIFFImageReader(
+    @Test
+    public void testGetCompressionWithJPEGImage() throws Exception {
+        instance.dispose();
+        instance = new TIFFImageReader(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-striped-jpeg.tif"));
-        assertEquals(Compression.JPEG, reader.getCompression(0));
-        reader.dispose();
+        assertEquals(Compression.JPEG, instance.getCompression(0));
+    }
 
-        // LZW
-        reader = new TIFFImageReader(
+    @Test
+    public void testGetCompressionWithLZWImage() throws Exception {
+        instance.dispose();
+        instance = new TIFFImageReader(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-striped-lzw.tif"));
-        assertEquals(Compression.LZW, reader.getCompression(0));
-        reader.dispose();
+        assertEquals(Compression.LZW, instance.getCompression(0));
+    }
 
-        // PackBits
-        reader = new TIFFImageReader(
+    @Test
+    public void testGetCompressionWithPackBitsImage() throws Exception {
+        instance.dispose();
+        instance = new TIFFImageReader(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-striped-packbits.tif"));
-        assertEquals(Compression.RLE, reader.getCompression(0));
-        reader.dispose();
+        assertEquals(Compression.RLE, instance.getCompression(0));
+    }
 
-        // Deflate/ZLib/Zip
-        reader = new TIFFImageReader(
+    @Test
+    public void testGetCompressionWithDeflateImage() throws Exception {
+        instance.dispose();
+        instance = new TIFFImageReader(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-striped-zip.tif"));
-        assertEquals(Compression.DEFLATE, reader.getCompression(0));
-        reader.dispose();
+        assertEquals(Compression.DEFLATE, instance.getCompression(0));
+    }
+
+    @Test
+    public void testGetIIOReader() {
+        assertTrue(instance.getIIOReader() instanceof
+                it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader);
     }
 
     @Test
     public void testGetMetadata() throws Exception {
-        assertNotNull(reader.getMetadata(0));
+        assertNotNull(instance.getMetadata(0));
+    }
+
+    @Test
+    public void testGetNumResolutions() throws Exception {
+        assertEquals(3, instance.getNumResolutions());
+    }
+
+    @Test
+    public void testGetSize() throws Exception {
+        assertEquals(new Dimension(64, 56), instance.getSize());
+    }
+
+    @Test
+    public void testGetSizeWithIndex() throws Exception {
+        assertEquals(new Dimension(64, 56), instance.getSize(0));
+    }
+
+    @Test
+    public void testGetTileSize() throws Exception {
+        assertEquals(new Dimension(16, 16), instance.getTileSize(0));
+    }
+
+    @Test
+    public void testPreferredIIOImplementations() {
+        String[] expected = new String[2];
+        expected[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.class.getName();
+        if (SystemUtils.getJavaVersion() >= 9) {
+            expected[1] = "com.sun.imageio.plugins.tiff.TIFFImageReader";
+        } else {
+            expected[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageReader";
+        }
+        assertArrayEquals(expected, instance.preferredIIOImplementations());
     }
 
     @Test
@@ -92,7 +137,7 @@ public class TIFFImageReaderTest extends BaseTest {
         ReductionFactor rf = new ReductionFactor();
         Set<ImageReader.Hint> hints = new HashSet<>();
 
-        BufferedImage image = reader.read(ops, orientation, rf, hints);
+        BufferedImage image = instance.read(ops, orientation, rf, hints);
 
         assertEquals(40, image.getWidth());
         assertEquals(40, image.getHeight());

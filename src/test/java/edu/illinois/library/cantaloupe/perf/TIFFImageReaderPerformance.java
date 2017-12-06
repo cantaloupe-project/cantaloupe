@@ -38,8 +38,8 @@ public class TIFFImageReaderPerformance extends TIFFImageReaderTest {
     }
 
     @Benchmark
-    public void testGetCompression() throws Exception {
-        super.testGetCompression();
+    public void testGetCompressionWithUncompressedImage() throws Exception {
+        super.testGetCompressionWithUncompressedImage();
     }
 
     @Benchmark

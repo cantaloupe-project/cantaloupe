@@ -31,18 +31,18 @@ public class TIFFImageWriterPerformance extends TIFFImageWriterTest {
     }
 
     @Benchmark
-    public void testWriteWithBufferedImageAndExifMetadata() throws Exception {
-        super.testWriteWithBufferedImageAndExifMetadata();
+    public void testWriteWithBufferedImageAndEXIFMetadata() throws Exception {
+        super.testWriteWithBufferedImageAndEXIFMetadata();
     }
 
     @Benchmark
-    public void testWriteWithBufferedImageAndIptcMetadata() throws Exception {
-        super.testWriteWithBufferedImageAndIptcMetadata();
+    public void testWriteWithBufferedImageAndIPTCMetadata() throws Exception {
+        super.testWriteWithBufferedImageAndIPTCMetadata();
     }
 
     @Benchmark
-    public void testWriteWithBufferedImageAndXmpMetadata() throws Exception {
-        super.testWriteWithBufferedImageAndXmpMetadata();
+    public void testWriteWithBufferedImageAndXMPMetadata() throws Exception {
+        super.testWriteWithBufferedImageAndXMPMetadata();
     }
 
     @Benchmark
@@ -51,17 +51,17 @@ public class TIFFImageWriterPerformance extends TIFFImageWriterTest {
     }
 
     @Benchmark
-    public void testWriteWithPlanarImageAndExifMetadata() throws Exception {
-        super.testWriteWithPlanarImageAndExifMetadata();
+    public void testWriteWithPlanarImageAndEXIFMetadata() throws Exception {
+        super.testWriteWithPlanarImageAndEXIFMetadata();
     }
 
     @Benchmark
-    public void testWriteWithPlanarImageAndIptcMetadata() throws Exception {
-        super.testWriteWithPlanarImageAndIptcMetadata();
+    public void testWriteWithPlanarImageAndIPTCMetadata() throws Exception {
+        super.testWriteWithPlanarImageAndIPTCMetadata();
     }
 
     @Benchmark
-    public void testWriteWithPlanarImageAndXmpMetadata() throws Exception {
-        super.testWriteWithPlanarImageAndXmpMetadata();
+    public void testWriteWithPlanarImageAndXMPMetadata() throws Exception {
+        super.testWriteWithPlanarImageAndXMPMetadata();
     }
 }

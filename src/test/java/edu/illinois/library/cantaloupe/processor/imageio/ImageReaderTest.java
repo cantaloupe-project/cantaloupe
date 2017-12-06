@@ -55,6 +55,11 @@ public class ImageReaderTest extends BaseTest {
     }
 
     @Test
+    public void testGetIIOReader() {
+        assertNotNull(reader.getIIOReader());
+    }
+
+    @Test
     public void testGetMetadata() throws Exception {
         assertNotNull(reader.getMetadata(0));
     }

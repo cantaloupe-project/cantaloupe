@@ -64,15 +64,22 @@ public class ImageReader {
     private AbstractImageReader reader;
 
     static {
-        // The application will handle caching itself, if so configured. The
-        // ImageIO cache would be redundant.
-        ImageIO.setUseCache(false);
+        try {
+            // The application will handle caching itself, if so configured. The
+            // ImageIO cache would be redundant.
+            ImageIO.setUseCache(false);
 
-        // ImageIO will automatically scan for plugins once, the first time
-        // it's used. That means that if our app is initialized after another
-        // ImageIO-using app in a container, any additional plugins bundled
-        // within our app won't be picked up unless we scan again.
-        ImageIO.scanForPlugins();
+            // ImageIO will automatically scan for plugins once, the first time
+            // it's used. That means that if our app is initialized after another
+            // ImageIO-using app in the same JVM, any additional plugins bundled
+            // within our app won't be picked up unless we scan again.
+            ImageIO.scanForPlugins();
+        } catch (NumberFormatException e) {
+            // This is an ImageIO bug in JDK 9.
+            if (!e.getMessage().equals("For input string: \"\"")) {
+                throw e;
+            }
+        }
     }
 
     public static void logImageIOReaders() {
@@ -178,6 +185,13 @@ public class ImageReader {
      */
     public Compression getCompression(int imageIndex) throws IOException {
         return reader.getCompression(imageIndex);
+    }
+
+    /**
+     * @return Wrapped ImageIO reader.
+     */
+    javax.imageio.ImageReader getIIOReader() {
+        return reader.getIIOReader();
     }
 
     /**
