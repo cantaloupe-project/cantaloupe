@@ -72,6 +72,7 @@ title: Change Log
 
 <ul>
   <li>Fixed FilesystemCache failing to purge invalid source images. (Thanks to @jhosteny)</li>
+  <li>Fixed the <code>cache.server.resolve_first</code> configuration key always being effectively <code>true</code> in the IIIF Image API 2.x endpoint.</li>
   <li>Fixed AmazonS3Cache sometimes purging fewer objects than it should.</li>
   <li>Fixed failure to auto-purge incompletely-written images from derivative caches other than FilesystemCache in response to a VM error (such as <code>OutOfMemoryError</code>).</li>
   <li>HttpResolver makes fewer HTTP requests.</li>
