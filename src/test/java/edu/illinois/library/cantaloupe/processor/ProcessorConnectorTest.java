@@ -96,7 +96,7 @@ public class ProcessorConnectorTest extends BaseTest {
         instance.connect(resolver, processor, IDENTIFIER);
 
         assertEquals(
-                ((FileResolver) resolver).getFile(),
+                ((FileResolver) resolver).getPath(),
                 ((FileProcessor) processor).getSourceFile());
     }
 

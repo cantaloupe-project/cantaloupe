@@ -66,11 +66,11 @@ public class FilesystemResolverTest extends BaseTest {
         instance.newStreamSource();
     }
 
-    /* getFile() */
+    /* getPath() */
 
     @Test
     public void getFileWithPresentReadableFile() throws Exception {
-        assertNotNull(instance.getFile());
+        assertNotNull(instance.getPath());
     }
 
     @Test(expected = AccessDeniedException.class)
@@ -78,7 +78,7 @@ public class FilesystemResolverTest extends BaseTest {
         File file = new File(instance.getPathname());
         try {
             file.setReadable(false);
-            instance.getFile();
+            instance.getPath();
             fail("Expected exception");
         } finally {
             file.setReadable(true);
@@ -88,7 +88,7 @@ public class FilesystemResolverTest extends BaseTest {
     @Test(expected = FileNotFoundException.class)
     public void getFileWithMissingFile() throws Exception {
         instance.setIdentifier(new Identifier("bogus"));
-        instance.getFile();
+        instance.getPath();
     }
 
     /* getPathname(Identifier) */

@@ -1,9 +1,9 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.Path;
 
 /**
  * Interface to be implemented by all resolvers that support access to source
@@ -20,6 +20,6 @@ public interface FileResolver extends Resolver {
      *                               identifier is not readable.
      * @throws IOException If there is some other issue accessing the image.
      */
-    File getFile() throws IOException;
+    Path getPath() throws IOException;
 
 }

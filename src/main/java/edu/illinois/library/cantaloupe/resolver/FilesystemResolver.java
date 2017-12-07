@@ -15,10 +15,12 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.stream.FileImageInputStream;
 import javax.script.ScriptException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -45,22 +47,22 @@ import java.util.List;
 class FilesystemResolver extends AbstractResolver
         implements StreamResolver, FileResolver {
 
-    private static class FilesystemStreamSource implements StreamSource {
+    private static class FileStreamSource implements StreamSource {
 
-        private final File file;
+        private final Path file;
 
-        FilesystemStreamSource(File file) {
+        FileStreamSource(Path file) {
             this.file = file;
         }
 
         @Override
         public FileImageInputStream newImageInputStream() throws IOException {
-            return new FileImageInputStream(file);
+            return new FileImageInputStream(file.toFile());
         }
 
         @Override
-        public FileInputStream newInputStream() throws IOException {
-            return new FileInputStream(file);
+        public InputStream newInputStream() throws IOException {
+            return Files.newInputStream(file);
         }
 
     }
@@ -81,11 +83,11 @@ class FilesystemResolver extends AbstractResolver
 
     @Override
     public StreamSource newStreamSource() throws IOException {
-        return new FilesystemStreamSource(getFile());
+        return new FileStreamSource(getPath());
     }
 
     @Override
-    public File getFile() throws IOException {
+    public Path getPath() throws IOException {
         final File file = new File(getPathname());
         try {
             checkAccess(file);
@@ -95,7 +97,7 @@ class FilesystemResolver extends AbstractResolver
             LOGGER.info(e.getMessage());
             throw e;
         }
-        return file;
+        return file.toPath();
     }
 
     /**

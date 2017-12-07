@@ -98,7 +98,7 @@ public class ProcessorConnector {
                         "between {} and {}",
                         resolverName, processorName);
                 ((FileProcessor) processor).setSourceFile(
-                        ((FileResolver) resolver).getFile());
+                        ((FileResolver) resolver).getPath().toFile());
             } else {
                 // All FileResolvers are also StreamResolvers.
                 LOGGER.info("FileResolver -> StreamProcessor connection " +
