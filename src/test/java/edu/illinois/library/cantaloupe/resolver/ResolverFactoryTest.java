@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resolver;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
@@ -32,15 +33,17 @@ public class ResolverFactoryTest extends BaseTest {
         Identifier identifier = new Identifier("jdbc");
 
         config.setProperty(Key.RESOLVER_STATIC, "FilesystemResolver");
-        assertTrue(instance.newResolver(identifier) instanceof FilesystemResolver);
+        Resolver resolver = instance.newResolver(identifier, new RequestContext());
+        assertTrue(resolver instanceof FilesystemResolver);
 
         config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
-        assertTrue(instance.newResolver(identifier) instanceof HttpResolver);
+        resolver = instance.newResolver(identifier, new RequestContext());
+        assertTrue(resolver instanceof HttpResolver);
 
         // invalid resolver
         try {
             config.setProperty(Key.RESOLVER_STATIC, "BogusResolver");
-            instance.newResolver(identifier);
+            instance.newResolver(identifier, new RequestContext());
             fail("Expected exception");
         } catch (ClassNotFoundException e) {
             // pass
@@ -57,10 +60,12 @@ public class ResolverFactoryTest extends BaseTest {
         config.setProperty(Key.RESOLVER_DELEGATE, true);
 
         Identifier identifier = new Identifier("http");
-        assertTrue(instance.newResolver(identifier) instanceof HttpResolver);
+        Resolver resolver = instance.newResolver(identifier, new RequestContext());
+        assertTrue(resolver instanceof HttpResolver);
 
         identifier = new Identifier("anythingelse");
-        assertTrue(instance.newResolver(identifier) instanceof FilesystemResolver);
+        resolver = instance.newResolver(identifier, new RequestContext());
+        assertTrue(resolver instanceof FilesystemResolver);
     }
 
     @Test

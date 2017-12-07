@@ -478,6 +478,15 @@ public abstract class AbstractResource extends ServerResource {
         return disposition;
     }
 
+    protected RequestContext getRequestContext() {
+        final RequestContext context = new RequestContext();
+        context.setRequestURI(getReference().toString());
+        context.setRequestHeaders(getRequest().getHeaders().getValuesMap());
+        context.setClientIP(getCanonicalClientIpAddress());
+        context.setCookies(getRequest().getCookies().getValuesMap());
+        return context;
+    }
+
     private String getContentDispositionFilename(Identifier identifier,
                                                  Format outputFormat) {
         return identifier.toString().replaceAll(FILENAME_CHARACTERS, "_") +

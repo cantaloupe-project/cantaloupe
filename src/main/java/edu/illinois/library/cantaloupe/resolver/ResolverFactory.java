@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.slf4j.Logger;
@@ -23,13 +24,13 @@ import java.util.Set;
 public class ResolverFactory {
 
     /**
-     * How resolvers are chosen by {@link #newResolver(Identifier)}.
+     * How resolvers are chosen by {@link #newResolver}.
      */
     public enum SelectionStrategy {
         STATIC, DELEGATE_SCRIPT
     }
 
-    private static Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(ResolverFactory.class);
 
     private static final String RESOLVER_CHOOSER_DELEGATE_METHOD =
@@ -55,17 +56,18 @@ public class ResolverFactory {
      *
      * @return Instance of the appropriate resolver for the given identifier,
      *         with identifier already set.
-     * @throws Exception
      * @throws FileNotFoundException If the specified chooser script is not
-     * found.
+     *                               found.
      */
-    public Resolver newResolver(Identifier identifier) throws Exception {
+    public Resolver newResolver(Identifier identifier,
+                                RequestContext context) throws Exception {
         final Configuration config = Configuration.getInstance();
         if (getSelectionStrategy().equals(SelectionStrategy.DELEGATE_SCRIPT)) {
             Resolver resolver = newDynamicResolver(identifier);
-            logger.info("{}() returned a {} for {}",
+            LOGGER.info("{}() returned a {} for {}",
                     RESOLVER_CHOOSER_DELEGATE_METHOD,
                     resolver.getClass().getSimpleName(), identifier);
+            resolver.setContext(context);
             return resolver;
         } else {
             final String resolverName = config.getString(Key.RESOLVER_STATIC);
@@ -79,7 +81,7 @@ public class ResolverFactory {
     }
 
     /**
-     * @return How resolvers are chosen by {@link #newResolver(Identifier)}.
+     * @return How resolvers are chosen by {@link #newResolver}.
      */
     public SelectionStrategy getSelectionStrategy() {
         final Configuration config = Configuration.getInstance();

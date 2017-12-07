@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
@@ -90,7 +91,8 @@ public class ProcessorConnectorTest extends BaseTest {
 
     @Test
     public void connectWithFileResolverAndFileProcessor() throws Exception {
-        final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER);
+        final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER,
+                new RequestContext());
         final Processor processor = new ProcessorFactory().newProcessor(Format.JPG);
 
         instance.connect(resolver, processor, IDENTIFIER);
@@ -105,7 +107,8 @@ public class ProcessorConnectorTest extends BaseTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_FALLBACK, "ImageMagickProcessor");
 
-        final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER);
+        final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER,
+                new RequestContext());
         final Processor processor = new ProcessorFactory().newProcessor(Format.JPG);
 
         instance.connect(resolver, processor, IDENTIFIER);
@@ -124,7 +127,8 @@ public class ProcessorConnectorTest extends BaseTest {
         config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
         config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
 
-        final Resolver resolver = new ResolverFactory().newResolver(identifier);
+        final Resolver resolver = new ResolverFactory().
+                newResolver(identifier, new RequestContext());
         final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
 
         try {
@@ -156,7 +160,8 @@ public class ProcessorConnectorTest extends BaseTest {
                     server.getHTTPURI() + "/");
             config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
 
-            final Resolver resolver = new ResolverFactory().newResolver(identifier);
+            final Resolver resolver = new ResolverFactory().
+                    newResolver(identifier, new RequestContext());
             final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
 
             instance.connect(resolver, processor, identifier);
@@ -184,7 +189,8 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                     server.getHTTPURI() + "/");
 
-            final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER);
+            final Resolver resolver = new ResolverFactory().
+                    newResolver(IDENTIFIER, new RequestContext());
             final Processor processor = new MockStreamProcessor();
 
             instance.connect(resolver, processor, IDENTIFIER);
@@ -219,7 +225,8 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     cacheFolder.getAbsolutePath());
 
-            final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER);
+            final Resolver resolver = new ResolverFactory().
+                    newResolver(IDENTIFIER, new RequestContext());
             final Processor processor = new MockStreamProcessor();
 
             instance.connect(resolver, processor, IDENTIFIER);
@@ -252,7 +259,8 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     cacheFolder.getAbsolutePath());
 
-            final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER);
+            final Resolver resolver = new ResolverFactory().
+                    newResolver(IDENTIFIER, new RequestContext());
             final Processor processor = new MockStreamProcessor();
 
             try {

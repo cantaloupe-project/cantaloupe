@@ -12,6 +12,7 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
+import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import org.restlet.data.CacheDirective;
 import org.restlet.data.Header;
@@ -160,8 +161,9 @@ public class AdminResource extends AbstractAdminResource {
 
         if (selectionStrategy.equals(ResolverFactory.SelectionStrategy.STATIC)) {
             try {
-                vars.put("currentResolver", new ObjectProxy(
-                        new ResolverFactory().newResolver(new Identifier("irrelevant"))));
+                Resolver resolver = new ResolverFactory().newResolver(
+                        new Identifier("irrelevant"), getRequestContext());
+                vars.put("currentResolver", new ObjectProxy(resolver));
             } catch (Exception e) {
                 // nothing we can do
             }

@@ -80,15 +80,8 @@ public class InformationResource extends IIIF1Resource {
             }
         }
 
-        final Resolver resolver = new ResolverFactory().newResolver(identifier);
-
-        // Setup the resolver context.
-        final RequestContext requestContext = new RequestContext();
-        requestContext.setRequestURI(getReference().toString());
-        requestContext.setRequestHeaders(getRequest().getHeaders().getValuesMap());
-        requestContext.setClientIP(getCanonicalClientIpAddress());
-        requestContext.setCookies(getRequest().getCookies().getValuesMap());
-        resolver.setContext(requestContext);
+        final Resolver resolver = new ResolverFactory().
+                newResolver(identifier, getRequestContext());
 
         try {
             resolver.checkAccess();
