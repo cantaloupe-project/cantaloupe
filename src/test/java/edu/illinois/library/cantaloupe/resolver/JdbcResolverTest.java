@@ -12,7 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.nio.file.NoSuchFileException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
@@ -76,6 +76,20 @@ public class JdbcResolverTest extends BaseTest {
         }
     }
 
+    /* checkAccess() */
+
+    @Test
+    public void testCheckAccessWithPresentImage() throws Exception {
+        instance.setIdentifier(new Identifier("jpg.jpg"));
+        instance.checkAccess();
+    }
+
+    @Test(expected = NoSuchFileException.class)
+    public void testCheckAccessWithMissingImage() throws Exception {
+        instance.setIdentifier(new Identifier("bogus"));
+        instance.checkAccess();
+    }
+
     /* getSourceFormat() */
 
     @Test
@@ -90,20 +104,6 @@ public class JdbcResolverTest extends BaseTest {
         assertEquals(Format.UNKNOWN, instance.getSourceFormat());
     }
 
-    /* newStreamSource() */
-
-    @Test
-    public void testNewStreamSourceWithPresentImage() throws Exception {
-        instance.setIdentifier(new Identifier("jpg.jpg"));
-        assertNotNull(instance.newStreamSource());
-    }
-
-    @Test(expected = FileNotFoundException.class)
-    public void testNewStreamSourceWithMissingImage() throws Exception {
-        instance.setIdentifier(new Identifier("bogus"));
-        instance.newStreamSource();
-    }
-
     /* getDatabaseIdentifier() */
 
     @Test
@@ -113,11 +113,11 @@ public class JdbcResolverTest extends BaseTest {
         assertEquals("cats.jpg", result);
     }
 
-    /* getLookupSql() */
+    /* getLookupSQL() */
 
     @Test
-    public void testGetLookupSql() throws Exception {
-        String result = instance.getLookupSql();
+    public void testGetLookupSQL() throws Exception {
+        String result = instance.getLookupSQL();
         assertEquals("SELECT image FROM items WHERE filename = ?", result);
     }
 
@@ -128,6 +128,14 @@ public class JdbcResolverTest extends BaseTest {
         instance.setIdentifier(new Identifier("cats.jpg"));
         String result = instance.getMediaType();
         assertEquals("SELECT media_type FROM items WHERE filename = ?", result);
+    }
+
+    /* newStreamSource() */
+
+    @Test
+    public void testNewStreamSourceWithPresentImage() throws Exception {
+        instance.setIdentifier(new Identifier("jpg.jpg"));
+        assertNotNull(instance.newStreamSource());
     }
 
 }

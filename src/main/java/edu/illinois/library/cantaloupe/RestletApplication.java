@@ -37,6 +37,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.NoSuchFileException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -102,7 +103,8 @@ public class RestletApplication extends Application {
                 status = new Status(Status.CLIENT_ERROR_BAD_REQUEST, t);
             } else if (t instanceof UnsupportedOutputFormatException) {
                 status = new Status(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE, t);
-            } else if (t instanceof FileNotFoundException) {
+            } else if (t instanceof FileNotFoundException ||
+                    t instanceof NoSuchFileException) {
                 status = new Status(Status.CLIENT_ERROR_NOT_FOUND, t);
             } else if (t instanceof AccessDeniedException) {
                 status = new Status(Status.CLIENT_ERROR_FORBIDDEN, t);

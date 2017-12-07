@@ -14,13 +14,13 @@ import org.slf4j.LoggerFactory;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.script.ScriptException;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -70,52 +70,45 @@ class FilesystemResolver extends AbstractResolver
     private static final Logger LOGGER = LoggerFactory.
             getLogger(FilesystemResolver.class);
 
-    private static final String UNIX_PATH_SEPARATOR = "/";
-    private static final String WINDOWS_PATH_SEPARATOR = "\\";
-
     private static final String GET_PATHNAME_DELEGATE_METHOD =
             "FilesystemResolver::get_pathname";
 
+    private static final String UNIX_PATH_SEPARATOR = "/";
+    private static final String WINDOWS_PATH_SEPARATOR = "\\";
+
     /**
-     * Lazy-loaded by {@link #getPathname()}.
+     * Lazy-loaded by {@link #getPath}.
      */
-    private String pathname;
+    private Path path;
 
     @Override
-    public StreamSource newStreamSource() throws IOException {
-        return new FileStreamSource(getPath());
-    }
-
-    @Override
-    public Path getPath() throws IOException {
-        final File file = new File(getPathname());
-        try {
-            checkAccess(file);
-            LOGGER.info("Resolved {} to {}", identifier,
-                    file.getAbsolutePath());
-        } catch (FileNotFoundException | AccessDeniedException e) {
-            LOGGER.info(e.getMessage());
-            throw e;
+    public void checkAccess() throws IOException {
+        final Path path = getPath();
+        if (!Files.exists(path)) {
+            throw new NoSuchFileException("Failed to resolve " +
+                    identifier + " to " + path);
+        } else if (!Files.isReadable(path)) {
+            throw new AccessDeniedException("File is not readable: " + path);
         }
-        return file.toPath();
     }
 
     /**
-     * @return Pathname corresponding to the given identifier according to the
+     * @return Path corresponding to the given identifier according to the
      *         current lookup strategy
      *         ({@link Key#FILESYSTEMRESOLVER_LOOKUP_STRATEGY}). The result is
      *         cached.
      */
-    String getPathname() throws IOException {
-        if (pathname == null) {
+    @Override
+    public Path getPath() throws IOException {
+        if (path == null) {
             final Configuration config = Configuration.getInstance();
             switch (config.getString(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY)) {
                 case "BasicLookupStrategy":
-                    pathname = getPathnameWithBasicStrategy();
+                    path = getPathWithBasicStrategy();
                     break;
                 case "ScriptLookupStrategy":
                     try {
-                        pathname = getPathnameWithScriptStrategy();
+                        path = getPathWithScriptStrategy();
                         break;
                     } catch (DelegateScriptDisabledException e) {
                         LOGGER.error(e.getMessage());
@@ -128,24 +121,25 @@ class FilesystemResolver extends AbstractResolver
                     throw new IOException(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY +
                             " is invalid or not set");
             }
+            LOGGER.info("Resolved {} to {}", identifier, path);
         }
-        return pathname;
+        return path;
     }
 
-    private String getPathnameWithBasicStrategy() {
+    private Path getPathWithBasicStrategy() {
         final Configuration config = Configuration.getInstance();
         final String prefix =
                 config.getString(Key.FILESYSTEMRESOLVER_PATH_PREFIX, "");
         final String suffix =
                 config.getString(Key.FILESYSTEMRESOLVER_PATH_SUFFIX, "");
         final Identifier sanitizedId = sanitizedIdentifier();
-        return prefix + sanitizedId.toString() + suffix;
+        return Paths.get(prefix + sanitizedId.toString() + suffix);
     }
 
     /**
      * @return Pathname of the file corresponding to the identifier passed to
      *         {@link #setIdentifier(Identifier)}.
-     * @throws FileNotFoundException If the delegate method indicated that there
+     * @throws NoSuchFileException If the delegate method indicated that there
      *                               is no file corresponding to the given
      *                               identifier.
      * @throws IOException
@@ -153,41 +147,27 @@ class FilesystemResolver extends AbstractResolver
      * @throws DelegateScriptDisabledException If the delegate script is
      *                                         disabled.
      */
-    private String getPathnameWithScriptStrategy()
-            throws IOException, ScriptException,
-            DelegateScriptDisabledException {
+    private Path getPathWithScriptStrategy() throws IOException,
+            ScriptException, DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final Object result = engine.invoke(GET_PATHNAME_DELEGATE_METHOD,
                 identifier.toString(), context.asMap());
         if (result == null) {
-            throw new FileNotFoundException(GET_PATHNAME_DELEGATE_METHOD +
+            throw new NoSuchFileException(GET_PATHNAME_DELEGATE_METHOD +
                     " returned nil for " + identifier);
         }
-        return (String) result;
+        return Paths.get((String) result);
     }
 
     @Override
     public Format getSourceFormat() throws IOException {
         if (sourceFormat == null) {
-            final File file = new File(getPathname());
-            checkAccess(file);
             sourceFormat = Format.inferFormat(identifier);
             if (sourceFormat.equals(Format.UNKNOWN)) {
                 sourceFormat = detectSourceFormat();
             }
         }
         return sourceFormat;
-    }
-
-    private void checkAccess(File file)
-            throws FileNotFoundException, AccessDeniedException {
-        if (!file.exists()) {
-            throw new FileNotFoundException("Failed to resolve " +
-                    identifier + " to " + file.getAbsolutePath());
-        } else if (!file.canRead()) {
-            throw new AccessDeniedException("File is not readable: " +
-                    file.getAbsolutePath());
-        }
     }
 
     /**
@@ -198,12 +178,17 @@ class FilesystemResolver extends AbstractResolver
      */
     private Format detectSourceFormat() throws IOException {
         Format format = Format.UNKNOWN;
-        final File file = new File(getPathname());
-        List<MediaType> detectedTypes = MediaType.detectMediaTypes(file);
+        final Path path = getPath();
+        List<MediaType> detectedTypes = MediaType.detectMediaTypes(path);
         if (detectedTypes.size() > 0) {
             format = detectedTypes.get(0).toFormat();
         }
         return format;
+    }
+
+    @Override
+    public StreamSource newStreamSource() throws IOException {
+        return new FileStreamSource(getPath());
     }
 
     /**
@@ -225,7 +210,7 @@ class FilesystemResolver extends AbstractResolver
 
     @Override
     public void setIdentifier(Identifier identifier) {
-        pathname = null;
+        path = null;
         sourceFormat = null;
         this.identifier = identifier;
     }

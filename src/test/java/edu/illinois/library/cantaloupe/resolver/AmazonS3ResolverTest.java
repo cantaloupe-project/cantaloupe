@@ -20,9 +20,9 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 
 import static org.junit.Assert.*;
 
@@ -57,7 +57,7 @@ public class AmazonS3ResolverTest extends BaseTest {
     }
 
     @AfterClass
-    public static void removeFixtures() {
+    public static void deleteFixtures() {
         final AmazonS3 s3 = client();
         s3.deleteObject(getBucket(), OBJECT_KEY);
     }
@@ -94,6 +94,14 @@ public class AmazonS3ResolverTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
+        useBasicLookupStrategy();
+
+        instance = new AmazonS3Resolver();
+        instance.setIdentifier(new Identifier(OBJECT_KEY));
+        instance.setContext(new RequestContext());
+    }
+
+    private void useBasicLookupStrategy() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.AMAZONS3RESOLVER_BUCKET_NAME, getBucket());
         config.setProperty(Key.AMAZONS3RESOLVER_BUCKET_REGION, getRegion());
@@ -101,106 +109,99 @@ public class AmazonS3ResolverTest extends BaseTest {
         config.setProperty(Key.AMAZONS3RESOLVER_SECRET_KEY, getSecretKey());
         config.setProperty(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
-
-        instance = new AmazonS3Resolver();
-        instance.setIdentifier(new Identifier(OBJECT_KEY));
-        instance.setContext(new RequestContext());
     }
 
-    @Test
-    public void testNewStreamSourceWithBasicLookupStrategy() {
-        // present, readable image
+    private void useScriptLookupStrategy() {
         try {
-            assertNotNull(instance.newStreamSource());
+            Configuration config = Configuration.getInstance();
+            config.setProperty(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY,
+                    "ScriptLookupStrategy");
+            config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+            config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
+                    TestUtil.getFixture("delegates.rb").getAbsolutePath());
         } catch (IOException e) {
             fail();
         }
-        // missing image
-        try {
-            instance.setIdentifier(new Identifier("bogus"));
-            instance.newStreamSource();
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        } catch (IOException e) {
-            fail("Expected FileNotFoundException");
-        }
     }
 
     @Test
-    public void testNewStreamSourceWithScriptLookupStrategy() throws Exception {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY,
-                "ScriptLookupStrategy");
-        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").getAbsolutePath());
-        // present image
-        try {
-            StreamSource source = instance.newStreamSource();
-            assertNotNull(source.newInputStream());
-        } catch (IOException e) {
-            fail();
-        }
-        // missing image
-        try {
-            instance.setIdentifier(new Identifier("bogus"));
-            instance.newStreamSource();
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        } catch (IOException e) {
-            fail("Expected FileNotFoundException");
-        }
+    public void testCheckAccessUsingBasicLookupStrategyWithPresentReadableImage()
+            throws Exception {
+        instance.checkAccess();
     }
 
     @Test
-    public void testGetSourceFormatWithBasicLookupStrategy() throws IOException {
+    public void testCheckAccessUsingBasicLookupStrategyWithPresentUnreadableImage() {
+        // TODO: write this
+    }
+
+    @Test(expected = NoSuchFileException.class)
+    public void testCheckAccessUsingBasicLookupStrategyWithMissingImage()
+            throws Exception {
+        instance.setIdentifier(new Identifier("bogus"));
+        instance.checkAccess();
+    }
+
+    @Test
+    public void testCheckAccessUsingScriptLookupStrategyWithPresentReadableImage()
+            throws Exception {
+        useScriptLookupStrategy();
+        instance.checkAccess();
+    }
+
+    @Test
+    public void testCheckAccessUsingScriptLookupStrategyWithPresentUnreadableImage() {
+        // TODO: write this
+    }
+
+    @Test(expected = NoSuchFileException.class)
+    public void testCheckAccessUsingScriptLookupStrategyWithMissingImage()
+            throws Exception {
+        useScriptLookupStrategy();
+
+        instance.setIdentifier(new Identifier("bogus"));
+        instance.checkAccess();
+    }
+
+    @Test
+    public void testGetSourceFormatUsingBasicLookupStrategy()
+            throws IOException {
         assertEquals(Format.JPG, instance.getSourceFormat());
-        try {
-            instance.setIdentifier(new Identifier("image.bogus"));
-            instance.getSourceFormat();
-            fail("Expected exception");
-        } catch (IOException e) {
-            // pass
-        }
-        try {
-            instance.setIdentifier(new Identifier("image"));
-            instance.getSourceFormat();
-            fail("Expected exception");
-        } catch (IOException e) {
-            // pass
-        }
     }
 
     @Test
-    public void testGetSourceFormatWithScriptLookupStrategy() throws IOException {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY,
-                "ScriptLookupStrategy");
-        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").getAbsolutePath());
-        // present image
+    public void testGetSourceFormatUsingScriptLookupStrategy()
+            throws IOException {
+        useScriptLookupStrategy();
         assertEquals(Format.JPG, instance.getSourceFormat());
-        // present image without extension TODO: write this
+    }
 
-        // missing image with extension
-        try {
-            instance.setIdentifier(new Identifier("image.bogus"));
-            instance.getSourceFormat();
-            fail("Expected exception");
-        } catch (IOException e) {
-            // pass
-        }
-        // missing image without extension
-        try {
-            instance.setIdentifier(new Identifier("image"));
-            instance.getSourceFormat();
-            fail("Expected exception");
-        } catch (IOException e) {
-            // pass
-        }
+    @Test
+    public void testGetSourceFormatWithImageWithRecognizedExtension()
+            throws IOException {
+        assertEquals(Format.JPG, instance.getSourceFormat());
+    }
+
+    @Test
+    public void testGetSourceFormatWithImageWithUnrecognizedExtension() {
+        // TODO: write this
+    }
+
+    @Test
+    public void testGetSourceFormatWithImageWithNoExtension() {
+        // TODO: write this
+    }
+
+    @Test
+    public void testNewStreamSourceUsingBasicLookupStrategy() throws Exception {
+        assertNotNull(instance.newStreamSource());
+    }
+
+    @Test
+    public void testNewStreamSourceUsingScriptLookupStrategy()
+            throws Exception {
+        useScriptLookupStrategy();
+        assertNotNull(instance.newStreamSource());
     }
 
 }

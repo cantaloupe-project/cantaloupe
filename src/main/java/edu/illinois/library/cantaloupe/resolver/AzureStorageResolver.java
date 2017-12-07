@@ -19,9 +19,9 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.NoSuchFileException;
 import java.security.InvalidKeyException;
 
 /**
@@ -65,13 +65,16 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
 
     }
 
-    private static Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(AzureStorageResolver.class);
 
-    static final String GET_KEY_DELEGATE_METHOD =
+    private static final String GET_KEY_DELEGATE_METHOD =
             "AzureStorageResolver::get_blob_key";
 
     private static CloudBlobClient client;
+
+    private CloudBlockBlob cachedBlob;
+    private IOException cachedBlobException;
 
     private static synchronized CloudBlobClient getClientInstance() {
         if (client == null) {
@@ -89,42 +92,52 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
                 final CloudStorageAccount account =
                         CloudStorageAccount.parse(connectionString);
 
-                logger.info("Using account: {}", accountName);
+                LOGGER.info("Using account: {}", accountName);
 
                 client = account.createCloudBlobClient();
             } catch (URISyntaxException | InvalidKeyException e) {
-                logger.error(e.getMessage());
+                LOGGER.error(e.getMessage());
             }
         }
         return client;
     }
 
     @Override
-    public StreamSource newStreamSource() throws IOException {
-        return new AzureStorageStreamSource(getObject());
+    public void checkAccess() throws IOException {
+        getObject();
     }
 
     private CloudBlockBlob getObject() throws IOException {
-        final Configuration config = Configuration.getInstance();
-        final String containerName =
-                config.getString(Key.AZURESTORAGERESOLVER_CONTAINER_NAME);
-        logger.info("Using container: {}", containerName);
+        if (cachedBlobException != null) {
+            throw cachedBlobException;
+        } else if (cachedBlob == null) {
+            try {
+                final Configuration config = Configuration.getInstance();
+                final String containerName =
+                        config.getString(Key.AZURESTORAGERESOLVER_CONTAINER_NAME);
+                LOGGER.info("Using container: {}", containerName);
 
-        final CloudBlobClient client = getClientInstance();
-        try {
-            final CloudBlobContainer container =
-                    client.getContainerReference(containerName);
-            final String objectKey = getObjectKey();
+                final CloudBlobClient client = getClientInstance();
+                try {
+                    final CloudBlobContainer container =
+                            client.getContainerReference(containerName);
+                    final String objectKey = getObjectKey();
 
-            logger.info("Requesting {}", objectKey);
-            final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
-            if (!blob.exists()) {
-                throw new FileNotFoundException("Not found: " + objectKey);
+                    LOGGER.info("Requesting {}", objectKey);
+                    final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
+                    if (!blob.exists()) {
+                        throw new NoSuchFileException("Not found: " + objectKey);
+                    }
+                    cachedBlob = blob;
+                } catch (URISyntaxException | StorageException e) {
+                    throw new IOException(e);
+                }
+            } catch (IOException e) {
+                cachedBlobException = e;
+                throw e;
             }
-            return blob;
-        } catch (URISyntaxException | StorageException e) {
-            throw new IOException(e);
         }
+        return cachedBlob;
     }
 
     private String getObjectKey() throws IOException {
@@ -136,7 +149,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
                 try {
                     return getObjectKeyWithDelegateStrategy();
                 } catch (ScriptException | DelegateScriptDisabledException e) {
-                    logger.error(e.getMessage(), e);
+                    LOGGER.error(e.getMessage(), e);
                     throw new IOException(e);
                 }
             default:
@@ -147,9 +160,9 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
 
     /**
      * @return
-     * @throws FileNotFoundException If the delegate script does not exist
+     * @throws NoSuchFileException If the delegate script does not exist.
      * @throws IOException
-     * @throws ScriptException If the script fails to execute
+     * @throws ScriptException If the delegate method throws an exception.
      */
     private String getObjectKeyWithDelegateStrategy()
             throws IOException, ScriptException,
@@ -158,7 +171,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
         final Object result = engine.invoke(GET_KEY_DELEGATE_METHOD,
                 identifier.toString(), context.asMap());
         if (result == null) {
-            throw new FileNotFoundException(GET_KEY_DELEGATE_METHOD +
+            throw new NoSuchFileException(GET_KEY_DELEGATE_METHOD +
                     " returned nil for " + identifier);
         }
         return (String) result;
@@ -183,6 +196,11 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
             }
         }
         return sourceFormat;
+    }
+
+    @Override
+    public StreamSource newStreamSource() throws IOException {
+        return new AzureStorageStreamSource(getObject());
     }
 
 }

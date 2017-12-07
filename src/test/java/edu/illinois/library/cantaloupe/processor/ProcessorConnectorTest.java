@@ -96,7 +96,7 @@ public class ProcessorConnectorTest extends BaseTest {
         instance.connect(resolver, processor, IDENTIFIER);
 
         assertEquals(
-                ((FileResolver) resolver).getPath(),
+                ((FileResolver) resolver).getPath().toFile(),
                 ((FileProcessor) processor).getSourceFile());
     }
 
@@ -166,11 +166,7 @@ public class ProcessorConnectorTest extends BaseTest {
                     ((FileProcessor) processor).getSourceFile());
         } finally {
             server.stop();
-            try {
-                recursiveDeleteOnExit(cacheFolder);
-            } catch (IOException e) {
-                System.out.println(e);
-            }
+            recursiveDeleteOnExit(cacheFolder);
         }
     }
 
@@ -233,11 +229,7 @@ public class ProcessorConnectorTest extends BaseTest {
                     ((StreamProcessor) processor).getStreamSource());
         } finally {
             server.stop();
-            try {
-                recursiveDeleteOnExit(cacheFolder);
-            } catch (IOException e) {
-                System.out.println(e);
-            }
+            recursiveDeleteOnExit(cacheFolder);
         }
     }
 
@@ -271,11 +263,7 @@ public class ProcessorConnectorTest extends BaseTest {
             }
         } finally {
             server.stop();
-            try {
-                recursiveDeleteOnExit(cacheFolder);
-            } catch (IOException e) {
-                System.out.println(e);
-            }
+            recursiveDeleteOnExit(cacheFolder);
         }
     }
 

@@ -26,12 +26,12 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.NoSuchFileException;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -204,16 +204,31 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public Format getSourceFormat() throws IOException {
+    public void checkAccess() throws IOException {
+        Response response = retrieveHEADResponse();
+        if (response.getStatus() >= HttpStatus.BAD_REQUEST_400) {
+            final String statusLine = "HTTP " + headResponse.getStatus() +
+                    ": " + headResponse.getReason();
+
+            if (response.getStatus() == HttpStatus.NOT_FOUND_404
+                    || response.getStatus() == HttpStatus.GONE_410) {
+                throw new NoSuchFileException(statusLine);
+            } else if (response.getStatus() == HttpStatus.UNAUTHORIZED_401
+                    || response.getStatus() == HttpStatus.FORBIDDEN_403) {
+                throw new AccessDeniedException(statusLine);
+            } else {
+                throw new IOException(statusLine);
+            }
+        }
+    }
+
+    @Override
+    public Format getSourceFormat() {
         if (sourceFormat == null) {
             sourceFormat = Format.inferFormat(identifier);
             if (Format.UNKNOWN.equals(sourceFormat)) {
                 sourceFormat = inferSourceFormatFromContentTypeHeader();
             }
-            // This will throw a variety of exceptions if the source is
-            // inaccessible, not found, etc., in order to comply with the
-            // StreamResolver contract.
-            newStreamSource();
         }
         return sourceFormat;
     }
@@ -267,9 +282,6 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
         if (info != null) {
             LOGGER.info("Resolved {} to {}", identifier, info.getURI());
-
-            checkHEADResponse();
-
             return new HTTPStreamSource(getHTTPClient(info), info.getURI());
         }
         return null;
@@ -306,24 +318,6 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
             }
         }
         return headResponse;
-    }
-
-    private void checkHEADResponse() throws IOException {
-        Response response = retrieveHEADResponse();
-        if (response.getStatus() >= HttpStatus.BAD_REQUEST_400) {
-            final String statusLine = "HTTP " + headResponse.getStatus() +
-                    ": " + headResponse.getReason();
-
-            if (response.getStatus() == HttpStatus.NOT_FOUND_404
-                    || response.getStatus() == HttpStatus.GONE_410) {
-                throw new FileNotFoundException(statusLine);
-            } else if (response.getStatus() == HttpStatus.UNAUTHORIZED_401
-                    || response.getStatus() == HttpStatus.FORBIDDEN_403) {
-                throw new AccessDeniedException(statusLine);
-            } else {
-                throw new IOException(statusLine);
-            }
-        }
     }
 
     /**
@@ -363,11 +357,11 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     }
 
     /**
-     * @throws FileNotFoundException If the remote resource was not found.
-     * @throws URISyntaxException    If {@link #GET_URL_DELEGATE_METHOD}
-     *                               returns an invalid URI.
+     * @throws NoSuchFileException  If the remote resource was not found.
+     * @throws URISyntaxException   If {@link #GET_URL_DELEGATE_METHOD}
+     *                              returns an invalid URI.
      * @throws IOException
-     * @throws ScriptException       If the script fails to execute.
+     * @throws ScriptException      If the delegate method throws an exception.
      * @throws DelegateScriptDisabledException
      */
     private ResourceInfo getResourceInfoUsingScriptStrategy()
@@ -377,7 +371,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         final Object result = engine.invoke(GET_URL_DELEGATE_METHOD,
                 identifier.toString(), context.asMap());
         if (result == null) {
-            throw new FileNotFoundException(GET_URL_DELEGATE_METHOD +
+            throw new NoSuchFileException(GET_URL_DELEGATE_METHOD +
                     " returned nil for " + identifier);
         }
         // The return value may be a string URI, or a hash with "uri",

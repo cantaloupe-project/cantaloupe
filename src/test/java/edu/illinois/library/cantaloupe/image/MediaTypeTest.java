@@ -61,7 +61,7 @@ public class MediaTypeTest {
             MediaType preferredMediaType = format.getPreferredMediaType();
 
             try {
-                boolean result = MediaType.detectMediaTypes(file).
+                boolean result = MediaType.detectMediaTypes(file.toPath()).
                         contains(preferredMediaType);
                 if (!result) {
                     System.out.println("format: " + format +

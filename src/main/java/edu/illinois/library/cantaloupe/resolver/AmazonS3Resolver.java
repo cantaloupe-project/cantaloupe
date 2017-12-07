@@ -18,8 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.NoSuchFileException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,17 +41,19 @@ import java.util.Map;
  */
 class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
-    private static Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(AmazonS3Resolver.class);
 
-    static final String GET_KEY_DELEGATE_METHOD =
+    private static final String GET_KEY_DELEGATE_METHOD =
             "AmazonS3Resolver::get_object_key";
 
     private static AmazonS3 client;
     
     private String bucketName;
+    private S3Object cachedObject;
+    private IOException cachedObjectException;
 
-    static synchronized AmazonS3 getClientInstance() {
+    private static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
             final Configuration config = Configuration.getInstance();
             final AWSClientFactory factory = new AWSClientFactory(
@@ -63,35 +66,52 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public StreamSource newStreamSource() throws IOException {
-        S3Object object = getObject();
-        return new InputStreamStreamSource(object.getObjectContent());
+    public void checkAccess() throws IOException {
+        getObject();
     }
 
     /**
      * N.B.: Either the returned instance, or the return value of
      * {@link S3Object#getObjectContent()}, must be closed.
+     *
+     * @throws NoSuchFileException if an object corresponding to the set
+     *         identifier does not exist.
+     * @throws AccessDeniedException if an object corresponding to the set
+     *         identifier is not readable.
+     * @throws IOException if there is some other issue accessing the object.
      */
     private S3Object getObject() throws IOException {
-        AmazonS3 s3 = getClientInstance();
+        if (cachedObjectException != null) {
+            throw cachedObjectException;
+        } else if (cachedObject == null) {
+            try {
+                AmazonS3 s3 = getClientInstance();
 
-        final Configuration config = Configuration.getInstance();
-        final String objectKey = getObjectKey();
-        if (bucketName == null) {
-        	bucketName = config.getString(Key.AMAZONS3RESOLVER_BUCKET_NAME);
-        }
-        try {
-            logger.info("Requesting {} from bucket {}", objectKey, bucketName);
-            return s3.getObject(new GetObjectRequest(bucketName, objectKey));
-        } catch (AmazonS3Exception e) {
-            if (e.getErrorCode().equals("NoSuchKey")) {
-                throw new FileNotFoundException(e.getMessage());
-            } else {
-                throw new IOException(e);
+                final Configuration config = Configuration.getInstance();
+                final String objectKey = getObjectKey();
+                if (bucketName == null) {
+                    bucketName = config.getString(Key.AMAZONS3RESOLVER_BUCKET_NAME);
+                }
+                try {
+                    LOGGER.info("Requesting {} from bucket {}",
+                            objectKey, bucketName);
+                    cachedObject = s3.getObject(new GetObjectRequest(bucketName,
+                            objectKey));
+                } catch (AmazonS3Exception e) {
+                    if (e.getErrorCode().equals("NoSuchKey")) {
+                        throw new NoSuchFileException(e.getMessage());
+                    } else {
+                        throw new IOException(e);
+                    }
+                }
+            } catch (IOException e) {
+                cachedObjectException = e;
+                throw e;
             }
         }
+        return cachedObject;
     }
-    
+
     private Map<String, Object> convertToHashMap(final RubyHash rubyMap) {
         HashMap<String, Object> map = new HashMap<String, Object>();
         for (Object key : rubyMap.keySet()) {
@@ -115,7 +135,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
             	        	bucketName = map.get("bucket").toString();
             	        	objectKey = map.get("key").toString();
                     	} else {
-                    		logger.error("Hash does not include bucket and key");
+                    		LOGGER.error("Hash does not include bucket and key");
                     		throw new IOException();
                     	}
                     } else {
@@ -123,7 +143,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
                     }
                     return objectKey;
                 } catch (ScriptException | DelegateScriptDisabledException e) {
-                    logger.error(e.getMessage(), e);
+                    LOGGER.error(e.getMessage(), e);
                     throw new IOException(e);
                 }
             default:
@@ -134,9 +154,9 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
     /**
      * @return
-     * @throws FileNotFoundException If the delegate script does not exist
+     * @throws NoSuchFileException If the delegate script does not exist.
      * @throws IOException
-     * @throws ScriptException If the script fails to execute
+     * @throws ScriptException If the delegate method throws an exception.
      */
     private Object getObjectInfoWithDelegateStrategy()
             throws IOException, ScriptException,
@@ -145,7 +165,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
         final Object result = engine.invoke(GET_KEY_DELEGATE_METHOD,
                 identifier.toString(), context.asMap());
         if (result == null) {
-            throw new FileNotFoundException(GET_KEY_DELEGATE_METHOD +
+            throw new NoSuchFileException(GET_KEY_DELEGATE_METHOD +
                     " returned nil for " + identifier);
         }
         return result;
@@ -171,6 +191,12 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
             }
         }
         return sourceFormat;
+    }
+
+    @Override
+    public StreamSource newStreamSource() throws IOException {
+        S3Object object = getObject();
+        return new InputStreamStreamSource(object.getObjectContent());
     }
 
 }

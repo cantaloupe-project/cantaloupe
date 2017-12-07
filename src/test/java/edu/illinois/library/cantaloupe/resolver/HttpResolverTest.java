@@ -14,14 +14,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.NoSuchFileException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -81,70 +80,96 @@ abstract class HttpResolverTest extends BaseTest {
                 TestUtil.getFixture("delegates.rb").getAbsolutePath());
     }
 
-    /* newStreamSource() */
+    /* checkAccess() */
 
     @Test
-    public void testNewStreamSourceUsingBasicLookupStrategyWithValidAuthentication()
+    public void testCheckAccessUsingBasicLookupStrategyWithPresentReadableImage()
             throws Exception {
         useBasicLookupStrategy();
-
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME,
-                WebServer.BASIC_USER);
-        config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_SECRET,
-                WebServer.BASIC_SECRET);
-
-        server.setBasicAuthEnabled(true);
-        server.start();
-
-        instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
-        assertNotNull(instance.newStreamSource());
+        doTestCheckAccessWithPresentReadableImage(PRESENT_READABLE_IDENTIFIER);
     }
 
     @Test
-    public void testNewStreamSourceUsingBasicLookupStrategyWithInvalidAuthentication()
+    public void testCheckAccessUsingBasicLookupStrategyWithPresentUnreadableImage()
             throws Exception {
         useBasicLookupStrategy();
+        doTestCheckAccessWithPresentUnreadableImage(new Identifier("gif"));
+    }
 
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME,
-                WebServer.BASIC_USER);
-        config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_SECRET,
-                "bogus");
+    @Test
+    public void testCheckAccessUsingBasicLookupStrategyWithMissingImage()
+            throws Exception {
+        useBasicLookupStrategy();
+        doTestCheckAccessWithMissingImage(new Identifier("bogus"));
+    }
 
-        server.setBasicAuthEnabled(true);
+    @Test
+    public void testCheckAccessUsingScriptLookupStrategyWithPresentReadableImage()
+            throws Exception {
+        useScriptLookupStrategy();
+        Identifier identifier = new Identifier(getServerURI() + "/" +
+                PRESENT_READABLE_IDENTIFIER);
+        doTestCheckAccessWithPresentReadableImage(identifier);
+    }
+
+    @Test
+    public void testCheckAccessUsingScriptLookupStrategyWithMissingImage()
+            throws Exception {
+        useScriptLookupStrategy();
+        Identifier identifier = new Identifier(getServerURI() + "/bogus");
+        doTestCheckAccessWithMissingImage(identifier);
+    }
+
+    @Test
+    public void testCheckAccessUsingScriptLookupStrategyWithPresentUnreadableImage()
+            throws Exception {
+        useScriptLookupStrategy();
+        Identifier identifier = new Identifier(getServerURI() + "/gif");
+        doTestCheckAccessWithPresentUnreadableImage(identifier);
+    }
+
+    private void doTestCheckAccessWithPresentReadableImage(
+            Identifier identifier) throws Exception {
         server.start();
 
-        instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
+        instance.setIdentifier(identifier);
+        instance.checkAccess();
+    }
+
+    private void doTestCheckAccessWithPresentUnreadableImage(
+            Identifier identifier) throws Exception {
         try {
-            instance.newStreamSource();
-            fail("Expected exception");
+            server.start();
+
+            File image = TestUtil.getImage("gif");
+            try {
+                image.setReadable(false);
+                instance.setIdentifier(identifier);
+                instance.checkAccess();
+                fail("Expected exception");
+            } finally {
+                image.setReadable(true);
+            }
         } catch (AccessDeniedException e) {
             // pass
         }
     }
 
-    @Test
-    public void testNewStreamSourceUsingBasicLookupStrategyWithPresentReadableImage() {
-        useBasicLookupStrategy();
-        doTestNewStreamSourceWithPresentReadableImage(PRESENT_READABLE_IDENTIFIER);
-    }
-
-    @Test
-    public void testNewStreamSourceUsingBasicLookupStrategyWithMissingImage() {
-        useBasicLookupStrategy();
-        doTestNewStreamSourceWithMissingImage(new Identifier("bogus"));
-    }
-
-    @Test
-    public void testNewStreamSourceWithUsingBasicLookupStrategyPresentUnreadableImage()
+    private void doTestCheckAccessWithMissingImage(Identifier identifier)
             throws Exception {
-        useBasicLookupStrategy();
-        doTestNewStreamSourceWithPresentUnreadableImage(new Identifier("gif"));
+        try {
+            server.start();
+
+            instance.setIdentifier(identifier);
+            instance.checkAccess();
+            fail("Expected exception");
+        } catch (NoSuchFileException e) {
+            // pass
+        }
     }
 
     @Test
-    public void testNewStreamSourceUsingScriptLookupStrategyWithValidAuthentication()
+    public void testCheckAccessUsingScriptLookupStrategyWithValidAuthentication()
             throws Exception {
         useScriptLookupStrategy();
 
@@ -155,11 +180,11 @@ abstract class HttpResolverTest extends BaseTest {
         server.start();
 
         instance.setIdentifier(identifier);
-        assertNotNull(instance.newStreamSource());
+        instance.checkAccess();
     }
 
-    @Test
-    public void testNewStreamSourceUsingScriptLookupStrategyWithInvalidAuthentication()
+    @Test(expected = AccessDeniedException.class)
+    public void testCheckAccessUsingScriptLookupStrategyWithInvalidAuthentication()
             throws Exception {
         useScriptLookupStrategy();
 
@@ -170,81 +195,52 @@ abstract class HttpResolverTest extends BaseTest {
         server.start();
 
         instance.setIdentifier(identifier);
-        try {
-            instance.newStreamSource();
-        } catch (AccessDeniedException e) {
-            // pass
-        }
+        instance.checkAccess();
     }
 
     @Test
-    public void testNewStreamSourceUsingScriptLookupStrategyWithPresentReadableImage()
-            throws Exception {
-        useScriptLookupStrategy();
-        Identifier identifier = new Identifier(getServerURI() + "/" +
-                PRESENT_READABLE_IDENTIFIER);
-        doTestNewStreamSourceWithPresentReadableImage(identifier);
-    }
-
-    @Test
-    public void testNewStreamSourceUsingScriptLookupStrategyWithMissingImage()
-            throws Exception {
-        useScriptLookupStrategy();
-        Identifier identifier = new Identifier(getServerURI() + "/bogus");
-        doTestNewStreamSourceWithMissingImage(identifier);
-    }
-
-    @Test
-    public void testNewStreamSourceUsingScriptLookupStrategyWithPresentUnreadableImage()
-            throws Exception {
-        useScriptLookupStrategy();
-        Identifier identifier = new Identifier(getServerURI() + "/gif");
-        doTestNewStreamSourceWithPresentUnreadableImage(identifier);
-    }
-
-    private void doTestNewStreamSourceWithPresentReadableImage(
-            Identifier identifier) {
-        try {
-            server.start();
-
-            instance.setIdentifier(identifier);
-            assertNotNull(instance.newStreamSource());
-        } catch (Exception e) {
-            fail();
-        }
-    }
-
-    private void doTestNewStreamSourceWithPresentUnreadableImage(Identifier identifier) {
-        try {
-            server.start();
-
-            File image = TestUtil.getImage("gif");
-            try {
-                image.setReadable(false);
-                instance.setIdentifier(identifier);
-                instance.newStreamSource();
-                fail("Expected exception");
-            } finally {
-                image.setReadable(true);
+    public void testCheckAccessWith403Response() throws Exception {
+        server.setHandler(new DefaultHandler() {
+            @Override
+            public void handle(String target,
+                               Request baseRequest,
+                               HttpServletRequest request,
+                               HttpServletResponse response) {
+                response.setStatus(403);
+                baseRequest.setHandled(true);
             }
+        });
+        server.start();
+
+        try {
+            instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
+            instance.checkAccess();
+            fail("Expected exception");
         } catch (AccessDeniedException e) {
-            // pass
-        } catch (Exception e) {
-            fail("Expected AccessDeniedException");
+            assertTrue(e.getMessage().contains("403"));
         }
     }
 
-    private void doTestNewStreamSourceWithMissingImage(Identifier identifier) {
-        try {
-            server.start();
+    @Test
+    public void testCheckAccessWith500Response() throws Exception {
+        server.setHandler(new DefaultHandler() {
+            @Override
+            public void handle(String target,
+                               Request baseRequest,
+                               HttpServletRequest request,
+                               HttpServletResponse response) {
+                response.setStatus(500);
+                baseRequest.setHandled(true);
+            }
+        });
+        server.start();
 
-            instance.setIdentifier(identifier);
-            instance.newStreamSource();
+        try {
+            instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
+            instance.checkAccess();
             fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        } catch (Exception e) {
-            fail("Expected FileNotFoundException");
+        } catch (IOException e) {
+            assertTrue(e.getMessage().contains("500"));
         }
     }
 
@@ -269,46 +265,9 @@ abstract class HttpResolverTest extends BaseTest {
     }
 
     @Test
-    public void testGetSourceFormatUsingBasicLookupStrategyWithInvalidAuthentication()
-            throws Exception {
-        useBasicLookupStrategy();
-
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME,
-                WebServer.BASIC_USER);
-        config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_SECRET,
-                "bogus");
-
-        server.setBasicAuthEnabled(true);
-        server.start();
-
-        instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
-        try {
-            instance.newStreamSource();
-        } catch (AccessDeniedException e) {
-            // pass
-        }
-    }
-
-    @Test
-    public void testGetSourceFormatUsingBasicLookupStrategyWithPresentReadableImage()
-            throws Exception {
+    public void testGetSourceFormatUsingBasicLookupStrategyWithPresentReadableImage() {
         useBasicLookupStrategy();
         doTestGetSourceFormatWithPresentReadableImage(PRESENT_READABLE_IDENTIFIER);
-    }
-
-    @Test
-    public void testGetSourceFormatUsingBasicLookupStrategyWithPresentUnreadableImage()
-            throws Exception {
-        useBasicLookupStrategy();
-        doTestGetSourceFormatWithPresentUnreadableImage(new Identifier("gif"));
-    }
-
-    @Test
-    public void testGetSourceFormatUsingBasicLookupStrategyWithMissingImage()
-            throws Exception {
-        useBasicLookupStrategy();
-        doTestGetSourceFormatWithMissingImage(new Identifier("bogus"));
     }
 
     @Test
@@ -321,29 +280,13 @@ abstract class HttpResolverTest extends BaseTest {
     }
 
     @Test
-    public void testGetSourceFormatUsingScriptLookupStrategyWithPresentUnreadableImage()
-            throws Exception {
-        useScriptLookupStrategy();
-        Identifier identifier = new Identifier(getServerURI() + "/gif");
-        doTestGetSourceFormatWithPresentUnreadableImage(identifier);
-    }
-
-    @Test
-    public void testGetSourceFormatUsingScriptLookupStrategyWithMissingImage()
-            throws Exception {
-        useScriptLookupStrategy();
-        doTestGetSourceFormatWithMissingImage(new Identifier("bogus"));
-    }
-
-    @Test
     public void testGetSourceFormatFollowsRedirect() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
             public void handle(String target,
                                Request baseRequest,
                                HttpServletRequest request,
-                               HttpServletResponse response)
-                    throws IOException, ServletException {
+                               HttpServletResponse response) {
                 if (baseRequest.getPathInfo().startsWith("/" + PRESENT_READABLE_IDENTIFIER)) {
                     response.setStatus(301);
                     response.setHeader("Location",
@@ -359,54 +302,6 @@ abstract class HttpResolverTest extends BaseTest {
     }
 
     @Test
-    public void testGetSourceFormatWith403Response() throws Exception {
-        server.setHandler(new DefaultHandler() {
-            @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response)
-                    throws IOException, ServletException {
-                response.setStatus(403);
-                baseRequest.setHandled(true);
-            }
-        });
-        server.start();
-
-        try {
-            instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
-            instance.getSourceFormat();
-            fail("Expected exception");
-        } catch (AccessDeniedException e) {
-            assertTrue(e.getMessage().contains("403"));
-        }
-    }
-
-    @Test
-    public void testGetSourceFormatWith500Response() throws Exception {
-        server.setHandler(new DefaultHandler() {
-            @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response)
-                    throws IOException, ServletException {
-                response.setStatus(500);
-                baseRequest.setHandled(true);
-            }
-        });
-        server.start();
-
-        try {
-            instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
-            instance.getSourceFormat();
-            fail("Expected exception");
-        } catch (IOException e) {
-            assertTrue(e.getMessage().contains("500"));
-        }
-    }
-
-    @Test
     public void testGetSourceFormatWithNoIdentifierExtensionAndContentTypeHeader()
             throws Exception {
         server.setHandler(new DefaultHandler() {
@@ -414,8 +309,7 @@ abstract class HttpResolverTest extends BaseTest {
             public void handle(String target,
                                Request baseRequest,
                                HttpServletRequest request,
-                               HttpServletResponse response)
-                    throws IOException, ServletException {
+                               HttpServletResponse response) {
                 response.setHeader("Content-Type", "image/jpeg");
                 baseRequest.setHandled(true);
             }
@@ -443,8 +337,7 @@ abstract class HttpResolverTest extends BaseTest {
             public void handle(String target,
                                Request baseRequest,
                                HttpServletRequest request,
-                               HttpServletResponse response)
-                    throws IOException, ServletException {
+                               HttpServletResponse response) {
                 response.setHeader("Content-Type", "image/bogus");
                 baseRequest.setHandled(true);
             }
@@ -464,42 +357,6 @@ abstract class HttpResolverTest extends BaseTest {
             assertEquals(Format.JPG, instance.getSourceFormat());
         } catch (Exception e) {
             fail();
-        }
-    }
-
-    private void doTestGetSourceFormatWithPresentUnreadableImage(
-            Identifier identifier) {
-        try {
-            server.start();
-
-            File image = TestUtil.getImage("gif");
-            try {
-                image.setReadable(false);
-                instance.setIdentifier(identifier);
-                instance.getSourceFormat();
-                fail("Expected exception");
-            } finally {
-                image.setReadable(true);
-            }
-        } catch (AccessDeniedException e) {
-            // pass
-        } catch (Exception e) {
-            fail("Expected AccessDeniedException");
-        }
-    }
-
-    private void doTestGetSourceFormatWithMissingImage(Identifier identifier) {
-        try {
-            server.start();
-
-            assertEquals(Format.JPG, instance.getSourceFormat());
-            instance.setIdentifier(identifier);
-            instance.getSourceFormat();
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        } catch (Exception e) {
-            fail("Expected FileNotFoundException");
         }
     }
 
@@ -596,22 +453,74 @@ abstract class HttpResolverTest extends BaseTest {
         assertEquals("secret", actual.getSecret());
     }
 
-    @Test
+    @Test(expected = NoSuchFileException.class)
     public void testGetResourceInfoUsingScriptLookupStrategyReturningNil()
             throws Exception {
         useScriptLookupStrategy();
+        server.start();
 
         Identifier identifier = new Identifier("bogus");
         instance.setIdentifier(identifier);
+        instance.getResourceInfo();
+    }
 
+    /* newStreamSource() */
+
+    @Test
+    public void testNewStreamSourceUsingBasicLookupStrategyWithValidAuthentication()
+            throws Exception {
+        useBasicLookupStrategy();
+
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME,
+                WebServer.BASIC_USER);
+        config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_SECRET,
+                WebServer.BASIC_SECRET);
+
+        server.setBasicAuthEnabled(true);
         server.start();
 
-        try {
-            instance.getResourceInfo();
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        }
+        instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
+        assertNotNull(instance.newStreamSource());
+    }
+
+    @Test
+    public void testNewStreamSourceUsingBasicLookupStrategyWithPresentReadableImage()
+            throws Exception {
+        useBasicLookupStrategy();
+        doTestNewStreamSourceWithPresentReadableImage(PRESENT_READABLE_IDENTIFIER);
+    }
+
+    @Test
+    public void testNewStreamSourceUsingScriptLookupStrategyWithValidAuthentication()
+            throws Exception {
+        useScriptLookupStrategy();
+
+        Identifier identifier = new Identifier("valid-auth-" +
+                getServerURI() + "/" + PRESENT_READABLE_IDENTIFIER);
+
+        server.setBasicAuthEnabled(true);
+        server.start();
+
+        instance.setIdentifier(identifier);
+        assertNotNull(instance.newStreamSource());
+    }
+
+    @Test
+    public void testNewStreamSourceUsingScriptLookupStrategyWithPresentReadableImage()
+            throws Exception {
+        useScriptLookupStrategy();
+        Identifier identifier = new Identifier(getServerURI() + "/" +
+                PRESENT_READABLE_IDENTIFIER);
+        doTestNewStreamSourceWithPresentReadableImage(identifier);
+    }
+
+    private void doTestNewStreamSourceWithPresentReadableImage(
+            Identifier identifier) throws Exception {
+        server.start();
+
+        instance.setIdentifier(identifier);
+        assertNotNull(instance.newStreamSource());
     }
 
 }

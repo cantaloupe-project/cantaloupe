@@ -14,9 +14,9 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.NoSuchFileException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -58,7 +58,7 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
                  PreparedStatement statement = connection.prepareStatement(sql)) {
                 statement.setString(1, databaseIdentifier);
 
-                logger.debug(sql);
+                LOGGER.debug(sql);
                 try (ResultSet result = statement.executeQuery()) {
                     if (result.next()) {
                         return result.getBinaryStream(1);
@@ -73,7 +73,8 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
 
     }
 
-    private static Logger logger = LoggerFactory.getLogger(JdbcResolver.class);
+    private static final Logger LOGGER = LoggerFactory.
+            getLogger(JdbcResolver.class);
 
     private static final String GET_DATABASE_IDENTIFIER_DELEGATE_METHOD =
             "JdbcResolver::get_database_identifier";
@@ -93,8 +94,8 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
 
             final String connectionString =
                     config.getString(Key.JDBCRESOLVER_JDBC_URL, "");
-            final int connectionTimeout = 1000 *
-                    config.getInt(Key.JDBCCACHE_CONNECTION_TIMEOUT, 10);
+            final int connectionTimeout =
+                    1000 * config.getInt(Key.JDBCCACHE_CONNECTION_TIMEOUT, 10);
             final int maxPoolSize =
                     Runtime.getRuntime().availableProcessors() * 2 + 1;
             final String user = config.getString(Key.JDBCRESOLVER_USER, "");
@@ -109,9 +110,9 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
             dataSource.setConnectionTimeout(connectionTimeout);
 
             try (Connection connection = dataSource.getConnection()) {
-                logger.info("Using {} {}", connection.getMetaData().getDriverName(),
+                LOGGER.info("Using {} {}", connection.getMetaData().getDriverName(),
                         connection.getMetaData().getDriverVersion());
-                logger.info("Connection string: {}",
+                LOGGER.info("Connection string: {}",
                         config.getString(Key.JDBCRESOLVER_JDBC_URL));
             }
         }
@@ -119,9 +120,9 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public StreamSource newStreamSource() throws IOException {
+    public void checkAccess() throws IOException {
         try (Connection connection = getConnection()) {
-            final String sql = getLookupSql();
+            final String sql = getLookupSQL();
             if (!sql.contains("?")) {
                 throw new IOException(GET_LOOKUP_SQL_DELEGATE_METHOD +
                         " implementation does not support prepared statements");
@@ -130,14 +131,13 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
             // Check that the image exists.
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 statement.setString(1, getDatabaseIdentifier());
-                logger.debug(sql);
+                LOGGER.debug(sql);
                 try (ResultSet result = statement.executeQuery()) {
                     if (!result.next()) {
-                        throw new FileNotFoundException();
+                        throw new NoSuchFileException(sql);
                     }
                 }
             }
-            return new JdbcStreamSource(sql, getDatabaseIdentifier());
         } catch (ScriptException | SQLException |
                 DelegateScriptDisabledException e) {
             throw new IOException(e.getMessage(), e);
@@ -156,7 +156,7 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
                     // the function result may be a media type, or an SQL
                     // statement to look it up.
                     if (methodResult.toUpperCase().startsWith("SELECT")) {
-                        logger.debug(methodResult);
+                        LOGGER.debug(methodResult);
                         try (Connection connection = getConnection();
                              PreparedStatement statement = connection.
                                      prepareStatement(methodResult)) {
@@ -203,11 +203,16 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     /**
      * @return Result of the {@link #GET_LOOKUP_SQL_DELEGATE_METHOD} method.
      */
-    String getLookupSql() throws IOException, ScriptException,
+    String getLookupSQL() throws IOException, ScriptException,
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final Object result = engine.invoke(GET_LOOKUP_SQL_DELEGATE_METHOD);
-        return (String) result;
+        final String resultStr = (String) result;
+        if (!resultStr.contains("?")) {
+            throw new IOException(GET_LOOKUP_SQL_DELEGATE_METHOD +
+                    " implementation does not support prepared statements");
+        }
+        return resultStr;
     }
 
     /**
@@ -218,6 +223,15 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final Object result = engine.invoke(GET_MEDIA_TYPE_DELEGATE_METHOD);
         return (String) result;
+    }
+
+    @Override
+    public StreamSource newStreamSource() throws IOException {
+        try {
+            return new JdbcStreamSource(getLookupSQL(), getDatabaseIdentifier());
+        } catch (ScriptException | DelegateScriptDisabledException e) {
+            throw new IOException(e.getMessage(), e);
+        }
     }
 
 }

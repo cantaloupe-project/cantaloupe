@@ -41,7 +41,7 @@ module Cantaloupe
 
   module FilesystemResolver
     def self.get_pathname(identifier, context)
-      '/bla/' + identifier
+      identifier.start_with?('/') ? identifier : '/bla/' + identifier
     end
   end
 

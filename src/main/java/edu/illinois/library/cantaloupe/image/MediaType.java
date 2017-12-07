@@ -14,8 +14,8 @@ import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,18 +58,18 @@ public final class MediaType {
     private String type;
 
     /**
-     * @param file File to probe.
+     * @param path File to probe.
      * @return Media types associated with the given file.
      * @throws IOException
      */
-    public static List<MediaType> detectMediaTypes(File file)
+    public static List<MediaType> detectMediaTypes(Path path)
             throws IOException {
         final List<MediaType> types = new ArrayList<>();
-        try (TikaInputStream is = TikaInputStream.get(file.toPath())) {
+        try (TikaInputStream is = TikaInputStream.get(path)) {
             AutoDetectParser parser = new AutoDetectParser();
             Detector detector = parser.getDetector();
             Metadata md = new Metadata();
-            md.add(Metadata.RESOURCE_NAME_KEY, file.getAbsolutePath());
+            md.add(Metadata.RESOURCE_NAME_KEY, path.toString());
             org.apache.tika.mime.MediaType mediaType = detector.detect(is, md);
             types.add(new MediaType(mediaType.toString()));
         }

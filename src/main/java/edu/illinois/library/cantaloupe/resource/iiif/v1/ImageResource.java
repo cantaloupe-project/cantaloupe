@@ -25,7 +25,7 @@ import org.restlet.representation.Variant;
 import org.restlet.resource.Get;
 
 import java.awt.Dimension;
-import java.io.FileNotFoundException;
+import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -82,17 +82,19 @@ public class ImageResource extends IIIF1Resource {
         requestContext.setCookies(getRequest().getCookies().getValuesMap());
         resolver.setContext(requestContext);
 
+        try {
+            resolver.checkAccess();
+        } catch (NoSuchFileException e) { // this needs to be rethrown!
+            if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
+                // If the image was not found, purge it from the cache.
+                cacheFacade.purgeAsync(identifier);
+            }
+            throw e;
+        }
+
         // If we don't have the format yet, get it from the resolver.
         if (Format.UNKNOWN.equals(sourceFormat)) {
-            try {
-                sourceFormat = resolver.getSourceFormat();
-            } catch (FileNotFoundException e) { // this needs to be rethrown!
-                if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
-                    // If the image was not found, purge it from the cache.
-                    cacheFacade.purgeAsync(identifier);
-                }
-                throw e;
-            }
+            sourceFormat = resolver.getSourceFormat();
         }
 
         // Obtain an instance of the processor assigned to that format.

@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import java.io.FileNotFoundException;
+import java.nio.file.NoSuchFileException;
 import java.util.List;
 
 import edu.illinois.library.cantaloupe.RestletApplication;
@@ -90,17 +90,18 @@ public class InformationResource extends IIIF2Resource {
         requestContext.setCookies(getRequest().getCookies().getValuesMap());
         resolver.setContext(requestContext);
 
-        // Determine the format of the source image.
-        Format format;
         try {
-            format = resolver.getSourceFormat();
-        } catch (FileNotFoundException e) { // this needs to be rethrown
+            resolver.checkAccess();
+        } catch (NoSuchFileException e) { // this needs to be rethrown!
             if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                 // If the image was not found, purge it from the cache.
                 cacheFacade.purgeAsync(identifier);
             }
             throw e;
         }
+
+        // Determine the format of the source image.
+        Format format = resolver.getSourceFormat();
 
         // Obtain an instance of the processor assigned to that format.
         final Processor processor = new ProcessorFactory().newProcessor(format);
