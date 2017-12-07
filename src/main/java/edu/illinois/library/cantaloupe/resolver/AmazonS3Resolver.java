@@ -21,7 +21,6 @@ import javax.script.ScriptException;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -48,7 +47,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
             "AmazonS3Resolver::get_object_key";
 
     private static AmazonS3 client;
-    
+
     private String bucketName;
     private S3Object cachedObject;
     private IOException cachedObjectException;
@@ -57,9 +56,9 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
         if (client == null) {
             final Configuration config = Configuration.getInstance();
             final AWSClientFactory factory = new AWSClientFactory(
-            		config.getString(Key.AMAZONS3RESOLVER_ACCESS_KEY_ID),
-            		config.getString(Key.AMAZONS3RESOLVER_SECRET_KEY),
-            		config.getString(Key.AMAZONS3RESOLVER_BUCKET_REGION));
+                    config.getString(Key.AMAZONS3RESOLVER_ACCESS_KEY_ID),
+                    config.getString(Key.AMAZONS3RESOLVER_SECRET_KEY),
+                    config.getString(Key.AMAZONS3RESOLVER_BUCKET_REGION));
             client = factory.newClient();
         }
         return client;
@@ -112,14 +111,6 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
         return cachedObject;
     }
 
-    private Map<String, Object> convertToHashMap(final RubyHash rubyMap) {
-        HashMap<String, Object> map = new HashMap<String, Object>();
-        for (Object key : rubyMap.keySet()) {
-            map.put(key.toString(), rubyMap.get(key));
-        }
-        return map;
-    }
-
     private String getObjectKey() throws IOException {
         final Configuration config = Configuration.getInstance();
         switch (config.getString(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY)) {
@@ -127,19 +118,19 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
                 return identifier.toString();
             case "ScriptLookupStrategy":
                 try {
-                	String objectKey;
-                	Object object = getObjectInfoWithDelegateStrategy();
+                    String objectKey;
+                    Object object = getObjectInfoWithDelegateStrategy();
                     if (object instanceof RubyHash) {
-                    	Map<String, Object> map = convertToHashMap((RubyHash)object);
-                    	if (map.containsKey("bucket") && map.containsKey("key")) {
-            	        	bucketName = map.get("bucket").toString();
-            	        	objectKey = map.get("key").toString();
-                    	} else {
-                    		LOGGER.error("Hash does not include bucket and key");
-                    		throw new IOException();
-                    	}
+                        Map<?,?> map = (RubyHash) object;
+                        if (map.containsKey("bucket") && map.containsKey("key")) {
+                            bucketName = map.get("bucket").toString();
+                            objectKey = map.get("key").toString();
+                        } else {
+                            LOGGER.error("Hash does not include bucket and key");
+                            throw new IOException();
+                        }
                     } else {
-                    	objectKey = (String)object;
+                        objectKey = (String)object;
                     }
                     return objectKey;
                 } catch (ScriptException | DelegateScriptDisabledException e) {
@@ -187,7 +178,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
                 if (Format.UNKNOWN.equals(sourceFormat)) {
                     // Try to infer a format based on the objectKey.
                     sourceFormat = Format.inferFormat(getObjectKey());
-                }                
+                }
             }
         }
         return sourceFormat;
