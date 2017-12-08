@@ -11,7 +11,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.FileInputStream;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -36,7 +36,7 @@ public class JdbcResolverTest extends BaseTest {
         config.setProperty(Key.JDBCRESOLVER_PASSWORD, "");
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").getAbsolutePath());
+                TestUtil.getFixture("delegates.rb").toString());
 
         try (Connection conn = JdbcResolver.getConnection()) {
             // create the table
@@ -55,7 +55,7 @@ public class JdbcResolverTest extends BaseTest {
                 statement.setString(1, "jpg.jpg");
                 statement.setString(2, "image/jpeg");
                 statement.setBinaryStream(3,
-                        new FileInputStream(TestUtil.getImage(IDENTIFIER.toString())));
+                        Files.newInputStream(TestUtil.getImage(IDENTIFIER.toString())));
                 statement.executeUpdate();
             }
         }

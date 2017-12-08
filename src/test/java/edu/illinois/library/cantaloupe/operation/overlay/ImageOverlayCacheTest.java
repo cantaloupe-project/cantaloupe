@@ -40,15 +40,15 @@ public class ImageOverlayCacheTest extends BaseTest {
 
     @Test
     public void testPutAndGetWithPresentFileURI() throws IOException {
-        URI uri = TestUtil.getImage("jpg").toURI();
+        URI uri = TestUtil.getImage("jpg").toUri();
         byte[] bytes = instance.putAndGet(uri);
         assertEquals(5439, bytes.length);
     }
 
     @Test
-    public void testPutAndGetWithMissingFileURI() throws IOException {
+    public void testPutAndGetWithMissingFileURI() {
         try {
-            URI uri = TestUtil.getImage("blablabla").toURI();
+            URI uri = TestUtil.getImage("blablabla").toUri();
             instance.putAndGet(uri);
             fail("Expected exception");
         } catch (IOException e) {

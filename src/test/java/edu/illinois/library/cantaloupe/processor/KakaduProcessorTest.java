@@ -9,8 +9,8 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -37,7 +37,7 @@ public class KakaduProcessorTest extends ProcessorTest {
     }
 
     @Override
-    protected File getSupported16BitImage() throws IOException {
+    protected Path getSupported16BitImage() throws IOException {
         return TestUtil.getImage("jp2-rgb-64x56x16-monotiled-lossy.jp2");
     }
 
@@ -71,16 +71,16 @@ public class KakaduProcessorTest extends ProcessorTest {
     public void testReadImageInfo() throws Exception {
         Info expectedInfo = new Info(100, 88, 100, 88, Format.JP2);
 
-        instance.setSourceFile(TestUtil.getImage("jp2"));
+        instance.setSourceFile(TestUtil.getImage("jp2").toFile());
         assertEquals(expectedInfo, instance.readImageInfo());
 
         // untiled image
-        instance.setSourceFile(TestUtil.getImage("jp2-rgb-64x56x8-monotiled-lossy.jp2"));
+        instance.setSourceFile(TestUtil.getImage("jp2-rgb-64x56x8-monotiled-lossy.jp2").toFile());
         expectedInfo = new Info(64, 56, 64, 56, Format.JP2);
         assertEquals(expectedInfo, instance.readImageInfo());
 
         // tiled image
-        instance.setSourceFile(TestUtil.getImage("jp2-rgb-64x56x8-multitiled-lossy.jp2"));
+        instance.setSourceFile(TestUtil.getImage("jp2-rgb-64x56x8-multitiled-lossy.jp2").toFile());
         expectedInfo = new Info(64, 56, Format.JP2);
         expectedInfo.getImages().get(0).tileWidth = 32;
         expectedInfo.getImages().get(0).tileHeight = 28;

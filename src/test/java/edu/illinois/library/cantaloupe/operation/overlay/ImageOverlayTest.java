@@ -23,7 +23,7 @@ public class ImageOverlayTest extends BaseTest {
 
     @Before
     public void setUp() throws Exception {
-        URI imageURI = TestUtil.getImage("jpg").toURI();
+        URI imageURI = TestUtil.getImage("jpg").toUri();
         instance = new ImageOverlay(imageURI, Position.BOTTOM_RIGHT, 5);
     }
 
@@ -72,7 +72,7 @@ public class ImageOverlayTest extends BaseTest {
 
     @Test
     public void testToString() throws IOException {
-        URI uri = TestUtil.getImage("jpg").toURI();
+        URI uri = TestUtil.getImage("jpg").toUri();
         instance.setURI(uri);
         assertEquals(uri.toString() + "_SE_5", instance.toString());
     }

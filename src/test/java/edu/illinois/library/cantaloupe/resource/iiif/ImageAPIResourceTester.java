@@ -9,13 +9,12 @@ import edu.illinois.library.cantaloupe.http.Client;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.http.Transport;
-import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
-import org.apache.commons.io.FileUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
 import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.*;
@@ -154,7 +153,7 @@ public class ImageAPIResourceTester {
 
     public void testCachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied(URI uri)
             throws Exception {
-        File cacheFolder = initializeFilesystemCache();
+        Path cacheDir = initializeFilesystemCache();
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.INFO_CACHE_ENABLED, true);
 
@@ -167,7 +166,7 @@ public class ImageAPIResourceTester {
 
             // assert that neither the image nor the info exists in the
             // derivative cache
-            assertRecursiveFileCount(cacheFolder.toPath(), 0);
+            assertRecursiveFileCount(cacheDir, 0);
 
             // assert that the info does NOT exist in the info cache
             assertEquals(0, InfoService.getInstance().getObjectCacheSize());
@@ -220,8 +219,7 @@ public class ImageAPIResourceTester {
      */
     public void testResolverProcessorCompatibility(URI uri,
                                                    String appServerHost,
-                                                   int appServerPort)
-            throws Exception {
+                                                   int appServerPort) {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
         config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
@@ -292,25 +290,18 @@ public class ImageAPIResourceTester {
         appServer.start();
     }
 
-    File initializeFilesystemCache() throws IOException {
-        File cacheFolder = TestUtil.getTempFolder();
-        cacheFolder = new File(cacheFolder.getAbsolutePath() + "/cache");
-        if (cacheFolder.exists()) {
-            FileUtils.cleanDirectory(cacheFolder);
-        } else {
-            cacheFolder.mkdir();
-        }
+    Path initializeFilesystemCache() throws IOException {
+        Path cacheDir = Files.createTempDirectory("test");
 
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
         config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
-        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
-                cacheFolder.getAbsolutePath());
+        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME, cacheDir.toString());
         config.setProperty(Key.CACHE_SERVER_TTL, 10);
 
-        assertRecursiveFileCount(cacheFolder.toPath(), 0);
+        assertRecursiveFileCount(cacheDir, 0);
 
-        return cacheFolder;
+        return cacheDir;
     }
 
 }

@@ -25,6 +25,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Iterator;
 
 import static org.junit.Assert.*;
@@ -46,11 +47,11 @@ public class GIFImageWriterTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, false);
 
         // Read an image fixture into memory
-        final File fixture = TestUtil.getImage("gif-xmp.gif");
-        metadata = new GIFImageReader(fixture).getMetadata(0);
-        bufferedImage = new GIFImageReader(fixture).read();
+        final Path fixture = TestUtil.getImage("gif-xmp.gif");
+        metadata = new GIFImageReader(fixture.toFile()).getMetadata(0);
+        bufferedImage = new GIFImageReader(fixture.toFile()).read();
         planarImage =  PlanarImage.wrapRenderedImage(
-                new GIFImageReader(fixture).readRendered());
+                new GIFImageReader(fixture.toFile()).readRendered());
 
         // Create a temp file and output stream to write to
         tempFile = File.createTempFile("test", "tmp");

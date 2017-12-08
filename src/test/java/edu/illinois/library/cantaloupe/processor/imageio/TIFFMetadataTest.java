@@ -15,9 +15,9 @@ import javax.imageio.ImageReader;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageInputStream;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.file.Path;
 import java.util.Iterator;
 
 import static org.junit.Assert.*;
@@ -55,24 +55,24 @@ public class TIFFMetadataTest extends BaseTest {
 
     @Test
     public void testGetExif() throws IOException {
-        final File srcFile = TestUtil.getImage("tif-exif.tif");
-        try (ImageInputStream is = ImageIO.createImageInputStream(srcFile)) {
+        final Path srcFile = TestUtil.getImage("tif-exif.tif");
+        try (ImageInputStream is = ImageIO.createImageInputStream(srcFile.toFile())) {
             assertNotNull(newInstance(is).getEXIF());
         }
     }
 
     @Test
     public void testGetIptc() throws IOException {
-        final File srcFile = TestUtil.getImage("tif-iptc.tif");
-        try (ImageInputStream is = ImageIO.createImageInputStream(srcFile)) {
+        final Path srcFile = TestUtil.getImage("tif-iptc.tif");
+        try (ImageInputStream is = ImageIO.createImageInputStream(srcFile.toFile())) {
             assertNotNull(newInstance(is).getIPTC());
         }
     }
 
     @Test
     public void testGetOrientation() throws IOException {
-        final File srcFile = TestUtil.getImage("tif-rotated.tif");
-        try (ImageInputStream is = ImageIO.createImageInputStream(srcFile)) {
+        final Path srcFile = TestUtil.getImage("tif-rotated.tif");
+        try (ImageInputStream is = ImageIO.createImageInputStream(srcFile.toFile())) {
             assertEquals(Orientation.ROTATE_90,
                     newInstance(is).getOrientation());
         }
@@ -80,8 +80,8 @@ public class TIFFMetadataTest extends BaseTest {
 
     @Test
     public void testGetXmp() throws IOException {
-        final File srcFile = TestUtil.getImage("tif-xmp.tif");
-        try (ImageInputStream is = ImageIO.createImageInputStream(srcFile)) {
+        final Path srcFile = TestUtil.getImage("tif-xmp.tif");
+        try (ImageInputStream is = ImageIO.createImageInputStream(srcFile.toFile())) {
             assertNotNull(newInstance(is).getXMP());
         }
     }
@@ -90,8 +90,8 @@ public class TIFFMetadataTest extends BaseTest {
     public void testGetXmpRdf() throws IOException {
         RIOT.init();
 
-        final File srcFile = TestUtil.getImage("tif-xmp.tif");
-        try (ImageInputStream is = ImageIO.createImageInputStream(srcFile)) {
+        final Path srcFile = TestUtil.getImage("tif-xmp.tif");
+        try (ImageInputStream is = ImageIO.createImageInputStream(srcFile.toFile())) {
             final String rdf = newInstance(is).getXMPRDF();
             final Model model = ModelFactory.createDefaultModel();
             model.read(new StringReader(rdf), null, "RDF/XML");

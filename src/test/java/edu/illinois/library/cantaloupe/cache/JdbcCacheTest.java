@@ -93,7 +93,7 @@ public class JdbcCacheTest extends BaseTest {
         ops.setIdentifier(new Identifier("cats"));
 
         try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
-            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+            Files.copy(TestUtil.getImage(IMAGE), os);
         }
 
         Identifier identifier = new Identifier("dogs");
@@ -108,7 +108,7 @@ public class JdbcCacheTest extends BaseTest {
         ops = new OperationList(identifier, format, crop, scale, rotate);
 
         try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
-            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+            Files.copy(TestUtil.getImage(IMAGE), os);
         }
 
         identifier = new Identifier("bunnies");
@@ -123,7 +123,7 @@ public class JdbcCacheTest extends BaseTest {
         ops = new OperationList(identifier, format, crop, scale, rotate);
 
         try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
-            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+            Files.copy(TestUtil.getImage(IMAGE), os);
         }
 
         // persist some infos corresponding to the above images
@@ -182,7 +182,7 @@ public class JdbcCacheTest extends BaseTest {
         ops.setIdentifier(new Identifier("bees"));
 
         try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
-            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+            Files.copy(TestUtil.getImage(IMAGE), os);
         }
         instance.put(new Identifier("bees"), new Info(50, 40));
 
@@ -256,7 +256,7 @@ public class JdbcCacheTest extends BaseTest {
         ops.setIdentifier(new Identifier("bees"));
 
         try (OutputStream bc = instance.newDerivativeImageOutputStream(ops)) {
-            Files.copy(TestUtil.getImage(IMAGE).toPath(), bc);
+            Files.copy(TestUtil.getImage(IMAGE), bc);
         }
 
         // existing, non-expired image
@@ -407,7 +407,7 @@ public class JdbcCacheTest extends BaseTest {
         ops.setIdentifier(new Identifier("cats"));
         // ...derivative image
         try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
-            Files.copy(TestUtil.getImage(IMAGE).toPath(), os);
+            Files.copy(TestUtil.getImage(IMAGE), os);
         }
         // ...info
         instance.put(new Identifier("bees"), new Info(50, 40));

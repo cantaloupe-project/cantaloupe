@@ -14,10 +14,10 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 
 import static org.junit.Assert.*;
 
@@ -36,7 +36,7 @@ public class CacheFacadeTest extends BaseTest {
             config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
             config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
-                    TestUtil.getTempFolder().getAbsolutePath());
+                    Files.createTempDirectory("teset").toString());
         } catch (IOException e) {
             fail(e.getMessage());
         }
@@ -104,7 +104,7 @@ public class CacheFacadeTest extends BaseTest {
         final FileProcessor processor = (FileProcessor) new ProcessorFactory().
                 newProcessor(Format.JPG);
         processor.setSourceFormat(Format.JPG);
-        processor.setSourceFile(TestUtil.getImage(identifier.toString()));
+        processor.setSourceFile(TestUtil.getImage(identifier.toString()).toFile());
 
         Info expected = InfoService.getInstance().getOrReadInfo(identifier, processor);
         Info actual = instance.getOrReadInfo(identifier, processor);
@@ -167,7 +167,7 @@ public class CacheFacadeTest extends BaseTest {
         OperationList opList = new OperationList(new Identifier("jpg"),
                 Format.JPG);
 
-        try (InputStream is = new FileInputStream(TestUtil.getImage("jpg"));
+        try (InputStream is = Files.newInputStream(TestUtil.getImage("jpg"));
              OutputStream os = instance.newDerivativeImageOutputStream(opList)) {
             IOUtils.copy(is, os);
         }
@@ -226,13 +226,13 @@ public class CacheFacadeTest extends BaseTest {
         Info info = new Info();
 
         // Add identifier to the source cache.
-        try (InputStream is = new FileInputStream(TestUtil.getImage("jpg"));
+        try (InputStream is = Files.newInputStream(TestUtil.getImage("jpg"));
              OutputStream os = sourceCache.newSourceImageOutputStream(identifier)) {
             IOUtils.copy(is, os);
         }
 
         // Add opList to the derivative cache.
-        try (InputStream is = new FileInputStream(TestUtil.getImage("jpg"));
+        try (InputStream is = Files.newInputStream(TestUtil.getImage("jpg"));
              OutputStream os = instance.newDerivativeImageOutputStream(opList)) {
             IOUtils.copy(is, os);
         }
@@ -272,13 +272,13 @@ public class CacheFacadeTest extends BaseTest {
         Info info = new Info();
 
         // Add identifier to the source cache.
-        try (InputStream is = new FileInputStream(TestUtil.getImage("jpg"));
+        try (InputStream is = Files.newInputStream(TestUtil.getImage("jpg"));
              OutputStream os = sourceCache.newSourceImageOutputStream(identifier)) {
             IOUtils.copy(is, os);
         }
 
         // Add opList to the derivative cache.
-        try (InputStream is = new FileInputStream(TestUtil.getImage("jpg"));
+        try (InputStream is = Files.newInputStream(TestUtil.getImage("jpg"));
              OutputStream os = instance.newDerivativeImageOutputStream(opList)) {
             IOUtils.copy(is, os);
         }
@@ -318,7 +318,7 @@ public class CacheFacadeTest extends BaseTest {
         OperationList opList = new OperationList(new Identifier("jpg"),
                 Format.JPG);
 
-        try (InputStream is = new FileInputStream(TestUtil.getImage("jpg"));
+        try (InputStream is = Files.newInputStream(TestUtil.getImage("jpg"));
              OutputStream os = instance.newDerivativeImageOutputStream(opList)) {
             IOUtils.copy(is, os);
         }
@@ -350,13 +350,13 @@ public class CacheFacadeTest extends BaseTest {
         Info info = new Info();
 
         // Add identifier to the source cache.
-        try (InputStream is = new FileInputStream(TestUtil.getImage("jpg"));
+        try (InputStream is = Files.newInputStream(TestUtil.getImage("jpg"));
              OutputStream os = sourceCache.newSourceImageOutputStream(identifier)) {
             IOUtils.copy(is, os);
         }
 
         // Add opList to the derivative cache.
-        try (InputStream is = new FileInputStream(TestUtil.getImage("jpg"));
+        try (InputStream is = Files.newInputStream(TestUtil.getImage("jpg"));
              OutputStream os = instance.newDerivativeImageOutputStream(opList)) {
             IOUtils.copy(is, os);
         }

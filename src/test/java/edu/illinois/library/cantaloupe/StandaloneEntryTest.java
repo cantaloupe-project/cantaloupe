@@ -97,7 +97,7 @@ public class StandaloneEntryTest extends BaseTest {
         super.setUp();
 
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT,
-                TestUtil.getFixture("config.properties").getAbsolutePath());
+                TestUtil.getFixture("config.properties").toString());
         System.setProperty(StandaloneEntry.TEST_VM_ARGUMENT, "true");
 
         ConfigurationFactory.clearInstance();
@@ -207,7 +207,7 @@ public class StandaloneEntryTest extends BaseTest {
     @Test
     public void mainWithDirectoryConfigFileArgumentPrintsUsage() throws Exception {
         redirectOutput();
-        String path = TestUtil.getFixture("bla").getParentFile().getAbsolutePath();
+        String path = TestUtil.getFixture("bla").getParent().toString();
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, path);
         StandaloneEntry.main("");
         assertEquals("Not a file: " + path + "\n\n" + StandaloneEntry.usage().trim(),
@@ -219,7 +219,7 @@ public class StandaloneEntryTest extends BaseTest {
         System.clearProperty(StandaloneEntry.TEST_VM_ARGUMENT);
         exit.expectSystemExitWithStatus(-1);
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT,
-                TestUtil.getFixture("bla").getParentFile().getAbsolutePath());
+                TestUtil.getFixture("bla").getParent().toString());
         StandaloneEntry.main("");
     }
 
@@ -294,7 +294,7 @@ public class StandaloneEntryTest extends BaseTest {
         ops.setIdentifier(new Identifier("dogs"));
         ops.add(new Rotate(15));
         try (OutputStream wbc = cache.newDerivativeImageOutputStream(ops)) {
-            Files.copy(TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg").toPath(), wbc);
+            Files.copy(TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"), wbc);
         }
 
         // assert that they've been cached
@@ -340,12 +340,12 @@ public class StandaloneEntryTest extends BaseTest {
         ops.setIdentifier(new Identifier("cats"));
         ops.add(new Rotate(15));
         try (OutputStream wbc = cache.newDerivativeImageOutputStream(ops)) {
-            Files.copy(TestUtil.getImage("jpg").toPath(), wbc);
+            Files.copy(TestUtil.getImage("jpg"), wbc);
         }
 
         ops.setIdentifier(new Identifier("dogs"));
         try (OutputStream wbc = cache.newDerivativeImageOutputStream(ops)) {
-            Files.copy(TestUtil.getImage("jpg").toPath(), wbc);
+            Files.copy(TestUtil.getImage("jpg"), wbc);
         }
 
         // assert that they've been cached

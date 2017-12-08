@@ -29,7 +29,7 @@ public class OverlayServiceTest extends BaseTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").getAbsolutePath());
+                TestUtil.getFixture("delegates.rb").toString());
         config.setProperty(Key.OVERLAY_ENABLED, true);
         config.setProperty(Key.OVERLAY_STRATEGY, "BasicStrategy");
         config.setProperty(Key.OVERLAY_TYPE, "image");

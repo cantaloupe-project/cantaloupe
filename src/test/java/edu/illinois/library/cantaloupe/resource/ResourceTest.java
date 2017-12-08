@@ -45,7 +45,7 @@ public abstract class ResourceTest extends BaseTest {
         config.setProperty(Key.ADMIN_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").getAbsolutePath());
+                TestUtil.getFixture("delegates.rb").toString());
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
         config.setProperty(Key.RESOLVER_STATIC, "FilesystemResolver");
         config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
@@ -65,7 +65,7 @@ public abstract class ResourceTest extends BaseTest {
         appServer.setHTTPSPort(HTTPS_PORT);
         appServer.setHTTPSKeyStoreType("JKS");
         appServer.setHTTPSKeyStorePath(
-                TestUtil.getFixture("keystore.jks").getAbsolutePath());
+                TestUtil.getFixture("keystore.jks").toString());
         appServer.setHTTPSKeyStorePassword("password");
         appServer.setHTTPSKeyPassword("password");
         appServer.setSecureHTTP2Enabled(SystemUtils.isALPNAvailable());

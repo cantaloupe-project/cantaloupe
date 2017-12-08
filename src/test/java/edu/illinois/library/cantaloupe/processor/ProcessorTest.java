@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -61,7 +62,7 @@ public abstract class ProcessorTest extends BaseTest {
      * @return Supported 16-bit image file as returned by
      *         {@link TestUtil#getImage(String)}.
      */
-    protected abstract File getSupported16BitImage() throws IOException;
+    protected abstract Path getSupported16BitImage() throws IOException;
 
     protected abstract Processor newInstance();
 
@@ -87,7 +88,7 @@ public abstract class ProcessorTest extends BaseTest {
         if (proc instanceof FileProcessor) {
             FileProcessor fproc = (FileProcessor) proc;
             try {
-                fproc.setSourceFile(TestUtil.getImage(IMAGE));
+                fproc.setSourceFile(TestUtil.getImage(IMAGE).toFile());
                 fproc.setSourceFormat(Format.JPG);
                 assertEquals(expectedInfo.toString(),
                         fproc.readImageInfo().toString());
@@ -140,13 +141,13 @@ public abstract class ProcessorTest extends BaseTest {
                             getImageFixtures(format);
                     final File fixture = (File) fixtures.toArray()[0];
                     if (proc instanceof StreamProcessor) {
-                        StreamSource source = new TestStreamSource(fixture);
+                        StreamSource source = new TestStreamSource(fixture.toPath());
                         ((StreamProcessor) proc).setStreamSource(source);
                     }
                     if (proc instanceof FileProcessor) {
-                        File file = TestUtil.getImage(
+                        Path path = TestUtil.getImage(
                                 format.getPreferredExtension());
-                        ((FileProcessor) proc).setSourceFile(file);
+                        ((FileProcessor) proc).setSourceFile(path.toFile());
                     }
                     try {
                         proc.process(ops, proc.readImageInfo(),
@@ -260,7 +261,7 @@ public abstract class ProcessorTest extends BaseTest {
     @Test
     public void testProcessOf16BitImageWithEncodeOperationLimitingTo8Bits()
             throws Exception {
-        final File fixture = getSupported16BitImage();
+        final Path fixture = getSupported16BitImage();
         assumeNotNull(fixture);
 
         final Format sourceFormat = getSupported16BitSourceFormat();
@@ -281,7 +282,7 @@ public abstract class ProcessorTest extends BaseTest {
     @Test
     public void testProcessOf16BitImageWithEncodeOperationWithNoLimit()
             throws Exception {
-        final File fixture = getSupported16BitImage();
+        final Path fixture = getSupported16BitImage();
         assumeNotNull(fixture);
 
         final Format sourceFormat = getSupported16BitSourceFormat();
@@ -357,7 +358,7 @@ public abstract class ProcessorTest extends BaseTest {
      */
     private void doProcessTest(OperationList ops) throws Exception {
         final Collection<File> fixtures = FileUtils.
-                listFiles(TestUtil.getFixture("images"), null, false);
+                listFiles(TestUtil.getFixture("images").toFile(), null, false);
 
         for (Format sourceFormat : Format.values()) {
             try {
@@ -370,7 +371,7 @@ public abstract class ProcessorTest extends BaseTest {
                             if (fixtureName.contains("-1x1")) {
                                 continue;
                             }
-                            doProcessTest(fixture, sourceFormat, ops);
+                            doProcessTest(fixture.toPath(), sourceFormat, ops);
                         }
                     }
                 }
@@ -385,7 +386,7 @@ public abstract class ProcessorTest extends BaseTest {
      * tests that {@link Processor#process} writes a result without throwing
      * any exceptions.
      */
-    private void doProcessTest(final File fixture,
+    private void doProcessTest(final Path fixture,
                                final Format sourceFormat,
                                final OperationList opList)
             throws ProcessorException {
@@ -407,7 +408,7 @@ public abstract class ProcessorTest extends BaseTest {
      * invokes {@link Processor#process} to write the result to the given
      * output stream.
      */
-    private void doProcessTest(final File fixture,
+    private void doProcessTest(final Path fixture,
                                final Format sourceFormat,
                                final OperationList opList,
                                final OutputStream os)
@@ -422,13 +423,13 @@ public abstract class ProcessorTest extends BaseTest {
         }
     }
 
-    private Processor newConfiguredProcessor(File fixture, Format sourceFormat)
+    private Processor newConfiguredProcessor(Path fixture, Format sourceFormat)
             throws UnsupportedSourceFormatException {
         Processor proc = newInstance();
         proc.setSourceFormat(sourceFormat);
 
         if (proc instanceof FileProcessor) {
-            ((FileProcessor) proc).setSourceFile(fixture);
+            ((FileProcessor) proc).setSourceFile(fixture.toFile());
         } else if (proc instanceof StreamProcessor) {
             StreamSource source = new TestStreamSource(fixture);
             ((StreamProcessor) proc).setStreamSource(source);

@@ -22,7 +22,7 @@ public final class WebServer {
     public WebServer() throws IOException {
         Path imagesPath = TestUtil.getFixturePath().resolve("images");
         wrappedServer.setRoot(imagesPath);
-        wrappedServer.setKeyStorePath(TestUtil.getFixture("keystore.jks").toPath());
+        wrappedServer.setKeyStorePath(TestUtil.getFixture("keystore.jks"));
         wrappedServer.setKeyStorePassword("password");
         wrappedServer.setKeyManagerPassword("password");
         wrappedServer.setHTTP1Enabled(true);

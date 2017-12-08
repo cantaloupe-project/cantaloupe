@@ -26,11 +26,11 @@ public final class TestUtil {
 
     public static Collection<File> getImageFixtures(Format format)
             throws IOException {
-        return FileUtils.listFiles(getFixture("images"), null, false);
+        return FileUtils.listFiles(getFixture("images").toFile(), null, false);
     }
 
-    public static File getFixture(String filename) throws IOException {
-        return new File(getFixturePath() + File.separator + filename);
+    public static Path getFixture(String filename) throws IOException {
+        return getFixturePath().resolve(filename);
     }
 
     public static Path getFixturePath() throws IOException {
@@ -38,12 +38,8 @@ public final class TestUtil {
                 "src", "test", "resources");
     }
 
-    public static File getImage(String name) throws IOException {
+    public static Path getImage(String name) throws IOException {
         return getFixture("images/" + name);
-    }
-
-    public static File getTempFolder() throws IOException {
-        return Files.createTempDirectory("test").toFile();
     }
 
     public static Configuration getTestConfig() {

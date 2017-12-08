@@ -17,11 +17,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 
 import static org.junit.Assert.*;
 
@@ -43,9 +43,9 @@ public class AzureStorageResolverTest extends BaseTest {
         final CloudBlockBlob blob = container.getBlockBlobReference(OBJECT_KEY);
         blob.getProperties().setContentType("image/jpeg");
 
-        final File fixture = TestUtil.getImage("jpg-rgb-64x56x8-line.jpg");
+        final Path fixture = TestUtil.getImage("jpg-rgb-64x56x8-line.jpg");
         try (OutputStream os = blob.openOutputStream()) {
-            Files.copy(fixture.toPath(), os);
+            Files.copy(fixture, os);
         }
     }
 
@@ -121,7 +121,7 @@ public class AzureStorageResolverTest extends BaseTest {
                     "ScriptLookupStrategy");
             config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
             config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                    TestUtil.getFixture("delegates.rb").getAbsolutePath());
+                    TestUtil.getFixture("delegates.rb").toString());
         } catch (IOException e) {
             fail();
         }

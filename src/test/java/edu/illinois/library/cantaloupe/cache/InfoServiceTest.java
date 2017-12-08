@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.file.Files;
 
 import static org.junit.Assert.*;
 
@@ -39,14 +40,14 @@ public class InfoServiceTest extends BaseTest {
         FileProcessor proc = (FileProcessor) new ProcessorFactory().
                 newProcessor(Format.JPG);
         proc.setSourceFormat(Format.JPG);
-        proc.setSourceFile(TestUtil.getImage("jpg"));
+        proc.setSourceFile(TestUtil.getImage("jpg").toFile());
         return proc;
     }
 
     private FileProcessor newMockProcessor() throws Exception {
         FileProcessor proc = new MockFileProcessor();
         proc.setSourceFormat(Format.JPG);
-        proc.setSourceFile(TestUtil.getImage("jpg"));
+        proc.setSourceFile(TestUtil.getImage("jpg").toFile());
         return proc;
     }
 
@@ -56,7 +57,7 @@ public class InfoServiceTest extends BaseTest {
             config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
             config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
-                    TestUtil.getTempFolder().toString());
+                    Files.createTempDirectory("test").toString());
             config.setProperty(Key.CACHE_SERVER_TTL, "10");
         } catch (IOException e) {
             fail(e.getMessage());
@@ -100,7 +101,7 @@ public class InfoServiceTest extends BaseTest {
     /* getObjectCacheSize() */
 
     @Test
-    public void testGetObjectCacheSize() throws Exception {
+    public void testGetObjectCacheSize() {
         assertEquals(0, instance.getObjectCacheSize());
 
         final Identifier identifier = new Identifier("cats");
@@ -177,7 +178,7 @@ public class InfoServiceTest extends BaseTest {
     /* purgeObjectCache() */
 
     @Test
-    public void testPurgeObjectCache() throws Exception {
+    public void testPurgeObjectCache() {
         final Identifier identifier = new Identifier("cats");
         final Info info = new Info(500, 300);
         instance.putInObjectCache(identifier, info);

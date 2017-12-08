@@ -230,7 +230,7 @@ public class ApplicationServerTest extends BaseTest {
     private void initializeHTTPS() throws IOException {
         instance.setHTTPSEnabled(true);
         instance.setHTTPSPort(HTTPS_PORT);
-        instance.setHTTPSKeyStorePath(TestUtil.getFixture("keystore.jks").getAbsolutePath());
+        instance.setHTTPSKeyStorePath(TestUtil.getFixture("keystore.jks").toString());
         instance.setHTTPSKeyStorePassword("password");
         instance.setHTTPSKeyStoreType("JKS");
         instance.setHTTPSKeyPassword("password");

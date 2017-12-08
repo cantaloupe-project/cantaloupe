@@ -45,7 +45,7 @@ public class FilesystemResolverTest extends BaseTest {
             Configuration config = Configuration.getInstance();
             config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
             config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                    TestUtil.getFixture("delegates.rb").getAbsolutePath());
+                    TestUtil.getFixture("delegates.rb").toString());
             config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
                     "BasicLookupStrategy");
             config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX,
@@ -62,7 +62,7 @@ public class FilesystemResolverTest extends BaseTest {
                     "ScriptLookupStrategy");
             config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
             config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                    TestUtil.getFixture("delegates.rb").getAbsolutePath());
+                    TestUtil.getFixture("delegates.rb").toString());
         } catch (IOException e) {
             fail();
         }

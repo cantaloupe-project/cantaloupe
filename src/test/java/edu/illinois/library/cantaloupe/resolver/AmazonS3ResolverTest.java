@@ -19,10 +19,10 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 
 import static org.junit.Assert.*;
 
@@ -38,10 +38,10 @@ public class AmazonS3ResolverTest extends BaseTest {
     @BeforeClass
     public static void uploadFixtures() throws IOException {
         final AmazonS3 s3 = client();
-        File fixture = TestUtil.getImage("jpg-rgb-64x56x8-line.jpg");
+        Path fixture = TestUtil.getImage("jpg-rgb-64x56x8-line.jpg");
 
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            Files.copy(fixture.toPath(), os);
+            Files.copy(fixture, os);
             byte[] imageBytes = os.toByteArray();
 
             final ObjectMetadata metadata = new ObjectMetadata();
@@ -118,7 +118,7 @@ public class AmazonS3ResolverTest extends BaseTest {
                     "ScriptLookupStrategy");
             config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
             config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                    TestUtil.getFixture("delegates.rb").getAbsolutePath());
+                    TestUtil.getFixture("delegates.rb"));
         } catch (IOException e) {
             fail();
         }

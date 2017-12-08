@@ -56,7 +56,7 @@ public class ResolverFactoryTest extends BaseTest {
         config.clear();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").getAbsolutePath());
+                TestUtil.getFixture("delegates.rb").toString());
         config.setProperty(Key.RESOLVER_DELEGATE, true);
 
         Identifier identifier = new Identifier("http");

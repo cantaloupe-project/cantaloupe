@@ -18,7 +18,7 @@ public class GIFImageReaderTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new GIFImageReader(TestUtil.getImage("gif"));
+        instance = new GIFImageReader(TestUtil.getImage("gif").toFile());
     }
 
     @After

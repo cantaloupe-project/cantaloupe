@@ -15,6 +15,8 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
 import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.*;
@@ -27,8 +29,8 @@ import static org.junit.Assert.*;
 public class InformationResourceTester extends ImageAPIResourceTester {
 
     public void testCacheWithDerivativeCacheEnabledAndInfoCacheEnabledAndResolveFirstEnabled(
-            URI uri, File sourceFile) throws Exception {
-        final File cacheDir = initializeFilesystemCache();
+            URI uri, Path sourceFile) throws Exception {
+        final Path cacheDir = initializeFilesystemCache();
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.INFO_CACHE_ENABLED, true);
         config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, true);
@@ -40,7 +42,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         Thread.sleep(1000); // the info may write asynchronously
 
         // assert that an info has been added to the derivative cache
-        assertRecursiveFileCount(cacheDir.toPath(), 1);
+        assertRecursiveFileCount(cacheDir, 1);
 
         // assert that an info has been added to the info cache
         assertEquals(1, InfoService.getInstance().getObjectCacheSize());
@@ -48,7 +50,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         // move the source image out of the way
         File movedFile = new File(sourceFile + ".tmp");
         try {
-            FileUtils.moveFile(sourceFile, movedFile);
+            Files.move(sourceFile, movedFile.toPath());
 
             // request it again and assert HTTP 404
             client.send();
@@ -56,14 +58,14 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         } catch (ResourceException e) {
             assertEquals(404, e.getStatusCode());
         } finally {
-            FileUtils.moveFile(movedFile, sourceFile);
+            Files.move(movedFile.toPath(), sourceFile);
             client.stop();
         }
     }
 
     public void testCacheWithDerivativeCacheEnabledAndInfoCacheEnabledAndResolveFirstDisabled(
-            URI uri, File sourceFile) throws Exception {
-        final File cacheDir = initializeFilesystemCache();
+            URI uri, Path sourceFile) throws Exception {
+        final Path cacheDir = initializeFilesystemCache();
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.INFO_CACHE_ENABLED, true);
         config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
@@ -75,7 +77,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         Thread.sleep(1000); // the info may write asynchronously
 
         // assert that an info has been added to the derivative cache
-        assertRecursiveFileCount(cacheDir.toPath(), 1);
+        assertRecursiveFileCount(cacheDir, 1);
 
         // assert that an info has been added to the info cache
         assertEquals(1, InfoService.getInstance().getObjectCacheSize());
@@ -83,19 +85,19 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         // move the source image out of the way
         File movedFile = new File(sourceFile + ".tmp");
         try {
-            FileUtils.moveFile(sourceFile, movedFile);
+            Files.move(sourceFile, movedFile.toPath());
 
             // request it again and assert HTTP 200
             assertEquals(200, client.send().getStatus());
         } finally {
-            FileUtils.moveFile(movedFile, sourceFile);
+            Files.move(movedFile.toPath(), sourceFile);
             client.stop();
         }
     }
 
     public void testCacheWithDerivativeCacheEnabledAndInfoCacheDisabledAndResolveFirstEnabled(
-            URI uri, File sourceFile) throws Exception {
-        final File cacheDir = initializeFilesystemCache();
+            URI uri, Path sourceFile) throws Exception {
+        final Path cacheDir = initializeFilesystemCache();
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.INFO_CACHE_ENABLED, false);
         config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, true);
@@ -107,7 +109,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         Thread.sleep(1000); // the info may write asynchronously
 
         // assert that an info has been added to the derivative cache
-        assertRecursiveFileCount(cacheDir.toPath(), 1);
+        assertRecursiveFileCount(cacheDir, 1);
 
         // assert that an info has NOT been added to the info cache
         assertEquals(0, InfoService.getInstance().getObjectCacheSize());
@@ -115,7 +117,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         // move the source image out of the way
         File movedFile = new File(sourceFile + ".tmp");
         try {
-            FileUtils.moveFile(sourceFile, movedFile);
+            Files.move(sourceFile, movedFile.toPath());
 
             // request it again and assert HTTP 404
             client.send();
@@ -123,14 +125,14 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         } catch (ResourceException e) {
             assertEquals(404, e.getStatusCode());
         } finally {
-            FileUtils.moveFile(movedFile, sourceFile);
+            Files.move(movedFile.toPath(), sourceFile);
             client.stop();
         }
     }
 
     public void testCacheWithDerivativeCacheEnabledAndInfoCacheDisabledAndResolveFirstDisabled(
-            URI uri, File sourceFile) throws Exception {
-        final File cacheDir = initializeFilesystemCache();
+            URI uri, Path sourceFile) throws Exception {
+        final Path cacheDir = initializeFilesystemCache();
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.INFO_CACHE_ENABLED, false);
         config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
@@ -142,7 +144,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         Thread.sleep(1000); // the info may write asynchronously
 
         // assert that an info has been added to the derivative cache
-        assertRecursiveFileCount(cacheDir.toPath(), 1);
+        assertRecursiveFileCount(cacheDir, 1);
 
         // assert that an info has NOT been added to the info cache
         assertEquals(0, InfoService.getInstance().getObjectCacheSize());
@@ -150,19 +152,19 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         // move the source image out of the way
         File movedFile = new File(sourceFile + ".tmp");
         try {
-            FileUtils.moveFile(sourceFile, movedFile);
+            Files.move(sourceFile, movedFile.toPath());
 
             // request it again and assert HTTP 200
             assertEquals(200, client.send().getStatus());
         } finally {
-            FileUtils.moveFile(movedFile, sourceFile);
+            Files.move(movedFile.toPath(), sourceFile);
             client.stop();
         }
     }
 
     public void testCacheWithDerivativeCacheDisabledAndInfoCacheEnabledAndResolveFirstEnabled(
-            URI uri, File sourceFile) throws Exception {
-        final File cacheDir = initializeFilesystemCache();
+            URI uri, Path sourceFile) throws Exception {
+        final Path cacheDir = initializeFilesystemCache();
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, false);
         config.setProperty(Key.INFO_CACHE_ENABLED, true);
@@ -175,7 +177,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         Thread.sleep(1000); // the info may write asynchronously
 
         // assert that nothing has been added to the derivative cache
-        assertRecursiveFileCount(cacheDir.toPath(), 0);
+        assertRecursiveFileCount(cacheDir, 0);
 
         // assert that an info has been added to the info cache
         assertEquals(1, InfoService.getInstance().getObjectCacheSize());
@@ -183,7 +185,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         // move the source image out of the way
         File movedFile = new File(sourceFile + ".tmp");
         try {
-            FileUtils.moveFile(sourceFile, movedFile);
+            Files.move(sourceFile, movedFile.toPath());
 
             // request it again and assert HTTP 404
             client.send();
@@ -191,14 +193,14 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         } catch (ResourceException e) {
             assertEquals(404, e.getStatusCode());
         } finally {
-            FileUtils.moveFile(movedFile, sourceFile);
+            Files.move(movedFile.toPath(), sourceFile);
             client.stop();
         }
     }
 
     public void testCacheWithDerivativeCacheDisabledAndInfoCacheEnabledAndResolveFirstDisabled(
-            URI uri, File sourceFile) throws Exception {
-        final File cacheDir = initializeFilesystemCache();
+            URI uri, Path sourceFile) throws Exception {
+        final Path cacheDir = initializeFilesystemCache();
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, false);
         config.setProperty(Key.INFO_CACHE_ENABLED, true);
@@ -211,7 +213,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         Thread.sleep(1000); // the info may write asynchronously
 
         // assert that nothing has been added to the derivative cache
-        assertRecursiveFileCount(cacheDir.toPath(), 0);
+        assertRecursiveFileCount(cacheDir, 0);
 
         // assert that an info has been added to the info cache
         assertEquals(1, InfoService.getInstance().getObjectCacheSize());
@@ -219,19 +221,19 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         // move the source image out of the way
         File movedFile = new File(sourceFile + ".tmp");
         try {
-            FileUtils.moveFile(sourceFile, movedFile);
+            Files.move(sourceFile, movedFile.toPath());
 
             // request it again and assert HTTP 200
             assertEquals(200, client.send().getStatus());
         } finally {
-            FileUtils.moveFile(movedFile, sourceFile);
+            Files.move(movedFile.toPath(), sourceFile);
             client.stop();
         }
     }
 
     public void testCacheWithDerivativeCacheDisabledAndInfoCacheDisabledAndResolveFirstEnabled(
-            URI uri, File sourceFile) throws Exception {
-        final File cacheDir = initializeFilesystemCache();
+            URI uri, Path sourceFile) throws Exception {
+        final Path cacheDir = initializeFilesystemCache();
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, false);
         config.setProperty(Key.INFO_CACHE_ENABLED, false);
@@ -244,7 +246,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         Thread.sleep(1000); // the info may write asynchronously
 
         // assert that nothing has been added to the derivative cache
-        assertRecursiveFileCount(cacheDir.toPath(), 0);
+        assertRecursiveFileCount(cacheDir, 0);
 
         // assert that an info has NOT been added to the info cache
         assertEquals(0, InfoService.getInstance().getObjectCacheSize());
@@ -252,7 +254,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         // move the source image out of the way
         File movedFile = new File(sourceFile + ".tmp");
         try {
-            FileUtils.moveFile(sourceFile, movedFile);
+            Files.move(sourceFile, movedFile.toPath());
 
             // request it again and assert HTTP 404
             client.send();
@@ -260,14 +262,14 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         } catch (ResourceException e) {
             assertEquals(404, e.getStatusCode());
         } finally {
-            FileUtils.moveFile(movedFile, sourceFile);
+            Files.move(movedFile.toPath(), sourceFile);
             client.stop();
         }
     }
 
     public void testCacheWithDerivativeCacheDisabledAndInfoCacheDisabledAndResolveFirstDisabled(
-            URI uri, File sourceFile) throws Exception {
-        final File cacheDir = initializeFilesystemCache();
+            URI uri, Path sourceFile) throws Exception {
+        final Path cacheDir = initializeFilesystemCache();
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, false);
         config.setProperty(Key.INFO_CACHE_ENABLED, false);
@@ -280,7 +282,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         Thread.sleep(1000); // the info may write asynchronously
 
         // assert that nothing has been added to the derivative cache
-        assertRecursiveFileCount(cacheDir.toPath(), 0);
+        assertRecursiveFileCount(cacheDir, 0);
 
         // assert that an info has NOT been added to the info cache
         assertEquals(0, InfoService.getInstance().getObjectCacheSize());
@@ -288,7 +290,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         // move the source image out of the way
         File movedFile = new File(sourceFile + ".tmp");
         try {
-            FileUtils.moveFile(sourceFile, movedFile);
+            Files.move(sourceFile, movedFile.toPath());
 
             // request it again and assert HTTP 404
             client.send();
@@ -296,7 +298,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         } catch (ResourceException e) {
             assertEquals(404, e.getStatusCode());
         } finally {
-            FileUtils.moveFile(movedFile, sourceFile);
+            Files.move(movedFile.toPath(), sourceFile);
             client.stop();
         }
     }
@@ -316,36 +318,23 @@ public class InformationResourceTester extends ImageAPIResourceTester {
             throws Exception {
         // Create a directory that will contain a source image. Don't want to
         // use the image fixtures dir because we'll need to delete one.
-        File sourceDir = TestUtil.getTempFolder();
-        sourceDir = new File(sourceDir.getAbsolutePath() + "/source");
-        if (sourceDir.exists()) {
-            FileUtils.cleanDirectory(sourceDir);
-        } else {
-            sourceDir.mkdir();
-        }
+        Path sourceDir = Files.createTempDirectory("source");
 
         // Populate the source directory with an image.
-        File imageFixture = TestUtil.getImage(IMAGE);
-        File sourceImage = new File(sourceDir.getAbsolutePath() + "/" +
-                imageFixture.getName());
-        FileUtils.copyFile(imageFixture, sourceImage);
+        Path imageFixture = TestUtil.getImage(IMAGE);
+        Path sourceImage = sourceDir.resolve(imageFixture.getFileName());
+        Files.copy(imageFixture, sourceImage);
 
         // Create the cache directory.
-        File cacheDir = TestUtil.getTempFolder();
-        cacheDir = new File(cacheDir.getAbsolutePath() + "/cache");
-        if (cacheDir.exists()) {
-            FileUtils.cleanDirectory(cacheDir);
-        } else {
-            cacheDir.mkdir();
-        }
+        Path cacheDir = Files.createTempDirectory("cache");
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX,
-                sourceDir.getAbsolutePath() + "/");
+                sourceDir.toString() + "/");
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
         config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
         config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
-                cacheDir.getAbsolutePath());
+                cacheDir.toString());
         config.setProperty(Key.CACHE_SERVER_TTL, 60);
         config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, true);
         config.setProperty(Key.CACHE_SERVER_PURGE_MISSING, purgeMissing);
@@ -355,7 +344,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         try {
             Identifier identifier = new Identifier(IMAGE);
 
-            assertRecursiveFileCount(cacheDir.toPath(), 0);
+            assertRecursiveFileCount(cacheDir, 0);
 
             // Request an image to cache its info.
             client.send();
@@ -364,12 +353,12 @@ public class InformationResourceTester extends ImageAPIResourceTester {
             Thread.sleep(1000);
 
             // Assert that it's been cached.
-            assertRecursiveFileCount(cacheDir.toPath(), 1);
+            assertRecursiveFileCount(cacheDir, 1);
             DerivativeCache cache = CacheFactory.getDerivativeCache();
             assertNotNull(cache.getImageInfo(identifier));
 
             // Delete the source image.
-            assertTrue(sourceImage.delete());
+            Files.delete(sourceImage);
 
             // Request the same image which is now cached but underlying is
             // gone.
@@ -390,8 +379,6 @@ public class InformationResourceTester extends ImageAPIResourceTester {
             }
         } finally {
             client.stop();
-            FileUtils.deleteDirectory(sourceDir);
-            FileUtils.deleteDirectory(cacheDir);
         }
     }
 

@@ -11,7 +11,7 @@ import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -42,7 +42,7 @@ abstract class ImageIOProcessorTest extends ProcessorTest {
         expectedInfo.getImages().get(0).tileWidth = 16;
         expectedInfo.getImages().get(0).tileHeight = 16;
 
-        final File fixture = TestUtil.
+        final Path fixture = TestUtil.
                 getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif");
 
         // test as a StreamProcessor
@@ -54,12 +54,12 @@ abstract class ImageIOProcessorTest extends ProcessorTest {
 
         // test as a FileProcessor
         FileProcessor fproc = (FileProcessor) newInstance();
-        fproc.setSourceFile(fixture);
+        fproc.setSourceFile(fixture.toFile());
         fproc.setSourceFormat(Format.TIF);
         assertEquals(expectedInfo, fproc.readImageInfo());
 
         try {
-            fproc.setSourceFile(TestUtil.getImage("mpg"));
+            fproc.setSourceFile(TestUtil.getImage("mpg").toFile());
             fproc.setSourceFormat(Format.MPG);
             expectedInfo = new Info(640, 360, Format.MPG);
             assertEquals(expectedInfo, fproc.readImageInfo());
@@ -73,10 +73,10 @@ abstract class ImageIOProcessorTest extends ProcessorTest {
         Configuration.getInstance().
                 setProperty(Key.PROCESSOR_RESPECT_ORIENTATION, true);
 
-        final File fixture = TestUtil.getImage("jpg-rotated.jpg");
+        final Path fixture = TestUtil.getImage("jpg-rotated.jpg");
 
         final FileProcessor fproc = (FileProcessor) newInstance();
-        fproc.setSourceFile(fixture);
+        fproc.setSourceFile(fixture.toFile());
         fproc.setSourceFormat(Format.JPG);
 
         final Info info = fproc.readImageInfo();

@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,7 +31,7 @@ public class Java2dProcessorTest extends ImageIOProcessorTest {
     }
 
     @Override
-    protected File getSupported16BitImage() throws IOException {
+    protected Path getSupported16BitImage() throws IOException {
         return TestUtil.getImage("png-rgb-64x56x16.png");
     }
 

@@ -14,8 +14,8 @@ import org.junit.Test;
 
 import java.awt.Dimension;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -40,7 +40,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     }
 
     @Override
-    protected File getSupported16BitImage() {
+    protected Path getSupported16BitImage() {
         return null;
     }
 
@@ -78,7 +78,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
 
     @Test
     public void testProcessWithPageOption() throws Exception {
-        instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
+        instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf").toFile());
         final Info imageInfo = instance.readImageInfo();
 
         // page option missing
@@ -99,7 +99,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     @Test
     public void testProcessWithIllegalPageOptionThrowsException()
             throws Exception {
-        instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
+        instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf").toFile());
         final Info imageInfo = instance.readImageInfo();
 
         // page "35"
@@ -118,14 +118,14 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     @Override
     public void testReadImageInfo() throws Exception {
         Info expectedInfo = new Info(100, 88, 100, 88, Format.PDF);
-        instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
+        instance.setSourceFile(TestUtil.getImage("pdf.pdf").toFile());
         instance.setSourceFormat(Format.PDF);
         assertEquals(expectedInfo, instance.readImageInfo());
     }
 
     @Test
     public void testValidate() throws Exception {
-        instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
+        instance.setSourceFile(TestUtil.getImage("pdf.pdf").toFile());
 
         OperationList ops = TestUtil.newOperationList();
         Dimension fullSize = new Dimension(1000, 1000);

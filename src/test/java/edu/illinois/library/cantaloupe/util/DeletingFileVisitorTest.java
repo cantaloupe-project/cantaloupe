@@ -21,7 +21,7 @@ public class DeletingFileVisitorTest {
 
     @Before
     public void setUp() throws IOException {
-        tempPath = TestUtil.getTempFolder().toPath();
+        tempPath = Files.createTempDirectory("test");
         instance = new DeletingFileVisitor();
         instance.setRootPathToExclude(tempPath);
     }

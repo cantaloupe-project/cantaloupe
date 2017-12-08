@@ -6,10 +6,9 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.nio.file.Path;
+import java.util.EnumSet;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -30,7 +29,7 @@ public class JaiProcessorTest extends ImageIOProcessorTest {
     }
 
     @Override
-    protected File getSupported16BitImage() throws IOException {
+    protected Path getSupported16BitImage() throws IOException {
         return TestUtil.getImage("png-rgb-64x56x16.png");
     }
 
@@ -43,7 +42,7 @@ public class JaiProcessorTest extends ImageIOProcessorTest {
     public void testGetSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
 
-        Set<ProcessorFeature> expectedFeatures = new HashSet<>(Arrays.asList(
+        Set<ProcessorFeature> expectedFeatures = EnumSet.of(
                 ProcessorFeature.MIRRORING,
                 ProcessorFeature.REGION_BY_PERCENT,
                 ProcessorFeature.REGION_BY_PIXELS,
@@ -56,7 +55,7 @@ public class JaiProcessorTest extends ImageIOProcessorTest {
                 ProcessorFeature.SIZE_BY_HEIGHT,
                 ProcessorFeature.SIZE_BY_PERCENT,
                 ProcessorFeature.SIZE_BY_WIDTH,
-                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
+                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
         assertEquals(expectedFeatures, instance.getSupportedFeatures());
     }
 

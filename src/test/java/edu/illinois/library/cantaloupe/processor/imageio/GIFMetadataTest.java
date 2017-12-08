@@ -14,9 +14,9 @@ import javax.imageio.ImageReader;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageInputStream;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.file.Path;
 import java.util.Iterator;
 
 import static org.junit.Assert.*;
@@ -25,7 +25,7 @@ public class GIFMetadataTest extends BaseTest {
 
     private GIFMetadata newInstance(String fixtureName)
             throws IOException {
-        final File srcFile = TestUtil.getImage(fixtureName);
+        final Path srcFile = TestUtil.getImage(fixtureName);
         final Iterator<ImageReader> it = ImageIO.getImageReadersByFormatName("GIF");
         final ImageReader reader = it.next();
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile)) {

@@ -18,7 +18,7 @@ public class DICOMImageReaderTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new DICOMImageReader(TestUtil.getImage("dcm"));
+        instance = new DICOMImageReader(TestUtil.getImage("dcm").toFile());
     }
 
     @After

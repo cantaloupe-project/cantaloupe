@@ -9,6 +9,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,7 +17,7 @@ import static org.junit.Assert.*;
 
 public class MediaTypeTest {
 
-    private static final Map<Format, File> files = new HashMap<>();
+    private static final Map<Format, Path> files = new HashMap<>();
 
     private MediaType instance;
 
@@ -57,15 +58,15 @@ public class MediaTypeTest {
     @Test
     public void testDetectMediaTypes() {
         for (Format format : files.keySet()) {
-            File file = files.get(format);
+            Path file = files.get(format);
             MediaType preferredMediaType = format.getPreferredMediaType();
 
             try {
-                boolean result = MediaType.detectMediaTypes(file.toPath()).
+                boolean result = MediaType.detectMediaTypes(file).
                         contains(preferredMediaType);
                 if (!result) {
                     System.out.println("format: " + format +
-                            "\tfile: " + file.getName() +
+                            "\tfile: " + file.getFileName() +
                             "\tresult: " + result);
                 }
                 //assertTrue(result);

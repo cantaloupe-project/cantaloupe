@@ -30,7 +30,7 @@ public class DelegateOverlayServiceTest extends BaseTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").getAbsolutePath());
+                TestUtil.getFixture("delegates.rb").toString());
 
         instance = new DelegateOverlayService();
     }

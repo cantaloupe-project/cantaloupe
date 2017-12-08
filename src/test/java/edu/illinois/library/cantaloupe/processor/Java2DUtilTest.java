@@ -26,8 +26,8 @@ import java.awt.image.ColorModel;
 import java.awt.image.DataBufferInt;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,8 +41,8 @@ public class Java2DUtilTest extends BaseTest {
     @Test
     public void testApplyRedactions() throws Exception {
         // read the base image into a BufferedImage
-        final File fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
-        final BufferedImage baseImage = ImageIO.read(fixture);
+        final Path fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
+        final BufferedImage baseImage = ImageIO.read(fixture.toFile());
         final ReductionFactor rf = new ReductionFactor(0);
 
         int pixel = baseImage.getRGB(0, 0);
@@ -78,8 +78,8 @@ public class Java2DUtilTest extends BaseTest {
     @Test
     public void testApplyOverlayWithImageOverlay() throws Exception {
         // read the base image into a BufferedImage
-        final File fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
-        final BufferedImage baseImage = ImageIO.read(fixture);
+        final Path fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
+        final BufferedImage baseImage = ImageIO.read(fixture.toFile());
 
         int pixel = baseImage.getRGB(0, 0);
         int alpha = (pixel >> 24) & 0xff;
@@ -93,7 +93,7 @@ public class Java2DUtilTest extends BaseTest {
 
         // create a Overlay
         final ImageOverlay overlay = new ImageOverlay(
-                TestUtil.getImage("png-rgb-1x1x8.png").toURI(),
+                TestUtil.getImage("png-rgb-1x1x8.png").toUri(),
                 Position.TOP_LEFT, 0);
 
         // apply it
@@ -106,8 +106,8 @@ public class Java2DUtilTest extends BaseTest {
     @Test
     public void testApplyOverlayWithImageOverlayAndInset() throws Exception {
         // read the base image into a BufferedImage
-        final File fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
-        final BufferedImage baseImage = ImageIO.read(fixture);
+        final Path fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
+        final BufferedImage baseImage = ImageIO.read(fixture.toFile());
 
         int pixel = baseImage.getRGB(
                 baseImage.getWidth() - 2, baseImage.getHeight() - 2);
@@ -123,7 +123,7 @@ public class Java2DUtilTest extends BaseTest {
         // create a Overlay
         final int inset = 2;
         final ImageOverlay overlay = new ImageOverlay(
-                TestUtil.getImage("png-rgb-1x1x8.png").toURI(),
+                TestUtil.getImage("png-rgb-1x1x8.png").toUri(),
                 Position.BOTTOM_RIGHT,
                 inset);
 
@@ -141,8 +141,8 @@ public class Java2DUtilTest extends BaseTest {
     @Ignore // TODO: see inline todo
     public void testApplyOverlayWithStringOverlay() throws Exception {
         // read the base image into a BufferedImage
-        final File fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
-        final BufferedImage baseImage = ImageIO.read(fixture);
+        final Path fixture = TestUtil.getImage("bmp-rgb-64x56x8.bmp");
+        final BufferedImage baseImage = ImageIO.read(fixture.toFile());
 
         // create a StringOverlay
         final StringOverlay overlay = new StringOverlay(
@@ -253,14 +253,14 @@ public class Java2DUtilTest extends BaseTest {
     @Test
     public void testGetOverlayImage() throws Exception {
         ImageOverlay overlay = new ImageOverlay(
-                TestUtil.getImage("png").toURI(), Position.BOTTOM_RIGHT, 0);
+                TestUtil.getImage("png").toUri(), Position.BOTTOM_RIGHT, 0);
         assertNotNull(Java2DUtil.getOverlayImage(overlay));
     }
 
     /* reduceTo8Bits() */
 
     @Test
-    public void testReduceTo8Bits() throws IOException {
+    public void testReduceTo8Bits() {
         final int width = 100, height = 100;
 
         // Assert that an 8-bit image is untouched.
@@ -279,8 +279,8 @@ public class Java2DUtilTest extends BaseTest {
 
     @Test
     public void testRemoveAlphaOnImageWithAlpha() throws IOException {
-        File file = TestUtil.getImage("png-rgba-64x56x8.png");
-        BufferedImage image = ImageIO.read(file);
+        Path file = TestUtil.getImage("png-rgba-64x56x8.png");
+        BufferedImage image = ImageIO.read(file.toFile());
         assertTrue(image.getColorModel().hasAlpha());
 
         image = Java2DUtil.removeAlpha(image);
@@ -289,8 +289,8 @@ public class Java2DUtilTest extends BaseTest {
 
     @Test
     public void testRemoveAlphaOnImageWithoutAlpha() throws IOException {
-        File file = TestUtil.getImage("png-rgb-64x56x8.png");
-        BufferedImage inImage = ImageIO.read(file);
+        Path file = TestUtil.getImage("png-rgb-64x56x8.png");
+        BufferedImage inImage = ImageIO.read(file.toFile());
         assertFalse(inImage.getColorModel().hasAlpha());
 
         BufferedImage outImage = Java2DUtil.removeAlpha(inImage);
@@ -302,8 +302,8 @@ public class Java2DUtilTest extends BaseTest {
     @Test
     public void testRemoveAlphaOnImageWithAlphaWithBackgroundColor()
             throws IOException {
-        File file = TestUtil.getImage("png-rgba-64x56x8.png");
-        BufferedImage inImage = ImageIO.read(file);
+        Path file = TestUtil.getImage("png-rgba-64x56x8.png");
+        BufferedImage inImage = ImageIO.read(file.toFile());
         assertTrue(inImage.getColorModel().hasAlpha());
 
         int[] rgba = { 0 };

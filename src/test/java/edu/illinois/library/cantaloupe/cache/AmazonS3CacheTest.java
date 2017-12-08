@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
@@ -117,12 +118,12 @@ public class AmazonS3CacheTest extends BaseTest {
 
     @Test
     public void testNewDerivativeImageInputStream() throws Exception {
-        File fixture = TestUtil.getImage(identifier.toString());
+        Path fixture = TestUtil.getImage(identifier.toString());
 
         // add an image
         try (OutputStream outputStream =
                      instance.newDerivativeImageOutputStream(opList)) {
-            Files.copy(fixture.toPath(), outputStream);
+            Files.copy(fixture, outputStream);
         }
 
         // wait for it to upload
@@ -136,7 +137,7 @@ public class AmazonS3CacheTest extends BaseTest {
         s3ByteStream.close();
 
         // assert that the downloaded byte array is the same size as the fixture
-        assertEquals(fixture.length(), s3ByteStream.toByteArray().length);
+        assertEquals(Files.size(fixture), s3ByteStream.toByteArray().length);
     }
 
     @Test
@@ -152,10 +153,10 @@ public class AmazonS3CacheTest extends BaseTest {
         assertObjectCount(0);
 
         // add an image
-        File imageFile = TestUtil.getImage(identifier.toString());
+        Path imageFile = TestUtil.getImage(identifier.toString());
         try (OutputStream outputStream =
                      instance.newDerivativeImageOutputStream(opList)) {
-            Files.copy(imageFile.toPath(), outputStream);
+            Files.copy(imageFile, outputStream);
         }
 
         Thread.sleep(UPLOAD_WAIT);
@@ -205,10 +206,10 @@ public class AmazonS3CacheTest extends BaseTest {
     @Test
     public void testPurge() throws Exception {
         // add an image
-        File imageFile = TestUtil.getImage(identifier.toString());
+        Path imageFile = TestUtil.getImage(identifier.toString());
         try (OutputStream outputStream =
                      instance.newDerivativeImageOutputStream(opList)) {
-            Files.copy(imageFile.toPath(), outputStream);
+            Files.copy(imageFile, outputStream);
         }
 
         // add an Info
@@ -229,20 +230,20 @@ public class AmazonS3CacheTest extends BaseTest {
     @Test
     public void testPurgeWithOperationList() throws Exception {
         // add an image
-        File fixture1 = TestUtil.getImage(identifier.toString());
+        Path fixture1 = TestUtil.getImage(identifier.toString());
         try (OutputStream outputStream =
                      instance.newDerivativeImageOutputStream(opList)) {
-            Files.copy(fixture1.toPath(), outputStream);
+            Files.copy(fixture1, outputStream);
         }
 
         // add another image
-        File fixture2 = TestUtil.getImage("gif-rgb-64x56x8.gif");
+        Path fixture2 = TestUtil.getImage("gif-rgb-64x56x8.gif");
         OperationList otherOpList = new OperationList(
-                new Identifier(fixture2.getName()), Format.GIF);
+                new Identifier(fixture2.getFileName().toString()), Format.GIF);
 
         try (OutputStream outputStream =
                      instance.newDerivativeImageOutputStream(otherOpList)) {
-            Files.copy(fixture2.toPath(), outputStream);
+            Files.copy(fixture2, outputStream);
         }
 
         // add an Info
@@ -265,10 +266,10 @@ public class AmazonS3CacheTest extends BaseTest {
         Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 4);
 
         // add an image
-        File fixture1 = TestUtil.getImage(identifier.toString());
+        Path fixture1 = TestUtil.getImage(identifier.toString());
         try (OutputStream outputStream =
                      instance.newDerivativeImageOutputStream(opList)) {
-            Files.copy(fixture1.toPath(), outputStream);
+            Files.copy(fixture1, outputStream);
         }
 
         // add an Info
@@ -277,13 +278,13 @@ public class AmazonS3CacheTest extends BaseTest {
         Thread.sleep(2000);
 
         // add another image
-        File fixture2 = TestUtil.getImage("gif-rgb-64x56x8.gif");
+        Path fixture2 = TestUtil.getImage("gif-rgb-64x56x8.gif");
         OperationList otherOpList = new OperationList(
-                new Identifier(fixture2.getName()), Format.GIF);
+                new Identifier(fixture2.getFileName().toString()), Format.GIF);
 
         try (OutputStream outputStream =
                      instance.newDerivativeImageOutputStream(otherOpList)) {
-            Files.copy(fixture2.toPath(), outputStream);
+            Files.copy(fixture2, outputStream);
         }
 
         // add another Info
@@ -306,10 +307,10 @@ public class AmazonS3CacheTest extends BaseTest {
     @Test
     public void testPurgeWithIdentifier() throws Exception {
         // add an image
-        File imageFile = TestUtil.getImage(identifier.toString());
+        Path imageFile = TestUtil.getImage(identifier.toString());
         try (OutputStream outputStream =
                      instance.newDerivativeImageOutputStream(opList)) {
-            Files.copy(imageFile.toPath(), outputStream);
+            Files.copy(imageFile, outputStream);
         }
 
         // add an Info

@@ -30,7 +30,8 @@ public class ImageReaderTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
         reader = new ImageReader(
-                TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"), Format.JPG);
+                TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg").toFile(),
+                Format.JPG);
     }
 
     @After
@@ -70,7 +71,7 @@ public class ImageReaderTest extends BaseTest {
         assertEquals(1, reader.getNumResolutions());
         // multiresolution
         reader = new ImageReader(
-                TestUtil.getImage("tif-rgb-multires-64x56x16-tiled-uncompressed.tif"),
+                TestUtil.getImage("tif-rgb-multires-64x56x16-tiled-uncompressed.tif").toFile(),
                 Format.TIF);
         assertEquals(3, reader.getNumResolutions());
     }
@@ -85,7 +86,7 @@ public class ImageReaderTest extends BaseTest {
     @Test
     public void testGetSizeWithIndex() throws Exception {
         reader = new ImageReader(
-                TestUtil.getImage("tif-rgb-multires-64x56x16-tiled-uncompressed.tif"),
+                TestUtil.getImage("tif-rgb-multires-64x56x16-tiled-uncompressed.tif").toFile(),
                 Format.TIF);
         Dimension expected = new Dimension(16, 14);
         Dimension actual = reader.getSize(2);
@@ -95,7 +96,7 @@ public class ImageReaderTest extends BaseTest {
     @Test
     public void testGetTileSizeWithTiledSource() throws Exception {
         reader = new ImageReader(
-                TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"),
+                TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif").toFile(),
                 Format.TIF);
         Dimension expected = new Dimension(16, 16);
         Dimension actual = reader.getTileSize(0);
@@ -105,7 +106,7 @@ public class ImageReaderTest extends BaseTest {
     @Test
     public void testGetTileSizeWithUntiledSource() throws Exception {
         reader = new ImageReader(
-                TestUtil.getImage("tif-rgb-monores-64x56x8-striped-uncompressed.tif"),
+                TestUtil.getImage("tif-rgb-monores-64x56x8-striped-uncompressed.tif").toFile(),
                 Format.TIF);
         Dimension expected = new Dimension(64, 42);
         Dimension actual = reader.getTileSize(0);
@@ -113,7 +114,8 @@ public class ImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testReadWithMonoResolutionImageAndNoScaleFactor() throws Exception {
+    public void testReadWithMonoResolutionImageAndNoScaleFactor()
+            throws Exception {
         OperationList ops = new OperationList(new Identifier("cats"),
                 Format.JPG);
         Crop crop = new Crop();

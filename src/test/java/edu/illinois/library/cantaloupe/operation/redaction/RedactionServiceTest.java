@@ -23,7 +23,7 @@ public class RedactionServiceTest extends BaseTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").getAbsolutePath());
+                TestUtil.getFixture("delegates.rb").toString());
         config.setProperty(Key.REDACTION_ENABLED, true);
     }
 

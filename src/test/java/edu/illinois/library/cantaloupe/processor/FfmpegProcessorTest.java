@@ -17,6 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.EnumSet;
 
@@ -48,7 +49,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
     }
 
     @Override
-    protected File getSupported16BitImage() {
+    protected Path getSupported16BitImage() {
         return null;
     }
 
@@ -57,9 +58,9 @@ public class FfmpegProcessorTest extends ProcessorTest {
         FfmpegProcessor instance = new FfmpegProcessor();
         try {
             final Format format = Format.MPG;
-            final File fixture = TestUtil.
+            final Path fixture = TestUtil.
                     getFixture("images/" + format.getPreferredExtension());
-            instance.setSourceFile(fixture);
+            instance.setSourceFile(fixture.toFile());
             instance.setSourceFormat(format);
         } catch (IOException | UnsupportedSourceFormatException e) {
             fail("Huge bug");
@@ -183,7 +184,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
     @Override
     @Test
     public void testReadImageInfo() throws Exception {
-        instance.setSourceFile(TestUtil.getImage("mpg"));
+        instance.setSourceFile(TestUtil.getImage("mpg").toFile());
         instance.setSourceFormat(Format.MPG);
         Info expectedInfo = new Info(640, 360, 640, 360, Format.MPG);
         assertEquals(expectedInfo.toString(),

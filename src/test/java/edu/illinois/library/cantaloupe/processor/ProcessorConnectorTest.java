@@ -20,8 +20,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileVisitResult;
@@ -40,9 +38,8 @@ public class ProcessorConnectorTest extends BaseTest {
 
     private ProcessorConnector instance;
 
-    private static void recursiveDeleteOnExit(File dir) throws IOException {
-        Path path = dir.toPath();
-        Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+    private static void recursiveDeleteOnExit(Path dir) throws IOException {
+        Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file,
                                              BasicFileAttributes attrs) {
@@ -69,7 +66,7 @@ public class ProcessorConnectorTest extends BaseTest {
         config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
         config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX,
-                TestUtil.getImage("jpg").getParentFile().getAbsolutePath() + "/");
+                TestUtil.getImage("jpg").getParent().toString() + "/");
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
     }
 
@@ -142,7 +139,7 @@ public class ProcessorConnectorTest extends BaseTest {
     @Test
     public void connectWithStreamResolverAndFileProcessor() throws Exception {
         final WebServer server = new WebServer();
-        final File cacheFolder = TestUtil.getTempFolder();
+        final Path cacheFolder = Files.createTempDirectory("test");
         final Identifier identifier = new Identifier("jp2");
 
         try {
@@ -152,7 +149,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
             config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
-                    cacheFolder.getAbsolutePath());
+                    cacheFolder.toString());
             config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
             config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
                     "BasicLookupStrategy");
@@ -208,7 +205,7 @@ public class ProcessorConnectorTest extends BaseTest {
     public void connectWithStreamResolverAndStreamProcessorWithCacheStrategy()
             throws Exception {
         final WebServer server = new WebServer();
-        final File cacheFolder = TestUtil.getTempFolder();
+        final Path cacheFolder = Files.createTempDirectory("test");
         try {
             server.start();
 
@@ -223,7 +220,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
                     "CacheStrategy");
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
-                    cacheFolder.getAbsolutePath());
+                    cacheFolder.toString());
 
             final Resolver resolver = new ResolverFactory().
                     newResolver(IDENTIFIER, new RequestContext());
@@ -232,7 +229,7 @@ public class ProcessorConnectorTest extends BaseTest {
             instance.connect(resolver, processor, IDENTIFIER);
 
             assertEqualSources(
-                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER),
+                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER).toPath(),
                     ((StreamProcessor) processor).getStreamSource());
         } finally {
             server.stop();
@@ -244,7 +241,7 @@ public class ProcessorConnectorTest extends BaseTest {
     public void connectWithStreamResolverAndStreamProcessorWithCacheStrategyAndSourceCacheDisabled()
             throws Exception {
         final WebServer server = new WebServer();
-        final File cacheFolder = TestUtil.getTempFolder();
+        final Path cacheFolder = Files.createTempDirectory("test");
         try {
             server.start();
 
@@ -257,7 +254,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
                     "CacheStrategy");
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
-                    cacheFolder.getAbsolutePath());
+                    cacheFolder.toString());
 
             final Resolver resolver = new ResolverFactory().
                     newResolver(IDENTIFIER, new RequestContext());
@@ -275,9 +272,9 @@ public class ProcessorConnectorTest extends BaseTest {
         }
     }
 
-    private void assertEqualSources(File file, StreamSource ss)
+    private void assertEqualSources(Path path, StreamSource ss)
             throws IOException {
-        assertEqualSources(new FileInputStream(file), ss.newInputStream());
+        assertEqualSources(Files.newInputStream(path), ss.newInputStream());
     }
 
     private void assertEqualSources(StreamSource ss1, StreamSource ss2)

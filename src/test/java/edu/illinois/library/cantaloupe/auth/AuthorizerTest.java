@@ -23,7 +23,7 @@ public class AuthorizerTest extends BaseTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").getAbsolutePath());
+                TestUtil.getFixture("delegates.rb").toString());
 
         instance = new Authorizer("http://localhost/", "127.0.0.1",
                 new HashMap<>(), new HashMap<>());

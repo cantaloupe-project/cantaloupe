@@ -12,16 +12,15 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.Assert.*;
 
@@ -101,21 +100,21 @@ public class RedisCacheTest extends BaseTest {
     @Test
     public void testNewDerivativeImageInputStream() throws Exception {
         OperationList opList = new OperationList(new Identifier("cats"), Format.JPG);
-        File imageFile = TestUtil.getImage(IMAGE);
+        Path imageFile = TestUtil.getImage(IMAGE);
 
         // Write an image to the cache
         try (OutputStream outputStream =
                      instance.newDerivativeImageOutputStream(opList)) {
-            Files.copy(imageFile.toPath(), outputStream);
+            Files.copy(imageFile, outputStream);
         }
 
         // Read it back in
         InputStream inputStream = instance.newDerivativeImageInputStream(opList);
-        byte[] imageBytes = new byte[(int) imageFile.length()];
+        byte[] imageBytes = new byte[(int) Files.size(imageFile)];
         IOUtils.readFully(inputStream, imageBytes);
         inputStream.close();
 
-        assertEquals(imageFile.length(), imageBytes.length);
+        assertEquals(Files.size(imageFile), imageBytes.length);
     }
 
     @Test
@@ -128,7 +127,7 @@ public class RedisCacheTest extends BaseTest {
     /* newDerivativeImageOutputStream(OperationList) */
 
     @Test
-    public void testNewDerivativeImageOutputStream() throws Exception {
+    public void testNewDerivativeImageOutputStream() {
         // tested in testNewDerivativeImageInputStream()
     }
 
@@ -147,7 +146,7 @@ public class RedisCacheTest extends BaseTest {
         instance.put(id3, new Info(52, 52));
 
         // Create an image for each identifier...
-        byte[] imageBytes = FileUtils.readFileToByteArray(TestUtil.getImage(IMAGE));
+        byte[] imageBytes = Files.readAllBytes(TestUtil.getImage(IMAGE));
 
         // ...image 1
         OperationList opList1 = new OperationList(id1, Format.JPG);
@@ -184,7 +183,7 @@ public class RedisCacheTest extends BaseTest {
         instance.put(id3, new Info(52, 52));
 
         // Create an image for each identifier...
-        byte[] imageBytes = FileUtils.readFileToByteArray(TestUtil.getImage(IMAGE));
+        byte[] imageBytes = Files.readAllBytes(TestUtil.getImage(IMAGE));
 
         // ...image 1
         OperationList opList1 = new OperationList(id1, Format.JPG);
@@ -213,7 +212,7 @@ public class RedisCacheTest extends BaseTest {
     /* purgeExpired() */
 
     @Test
-    public void testPurgeExpired() throws Exception {
+    public void testPurgeExpired() {
         // Nothing to test
     }
 
@@ -232,7 +231,7 @@ public class RedisCacheTest extends BaseTest {
         instance.put(id3, new Info(52, 52));
 
         // Create an image for each identifier...
-        byte[] imageBytes = FileUtils.readFileToByteArray(TestUtil.getImage(IMAGE));
+        byte[] imageBytes = Files.readAllBytes(TestUtil.getImage(IMAGE));
 
         // ...image 1
         OperationList opList1 = new OperationList(id1, Format.JPG);

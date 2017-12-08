@@ -4,27 +4,27 @@ import edu.illinois.library.cantaloupe.resolver.StreamSource;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 class TestStreamSource implements StreamSource {
 
-    private File file;
+    private Path path;
 
-    public TestStreamSource(File file) {
-        this.file = file;
+    TestStreamSource(Path path) {
+        this.path = path;
     }
 
     @Override
     public ImageInputStream newImageInputStream() throws IOException {
-        return new FileImageInputStream(file);
+        return new FileImageInputStream(path.toFile());
     }
 
     @Override
     public InputStream newInputStream() throws IOException {
-        return new FileInputStream(file);
+        return Files.newInputStream(path);
     }
 
 }

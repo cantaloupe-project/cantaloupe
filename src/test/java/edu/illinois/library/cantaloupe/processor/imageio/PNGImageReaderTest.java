@@ -18,7 +18,7 @@ public class PNGImageReaderTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new PNGImageReader(TestUtil.getImage("png"));
+        instance = new PNGImageReader(TestUtil.getImage("png").toFile());
     }
 
     @After

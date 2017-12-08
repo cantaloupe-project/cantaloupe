@@ -22,19 +22,16 @@ public class ScriptEngineFactoryTest extends BaseTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").getAbsolutePath());
+                TestUtil.getFixture("delegates.rb").toString());
     }
 
-    @Test
-    public void testGetScriptEngineWithDelegateScriptDisabled() throws Exception {
+    @Test(expected = DelegateScriptDisabledException.class)
+    public void testGetScriptEngineWithDelegateScriptDisabled()
+            throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, false);
-        try {
-            ScriptEngineFactory.getScriptEngine();
-            fail("Expected exception");
-        } catch (DelegateScriptDisabledException e) {
-            // pass
-        }
+
+        ScriptEngineFactory.getScriptEngine();
     }
 
     @Test
@@ -43,42 +40,30 @@ public class ScriptEngineFactoryTest extends BaseTest {
         assertNotNull(engine);
     }
 
-    @Test
+    @Test(expected = ScriptException.class)
     public void testGetScriptEngineWithPresentInvalidScript() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getImage("txt").getAbsolutePath());
-        try {
-            ScriptEngineFactory.getScriptEngine();
-            fail("Expected exception");
-        } catch (ScriptException e) {
-            // pass
-        }
+                TestUtil.getImage("txt").toString());
+
+        ScriptEngineFactory.getScriptEngine();
     }
 
-    @Test
+    @Test(expected = FileNotFoundException.class)
     public void testGetScriptEngineWithNoScript() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME, "");
-        try {
-            ScriptEngineFactory.getScriptEngine();
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        }
+
+        ScriptEngineFactory.getScriptEngine();
     }
 
-    @Test
+    @Test(expected = FileNotFoundException.class)
     public void testGetScriptEngineWithBogusScript() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 "/bla/bla/blaasdfasdfasfd");
-        try {
-            ScriptEngineFactory.getScriptEngine();
-            fail("Expected exception");
-        } catch (FileNotFoundException e) {
-            // pass
-        }
+
+        ScriptEngineFactory.getScriptEngine();
     }
 
 }

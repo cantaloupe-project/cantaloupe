@@ -13,9 +13,9 @@ import javax.imageio.ImageReader;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageInputStream;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.file.Path;
 import java.util.Iterator;
 
 import static org.junit.Assert.*;
@@ -26,8 +26,8 @@ public class JPEGMetadataTest extends BaseTest {
             throws IOException {
         final Iterator<ImageReader> it = ImageIO.getImageReadersByFormatName("JPEG");
         final ImageReader reader = it.next();
-        final File srcFile = TestUtil.getImage(fixtureName);
-        try (ImageInputStream is = ImageIO.createImageInputStream(srcFile)) {
+        final Path srcFile = TestUtil.getImage(fixtureName);
+        try (ImageInputStream is = ImageIO.createImageInputStream(srcFile.toFile())) {
             reader.setInput(is);
             final IIOMetadata metadata = reader.getImageMetadata(0);
             return new JPEGMetadata(metadata,

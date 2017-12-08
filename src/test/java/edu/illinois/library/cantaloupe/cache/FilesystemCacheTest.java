@@ -44,7 +44,7 @@ public class FilesystemCacheTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        fixturePath = TestUtil.getTempFolder().toPath().resolve("cache");
+        fixturePath = Files.createTempDirectory("test").resolve("cache");
         sourceImagePath = fixturePath.resolve("source");
         derivativeImagePath = fixturePath.resolve("image");
         infoPath = fixturePath.resolve("info");
@@ -408,7 +408,7 @@ public class FilesystemCacheTest extends BaseTest {
         new ConcurrentReaderWriter(() -> {
             try (OutputStream os =
                          instance.newSourceImageOutputStream(identifier)) {
-                Files.copy(TestUtil.getImage("jpg").toPath(), os);
+                Files.copy(TestUtil.getImage("jpg"), os);
             }
             return null;
         }, () -> {
@@ -465,7 +465,7 @@ public class FilesystemCacheTest extends BaseTest {
         new ConcurrentReaderWriter(() -> {
             try (OutputStream os =
                          instance.newDerivativeImageOutputStream(ops)) {
-                Files.copy(TestUtil.getImage("jpg").toPath(), os);
+                Files.copy(TestUtil.getImage("jpg"), os);
             }
             return null;
         }, () -> {

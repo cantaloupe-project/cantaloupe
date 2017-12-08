@@ -18,7 +18,7 @@ public class JPEGImageReaderTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new JPEGImageReader(TestUtil.getImage("jpg"));
+        instance = new JPEGImageReader(TestUtil.getImage("jpg").toFile());
     }
 
     @After

@@ -17,6 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -119,7 +120,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Override
-    protected File getSupported16BitImage() throws IOException {
+    protected Path getSupported16BitImage() throws IOException {
         return TestUtil.getImage("png-rgb-64x56x16.png");
     }
 
@@ -173,12 +174,12 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
             return;
         }
 
-        final File fixture = TestUtil.getImage("pdf-multipage.pdf");
+        final Path fixture = TestUtil.getImage("pdf-multipage.pdf");
         byte[] page1, page2;
         Info imageInfo;
 
         // page option missing
-        instance.setStreamSource(new FileInputStreamStreamSource(fixture));
+        instance.setStreamSource(new FileInputStreamStreamSource(fixture.toFile()));
         imageInfo = instance.readImageInfo();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -187,7 +188,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
         page1 = outputStream.toByteArray();
 
         // page option present
-        instance.setStreamSource(new FileInputStreamStreamSource(fixture));
+        instance.setStreamSource(new FileInputStreamStreamSource(fixture.toFile()));
 
         ops = TestUtil.newOperationList();
         ops.getOptions().put("page", "2");
@@ -208,7 +209,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
         }
 
         instance.setStreamSource(new FileInputStreamStreamSource(
-                TestUtil.getImage("pdf.pdf")));
+                TestUtil.getImage("pdf.pdf").toFile()));
 
         OperationList ops = TestUtil.newOperationList();
         Dimension fullSize = new Dimension(1000, 1000);

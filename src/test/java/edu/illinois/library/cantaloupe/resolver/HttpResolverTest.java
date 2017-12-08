@@ -20,9 +20,14 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -77,7 +82,7 @@ abstract class HttpResolverTest extends BaseTest {
                 "ScriptLookupStrategy");
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").getAbsolutePath());
+                TestUtil.getFixture("delegates.rb").toString());
     }
 
     /* checkAccess() */
@@ -141,14 +146,17 @@ abstract class HttpResolverTest extends BaseTest {
         try {
             server.start();
 
-            File image = TestUtil.getImage("gif");
+            Path image = TestUtil.getImage("gif");
+            Set<PosixFilePermission> permissions =
+                    Files.getPosixFilePermissions(image);
             try {
-                image.setReadable(false);
+                Files.setPosixFilePermissions(image, Collections.emptySet());
+
                 instance.setIdentifier(identifier);
                 instance.checkAccess();
                 fail("Expected exception");
             } finally {
-                image.setReadable(true);
+                Files.setPosixFilePermissions(image, permissions);
             }
         } catch (AccessDeniedException e) {
             // pass

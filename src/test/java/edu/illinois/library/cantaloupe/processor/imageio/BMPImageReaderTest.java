@@ -18,7 +18,7 @@ public class BMPImageReaderTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new BMPImageReader(TestUtil.getImage("bmp"));
+        instance = new BMPImageReader(TestUtil.getImage("bmp").toFile());
     }
 
     @After
