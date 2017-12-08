@@ -23,6 +23,9 @@ public class FormatTest extends BaseTest {
         // DCM
         assertEquals(Format.DCM,
                 Format.inferFormat(new Identifier("bla.dcm")));
+        // FLV
+        assertEquals(Format.FLV,
+                Format.inferFormat(new Identifier("bla.flv")));
         // GIF
         assertEquals(Format.GIF,
                 Format.inferFormat(new Identifier("bla.gif")));
@@ -73,6 +76,8 @@ public class FormatTest extends BaseTest {
         assertEquals(Format.BMP, Format.inferFormat("bla.bmp"));
         // DCM
         assertEquals(Format.DCM, Format.inferFormat("bla.dcm"));
+        // FLV
+        assertEquals(Format.FLV, Format.inferFormat("bla.flv"));
         // GIF
         assertEquals(Format.GIF, Format.inferFormat("bla.gif"));
         // JP2
@@ -109,6 +114,8 @@ public class FormatTest extends BaseTest {
         assertEquals(Arrays.asList("bmp", "dib"), Format.BMP.getExtensions());
         // DCM
         assertEquals(Arrays.asList("dcm", "dic"), Format.DCM.getExtensions());
+        // FLV
+        assertEquals(Arrays.asList("flv", "f4v"), Format.FLV.getExtensions());
         // GIF
         assertEquals(Arrays.asList("gif"), Format.GIF.getExtensions());
         // JP2
@@ -144,6 +151,7 @@ public class FormatTest extends BaseTest {
         assertEquals(Format.ImageType.RASTER, Format.AVI.getImageType());
         assertEquals(Format.ImageType.RASTER, Format.BMP.getImageType());
         assertEquals(Format.ImageType.RASTER, Format.DCM.getImageType());
+        assertEquals(Format.ImageType.RASTER, Format.FLV.getImageType());
         assertEquals(Format.ImageType.RASTER, Format.GIF.getImageType());
         assertEquals(Format.ImageType.RASTER, Format.JP2.getImageType());
         assertEquals(Format.ImageType.RASTER, Format.JPG.getImageType());
@@ -164,6 +172,7 @@ public class FormatTest extends BaseTest {
         assertEquals(8, Format.AVI.getMaxSampleSize());
         assertEquals(8, Format.BMP.getMaxSampleSize());
         assertEquals(16, Format.DCM.getMaxSampleSize());
+        assertEquals(8, Format.FLV.getMaxSampleSize());
         assertEquals(3, Format.GIF.getMaxSampleSize());
         assertEquals(16, Format.JP2.getMaxSampleSize());
         assertEquals(8, Format.JPG.getMaxSampleSize());
@@ -197,6 +206,10 @@ public class FormatTest extends BaseTest {
         assertEquals(Arrays.asList(
                 new MediaType("application/dicom")),
                 Format.DCM.getMediaTypes());
+        // FLV
+        assertEquals(Arrays.asList(
+                new MediaType("video/x-flv")),
+                Format.FLV.getMediaTypes());
         // GIF
         assertEquals(Arrays.asList(
                 new MediaType("image/gif")),
@@ -277,6 +290,7 @@ public class FormatTest extends BaseTest {
         assertEquals("avi", Format.AVI.getPreferredExtension());
         assertEquals("bmp", Format.BMP.getPreferredExtension());
         assertEquals("dcm", Format.DCM.getPreferredExtension());
+        assertEquals("flv", Format.FLV.getPreferredExtension());
         assertEquals("gif", Format.GIF.getPreferredExtension());
         assertEquals("jp2", Format.JP2.getPreferredExtension());
         assertEquals("jpg", Format.JPG.getPreferredExtension());
@@ -300,6 +314,8 @@ public class FormatTest extends BaseTest {
                 Format.BMP.getPreferredMediaType().toString());
         assertEquals("application/dicom",
                 Format.DCM.getPreferredMediaType().toString());
+        assertEquals("video/x-flv",
+                Format.FLV.getPreferredMediaType().toString());
         assertEquals("image/gif",
                 Format.GIF.getPreferredMediaType().toString());
         assertEquals("image/jp2",
@@ -333,6 +349,7 @@ public class FormatTest extends BaseTest {
         assertEquals(Format.Type.VIDEO, Format.AVI.getType());
         assertEquals(Format.Type.IMAGE, Format.BMP.getType());
         assertEquals(Format.Type.IMAGE, Format.DCM.getType());
+        assertEquals(Format.Type.VIDEO, Format.FLV.getType());
         assertEquals(Format.Type.IMAGE, Format.GIF.getType());
         assertEquals(Format.Type.IMAGE, Format.JP2.getType());
         assertEquals(Format.Type.IMAGE, Format.JPG.getType());
@@ -353,6 +370,7 @@ public class FormatTest extends BaseTest {
         assertFalse(Format.AVI.isImage());
         assertTrue(Format.BMP.isImage());
         assertTrue(Format.DCM.isImage());
+        assertFalse(Format.FLV.isImage());
         assertTrue(Format.GIF.isImage());
         assertTrue(Format.JP2.isImage());
         assertTrue(Format.JPG.isImage());
@@ -373,6 +391,7 @@ public class FormatTest extends BaseTest {
         assertTrue(Format.AVI.isVideo());
         assertFalse(Format.BMP.isVideo());
         assertFalse(Format.DCM.isVideo());
+        assertTrue(Format.FLV.isVideo());
         assertFalse(Format.GIF.isVideo());
         assertFalse(Format.JP2.isVideo());
         assertFalse(Format.JPG.isVideo());
@@ -393,6 +412,7 @@ public class FormatTest extends BaseTest {
         assertFalse(Format.AVI.supportsTransparency());
         assertTrue(Format.BMP.supportsTransparency());
         assertFalse(Format.DCM.supportsTransparency());
+        assertFalse(Format.FLV.supportsTransparency());
         assertTrue(Format.GIF.supportsTransparency());
         assertTrue(Format.JP2.supportsTransparency());
         assertFalse(Format.JPG.supportsTransparency());

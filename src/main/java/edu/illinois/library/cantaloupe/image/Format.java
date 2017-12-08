@@ -52,6 +52,17 @@ public enum Format {
             false),
 
     /**
+     * Flash Video format.
+     */
+    FLV("FLV",
+            ImageType.RASTER,
+            Arrays.asList("video/x-flv"),
+            Arrays.asList("flv", "f4v"),
+            Type.VIDEO,
+            8,
+            false),
+
+    /**
      * CompuServe GIF image format.
      */
     GIF("GIF",

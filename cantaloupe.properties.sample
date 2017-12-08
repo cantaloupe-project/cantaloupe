@@ -244,6 +244,7 @@ AzureStorageResolver.lookup_strategy = BasicLookupStrategy
 processor.avi = FfmpegProcessor
 processor.bmp =
 processor.dcm =
+processor.flv = FfmpegProcessor
 processor.gif =
 processor.jp2 = KakaduProcessor
 processor.jpg =
