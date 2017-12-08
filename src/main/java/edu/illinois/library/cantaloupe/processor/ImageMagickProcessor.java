@@ -245,8 +245,6 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                             if (s.contains(" rw")) {
                                 outputFormats.add(Format.PNG);
                             }
-                        } else if (s.startsWith("PSD") && s.contains("  r")) {
-                            sourceFormats.add(Format.PSD);
                         } else if (s.startsWith("TIFF")) {
                             sourceFormats.add(Format.TIF);
                             if (s.contains(" rw")) {

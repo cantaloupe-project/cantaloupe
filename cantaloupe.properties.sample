@@ -252,7 +252,6 @@ processor.mp4 = FfmpegProcessor
 processor.mpg = FfmpegProcessor
 processor.pdf = PdfBoxProcessor
 processor.png =
-processor.psd = ImageMagickProcessor
 processor.sgi = ImageMagickProcessor
 processor.tif =
 processor.webm = FfmpegProcessor

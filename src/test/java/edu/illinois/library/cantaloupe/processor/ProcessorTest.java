@@ -91,13 +91,8 @@ public abstract class ProcessorTest extends BaseTest {
                                 fixture.getFileName().toString().equals("tif-rgba-monores-64x56x8-tiled-jpeg.tif")) {
                             continue;
                         }
-                    } else if (proc instanceof GraphicsMagickProcessor) { // TODO: why doesn't GraphicsMagickProcessor like these?
-                        if (fixture.getFileName().toString().equals("jpg-rgb-594x522x8-baseline.jpg") ||
-                                fixture.getFileName().toString().endsWith("psd")) {
-                            continue;
-                        }
-                    } else if (proc instanceof ImageMagickProcessor) {
-                        if (fixture.getFileName().toString().endsWith("psd")) { // TODO: why doesn't ImageMagickProcessor like this?
+                    } else if (proc instanceof GraphicsMagickProcessor) { // TODO: why doesn't GraphicsMagickProcessor like this?
+                        if (fixture.getFileName().toString().equals("jpg-rgb-594x522x8-baseline.jpg")) {
                             continue;
                         }
                     }
@@ -349,9 +344,8 @@ public abstract class ProcessorTest extends BaseTest {
                 proc.setSourceFormat(format);
 
                 for (Path fixture : TestUtil.getImageFixtures(format)) {
-                    if (proc instanceof GraphicsMagickProcessor) { // TODO: why doesn't GraphicsMagickProcessor like these?
-                        if (fixture.getFileName().toString().equals("jpg-rgb-594x522x8-baseline.jpg") ||
-                                fixture.getFileName().toString().endsWith("psd")) {
+                    if (proc instanceof GraphicsMagickProcessor) { // TODO: why doesn't GraphicsMagickProcessor like this?
+                        if (fixture.getFileName().toString().equals("jpg-rgb-594x522x8-baseline.jpg")) {
                             continue;
                         }
                     }
