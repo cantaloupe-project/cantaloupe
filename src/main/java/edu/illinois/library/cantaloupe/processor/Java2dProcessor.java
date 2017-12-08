@@ -25,8 +25,9 @@ class Java2dProcessor extends AbstractJava2DProcessor
             throws ProcessorException {
         super.process(ops, imageInfo, outputStream);
 
-        final ImageReader reader = getReader();
+        ImageReader reader = null;
         try {
+            reader = getReader();
             final ReductionFactor rf = new ReductionFactor();
             final Set<ImageReader.Hint> hints = new HashSet<>();
 
@@ -43,7 +44,9 @@ class Java2dProcessor extends AbstractJava2DProcessor
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         } finally {
-            reader.dispose();
+            if (reader != null) {
+                reader.dispose();
+            }
         }
     }
 

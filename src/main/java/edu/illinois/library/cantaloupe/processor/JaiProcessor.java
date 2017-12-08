@@ -120,8 +120,9 @@ class JaiProcessor extends AbstractImageIOProcessor
             throws ProcessorException {
         super.process(opList, imageInfo, outputStream);
 
-        final ImageReader reader = getReader();
+        ImageReader reader = null;
         try {
+            reader = getReader();
             final Format outputFormat = opList.getOutputFormat();
             final Orientation orientation = getEffectiveOrientation();
             final Dimension fullSize = imageInfo.getSize();
@@ -243,7 +244,9 @@ class JaiProcessor extends AbstractImageIOProcessor
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         } finally {
-            reader.dispose();
+            if (reader != null) {
+                reader.dispose();
+            }
         }
     }
 

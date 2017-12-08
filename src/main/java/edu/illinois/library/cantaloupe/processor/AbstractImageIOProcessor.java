@@ -8,13 +8,12 @@ import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -23,10 +22,7 @@ import java.util.Set;
  */
 abstract class AbstractImageIOProcessor extends AbstractProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(AbstractImageIOProcessor.class);
-
-    private static final HashMap<Format,Set<Format>> FORMATS =
+    private static final Map<Format,Set<Format>> FORMATS =
             availableOutputFormats();
 
     protected File sourceFile;
@@ -86,7 +82,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
         Orientation orientation = null;
         if (Configuration.getInstance().
                 getBoolean(Key.PROCESSOR_RESPECT_ORIENTATION, false)) {
-            orientation = reader.getMetadata(0).getOrientation();
+            orientation = getReader().getMetadata(0).getOrientation();
         }
         if (orientation == null) {
             orientation = Orientation.ROTATE_0;
@@ -98,27 +94,23 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
      * ({@link #setSourceFile(File)} or {@link #setStreamSource(StreamSource)})
      * and {@link #setSourceFormat(Format)} must be invoked first.
      */
-    protected ImageReader getReader() {
+    protected ImageReader getReader() throws IOException {
         if (reader == null) {
-            try {
-                if (streamSource != null) {
-                    reader = new ImageReader(streamSource, getSourceFormat());
-                } else {
-                    reader = new ImageReader(sourceFile, getSourceFormat());
-                }
-            } catch (IOException e) {
-                LOGGER.error(e.getMessage(), e);
+            if (streamSource != null) {
+                reader = new ImageReader(streamSource, getSourceFormat());
+            } else {
+                reader = new ImageReader(sourceFile, getSourceFormat());
             }
         }
         return reader;
     }
 
     public File getSourceFile() {
-        return this.sourceFile;
+        return sourceFile;
     }
 
     public StreamSource getStreamSource() {
-        return this.streamSource;
+        return streamSource;
     }
 
     public void setSourceFile(File sourceFile) {
