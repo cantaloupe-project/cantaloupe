@@ -255,6 +255,24 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
         return new ProcessBuilder(command);
     }
 
+    private void reset() {
+        durationSec = 0;
+        imageInfo = null;
+    }
+
+    @Override
+    public void setSourceFile(File sourceFile) {
+        super.setSourceFile(sourceFile);
+        reset();
+    }
+
+    @Override
+    public void setSourceFormat(Format format)
+            throws UnsupportedSourceFormatException {
+        super.setSourceFormat(format);
+        reset();
+    }
+
     @Override
     public void validate(OperationList opList, Dimension fullSize)
             throws ValidationException, ProcessorException {
