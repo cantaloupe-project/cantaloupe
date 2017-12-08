@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
+import edu.illinois.library.cantaloupe.resolver.FileInputStreamStreamSource;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
@@ -32,12 +33,8 @@ abstract class ImageIOProcessorTest extends ProcessorTest {
         assertEquals(expectedFormats, proc.getAvailableOutputFormats());
     }
 
-    /**
-     * Tile-aware override.
-     */
     @Test
-    @Override
-    public void testReadImageInfo() throws Exception {
+    public void testReadImageInfoTileAwareness() throws Exception {
         Info expectedInfo = new Info(64, 56, Format.TIF);
         expectedInfo.getImages().get(0).tileWidth = 16;
         expectedInfo.getImages().get(0).tileHeight = 16;
@@ -47,7 +44,7 @@ abstract class ImageIOProcessorTest extends ProcessorTest {
 
         // test as a StreamProcessor
         StreamProcessor sproc = (StreamProcessor) newInstance();
-        StreamSource streamSource = new TestStreamSource(fixture);
+        StreamSource streamSource = new FileInputStreamStreamSource(fixture);
         sproc.setStreamSource(streamSource);
         sproc.setSourceFormat(Format.TIF);
         assertEquals(expectedInfo, sproc.readImageInfo());

@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Transpose;
+import edu.illinois.library.cantaloupe.resolver.FileInputStreamStreamSource;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -66,39 +67,62 @@ public abstract class ProcessorTest extends BaseTest {
 
     protected abstract Processor newInstance();
 
-    /* readImageInfo() */
+    /* process() */
 
-    /**
-     * This implementation is tile-unaware. Tile-aware processors will need to
-     * override it.
-     */
     @Test
-    public void testReadImageInfo() throws Exception {
-        Info expectedInfo = new Info(64, 56, 64, 56, Format.JPG);
+    public void testProcessOnAllFixtures() throws Exception {
+        final OperationList ops = new OperationList(
+                new Identifier("cats"),
+                Format.JPG,
+                new Rotate(180),
+                new Encode(Format.JPG));
+        final Processor proc = newInstance();
 
-        Processor proc = newInstance();
-        if (proc instanceof StreamProcessor) {
-            StreamProcessor sproc = (StreamProcessor) proc;
-            StreamSource streamSource = new TestStreamSource(
-                    TestUtil.getImage(IMAGE));
-            sproc.setStreamSource(streamSource);
-            sproc.setSourceFormat(Format.JPG);
-            assertEquals(expectedInfo, sproc.readImageInfo());
-        }
-        if (proc instanceof FileProcessor) {
-            FileProcessor fproc = (FileProcessor) proc;
+        for (Format format : Format.values()) {
             try {
-                fproc.setSourceFile(TestUtil.getImage(IMAGE).toFile());
-                fproc.setSourceFormat(Format.JPG);
-                assertEquals(expectedInfo.toString(),
-                        fproc.readImageInfo().toString());
+                // The processor will throw an exception if it doesn't support
+                // this format, which is fine. No processor supports all
+                // formats
+                proc.setSourceFormat(format);
+
+                for (Path fixture : TestUtil.getImageFixtures(format)) {
+                    if (proc instanceof AbstractImageIOProcessor) { // TODO: why doesn't ImageIO like these?
+                        if (fixture.getFileName().toString().equals("tif-rgba-monores-64x56x8-striped-jpeg.tif") ||
+                                fixture.getFileName().toString().equals("tif-rgba-monores-64x56x8-tiled-jpeg.tif")) {
+                            continue;
+                        }
+                    } else if (proc instanceof GraphicsMagickProcessor) { // TODO: why doesn't GraphicsMagickProcessor like these?
+                        if (fixture.getFileName().toString().equals("jpg-rgb-594x522x8-baseline.jpg") ||
+                                fixture.getFileName().toString().endsWith("psd")) {
+                            continue;
+                        }
+                    } else if (proc instanceof ImageMagickProcessor) {
+                        if (fixture.getFileName().toString().endsWith("psd")) { // TODO: why doesn't ImageMagickProcessor like this?
+                            continue;
+                        }
+                    }
+
+                    if (proc instanceof StreamProcessor) {
+                        StreamSource source =
+                                new FileInputStreamStreamSource(fixture);
+                        ((StreamProcessor) proc).setStreamSource(source);
+                    } else if (proc instanceof FileProcessor) {
+                        ((FileProcessor) proc).setSourceFile(fixture.toFile());
+                    }
+
+                    try {
+                        proc.process(ops, proc.readImageInfo(),
+                                new NullOutputStream());
+                    } catch (Exception e) {
+                        System.err.println(format + " : " + fixture);
+                        throw e;
+                    }
+                }
             } catch (UnsupportedSourceFormatException e) {
-                // no problem
+                // OK, continue
             }
         }
     }
-
-    /* process() */
 
     @Test
     public void testProcessWithSupportedSourceFormatsAndNoOperations()
@@ -112,57 +136,12 @@ public abstract class ProcessorTest extends BaseTest {
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
-        OperationList ops = new OperationList(new Identifier("bla"), Format.JPG);
+        OperationList ops = new OperationList(new Identifier("cats"),
+                Format.JPG);
         ops.add(crop);
         ops.add(scale);
         ops.add(new Rotate(0));
         doProcessTest(ops);
-    }
-
-    @Test
-    public void testProcessWithUnsupportedSourceFormats() throws Exception {
-        Crop crop = new Crop();
-        crop.setX(20f);
-        crop.setY(20f);
-        crop.setWidth(50f);
-        crop.setHeight(50f);
-        Scale scale = new Scale(0.8f);
-        OperationList ops = new OperationList(new Identifier("bla"), Format.JPG);
-        ops.add(crop);
-        ops.add(scale);
-        ops.add(new Rotate(15));
-
-        for (Format format : Format.values()) {
-            try {
-                final Processor proc = newInstance();
-                proc.setSourceFormat(format);
-                if (proc.getAvailableOutputFormats().size() == 0) {
-                    final Collection<File> fixtures = TestUtil.
-                            getImageFixtures(format);
-                    final File fixture = (File) fixtures.toArray()[0];
-                    if (proc instanceof StreamProcessor) {
-                        StreamSource source = new TestStreamSource(fixture.toPath());
-                        ((StreamProcessor) proc).setStreamSource(source);
-                    }
-                    if (proc instanceof FileProcessor) {
-                        Path path = TestUtil.getImage(
-                                format.getPreferredExtension());
-                        ((FileProcessor) proc).setSourceFile(path.toFile());
-                    }
-                    try {
-                        proc.process(ops, proc.readImageInfo(),
-                                new NullOutputStream());
-                        fail("Expected exception");
-                    } catch (ProcessorException e) {
-                        assertEquals("Unsupported source format: " +
-                                        format.getPreferredExtension(),
-                                e.getMessage());
-                    }
-                }
-            } catch (UnsupportedSourceFormatException e) {
-                // continue
-            }
-        }
     }
 
     @Test
@@ -312,7 +291,7 @@ public abstract class ProcessorTest extends BaseTest {
         }
     }
 
-    /* getSupportedIiif11Qualities() */
+    /* getSupportedIIIF11Qualities() */
 
     /**
      * Tests for the presence of all available IIIF 1.1 qualities. Subclasses
@@ -332,7 +311,7 @@ public abstract class ProcessorTest extends BaseTest {
         assertEquals(expectedQualities, proc.getSupportedIIIF1Qualities());
     }
 
-    /* getSupportedIiif20Qualities() */
+    /* getSupportedIIIF20Qualities() */
 
     /**
      * Tests for the presence of all available IIIF 2.0 qualities. Subclasses
@@ -350,6 +329,78 @@ public abstract class ProcessorTest extends BaseTest {
                 edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY,
                 edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT));
         assertEquals(expectedQualities, proc.getSupportedIIIF2Qualities());
+    }
+
+    /* readImageInfo() */
+
+    /**
+     * This implementation is tile-unaware. Tile-aware processors will need to
+     * override it.
+     */
+    @Test
+    public void testReadImageInfoOnAllFixtures() throws Exception {
+        final Processor proc = newInstance();
+
+        for (Format format : Format.values()) {
+            try {
+                // The processor will throw an exception if it doesn't support
+                // this format, which is fine. No processor supports all
+                // formats.
+                proc.setSourceFormat(format);
+
+                for (Path fixture : TestUtil.getImageFixtures(format)) {
+                    if (proc instanceof GraphicsMagickProcessor) { // TODO: why doesn't GraphicsMagickProcessor like these?
+                        if (fixture.getFileName().toString().equals("jpg-rgb-594x522x8-baseline.jpg") ||
+                                fixture.getFileName().toString().endsWith("psd")) {
+                            continue;
+                        }
+                    }
+
+                    if (proc instanceof StreamProcessor) {
+                        StreamProcessor sproc = (StreamProcessor) proc;
+                        StreamSource streamSource =
+                                new FileInputStreamStreamSource(fixture);
+                        sproc.setStreamSource(streamSource);
+                    } else if (proc instanceof FileProcessor) {
+                        FileProcessor fproc = (FileProcessor) proc;
+                        fproc.setSourceFile(fixture.toFile());
+                    }
+
+                    try {
+                        // We don't know the dimensions of the source image and
+                        // we can't get them because that would require using
+                        // the method we are now testing, so the best we can do
+                        // is to assert that they are nonzero.
+                        final Info actualInfo = proc.readImageInfo();
+                        assertEquals(format, actualInfo.getSourceFormat());
+                        assertTrue(actualInfo.getSize().getWidth() > 0);
+                        assertTrue(actualInfo.getSize().getHeight() > 0);
+                    } catch (Exception e) {
+                        System.err.println(format + " : " + fixture);
+                        throw e;
+                    }
+                }
+            } catch (UnsupportedSourceFormatException e) {
+                // OK, continue
+            }
+        }
+    }
+
+    /* setSourceFormat() */
+
+    @Test
+    public void testSetSourceFormatWithUnsupportedSourceFormat() {
+        for (Format format : Format.values()) {
+            try {
+                final Processor proc = newInstance();
+                proc.setSourceFormat(format);
+                if (proc.getAvailableOutputFormats().isEmpty()) {
+                    fail("Expected exception");
+                }
+            } catch (UnsupportedSourceFormatException e) {
+                // pass
+            }
+        }
     }
 
     /**
@@ -431,7 +482,7 @@ public abstract class ProcessorTest extends BaseTest {
         if (proc instanceof FileProcessor) {
             ((FileProcessor) proc).setSourceFile(fixture.toFile());
         } else if (proc instanceof StreamProcessor) {
-            StreamSource source = new TestStreamSource(fixture);
+            StreamSource source = new FileInputStreamStreamSource(fixture);
             ((StreamProcessor) proc).setStreamSource(source);
         }
         return proc;

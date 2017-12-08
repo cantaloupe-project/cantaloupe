@@ -179,7 +179,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
         Info imageInfo;
 
         // page option missing
-        instance.setStreamSource(new FileInputStreamStreamSource(fixture.toFile()));
+        instance.setStreamSource(new FileInputStreamStreamSource(fixture));
         imageInfo = instance.readImageInfo();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -188,7 +188,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
         page1 = outputStream.toByteArray();
 
         // page option present
-        instance.setStreamSource(new FileInputStreamStreamSource(fixture.toFile()));
+        instance.setStreamSource(new FileInputStreamStreamSource(fixture));
 
         ops = TestUtil.newOperationList();
         ops.getOptions().put("page", "2");
@@ -209,7 +209,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
         }
 
         instance.setStreamSource(new FileInputStreamStreamSource(
-                TestUtil.getImage("pdf.pdf").toFile()));
+                TestUtil.getImage("pdf.pdf")));
 
         OperationList ops = TestUtil.newOperationList();
         Dimension fullSize = new Dimension(1000, 1000);

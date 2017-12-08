@@ -181,16 +181,6 @@ public class FfmpegProcessorTest extends ProcessorTest {
         }
     }
 
-    @Override
-    @Test
-    public void testReadImageInfo() throws Exception {
-        instance.setSourceFile(TestUtil.getImage("mpg").toFile());
-        instance.setSourceFormat(Format.MPG);
-        Info expectedInfo = new Info(640, 360, 640, 360, Format.MPG);
-        assertEquals(expectedInfo.toString(),
-                instance.readImageInfo().toString());
-    }
-
     @Test
     public void testValidate() throws Exception {
         OperationList ops = TestUtil.newOperationList();

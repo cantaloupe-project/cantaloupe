@@ -123,8 +123,7 @@ public class OpenJpegProcessorTest extends ProcessorTest {
     }
 
     @Test
-    @Override
-    public void testReadImageInfo() throws Exception {
+    public void testReadImageInfoTileAwareness() throws Exception {
         Info expectedInfo = new Info(100, 88, 100, 88, Format.JP2);
 
         instance.setSourceFile(TestUtil.getImage("jp2").toFile());
