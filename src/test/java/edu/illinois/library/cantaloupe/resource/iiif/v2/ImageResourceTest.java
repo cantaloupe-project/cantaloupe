@@ -3,15 +3,20 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Client;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.resource.iiif.ImageResourceTester;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
 import static org.junit.Assert.*;
@@ -370,7 +375,7 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testUnavailableSourceFormat() throws Exception {
+    public void testUnavailableSourceFormat() {
         URI uri = getHTTPURI("/text.txt/full/full/0/color.jpg");
         tester.testUnavailableSourceFormat(uri);
     }
@@ -381,10 +386,39 @@ public class ImageResourceTest extends ResourceTest {
         tester.testInvalidOutputFormat(uri);
     }
 
+    /**
+     * Tests the default response headers. Individual headers may be tested
+     * more thoroughly elsewhere.
+     */
     @Test
-    public void testXPoweredByHeader() throws Exception {
-        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
-        tester.testXPoweredByHeader(uri);
+    public void testResponseHeaders() throws Exception {
+        client = newClient("/" + IMAGE + "/full/full/0/color.jpg");
+        Response response = client.send();
+        Map<String,String> headers = response.getHeaders();
+        assertEquals(8, headers.size());
+
+        // Accept-Ranges TODO: remove this
+        assertEquals("bytes", headers.get("Accept-Ranges"));
+        // Content-Type
+        assertEquals("image/jpeg", headers.get("Content-Type"));
+        // Date
+        assertNotNull(headers.get("Date"));
+        // Link
+        assertTrue(headers.get("Link").contains("://"));
+        // Server
+        assertTrue(headers.get("Server").contains("Restlet"));
+        // Transfer-Encoding
+        assertEquals("chunked", headers.get("Transfer-Encoding"));
+        // Vary
+        List<String> parts = Arrays.asList(StringUtils.split(headers.get("Vary"), ", "));
+        assertEquals(5, parts.size());
+        assertTrue(parts.contains("Accept"));
+        assertTrue(parts.contains("Accept-Charset"));
+        assertTrue(parts.contains("Accept-Encoding"));
+        assertTrue(parts.contains("Accept-Language"));
+        assertTrue(parts.contains("Origin"));
+        // X-Powered-By
+        assertEquals("Cantaloupe/Unknown", headers.get("X-Powered-By"));
     }
 
 }

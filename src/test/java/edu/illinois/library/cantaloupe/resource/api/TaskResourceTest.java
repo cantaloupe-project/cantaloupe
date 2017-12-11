@@ -6,9 +6,13 @@ import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.image.MediaType;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -36,6 +40,46 @@ public class TaskResourceTest extends AbstractAPIResourceTest {
 
     @Test
     public void testDoGetWithValidID() throws Exception {
+        Response response = createTask();
+
+        assertEquals(200, response.getStatus());
+        String responseBody = response.getBodyAsString();
+
+        assertTrue(responseBody.contains("PurgeInvalidFromCache"));
+    }
+
+    @Test
+    public void testDoGetResponseHeaders() throws Exception {
+        Response response = createTask();
+
+        Map<String,String> headers = response.getHeaders();
+        assertEquals(8, headers.size());
+
+        // Accept-Ranges TODO: remove this
+        assertEquals("bytes", headers.get("Accept-Ranges"));
+        // Cache-Control
+        assertEquals("no-cache", headers.get("Cache-Control"));
+        // Content-Type
+        assertEquals("application/json;charset=UTF-8", headers.get("Content-Type"));
+        // Date
+        assertNotNull(headers.get("Date"));
+        // Server
+        assertTrue(headers.get("Server").contains("Restlet"));
+        // Transfer-Encoding
+        assertEquals("chunked", headers.get("Transfer-Encoding"));
+        // Vary
+        List<String> parts = Arrays.asList(StringUtils.split(headers.get("Vary"), ", "));
+        assertEquals(4, parts.size());
+        //assertTrue(parts.contains("Accept")); // TODO: why is this missing?
+        assertTrue(parts.contains("Accept-Charset"));
+        assertTrue(parts.contains("Accept-Encoding"));
+        assertTrue(parts.contains("Accept-Language"));
+        assertTrue(parts.contains("Origin"));
+        // X-Powered-By
+        assertEquals("Cantaloupe/Unknown", headers.get("X-Powered-By"));
+    }
+
+    private Response createTask() throws Exception {
         // Create a task
         APITask<?> submittedTask =
                 new APITask<>(new PurgeInvalidFromCacheCommand<>());
@@ -55,12 +99,8 @@ public class TaskResourceTest extends AbstractAPIResourceTest {
         String location = response.getHeaders().get("Location");
         client.setURI(new URI(location));
         client.setMethod(Method.GET);
-        response = client.send();
 
-        assertEquals(200, response.getStatus());
-        String responseBody = response.getBodyAsString();
-
-        assertTrue(responseBody.contains("PurgeInvalidFromCache"));
+        return client.send();
     }
 
 }

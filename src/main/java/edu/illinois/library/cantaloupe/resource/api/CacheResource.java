@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
+import org.restlet.data.MediaType;
 import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
@@ -16,7 +17,9 @@ public class CacheResource extends AbstractAPIResource {
     @Delete
     public Representation doPurge() throws Exception {
         new CacheFacade().purge(getIdentifier());
-        return new EmptyRepresentation();
+        Representation rep = new EmptyRepresentation();
+        rep.setMediaType(MediaType.TEXT_PLAIN);
+        return rep;
     }
 
 }

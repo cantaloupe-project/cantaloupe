@@ -245,17 +245,6 @@ public class ImageAPIResourceTester {
         assertStatus(501, uri);
     }
 
-    public void testXPoweredByHeader(URI uri) throws Exception {
-        Client client = newClient(uri);
-        try {
-            Response response = client.send();
-            String value = response.getHeaders().get("X-Powered-By");
-            assertEquals("Cantaloupe/Unknown", value);
-        } finally {
-            client.stop();
-        }
-    }
-
     private void enableCacheControlHeaders() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.CLIENT_CACHE_ENABLED, "true");

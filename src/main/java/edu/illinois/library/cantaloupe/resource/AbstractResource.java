@@ -17,6 +17,7 @@ import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.Request;
 import org.restlet.data.CacheDirective;
+import org.restlet.data.Dimension;
 import org.restlet.data.Disposition;
 import org.restlet.data.Header;
 import org.restlet.data.Parameter;
@@ -32,10 +33,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
-import java.awt.Dimension;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -185,10 +186,18 @@ public abstract class AbstractResource extends ServerResource {
     @Override
     protected void doInit() throws ResourceException {
         super.doInit();
+
+        // We don't respect the Range header.
+        getResponse().getServerInfo().setAcceptingRanges(false);
+
         // "Dimensions" are added to the Vary header. Restlet doesn't supply
         // Origin by default, but it's needed.
         // See: https://github.com/medusa-project/cantaloupe/issues/107
-        getResponse().getDimensions().add(org.restlet.data.Dimension.ORIGIN);
+        getResponse().getDimensions().addAll(Arrays.asList(
+                Dimension.CHARACTER_SET,
+                Dimension.ENCODING,
+                Dimension.LANGUAGE,
+                Dimension.ORIGIN));
         getResponse().getHeaders().add("X-Powered-By",
                 "Cantaloupe/" + Application.getVersion());
         LOGGER.info("doInit(): handling {} {}", getMethod(), getReference());
@@ -208,7 +217,8 @@ public abstract class AbstractResource extends ServerResource {
      *                               <code>false</code>.
      */
     protected final StringRepresentation checkAuthorization(
-            final OperationList opList, final Dimension fullSize)
+            final OperationList opList,
+            final java.awt.Dimension fullSize)
             throws IOException, ScriptException, AccessDeniedException {
         final Authorizer authorizer = new Authorizer(getReference().toString(),
                 getCanonicalClientIpAddress(),
@@ -541,7 +551,8 @@ public abstract class AbstractResource extends ServerResource {
                                                final Format sourceFormat,
                                                final Info info)
             throws EmptyPayloadException, PayloadTooLargeException {
-        final Dimension resultingSize = opList.getResultingSize(info.getSize());
+        final java.awt.Dimension resultingSize =
+                opList.getResultingSize(info.getSize());
 
         if (resultingSize.width < 1 || resultingSize.height < 1) {
             throw new EmptyPayloadException();
