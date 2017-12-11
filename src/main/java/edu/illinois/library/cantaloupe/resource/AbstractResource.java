@@ -58,8 +58,6 @@ public abstract class AbstractResource extends ServerResource {
     protected static final String RESPONSE_CONTENT_DISPOSITION_QUERY_ARG =
             "response-content-disposition";
 
-    private static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
-
     private Series<Header> bufferedResponseHeaders = new Series<>(Header.class);
 
     /**
@@ -464,7 +462,7 @@ public abstract class AbstractResource extends ServerResource {
                     // Filter out filename-unsafe characters as well as ".."
                     filename = StringUtil.sanitize(m.group(1),
                             Pattern.compile("\\.\\."),
-                            Pattern.compile(FILENAME_CHARACTERS));
+                            Pattern.compile(StringUtil.FILENAME_REGEX));
                 } else {
                     filename = getContentDispositionFilename(identifier,
                             outputFormat);
@@ -499,7 +497,7 @@ public abstract class AbstractResource extends ServerResource {
 
     private String getContentDispositionFilename(Identifier identifier,
                                                  Format outputFormat) {
-        return identifier.toString().replaceAll(FILENAME_CHARACTERS, "_") +
+        return identifier.toString().replaceAll(StringUtil.FILENAME_REGEX, "_") +
                 "." + outputFormat.getPreferredExtension();
     }
 

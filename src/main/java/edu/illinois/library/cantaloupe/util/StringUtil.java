@@ -15,6 +15,8 @@ public final class StringUtil {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(StringUtil.class);
 
+    public static final String FILENAME_REGEX = "[^A-Za-z0-9._-]";
+
     /**
      * Returns a filename-safe string guaranteed to uniquely represent the
      * given string.
