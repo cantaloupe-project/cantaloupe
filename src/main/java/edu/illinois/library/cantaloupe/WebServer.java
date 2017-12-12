@@ -160,8 +160,6 @@ public class WebServer {
 
     /**
      * Starts the HTTP and/or HTTPS servers.
-     *
-     * @throws Exception
      */
     public void start() throws Exception {
         if (!isInitialized) {
@@ -181,7 +179,10 @@ public class WebServer {
 
             // Initialize the HTTP server
             if (isHttpEnabled()) {
-                ServerConnector connector = new ServerConnector(server);
+                final HttpConfiguration config = new HttpConfiguration();
+                config.setSendDateHeader(false); // Restlet will take care of this
+                ServerConnector connector = new ServerConnector(server,
+                        new HttpConnectionFactory(config));
                 connector.setHost(getHttpHost());
                 connector.setPort(getHttpPort());
                 connector.setIdleTimeout(IDLE_TIMEOUT);
@@ -189,8 +190,9 @@ public class WebServer {
             }
             // Initialize the HTTPS server
             if (isHttpsEnabled()) {
-                HttpConfiguration httpsConfig = new HttpConfiguration();
-                httpsConfig.addCustomizer(new SecureRequestCustomizer());
+                final HttpConfiguration config = new HttpConfiguration();
+                config.setSendDateHeader(false); // Restlet will take care of this
+                config.addCustomizer(new SecureRequestCustomizer());
                 SslContextFactory sslContextFactory = new SslContextFactory();
 
                 sslContextFactory.setKeyStorePath(getHttpsKeyStorePath());
@@ -198,7 +200,7 @@ public class WebServer {
                 sslContextFactory.setKeyManagerPassword(getHttpsKeyPassword());
                 ServerConnector sslConnector = new ServerConnector(server,
                         new SslConnectionFactory(sslContextFactory, "HTTP/1.1"),
-                        new HttpConnectionFactory(httpsConfig));
+                        new HttpConnectionFactory(config));
                 sslConnector.setHost(getHttpsHost());
                 sslConnector.setPort(getHttpsPort());
                 server.addConnector(sslConnector);
