@@ -114,7 +114,7 @@ public class TIFFImageReaderTest extends BaseTest {
     public void testPreferredIIOImplementations() {
         String[] expected = new String[2];
         expected[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.class.getName();
-        if (SystemUtils.getJavaVersion() >= 9) {
+        if (SystemUtils.getJavaMajorVersion() >= 9) {
             expected[1] = "com.sun.imageio.plugins.tiff.TIFFImageReader";
         } else {
             expected[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageReader";

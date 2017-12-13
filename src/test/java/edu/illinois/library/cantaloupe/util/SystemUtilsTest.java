@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
 public class SystemUtilsTest {
 
     @Test
-    public void testGetJavaVersion() {
+    public void testGetJavaMajorVersion() {
         int expected = 0;
         final String versionStr = System.getProperty("java.version");
         if (versionStr.contains(".")) {
@@ -23,7 +23,7 @@ public class SystemUtilsTest {
         if (expected == 0) {
             expected = Integer.parseInt(versionStr);
         }
-        int actual = SystemUtils.getJavaVersion();
+        int actual = SystemUtils.getJavaMajorVersion();
         assertEquals(expected, actual);
                                                // planning ahead...
         assertTrue(new HashSet<>(Arrays.asList(8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)).contains(actual));
@@ -32,7 +32,7 @@ public class SystemUtilsTest {
     @Test
     public void testIsALPNAvailable() {
         boolean result = SystemUtils.isALPNAvailable();
-        if (SystemUtils.getJavaVersion() >= 9) {
+        if (SystemUtils.getJavaMajorVersion() >= 9) {
             assertTrue(result);
         } else {
             assertFalse(result);

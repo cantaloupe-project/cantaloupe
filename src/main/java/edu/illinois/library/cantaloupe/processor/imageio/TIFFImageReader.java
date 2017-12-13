@@ -83,7 +83,7 @@ final class TIFFImageReader extends AbstractImageReader {
         impls[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.class.getName();
 
         // The Sun TIFF reader has moved in Java 9.
-        if (SystemUtils.getJavaVersion() >= 9) {
+        if (SystemUtils.getJavaMajorVersion() >= 9) {
             impls[1] = "com.sun.imageio.plugins.tiff.TIFFImageReader";
         } else {
             impls[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageReader";

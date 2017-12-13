@@ -9,9 +9,9 @@ public final class SystemUtils {
     /**
      * @return Java major version such as <code>8</code>, <code>9</code>, etc.
      */
-    public static int getJavaVersion() {
         // Up to Java 8, this will be a string like: 1.8.0_60
         // Beginning in Java 9, it will be an integer like 9.
+    public static int getJavaMajorVersion() {
         final String versionStr = System.getProperty("java.version");
         if (versionStr.contains(".")) {
             String[] parts = versionStr.split(Pattern.quote("."));
@@ -29,7 +29,7 @@ public final class SystemUtils {
      * <code>-Xbootclasspath/p:/path/to/alpn-boot-8.1.5.v20150921.jar</code>
      */
     public static boolean isALPNAvailable() {
-        if (getJavaVersion() < 9) {
+        if (getJavaMajorVersion() < 9) {
             try {
                 NegotiatingServerConnectionFactory.
                         checkProtocolNegotiationAvailable();
