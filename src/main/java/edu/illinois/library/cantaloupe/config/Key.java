@@ -113,6 +113,7 @@ public enum Key {
     HTTPRESOLVER_BASIC_AUTH_SECRET("HttpResolver.auth.basic.secret"),
     HTTPRESOLVER_BASIC_AUTH_USERNAME("HttpResolver.auth.basic.username"),
     HTTPRESOLVER_LOOKUP_STRATEGY("HttpResolver.lookup_strategy"),
+    HTTPRESOLVER_REQUEST_TIMEOUT("HttpResolver.request_timeout"),
     HTTPRESOLVER_TRUST_ALL_CERTS("HttpResolver.trust_all_certs"),
     HTTPRESOLVER_URL_PREFIX("HttpResolver.BasicLookupStrategy.url_prefix"),
     HTTPRESOLVER_URL_SUFFIX("HttpResolver.BasicLookupStrategy.url_suffix"),

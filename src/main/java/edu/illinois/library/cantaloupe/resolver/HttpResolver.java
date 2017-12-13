@@ -100,12 +100,12 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                 InputStreamResponseListener listener =
                         new InputStreamResponseListener();
                 client.newRequest(uri).
-                        timeout(REQUEST_TIMEOUT, TimeUnit.SECONDS).
+                        timeout(getRequestTimeout(), TimeUnit.SECONDS).
                         method(HttpMethod.GET).
                         send(listener);
 
                 // Wait for the response headers to arrive.
-                Response response = listener.get(REQUEST_TIMEOUT,
+                Response response = listener.get(getRequestTimeout(),
                         TimeUnit.SECONDS);
 
                 if (response.getStatus() == HttpStatus.OK_200) {
@@ -159,7 +159,6 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
     private static final String GET_URL_DELEGATE_METHOD =
             "HttpResolver::get_url";
-    private static final int REQUEST_TIMEOUT = 10;
 
     private static HttpClient jettyClient;
 
@@ -201,6 +200,15 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                     info.getURI(), info.getUsername(), info.getSecret()));
         }
         return jettyClient;
+    }
+
+    /**
+     * @return Request timeout from the application configuration, or a
+     *         reasonable default if not set.
+     */
+    private static int getRequestTimeout() {
+        return Configuration.getInstance().
+                getInt(Key.HTTPRESOLVER_REQUEST_TIMEOUT, 10);
     }
 
     @Override
@@ -306,11 +314,12 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                 InputStreamResponseListener listener =
                         new InputStreamResponseListener();
                 client.newRequest(info.getURI()).
-                        timeout(REQUEST_TIMEOUT, TimeUnit.SECONDS).
+                        timeout(getRequestTimeout(), TimeUnit.SECONDS).
                         method(HttpMethod.HEAD).send(listener);
 
                 // Wait for the response headers to arrive.
-                headResponse = listener.get(REQUEST_TIMEOUT, TimeUnit.SECONDS);
+                headResponse = listener.get(getRequestTimeout(),
+                        TimeUnit.SECONDS);
             } catch (ExecutionException e ) {
                 throw new AccessDeniedException(info.getURI().toString());
             } catch (InterruptedException | TimeoutException e) {

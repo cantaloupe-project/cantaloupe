@@ -347,6 +347,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         selectNamed(Key.HTTPRESOLVER_LOOKUP_STRATEGY).
                 selectByValue("BasicLookupStrategy");
         inputNamed(Key.HTTPRESOLVER_TRUST_ALL_CERTS).click();
+        inputNamed(Key.HTTPRESOLVER_REQUEST_TIMEOUT).sendKeys("13");
         inputNamed(Key.HTTPRESOLVER_URL_PREFIX).sendKeys("http://prefix/");
         inputNamed(Key.HTTPRESOLVER_URL_SUFFIX).sendKeys("/suffix");
         inputNamed(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME).sendKeys("username");
@@ -400,6 +401,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getBoolean(Key.HTTPRESOLVER_TRUST_ALL_CERTS));
         assertEquals("BasicLookupStrategy",
                 config.getString(Key.HTTPRESOLVER_LOOKUP_STRATEGY));
+        assertEquals("13",
+                config.getString(Key.HTTPRESOLVER_REQUEST_TIMEOUT));
         assertEquals("http://prefix/",
                 config.getString(Key.HTTPRESOLVER_URL_PREFIX));
         assertEquals("/suffix",

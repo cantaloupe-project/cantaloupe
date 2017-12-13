@@ -148,8 +148,8 @@ FilesystemResolver.BasicLookupStrategy.path_suffix =
 # HttpResolver
 #----------------------------------------
 
-# Whether to trust insecure certificates when making HTTPS connections.
 HttpResolver.trust_all_certs = false
+HttpResolver.request_timeout = 10
 
 # Tells HttpResolver how to look up resources. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
