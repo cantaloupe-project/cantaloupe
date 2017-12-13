@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource.api;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
@@ -13,7 +14,6 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -68,8 +68,9 @@ abstract class AbstractAPIResourceTest extends ResourceTest {
         Response response = client.send();
         assertEquals(204, response.getStatus());
 
-        Map<String,String> headers = response.getHeaders();
-        List<String> methods = Arrays.asList(StringUtils.split(headers.get("Allow"), ", "));
+        Headers headers = response.getHeaders();
+        List<String> methods =
+                Arrays.asList(StringUtils.split(headers.getFirstValue("Allow"), ", "));
         assertEquals(2, methods.size());
         assertTrue(methods.contains("GET"));
         assertTrue(methods.contains("OPTIONS"));

@@ -13,9 +13,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.junit.Assert.*;
 
 public class ResponseTest {
@@ -57,9 +54,9 @@ public class ResponseTest {
         assertEquals(jresponse.getStatus(), response.getStatus());
         assertEquals(Transport.HTTP1_1, response.getTransport());
 
-        Map<String,String> expectedHeaders = new HashMap<>();
+        Headers expectedHeaders = new Headers();
         for (HttpField field : jresponse.getHeaders()) {
-            expectedHeaders.put(field.getName(), field.getValue());
+            expectedHeaders.add(field.getName(), field.getValue());
         }
 
         assertEquals(expectedHeaders, response.getHeaders());

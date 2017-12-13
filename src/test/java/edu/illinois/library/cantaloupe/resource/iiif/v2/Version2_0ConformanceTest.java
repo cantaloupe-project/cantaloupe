@@ -17,7 +17,6 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Path;
@@ -57,7 +56,7 @@ public class Version2_0ConformanceTest extends ResourceTest {
 
         assertEquals(303, response.getStatus());
         assertEquals(getHTTPURI("/" + IMAGE + "/info.json").toString(),
-                response.getHeaders().get("Location"));
+                response.getHeaders().getFirstValue("Location"));
     }
 
     /**
@@ -67,7 +66,7 @@ public class Version2_0ConformanceTest extends ResourceTest {
      * encoded (also called “percent encoded”).
      */
     @Test
-    public void testIdentifierWithEncodedCharacters() throws IOException {
+    public void testIdentifierWithEncodedCharacters() throws Exception {
         // override the filesystem prefix to one folder level up so we can use
         // a slash in the identifier
         File directory = new File(".");
@@ -454,7 +453,7 @@ public class Version2_0ConformanceTest extends ResourceTest {
                 Response response = client.send();
                 assertEquals(200, response.getStatus());
                 assertEquals(outputFormat.getPreferredMediaType().toString(),
-                        response.getHeaders().get("Content-Type"));
+                        response.getHeaders().getFirstValue("Content-Type"));
             } else {
                 try {
                     client.send();
@@ -494,7 +493,7 @@ public class Version2_0ConformanceTest extends ResourceTest {
         Response response = client.send();
 
         assertEquals("<" + uri + ">;rel=\"canonical\"",
-                response.getHeaders().get("Link"));
+                response.getHeaders().getFirstValue("Link"));
     }
 
     /**
@@ -516,7 +515,7 @@ public class Version2_0ConformanceTest extends ResourceTest {
 
         assertEquals(200, response.getStatus());
         assertEquals("application/json;charset=utf-8",
-                response.getHeaders().get("Content-Type").replace(" ", "").toLowerCase());
+                response.getHeaders().getFirstValue("Content-Type").replace(" ", "").toLowerCase());
     }
 
     /**
@@ -527,15 +526,15 @@ public class Version2_0ConformanceTest extends ResourceTest {
     @Test
     public void testInformationRequestContentTypeJSONLD() throws Exception {
         client = newClient("/" + IMAGE + "/info.json");
-        client.getHeaders().put("Accept", "application/ld+json");
+        client.getHeaders().set("Accept", "application/ld+json");
         Response response = client.send();
         assertEquals("application/ld+json; charset=UTF-8",
-                response.getHeaders().get("Content-Type"));
+                response.getHeaders().getFirstValue("Content-Type"));
 
-        client.getHeaders().put("Accept", "application/json");
+        client.getHeaders().set("Accept", "application/json");
         response = client.send();
         assertEquals("application/json;charset=utf-8",
-                response.getHeaders().get("Content-Type").replace(" ", "").toLowerCase());
+                response.getHeaders().getFirstValue("Content-Type").replace(" ", "").toLowerCase());
     }
 
     /**
@@ -545,10 +544,11 @@ public class Version2_0ConformanceTest extends ResourceTest {
     @Test
     public void testInformationRequestCORSHeader() throws Exception {
         client = newClient("/" + IMAGE + "/info.json");
-        client.getHeaders().put("Origin", "*");
+        client.getHeaders().set("Origin", "*");
 
         Response response = client.send();
-        assertEquals("*", response.getHeaders().get("Access-Control-Allow-Origin"));
+        assertEquals("*",
+                response.getHeaders().getFirstValue("Access-Control-Allow-Origin"));
     }
 
     /**

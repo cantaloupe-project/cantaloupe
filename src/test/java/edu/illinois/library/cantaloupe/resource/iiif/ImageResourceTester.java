@@ -41,7 +41,8 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         try {
             Response response = client.send();
             assertEquals(303, response.getStatus());
-            assertEquals("http://example.org/", response.getHeaders().get("Location"));
+            assertEquals("http://example.org/",
+                    response.getHeaders().getFirstValue("Location"));
         } finally {
             client.stop();
         }
@@ -334,7 +335,7 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         Client client = newClient(uri);
         try {
             Response response = client.send();
-            assertNull(response.getHeaders().get("Content-Disposition"));
+            assertNull(response.getHeaders().getFirstValue("Content-Disposition"));
         } finally {
             client.stop();
         }
@@ -348,7 +349,8 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         Client client = newClient(uri);
         try {
             Response response = client.send();
-            assertEquals("inline", response.getHeaders().get("Content-Disposition"));
+            assertEquals("inline",
+                    response.getHeaders().getFirstValue("Content-Disposition"));
         } finally {
             client.stop();
         }
@@ -363,7 +365,7 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         try {
             Response response = client.send();
             assertEquals("attachment; filename=" + IMAGE + ".jpg",
-                    response.getHeaders().get("Content-Disposition"));
+                    response.getHeaders().getFirstValue("Content-Disposition"));
         } finally {
             client.stop();
         }

@@ -94,7 +94,7 @@ public class ImageAPIResourceTester {
         try {
             Response response = client.send();
 
-            String header = response.getHeaders().get("Cache-Control");
+            String header = response.getHeaders().getFirstValue("Cache-Control");
             assertTrue(header.contains("max-age=1234"));
             assertTrue(header.contains("s-maxage=4567"));
             assertTrue(header.contains("public"));
@@ -131,7 +131,7 @@ public class ImageAPIResourceTester {
         Client client = newClient(uri);
         try {
             Response response = client.send();
-            assertNull(response.getHeaders().get("Cache-Control"));
+            assertNull(response.getHeaders().getFirstValue("Cache-Control"));
         } finally {
             client.stop();
         }
@@ -145,7 +145,7 @@ public class ImageAPIResourceTester {
         Client client = newClient(uri);
         try {
             Response response = client.send();
-            assertNull(response.getHeaders().get("Cache-Control"));
+            assertNull(response.getHeaders().getFirstValue("Cache-Control"));
         } finally {
             client.stop();
         }

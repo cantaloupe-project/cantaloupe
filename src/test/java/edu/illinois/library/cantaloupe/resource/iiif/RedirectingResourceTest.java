@@ -23,7 +23,7 @@ public class RedirectingResourceTest extends ResourceTest {
         Response response = client.send();
 
         assertEquals(303, response.getStatus());
-        assertTrue(response.getHeaders().get("Location").
+        assertTrue(response.getHeaders().getFirstValue("Location").
                 endsWith(RestletApplication.IIIF_2_PATH));
         assertTrue(response.getBodyAsString().isEmpty());
     }

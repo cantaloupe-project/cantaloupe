@@ -16,8 +16,6 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import java.io.File;
 import java.net.ConnectException;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -59,7 +57,7 @@ public final class Client {
         }
 
         public Builder header(String key, String value) {
-            clientInstance.getHeaders().put(key, value);
+            clientInstance.getHeaders().add(key, value);
             return this;
         }
 
@@ -98,7 +96,7 @@ public final class Client {
     private HttpClient client;
     private String entity;
     private boolean followRedirects = false;
-    private final Map<String,String> headers = new HashMap<>();
+    private final Headers headers = new Headers();
     private File keyStore;
     private String keyStorePassword = "password";
     private Method method = Method.GET;
@@ -113,7 +111,7 @@ public final class Client {
         return new Builder(this);
     }
 
-    public Map<String,String> getHeaders() {
+    public Headers getHeaders() {
         return headers;
     }
 
@@ -175,8 +173,8 @@ public final class Client {
         request.method(method.toJettyMethod());
 
         // Add headers
-        for (String key : headers.keySet()) {
-            request.getHeaders().add(key, headers.get(key));
+        for (Header header : headers) {
+            request.getHeaders().add(header.getName(), header.getValue());
         }
 
         // Add body
@@ -207,7 +205,7 @@ public final class Client {
      * Adds a <code>Content-Type</code> header to the {@link #getHeaders()} map.
      */
     public void setContentType(MediaType type) {
-        getHeaders().put("Content-Type", type.toString());
+        getHeaders().set("Content-Type", type.toString());
     }
 
     public void setEntity(String entity) {

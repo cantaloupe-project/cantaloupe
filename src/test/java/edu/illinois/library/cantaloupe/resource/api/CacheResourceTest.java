@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource.api;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
@@ -11,7 +12,6 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -64,21 +64,22 @@ public class CacheResourceTest extends AbstractAPIResourceTest {
     public void testDELETEResponseHeaders() throws Exception {
         client.setMethod(Method.DELETE);
         Response response = client.send();
-        Map<String,String> headers = response.getHeaders();
+        Headers headers = response.getHeaders();
         assertEquals(7, headers.size());
 
         // Accept-Ranges
-        assertEquals("bytes", headers.get("Accept-Ranges"));
+        assertEquals("bytes", headers.getFirstValue("Accept-Ranges"));
         // Cache-Control
-        assertEquals("no-cache", headers.get("Cache-Control"));
+        assertEquals("no-cache", headers.getFirstValue("Cache-Control"));
         // Content-Type
-        assertEquals("text/plain", headers.get("Content-Type"));
+        assertEquals("text/plain", headers.getFirstValue("Content-Type"));
         // Date
-        assertNotNull(headers.get("Date"));
+        assertNotNull(headers.getFirstValue("Date"));
         // Server
-        assertTrue(headers.get("Server").contains("Restlet"));
+        assertTrue(headers.getFirstValue("Server").contains("Restlet"));
         // Vary
-        List<String> parts = Arrays.asList(StringUtils.split(headers.get("Vary"), ", "));
+        List<String> parts =
+                Arrays.asList(StringUtils.split(headers.getFirstValue("Vary"), ", "));
         assertEquals(5, parts.size());
         assertTrue(parts.contains("Accept"));
         assertTrue(parts.contains("Accept-Charset"));
@@ -86,7 +87,7 @@ public class CacheResourceTest extends AbstractAPIResourceTest {
         assertTrue(parts.contains("Accept-Language"));
         assertTrue(parts.contains("Origin"));
         // X-Powered-By
-        assertEquals("Cantaloupe/Unknown", headers.get("X-Powered-By"));
+        assertEquals("Cantaloupe/Unknown", headers.getFirstValue("X-Powered-By"));
     }
 
     @Override
@@ -99,8 +100,9 @@ public class CacheResourceTest extends AbstractAPIResourceTest {
         Response response = client.send();
         assertEquals(204, response.getStatus());
 
-        Map<String,String> headers = response.getHeaders();
-        List<String> methods = Arrays.asList(StringUtils.split(headers.get("Allow"), ", "));
+        Headers headers = response.getHeaders();
+        List<String> methods =
+                Arrays.asList(StringUtils.split(headers.getFirstValue("Allow"), ", "));
         assertEquals(2, methods.size());
         assertTrue(methods.contains("DELETE"));
         assertTrue(methods.contains("OPTIONS"));

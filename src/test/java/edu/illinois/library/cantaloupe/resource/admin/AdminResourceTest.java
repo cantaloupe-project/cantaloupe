@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource.admin;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import org.apache.commons.lang3.StringUtils;
@@ -10,7 +11,6 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -38,7 +38,8 @@ public class AdminResourceTest extends AbstractAdminResourceTest {
         config.setProperty(Key.CLIENT_CACHE_PROXY_REVALIDATE, "false");
 
         Response response = client.send();
-        assertEquals("no-cache", response.getHeaders().get("Cache-Control"));
+        assertEquals("no-cache",
+                response.getHeaders().getFirstValue("Cache-Control"));
     }
 
     @Test
@@ -89,23 +90,25 @@ public class AdminResourceTest extends AbstractAdminResourceTest {
     @Test
     public void testGETResponseHeaders() throws Exception {
         Response response = client.send();
-        Map<String,String> headers = response.getHeaders();
+        Headers headers = response.getHeaders();
         assertEquals(8, headers.size());
 
         // Accept-Ranges
-        assertEquals("bytes", headers.get("Accept-Ranges"));
+        assertEquals("bytes", headers.getFirstValue("Accept-Ranges"));
         // Cache-Control
-        assertEquals("no-cache", headers.get("Cache-Control"));
+        assertEquals("no-cache", headers.getFirstValue("Cache-Control"));
         // Content-Type
-        assertEquals("text/html;charset=UTF-8", headers.get("Content-Type"));
+        assertEquals("text/html;charset=UTF-8",
+                headers.getFirstValue("Content-Type"));
         // Date
-        assertNotNull(headers.get("Date"));
+        assertNotNull(headers.getFirstValue("Date"));
         // Server
-        assertTrue(headers.get("Server").contains("Restlet"));
+        assertTrue(headers.getFirstValue("Server").contains("Restlet"));
         // Transfer-Encoding
-        assertEquals("chunked", headers.get("Transfer-Encoding"));
+        assertEquals("chunked", headers.getFirstValue("Transfer-Encoding"));
         // Vary
-        List<String> parts = Arrays.asList(StringUtils.split(headers.get("Vary"), ", "));
+        List<String> parts =
+                Arrays.asList(StringUtils.split(headers.getFirstValue("Vary"), ", "));
         assertEquals(5, parts.size());
         assertTrue(parts.contains("Accept"));
         assertTrue(parts.contains("Accept-Charset"));
@@ -113,7 +116,8 @@ public class AdminResourceTest extends AbstractAdminResourceTest {
         assertTrue(parts.contains("Accept-Language"));
         assertTrue(parts.contains("Origin"));
         // X-Powered-By
-        assertEquals("Cantaloupe/Unknown", headers.get("X-Powered-By"));
+        assertEquals("Cantaloupe/Unknown",
+                headers.getFirstValue("X-Powered-By"));
     }
 
 }

@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource.api;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
@@ -13,7 +14,6 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -45,8 +45,9 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
         Response response = client.send();
         assertEquals(204, response.getStatus());
 
-        Map<String,String> headers = response.getHeaders();
-        List<String> methods = Arrays.asList(StringUtils.split(headers.get("Allow"), ", "));
+        Headers headers = response.getHeaders();
+        List<String> methods =
+                Arrays.asList(StringUtils.split(headers.getFirstValue("Allow"), ", "));
         assertEquals(2, methods.size());
         assertTrue(methods.contains("POST"));
         assertTrue(methods.contains("OPTIONS"));
@@ -114,7 +115,7 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
         Response response = client.send();
 
         assertEquals(202, response.getStatus());
-        assertNotNull(response.getHeaders().get("Location"));
+        assertNotNull(response.getHeaders().getFirstValue("Location"));
     }
 
     @Test
@@ -124,7 +125,7 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
         Response response = client.send();
 
         assertEquals(202, response.getStatus());
-        assertNotNull(response.getHeaders().get("Location"));
+        assertNotNull(response.getHeaders().getFirstValue("Location"));
     }
 
     @Test
@@ -134,7 +135,7 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
         Response response = client.send();
 
         assertEquals(202, response.getStatus());
-        assertNotNull(response.getHeaders().get("Location"));
+        assertNotNull(response.getHeaders().getFirstValue("Location"));
     }
 
     @Test
@@ -142,25 +143,27 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
         client.setEntity("{ \"verb\": \"PurgeDelegateMethodInvocationCache\" }");
         client.setContentType(MediaType.APPLICATION_JSON);
         Response response = client.send();
-        Map<String,String> headers = response.getHeaders();
+        Headers headers = response.getHeaders();
         assertEquals(9, headers.size());
 
         // Accept-Ranges
-        assertEquals("bytes", headers.get("Accept-Ranges"));
+        assertEquals("bytes", headers.getFirstValue("Accept-Ranges"));
         // Cache-Control
-        assertEquals("no-cache", headers.get("Cache-Control"));
+        assertEquals("no-cache", headers.getFirstValue("Cache-Control"));
         // Content-Length
-        assertEquals("0", headers.get("Content-Length"));
+        assertEquals("0", headers.getFirstValue("Content-Length"));
         // Content-Type
-        assertEquals("application/json;charset=UTF-8", headers.get("Content-Type"));
+        assertEquals("application/json;charset=UTF-8",
+                headers.getFirstValue("Content-Type"));
         // Date
-        assertNotNull(headers.get("Date"));
+        assertNotNull(headers.getFirstValue("Date"));
         // Location
-        assertNotNull(headers.get("Location"));
+        assertNotNull(headers.getFirstValue("Location"));
         // Server
-        assertTrue(headers.get("Server").contains("Restlet"));
+        assertTrue(headers.getFirstValue("Server").contains("Restlet"));
         // Vary
-        List<String> parts = Arrays.asList(StringUtils.split(headers.get("Vary"), ", "));
+        List<String> parts =
+                Arrays.asList(StringUtils.split(headers.getFirstValue("Vary"), ", "));
         assertEquals(5, parts.size());
         assertTrue(parts.contains("Accept"));
         assertTrue(parts.contains("Accept-Charset"));
@@ -168,7 +171,8 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
         assertTrue(parts.contains("Accept-Language"));
         assertTrue(parts.contains("Origin"));
         // X-Powered-By
-        assertEquals("Cantaloupe/Unknown", headers.get("X-Powered-By"));
+        assertEquals("Cantaloupe/Unknown",
+                headers.getFirstValue("X-Powered-By"));
     }
 
 }

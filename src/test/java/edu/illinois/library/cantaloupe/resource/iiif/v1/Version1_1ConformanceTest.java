@@ -17,7 +17,6 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -55,7 +54,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
 
         assertEquals(303, response.getStatus());
         assertEquals(getHTTPURI("/" + IMAGE + "/info.json").toString(),
-                response.getHeaders().get("Location"));
+                response.getHeaders().getFirstValue("Location"));
     }
 
     /**
@@ -438,7 +437,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
                 Response response = client.send();
                 assertEquals(200, response.getStatus());
                 assertEquals(outputFormat.getPreferredMediaType().toString(),
-                        response.getHeaders().get("Content-Type"));
+                        response.getHeaders().getFirstValue("Content-Type"));
             } else {
                 try {
                     client.send();
@@ -475,11 +474,12 @@ public class Version1_1ConformanceTest extends ResourceTest {
     @Test
     public void testFormatInAcceptHeader() throws Exception {
         client = newClient("/" + IMAGE + "/full/full/0/native");
-        client.getHeaders().put("Accept", "image/png");
+        client.getHeaders().set("Accept", "image/png");
         Response response = client.send();
 
         assertEquals(200, response.getStatus());
-        assertEquals("image/png", response.getHeaders().get("Content-Type"));
+        assertEquals("image/png",
+                response.getHeaders().getFirstValue("Content-Type"));
     }
 
     /**
@@ -489,11 +489,12 @@ public class Version1_1ConformanceTest extends ResourceTest {
     @Test
     public void testNoFormat() throws Exception {
         client = newClient("/" + IMAGE + "/full/full/0/native");
-        client.getHeaders().put("Accept", "*/*");
+        client.getHeaders().set("Accept", "*/*");
         Response response = client.send();
 
         assertEquals(200, response.getStatus());
-        assertEquals("image/jpeg", response.getHeaders().get("Content-Type"));
+        assertEquals("image/jpeg",
+                response.getHeaders().getFirstValue("Content-Type"));
     }
 
     /**
@@ -516,7 +517,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
 
         assertEquals(200, response.getStatus());
         assertEquals("application/json;charset=utf-8",
-                response.getHeaders().get("Content-Type").replace(" ", "").toLowerCase());
+                response.getHeaders().getFirstValue("Content-Type").replace(" ", "").toLowerCase());
     }
 
     /**
@@ -531,7 +532,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * 6.2 "Requests are limited to 1024 characters."
      */
     @Test
-    public void testURITooLong() throws IOException {
+    public void testURITooLong() {
         // information endpoint
         String uriStr = "/" + IMAGE + "/info.json?bogus=";
         uriStr = StringUtils.rightPad(uriStr, 1025, "a");
@@ -555,7 +556,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
         client = newClient("/" + IMAGE + "/info.json");
         Response response = client.send();
         assertEquals("<http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2>;rel=\"profile\";",
-                response.getHeaders().get("Link"));
+                response.getHeaders().getFirstValue("Link"));
     }
 
     /**
@@ -570,7 +571,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
         client = newClient("/" + IMAGE + "/full/full/0/native.jpg");
         Response response = client.send();
         assertEquals("<http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2>;rel=\"profile\";",
-                response.getHeaders().get("Link"));
+                response.getHeaders().getFirstValue("Link"));
     }
 
 }
