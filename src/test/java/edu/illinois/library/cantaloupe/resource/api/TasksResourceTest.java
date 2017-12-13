@@ -153,8 +153,7 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
         // Content-Length
         assertEquals("0", headers.getFirstValue("Content-Length"));
         // Content-Type
-        assertEquals("application/json;charset=UTF-8",
-                headers.getFirstValue("Content-Type"));
+        assertTrue(headers.getFirstValue("Content-Type").contains("charset=UTF-8"));
         // Date
         assertNotNull(headers.getFirstValue("Date"));
         // Location
