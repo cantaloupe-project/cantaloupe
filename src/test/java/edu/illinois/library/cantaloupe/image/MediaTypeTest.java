@@ -6,11 +6,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -56,22 +57,23 @@ public class MediaTypeTest {
     /* detectMediaTypes(File) */
 
     @Test
-    public void testDetectMediaTypes() {
+    public void testDetectMediaTypes() throws Exception {
         for (Format format : files.keySet()) {
             Path file = files.get(format);
             MediaType preferredMediaType = format.getPreferredMediaType();
 
-            try {
-                boolean result = MediaType.detectMediaTypes(file).
-                        contains(preferredMediaType);
-                if (!result) {
-                    System.out.println("format: " + format +
-                            "\tfile: " + file.getFileName() +
-                            "\tresult: " + result);
-                }
-                //assertTrue(result);
-            } catch (IOException e) {
-                System.err.println(e.getMessage());
+            boolean result = MediaType.detectMediaTypes(file).
+                    contains(preferredMediaType);
+            if (!result) {
+                System.err.println("detection failed:" +
+                        "\tformat: " + format +
+                        "\tfile: " + file.getFileName());
+            }
+
+            // TODO: detectMediaTypes() doesn't understand these
+            if (!new HashSet<>(Arrays.asList("avi", "bmp", "sgi", "webm")).
+                    contains(file.getFileName().toString())) {
+                assertTrue(result);
             }
         }
     }
@@ -84,14 +86,9 @@ public class MediaTypeTest {
         assertEquals("image/jpeg", instance.toString());
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testConstructorWithInvalidString() {
-        try {
-            new MediaType("cats");
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
+        new MediaType("cats");
     }
 
     /* equals() */
