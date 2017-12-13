@@ -3,6 +3,8 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Method;
+import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.apache.commons.lang3.StringUtils;
@@ -17,6 +19,7 @@ import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Functional test of LandingResource.
@@ -29,7 +32,7 @@ public class LandingResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testWithEndpointEnabled() {
+    public void testGETWithEndpointEnabled() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, true);
         assertStatus(200, getHTTPURI(""));
@@ -37,26 +40,26 @@ public class LandingResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testWithEndpointDisabled() {
+    public void testGETWithEndpointDisabled() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, false);
         assertStatus(403, getHTTPURI(""));
     }
 
     @Test
-    public void testGetWithTrailingSlashRedirectsToWithout() throws Exception {
+    public void testGETWithTrailingSlashRedirectsToWithout() throws Exception {
         final URI uri = getHTTPURI("");
         assertRedirect(new URI(uri + "/"), uri, 301);
     }
 
     @Test
-    public void testResponseHeaders() throws Exception {
+    public void testGETResponseHeaders() throws Exception {
         client = newClient("");
         Response response = client.send();
         Map<String,String> headers = response.getHeaders();
         assertEquals(7, headers.size());
 
-        // Accept-Ranges TODO: remove this
+        // Accept-Ranges
         assertEquals("bytes", headers.get("Accept-Ranges"));
         // Content-Type
         assertEquals("text/html;charset=UTF-8", headers.get("Content-Type"));
@@ -76,6 +79,37 @@ public class LandingResourceTest extends ResourceTest {
         assertTrue(parts.contains("Origin"));
         // X-Powered-By
         assertEquals("Cantaloupe/Unknown", headers.get("X-Powered-By"));
+    }
+
+    @Test
+    public void testOPTIONSWhenEnabled() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, true);
+
+        client = newClient("");
+        client.setMethod(Method.OPTIONS);
+        Response response = client.send();
+        assertEquals(204, response.getStatus());
+
+        Map<String,String> headers = response.getHeaders();
+        List<String> methods = Arrays.asList(StringUtils.split(headers.get("Allow"), ", "));
+        assertEquals(2, methods.size());
+        assertTrue(methods.contains("GET"));
+        assertTrue(methods.contains("OPTIONS"));
+    }
+
+    @Test
+    public void testOPTIONSWhenDisabled() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, false);
+        try {
+            client = newClient("");
+            client.setMethod(Method.OPTIONS);
+            client.send();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(403, e.getStatusCode());
+        }
     }
 
 }

@@ -5,9 +5,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
-import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -16,23 +14,7 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class StatusResourceTest extends ResourceTest {
-
-    private static final String USERNAME = "admin";
-    private static final String SECRET = "secret";
-
-    @Before
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-
-        final Configuration config = Configuration.getInstance();
-        config.setProperty(Key.ADMIN_USERNAME, USERNAME);
-        config.setProperty(Key.ADMIN_SECRET, SECRET);
-
-        client = newClient("", USERNAME, SECRET,
-                RestletApplication.ADMIN_REALM);
-    }
+public class StatusResourceTest extends AbstractAdminResourceTest {
 
     @Override
     protected String getEndpointPath() {
@@ -40,14 +22,7 @@ public class StatusResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testGet() throws Exception {
-        Response response = client.send();
-
-        assertTrue(response.getBodyAsString().contains("\"infoCache\":"));
-    }
-
-    @Test
-    public void testEnabled() throws Exception {
+    public void testGETWhenEnabled() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.ADMIN_ENABLED, true);
 
@@ -56,7 +31,7 @@ public class StatusResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testDisabled() throws Exception {
+    public void testGETWhenDisabled() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.ADMIN_ENABLED, false);
         try {
@@ -68,13 +43,19 @@ public class StatusResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testResponseHeaders() throws Exception {
+    public void testGETResponseBody() throws Exception {
+        Response response = client.send();
+        assertTrue(response.getBodyAsString().contains("\"infoCache\":"));
+    }
+
+    @Test
+    public void testGETResponseHeaders() throws Exception {
         Response response = client.send();
         Map<String,String> headers = response.getHeaders();
         assertEquals(8, headers.size());
 
         // Accept-Ranges
-        assertEquals("bytes", headers.get("Accept-Ranges")); // TODO: remove this
+        assertEquals("bytes", headers.get("Accept-Ranges"));
         // Cache-Control
         assertEquals("no-cache", headers.get("Cache-Control"));
         // Content-Type

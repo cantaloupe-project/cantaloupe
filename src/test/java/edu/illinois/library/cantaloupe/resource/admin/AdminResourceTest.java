@@ -3,12 +3,9 @@ package edu.illinois.library.cantaloupe.resource.admin;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.http.Client;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
-import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -20,23 +17,7 @@ import static org.junit.Assert.*;
 /**
  * Functional test of AdminResource.
  */
-public class AdminResourceTest extends ResourceTest {
-
-    private static final String USERNAME = "admin";
-    private static final String SECRET = "secret";
-
-    @Before
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-
-        final Configuration config = Configuration.getInstance();
-        config.setProperty(Key.ADMIN_USERNAME, USERNAME);
-        config.setProperty(Key.ADMIN_SECRET, SECRET);
-
-        client = newClient("", USERNAME, SECRET,
-                RestletApplication.ADMIN_REALM);
-    }
+public class AdminResourceTest extends AbstractAdminResourceTest {
 
     @Override
     protected String getEndpointPath() {
@@ -44,7 +25,7 @@ public class AdminResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testCacheHeaders() throws Exception {
+    public void testGETCacheHeaders() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.CLIENT_CACHE_ENABLED, "true");
         config.setProperty(Key.CLIENT_CACHE_MAX_AGE, "1234");
@@ -61,8 +42,7 @@ public class AdminResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testDoGet() throws Exception {
-        // no credentials
+    public void testGETWithNoCredentials() throws Exception {
         try {
             client.setUsername(null);
             client.setSecret(null);
@@ -71,8 +51,10 @@ public class AdminResourceTest extends ResourceTest {
         } catch (ResourceException e) {
             assertEquals(401, e.getStatusCode());
         }
+    }
 
-        // invalid credentials
+    @Test
+    public void testGETWithInvalidCredentials() throws Exception {
         try {
             client.setUsername("invalid");
             client.setSecret("invalid");
@@ -81,17 +63,10 @@ public class AdminResourceTest extends ResourceTest {
         } catch (ResourceException e) {
             assertEquals(401, e.getStatusCode());
         }
-
-        // valid credentials
-        client.setUsername(USERNAME);
-        client.setSecret(SECRET);
-        Response response = client.send();
-        assertEquals(200, response.getStatus());
-        assertTrue(response.getBodyAsString().contains("Cantaloupe Image Server"));
     }
 
     @Test
-    public void testEnabled() throws Exception {
+    public void testGETWhenEnabled() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.ADMIN_ENABLED, true);
 
@@ -100,7 +75,7 @@ public class AdminResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testDisabled() throws Exception {
+    public void testGETWhenDisabled() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.ADMIN_ENABLED, false);
         try {
@@ -112,12 +87,12 @@ public class AdminResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testResponseHeaders() throws Exception {
+    public void testGETResponseHeaders() throws Exception {
         Response response = client.send();
         Map<String,String> headers = response.getHeaders();
         assertEquals(8, headers.size());
 
-        // Accept-Ranges TODO: remove this
+        // Accept-Ranges
         assertEquals("bytes", headers.get("Accept-Ranges"));
         // Cache-Control
         assertEquals("no-cache", headers.get("Cache-Control"));

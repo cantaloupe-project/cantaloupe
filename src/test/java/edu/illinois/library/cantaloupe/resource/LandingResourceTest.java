@@ -1,5 +1,9 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Method;
+import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
@@ -24,23 +28,23 @@ public class LandingResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testRootURIStatus() {
+    public void testGET() {
         assertStatus(200, getHTTPURI(""));
     }
 
     @Test
-    public void testRootURIRepresentation() {
+    public void testGETResponseBody() {
         assertRepresentationContains("<body", getHTTPURI(""));
     }
 
     @Test
-    public void testResponseHeaders() throws Exception {
+    public void testGETResponseHeaders() throws Exception {
         client = newClient("");
         Response response = client.send();
         Map<String,String> headers = response.getHeaders();
         assertEquals(8, headers.size());
 
-        // Accept-Ranges TODO: remove this
+        // Accept-Ranges
         assertEquals("bytes", headers.get("Accept-Ranges"));
         // Cache-Control
         assertTrue(headers.get("Cache-Control").contains("public"));
@@ -63,6 +67,20 @@ public class LandingResourceTest extends ResourceTest {
         assertTrue(parts.contains("Origin"));
         // X-Powered-By
         assertEquals("Cantaloupe/Unknown", headers.get("X-Powered-By"));
+    }
+
+    @Test
+    public void testOPTIONS() throws Exception {
+        client = newClient("");
+        client.setMethod(Method.OPTIONS);
+        Response response = client.send();
+        assertEquals(204, response.getStatus());
+
+        Map<String,String> headers = response.getHeaders();
+        List<String> methods = Arrays.asList(StringUtils.split(headers.get("Allow"), ", "));
+        assertEquals(2, methods.size());
+        assertTrue(methods.contains("GET"));
+        assertTrue(methods.contains("OPTIONS"));
     }
 
 }

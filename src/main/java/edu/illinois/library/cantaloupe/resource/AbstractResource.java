@@ -24,8 +24,10 @@ import org.restlet.data.Parameter;
 import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.data.Status;
+import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
+import org.restlet.resource.Options;
 import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
 import org.restlet.util.Series;
@@ -185,7 +187,7 @@ public abstract class AbstractResource extends ServerResource {
     protected void doInit() throws ResourceException {
         super.doInit();
 
-        // We don't respect the Range header.
+        // We don't honor the Range header as most responses will be streamed.
         getResponse().getServerInfo().setAcceptingRanges(false);
 
         // "Dimensions" are added to the Vary header. Restlet doesn't supply
@@ -199,6 +201,15 @@ public abstract class AbstractResource extends ServerResource {
         getResponse().getHeaders().add("X-Powered-By",
                 "Cantaloupe/" + Application.getVersion());
         LOGGER.info("doInit(): handling {} {}", getMethod(), getReference());
+    }
+
+    /**
+     * Enables HTTP OPTIONS requests. Restlet will set the <code>Allow</code>
+     * header automatically.
+     */
+    @Options
+    public Representation doOptions() {
+        return new EmptyRepresentation();
     }
 
     /**

@@ -8,9 +8,7 @@ import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.image.MediaType;
-import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -20,23 +18,7 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class ConfigurationResourceTest extends ResourceTest {
-
-    private static final String USERNAME = "admin";
-    private static final String SECRET = "secret";
-
-    @Before
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-
-        final Configuration config = Configuration.getInstance();
-        config.setProperty(Key.ADMIN_USERNAME, USERNAME);
-        config.setProperty(Key.ADMIN_SECRET, SECRET);
-
-        client = newClient("", USERNAME, SECRET,
-                RestletApplication.ADMIN_REALM);
-    }
+public class ConfigurationResourceTest extends AbstractAdminResourceTest {
 
     @Override
     protected String getEndpointPath() {
@@ -44,39 +26,16 @@ public class ConfigurationResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testGetConfiguration() throws Exception {
-        Configuration.getInstance().setProperty("test", "cats");
-
-        Response response = client.send();
-
-        assertTrue(response.getBodyAsString().contains("\"test\":\"cats\""));
-    }
-
-    @Test
-    public void testPutConfiguration() throws Exception {
-        Map<String,Object> entityMap = new HashMap<>();
-        entityMap.put("test", "cats");
-        String entityStr = new ObjectMapper().writer().writeValueAsString(entityMap);
-
-        client.setMethod(Method.PUT);
-        client.setEntity(entityStr);
-        client.setContentType(new MediaType("application/json"));
-        client.send();
-
-        assertEquals("cats", Configuration.getInstance().getString("test"));
-    }
-
-    @Test
-    public void testEnabled() throws Exception {
+    public void testGETWhenEnabled() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.ADMIN_ENABLED, true);
+        config.setProperty("test", "cats");
 
         Response response = client.send();
         assertEquals(200, response.getStatus());
     }
 
     @Test
-    public void testDisabled() throws Exception {
+    public void testGETWhenDisabled() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.ADMIN_ENABLED, false);
         try {
@@ -88,13 +47,13 @@ public class ConfigurationResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testResponseHeaders() throws Exception {
+    public void testGETResponseHeaders() throws Exception {
         Response response = client.send();
         Map<String,String> headers = response.getHeaders();
         assertEquals(8, headers.size());
 
         // Accept-Ranges
-        assertEquals("bytes", headers.get("Accept-Ranges")); // TODO: remove this
+        assertEquals("bytes", headers.get("Accept-Ranges"));
         // Cache-Control
         assertEquals("no-cache", headers.get("Cache-Control"));
         // Content-Type
@@ -115,6 +74,69 @@ public class ConfigurationResourceTest extends ResourceTest {
         assertTrue(parts.contains("Origin"));
         // X-Powered-By
         assertEquals("Cantaloupe/Unknown", headers.get("X-Powered-By"));
+    }
+
+    @Test
+    public void testGETResponseBody() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty("test", "cats");
+
+        Response response = client.send();
+        assertTrue(response.getBodyAsString().contains("\"test\":\"cats\""));
+    }
+
+    @Override
+    @Test
+    public void testOPTIONSWhenEnabled() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.ADMIN_ENABLED, true);
+
+        client.setMethod(Method.OPTIONS);
+        Response response = client.send();
+        assertEquals(204, response.getStatus());
+
+        Map<String,String> headers = response.getHeaders();
+        List<String> methods = Arrays.asList(StringUtils.split(headers.get("Allow"), ", "));
+        assertEquals(3, methods.size());
+        assertTrue(methods.contains("GET"));
+        assertTrue(methods.contains("PUT"));
+        assertTrue(methods.contains("OPTIONS"));
+    }
+
+    @Test
+    public void testPUTWhenEnabled() throws Exception {
+        Map<String,Object> entityMap = new HashMap<>();
+        entityMap.put("test", "cats");
+        String entityStr = new ObjectMapper().writer().writeValueAsString(entityMap);
+
+        client.setMethod(Method.PUT);
+        client.setEntity(entityStr);
+        client.setContentType(new MediaType("application/json"));
+        client.send();
+
+        assertEquals("cats", Configuration.getInstance().getString("test"));
+    }
+
+    @Test
+    public void testPUTWhenDisabled() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.ADMIN_ENABLED, false);
+
+        Map<String,Object> entityMap = new HashMap<>();
+        entityMap.put("test", "cats");
+        String entityStr = new ObjectMapper().writer().
+                writeValueAsString(entityMap);
+
+        client.setMethod(Method.PUT);
+        client.setEntity(entityStr);
+        client.setContentType(new MediaType("application/json"));
+
+        try {
+            client.send();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(403, e.getStatusCode());
+        }
     }
 
 }

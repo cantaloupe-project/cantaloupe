@@ -28,14 +28,22 @@ public class ConfigurationResourceTest extends AbstractAPIResourceTest {
         return RestletApplication.CONFIGURATION_PATH;
     }
 
-    @Override
     @Test
-    public void testEndpointDisabled() throws Exception {
+    public void testGETWithEndpointEnabled() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.API_ENABLED, true);
+
+        client.setMethod(Method.GET);
+        Response response = client.send();
+        assertEquals(200, response.getStatus());
+    }
+
+    @Test
+    public void testGETWithEndpointDisabled() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.API_ENABLED, false);
 
         try {
-            client.setMethod(Method.GET);
             client.send();
             fail("Expected exception");
         } catch (ResourceException e) {
@@ -43,42 +51,22 @@ public class ConfigurationResourceTest extends AbstractAPIResourceTest {
         }
     }
 
-    /* getConfiguration() */
-
     @Test
-    public void testGetConfiguration() throws Exception {
-        System.setProperty("cats", "yes");
-
+    public void testGETResponseBody() throws Exception {
         client.setMethod(Method.GET);
         Response response = client.send();
         assertTrue(response.getBodyAsString().startsWith("{"));
     }
 
-    /* putConfiguration() */
-
     @Test
-    public void testPutConfiguration() throws Exception {
-        Map<String,Object> entityMap = new HashMap<>();
-        entityMap.put("test", "cats");
-        String entity = new ObjectMapper().writer().writeValueAsString(entityMap);
-
-        client.setMethod(Method.PUT);
-        client.setContentType(MediaType.APPLICATION_JSON);
-        client.setEntity(entity);
-        client.send();
-
-        assertEquals("cats", Configuration.getInstance().getString("test"));
-    }
-
-    @Test
-    public void testResponseHeaders() throws Exception {
+    public void testGETResponseHeaders() throws Exception {
         client.setMethod(Method.GET);
         Response response = client.send();
         Map<String,String> headers = response.getHeaders();
         assertEquals(8, headers.size());
 
         // Accept-Ranges
-        assertEquals("bytes", headers.get("Accept-Ranges")); // TODO: remove this
+        assertEquals("bytes", headers.get("Accept-Ranges"));
         // Cache-Control
         assertEquals("no-cache", headers.get("Cache-Control"));
         // Content-Type
@@ -99,6 +87,50 @@ public class ConfigurationResourceTest extends AbstractAPIResourceTest {
         assertTrue(parts.contains("Origin"));
         // X-Powered-By
         assertEquals("Cantaloupe/Unknown", headers.get("X-Powered-By"));
+    }
+
+    @Test
+    public void testOPTIONSWhenEnabled() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.API_ENABLED, true);
+
+        client.setMethod(Method.OPTIONS);
+        Response response = client.send();
+        assertEquals(204, response.getStatus());
+
+        Map<String,String> headers = response.getHeaders();
+        List<String> methods = Arrays.asList(StringUtils.split(headers.get("Allow"), ", "));
+        assertEquals(3, methods.size());
+        assertTrue(methods.contains("GET"));
+        assertTrue(methods.contains("PUT"));
+        assertTrue(methods.contains("OPTIONS"));
+    }
+
+    @Test
+    public void testOPTIONSWhenDisabled() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.API_ENABLED, false);
+        try {
+            client.setMethod(Method.OPTIONS);
+            client.send();
+            fail("Expected exception");
+        } catch (ResourceException e) {
+            assertEquals(403, e.getStatusCode());
+        }
+    }
+
+    @Test
+    public void testPUT() throws Exception {
+        Map<String,Object> entityMap = new HashMap<>();
+        entityMap.put("test", "cats");
+        String entity = new ObjectMapper().writer().writeValueAsString(entityMap);
+
+        client.setMethod(Method.PUT);
+        client.setContentType(MediaType.APPLICATION_JSON);
+        client.setEntity(entity);
+        client.send();
+
+        assertEquals("cats", Configuration.getInstance().getString("test"));
     }
 
 }

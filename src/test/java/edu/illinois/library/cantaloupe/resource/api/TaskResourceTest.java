@@ -26,10 +26,8 @@ public class TaskResourceTest extends AbstractAPIResourceTest {
         return RestletApplication.TASKS_PATH + "/some-uuid";
     }
 
-    /* doGet() */
-
     @Test
-    public void testDoGetWithInvalidID() throws Exception {
+    public void testGETWithInvalidID() throws Exception {
         try {
             client.setMethod(Method.GET);
             client.send();
@@ -39,7 +37,7 @@ public class TaskResourceTest extends AbstractAPIResourceTest {
     }
 
     @Test
-    public void testDoGetWithValidID() throws Exception {
+    public void testGETWithValidID() throws Exception {
         Response response = createTask();
 
         assertEquals(200, response.getStatus());
@@ -49,13 +47,13 @@ public class TaskResourceTest extends AbstractAPIResourceTest {
     }
 
     @Test
-    public void testDoGetResponseHeaders() throws Exception {
+    public void testGETResponseHeaders() throws Exception {
         Response response = createTask();
 
         Map<String,String> headers = response.getHeaders();
         assertEquals(8, headers.size());
 
-        // Accept-Ranges TODO: remove this
+        // Accept-Ranges
         assertEquals("bytes", headers.get("Accept-Ranges"));
         // Cache-Control
         assertEquals("no-cache", headers.get("Cache-Control"));

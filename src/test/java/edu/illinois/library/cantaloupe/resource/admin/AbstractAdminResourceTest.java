@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resource.api;
+package edu.illinois.library.cantaloupe.resource.admin;
 
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -15,12 +15,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-abstract class AbstractAPIResourceTest extends ResourceTest {
+abstract class AbstractAdminResourceTest extends ResourceTest {
 
-    static final String USERNAME = "admin";
-    static final String SECRET = "secret";
+    private static final String USERNAME = "admin";
+    private static final String SECRET = "secret";
 
     @Before
     @Override
@@ -28,41 +30,17 @@ abstract class AbstractAPIResourceTest extends ResourceTest {
         super.setUp();
 
         final Configuration config = Configuration.getInstance();
-        config.setProperty(Key.API_ENABLED, true);
-        config.setProperty(Key.API_USERNAME, USERNAME);
-        config.setProperty(Key.API_SECRET, SECRET);
+        config.setProperty(Key.ADMIN_USERNAME, USERNAME);
+        config.setProperty(Key.ADMIN_SECRET, SECRET);
 
-        client = newClient("", USERNAME, SECRET, RestletApplication.API_REALM);
-    }
-
-    @Test
-    public void testGETWithNoCredentials() throws Exception {
-        try {
-            client.setUsername(null);
-            client.setSecret(null);
-            client.send();
-            fail("Expected exception");
-        } catch (ResourceException e) {
-            assertEquals(401, e.getStatusCode());
-        }
-    }
-
-    @Test
-    public void testGETWithInvalidCredentials() throws Exception {
-        client.setUsername("invalid");
-        client.setSecret("invalid");
-        try {
-            client.send();
-            fail("Expected exception");
-        } catch (ResourceException e) {
-            assertEquals(401, e.getStatusCode());
-        }
+        client = newClient("", USERNAME, SECRET,
+                RestletApplication.ADMIN_REALM);
     }
 
     @Test
     public void testOPTIONSWhenEnabled() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.API_ENABLED, true);
+        config.setProperty(Key.ADMIN_ENABLED, true);
 
         client.setMethod(Method.OPTIONS);
         Response response = client.send();
@@ -78,7 +56,7 @@ abstract class AbstractAPIResourceTest extends ResourceTest {
     @Test
     public void testOPTIONSWhenDisabled() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.API_ENABLED, false);
+        config.setProperty(Key.ADMIN_ENABLED, false);
         try {
             client.setMethod(Method.OPTIONS);
             client.send();

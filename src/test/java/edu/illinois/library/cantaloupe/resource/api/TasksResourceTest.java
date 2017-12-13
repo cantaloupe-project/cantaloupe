@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
 import edu.illinois.library.cantaloupe.RestletApplication;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
@@ -33,10 +35,25 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
         return RestletApplication.TASKS_PATH;
     }
 
-    /* doPost() */
+    @Override
+    @Test
+    public void testOPTIONSWhenEnabled() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.API_ENABLED, true);
+
+        client.setMethod(Method.OPTIONS);
+        Response response = client.send();
+        assertEquals(204, response.getStatus());
+
+        Map<String,String> headers = response.getHeaders();
+        List<String> methods = Arrays.asList(StringUtils.split(headers.get("Allow"), ", "));
+        assertEquals(2, methods.size());
+        assertTrue(methods.contains("POST"));
+        assertTrue(methods.contains("OPTIONS"));
+    }
 
     @Test
-    public void testDoPostWithIncorrectContentType() throws Exception {
+    public void testPOSTWithIncorrectContentType() throws Exception {
         try {
             client.setEntity("{ \"verb\": \"PurgeCache\" }");
             client.setContentType(MediaType.TEXT_PLAIN);
@@ -47,7 +64,7 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
     }
 
     @Test
-    public void testDoPostWithEmptyRequestBody() throws Exception {
+    public void testPOSTWithEmptyRequestBody() throws Exception {
         try {
             client.setContentType(MediaType.APPLICATION_JSON);
             client.send();
@@ -57,7 +74,7 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
     }
 
     @Test
-    public void testDoPostWithMalformedRequestBody() throws Exception {
+    public void testPOSTWithMalformedRequestBody() throws Exception {
         try {
             client.setEntity("{ this is: invalid\" }");
             client.setContentType(MediaType.APPLICATION_JSON);
@@ -68,7 +85,7 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
     }
 
     @Test
-    public void testDoPostWithMissingVerb() throws Exception {
+    public void testPOSTWithMissingVerb() throws Exception {
         try {
             client.setEntity("{ \"cats\": \"yes\" }");
             client.setContentType(MediaType.APPLICATION_JSON);
@@ -79,7 +96,7 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
     }
 
     @Test
-    public void testDoPostWithUnsupportedVerb() throws Exception {
+    public void testPOSTWithUnsupportedVerb() throws Exception {
         try {
             client.setEntity("{ \"verb\": \"dogs\" }");
             client.setContentType(MediaType.APPLICATION_JSON);
@@ -90,7 +107,7 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
     }
 
     @Test
-    public void testDoPostWithPurgeDelegateMethodInvocationCacheVerb()
+    public void testPOSTWithPurgeDelegateMethodInvocationCacheVerb()
             throws Exception {
         client.setEntity("{ \"verb\": \"PurgeDelegateMethodInvocationCache\" }");
         client.setContentType(MediaType.APPLICATION_JSON);
@@ -101,7 +118,7 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
     }
 
     @Test
-    public void testDoPostWithPurgeInvalidFromCacheVerb() throws Exception {
+    public void testPOSTWithPurgeInvalidFromCacheVerb() throws Exception {
         client.setEntity("{ \"verb\": \"PurgeInvalidFromCache\" }");
         client.setContentType(MediaType.APPLICATION_JSON);
         Response response = client.send();
@@ -111,7 +128,7 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
     }
 
     @Test
-    public void testDoPostWithPurgeItemFromCacheVerb() throws Exception {
+    public void testPOSTWithPurgeItemFromCacheVerb() throws Exception {
         client.setEntity("{ \"verb\": \"PurgeItemFromCache\", \"identifier\": \"cats\" }");
         client.setContentType(MediaType.APPLICATION_JSON);
         Response response = client.send();
@@ -121,14 +138,14 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
     }
 
     @Test
-    public void testDoPostResponseHeaders() throws Exception {
+    public void testPOSTResponseHeaders() throws Exception {
         client.setEntity("{ \"verb\": \"PurgeDelegateMethodInvocationCache\" }");
         client.setContentType(MediaType.APPLICATION_JSON);
         Response response = client.send();
         Map<String,String> headers = response.getHeaders();
         assertEquals(9, headers.size());
 
-        // Accept-Ranges TODO: remove this
+        // Accept-Ranges
         assertEquals("bytes", headers.get("Accept-Ranges"));
         // Cache-Control
         assertEquals("no-cache", headers.get("Cache-Control"));

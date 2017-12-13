@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.resource.admin;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +21,7 @@ import static org.junit.Assert.*;
 /**
  * Functional test of the Control Panel using Selenium.
  */
-public class ControlPanelTest extends ResourceTest {
+public class AdminResourceUITest extends AbstractAdminResourceTest {
 
     private static final int WAIT_AFTER_SUBMIT = 2000;
     private static final String USERNAME = "admin";
