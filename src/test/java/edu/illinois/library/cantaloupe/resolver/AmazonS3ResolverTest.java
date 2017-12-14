@@ -8,7 +8,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
-import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.AWSClientFactory;
@@ -29,7 +28,7 @@ import static org.junit.Assert.*;
 /**
  * Tests AmazonS3Resolver against Amazon S3. An AWS account is required.
  */
-public class AmazonS3ResolverTest extends BaseTest {
+public class AmazonS3ResolverTest extends AbstractResolverTest {
 
     private static final String OBJECT_KEY = "jpeg.jpg";
 
@@ -93,15 +92,29 @@ public class AmazonS3ResolverTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-
-        useBasicLookupStrategy();
-
-        instance = new AmazonS3Resolver();
-        instance.setIdentifier(new Identifier(OBJECT_KEY));
-        instance.setContext(new RequestContext());
+        instance = newInstance();
     }
 
-    private void useBasicLookupStrategy() {
+    @Override
+    void destroyEndpoint() {
+        // will be done in @AfterClass
+    }
+
+    @Override
+    void initializeEndpoint() {
+        // will be done in @BeforeClass
+    }
+
+    @Override
+    AmazonS3Resolver newInstance() {
+        AmazonS3Resolver instance = new AmazonS3Resolver();
+        instance.setIdentifier(new Identifier(OBJECT_KEY));
+        instance.setContext(new RequestContext());
+        return instance;
+    }
+
+    @Override
+    void useBasicLookupStrategy() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.AMAZONS3RESOLVER_BUCKET_NAME, getBucket());
         config.setProperty(Key.AMAZONS3RESOLVER_BUCKET_REGION, getRegion());
@@ -111,7 +124,8 @@ public class AmazonS3ResolverTest extends BaseTest {
                 "BasicLookupStrategy");
     }
 
-    private void useScriptLookupStrategy() {
+    @Override
+    void useScriptLookupStrategy() {
         try {
             Configuration config = Configuration.getInstance();
             config.setProperty(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY,
@@ -125,21 +139,8 @@ public class AmazonS3ResolverTest extends BaseTest {
     }
 
     @Test
-    public void testCheckAccessUsingBasicLookupStrategyWithPresentReadableImage()
-            throws Exception {
-        instance.checkAccess();
-    }
-
-    @Test
     public void testCheckAccessUsingBasicLookupStrategyWithPresentUnreadableImage() {
         // TODO: write this
-    }
-
-    @Test(expected = NoSuchFileException.class)
-    public void testCheckAccessUsingBasicLookupStrategyWithMissingImage()
-            throws Exception {
-        instance.setIdentifier(new Identifier("bogus"));
-        instance.checkAccess();
     }
 
     @Test

@@ -10,6 +10,10 @@ abstract class AbstractResolver {
     protected Format sourceFormat;
     protected RequestContext context;
 
+    RequestContext getContext() {
+        return context;
+    }
+
     public void setIdentifier(Identifier identifier) {
         this.identifier = identifier;
         this.sourceFormat = null;

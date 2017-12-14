@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
-import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import org.eclipse.jetty.server.Request;
@@ -16,7 +15,6 @@ import org.junit.Test;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.AccessDeniedException;
@@ -31,7 +29,7 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-abstract class HttpResolverTest extends BaseTest {
+abstract class HttpResolverTest extends AbstractResolverTest {
 
     private static final Identifier PRESENT_READABLE_IDENTIFIER =
             new Identifier("jpg-rgb-64x56x8-baseline.jpg");
@@ -39,7 +37,6 @@ abstract class HttpResolverTest extends BaseTest {
     WebServer server;
 
     private HttpResolver instance;
-    private RequestContext context;
 
     /**
      * Subclasses need to override, call super, and set
@@ -49,63 +46,66 @@ abstract class HttpResolverTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-
-        context = new RequestContext();
-        instance = new HttpResolver();
-        instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
-        instance.setContext(context);
-
-        useBasicLookupStrategy();
+        instance = newInstance();
     }
 
     @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-
-        server.stop();
+        destroyEndpoint();
     }
 
     abstract String getScheme();
 
     abstract URI getServerURI();
 
-    private void useBasicLookupStrategy() {
+    @Override
+    void destroyEndpoint() throws Exception {
+        server.stop();
+    }
+
+    @Override
+    void initializeEndpoint() throws Exception {
+        server.start();
+    }
+
+    @Override
+    HttpResolver newInstance() {
+        RequestContext context = new RequestContext();
+        HttpResolver instance = new HttpResolver();
+        instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
+        instance.setContext(context);
+        return instance;
+    }
+
+    @Override
+    void useBasicLookupStrategy() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
     }
 
-    private void useScriptLookupStrategy() throws IOException {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
-                "ScriptLookupStrategy");
-        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").toString());
+    @Override
+    void useScriptLookupStrategy() {
+        try {
+            Configuration config = Configuration.getInstance();
+            config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
+                    "ScriptLookupStrategy");
+            config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+            config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
+                    TestUtil.getFixture("delegates.rb").toString());
+        } catch (IOException e) {
+            fail(e.getMessage());
+        }
     }
 
     /* checkAccess() */
 
     @Test
-    public void testCheckAccessUsingBasicLookupStrategyWithPresentReadableImage()
-            throws Exception {
-        useBasicLookupStrategy();
-        doTestCheckAccessWithPresentReadableImage(PRESENT_READABLE_IDENTIFIER);
-    }
-
-    @Test
     public void testCheckAccessUsingBasicLookupStrategyWithPresentUnreadableImage()
             throws Exception {
-        useBasicLookupStrategy();
         doTestCheckAccessWithPresentUnreadableImage(new Identifier("gif"));
-    }
-
-    @Test
-    public void testCheckAccessUsingBasicLookupStrategyWithMissingImage()
-            throws Exception {
-        useBasicLookupStrategy();
-        doTestCheckAccessWithMissingImage(new Identifier("bogus"));
     }
 
     @Test
@@ -133,16 +133,16 @@ abstract class HttpResolverTest extends BaseTest {
         doTestCheckAccessWithPresentUnreadableImage(identifier);
     }
 
-    private void doTestCheckAccessWithPresentReadableImage(
-            Identifier identifier) throws Exception {
+    private void doTestCheckAccessWithPresentReadableImage(Identifier identifier)
+            throws Exception {
         server.start();
 
         instance.setIdentifier(identifier);
         instance.checkAccess();
     }
 
-    private void doTestCheckAccessWithPresentUnreadableImage(
-            Identifier identifier) throws Exception {
+    private void doTestCheckAccessWithPresentUnreadableImage(Identifier identifier)
+            throws Exception {
         try {
             server.start();
 
@@ -257,8 +257,6 @@ abstract class HttpResolverTest extends BaseTest {
     @Test
     public void testGetSourceFormatUsingBasicLookupStrategyWithValidAuthentication()
             throws Exception {
-        useBasicLookupStrategy();
-
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME,
                 WebServer.BASIC_USER);
@@ -274,13 +272,11 @@ abstract class HttpResolverTest extends BaseTest {
 
     @Test
     public void testGetSourceFormatUsingBasicLookupStrategyWithPresentReadableImage() {
-        useBasicLookupStrategy();
         doTestGetSourceFormatWithPresentReadableImage(PRESENT_READABLE_IDENTIFIER);
     }
 
     @Test
-    public void testGetSourceFormatUsingScriptLookupStrategyWithPresentReadableImage()
-            throws Exception {
+    public void testGetSourceFormatUsingScriptLookupStrategyWithPresentReadableImage() {
         useScriptLookupStrategy();
         Identifier identifier = new Identifier(getServerURI() + "/" +
                 PRESENT_READABLE_IDENTIFIER);
@@ -373,7 +369,6 @@ abstract class HttpResolverTest extends BaseTest {
     @Test
     public void testGetResourceInfoUsingBasicLookupStrategyWithPrefix()
             throws Exception {
-        useBasicLookupStrategy();
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                 getScheme() + "://example.org/prefix/");
@@ -388,7 +383,6 @@ abstract class HttpResolverTest extends BaseTest {
     @Test
     public void testGetResourceInfoUsingBasicLookupStrategyWithPrefixAndSuffix()
             throws Exception {
-        useBasicLookupStrategy();
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                 getScheme() + "://example.org/prefix/");
@@ -404,7 +398,6 @@ abstract class HttpResolverTest extends BaseTest {
     @Test
     public void testGetResourceInfoUsingBasicLookupStrategyWithoutPrefixOrSuffix()
             throws Exception {
-        useBasicLookupStrategy();
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_URL_PREFIX, "");
         config.setProperty(Key.HTTPRESOLVER_URL_SUFFIX, "");
@@ -435,8 +428,8 @@ abstract class HttpResolverTest extends BaseTest {
 
         final Map<String, String> headers = new HashMap<>();
         headers.put("X-Forwarded-Proto", getScheme());
-        context.setClientIP("1.2.3.4");
-        context.setRequestHeaders(headers);
+        instance.getContext().setClientIP("1.2.3.4");
+        instance.getContext().setRequestHeaders(headers);
 
         server.start();
 
@@ -477,8 +470,6 @@ abstract class HttpResolverTest extends BaseTest {
     @Test
     public void testNewStreamSourceUsingBasicLookupStrategyWithValidAuthentication()
             throws Exception {
-        useBasicLookupStrategy();
-
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME,
                 WebServer.BASIC_USER);
@@ -495,7 +486,6 @@ abstract class HttpResolverTest extends BaseTest {
     @Test
     public void testNewStreamSourceUsingBasicLookupStrategyWithPresentReadableImage()
             throws Exception {
-        useBasicLookupStrategy();
         doTestNewStreamSourceWithPresentReadableImage(PRESENT_READABLE_IDENTIFIER);
     }
 
