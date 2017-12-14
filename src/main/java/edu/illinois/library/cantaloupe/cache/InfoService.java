@@ -24,7 +24,7 @@ public class InfoService {
     /**
      * We can't know the average size of an info in advance, but 100 bytes is
      * a reasonable estimate for an image with no other embedded subimages.
-     * Infos for multiresolution images will be bigger. It's better to
+     * Infos for multiresolution images may be bigger. It's better to
      * overestimate this than underestimate it.
      */
     private static final int EXPECTED_AVERAGE_INFO_SIZE = 150;
@@ -37,7 +37,7 @@ public class InfoService {
      */
     private static final float MAX_HEAP_PERCENT = 0.1f;
 
-    private static volatile InfoService instance;
+    private static InfoService instance;
 
     private final ObjectCache<Identifier, Info> objectCache;
 
@@ -51,18 +51,11 @@ public class InfoService {
     /**
      * @return Shared instance.
      */
-    public static InfoService getInstance() {
-        InfoService service = instance;
-        if (service == null) {
-            synchronized (InfoService.class) {
-                service = instance;
-                if (service == null) {
-                    instance = new InfoService();
-                    service = instance;
-                }
-            }
+    public static synchronized InfoService getInstance() {
+        if (instance == null) {
+            instance = new InfoService();
         }
-        return service;
+        return instance;
     }
 
     private InfoService() {
