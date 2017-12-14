@@ -25,7 +25,8 @@ public class VelocityRepresentation extends OutputRepresentation {
         Velocity.setProperty("classpath.resource.loader.class",
                 ClasspathResourceLoader.class.getName());
         Velocity.setProperty("class.resource.loader.cache", true);
-        Velocity.setProperty("space.gobbling", "structured");
+        // http://velocity.apache.org/engine/2.0/developer-guide.html#space-gobbling
+        Velocity.setProperty("space.gobbling", "lines");
         Velocity.init();
     }
 
