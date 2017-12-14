@@ -35,7 +35,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
     /**
      * Map of PropertiesConfigurations in order from leaf to trunk.
      */
-    private LinkedHashMap<File, PropertiesConfiguration> commonsConfigs =
+    private final LinkedHashMap<File, PropertiesConfiguration> commonsConfigs =
             new LinkedHashMap<>();
 
     /**

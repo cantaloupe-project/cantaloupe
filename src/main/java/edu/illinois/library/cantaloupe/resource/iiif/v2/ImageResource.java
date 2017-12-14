@@ -17,7 +17,6 @@ import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
-import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import org.restlet.data.Disposition;
 import org.restlet.representation.Representation;
@@ -78,7 +77,7 @@ public class ImageResource extends IIIF2Resource {
             if (info != null) {
                 ops.applyNonEndpointMutations(info.getSize(),
                         info.getOrientation(),
-                        getCanonicalClientIpAddress(),
+                        getCanonicalClientIPAddress(),
                         getReference().toUri(),
                         getRequest().getHeaders().getValuesMap(),
                         getCookies().getValuesMap());
@@ -160,7 +159,7 @@ public class ImageResource extends IIIF2Resource {
         try {
             ops.applyNonEndpointMutations(fullSize,
                     info.getOrientation(),
-                    getCanonicalClientIpAddress(),
+                    getCanonicalClientIPAddress(),
                     getReference().toUri(),
                     getRequest().getHeaders().getValuesMap(),
                     getCookies().getValuesMap());

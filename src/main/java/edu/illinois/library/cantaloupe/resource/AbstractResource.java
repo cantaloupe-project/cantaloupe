@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -230,7 +231,7 @@ public abstract class AbstractResource extends ServerResource {
             final java.awt.Dimension fullSize)
             throws IOException, ScriptException, AccessDeniedException {
         final Authorizer authorizer = new Authorizer(getReference().toString(),
-                getCanonicalClientIpAddress(),
+                getCanonicalClientIPAddress(),
                 getRequest().getHeaders().getValuesMap(),
                 getRequest().getCookies().getValuesMap());
         final AuthInfo info = authorizer.authorize(opList, fullSize);
@@ -269,7 +270,7 @@ public abstract class AbstractResource extends ServerResource {
     private String decodeSlashes(final String uriPathComponent) {
         final String substitute = Configuration.getInstance().
                 getString(Key.SLASH_SUBSTITUTE, "");
-        if (substitute.length() > 0) {
+        if (!substitute.isEmpty()) {
             return StringUtils.replace(uriPathComponent, substitute, "/");
         }
         return uriPathComponent;
@@ -335,7 +336,7 @@ public abstract class AbstractResource extends ServerResource {
      * @return Best guess at the user agent's IP address, respecting the
      *         <code>X-Forwarded-For</code> request header, if present.
      */
-    protected String getCanonicalClientIpAddress() {
+    protected String getCanonicalClientIPAddress() {
         String addr;
         // The value is supposed to be in the format: "client, proxy1, proxy2"
         final String forwardedFor =
@@ -364,7 +365,7 @@ public abstract class AbstractResource extends ServerResource {
         // Decode slash substitutes.
         final String identifier = decodeSlashes(decodedIdentifier);
 
-        LOGGER.debug("getIdentifier(): requested: {} / decoded: {} / " +
+        LOGGER.debug("Identifier requested: {} -> decoded: {} -> " +
                         "slashes substituted: {}",
                 urlIdentifier, decodedIdentifier, identifier);
 
@@ -403,10 +404,10 @@ public abstract class AbstractResource extends ServerResource {
         final String urlID = (String) attrs.get("identifier");
         final String decodedID = Reference.decode(urlID);
         final String reSlashedID = decodeSlashes(decodedID);
-        final String headerID = getRequest().getHeaders().getFirstValue(
-                PUBLIC_IDENTIFIER_HEADER, true);
+        final String headerID = getRequest().getHeaders().
+                getFirstValue(PUBLIC_IDENTIFIER_HEADER, true);
 
-        LOGGER.debug("Identifier requested: {} -> decoded: {} -> " +
+        LOGGER.debug("Public identifier requested: {} -> decoded: {} -> " +
                         "slashes substituted: {} | {} header: {}",
                 urlID, decodedID, reSlashedID, PUBLIC_IDENTIFIER_HEADER,
                 headerID);
@@ -501,7 +502,7 @@ public abstract class AbstractResource extends ServerResource {
         final RequestContext context = new RequestContext();
         context.setRequestURI(getReference().toString());
         context.setRequestHeaders(getRequest().getHeaders().getValuesMap());
-        context.setClientIP(getCanonicalClientIpAddress());
+        context.setClientIP(getCanonicalClientIPAddress());
         context.setCookies(getRequest().getCookies().getValuesMap());
         return context;
     }
@@ -531,7 +532,7 @@ public abstract class AbstractResource extends ServerResource {
      *             template variables.
      */
     public Representation template(String name) {
-        return template(name, new HashMap<>());
+        return template(name, Collections.emptyMap());
     }
 
     /**

@@ -145,11 +145,10 @@ public class ImageRepresentation extends OutputRepresentation {
         if (!opList.hasEffect(processor.getSourceFormat())) {
             if (processor instanceof FileProcessor &&
                     ((FileProcessor) processor).getSourceFile() != null) {
-                final File sourceFile =
-                        ((FileProcessor) processor).getSourceFile();
+                File sourceFile = ((FileProcessor) processor).getSourceFile();
                 Files.copy(sourceFile.toPath(), outputStream);
             } else {
-                final StreamSource streamSource =
+                StreamSource streamSource =
                         ((StreamProcessor) processor).getStreamSource();
                 try (InputStream inputStream = streamSource.newInputStream()) {
                     IOUtils.copy(inputStream, outputStream);

@@ -16,7 +16,6 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
-import edu.illinois.library.cantaloupe.resource.RequestContext;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Disposition;
 import org.restlet.representation.Representation;
@@ -123,7 +122,7 @@ public class ImageResource extends IIIF1Resource {
 
         ops.applyNonEndpointMutations(fullSize,
                 info.getOrientation(),
-                getCanonicalClientIpAddress(),
+                getCanonicalClientIPAddress(),
                 getReference().toUri(),
                 getRequest().getHeaders().getValuesMap(),
                 getCookies().getValuesMap());
