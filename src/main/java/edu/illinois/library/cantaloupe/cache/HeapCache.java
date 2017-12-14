@@ -195,6 +195,11 @@ class HeapCache implements DerivativeCache {
         }
 
         @Override
+        public void flush() throws IOException {
+            wrappedStream.flush();
+        }
+
+        @Override
         public void write(int b) throws IOException {
             wrappedStream.write(b);
         }

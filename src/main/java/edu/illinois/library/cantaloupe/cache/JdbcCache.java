@@ -107,6 +107,11 @@ class JdbcCache implements DerivativeCache {
         }
 
         @Override
+        public void flush() throws IOException {
+            blobOutputStream.flush();
+        }
+
+        @Override
         public void write(int b) throws IOException {
             blobOutputStream.write(b);
         }

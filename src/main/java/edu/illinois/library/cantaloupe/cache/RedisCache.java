@@ -160,6 +160,11 @@ class RedisCache implements DerivativeCache {
         }
 
         @Override
+        public void flush() throws IOException {
+            bufferStream.flush();
+        }
+
+        @Override
         public void write(int b) throws IOException {
             bufferStream.write(b);
         }

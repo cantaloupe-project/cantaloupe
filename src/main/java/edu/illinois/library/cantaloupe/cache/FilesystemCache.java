@@ -207,6 +207,11 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         }
 
         @Override
+        public void flush() throws IOException {
+            wrappedOutputStream.flush();
+        }
+
+        @Override
         public void write(int b) throws IOException {
             wrappedOutputStream.write(b);
         }
