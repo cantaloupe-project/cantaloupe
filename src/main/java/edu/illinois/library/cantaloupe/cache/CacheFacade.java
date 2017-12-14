@@ -152,7 +152,7 @@ public final class CacheFacade {
     /**
      * Invokes {@link #purge(Identifier)} asynchronously.
      */
-    public void purgeAsync(Identifier identifier) throws CacheException {
+    public void purgeAsync(Identifier identifier) {
         TaskQueue.getInstance().submit(() -> {
             try {
                 purge(identifier);

@@ -106,7 +106,7 @@ class RedisCache implements DerivativeCache {
         }
 
         @Override
-        public int read() throws IOException {
+        public int read() {
             if (bufferStream == null) {
                 bufferValue();
             }
@@ -122,7 +122,7 @@ class RedisCache implements DerivativeCache {
         }
 
         @Override
-        public int read(byte[] b, int off, int len) throws IOException {
+        public int read(byte[] b, int off, int len) {
             if (bufferStream == null) {
                 bufferValue();
             }
@@ -238,8 +238,7 @@ class RedisCache implements DerivativeCache {
     }
 
     @Override
-    public InputStream newDerivativeImageInputStream(OperationList opList)
-            throws CacheException {
+    public InputStream newDerivativeImageInputStream(OperationList opList) {
         final String imageKey = imageKey(opList);
         if (getConnection().sync().hexists(IMAGE_HASH_KEY, imageKey)) {
             return new RedisInputStream(IMAGE_HASH_KEY, imageKey,
@@ -249,8 +248,7 @@ class RedisCache implements DerivativeCache {
     }
 
     @Override
-    public OutputStream newDerivativeImageOutputStream(OperationList opList)
-            throws CacheException {
+    public OutputStream newDerivativeImageOutputStream(OperationList opList) {
         return new RedisOutputStream(IMAGE_HASH_KEY, imageKey(opList),
                 getConnection());
     }
@@ -276,7 +274,8 @@ class RedisCache implements DerivativeCache {
         // Purge images
         ScanArgs imagePattern = ScanArgs.Builder.matches(identifier + "*");
         logger.info("purge(Identifier): purging {}...", imagePattern);
-        MapScanCursor cursor = getConnection().sync().
+
+        MapScanCursor<String, byte[]> cursor = getConnection().sync().
                 hscan(IMAGE_HASH_KEY, imagePattern);
         for (Object key : cursor.getMap().keySet()) {
             getConnection().sync().hdel(IMAGE_HASH_KEY, (String) key);

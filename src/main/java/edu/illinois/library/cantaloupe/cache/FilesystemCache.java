@@ -158,7 +158,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
          * for more info.
          */
         @Override
-        public void close() throws IOException {
+        public void close() {
             if (!isClosed) {
                 isClosed = true;
                 try {
@@ -931,7 +931,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * progress in another thread.</p>
      */
     @Override
-    public void purge(OperationList opList) throws CacheException {
+    public void purge(OperationList opList) {
         if (isGlobalPurgeInProgress.get()) {
             LOGGER.info("purge(OperationList) called with a global purge in " +
                     "progress. Aborting.");

@@ -86,14 +86,13 @@ class AzureStorageCache implements DerivativeCache {
 
     }
 
-    private static Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(AzureStorageCache.class);
 
     private static CloudBlobClient client;
 
     /**
-     * Set of blob keys currently being written to Azure Storage from any
-     * thread.
+     * Blob keys currently being written to Azure Storage from any thread.
      */
     private static final Set<String> uploadingKeys =
             new ConcurrentSkipListSet<>();
@@ -114,14 +113,14 @@ class AzureStorageCache implements DerivativeCache {
                 final CloudStorageAccount account =
                         CloudStorageAccount.parse(connectionString);
 
-                logger.info("Using account: {}", accountName);
+                LOGGER.info("Using account: {}", accountName);
 
                 client = account.createCloudBlobClient();
 
                 client.getContainerReference(getContainerName()).
                         createIfNotExists();
             } catch (StorageException | URISyntaxException | InvalidKeyException e) {
-                logger.error(e.getMessage());
+                LOGGER.error(e.getMessage());
             }
         }
         return client;
@@ -147,7 +146,7 @@ class AzureStorageCache implements DerivativeCache {
             final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
             if (blob.exists()) {
                 Info info = Info.fromJSON(blob.openInputStream());
-                logger.info("getImageInfo(): read {} from container {} in {} msec",
+                LOGGER.info("getImageInfo(): read {} from container {} in {} msec",
                         objectKey, containerName, watch.timeElapsed());
                 return info;
             }
@@ -168,7 +167,7 @@ class AzureStorageCache implements DerivativeCache {
                     client.getContainerReference(containerName);
             final String objectKey = getObjectKey(opList);
 
-            logger.info("newDerivativeImageInputStream(): bucket: {}; key: {}",
+            LOGGER.info("newDerivativeImageInputStream(): bucket: {}; key: {}",
                     containerName, objectKey);
             final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
             if (blob.exists()) {
@@ -214,7 +213,7 @@ class AzureStorageCache implements DerivativeCache {
             return getObjectKeyPrefix() + "info/" +
                     URLEncoder.encode(identifier.toString(), "UTF-8") + ".json";
         } catch (UnsupportedEncodingException e) {
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         }
         return null;
     }
@@ -228,7 +227,7 @@ class AzureStorageCache implements DerivativeCache {
             return getObjectKeyPrefix() + "image/" +
                     URLEncoder.encode(opList.toString(), "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         }
         return null;
     }
@@ -264,7 +263,7 @@ class AzureStorageCache implements DerivativeCache {
                     }
                 }
             }
-            logger.info("purge(): deleted {} items", count);
+            LOGGER.info("purge(): deleted {} items", count);
         } catch (URISyntaxException | StorageException e) {
             throw new CacheException(e.getMessage(), e);
         }
@@ -313,7 +312,7 @@ class AzureStorageCache implements DerivativeCache {
                     }
                 }
             }
-            logger.info("purgeExpired(): deleted {} of {} items",
+            LOGGER.info("purgeExpired(): deleted {} of {} items",
                     deletedCount, count);
         } catch (URISyntaxException | StorageException e) {
             throw new CacheException(e.getMessage(), e);

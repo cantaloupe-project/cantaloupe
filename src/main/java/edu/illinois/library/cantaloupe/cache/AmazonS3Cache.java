@@ -52,9 +52,10 @@ class AmazonS3Cache implements DerivativeCache {
     /**
      * <p>Wraps a {@link ByteArrayOutputStream} for upload to Amazon S3.</p>
      *
-     * <p>N.B. S3 does not allow uploads without a Content-Length header, which
-     * is impossible to provide when streaming an unknown amount of data. From
-     * the documentation of {@link PutObjectRequest}:</p>
+     * <p>N.B. S3 does not allow uploads without a <code>Content-Length</code>
+     * header, which is impossible to provide when streaming an unknown amount
+     * of data (which this class is going to be doing all the time). From the
+     * documentation of {@link PutObjectRequest}:</p>
      *
      * <blockquote>"When uploading directly from an input stream, content
      * length must be specified before data can be uploaded to Amazon S3. If
@@ -63,12 +64,11 @@ class AmazonS3Cache implements DerivativeCache {
      * content length be sent in the request headers before any of the data is
      * sent."</blockquote>
      *
-     * <p>Since it is therefore not possible to write an OutputStream of
-     * unknown length to the S3 client as the {@link Cache} interface requires,
-     * this class buffers written data in a byte array before uploading it to
-     * S3 upon closure. (The upload is submitted to the
-     * {@link ThreadPool} in order to allow {@link #close()} to return
-     * immediately.)</p>
+     * <p>Since it's not possible to write an OutputStream of unknown length
+     * to the S3 client as the {@link Cache} interface requires, this class
+     * buffers written data in a byte array before uploading it to S3 upon
+     * closure. (The upload is submitted to the {@link ThreadPool} in order to
+     * allow {@link #close()} to return immediately.)</p>
      */
     private static class AmazonS3OutputStream extends OutputStream {
 
@@ -129,7 +129,8 @@ class AmazonS3Cache implements DerivativeCache {
 
     private static class AmazonS3Upload implements Runnable {
 
-        private Logger logger = LoggerFactory.getLogger(AmazonS3Upload.class);
+        private static final Logger UPLOAD_LOGGER = LoggerFactory.
+                getLogger(AmazonS3Upload.class);
 
         private String bucketName;
         private ByteArrayOutputStream byteStream;
@@ -166,10 +167,12 @@ class AmazonS3Cache implements DerivativeCache {
                     bucketName, objectKey, is, metadata);
             final Stopwatch watch = new Stopwatch();
 
-            logger.info("Uploading {} bytes to {} in bucket {}",
+            UPLOAD_LOGGER.info("Uploading {} bytes to {} in bucket {}",
                     bytes.length, request.getKey(), request.getBucketName());
+
             s3.putObject(request);
-            logger.info("Wrote {} bytes to {} in bucket {} in {} msec",
+
+            UPLOAD_LOGGER.info("Wrote {} bytes to {} in bucket {} in {} msec",
                     bytes.length, request.getKey(), request.getBucketName(),
                     watch.timeElapsed());
         }
@@ -243,8 +246,7 @@ class AmazonS3Cache implements DerivativeCache {
     }
 
     @Override
-    public OutputStream newDerivativeImageOutputStream(OperationList opList)
-            throws CacheException {
+    public OutputStream newDerivativeImageOutputStream(OperationList opList) {
         final String objectKey = getObjectKey(opList);
         final String bucketName = getBucketName();
         final AmazonS3 s3 = getClientInstance();
@@ -285,7 +287,7 @@ class AmazonS3Cache implements DerivativeCache {
     }
 
     @Override
-    public void purge() throws CacheException {
+    public void purge() {
         final AmazonS3 s3 = getClientInstance();
 
         ObjectListing listing = s3.listObjects(getBucketName(),
@@ -320,7 +322,7 @@ class AmazonS3Cache implements DerivativeCache {
     }
 
     @Override
-    public void purgeExpired() throws CacheException {
+    public void purgeExpired() {
         final Configuration config = Configuration.getInstance();
         final AmazonS3 s3 = getClientInstance();
         final String bucketName = getBucketName();
