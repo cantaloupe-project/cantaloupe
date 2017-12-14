@@ -17,8 +17,11 @@ import org.jruby.RubyHash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
 import java.util.Map;
@@ -40,6 +43,26 @@ import java.util.Map;
  */
 class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
+    private static class S3ObjectStreamSource implements StreamSource {
+
+        private S3Object object;
+
+        S3ObjectStreamSource(S3Object object) {
+            this.object = object;
+        }
+
+        @Override
+        public ImageInputStream newImageInputStream() throws IOException {
+            return ImageIO.createImageInputStream(newInputStream());
+        }
+
+        @Override
+        public InputStream newInputStream() {
+            return object.getObjectContent();
+        }
+
+    }
+
     private static final Logger LOGGER = LoggerFactory.
             getLogger(AmazonS3Resolver.class);
 
@@ -49,8 +72,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     private static AmazonS3 client;
 
     private String bucketName;
-    private S3Object cachedObject;
-    private IOException cachedObjectException;
+    private IOException cachedAccessException;
 
     private static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
@@ -80,9 +102,9 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
      * @throws IOException if there is some other issue accessing the object.
      */
     private S3Object getObject() throws IOException {
-        if (cachedObjectException != null) {
-            throw cachedObjectException;
-        } else if (cachedObject == null) {
+        if (cachedAccessException != null) {
+            throw cachedAccessException;
+        } else {
             try {
                 AmazonS3 s3 = getClientInstance();
 
@@ -94,7 +116,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
                 try {
                     LOGGER.info("Requesting {} from bucket {}",
                             objectKey, bucketName);
-                    cachedObject = s3.getObject(new GetObjectRequest(bucketName,
+                    return s3.getObject(new GetObjectRequest(bucketName,
                             objectKey));
                 } catch (AmazonS3Exception e) {
                     if (e.getErrorCode().equals("NoSuchKey")) {
@@ -104,11 +126,10 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
                     }
                 }
             } catch (IOException e) {
-                cachedObjectException = e;
+                cachedAccessException = e;
                 throw e;
             }
         }
-        return cachedObject;
     }
 
     private String getObjectKey() throws IOException {
@@ -187,7 +208,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     @Override
     public StreamSource newStreamSource() throws IOException {
         S3Object object = getObject();
-        return new InputStreamStreamSource(object.getObjectContent());
+        return new S3ObjectStreamSource(object);
     }
 
 }
