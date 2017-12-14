@@ -21,11 +21,6 @@ import java.util.concurrent.ExecutionException;
 /**
  * <p>Thinly wraps a Jetty HTTP client with support for HTTP/2 and convenient
  * initialization using the Builder pattern.</p>
- *
- * <p>There are obviously lots of good Java HTTP clients out there, but, as of
- * 11/2017, they either require too much boilerplate to initialize, or don't
- * support HTTP/2. Also, wrapping one will make it easier to change
- * implementations later.</p>
  */
 public final class Client {
 

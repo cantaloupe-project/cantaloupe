@@ -69,7 +69,6 @@ public class ImageRepresentation extends OutputRepresentation {
         // N.B. We don't need to close outputStream after writing to it;
         // Restlet will take care of that.
         if (!bypassCache) {
-            // The cache will be null if caching is disabled.
             final CacheFacade cacheFacade = new CacheFacade();
             if (cacheFacade.isDerivativeCacheAvailable()) {
                 // Try to get the image from the cache.
@@ -107,10 +106,10 @@ public class ImageRepresentation extends OutputRepresentation {
                         } catch (Throwable e) {
                             // The cached image has been incompletely written
                             // and is corrupt, so it must be purged. This may
-                            // happen in response to an OutOfMemoryError,
-                            // or when the connection has been closed
-                            // prematurely, as in the case of e.g. the client
-                            // hitting the stop button;
+                            // happen in response to a VM error like
+                            // OutOfMemoryError, or when the connection has
+                            // been closed prematurely, as in the case of e.g.
+                            // the client hitting the stop button.
                             LOGGER.info("write(): {}", e.getMessage());
                             cacheFacade.purge(opList);
                         }
