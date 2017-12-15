@@ -108,6 +108,11 @@ final class TIFFImageWriter extends AbstractImageWriter {
         }
     }
 
+    @Override
+    Logger getLogger() {
+        return LOGGER;
+    }
+
     /**
      * @param writeParam Write parameters on which to base the metadata.
      * @param image Image to apply the metadata to.

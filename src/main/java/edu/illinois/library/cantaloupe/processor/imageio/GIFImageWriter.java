@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
 
 import javax.imageio.IIOImage;
@@ -28,14 +30,16 @@ import java.io.OutputStream;
  */
 final class GIFImageWriter extends AbstractImageWriter {
 
+    private static final Logger LOGGER = LoggerFactory.
+            getLogger(BMPImageReader.class);
+
     GIFImageWriter(OperationList opList,
                    Metadata sourceMetadata) {
         super(opList, sourceMetadata);
     }
 
     @Override
-    protected void addMetadata(final IIOMetadataNode baseTree)
-            throws IOException {
+    protected void addMetadata(final IIOMetadataNode baseTree) {
         if (sourceMetadata instanceof GIFMetadata) {
             // GIF doesn't support EXIF or IPTC metadata -- only XMP.
             // The XMP node will be located at /ApplicationExtensions/
@@ -63,6 +67,11 @@ final class GIFImageWriter extends AbstractImageWriter {
                 appExtensions.appendChild(appExtensionNode);
             }
         }
+    }
+
+    @Override
+    Logger getLogger() {
+        return LOGGER;
     }
 
     /**

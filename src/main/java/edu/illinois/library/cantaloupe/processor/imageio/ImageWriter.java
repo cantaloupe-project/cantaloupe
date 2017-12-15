@@ -33,10 +33,13 @@ public class ImageWriter {
                     Format.PNG, Format.TIF));
 
     private AbstractImageWriter wrappedWriter;
-    private OperationList opList;
     private Metadata sourceMetadata;
 
-    public static void logImageIOWriters() {
+    static {
+        logImageIOWriters();
+    }
+
+    private static void logImageIOWriters() {
         // TODO: get this info from somewhere else
         final Format[] iiifOutputFormats = new Format[] {
                 Format.JPG, Format.PNG, Format.TIF, Format.GIF, Format.PDF,
@@ -67,8 +70,6 @@ public class ImageWriter {
     }
 
     public ImageWriter(final OperationList opList) {
-        this.opList = opList;
-
         switch (opList.getOutputFormat()) {
             case GIF:
                 wrappedWriter = new GIFImageWriter(opList, sourceMetadata);

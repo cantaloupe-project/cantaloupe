@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageTypeSpecifier;
@@ -19,9 +18,6 @@ import java.util.Iterator;
 import java.util.List;
 
 abstract class AbstractImageWriter {
-
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(AbstractImageWriter.class);
 
     javax.imageio.ImageWriter iioWriter;
     OperationList opList;
@@ -75,14 +71,16 @@ abstract class AbstractImageWriter {
     private void createWriter() {
         this.iioWriter = negotiateImageWriter();
 
-        LOGGER.debug("createWriter(): using {}",
-                iioWriter.getClass().getName());
+        getLogger().debug("Using {}", iioWriter.getClass().getName());
     }
 
     javax.imageio.ImageWriter getIIOWriter() {
         return iioWriter;
 
     }
+
+    abstract Logger getLogger();
+
     /**
      * @param writeParam Write parameters on which to base the metadata.
      * @param image Image to apply the metadata to.
@@ -118,6 +116,10 @@ abstract class AbstractImageWriter {
 
         if (!iioWriters.isEmpty()) {
             final String[] preferredImplClasses = preferredIIOImplementations();
+
+            getLogger().debug("ImageIO plugin preferences: {}",
+                    (preferredImplClasses.length > 0) ?
+                            String.join(", ", preferredImplClasses) : "none");
 
             if (preferredImplClasses.length > 0) {
                 for (String preferredImplClass : preferredImplClasses) {

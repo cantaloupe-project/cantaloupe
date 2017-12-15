@@ -41,8 +41,7 @@ final class PNGImageWriter extends AbstractImageWriter {
      * EXIF tags in XMP.
      */
     @Override
-    protected void addMetadata(final IIOMetadataNode baseTree)
-            throws IOException {
+    protected void addMetadata(final IIOMetadataNode baseTree) {
         if (sourceMetadata instanceof PNGMetadata) {
             // Add native metadata.
             final List<IIOMetadataNode> nativeMetadata =
@@ -90,6 +89,11 @@ final class PNGImageWriter extends AbstractImageWriter {
                 }
             }
         }
+    }
+
+    @Override
+    Logger getLogger() {
+        return LOGGER;
     }
 
     /**

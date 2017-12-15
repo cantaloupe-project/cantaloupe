@@ -41,8 +41,7 @@ final class JPEGImageWriter extends AbstractImageWriter {
      * @param baseTree Tree to embed the metadata into.
      */
     @Override
-    protected void addMetadata(final IIOMetadataNode baseTree)
-            throws IOException {
+    protected void addMetadata(final IIOMetadataNode baseTree) {
         if (sourceMetadata instanceof JPEGMetadata) {
             final Object exif = sourceMetadata.getEXIF();
             if (exif != null) {
@@ -80,6 +79,11 @@ final class JPEGImageWriter extends AbstractImageWriter {
                 markerSequence.insertBefore(node, markerSequence.getFirstChild());
             }
         }
+    }
+
+    @Override
+    Logger getLogger() {
+        return LOGGER;
     }
 
     private ImageWriteParam getWriteParam() {

@@ -47,8 +47,8 @@ public class ImageReader {
         ALREADY_CROPPED,
 
         /**
-         * Provided to a reader. The reader should read the entire image
-         * regardless of any cropping directives provided.
+         * Provided to a reader, telling it to read the entire image ignoring
+         * {@link edu.illinois.library.cantaloupe.operation.Crop} operations.
          */
         IGNORE_CROP
     }
@@ -70,9 +70,10 @@ public class ImageReader {
             ImageIO.setUseCache(false);
 
             // ImageIO will automatically scan for plugins once, the first time
-            // it's used. That means that if our app is initialized after another
-            // ImageIO-using app in the same JVM, any additional plugins bundled
-            // within our app won't be picked up unless we scan again.
+            // it's used. If our app is initialized after another ImageIO-using
+            // app in the same JVM, any additional plugins bundled within our
+            // app won't be picked up unless we scan again.
+            LOGGER.info("Scanning for ImageIO plugins...");
             ImageIO.scanForPlugins();
         } catch (NumberFormatException e) {
             // This is an ImageIO bug in JDK 9.
@@ -80,9 +81,11 @@ public class ImageReader {
                 throw e;
             }
         }
+
+        logImageIOReaders();
     }
 
-    public static void logImageIOReaders() {
+    private static void logImageIOReaders() {
         final List<Format> imageFormats = Arrays.stream(Format.values()).
                 filter(f -> Format.Type.IMAGE.equals(f.getType())).
                 collect(Collectors.toList());

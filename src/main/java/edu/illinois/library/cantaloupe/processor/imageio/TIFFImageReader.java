@@ -12,6 +12,8 @@ import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
 
 import javax.imageio.metadata.IIOMetadata;
@@ -23,6 +25,9 @@ import java.io.IOException;
 import java.util.Set;
 
 final class TIFFImageReader extends AbstractImageReader {
+
+    private static final Logger LOGGER = LoggerFactory.
+            getLogger(TIFFImageReader.class);
 
     /**
      * @param sourceFile Source file to read.
@@ -66,6 +71,11 @@ final class TIFFImageReader extends AbstractImageReader {
             default:
                 return Compression.UNDEFINED;
         }
+    }
+
+    @Override
+    Logger getLogger() {
+        return LOGGER;
     }
 
     @Override
