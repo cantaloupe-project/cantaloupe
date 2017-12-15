@@ -17,10 +17,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Establishes the best connection between a processor and a resolver.
@@ -154,7 +155,7 @@ public class ProcessorConnector {
             throws IOException, CacheException {
         // This will block while a file is being written in another thread,
         // which will prevent the image from being downloaded multiple times.
-        File sourceFile = sourceCache.getSourceImageFile(identifier);
+        Path sourceFile = sourceCache.getSourceImageFile(identifier);
         if (sourceFile == null) {
             downloadToSourceCache(resolver, sourceCache, identifier);
             sourceFile = sourceCache.getSourceImageFile(identifier);
@@ -163,9 +164,9 @@ public class ProcessorConnector {
                 sourceCache.getClass().getSimpleName(),
                 processor.getClass().getSimpleName());
         if (processor instanceof FileProcessor) {
-            ((FileProcessor) processor).setSourceFile(sourceFile);
+            ((FileProcessor) processor).setSourceFile(sourceFile.toFile());
         } else {
-            InputStream inputStream = new FileInputStream(sourceFile);
+            InputStream inputStream = Files.newInputStream(sourceFile);
             StreamSource streamSource = new InputStreamStreamSource(inputStream);
             ((StreamProcessor) processor).setStreamSource(streamSource);
         }

@@ -13,7 +13,6 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -645,7 +644,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     @Override
-    public File getSourceImageFile(Identifier identifier)
+    public Path getSourceImageFile(Identifier identifier)
             throws CacheException {
         synchronized (sourceImageWriteLock) {
             while (imagesBeingWritten.contains(identifier)) {
@@ -659,7 +658,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             }
         }
 
-        File file = null;
+        Path file = null;
         final Path cacheFile = sourceImageFile(identifier);
 
         try {
@@ -667,7 +666,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 if (!isExpired(cacheFile)) {
                     LOGGER.info("getSourceImageFile(): hit: {} ({})",
                             identifier, cacheFile);
-                    file = cacheFile.toFile();
+                    file = cacheFile;
                 } else {
                     // Delete it asynchronously.
                     ThreadPool.getInstance().submit(() -> {
