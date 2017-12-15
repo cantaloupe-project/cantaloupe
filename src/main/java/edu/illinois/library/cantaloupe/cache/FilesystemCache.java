@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.util.DeletingFileVisitor;
 import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -396,6 +397,10 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             new ConcurrentHashMap<>();
 
     /**
+     * Returns the last-accessed time of the given file. On some OS/filesystem
+     * combinations, this may be unreliable, in which case the last-modified
+     * time is returned instead.
+     *
      * @param file File to check.
      * @return Last-accessed time of the given file, if available, or the
      *         last-modified time otherwise.
@@ -404,6 +409,13 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      */
     private static FileTime getLastAccessedTime(Path file) throws IOException {
         try {
+            // Last-accessed time is not reliable on macOS+APFS as of 10.13.2.
+            // TODO: what about HFS+?
+            if (SystemUtils.IS_OS_MAC) {
+                LOGGER.debug("macOS detected; using last-modified time " +
+                        "instead of last-accessed time.");
+                return Files.getLastModifiedTime(file);
+            }
             return (FileTime) Files.getAttribute(file, "lastAccessTime");
         } catch (UnsupportedOperationException e) {
             LOGGER.error("getLastAccessedTime(): {}", e.getMessage(), e);
