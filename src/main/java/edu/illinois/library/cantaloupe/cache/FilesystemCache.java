@@ -452,7 +452,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 getLong(Key.CACHE_SERVER_TTL, 0);
         final long age = System.currentTimeMillis()
                 - getLastAccessedTime(file).toMillis();
-        return (ttlMsec > 0 && age > ttlMsec && Files.isRegularFile(file));
+        LOGGER.debug("Age of {}: {} msec", file.getFileName(), age);
+        return (ttlMsec > 0 && age > ttlMsec);
     }
 
     /**
