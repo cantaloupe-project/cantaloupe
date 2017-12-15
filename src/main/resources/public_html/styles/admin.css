@@ -54,10 +54,12 @@ table, .table, .checkbox label, .radio label {
 }
 
 #cl-status-memory td:first-child,
-#cl-proxy-headers td:first-child,
-#cl-status-vm td:first-child {
-    white-space: nowrap;
+#cl-proxy-headers td:first-child {
     width: 30%;
+}
+
+#cl-proxy-headers td:first-child {
+    white-space: nowrap;
 }
 
 #cl-status-internal-caches td:first-child {
