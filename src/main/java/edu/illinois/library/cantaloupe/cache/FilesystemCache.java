@@ -406,10 +406,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     private static FileTime getLastAccessedTime(Path file) throws IOException {
         try {
             return (FileTime) Files.getAttribute(file, "lastAccessTime");
-        } catch (NoSuchFileException e) {
-            LOGGER.info("getLastAccessedTime(): {}", e.getMessage());
-            throw e;
-        } catch (IOException e) {
+        } catch (UnsupportedOperationException e) {
             LOGGER.error("getLastAccessedTime(): {}", e.getMessage(), e);
             return Files.getLastModifiedTime(file);
         }
