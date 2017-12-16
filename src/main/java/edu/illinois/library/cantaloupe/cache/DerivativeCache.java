@@ -17,37 +17,43 @@ import java.io.OutputStream;
 public interface DerivativeCache extends Cache {
 
     /**
-     * <p>Reads cached image information.</p>
+     * <p>Reads the cached image information corresponding to the given
+     * identifier.</p>
      *
-     * <p>If image information corresponding to the given identifier exists in
-     * the cache but is expired, implementations should delete it.</p>
+     * <p>If invalid image information exists in the cache, implementations
+     * should delete it&mdash;ideally asynchronously.</p>
      *
      * @param identifier Image identifier for which to retrieve information.
-     * @return Info corresponding to the given identifier, or null if no
-     * non-expired info exists in the cache.
+     * @return Info corresponding to the given identifier, or
+     *         <code>null</code> if no valid info exists in the cache.
      * @throws IOException
      */
     Info getImageInfo(Identifier identifier) throws IOException;
 
     /**
-     * <p>Returns an input stream corresponding to the given OperationList,
-     * or null if a non-expired image corresponding to the given operation
-     * list does not exist in the cache..</p>
+     * <p>Returns an input stream corresponding to the given operation list,
+     * or <code>null</code> if a valid image corresponding to the given
+     * operation list does not exist in the cache.</p>
      *
-     * <p>If an image corresponding to the given list exists in the cache but
-     * is expired, implementations should delete it before returning null.</p>
+     * <p>If an invalid image corresponding to the given operation list exists
+     * in the cache, implementations should delete it (ideally asynchronously)
+     * and return <code>null</code>.</p>
      *
      * @param opList Operation list for which to retrieve an input stream for
      *               reading from the cache.
-     * @return Input stream corresponding to the given operation list, or null
-     *         if a non-expired image corresponding to the given operation
-     *         list does not exist in the cache.
+     * @return Input stream corresponding to the given operation list, or
+     *         <code>null</code> if a valid image does not exist in the cache.
      * @throws IOException
      */
     InputStream newDerivativeImageInputStream(OperationList opList)
             throws IOException;
 
     /**
+     * <p>Returns an output stream for writing an image to the cache.</p>
+     *
+     * <p>If an image corresponding to the given identifier already
+     * exists, the stream should overwrite it.</p>
+     *
      * @param opList Operation list for which to retrieve an output stream for
      *               writing to the cache.
      * @return Output stream to which an image corresponding to the given
@@ -73,8 +79,7 @@ public interface DerivativeCache extends Cache {
      * <p>If the information corresponding to the given identifier already
      * exists, it should be overwritten.</p>
      *
-     * <p>If writing is interrupted, implementations should perform cleanup,
-     * if necessary.</p>
+     * <p>This method is synchronous.</p>
      *
      * @param identifier Image identifier.
      * @param imageInfo Info containing information about the image with
