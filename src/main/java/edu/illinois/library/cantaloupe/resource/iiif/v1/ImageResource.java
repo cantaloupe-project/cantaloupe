@@ -24,6 +24,7 @@ import org.restlet.representation.Variant;
 import org.restlet.resource.Get;
 
 import java.awt.Dimension;
+import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,12 +63,17 @@ public class ImageResource extends IIIF1Resource {
         // it from a resolver.
         Format sourceFormat = Format.UNKNOWN;
         if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)) {
-            Info info = cacheFacade.getInfo(identifier);
-            if (info != null) {
-                Format infoFormat = info.getSourceFormat();
-                if (infoFormat != null) {
-                    sourceFormat = infoFormat;
+            try {
+                Info info = cacheFacade.getInfo(identifier);
+                if (info != null) {
+                    Format infoFormat = info.getSourceFormat();
+                    if (infoFormat != null) {
+                        sourceFormat = infoFormat;
+                    }
                 }
+            } catch (IOException e) {
+                // Don't rethrow -- it's still possible to service the request.
+                getLogger().severe(e.getMessage());
             }
         }
 

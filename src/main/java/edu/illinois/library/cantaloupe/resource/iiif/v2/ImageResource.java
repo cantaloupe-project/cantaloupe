@@ -24,6 +24,7 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 
 import java.awt.Dimension;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.NoSuchFileException;
 import java.util.List;
@@ -81,14 +82,22 @@ public class ImageResource extends IIIF2Resource {
                         getReference().toUri(),
                         getRequest().getHeaders().getValuesMap(),
                         getCookies().getValuesMap());
-                InputStream inputStream =
-                        cacheFacade.newDerivativeImageInputStream(ops);
-                if (inputStream != null) {
+
+                InputStream cacheStream = null;
+                try {
+                    cacheStream = cacheFacade.newDerivativeImageInputStream(ops);
+                } catch (IOException e) {
+                    // Don't rethrow -- it's still possible to service the
+                    // request.
+                    getLogger().severe(e.getMessage());
+                }
+
+                if (cacheStream != null) {
                     addLinkHeader(params);
                     commitCustomResponseHeaders();
                     return new CachedImageRepresentation(
                             params.getOutputFormat().getPreferredMediaType(),
-                            disposition, inputStream);
+                            disposition, cacheStream);
                 } else {
                     Format infoFormat = info.getSourceFormat();
                     if (infoFormat != null) {

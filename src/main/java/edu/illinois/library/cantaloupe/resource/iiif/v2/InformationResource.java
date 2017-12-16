@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
+import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.util.List;
 
@@ -17,7 +18,6 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.JSONRepresentation;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
-import edu.illinois.library.cantaloupe.resource.RequestContext;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
@@ -66,17 +66,22 @@ public class InformationResource extends IIIF2Resource {
         // cache contains an info matching the request, skip all the setup and
         // just return the cached info.
         if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, false)) {
-            final Info info = cacheFacade.getInfo(identifier);
-            if (info != null) {
-                // The source format will be null or UNKNOWN if the info was
-                // serialized in version < 3.4.
-                final Format format = info.getSourceFormat();
-                if (format != null && !Format.UNKNOWN.equals(format)) {
-                    final Processor processor = new ProcessorFactory().
-                            newProcessor(format);
-                    commitCustomResponseHeaders();
-                    return newRepresentation(identifier, info, processor);
+            try {
+                Info info = cacheFacade.getInfo(identifier);
+                if (info != null) {
+                    // The source format will be null or UNKNOWN if the info was
+                    // serialized in version < 3.4.
+                    final Format format = info.getSourceFormat();
+                    if (format != null && !Format.UNKNOWN.equals(format)) {
+                        final Processor processor = new ProcessorFactory().
+                                newProcessor(format);
+                        commitCustomResponseHeaders();
+                        return newRepresentation(identifier, info, processor);
+                    }
                 }
+            } catch (IOException e) {
+                // Don't rethrow -- it's still possible to service the request.
+                getLogger().severe(e.getMessage());
             }
         }
 

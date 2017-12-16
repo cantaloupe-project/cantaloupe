@@ -294,6 +294,20 @@ public class ImageResourceTest extends ResourceTest {
                 uri, opList);
     }
 
+    @Test
+    public void testGETRecoveryFromDerivativeCacheNewDerivativeImageInputStreamException()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
+        tester.testRecoveryFromDerivativeCacheNewDerivativeImageInputStreamException(uri);
+    }
+
+    @Test
+    public void testGETRecoveryFromDerivativeCacheNewDerivativeImageOutputStreamException()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.png");
+        tester.testRecoveryFromDerivativeCacheNewDerivativeImageOutputStreamException(uri);
+    }
+
     /**
      * Checks that the server responds with HTTP 500 when a non-FileResolver is
      * used with a non-StreamProcessor.

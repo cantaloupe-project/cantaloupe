@@ -225,6 +225,20 @@ public class InformationResourceTest extends ResourceTest {
     }
 
     @Test
+    public void testGETRecoveryFromDerivativeCacheNewDerivativeImageInputStreamException()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
+        tester.testRecoveryFromDerivativeCacheNewDerivativeImageInputStreamException(uri);
+    }
+
+    @Test
+    public void testGETRecoveryFromDerivativeCacheNewDerivativeImageOutputStreamException()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.png");
+        tester.testRecoveryFromDerivativeCacheNewDerivativeImageOutputStreamException(uri);
+    }
+
+    @Test
     public void testGETRedirectToInfoJSON() {
         URI fromURI = getHTTPURI("/" + IMAGE);
         URI toURI = getHTTPURI("/" + IMAGE + "/info.json");
