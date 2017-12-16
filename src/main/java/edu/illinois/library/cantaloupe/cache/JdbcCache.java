@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.cache;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.zaxxer.hikari.HikariDataSource;
+import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -45,7 +46,7 @@ class JdbcCache implements DerivativeCache {
 
     /**
      * Wraps a {@link Blob} OutputStream, for writing an image to a BLOB.
-     * The constructor creates a transaction, which is committed on close.
+     * The constructor creates a transaction that is committed on close.
      */
     private class ImageBlobOutputStream extends OutputStream {
 
@@ -145,7 +146,6 @@ class JdbcCache implements DerivativeCache {
     /**
      * @return Connection from the connection pool. Clients must call
      *         {@link Connection#close} when they are done with it.
-     * @throws SQLException
      */
     public static synchronized Connection getConnection() throws SQLException {
         if (dataSource == null) {
@@ -228,11 +228,8 @@ class JdbcCache implements DerivativeCache {
     }
 
     /**
-     * Updates the last-accessed time for the derivative image corresponding to
+     * Updates the last-accessed time of the derivative image corresponding to
      * the given operation list.
-     *
-     * @param opList
-     * @param connection
      */
     private void accessDerivativeImage(OperationList opList,
                                        Connection connection)
@@ -252,13 +249,24 @@ class JdbcCache implements DerivativeCache {
     }
 
     /**
-     * Updates the last-accessed time for the info corresponding to the given
-     * identifier.
-     *
-     * @param identifier
-     * @param connection
+     * Updates the last-accessed time of the derivative image corresponding to
+     * the given operation list asynchronously.
      */
-    private void accessImageInfo(Identifier identifier, Connection connection)
+    private void accessDerivativeImageAsync(OperationList opList) {
+        ThreadPool.getInstance().submit(() -> {
+            try (Connection conn = getConnection()) {
+                accessDerivativeImage(opList, conn);
+            } catch (SQLException e) {
+                LOGGER.error("accessDerivativeImageAsync(): {}", e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Updates the last-accessed time of the info corresponding to the given
+     * identifier.
+     */
+    private void accessInfo(Identifier identifier, Connection connection)
             throws SQLException {
         final String sql = String.format(
                 "UPDATE %s SET %s = ? WHERE %s = ?",
@@ -275,6 +283,30 @@ class JdbcCache implements DerivativeCache {
         }
     }
 
+    /**
+     * Updates the last-accessed time of the info corresponding to the given
+     * operation list asynchronously.
+     */
+    private void accessInfoAsync(Identifier identifier) {
+        ThreadPool.getInstance().submit(() -> {
+            try (Connection conn = getConnection()) {
+                accessInfo(identifier, conn);
+            } catch (SQLException e) {
+                LOGGER.error("accessInfoAsync(): {}", e.getMessage());
+            }
+        });
+    }
+
+    Timestamp earliestValidDate() {
+        final long ttl = Configuration.getInstance().
+                getLong(Key.CACHE_SERVER_TTL, 0);
+        if (ttl > 0) {
+            return new Timestamp(System.currentTimeMillis() - ttl * 1000);
+        } else {
+            return new Timestamp(Long.MIN_VALUE);
+        }
+    }
+
     @Override
     public Info getImageInfo(Identifier identifier) throws IOException {
         final String sql = String.format(
@@ -288,18 +320,19 @@ class JdbcCache implements DerivativeCache {
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, identifier.toString());
-            statement.setTimestamp(2, oldestValidDate());
+            statement.setTimestamp(2, earliestValidDate());
 
             LOGGER.debug(sql);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    accessImageInfo(identifier, connection);
-                    LOGGER.info("Hit for image info: {}", identifier);
+                    accessInfoAsync(identifier);
+
+                    LOGGER.info("Hit for info: {}", identifier);
                     String json = resultSet.getString(1);
                     return Info.fromJSON(json);
                 } else {
-                    LOGGER.info("Miss for image info: {}", identifier);
-                    purgeImageInfo(identifier, connection);
+                    LOGGER.info("Miss for info: {}", identifier);
+                    purgeInfoAsync(identifier);
                 }
             }
         } catch (SQLException e) {
@@ -323,17 +356,17 @@ class JdbcCache implements DerivativeCache {
         try (Connection conn = getConnection();
              PreparedStatement statement = conn.prepareStatement(sql)) {
             statement.setString(1, opList.toString());
-            statement.setTimestamp(2, oldestValidDate());
+            statement.setTimestamp(2, earliestValidDate());
 
             LOGGER.debug(sql);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     LOGGER.info("Hit for image: {}", opList);
                     inputStream = resultSet.getBinaryStream(1);
-                    accessDerivativeImage(opList, conn);
+                    accessDerivativeImageAsync(opList);
                 } else {
                     LOGGER.info("Miss for image: {}", opList);
-                    purgeDerivativeImage(opList, conn);
+                    purgeDerivativeImageAsync(opList);
                 }
             }
         } catch (SQLException e) {
@@ -345,8 +378,7 @@ class JdbcCache implements DerivativeCache {
     @Override
     public OutputStream newDerivativeImageOutputStream(OperationList ops)
             throws IOException {
-        // TODO: return a no-op stream when a write corresponding to an
-        // identical op list is in progress in another thread
+        // TODO: return a no-op stream when a write of an equal op list is in progress in another thread
         LOGGER.info("Miss; caching {}", ops);
         try {
             return new ImageBlobOutputStream(getConnection(), ops);
@@ -361,23 +393,13 @@ class JdbcCache implements DerivativeCache {
         return new Timestamp(now.getTime());
     }
 
-    Timestamp oldestValidDate() {
-        final long ttl = Configuration.getInstance().
-                getLong(Key.CACHE_SERVER_TTL, 0);
-        if (ttl > 0) {
-            return new Timestamp(System.currentTimeMillis() - ttl * 1000);
-        } else {
-            return new Timestamp(Long.MIN_VALUE);
-        }
-    }
-
     @Override
     public void purge() throws IOException {
         try (Connection connection = getConnection()) {
             connection.setAutoCommit(false);
             final int numDeletedDerivativeImages =
                     purgeDerivativeImages(connection);
-            final int numDeletedInfos = purgeImageInfos(connection);
+            final int numDeletedInfos = purgeInfos(connection);
             connection.commit();
             LOGGER.info("Purged {} derivative images and {} infos",
                     numDeletedDerivativeImages, numDeletedInfos);
@@ -406,7 +428,7 @@ class JdbcCache implements DerivativeCache {
                     purgeExpiredDerivativeImages(connection);
             final int numDeletedInfos = purgeExpiredInfos(connection);
             connection.commit();
-            LOGGER.info("Purged {} derivative images and {} info(s)",
+            LOGGER.info("purgeExpired(): purged {} derivative images and {} info(s)",
                     numDeletedDerivativeImages, numDeletedInfos);
         } catch (SQLException e) {
             throw new IOException(e.getMessage(), e);
@@ -415,7 +437,7 @@ class JdbcCache implements DerivativeCache {
 
     /**
      * @param conn Will not be closed.
-     * @return
+     * @return Number of images purged.
      */
     private int purgeExpiredDerivativeImages(Connection conn)
             throws SQLException {
@@ -423,7 +445,7 @@ class JdbcCache implements DerivativeCache {
                 getDerivativeImageTableName(),
                 DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
-            statement.setTimestamp(1, oldestValidDate());
+            statement.setTimestamp(1, earliestValidDate());
             LOGGER.debug(sql);
             return statement.executeUpdate();
         }
@@ -431,14 +453,14 @@ class JdbcCache implements DerivativeCache {
 
     /**
      * @param conn Will not be closed.
-     * @return
+     * @return Number of infos purged.
      */
     private int purgeExpiredInfos(Connection conn)
             throws SQLException {
         final String sql = String.format("DELETE FROM %s WHERE %s < ?",
                 getInfoTableName(), INFO_TABLE_LAST_ACCESSED_COLUMN);
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
-            statement.setTimestamp(1, oldestValidDate());
+            statement.setTimestamp(1, earliestValidDate());
             LOGGER.debug(sql);
             return statement.executeUpdate();
         }
@@ -462,6 +484,21 @@ class JdbcCache implements DerivativeCache {
     }
 
     /**
+     * @param ops Operation list corresponding to the derivative image to purge.
+     */
+    private void purgeDerivativeImageAsync(OperationList ops) {
+        ThreadPool.getInstance().submit(() -> {
+            try (Connection conn = getConnection()) {
+                purgeDerivativeImage(ops, conn);
+            } catch (SQLException e) {
+                LOGGER.error("purgeDerivativeImageAsync(): {}", e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Purges all derivative images.
+     *
      * @param conn Will not be closed.
      * @return Number of purged images
      */
@@ -474,6 +511,9 @@ class JdbcCache implements DerivativeCache {
     }
 
     /**
+     * Purges all derivative images corresponding to the source image with the
+     * given identifier.
+     *
      * @param identifier
      * @param conn Will not be closed.
      * @return The number of purged images
@@ -496,7 +536,7 @@ class JdbcCache implements DerivativeCache {
             connection.setAutoCommit(false);
             final int numDeletedImages = purgeDerivativeImages(identifier,
                     connection);
-            final int numDeletedInfos = purgeImageInfo(identifier, connection);
+            final int numDeletedInfos = purgeInfo(identifier, connection);
             connection.commit();
             LOGGER.info("Deleted {} cached image(s) and {} cached info(s)",
                     numDeletedImages, numDeletedInfos);
@@ -506,11 +546,14 @@ class JdbcCache implements DerivativeCache {
     }
 
     /**
+     * Purges the info corresponding to the source image with the given
+     * identifier.
+     *
      * @param identifier
      * @param conn Will not be closed.
-     * @return The number of purged infos
+     * @return The number of purged infos.
      */
-    private int purgeImageInfo(Identifier identifier, Connection conn)
+    private int purgeInfo(Identifier identifier, Connection conn)
             throws SQLException {
         final String sql = String.format("DELETE FROM %s WHERE %s = ?",
                 getInfoTableName(), INFO_TABLE_IDENTIFIER_COLUMN);
@@ -521,11 +564,21 @@ class JdbcCache implements DerivativeCache {
         }
     }
 
+    private void purgeInfoAsync(Identifier identifier) {
+        ThreadPool.getInstance().submit(() -> {
+            try (Connection conn = getConnection()) {
+                purgeInfo(identifier, conn);
+            } catch (SQLException e) {
+                LOGGER.error("purgeImageInfosAsync(): {}", e.getMessage());
+            }
+        });
+    }
+
     /**
      * @param conn Will not be closed.
-     * @return The number of purged infos
+     * @return The number of purged infos.
      */
-    private int purgeImageInfos(Connection conn) throws SQLException {
+    private int purgeInfos(Connection conn) throws SQLException {
         final String sql = "DELETE FROM " + getInfoTableName();
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             LOGGER.debug(sql);
@@ -534,8 +587,8 @@ class JdbcCache implements DerivativeCache {
     }
 
     @Override
-    public void put(Identifier identifier, Info imageInfo) throws IOException {
-        LOGGER.info("Caching image info: {}", identifier);
+    public void put(Identifier identifier, Info info) throws IOException {
+        LOGGER.info("put(): {}", identifier);
 
         final String sql = String.format(
                 "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
@@ -549,11 +602,11 @@ class JdbcCache implements DerivativeCache {
             conn.setAutoCommit(false);
 
             // Delete any existing info corresponding to the given identifier.
-            purgeImageInfo(identifier, conn);
+            purgeInfo(identifier, conn);
 
             // Add a new info corresponding to the given identifier.
             statement.setString(1, identifier.toString());
-            statement.setString(2, imageInfo.toJSON());
+            statement.setString(2, info.toJSON());
             statement.setTimestamp(3, now());
 
             LOGGER.debug(sql);
