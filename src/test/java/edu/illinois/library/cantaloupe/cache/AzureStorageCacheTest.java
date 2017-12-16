@@ -103,6 +103,18 @@ public class AzureStorageCacheTest extends BaseTest {
         assertNull(instance.getImageInfo(identifier));
     }
 
+    @Test
+    public void testGetImageInfoWithInvalidInfo() throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.CACHE_SERVER_TTL, 1);
+
+        instance.put(identifier, imageInfo);
+
+        Thread.sleep(1100);
+
+        assertNull(instance.getImageInfo(identifier));
+    }
+
     /* newDerivativeImageInputStream(OperationList) */
 
     @Test

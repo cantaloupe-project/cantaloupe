@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import com.amazonaws.services.s3.iterable.S3Objects;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -17,7 +16,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -111,6 +109,18 @@ public class AmazonS3CacheTest extends BaseTest {
 
     @Test
     public void testGetImageInfoWithNonexistentInfo() throws Exception {
+        assertNull(instance.getImageInfo(identifier));
+    }
+
+    @Test
+    public void testGetImageInfoWithInvalidInfo() throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.CACHE_SERVER_TTL, 1);
+
+        instance.put(identifier, imageInfo);
+
+        Thread.sleep(2100);
+
         assertNull(instance.getImageInfo(identifier));
     }
 

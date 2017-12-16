@@ -197,6 +197,13 @@ class AmazonS3Cache implements DerivativeCache {
         return client;
     }
 
+    private static Date getEarliestValidDate() {
+        final Configuration config = Configuration.getInstance();
+        final Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.SECOND, 0 - config.getInt(Key.CACHE_SERVER_TTL));
+        return cal.getTime();
+    }
+
     String getBucketName() {
         return Configuration.getInstance().
                 getString(Key.AMAZONS3CACHE_BUCKET_NAME);
@@ -210,17 +217,33 @@ class AmazonS3Cache implements DerivativeCache {
 
         final Stopwatch watch = new Stopwatch();
         try {
-            final String jsonStr = s3.getObjectAsString(bucketName, objectKey);
-            final Info info = Info.fromJSON(jsonStr);
-            LOGGER.info("getImageInfo(): read {} from bucket {} in {} msec",
-                    objectKey, bucketName, watch.timeElapsed());
-            return info;
-        } catch (AmazonS3Exception e) {
-            if (e.getStatusCode() == 404) {
-                return null;
+            S3Object object = s3.getObject(bucketName, objectKey);
+            if (!isExpired(object)) {
+                try (InputStream is = object.getObjectContent()) {
+                    final Info info = Info.fromJSON(is);
+                    LOGGER.info("getImageInfo(): read {} from bucket {} in {} msec",
+                            objectKey, bucketName, watch.timeElapsed());
+                    return info;
+                }
+            } else {
+                // Delete it asynchronously.
+                LOGGER.info("getImageInfo(): {} in bucket {} is invalid; deleting",
+                        objectKey, bucketName);
+                ThreadPool.getInstance().submit(() ->
+                    s3.deleteObject(bucketName, objectKey));
             }
-            throw new IOException(e.getMessage(), e);
+        } catch (AmazonS3Exception e) {
+            if (e.getStatusCode() != 404) {
+                throw new IOException(e.getMessage(), e);
+            }
         }
+        return null;
+    }
+
+    private boolean isExpired(S3Object object) {
+        Date lastModified = object.getObjectMetadata().getLastModified();
+        Date earliestAllowed = getEarliestValidDate();
+        return lastModified.before(earliestAllowed);
     }
 
     @Override
@@ -321,13 +344,9 @@ class AmazonS3Cache implements DerivativeCache {
 
     @Override
     public void purgeExpired() {
-        final Configuration config = Configuration.getInstance();
         final AmazonS3 s3 = getClientInstance();
         final String bucketName = getBucketName();
-
-        Calendar c = Calendar.getInstance();
-        c.add(Calendar.SECOND, 0 - config.getInt(Key.CACHE_SERVER_TTL));
-        Date cutoffDate = c.getTime();
+        final Date cutoffDate = getEarliestValidDate();
 
         ObjectListing listing = s3.listObjects(getBucketName(),
                 getObjectKeyPrefix());
