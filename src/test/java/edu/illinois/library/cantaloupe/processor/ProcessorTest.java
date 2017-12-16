@@ -433,8 +433,7 @@ public abstract class ProcessorTest extends BaseTest {
      */
     private void doProcessTest(final Path fixture,
                                final Format sourceFormat,
-                               final OperationList opList)
-            throws ProcessorException {
+                               final OperationList opList) throws Exception {
         final Processor proc = newConfiguredProcessor(fixture, sourceFormat);
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -456,8 +455,7 @@ public abstract class ProcessorTest extends BaseTest {
     private void doProcessTest(final Path fixture,
                                final Format sourceFormat,
                                final OperationList opList,
-                               final OutputStream os)
-            throws ProcessorException {
+                               final OutputStream os) throws Exception {
         final Processor proc = newConfiguredProcessor(fixture, sourceFormat);
         try {
             proc.process(opList, proc.readImageInfo(), os);

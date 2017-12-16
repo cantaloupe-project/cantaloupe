@@ -29,6 +29,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
@@ -228,7 +229,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
      * kdu_jp2info.
      */
     @Override
-    public Info readImageInfo() throws ProcessorException {
+    public Info readImageInfo() throws IOException {
         try {
             if (infoDocument == null) {
                 readImageInfoDocument();
@@ -273,8 +274,9 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
                 }
             }
             return info;
-        } catch (Exception e) {
-            throw new ProcessorException(e.getMessage(), e);
+        } catch (SAXException | ParserConfigurationException |
+                XPathExpressionException e) {
+            throw new IOException(e.getMessage(), e);
         }
     }
 

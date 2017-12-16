@@ -287,54 +287,51 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
      * Gets the size of the given image by parsing the output of opj_dump.
      */
     @Override
-    public Info readImageInfo() throws ProcessorException {
-        try {
-            if (imageInfo == null) {
-                doReadImageInfo();
-            }
-            final Info.Image image = new Info.Image();
+    public Info readImageInfo() throws IOException {
+        if (imageInfo == null) {
+            doReadImageInfo();
+        }
+        final Info.Image image = new Info.Image();
 
-            try (final Scanner scan = new Scanner(imageInfo)) {
-                while (scan.hasNextLine()) {
-                    String line = scan.nextLine().trim();
-                    if (line.startsWith("x1=")) {
-                        String[] parts = StringUtils.split(line, ",");
-                        for (int i = 0; i < 2; i++) {
-                            String[] kv = StringUtils.split(parts[i], "=");
-                            if (kv.length == 2) {
-                                if (i == 0) {
-                                    image.width = Integer.parseInt(kv[1].trim());
-                                } else {
-                                    image.height = Integer.parseInt(kv[1].trim());
-                                }
-                            }
-                        }
-                    } else if (line.startsWith("tdx=")) {
-                        String[] parts = StringUtils.split(line, ",");
-                        if (parts.length == 2) {
-                            final int dim1 = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
-                            final int dim2 = Integer.parseInt(parts[1].replaceAll("[^0-9]", ""));
-                            int tileWidth, tileHeight;
-                            if (image.width > image.height) {
-                                tileWidth = Math.max(dim1, dim2);
-                                tileHeight = Math.min(dim1, dim2);
+        try (final Scanner scan = new Scanner(imageInfo)) {
+            while (scan.hasNextLine()) {
+                String line = scan.nextLine().trim();
+                if (line.startsWith("x1=")) {
+                    String[] parts = StringUtils.split(line, ",");
+                    for (int i = 0; i < 2; i++) {
+                        String[] kv = StringUtils.split(parts[i], "=");
+                        if (kv.length == 2) {
+                            if (i == 0) {
+                                image.width = Integer.parseInt(kv[1].trim());
                             } else {
-                                tileWidth = Math.min(dim1, dim2);
-                                tileHeight = Math.max(dim1, dim2);
+                                image.height = Integer.parseInt(kv[1].trim());
                             }
-                            image.tileWidth = tileWidth;
-                            image.tileHeight = tileHeight;
                         }
+                    }
+                } else if (line.startsWith("tdx=")) {
+                    String[] parts = StringUtils.split(line, ",");
+                    if (parts.length == 2) {
+                        final int dim1 = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
+                        final int dim2 = Integer.parseInt(parts[1].replaceAll("[^0-9]", ""));
+                        int tileWidth, tileHeight;
+                        if (image.width > image.height) {
+                            tileWidth = Math.max(dim1, dim2);
+                            tileHeight = Math.min(dim1, dim2);
+                        } else {
+                            tileWidth = Math.min(dim1, dim2);
+                            tileHeight = Math.max(dim1, dim2);
+                        }
+                        image.tileWidth = tileWidth;
+                        image.tileHeight = tileHeight;
                     }
                 }
             }
-            final Info info = new Info();
-            info.setSourceFormat(getSourceFormat());
-            info.getImages().add(image);
-            return info;
-        } catch (IOException e) {
-            throw new ProcessorException(e.getMessage(), e);
         }
+        final Info info = new Info();
+        info.setSourceFormat(getSourceFormat());
+        info.getImages().add(image);
+        return info;
+
     }
 
     private void doReadImageInfo() throws IOException {

@@ -232,7 +232,7 @@ public class InfoService {
      * Reads the information of a source image from the given processor.
      */
     private Info readInfo(final Identifier identifier,
-                          final Processor proc) throws ProcessorException {
+                          final Processor proc) throws IOException {
         final Stopwatch watch = new Stopwatch();
         final Info info = proc.readImageInfo();
         LOGGER.debug("readInfo(): read {} from {} in {} msec",

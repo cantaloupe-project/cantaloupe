@@ -127,7 +127,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
      * output. The result is cached.
      */
     @Override
-    public Info readImageInfo() throws ProcessorException {
+    public Info readImageInfo() throws IOException {
         if (imageInfo == null) {
             final List<String> command = new ArrayList<>();
             command.add(getPath("ffprobe"));
@@ -144,24 +144,21 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
 
-            try {
-                LOGGER.info("Invoking {}", StringUtils.join(pb.command(), " "));
-                Process process = pb.start();
-                InputStream processInputStream = process.getInputStream();
-                try (BufferedReader reader =
-                             new BufferedReader(new InputStreamReader(processInputStream, "UTF-8"))) {
-                    int width = Integer.parseInt(reader.readLine());
-                    int height = Integer.parseInt(reader.readLine());
-                    try {
-                        durationSec = Double.parseDouble(reader.readLine());
-                    } catch (NumberFormatException e) {
-                        LOGGER.debug("readImageInfo(): {}", e.getMessage());
-                    }
-                    imageInfo = new Info(width, height, width, height,
-                            getSourceFormat());
+            LOGGER.info("Invoking {}", StringUtils.join(pb.command(), " "));
+            Process process = pb.start();
+
+            try (InputStream processInputStream = process.getInputStream();
+                 BufferedReader reader = new BufferedReader(
+                         new InputStreamReader(processInputStream, "UTF-8"))) {
+                int width = Integer.parseInt(reader.readLine());
+                int height = Integer.parseInt(reader.readLine());
+                try {
+                    durationSec = Double.parseDouble(reader.readLine());
+                } catch (NumberFormatException e) {
+                    LOGGER.debug("readImageInfo(): {}", e.getMessage());
                 }
-            } catch (IOException e) {
-                throw new ProcessorException(e.getMessage(), e);
+                imageInfo = new Info(width, height, width, height,
+                        getSourceFormat());
             }
         }
         return imageInfo;
@@ -279,7 +276,11 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
         FileProcessor.super.validate(opList, fullSize);
 
         if (durationSec < 1) {
-            readImageInfo();
+            try {
+                readImageInfo();
+            } catch (IOException e) {
+                throw new ProcessorException(e.getMessage(), e);
+            }
         }
         // Check that the "time" option, if supplied, is in the correct format.
         final String timeStr = (String) opList.getOptions().get("time");

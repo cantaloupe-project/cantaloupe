@@ -147,19 +147,15 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     }
 
     @Override
-    public Info readImageInfo() throws ProcessorException {
-        try {
-            if (imageSize == null) {
-                // This is a very inefficient method of getting the size.
-                // Unfortunately, it's the only choice PDFBox offers.
-                BufferedImage image = readImage();
-                imageSize = new Dimension(image.getWidth(), image.getHeight());
-            }
-            return new Info(imageSize.width, imageSize.height,
-                    imageSize.width, imageSize.height, getSourceFormat());
-        } catch (IOException e) {
-            throw new ProcessorException(e.getMessage(), e);
+    public Info readImageInfo() throws IOException {
+        if (imageSize == null) {
+            // This is a very inefficient method of getting the size.
+            // Unfortunately, it's the only choice PDFBox offers.
+            BufferedImage image = readImage();
+            imageSize = new Dimension(image.getWidth(), image.getHeight());
         }
+        return new Info(imageSize.width, imageSize.height,
+                imageSize.width, imageSize.height, getSourceFormat());
     }
 
     @Override

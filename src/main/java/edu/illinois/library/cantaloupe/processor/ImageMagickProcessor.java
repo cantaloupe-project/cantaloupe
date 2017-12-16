@@ -698,7 +698,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     }
 
     @Override
-    public Info readImageInfo() throws ProcessorException {
+    public Info readImageInfo() throws IOException {
         try (InputStream inputStream = streamSource.newInputStream()) {
             final List<String> args = new ArrayList<>();
             if (IMVersion.VERSION_7.equals(getIMVersion())) {
@@ -754,7 +754,11 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             throw new IOException("readImageInfo(): nothing received on " +
                     "stdout from command: " + cmdString);
         } catch (Exception e) {
-            throw new ProcessorException(e.getMessage(), e);
+            if (e instanceof IOException) {
+                throw (IOException) e;
+            } else {
+                throw new IOException(e.getMessage(), e);
+            }
         }
     }
 

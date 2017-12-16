@@ -53,18 +53,17 @@ class MockStreamProcessor implements StreamProcessor {
 
     @Override
     public void process(OperationList opList, Info sourceInfo,
-                        OutputStream outputStream) throws ProcessorException {
+                        OutputStream outputStream) {
         // no-op
     }
 
     @Override
-    public Info readImageInfo() throws ProcessorException {
+    public Info readImageInfo(){
         return new Info();
     }
 
     @Override
-    public void setSourceFormat(Format format)
-            throws UnsupportedSourceFormatException {
+    public void setSourceFormat(Format format) {
         this.sourceFormat = format;
     }
 

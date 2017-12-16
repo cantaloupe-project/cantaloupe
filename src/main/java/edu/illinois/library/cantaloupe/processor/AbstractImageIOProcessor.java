@@ -53,25 +53,21 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
         return formats;
     }
 
-    public Info readImageInfo() throws ProcessorException {
-        try {
-            final Info info = new Info();
-            info.setSourceFormat(getSourceFormat());
+    public Info readImageInfo() throws IOException {
+        final Info info = new Info();
+        info.setSourceFormat(getSourceFormat());
 
-            final ImageReader reader = getReader();
-            final Orientation orientation = getEffectiveOrientation();
-            for (int i = 0, numResolutions = reader.getNumResolutions();
-                 i < numResolutions; i++) {
-                Info.Image image = new Info.Image();
-                image.setSize(reader.getSize(i));
-                image.setTileSize(reader.getTileSize(i));
-                image.setOrientation(orientation);
-                info.getImages().add(image);
-            }
-            return info;
-        } catch (IOException e) {
-            throw new ProcessorException(e.getMessage(), e);
+        final ImageReader reader = getReader();
+        final Orientation orientation = getEffectiveOrientation();
+        for (int i = 0, numResolutions = reader.getNumResolutions();
+             i < numResolutions; i++) {
+            Info.Image image = new Info.Image();
+            image.setSize(reader.getSize(i));
+            image.setTileSize(reader.getTileSize(i));
+            image.setOrientation(orientation);
+            info.getImages().add(image);
         }
+        return info;
     }
 
     /**

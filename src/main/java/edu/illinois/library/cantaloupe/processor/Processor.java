@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 import java.awt.Dimension;
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
@@ -151,7 +152,7 @@ public interface Processor {
      * @return Information about the source image.
      * @throws ProcessorException If anything goes wrong.
      */
-    Info readImageInfo() throws ProcessorException;
+    Info readImageInfo() throws IOException;
 
     /**
      * @param format Format of the source image. Will never be

@@ -165,7 +165,7 @@ public class ProcessorConnectorTest extends BaseTest {
 
             assertEquals(
                     CacheFactory.getSourceCache().getSourceImageFile(identifier),
-                    ((FileProcessor) processor).getSourceFile());
+                    ((FileProcessor) processor).getSourceFile().toPath());
         } finally {
             server.stop();
             recursiveDeleteOnExit(cacheFolder);
