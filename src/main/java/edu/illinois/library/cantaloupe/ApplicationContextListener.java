@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.async.ThreadPool;
-import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.cache.CacheWorkerRunner;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -16,6 +15,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import java.awt.GraphicsEnvironment;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import static edu.illinois.library.cantaloupe.StandaloneEntry.CLEAN_CACHE_VM_ARGUMENT;
 import static edu.illinois.library.cantaloupe.StandaloneEntry.LIST_FONTS_VM_ARGUMENT;
@@ -115,7 +115,7 @@ public class ApplicationContextListener implements ServletContextListener {
                 }
                 exitUnlessTesting(0);
             }
-        } catch (CacheException e) {
+        } catch (IOException e) {
             System.err.println(e.getMessage());
             exitUnlessTesting(-1);
         }

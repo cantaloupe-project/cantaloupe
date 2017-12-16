@@ -261,7 +261,7 @@ public class RedisCacheTest extends BaseTest {
     /* put(Identifier, Info) */
 
     @Test
-    public void testPut() throws CacheException {
+    public void testPut() throws Exception {
         Identifier identifier = new Identifier("birds");
 
         assertNull(instance.getImageInfo(identifier));

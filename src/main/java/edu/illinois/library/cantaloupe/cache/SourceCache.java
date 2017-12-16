@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.image.Identifier;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
 
@@ -40,17 +41,17 @@ public interface SourceCache extends Cache {
      * @return File corresponding to the given identifier, or null if a
      *         non-expired image corresponding to the given identifier does not
      *         exist in the cache.
-     * @throws CacheException
+     * @throws IOException
      */
-    Path getSourceImageFile(Identifier identifier) throws CacheException;
+    Path getSourceImageFile(Identifier identifier) throws IOException;
 
     /**
      * @param identifier Identifier of an image to write to the cache.
      * @return Output stream to which an image corresponding to the given
      *         identifier can be written.
-     * @throws CacheException
+     * @throws IOException
      */
     OutputStream newSourceImageOutputStream(Identifier identifier)
-            throws CacheException;
+            throws IOException;
 
 }

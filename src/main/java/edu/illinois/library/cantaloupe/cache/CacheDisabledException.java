@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
-public class CacheDisabledException extends CacheException {
+public class CacheDisabledException extends Exception {
 
     public CacheDisabledException() {
         super();

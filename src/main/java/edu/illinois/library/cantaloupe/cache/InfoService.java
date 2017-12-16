@@ -12,6 +12,8 @@ import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+
 /**
  * <p>Used to obtain {@link Info} instances in an efficient way, utilizing
  * (optionally) several tiers of caching.</p>
@@ -85,14 +87,14 @@ public class InfoService {
      *     {@link CacheFactory#getDerivativeCache()};</li>
      * </ol>
      *
-     * @param identifier Identifier of the source image for which to retrieve
-     *                   the info.
-     * @return           Info for the image with the given identifier.
-     * @throws CacheException     If there is an error reading or writing to or
-     *                            from the cache.
+     * @param identifier   Identifier of the source image for which to retrieve
+     *                     the info.
+     * @return             Info for the image with the given identifier.
+     * @throws IOException If there is an error reading or writing to or
+     *                     from the cache.
      * @see #getOrReadInfo(Identifier, Processor)
      */
-    Info getInfo(final Identifier identifier) throws CacheException {
+    Info getInfo(final Identifier identifier) throws IOException {
         // Check the local object cache.
         Info info = objectCache.get(identifier);
 
@@ -149,14 +151,14 @@ public class InfoService {
      *                   the info.
      * @param proc       Processor to use to read the info if necessary.
      * @return           Info for the image with the given identifier.
-     * @throws CacheException     If there is an error reading or writing to or
+     * @throws IOException        If there is an error reading or writing to or
      *                            from the cache.
      * @throws ProcessorException If there is an error reading the info from
      *                            the processor.
      * @see #getInfo(Identifier)
      */
     Info getOrReadInfo(final Identifier identifier, final Processor proc)
-            throws CacheException, ProcessorException {
+            throws IOException, ProcessorException {
         // Try to retrieve it from an object or derivative cache.
         Info info = getInfo(identifier);
         if (info == null) {
@@ -219,7 +221,7 @@ public class InfoService {
             putInObjectCache(identifier, info);
             try {
                 derivCache.put(identifier, info);
-            } catch (CacheException e) {
+            } catch (IOException e) {
                 LOGGER.error("putInCachesAsync(): {}", e.getMessage());
             }
             return null;

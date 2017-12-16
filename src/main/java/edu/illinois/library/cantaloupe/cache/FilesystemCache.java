@@ -588,23 +588,19 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * Cleans up temporary and zero-byte files.
      */
     @Override
-    public void cleanUp() throws CacheException {
+    public void cleanUp() throws IOException {
         final Path path = rootPath();
 
         LOGGER.info("cleanUp(): cleaning directory: {}", path);
         DetritalFileVisitor visitor = new DetritalFileVisitor(minCleanableAge);
 
-        try {
-            Files.walkFileTree(path,
-                    new HashSet<>(Collections.singletonList(FileVisitOption.FOLLOW_LINKS)),
-                    Integer.MAX_VALUE,
-                    visitor);
-            LOGGER.info("cleanUp(): cleaned {} item(s) totaling {} bytes",
-                    visitor.getDeletedFileCount(),
-                    visitor.getDeletedFileSize());
-        } catch (IOException e) {
-            throw new CacheException(e.getMessage(), e);
-        }
+        Files.walkFileTree(path,
+                new HashSet<>(Collections.singletonList(FileVisitOption.FOLLOW_LINKS)),
+                Integer.MAX_VALUE,
+                visitor);
+        LOGGER.info("cleanUp(): cleaned {} item(s) totaling {} bytes",
+                visitor.getDeletedFileCount(),
+                visitor.getDeletedFileSize());
     }
 
     /**
@@ -612,7 +608,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @return All cached image files deriving from the image with the given
      *         identifier.
      */
-    Set<Path> getDerivativeImageFiles(Identifier identifier) throws IOException {
+    Set<Path> getDerivativeImageFiles(Identifier identifier)
+            throws IOException {
         final Path cachePath = rootDerivativeImagePath().resolve(
                 hashedPathFragment(identifier.toString()));
         final String expectedNamePrefix =
@@ -623,7 +620,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     @Override
-    public Info getImageInfo(Identifier identifier) throws CacheException {
+    public Info getImageInfo(Identifier identifier) throws IOException {
         final ReadWriteLock lock = acquireInfoLock(identifier);
         lock.readLock().lock();
 
@@ -647,8 +644,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             }
         } catch (NoSuchFileException | FileNotFoundException e) {
             LOGGER.info("getImageInfo(): not found: {}", e.getMessage());
-        } catch (IOException e) {
-            throw new CacheException(e.getMessage(), e);
         } finally {
             lock.readLock().unlock();
         }
@@ -656,8 +651,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     @Override
-    public Path getSourceImageFile(Identifier identifier)
-            throws CacheException {
+    public Path getSourceImageFile(Identifier identifier) throws IOException {
         synchronized (sourceImageWriteLock) {
             while (imagesBeingWritten.contains(identifier)) {
                 try {
@@ -673,66 +667,57 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         Path file = null;
         final Path cacheFile = sourceImageFile(identifier);
 
-        try {
-            if (Files.exists(cacheFile)) {
-                if (!isExpired(cacheFile)) {
-                    LOGGER.info("getSourceImageFile(): hit: {} ({})",
-                            identifier, cacheFile);
-                    file = cacheFile;
-                } else {
-                    // Delete it asynchronously.
-                    ThreadPool.getInstance().submit(() -> {
-                        LOGGER.info("getSourceImageFile(): deleting stale file: {}",
+        if (Files.exists(cacheFile)) {
+            if (!isExpired(cacheFile)) {
+                LOGGER.info("getSourceImageFile(): hit: {} ({})",
+                        identifier, cacheFile);
+                file = cacheFile;
+            } else {
+                // Delete it asynchronously.
+                ThreadPool.getInstance().submit(() -> {
+                    LOGGER.info("getSourceImageFile(): deleting stale file: {}",
+                            cacheFile);
+                    try {
+                        Files.deleteIfExists(cacheFile);
+                    } catch (IOException e) {
+                        LOGGER.warn("getSourceImageFile(): unable to delete {}",
                                 cacheFile);
-                        try {
-                            Files.deleteIfExists(cacheFile);
-                        } catch (IOException e) {
-                            LOGGER.warn("getSourceImageFile(): unable to delete {}",
-                                    cacheFile);
-                        }
-                    });
-                }
+                    }
+                });
             }
-        } catch (IOException e) {
-            throw new CacheException(e.getMessage(), e);
         }
         return file;
     }
 
     @Override
     public InputStream newDerivativeImageInputStream(OperationList ops)
-            throws CacheException {
+            throws IOException {
         InputStream inputStream = null;
         final Path cacheFile = derivativeImageFile(ops);
 
-        try {
-            if (Files.exists(cacheFile)) {
-                if (!isExpired(cacheFile)) {
-                    try {
-                        LOGGER.info("newDerivativeImageInputStream(): " +
-                                        "hit: {} ({})", ops, cacheFile);
-                        inputStream = Files.newInputStream(cacheFile);
-                    } catch (NoSuchFileException e) {
-                        LOGGER.error(e.getMessage(), e);
-                    }
-                } else {
-                    // Delete it asynchronously.
-                    ThreadPool.getInstance().submit(() -> {
-                        LOGGER.info("newDerivativeImageInputStream(): " +
-                                "deleting stale file: {}", cacheFile);
-                        try {
-                            Files.deleteIfExists(cacheFile);
-                        } catch (IOException e) {
-                            LOGGER.warn("newDerivativeImageInputStream(): " +
-                                    "unable to delete {}", cacheFile);
-                        }
-                    });
+        if (Files.exists(cacheFile)) {
+            if (!isExpired(cacheFile)) {
+                try {
+                    LOGGER.info("newDerivativeImageInputStream(): " +
+                                    "hit: {} ({})", ops, cacheFile);
+                    inputStream = Files.newInputStream(cacheFile);
+                } catch (NoSuchFileException e) {
+                    LOGGER.error(e.getMessage(), e);
                 }
+            } else {
+                // Delete it asynchronously.
+                ThreadPool.getInstance().submit(() -> {
+                    LOGGER.info("newDerivativeImageInputStream(): " +
+                            "deleting stale file: {}", cacheFile);
+                    try {
+                        Files.deleteIfExists(cacheFile);
+                    } catch (IOException e) {
+                        LOGGER.warn("newDerivativeImageInputStream(): " +
+                                "unable to delete {}", cacheFile);
+                    }
+                });
             }
-        } catch (IOException e) {
-            throw new CacheException(e.getMessage(), e);
         }
-
         return inputStream;
     }
 
@@ -742,17 +727,13 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      *         temporary file and then move it into place when closed. It may
      *         also write to nothing if an output stream for the same operation
      *         list has been returned to another thread but not yet closed.
-     * @throws CacheException If anything goes wrong.
+     * @throws IOException If anything goes wrong.
      */
     @Override
     public OutputStream newDerivativeImageOutputStream(OperationList ops)
-            throws CacheException {
-        try {
-            return newOutputStream(ops, derivativeImageTempFile(ops),
-                    derivativeImageFile(ops), derivativeImageWriteLock);
-        } catch (IOException e) {
-            throw new CacheException(e.getMessage(), e);
-        }
+            throws IOException {
+        return newOutputStream(ops, derivativeImageTempFile(ops),
+                derivativeImageFile(ops), derivativeImageWriteLock);
     }
 
     /**
@@ -761,17 +742,13 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      *         a temp file and then move it into place when closed. It may also
      *         write to nothing if an output stream for the same operation list
      *         has been returned to another thread but not yet closed.
-     * @throws CacheException If anything goes wrong.
+     * @throws IOException If anything goes wrong.
      */
     @Override
     public OutputStream newSourceImageOutputStream(Identifier identifier)
-            throws CacheException {
-        try {
-            return newOutputStream(identifier, sourceImageTempFile(identifier),
-                    sourceImageFile(identifier), sourceImageWriteLock);
-        } catch (IOException e) {
-            throw new CacheException(e.getMessage(), e);
-        }
+            throws IOException {
+        return newOutputStream(identifier, sourceImageTempFile(identifier),
+                sourceImageFile(identifier), sourceImageWriteLock);
     }
 
     /**
@@ -826,7 +803,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * progress in another thread.</p>
      */
     @Override
-    public void purge() throws CacheException {
+    public void purge() throws IOException {
         if (isGlobalPurgeInProgress.get()) {
             LOGGER.info("purge() called with a purge already in progress. " +
                     "Aborting.");
@@ -859,8 +836,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             LOGGER.info("purge(): purged {} item(s) totaling {} bytes",
                     visitor.getDeletedFileCount(),
                     visitor.getDeletedFileSize());
-        } catch (IOException e) {
-            throw new CacheException(e.getMessage(), e);
         } finally {
             isGlobalPurgeInProgress.set(false);
             synchronized (imagePurgeLock) {
@@ -876,7 +851,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * progress in another thread.</p>
      */
     @Override
-    public void purge(Identifier identifier) throws CacheException {
+    public void purge(Identifier identifier) throws IOException {
         if (isGlobalPurgeInProgress.get()) {
             LOGGER.info("purge(Identifier) called with a global purge in " +
                     "progress. Aborting.");
@@ -922,8 +897,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     LOGGER.warn(e.getMessage());
                 }
             }
-        } catch (IOException e) {
-            throw new CacheException(e.getMessage(), e);
         } finally {
             infosBeingPurged.remove(identifier);
         }
@@ -984,7 +957,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * progress in another thread.</p>
      */
     @Override
-    public void purgeExpired() throws CacheException {
+    public void purgeExpired() throws IOException {
         if (isGlobalPurgeInProgress.get()) {
             LOGGER.info("purgeExpired() called with a purge in progress. " +
                     "Aborting.");
@@ -1014,8 +987,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             LOGGER.info("purgeExpired(): purged {} item(s) totaling {} bytes",
                     visitor.getDeletedFileCount(),
                     visitor.getDeletedFileSize());
-        } catch (IOException e) {
-            throw new CacheException(e.getMessage(), e);
         } finally {
             isGlobalPurgeInProgress.set(false);
             synchronized (imagePurgeLock) {
@@ -1025,7 +996,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     @Override
-    public void put(Identifier identifier, Info info) throws CacheException {
+    public void put(Identifier identifier, Info info) throws IOException {
         final ReadWriteLock lock = acquireInfoLock(identifier);
 
         lock.writeLock().lock();
@@ -1066,7 +1037,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 LOGGER.error("put(): failed to delete file: {}",
                         e2.getMessage());
             }
-            throw new CacheException(e.getMessage(), e);
+            throw e;
         } finally {
             lock.writeLock().unlock();
         }

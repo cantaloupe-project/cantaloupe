@@ -203,7 +203,7 @@ class AmazonS3Cache implements DerivativeCache {
     }
 
     @Override
-    public Info getImageInfo(Identifier identifier) throws CacheException {
+    public Info getImageInfo(Identifier identifier) throws IOException {
         final AmazonS3 s3 = getClientInstance();
         final String bucketName = getBucketName();
         final String objectKey = getObjectKey(identifier);
@@ -219,15 +219,13 @@ class AmazonS3Cache implements DerivativeCache {
             if (e.getStatusCode() == 404) {
                 return null;
             }
-            throw new CacheException(e.getMessage(), e);
-        } catch (IOException e) {
-            throw new CacheException(e.getMessage(), e);
+            throw new IOException(e.getMessage(), e);
         }
     }
 
     @Override
     public InputStream newDerivativeImageInputStream(OperationList opList)
-            throws CacheException {
+            throws IOException {
         final AmazonS3 s3 = getClientInstance();
         final String bucketName = getBucketName();
         final String objectKey = getObjectKey(opList);
@@ -241,7 +239,7 @@ class AmazonS3Cache implements DerivativeCache {
             if (e.getStatusCode() == 404) {
                 return null;
             }
-            throw new CacheException(e.getMessage(), e);
+            throw new IOException(e.getMessage(), e);
         }
     }
 
@@ -392,24 +390,20 @@ class AmazonS3Cache implements DerivativeCache {
      * @param info       Info to upload to S3.
      */
     @Override
-    public void put(Identifier identifier, Info info) throws CacheException {
+    public void put(Identifier identifier, Info info) throws IOException {
         final AmazonS3 s3 = getClientInstance();
         final String objectKey = getObjectKey(identifier);
         final String bucketName = getBucketName();
 
-        try {
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            info.writeAsJSON(os);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        info.writeAsJSON(os);
 
-            final ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentType("application/json");
-            metadata.setContentEncoding("UTF-8");
-            metadata.setContentLength(os.size());
+        final ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType("application/json");
+        metadata.setContentEncoding("UTF-8");
+        metadata.setContentLength(os.size());
 
-            new AmazonS3Upload(s3, os, bucketName, objectKey, metadata).run();
-        } catch (IOException e) {
-            throw new CacheException(e.getMessage(), e);
-        }
+        new AmazonS3Upload(s3, os, bucketName, objectKey, metadata).run();
     }
 
 }

@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.auth.AuthInfo;
 import edu.illinois.library.cantaloupe.auth.Authorizer;
-import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -382,7 +381,7 @@ public abstract class AbstractResource extends ServerResource {
      */
     protected final Info getOrReadInfo(final Identifier identifier,
                                        final Processor proc)
-            throws ProcessorException, CacheException {
+            throws ProcessorException, IOException {
         Info info;
         if (!isBypassingCache()) {
             info = new CacheFacade().getOrReadInfo(identifier, proc);

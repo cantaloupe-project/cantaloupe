@@ -202,7 +202,7 @@ class RedisCache implements DerivativeCache {
         }
     }
 
-    private static final Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(RedisCache.class);
 
     static final String IMAGE_HASH_KEY =
@@ -223,16 +223,12 @@ class RedisCache implements DerivativeCache {
     }
 
     @Override
-    public Info getImageInfo(Identifier identifier) throws CacheException {
+    public Info getImageInfo(Identifier identifier) throws IOException {
         byte[] json = getConnection().sync().hget(INFO_HASH_KEY,
                 infoKey(identifier));
         if (json != null) {
-            try {
-                String jsonStr = new String(json, "UTF-8");
-                return Info.fromJSON(jsonStr);
-            } catch (IOException e) {
-                throw new CacheException(e.getMessage(), e);
-            }
+            String jsonStr = new String(json, "UTF-8");
+            return Info.fromJSON(jsonStr);
         }
         return null;
     }
@@ -256,11 +252,11 @@ class RedisCache implements DerivativeCache {
     @Override
     public void purge() {
         // Purge infos
-        logger.info("purge(): purging {}...", INFO_HASH_KEY);
+        LOGGER.info("purge(): purging {}...", INFO_HASH_KEY);
         getConnection().sync().del(INFO_HASH_KEY);
 
         // Purge images
-        logger.info("purge(): purging {}...", IMAGE_HASH_KEY);
+        LOGGER.info("purge(): purging {}...", IMAGE_HASH_KEY);
         getConnection().sync().del(IMAGE_HASH_KEY);
     }
 
@@ -268,12 +264,12 @@ class RedisCache implements DerivativeCache {
     public void purge(Identifier identifier) {
         // Purge info
         String infoKey = infoKey(identifier);
-        logger.info("purge(Identifier): purging {}...", infoKey);
+        LOGGER.info("purge(Identifier): purging {}...", infoKey);
         getConnection().sync().hdel(INFO_HASH_KEY, infoKey);
 
         // Purge images
         ScanArgs imagePattern = ScanArgs.Builder.matches(identifier + "*");
-        logger.info("purge(Identifier): purging {}...", imagePattern);
+        LOGGER.info("purge(Identifier): purging {}...", imagePattern);
 
         MapScanCursor<String, byte[]> cursor = getConnection().sync().
                 hscan(IMAGE_HASH_KEY, imagePattern);
@@ -287,27 +283,26 @@ class RedisCache implements DerivativeCache {
      */
     @Override
     public void purgeExpired() {
-        logger.info("purgeExpired(): " +
+        LOGGER.info("purgeExpired(): " +
                 "nothing to do (expiration must be configured in Redis)");
     }
 
     @Override
     public void purge(OperationList opList) {
         String imageKey = imageKey(opList);
-        logger.info("purge(OperationList): purging {}...", imageKey);
+        LOGGER.info("purge(OperationList): purging {}...", imageKey);
         getConnection().sync().hdel(IMAGE_HASH_KEY, imageKey);
     }
 
     @Override
-    public void put(Identifier identifier, Info imageInfo)
-            throws CacheException {
-        logger.info("put(): caching info for {}", identifier);
+    public void put(Identifier identifier, Info imageInfo) throws IOException {
+        LOGGER.info("put(): caching info for {}", identifier);
         try {
             getConnection().async().hset(INFO_HASH_KEY, infoKey(identifier),
                     imageInfo.toJSON().getBytes("UTF-8"));
         } catch (JsonProcessingException | UnsupportedEncodingException e) {
-            logger.error("put(): {}", e.getMessage());
-            throw new CacheException(e.getMessage(), e);
+            LOGGER.error("put(): {}", e.getMessage());
+            throw new IOException(e.getMessage(), e);
         }
     }
 

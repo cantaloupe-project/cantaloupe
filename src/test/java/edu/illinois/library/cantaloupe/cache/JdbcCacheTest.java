@@ -54,7 +54,7 @@ public class JdbcCacheTest extends BaseTest {
     }
 
     @After
-    public void tearDown() throws CacheException {
+    public void tearDown() throws Exception {
         instance.purge();
     }
 
@@ -158,14 +158,11 @@ public class JdbcCacheTest extends BaseTest {
     /* getImageInfo(Identifier) */
 
     @Test
-    public void testGetImageInfoWithZeroTtl() throws CacheException {
+    public void testGetImageInfoWithZeroTtl() throws Exception {
         // existing image
-        try {
-            Info actual = instance.getImageInfo(new Identifier("cats"));
-            assertEquals(actual, new Info(50, 40));
-        } catch (CacheException e) {
-            fail();
-        }
+        Info actual = instance.getImageInfo(new Identifier("cats"));
+        assertEquals(actual, new Info(50, 40));
+
         // nonexistent image
         assertNull(instance.getImageInfo(new Identifier("bogus")));
     }
@@ -187,12 +184,9 @@ public class JdbcCacheTest extends BaseTest {
         instance.put(new Identifier("bees"), new Info(50, 40));
 
         // existing, non-expired image
-        try {
-            Info actual = instance.getImageInfo(new Identifier("bees"));
-            assertEquals(actual, new Info(50, 40));
-        } catch (CacheException e) {
-            fail();
-        }
+        Info actual = instance.getImageInfo(new Identifier("bees"));
+        assertEquals(actual, new Info(50, 40));
+
         // existing, expired image
         assertNull(instance.getImageInfo(new Identifier("cats")));
         // nonexistent image
@@ -467,7 +461,7 @@ public class JdbcCacheTest extends BaseTest {
     /* put(Identifier, Info) */
 
     @Test
-    public void testPutWithImageInfo() throws CacheException {
+    public void testPutWithImageInfo() throws Exception {
         Identifier identifier = new Identifier("birds");
         Info info = new Info(52, 52);
         instance.put(identifier, info);

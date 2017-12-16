@@ -651,7 +651,7 @@ public class FilesystemCacheTest extends BaseTest {
     }
 
     @Test
-    public void testPut() throws CacheException {
+    public void testPut() throws Exception {
         Identifier identifier = new Identifier("cats");
         Info info = new Info(52, 42);
         instance.put(identifier, info);

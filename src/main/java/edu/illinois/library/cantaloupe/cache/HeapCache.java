@@ -344,16 +344,13 @@ class HeapCache implements DerivativeCache {
     }
 
     @Override
-    public Info getImageInfo(Identifier identifier) throws CacheException {
+    public Info getImageInfo(Identifier identifier) throws IOException {
         Info info = null;
         Item item = get(itemKey(identifier));
         if (item != null) {
             LOGGER.info("getImageInfo(): hit for {}", identifier);
-            try {
-                info = Info.fromJSON(new String(item.getData(), "UTF-8"));
-            } catch (IOException e) {
-                throw new CacheException(e.getMessage(), e);
-            }
+
+            info = Info.fromJSON(new String(item.getData(), "UTF-8"));
         }
         return info;
     }
@@ -571,19 +568,15 @@ class HeapCache implements DerivativeCache {
     }
 
     @Override
-    public void put(Identifier identifier, Info imageInfo)
-            throws CacheException {
+    public void put(Identifier identifier, Info imageInfo) throws IOException {
         LOGGER.info("put(): caching info for {}", identifier);
         isDirty.lazySet(true);
         Key key = itemKey(identifier);
-        try {
-            // Rather than storing the info instance itself, we store its JSON
-            // serialization, mainly in order to be able to easily get its size.
-            Item item = new Item(imageInfo.toJSON().getBytes("UTF-8"));
-            cache.putIfAbsent(key, item);
-        } catch (IOException e) {
-            throw new CacheException(e.getMessage(), e);
-        }
+
+        // Rather than storing the info instance itself, we store its JSON
+        // serialization, mainly in order to be able to easily get its size.
+        Item item = new Item(imageInfo.toJSON().getBytes("UTF-8"));
+        cache.putIfAbsent(key, item);
     }
 
     /**

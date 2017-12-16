@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.image.Info;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -24,9 +25,9 @@ public interface DerivativeCache extends Cache {
      * @param identifier Image identifier for which to retrieve information.
      * @return Info corresponding to the given identifier, or null if no
      * non-expired info exists in the cache.
-     * @throws CacheException
+     * @throws IOException
      */
-    Info getImageInfo(Identifier identifier) throws CacheException;
+    Info getImageInfo(Identifier identifier) throws IOException;
 
     /**
      * <p>Returns an input stream corresponding to the given OperationList,
@@ -41,30 +42,30 @@ public interface DerivativeCache extends Cache {
      * @return Input stream corresponding to the given operation list, or null
      *         if a non-expired image corresponding to the given operation
      *         list does not exist in the cache.
-     * @throws CacheException
+     * @throws IOException
      */
     InputStream newDerivativeImageInputStream(OperationList opList)
-            throws CacheException;
+            throws IOException;
 
     /**
      * @param opList Operation list for which to retrieve an output stream for
      *               writing to the cache.
      * @return Output stream to which an image corresponding to the given
      *         operation list can be written.
-     * @throws CacheException
+     * @throws IOException
      */
     OutputStream newDerivativeImageOutputStream(OperationList opList)
-            throws CacheException;
+            throws IOException;
 
     /**
      * Deletes the cached image corresponding to the given operation list.
      *
      * @param opList
-     * @throws CacheException Upon fatal error. Implementations should do the
+     * @throws IOException Upon fatal error. Implementations should do the
      *         best they can to complete the operation and swallow and log
      *         non-fatal errors.
      */
-    void purge(OperationList opList) throws CacheException;
+    void purge(OperationList opList) throws IOException;
 
     /**
      * <p>Adds image information to the cache.</p>
@@ -78,8 +79,8 @@ public interface DerivativeCache extends Cache {
      * @param identifier Image identifier.
      * @param imageInfo Info containing information about the image with
      *                  the given identifier.
-     * @throws CacheException
+     * @throws IOException
      */
-    void put(Identifier identifier, Info imageInfo) throws CacheException;
+    void put(Identifier identifier, Info imageInfo) throws IOException;
 
 }
