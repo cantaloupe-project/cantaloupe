@@ -63,16 +63,15 @@ public class ResolverFactory {
                                 RequestContext context) throws Exception {
         final Configuration config = Configuration.getInstance();
         if (getSelectionStrategy().equals(SelectionStrategy.DELEGATE_SCRIPT)) {
-            Resolver resolver = newDynamicResolver(identifier);
+            Resolver resolver = newDynamicResolver(identifier, context);
             LOGGER.info("{}() returned a {} for {}",
                     RESOLVER_CHOOSER_DELEGATE_METHOD,
                     resolver.getClass().getSimpleName(), identifier);
-            resolver.setContext(context);
             return resolver;
         } else {
             final String resolverName = config.getString(Key.RESOLVER_STATIC);
             if (resolverName != null) {
-                return newStaticResolver(resolverName, identifier);
+                return newResolver(resolverName, identifier, context);
             } else {
                 throw new ConfigurationException(Key.RESOLVER_STATIC +
                         " is not set to a valid resolver.");
@@ -89,26 +88,14 @@ public class ResolverFactory {
                 SelectionStrategy.DELEGATE_SCRIPT : SelectionStrategy.STATIC;
     }
 
-    /**
-     * @param resolverName Resolver name
-     * @param identifier Identifier to return a resolver for.
-     * @return An instance of the current resolver based on the
-     * <code>resolver</code> setting in the configuration.
-     * @throws Exception
-     * @throws ConfigurationException If there is no resolver specified in the
-     * configuration.
-     */
-    private Resolver newStaticResolver(String resolverName,
-                                       Identifier identifier) throws Exception {
-        return newResolver(resolverName, identifier);
-    }
-
-    private Resolver newResolver(String name, Identifier identifier)
-            throws Exception {
-        Class<?> class_ = Class.forName(ResolverFactory.class.getPackage().getName() +
-                "." + name);
+    private Resolver newResolver(String name,
+                                 Identifier identifier,
+                                 RequestContext context) throws Exception {
+        Class<?> class_ = Class.forName(
+                ResolverFactory.class.getPackage().getName() + "." + name);
         Resolver resolver = (Resolver) class_.newInstance();
         resolver.setIdentifier(identifier);
+        resolver.setContext(context);
         return resolver;
     }
 
@@ -116,18 +103,19 @@ public class ResolverFactory {
      * Passes the given identifier to the resolver chooser delegate method.
      *
      * @param identifier Identifier to return a resolver for.
-     * @return Pathname of the image file corresponding to the given identifier,
-     * as reported by the lookup script, or null.
+     * @param context    Request context.
+     * @return Resolver for the given identifier as returned from a delegate
+     *         method.
      * @throws IOException If the lookup script configuration key is undefined
-     * @throws ScriptException If the script failed to execute
-     * @throws ScriptException If the script is of an unsupported type
+     * @throws ScriptException If the script failed to execute.
      */
-    private Resolver newDynamicResolver(final Identifier identifier)
+    private Resolver newDynamicResolver(Identifier identifier,
+                                        RequestContext context)
             throws Exception {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
         final Object result = engine.invoke(RESOLVER_CHOOSER_DELEGATE_METHOD,
                 identifier.toString());
-        return newResolver((String) result, identifier);
+        return newResolver((String) result, identifier, context);
     }
 
 }
