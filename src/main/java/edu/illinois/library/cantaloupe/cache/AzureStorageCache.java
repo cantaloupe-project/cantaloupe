@@ -154,16 +154,17 @@ class AzureStorageCache implements DerivativeCache {
             final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
             if (blob.exists()) {
                 if (!isExpired(blob)) {
-                    Info info = Info.fromJSON(blob.openInputStream());
-                    LOGGER.info("getImageInfo(): read {} from container {} in {} msec",
-                            objectKey, containerName, watch.timeElapsed());
-                    return info;
+                    try (InputStream is = blob.openInputStream()) {
+                        Info info = Info.fromJSON(is);
+                        LOGGER.info("getImageInfo(): read {} from container {} in {} msec",
+                                objectKey, containerName, watch.timeElapsed());
+                        return info;
+                    }
                 } else {
-                    // Delete it asynchronously.
-                    LOGGER.info("getImageInfo(): {} in container {} is invalid; deleting",
+                    LOGGER.debug("getImageInfo(): deleting invalid item " +
+                                    "asynchronously: {} in container {}",
                             objectKey, containerName);
-                    ThreadPool.getInstance().submit(() ->
-                            blob.deleteIfExists());
+                    purgeAsync(blob);
                 }
             }
         } catch (URISyntaxException | StorageException e) {
@@ -187,7 +188,15 @@ class AzureStorageCache implements DerivativeCache {
                     containerName, objectKey);
             final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
             if (blob.exists()) {
-                return blob.openInputStream();
+                if (!isExpired(blob)) {
+                    return blob.openInputStream();
+                } else {
+                    LOGGER.debug("newDerivativeImageInputStream(): " +
+                                    "deleting invalid item asynchronously: " +
+                                    "{} in container {}",
+                            objectKey, containerName);
+                    purgeAsync(blob);
+                }
             }
             return null;
         } catch (URISyntaxException | StorageException e) {
@@ -305,6 +314,18 @@ class AzureStorageCache implements DerivativeCache {
         } catch (URISyntaxException | StorageException e) {
             throw new IOException(e.getMessage(), e);
         }
+    }
+
+    private void purgeAsync(CloudBlob blob) {
+        ThreadPool.getInstance().submit(() -> {
+            LOGGER.debug("purgeAsync(): {}", blob);
+            try {
+                blob.deleteIfExists();
+            } catch (StorageException e) {
+                LOGGER.warn("purgeAsync(): failed to delete {}: {}",
+                        blob, e.getMessage());
+            }
+        });
     }
 
     @Override

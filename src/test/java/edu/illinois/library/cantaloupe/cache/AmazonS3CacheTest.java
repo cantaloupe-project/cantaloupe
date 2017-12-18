@@ -119,7 +119,7 @@ public class AmazonS3CacheTest extends BaseTest {
 
         instance.put(identifier, imageInfo);
 
-        Thread.sleep(2100);
+        Thread.sleep(3100);
 
         assertNull(instance.getImageInfo(identifier));
     }
@@ -131,6 +131,38 @@ public class AmazonS3CacheTest extends BaseTest {
         Path fixture = TestUtil.getImage(identifier.toString());
 
         // add an image
+        try (OutputStream os = instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(fixture, os);
+        }
+
+        // wait for it to upload
+        Thread.sleep(UPLOAD_WAIT);
+
+        // download the image
+        try (InputStream s3is = instance.newDerivativeImageInputStream(opList)) {
+            ByteArrayOutputStream s3ByteStream = new ByteArrayOutputStream();
+            IOUtils.copy(s3is, s3ByteStream);
+            s3ByteStream.close();
+
+            // assert that the downloaded byte array is the same length as the fixture
+            assertEquals(Files.size(fixture), s3ByteStream.toByteArray().length);
+        }
+    }
+
+    @Test
+    public void testNewDerivativeImageInputStreamWithNonexistentImage()
+            throws Exception {
+        try (InputStream is = instance.newDerivativeImageInputStream(opList)) {
+            assertNull(is);
+        }
+    }
+
+    @Test
+    public void testNewDerivativeImageInputStreamWithInvalidImage()
+            throws Exception {
+        Path fixture = TestUtil.getImage(identifier.toString());
+
+        // add an image
         try (OutputStream outputStream =
                      instance.newDerivativeImageOutputStream(opList)) {
             Files.copy(fixture, outputStream);
@@ -139,21 +171,17 @@ public class AmazonS3CacheTest extends BaseTest {
         // wait for it to upload
         Thread.sleep(UPLOAD_WAIT);
 
-        // download the image
-        InputStream s3InputStream = instance.newDerivativeImageInputStream(opList);
-        ByteArrayOutputStream s3ByteStream = new ByteArrayOutputStream();
-        IOUtils.copy(s3InputStream, s3ByteStream);
-        s3InputStream.close();
-        s3ByteStream.close();
+        try (InputStream is = instance.newDerivativeImageInputStream(opList)) {
+            assertNotNull(is);
+        }
 
-        // assert that the downloaded byte array is the same size as the fixture
-        assertEquals(Files.size(fixture), s3ByteStream.toByteArray().length);
-    }
+        // wait for it to invalidate
+        Thread.sleep(2100);
 
-    @Test
-    public void testnewDerivativeImageInputStreamWithNonexistentImage()
-            throws Exception {
-        assertNull(instance.newDerivativeImageInputStream(opList));
+        // assert that it has been purged
+        try (InputStream is = instance.newDerivativeImageInputStream(opList)) {
+            assertNull(is);
+        }
     }
 
     /* newDerivativeImageOutputStream(OperationList) */

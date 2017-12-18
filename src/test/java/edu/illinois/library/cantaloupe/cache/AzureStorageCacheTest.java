@@ -144,6 +144,30 @@ public class AzureStorageCacheTest extends BaseTest {
         assertNull(instance.newDerivativeImageInputStream(opList));
     }
 
+    @Test
+    public void testNewDerivativeImageInputStreamWithInvalidImage()
+            throws Exception {
+        Path fixture = TestUtil.getImage(identifier.toString());
+
+        // add an image
+        try (OutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(fixture, outputStream);
+        }
+
+        try (InputStream is = instance.newDerivativeImageInputStream(opList)) {
+            assertNotNull(is);
+        }
+
+        // wait for it to invalidate
+        Thread.sleep(2100);
+
+        // assert that it has been purged
+        try (InputStream is = instance.newDerivativeImageInputStream(opList)) {
+            assertNull(is);
+        }
+    }
+
     /* newDerivativeImageOutputStream(OperationList) */
 
     @Test
