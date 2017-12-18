@@ -32,6 +32,7 @@ title: Change Log
       <li>Added an option to HttpResolver to trust all certificates.</li>
       <li>The request timeout of HttpResolver is configurable.</li>
       <li>AmazonS3Resolver and AzureStorageResolver attempt to infer a source format from the object/blob key if not able to do so from the identifier or from object/blob metadata.</li>
+      <li>The maxmimum number of AWS connections used by AmazonS3Resolver is configurable.</li>
       <li>AmazonS3Resolver falls back to obtaining credentials from various other sources (see the user manual) when they are not set in the config file. (Thanks to @jweisman)</li>
       <li>Resolver delegates are passed an additional context parameter. (Thanks to @jonathangreen)</li>
     </ul>
@@ -58,6 +59,7 @@ title: Change Log
       <li>Added RedisCache.</li>
       <li>Added HeapCache.</li>
       <li>AmazonS3Cache uploads images to S3 asynchronously, enabling faster responses.</li>
+      <li>The maxmimum number of AWS connections used by AmazonS3Cache is configurable.</li>
       <li>AmazonS3Cache falls back to obtaining credentials from various other sources (see the user manual) when they are not set in the config file. (Thanks to @jweisman)</li>
       <li>On macOS, FilesystemCache uses file last-modified times rather than last-accessed times as the latter are unreliable.</li>
     </ul>

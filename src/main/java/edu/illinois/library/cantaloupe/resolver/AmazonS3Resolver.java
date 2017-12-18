@@ -11,7 +11,7 @@ import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
-import edu.illinois.library.cantaloupe.util.AWSClientFactory;
+import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
 
 import org.jruby.RubyHash;
 import org.slf4j.Logger;
@@ -77,11 +77,12 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     private static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
             final Configuration config = Configuration.getInstance();
-            final AWSClientFactory factory = new AWSClientFactory(
-                    config.getString(Key.AMAZONS3RESOLVER_ACCESS_KEY_ID),
-                    config.getString(Key.AMAZONS3RESOLVER_SECRET_KEY),
-                    config.getString(Key.AMAZONS3RESOLVER_BUCKET_REGION));
-            client = factory.newClient();
+            client = new AWSClientBuilder()
+                    .accessKeyID(config.getString(Key.AMAZONS3RESOLVER_ACCESS_KEY_ID))
+                    .secretKey(config.getString(Key.AMAZONS3RESOLVER_SECRET_KEY))
+                    .region(config.getString(Key.AMAZONS3RESOLVER_BUCKET_REGION))
+                    .maxConnections(config.getInt(Key.AMAZONS3RESOLVER_MAX_CONNECTIONS, 100))
+                    .build();
         }
         return client;
     }

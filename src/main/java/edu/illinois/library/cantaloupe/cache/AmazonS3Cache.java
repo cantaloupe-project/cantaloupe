@@ -14,7 +14,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.util.AWSClientFactory;
+import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -188,11 +188,12 @@ class AmazonS3Cache implements DerivativeCache {
     static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
             final Configuration config = Configuration.getInstance();
-            final AWSClientFactory factory = new AWSClientFactory(
-                    config.getString(Key.AMAZONS3CACHE_ACCESS_KEY_ID),
-                    config.getString(Key.AMAZONS3CACHE_SECRET_KEY),
-                    config.getString(Key.AMAZONS3CACHE_BUCKET_REGION));
-            client = factory.newClient();
+            client = new AWSClientBuilder()
+                    .accessKeyID(config.getString(Key.AMAZONS3CACHE_ACCESS_KEY_ID))
+                    .secretKey(config.getString(Key.AMAZONS3CACHE_SECRET_KEY))
+                    .region(config.getString(Key.AMAZONS3CACHE_BUCKET_REGION))
+                    .maxConnections(config.getInt(Key.AMAZONS3CACHE_MAX_CONNECTIONS, 100))
+                    .build();
         }
         return client;
     }

@@ -10,7 +10,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import edu.illinois.library.cantaloupe.util.AWSClientFactory;
+import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -62,7 +62,11 @@ public class AmazonS3ResolverTest extends AbstractResolverTest {
     }
 
     private static AmazonS3 client() {
-        return new AWSClientFactory(getAccessKeyId(), getSecretKey(), getRegion()).newClient();
+        return new AWSClientBuilder()
+                .accessKeyID(getAccessKeyId())
+                .secretKey(getSecretKey())
+                .region(getRegion())
+                .build();
     }
 
     private static String getAccessKeyId() {
