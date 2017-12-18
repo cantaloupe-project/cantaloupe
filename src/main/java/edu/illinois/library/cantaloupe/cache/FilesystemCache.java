@@ -630,17 +630,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 LOGGER.info("getImageInfo(): hit: {}", cacheFile);
                 return Info.fromJSON(cacheFile.toFile());
             } else {
-                // Delete it asynchronously.
-                ThreadPool.getInstance().submit(() -> {
-                    LOGGER.info("getImageInfo(): deleting stale file: {}",
-                            cacheFile);
-                    try {
-                        Files.deleteIfExists(cacheFile);
-                    } catch (IOException e) {
-                        LOGGER.warn("getImageInfo(): unable to delete {}",
-                                cacheFile);
-                    }
-                });
+                purgeAsync(cacheFile);
             }
         } catch (NoSuchFileException | FileNotFoundException e) {
             LOGGER.info("getImageInfo(): not found: {}", e.getMessage());
@@ -673,17 +663,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                         identifier, cacheFile);
                 file = cacheFile;
             } else {
-                // Delete it asynchronously.
-                ThreadPool.getInstance().submit(() -> {
-                    LOGGER.info("getSourceImageFile(): deleting stale file: {}",
-                            cacheFile);
-                    try {
-                        Files.deleteIfExists(cacheFile);
-                    } catch (IOException e) {
-                        LOGGER.warn("getSourceImageFile(): unable to delete {}",
-                                cacheFile);
-                    }
-                });
+                purgeAsync(cacheFile);
             }
         }
         return file;
@@ -705,17 +685,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     LOGGER.error(e.getMessage(), e);
                 }
             } else {
-                // Delete it asynchronously.
-                ThreadPool.getInstance().submit(() -> {
-                    LOGGER.info("newDerivativeImageInputStream(): " +
-                            "deleting stale file: {}", cacheFile);
-                    try {
-                        Files.deleteIfExists(cacheFile);
-                    } catch (IOException e) {
-                        LOGGER.warn("newDerivativeImageInputStream(): " +
-                                "unable to delete {}", cacheFile);
-                    }
-                });
+                purgeAsync(cacheFile);
             }
         }
         return inputStream;
@@ -947,6 +917,17 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 imagePurgeLock.notifyAll();
             }
         }
+    }
+
+    private void purgeAsync(final Path path) {
+        ThreadPool.getInstance().submit(() -> {
+            LOGGER.debug("purgeAsync(): deleting stale file: {}", path);
+            try {
+                Files.deleteIfExists(path);
+            } catch (IOException e) {
+                LOGGER.warn("purgeAsync(): unable to delete {}", path);
+            }
+        });
     }
 
     /**
