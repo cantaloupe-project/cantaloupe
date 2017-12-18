@@ -13,7 +13,6 @@ import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
 
-import org.jruby.RubyHash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +30,7 @@ import java.util.Map;
  * Simple Storage Service (S3)</a> object, for retrieving images from Amazon
  * S3.</p>
  *
- * <h3>Lookup Strategies</h3>
+ * <h1>Lookup Strategies</h1>
  *
  * <p>Two distinct lookup strategies are supported, defined by
  * {@link Key#AMAZONS3RESOLVER_LOOKUP_STRATEGY}. BasicLookupStrategy maps
@@ -43,12 +42,37 @@ import java.util.Map;
  */
 class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
+    private static class ObjectInfo {
+
+        private String bucketName;
+        private String key;
+
+        ObjectInfo(String key, String bucketName) {
+            this.key = key;
+            this.bucketName = bucketName;
+        }
+
+        String getBucketName() {
+            return bucketName;
+        }
+
+        String getKey() {
+            return key;
+        }
+
+        @Override
+        public String toString() {
+            return "" + getBucketName() + "/" + getKey();
+        }
+
+    }
+
     private static class S3ObjectStreamSource implements StreamSource {
 
-        private S3Object object;
+        private ObjectInfo objectInfo;
 
-        S3ObjectStreamSource(S3Object object) {
-            this.object = object;
+        S3ObjectStreamSource(ObjectInfo objectInfo) {
+            this.objectInfo = objectInfo;
         }
 
         @Override
@@ -57,7 +81,8 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
         }
 
         @Override
-        public InputStream newInputStream() {
+        public InputStream newInputStream() throws IOException {
+            S3Object object = fetchObject(objectInfo);
             return object.getObjectContent();
         }
 
@@ -71,7 +96,6 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
     private static AmazonS3 client;
 
-    private String bucketName;
     private IOException cachedAccessException;
 
     private static synchronized AmazonS3 getClientInstance() {
@@ -85,6 +109,22 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
                     .build();
         }
         return client;
+    }
+
+    private static S3Object fetchObject(ObjectInfo info) throws IOException {
+        final AmazonS3 s3 = getClientInstance();
+        try {
+            LOGGER.debug("Requesting {}", info);
+            return s3.getObject(new GetObjectRequest(
+                    info.getBucketName(),
+                    info.getKey()));
+        } catch (AmazonS3Exception e) {
+            if (e.getErrorCode().equals("NoSuchKey")) {
+                throw new NoSuchFileException(e.getMessage());
+            } else {
+                throw new IOException(e);
+            }
+        }
     }
 
     @Override
@@ -107,25 +147,8 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
             throw cachedAccessException;
         } else {
             try {
-                AmazonS3 s3 = getClientInstance();
-
-                final Configuration config = Configuration.getInstance();
-                final String objectKey = getObjectKey();
-                if (bucketName == null) {
-                    bucketName = config.getString(Key.AMAZONS3RESOLVER_BUCKET_NAME);
-                }
-                try {
-                    LOGGER.info("Requesting {} from bucket {}",
-                            objectKey, bucketName);
-                    return s3.getObject(new GetObjectRequest(bucketName,
-                            objectKey));
-                } catch (AmazonS3Exception e) {
-                    if (e.getErrorCode().equals("NoSuchKey")) {
-                        throw new NoSuchFileException(e.getMessage());
-                    } else {
-                        throw new IOException(e);
-                    }
-                }
+                final ObjectInfo info = getObjectInfo();
+                return fetchObject(info);
             } catch (IOException e) {
                 cachedAccessException = e;
                 throw e;
@@ -133,17 +156,21 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
         }
     }
 
-    private String getObjectKey() throws IOException {
+    private ObjectInfo getObjectInfo() throws IOException {
         final Configuration config = Configuration.getInstance();
+        ObjectInfo objectInfo;
+
         switch (config.getString(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY)) {
             case "BasicLookupStrategy":
-                return identifier.toString();
+                objectInfo = new ObjectInfo(identifier.toString(),
+                        config.getString(Key.AMAZONS3RESOLVER_BUCKET_NAME));
+                break;
             case "ScriptLookupStrategy":
                 try {
-                    String objectKey;
+                    String bucketName, objectKey;
                     Object object = getObjectInfoWithDelegateStrategy();
-                    if (object instanceof RubyHash) {
-                        Map<?,?> map = (RubyHash) object;
+                    if (object instanceof Map) {
+                        Map<?, ?> map = (Map<?, ?>) object;
                         if (map.containsKey("bucket") && map.containsKey("key")) {
                             bucketName = map.get("bucket").toString();
                             objectKey = map.get("key").toString();
@@ -152,17 +179,21 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
                             throw new IOException();
                         }
                     } else {
-                        objectKey = (String)object;
+                        objectKey = (String) object;
+                        bucketName = config.getString(
+                                Key.AMAZONS3RESOLVER_BUCKET_NAME);
                     }
-                    return objectKey;
+                    objectInfo = new ObjectInfo(objectKey, bucketName);
                 } catch (ScriptException | DelegateScriptDisabledException e) {
                     LOGGER.error(e.getMessage(), e);
                     throw new IOException(e);
                 }
+                break;
             default:
                 throw new IOException(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY +
                         " is invalid or not set");
         }
+        return objectInfo;
     }
 
     /**
@@ -199,7 +230,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
                 }
                 if (Format.UNKNOWN.equals(sourceFormat)) {
                     // Try to infer a format based on the objectKey.
-                    sourceFormat = Format.inferFormat(getObjectKey());
+                    sourceFormat = Format.inferFormat(object.getKey());
                 }
             }
         }
@@ -208,8 +239,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
     @Override
     public StreamSource newStreamSource() throws IOException {
-        S3Object object = getObject();
-        return new S3ObjectStreamSource(object);
+        return new S3ObjectStreamSource(getObjectInfo());
     }
 
 }
