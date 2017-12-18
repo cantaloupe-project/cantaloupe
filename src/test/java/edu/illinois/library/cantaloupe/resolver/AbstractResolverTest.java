@@ -2,9 +2,13 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.NoSuchFileException;
 
 abstract class AbstractResolverTest extends BaseTest {
@@ -88,10 +92,36 @@ abstract class AbstractResolverTest extends BaseTest {
             try {
                 initializeEndpoint();
 
-                StreamResolver sinstance = (StreamResolver) instance;
-                sinstance.newStreamSource();
-                sinstance.newStreamSource();
-                sinstance.newStreamSource();
+                StreamResolver sres = (StreamResolver) instance;
+                sres.newStreamSource();
+                sres.newStreamSource();
+                sres.newStreamSource();
+            } finally {
+                destroyEndpoint();
+            }
+        }
+    }
+
+    @Test
+    public void testNewStreamSourceReturnedInstanceIsReusable()
+            throws Exception {
+        Resolver instance = newInstance();
+        if (instance instanceof StreamResolver) {
+            try {
+                initializeEndpoint();
+
+                StreamResolver sres = (StreamResolver) instance;
+                StreamSource source = sres.newStreamSource();
+
+                try (InputStream is = source.newInputStream();
+                     OutputStream os = new NullOutputStream()) {
+                    IOUtils.copy(is, os);
+                }
+
+                try (InputStream is = source.newInputStream();
+                     OutputStream os = new NullOutputStream()) {
+                    IOUtils.copy(is, os);
+                }
             } finally {
                 destroyEndpoint();
             }
