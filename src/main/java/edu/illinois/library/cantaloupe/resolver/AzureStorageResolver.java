@@ -141,11 +141,10 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     }
 
     private String getObjectKey() throws IOException {
-        final Configuration config = Configuration.getInstance();
-        switch (config.getString(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY)) {
-            case "BasicLookupStrategy":
-                return identifier.toString();
-            case "ScriptLookupStrategy":
+        final LookupStrategy strategy =
+                LookupStrategy.fromKey(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY);
+        switch (strategy) {
+            case DELEGATE_SCRIPT:
                 try {
                     return getObjectKeyWithDelegateStrategy();
                 } catch (ScriptException | DelegateScriptDisabledException e) {
@@ -153,8 +152,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
                     throw new IOException(e);
                 }
             default:
-                throw new IOException(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY +
-                        " is invalid or not set");
+                return identifier.toString();
         }
     }
 

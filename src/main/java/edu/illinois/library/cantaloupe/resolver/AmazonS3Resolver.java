@@ -160,12 +160,10 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
         final Configuration config = Configuration.getInstance();
         ObjectInfo objectInfo;
 
-        switch (config.getString(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY)) {
-            case "BasicLookupStrategy":
-                objectInfo = new ObjectInfo(identifier.toString(),
-                        config.getString(Key.AMAZONS3RESOLVER_BUCKET_NAME));
-                break;
-            case "ScriptLookupStrategy":
+        final LookupStrategy strategy =
+                LookupStrategy.fromKey(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY);
+        switch (strategy) {
+            case DELEGATE_SCRIPT:
                 try {
                     String bucketName, objectKey;
                     Object object = getObjectInfoWithDelegateStrategy();
@@ -185,13 +183,13 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
                     }
                     objectInfo = new ObjectInfo(objectKey, bucketName);
                 } catch (ScriptException | DelegateScriptDisabledException e) {
-                    LOGGER.error(e.getMessage(), e);
                     throw new IOException(e);
                 }
                 break;
             default:
-                throw new IOException(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY +
-                        " is invalid or not set");
+                objectInfo = new ObjectInfo(identifier.toString(),
+                        config.getString(Key.AMAZONS3RESOLVER_BUCKET_NAME));
+                break;
         }
         return objectInfo;
     }

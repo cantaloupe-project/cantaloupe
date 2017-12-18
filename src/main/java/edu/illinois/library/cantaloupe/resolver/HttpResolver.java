@@ -334,17 +334,15 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
      */
     ResourceInfo getResourceInfo() throws Exception {
         if (resourceInfo == null) {
-            final Configuration config = Configuration.getInstance();
-            switch (config.getString(Key.HTTPRESOLVER_LOOKUP_STRATEGY)) {
-                case "BasicLookupStrategy":
-                    resourceInfo = getResourceInfoUsingBasicStrategy();
-                    break;
-                case "ScriptLookupStrategy":
+            final LookupStrategy strategy =
+                    LookupStrategy.fromKey(Key.HTTPRESOLVER_LOOKUP_STRATEGY);
+            switch (strategy) {
+                case DELEGATE_SCRIPT:
                     resourceInfo = getResourceInfoUsingScriptStrategy();
                     break;
                 default:
-                    throw new ConfigurationException(Key.HTTPRESOLVER_LOOKUP_STRATEGY +
-                            " is invalid or not set");
+                    resourceInfo = getResourceInfoUsingBasicStrategy();
+                    break;
             }
         }
         return resourceInfo;
