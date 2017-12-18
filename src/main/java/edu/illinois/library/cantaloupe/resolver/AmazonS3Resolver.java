@@ -175,8 +175,8 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
                             bucketName = map.get("bucket").toString();
                             objectKey = map.get("key").toString();
                         } else {
-                            LOGGER.error("Hash does not include bucket and key");
-                            throw new IOException();
+                            throw new IllegalArgumentException(
+                                    "Hash does not include bucket and key");
                         }
                     } else {
                         objectKey = (String) object;

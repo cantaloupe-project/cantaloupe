@@ -169,6 +169,25 @@ public class AmazonS3ResolverTest extends AbstractResolverTest {
     }
 
     @Test
+    public void testCheckAccessUsingScriptLookupStrategyReturningHash()
+            throws Exception {
+        useScriptLookupStrategy();
+
+        instance.setIdentifier(new Identifier("bucket:" + getBucket() +
+                ";key:" + OBJECT_KEY));
+        instance.checkAccess();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCheckAccessUsingScriptLookupStrategyWithMissingKeyInReturnedHash()
+            throws Exception {
+        useScriptLookupStrategy();
+
+        instance.setIdentifier(new Identifier("key:" + OBJECT_KEY));
+        instance.checkAccess();
+    }
+
+    @Test
     public void testGetSourceFormatUsingBasicLookupStrategy()
             throws IOException {
         assertEquals(Format.JPG, instance.getSourceFormat());
