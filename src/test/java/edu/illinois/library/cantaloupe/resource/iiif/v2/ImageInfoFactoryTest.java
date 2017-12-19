@@ -127,7 +127,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoSizesWithRotatedImage() throws Exception {
+    public void testNewImageInfoSizesWithRotatedImage() {
         // TODO: write this (need a bigger rotated image)
     }
 
@@ -177,13 +177,13 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoProfile() throws Exception {
+    public void testNewImageInfoProfile() {
         List<?> profile = (List<?>) imageInfo.get("profile");
         assertEquals("http://iiif.io/api/image/2/level2.json", profile.get(0));
     }
 
     @Test
-    public void testNewImageInfoFormats() throws Exception {
+    public void testNewImageInfoFormats() {
         List<?> profile = (List<?>) imageInfo.get("profile");
         // If some are present, we will assume the rest are. (The exact
         // contents of the sets are processor-dependent and this is not a
@@ -192,7 +192,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoQualities() throws Exception {
+    public void testNewImageInfoQualities() {
         List<?> profile = (List<?>) imageInfo.get("profile");
         // If some are present, we will assume the rest are. (The exact
         // contents of the sets are processor-dependent and this is not a
@@ -218,7 +218,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoSupports() throws Exception {
+    public void testNewImageInfoSupports() {
         List<?> profile = (List<?>) imageInfo.get("profile");
 
         final Set<?> supportsSet = (Set<?>) ((Map<?, ?>) profile.get(1)).get("supports");

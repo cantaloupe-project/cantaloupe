@@ -49,8 +49,7 @@ class ImageInfoFactory {
     ImageInfo<String,Object> newImageInfo(final Identifier identifier,
                                           final String imageUri,
                                           final Processor processor,
-                                          final Info cacheInfo)
-            throws ProcessorException {
+                                          final Info cacheInfo) {
         final Configuration config = Configuration.getInstance();
 
         // We want to use the orientation-aware full size, which takes the

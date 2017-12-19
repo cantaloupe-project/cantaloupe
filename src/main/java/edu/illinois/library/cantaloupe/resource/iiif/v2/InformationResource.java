@@ -12,7 +12,6 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
@@ -140,8 +139,7 @@ public class InformationResource extends IIIF2Resource {
 
     private Representation newRepresentation(Identifier identifier,
                                              Info info,
-                                             Processor processor)
-            throws ProcessorException {
+                                             Processor processor) {
         final ImageInfo<String, Object> imageInfo =
                 new ImageInfoFactory().newImageInfo(
                         identifier, getImageURI(), processor, info);
