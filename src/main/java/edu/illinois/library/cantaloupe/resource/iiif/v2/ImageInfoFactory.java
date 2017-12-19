@@ -49,28 +49,28 @@ class ImageInfoFactory {
     ImageInfo<String,Object> newImageInfo(final Identifier identifier,
                                           final String imageUri,
                                           final Processor processor,
-                                          final Info cacheInfo) {
+                                          final Info info) {
         final Configuration config = Configuration.getInstance();
 
         // We want to use the orientation-aware full size, which takes the
         // embedded orientation into account.
-        final Dimension virtualSize = cacheInfo.getOrientationSize();
+        final Dimension virtualSize = info.getOrientationSize();
 
         // Create a Map instance, which will eventually be serialized to JSON
         // and returned in the response body.
-        final ImageInfo<String,Object> imageInfo = new ImageInfo<>();
-        imageInfo.put("@context", "http://iiif.io/api/image/2/context.json");
-        imageInfo.put("@id", imageUri);
-        imageInfo.put("protocol", "http://iiif.io/api/image");
-        imageInfo.put("width", virtualSize.width);
-        imageInfo.put("height", virtualSize.height);
+        final ImageInfo<String,Object> responseInfo = new ImageInfo<>();
+        responseInfo.put("@context", "http://iiif.io/api/image/2/context.json");
+        responseInfo.put("@id", imageUri);
+        responseInfo.put("protocol", "http://iiif.io/api/image");
+        responseInfo.put("width", virtualSize.width);
+        responseInfo.put("height", virtualSize.height);
 
         // sizes -- this will be a 2^n series that will work for both multi-
         // and monoresolution images.
         final List<ImageInfo.Size> sizes = new ArrayList<>();
-        imageInfo.put("sizes", sizes);
+        responseInfo.put("sizes", sizes);
 
-        /** Minimum size that will be used in info.json "sizes" keys. */
+        // Minimum size that will be used in info.json "sizes" keys.
         final int minSize = config.getInt(Key.IIIF_MIN_SIZE, 64);
 
         final int maxReductionFactor =
@@ -97,20 +97,20 @@ class ImageInfoFactory {
         // Otherwise, use the smallest multiple of the tile size above that
         // of image resolution 0.
         final List<ImageInfo.Tile> tiles = new ArrayList<>();
-        imageInfo.put("tiles", tiles);
+        responseInfo.put("tiles", tiles);
 
         final Info.Image firstImage =
-                cacheInfo.getImages().get(0);
+                info.getImages().get(0);
 
         // Find the virtual tile size based on the virtual full image size.
         final Dimension virtualTileSize = firstImage.getOrientationTileSize();
 
-        if (cacheInfo.getImages().size() == 1 &&
+        if (info.getImages().size() == 1 &&
                 virtualTileSize.equals(virtualSize)) {
             uniqueTileSizes.add(
                     ImageInfoUtil.smallestTileSize(virtualSize, minTileSize));
         } else {
-            for (Info.Image image : cacheInfo.getImages()) {
+            for (Info.Image image : info.getImages()) {
                 uniqueTileSizes.add(
                         ImageInfoUtil.smallestTileSize(virtualSize,
                                 image.getOrientationTileSize(), minTileSize));
@@ -128,7 +128,7 @@ class ImageInfoFactory {
         }
 
         final List<Object> profile = new ArrayList<>();
-        imageInfo.put("profile", profile);
+        responseInfo.put("profile", profile);
 
         final String complianceUri = ComplianceLevel.getLevel(
                 SUPPORTED_SERVICE_FEATURES,
@@ -173,7 +173,7 @@ class ImageInfoFactory {
         try {
             final Map<String, Object> keyMap = (Map<String, Object>) ScriptEngineFactory.getScriptEngine().
                     invoke(SERVICE_DELEGATE_METHOD, identifier.toString());
-            imageInfo.putAll(keyMap);
+            responseInfo.putAll(keyMap);
         } catch (DelegateScriptDisabledException e) {
             LOGGER.debug("Delegate script disabled; skipping service " +
                     "information.");
@@ -181,7 +181,7 @@ class ImageInfoFactory {
             LOGGER.error(e.getMessage());
         }
 
-        return imageInfo;
+        return responseInfo;
     }
 
 }
