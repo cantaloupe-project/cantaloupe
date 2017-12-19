@@ -7,18 +7,26 @@ public class ImageInfoUtil {
     /**
      * @param fullSize Full size of the source image.
      * @param minDimension Minimum allowed dimension.
-     * @return Maximum reduction factor to be able to fit above minDimension.
+     * @return Maximum reduction factor to be able to fit above the minimum
+     *         allowed dimension.
      */
     public static int maxReductionFactor(final Dimension fullSize,
                                          final int minDimension) {
+        if (minDimension <= 0) {
+            throw new IllegalArgumentException("minDimension must be a positive number.");
+        }
         int nextDimension = Math.min(fullSize.width, fullSize.height);
-        for (int factor = 0; factor < 9999; factor++) {
+        int factor = -1;
+        for (int i = 0; i < 9999; i++) {
             nextDimension /= 2f;
             if (nextDimension < minDimension) {
-                return factor;
+                factor = i;
+                break;
             }
         }
-        return 0;
+        return factor;
+    }
+
     }
 
     /**
