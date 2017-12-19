@@ -34,8 +34,7 @@ import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -595,7 +594,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         DetritalFileVisitor visitor = new DetritalFileVisitor(minCleanableAge);
 
         Files.walkFileTree(path,
-                new HashSet<>(Collections.singletonList(FileVisitOption.FOLLOW_LINKS)),
+                EnumSet.of(FileVisitOption.FOLLOW_LINKS),
                 Integer.MAX_VALUE,
                 visitor);
         LOGGER.info("cleanUp(): cleaned {} item(s) totaling {} bytes",
@@ -800,7 +799,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
             LOGGER.info("purge(): purging...");
             Files.walkFileTree(path,
-                    new HashSet<>(Collections.singletonList(FileVisitOption.FOLLOW_LINKS)),
+                    EnumSet.of(FileVisitOption.FOLLOW_LINKS),
                     Integer.MAX_VALUE,
                     visitor);
             LOGGER.info("purge(): purged {} item(s) totaling {} bytes",
@@ -962,7 +961,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
             LOGGER.info("purgeExpired(): purging...");
             Files.walkFileTree(rootPath(),
-                    new HashSet<>(Collections.singletonList(FileVisitOption.FOLLOW_LINKS)),
+                    EnumSet.of(FileVisitOption.FOLLOW_LINKS),
                     Integer.MAX_VALUE,
                     visitor);
             LOGGER.info("purgeExpired(): purged {} item(s) totaling {} bytes",

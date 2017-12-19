@@ -14,13 +14,12 @@ import org.junit.Test;
 import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -48,8 +47,8 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
     protected HashMap<Format, Set<Format>> getAvailableOutputFormats()
             throws IOException {
         if (supportedFormats == null) {
-            final Set<Format> sourceFormats = new HashSet<>();
-            final Set<Format> outputFormats = new HashSet<>();
+            final Set<Format> sourceFormats = EnumSet.noneOf(Format.class);
+            final Set<Format> outputFormats = EnumSet.noneOf(Format.class);
 
             // retrieve the output of the `gm version` command, which contains a
             // list of all optional formats
@@ -104,7 +103,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
 
             supportedFormats = new HashMap<>();
             for (Format format : Format.values()) {
-                supportedFormats.put(format, new HashSet<>());
+                supportedFormats.put(format, EnumSet.noneOf(Format.class));
             }
             for (Format format : sourceFormats) {
                 supportedFormats.put(format, outputFormats);

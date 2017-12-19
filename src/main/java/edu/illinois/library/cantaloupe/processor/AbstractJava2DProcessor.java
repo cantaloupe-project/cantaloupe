@@ -111,8 +111,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
                      final OperationList opList,
                      final Info imageInfo,
                      ReductionFactor reductionFactor,
-                     final OutputStream outputStream)
-            throws IOException, ProcessorException {
+                     final OutputStream outputStream) throws IOException {
         final Format outputFormat = opList.getOutputFormat();
 
         if (reductionFactor == null) {

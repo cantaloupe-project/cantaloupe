@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resource.iiif.Feature;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,12 +20,18 @@ enum ComplianceLevel {
     LEVEL_1("http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level1"),
     LEVEL_2("http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2");
 
-    private static final Set<Feature> LEVEL_1_FEATURES = new HashSet<>();
-    private static final Set<Format> LEVEL_1_OUTPUT_FORMATS = new HashSet<>();
-    private static final Set<Quality> LEVEL_1_QUALITIES = new HashSet<>();
-    private static final Set<Feature> LEVEL_2_FEATURES = new HashSet<>();
-    private static final Set<Format> LEVEL_2_OUTPUT_FORMATS = new HashSet<>();
-    private static final Set<Quality> LEVEL_2_QUALITIES = new HashSet<>();
+    private static final Set<Feature> LEVEL_1_FEATURES =
+            new HashSet<>();
+    private static final Set<Format> LEVEL_1_OUTPUT_FORMATS =
+            EnumSet.noneOf(Format.class);
+    private static final Set<Quality> LEVEL_1_QUALITIES =
+            EnumSet.noneOf(Quality.class);
+    private static final Set<Feature> LEVEL_2_FEATURES =
+            new HashSet<>();
+    private static final Set<Format> LEVEL_2_OUTPUT_FORMATS =
+            EnumSet.noneOf(Format.class);
+    private static final Set<Quality> LEVEL_2_QUALITIES =
+            EnumSet.noneOf(Quality.class);
 
     private String uri;
 
@@ -60,8 +67,7 @@ enum ComplianceLevel {
             Set<ProcessorFeature> processorFeatures,
             Set<Quality> qualities,
             Set<Format> outputFormats) {
-        Set<Feature> allFeatures = new HashSet<>();
-        allFeatures.addAll(processorFeatures);
+        Set<Feature> allFeatures = new HashSet<>(processorFeatures);
 
         ComplianceLevel level = LEVEL_0;
         if (allFeatures.containsAll(LEVEL_1_FEATURES) &&

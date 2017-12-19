@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,7 +30,8 @@ class Java2dProcessor extends AbstractJava2DProcessor
         try {
             reader = getReader();
             final ReductionFactor rf = new ReductionFactor();
-            final Set<ImageReader.Hint> hints = new HashSet<>();
+            final Set<ImageReader.Hint> hints =
+                    EnumSet.noneOf(ImageReader.Hint.class);
 
             if (ops.getFirst(Normalize.class) != null) {
                 // When normalizing, the reader needs to read the entire image

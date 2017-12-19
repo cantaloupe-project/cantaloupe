@@ -37,6 +37,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
@@ -406,7 +407,8 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                         Format.BMP);
                 final BufferedImage image = reader.read();
                 try {
-                    Set<ImageReader.Hint> hints = new HashSet<>();
+                    Set<ImageReader.Hint> hints =
+                            EnumSet.noneOf(ImageReader.Hint.class);
                     if (!normalize) {
                         hints.add(ImageReader.Hint.ALREADY_CROPPED);
                     }
