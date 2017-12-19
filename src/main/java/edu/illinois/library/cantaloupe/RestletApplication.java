@@ -201,8 +201,7 @@ public class RestletApplication extends Application {
         return auth;
     }
 
-    private Authenticator newPublicEndpointAuthenticator()
-            throws ConfigurationException {
+    private Authenticator newPublicEndpointAuthenticator() {
         final Configuration config = Configuration.getInstance();
 
         if (config.getBoolean(Key.BASIC_AUTH_ENABLED, false)) {
@@ -336,15 +335,12 @@ public class RestletApplication extends Application {
         router.attach(STATIC_ROOT_PATH, dir);
 
         // Hook up public endpoint authentication
-        try {
-            Authenticator endpointAuth = newPublicEndpointAuthenticator();
-            if (endpointAuth != null) {
-                endpointAuth.setNext(router);
-                return endpointAuth;
-            }
-        } catch (ConfigurationException e) {
-            getLogger().log(Level.WARNING, e.getMessage());
+        Authenticator endpointAuth = newPublicEndpointAuthenticator();
+        if (endpointAuth != null) {
+            endpointAuth.setNext(router);
+            return endpointAuth;
         }
+
         return router;
     }
 
