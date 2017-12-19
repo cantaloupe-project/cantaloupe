@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.util.ObjectCache;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.slf4j.Logger;
@@ -153,12 +152,10 @@ public class InfoService {
      * @return           Info for the image with the given identifier.
      * @throws IOException        If there is an error reading or writing to or
      *                            from the cache.
-     * @throws ProcessorException If there is an error reading the info from
-     *                            the processor.
      * @see #getInfo(Identifier)
      */
     Info getOrReadInfo(final Identifier identifier, final Processor proc)
-            throws IOException, ProcessorException {
+            throws IOException {
         // Try to retrieve it from an object or derivative cache.
         Info info = getInfo(identifier);
         if (info == null) {

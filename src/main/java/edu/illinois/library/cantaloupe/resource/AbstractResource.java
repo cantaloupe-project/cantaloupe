@@ -11,7 +11,6 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.Request;
@@ -380,8 +379,7 @@ public abstract class AbstractResource extends ServerResource {
      * @return           Info for the image with the given identifier.
      */
     protected final Info getOrReadInfo(final Identifier identifier,
-                                       final Processor proc)
-            throws ProcessorException, IOException {
+                                       final Processor proc) throws IOException {
         Info info;
         if (!isBypassingCache()) {
             info = new CacheFacade().getOrReadInfo(identifier, proc);
