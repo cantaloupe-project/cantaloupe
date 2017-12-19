@@ -104,7 +104,7 @@ public class CacheFacadeTest extends BaseTest {
         final FileProcessor processor = (FileProcessor) new ProcessorFactory().
                 newProcessor(Format.JPG);
         processor.setSourceFormat(Format.JPG);
-        processor.setSourceFile(TestUtil.getImage(identifier.toString()).toFile());
+        processor.setSourceFile(TestUtil.getImage(identifier.toString()));
 
         Info expected = InfoService.getInstance().getOrReadInfo(identifier, processor);
         Info actual = instance.getOrReadInfo(identifier, processor);

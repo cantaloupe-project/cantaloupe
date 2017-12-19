@@ -16,11 +16,11 @@ import org.restlet.representation.OutputRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Restlet representation for images.
@@ -148,8 +148,8 @@ public class ImageRepresentation extends OutputRepresentation {
         if (!opList.hasEffect(processor.getSourceFormat())) {
             if (processor instanceof FileProcessor &&
                     ((FileProcessor) processor).getSourceFile() != null) {
-                File sourceFile = ((FileProcessor) processor).getSourceFile();
-                Files.copy(sourceFile.toPath(), outputStream);
+                Path sourceFile = ((FileProcessor) processor).getSourceFile();
+                Files.copy(sourceFile, outputStream);
             } else {
                 StreamSource streamSource =
                         ((StreamProcessor) processor).getStreamSource();

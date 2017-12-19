@@ -15,8 +15,8 @@ import javax.imageio.ImageIO;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -121,7 +121,7 @@ public class ImageReader {
      * @param sourceFile File to read from.
      * @param format Format of the source image.
      */
-    public ImageReader(File sourceFile, Format format)
+    public ImageReader(Path sourceFile, Format format)
             throws IOException {
         switch (format) {
             case BMP:

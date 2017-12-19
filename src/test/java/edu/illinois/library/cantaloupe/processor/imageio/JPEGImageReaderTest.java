@@ -18,7 +18,7 @@ public class JPEGImageReaderTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new JPEGImageReader(TestUtil.getImage("jpg").toFile());
+        instance = new JPEGImageReader(TestUtil.getImage("jpg"));
     }
 
     @After
@@ -28,7 +28,7 @@ public class JPEGImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testGetCompression() throws Exception {
+    public void testGetCompression() {
         assertEquals(Compression.JPEG, instance.getCompression(0));
     }
 

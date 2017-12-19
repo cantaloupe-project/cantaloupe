@@ -7,8 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.metadata.IIOMetadata;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 final class BMPImageReader extends AbstractImageReader {
 
@@ -18,7 +18,7 @@ final class BMPImageReader extends AbstractImageReader {
     /**
      * @param sourceFile Source file to read.
      */
-    BMPImageReader(File sourceFile) throws IOException {
+    BMPImageReader(Path sourceFile) throws IOException {
         super(sourceFile, Format.BMP);
     }
 

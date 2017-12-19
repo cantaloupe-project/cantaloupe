@@ -99,7 +99,7 @@ public class ProcessorConnector {
                         "between {} and {}",
                         resolverName, processorName);
                 ((FileProcessor) processor).setSourceFile(
-                        ((FileResolver) resolver).getPath().toFile());
+                        ((FileResolver) resolver).getPath());
             } else {
                 // All FileResolvers are also StreamResolvers.
                 LOGGER.info("FileResolver -> StreamProcessor connection " +
@@ -164,7 +164,7 @@ public class ProcessorConnector {
                 sourceCache.getClass().getSimpleName(),
                 processor.getClass().getSimpleName());
         if (processor instanceof FileProcessor) {
-            ((FileProcessor) processor).setSourceFile(sourceFile.toFile());
+            ((FileProcessor) processor).setSourceFile(sourceFile);
         } else {
             InputStream inputStream = Files.newInputStream(sourceFile);
             StreamSource streamSource = new InputStreamStreamSource(inputStream);

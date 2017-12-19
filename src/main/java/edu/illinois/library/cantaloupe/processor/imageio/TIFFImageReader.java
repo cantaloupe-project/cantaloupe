@@ -20,8 +20,8 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Set;
 
 final class TIFFImageReader extends AbstractImageReader {
@@ -32,7 +32,7 @@ final class TIFFImageReader extends AbstractImageReader {
     /**
      * @param sourceFile Source file to read.
      */
-    TIFFImageReader(File sourceFile) throws IOException {
+    TIFFImageReader(Path sourceFile) throws IOException {
         super(sourceFile, Format.TIF);
     }
 

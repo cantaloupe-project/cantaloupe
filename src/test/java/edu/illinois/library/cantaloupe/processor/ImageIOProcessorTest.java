@@ -51,12 +51,12 @@ abstract class ImageIOProcessorTest extends ProcessorTest {
 
         // test as a FileProcessor
         FileProcessor fproc = (FileProcessor) newInstance();
-        fproc.setSourceFile(fixture.toFile());
+        fproc.setSourceFile(fixture);
         fproc.setSourceFormat(Format.TIF);
         assertEquals(expectedInfo, fproc.readImageInfo());
 
         try {
-            fproc.setSourceFile(TestUtil.getImage("mpg").toFile());
+            fproc.setSourceFile(TestUtil.getImage("mpg"));
             fproc.setSourceFormat(Format.MPG);
             expectedInfo = new Info(640, 360, Format.MPG);
             assertEquals(expectedInfo, fproc.readImageInfo());
@@ -73,7 +73,7 @@ abstract class ImageIOProcessorTest extends ProcessorTest {
         final Path fixture = TestUtil.getImage("jpg-rotated.jpg");
 
         final FileProcessor fproc = (FileProcessor) newInstance();
-        fproc.setSourceFile(fixture.toFile());
+        fproc.setSourceFile(fixture);
         fproc.setSourceFormat(Format.JPG);
 
         final Info info = fproc.readImageInfo();

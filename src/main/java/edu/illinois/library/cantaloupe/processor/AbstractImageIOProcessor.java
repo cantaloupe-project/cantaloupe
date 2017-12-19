@@ -9,8 +9,8 @@ import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +25,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
     private static final Map<Format,Set<Format>> FORMATS =
             availableOutputFormats();
 
-    protected File sourceFile;
+    protected Path sourceFile;
     protected StreamSource streamSource;
 
     /**
@@ -87,8 +87,8 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
     }
 
     /**
-     * ({@link #setSourceFile(File)} or {@link #setStreamSource(StreamSource)})
-     * and {@link #setSourceFormat(Format)} must be invoked first.
+     * ({@link #setSourceFile} or {@link #setStreamSource}) and
+     * {@link #setSourceFormat(Format)} must be invoked first.
      */
     protected ImageReader getReader() throws IOException {
         if (reader == null) {
@@ -101,7 +101,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
         return reader;
     }
 
-    public File getSourceFile() {
+    public Path getSourceFile() {
         return sourceFile;
     }
 
@@ -109,7 +109,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
         return streamSource;
     }
 
-    public void setSourceFile(File sourceFile) {
+    public void setSourceFile(Path sourceFile) {
         disposeReader();
         this.streamSource = null;
         this.sourceFile = sourceFile;

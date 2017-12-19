@@ -95,7 +95,7 @@ public class ProcessorConnectorTest extends BaseTest {
         instance.connect(resolver, processor, IDENTIFIER);
 
         assertEquals(
-                ((FileResolver) resolver).getPath().toFile(),
+                ((FileResolver) resolver).getPath(),
                 ((FileProcessor) processor).getSourceFile());
     }
 
@@ -165,7 +165,7 @@ public class ProcessorConnectorTest extends BaseTest {
 
             assertEquals(
                     CacheFactory.getSourceCache().getSourceImageFile(identifier),
-                    ((FileProcessor) processor).getSourceFile().toPath());
+                    ((FileProcessor) processor).getSourceFile());
         } finally {
             server.stop();
             recursiveDeleteOnExit(cacheFolder);

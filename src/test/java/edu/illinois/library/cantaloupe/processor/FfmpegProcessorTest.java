@@ -14,7 +14,6 @@ import org.junit.Test;
 
 import java.awt.Dimension;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
@@ -60,7 +59,7 @@ public class FfmpegProcessorTest extends ProcessorTest {
             final Format format = Format.MPG;
             final Path fixture = TestUtil.
                     getFixture("images/" + format.getPreferredExtension());
-            instance.setSourceFile(fixture.toFile());
+            instance.setSourceFile(fixture);
             instance.setSourceFormat(format);
         } catch (IOException | UnsupportedSourceFormatException e) {
             fail("Huge bug");

@@ -7,8 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.metadata.IIOMetadata;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 final class JPEGImageReader extends AbstractImageReader {
 
@@ -18,7 +18,7 @@ final class JPEGImageReader extends AbstractImageReader {
     /**
      * @param sourceFile Source file to read.
      */
-    JPEGImageReader(File sourceFile) throws IOException {
+    JPEGImageReader(Path sourceFile) throws IOException {
         super(sourceFile, Format.JPG);
     }
 

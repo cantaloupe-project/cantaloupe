@@ -126,16 +126,16 @@ public class OpenJpegProcessorTest extends ProcessorTest {
     public void testReadImageInfoTileAwareness() throws Exception {
         Info expectedInfo = new Info(100, 88, 100, 88, Format.JP2);
 
-        instance.setSourceFile(TestUtil.getImage("jp2").toFile());
+        instance.setSourceFile(TestUtil.getImage("jp2"));
         assertEquals(expectedInfo, instance.readImageInfo());
 
         // untiled image
-        instance.setSourceFile(TestUtil.getImage("jp2-rgb-64x56x8-monotiled-lossy.jp2").toFile());
+        instance.setSourceFile(TestUtil.getImage("jp2-rgb-64x56x8-monotiled-lossy.jp2"));
         expectedInfo = new Info(64, 56, 64, 56, Format.JP2);
         assertEquals(expectedInfo, instance.readImageInfo());
 
         // tiled image
-        instance.setSourceFile(TestUtil.getImage("jp2-rgb-64x56x8-multitiled-lossy.jp2").toFile());
+        instance.setSourceFile(TestUtil.getImage("jp2-rgb-64x56x8-multitiled-lossy.jp2"));
         expectedInfo = new Info(64, 56, Format.JP2);
         expectedInfo.getImages().get(0).tileWidth = 32;
         expectedInfo.getImages().get(0).tileHeight = 28;

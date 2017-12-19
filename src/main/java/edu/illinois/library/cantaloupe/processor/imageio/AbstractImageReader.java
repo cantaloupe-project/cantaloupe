@@ -18,14 +18,13 @@ import org.slf4j.Logger;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageTypeSpecifier;
-import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -58,8 +57,7 @@ abstract class AbstractImageReader {
      *
      * @param inputFile Image file to read.
      */
-    AbstractImageReader(File inputFile, Format format)
-            throws IOException {
+    AbstractImageReader(Path inputFile, Format format) throws IOException {
         setSource(inputFile);
         setFormat(format);
 
@@ -253,8 +251,8 @@ abstract class AbstractImageReader {
     }
 
     private void reset() throws IOException {
-        if (source instanceof File) {
-            setSource((File) source);
+        if (source instanceof Path) {
+            setSource((Path) source);
         } else {
             setSource((StreamSource) source);
         }
@@ -265,10 +263,10 @@ abstract class AbstractImageReader {
         this.format = format;
     }
 
-    void setSource(File inputFile) throws IOException {
+    void setSource(Path inputFile) throws IOException {
         dispose();
         source = inputFile;
-        inputStream = new FileImageInputStream(inputFile);
+        inputStream = ImageIO.createImageInputStream(inputFile.toFile());
     }
 
     void setSource(StreamSource streamSource) throws IOException {

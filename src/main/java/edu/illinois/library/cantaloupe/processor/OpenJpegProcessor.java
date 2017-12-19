@@ -338,7 +338,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         final List<String> command = new ArrayList<>();
         command.add(getPath("opj_dump"));
         command.add("-i");
-        command.add(sourceFile.getAbsolutePath());
+        command.add(sourceFile.toString());
 
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.redirectErrorStream(true);
@@ -445,7 +445,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
     }
 
     @Override
-    public void setSourceFile(File sourceFile) {
+    public void setSourceFile(Path sourceFile) {
         super.setSourceFile(sourceFile);
         reset();
     }
@@ -473,7 +473,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         }
 
         command.add("-i");
-        command.add(sourceFile.getAbsolutePath());
+        command.add(sourceFile.toString());
 
         for (Operation op : opList) {
             if (op instanceof Crop && !ignoreCrop) {

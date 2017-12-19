@@ -289,7 +289,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
         final List<String> command = new ArrayList<>();
         command.add(getPath("kdu_jp2info"));
         command.add("-i");
-        command.add(sourceFile.getAbsolutePath());
+        command.add(sourceFile.toString());
         command.add("-siz");
 
         final ProcessBuilder pb = new ProcessBuilder(command);
@@ -394,7 +394,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     }
 
     @Override
-    public void setSourceFile(File sourceFile) {
+    public void setSourceFile(Path sourceFile) {
         super.setSourceFile(sourceFile);
         reset();
     }
@@ -420,7 +420,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
         command.add("-resilient");
         command.add("-no_alpha");
         command.add("-i");
-        command.add(sourceFile.getAbsolutePath());
+        command.add(sourceFile.toString());
 
         for (Operation op : opList) {
             if (op instanceof Crop && !ignoreCrop) {

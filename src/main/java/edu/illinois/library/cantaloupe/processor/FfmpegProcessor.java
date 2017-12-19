@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -139,7 +140,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
             command.add("stream=width,height,duration");
             command.add("-of");
             command.add("default=noprint_wrappers=1:nokey=1");
-            command.add(sourceFile.getAbsolutePath());
+            command.add(sourceFile.toString());
 
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
@@ -225,7 +226,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
         final List<String> command = new ArrayList<>();
         command.add(getPath("ffmpeg"));
         command.add("-i");
-        command.add(sourceFile.getAbsolutePath());
+        command.add(sourceFile.toString());
 
         // Seeking to a particular time is supported via a "time" URL query
         // parameter which gets injected into an -ss flag. FFmpeg supports
@@ -258,7 +259,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
     }
 
     @Override
-    public void setSourceFile(File sourceFile) {
+    public void setSourceFile(Path sourceFile) {
         super.setSourceFile(sourceFile);
         reset();
     }

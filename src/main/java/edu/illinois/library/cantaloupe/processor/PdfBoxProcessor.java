@@ -16,10 +16,10 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Set;
 
@@ -37,7 +37,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     private PDDocument doc;
     private InputStream docInputStream;
     private Dimension imageSize;
-    private File sourceFile;
+    private Path sourceFile;
     private StreamSource streamSource;
 
     private void closeResources() {
@@ -59,7 +59,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     }
 
     @Override
-    public File getSourceFile() {
+    public Path getSourceFile() {
         return sourceFile;
     }
 
@@ -71,7 +71,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     private void loadDocument() throws IOException {
         if (doc == null) {
             if (sourceFile != null) {
-                doc = PDDocument.load(sourceFile);
+                doc = PDDocument.load(sourceFile.toFile());
             } else {
                 docInputStream = streamSource.newInputStream();
                 doc = PDDocument.load(docInputStream);
@@ -159,7 +159,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     }
 
     @Override
-    public void setSourceFile(File sourceFile) {
+    public void setSourceFile(Path sourceFile) {
         this.streamSource = null;
         this.sourceFile = sourceFile;
     }

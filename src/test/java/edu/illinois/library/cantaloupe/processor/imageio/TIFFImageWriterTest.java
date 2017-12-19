@@ -32,7 +32,7 @@ public class TIFFImageWriterTest extends BaseTest {
     @Test
     public void testWriteWithBufferedImage() throws Exception {
         final Path fixture = TestUtil.getImage("tif-xmp.tif");
-        final TIFFImageReader reader = new TIFFImageReader(fixture.toFile());
+        final TIFFImageReader reader = new TIFFImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final BufferedImage image = reader.read();
 
@@ -46,7 +46,7 @@ public class TIFFImageWriterTest extends BaseTest {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final Path fixture = TestUtil.getImage("tif-exif.tif");
-        final TIFFImageReader reader = new TIFFImageReader(fixture.toFile());
+        final TIFFImageReader reader = new TIFFImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final BufferedImage image = reader.read();
 
@@ -60,7 +60,7 @@ public class TIFFImageWriterTest extends BaseTest {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final Path fixture = TestUtil.getImage("tif-iptc.tif");
-        final TIFFImageReader reader = new TIFFImageReader(fixture.toFile());
+        final TIFFImageReader reader = new TIFFImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final BufferedImage image = reader.read();
 
@@ -74,7 +74,7 @@ public class TIFFImageWriterTest extends BaseTest {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final Path fixture = TestUtil.getImage("tif-xmp.tif");
-        final TIFFImageReader reader = new TIFFImageReader(fixture.toFile());
+        final TIFFImageReader reader = new TIFFImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final BufferedImage image = reader.read();
 
@@ -86,7 +86,7 @@ public class TIFFImageWriterTest extends BaseTest {
     @Test
     public void testWriteWithPlanarImage() throws Exception {
         final Path fixture = TestUtil.getImage("tif-xmp.tif");
-        final TIFFImageReader reader = new TIFFImageReader(fixture.toFile());
+        final TIFFImageReader reader = new TIFFImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final PlanarImage image =
                 PlanarImage.wrapRenderedImage(reader.readRendered());
@@ -102,7 +102,7 @@ public class TIFFImageWriterTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
 
         final Path fixture = TestUtil.getImage("tif-exif.tif");
-        final TIFFImageReader reader = new TIFFImageReader(fixture.toFile());
+        final TIFFImageReader reader = new TIFFImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final PlanarImage image =
                 PlanarImage.wrapRenderedImage(reader.readRendered());
@@ -117,7 +117,7 @@ public class TIFFImageWriterTest extends BaseTest {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final Path fixture = TestUtil.getImage("tif-iptc.tif");
-        final TIFFImageReader reader = new TIFFImageReader(fixture.toFile());
+        final TIFFImageReader reader = new TIFFImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final PlanarImage image =
                 PlanarImage.wrapRenderedImage(reader.readRendered());
@@ -132,7 +132,7 @@ public class TIFFImageWriterTest extends BaseTest {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final Path fixture = TestUtil.getImage("tif-xmp.tif");
-        final TIFFImageReader reader = new TIFFImageReader(fixture.toFile());
+        final TIFFImageReader reader = new TIFFImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final PlanarImage image =
                 PlanarImage.wrapRenderedImage(reader.readRendered());

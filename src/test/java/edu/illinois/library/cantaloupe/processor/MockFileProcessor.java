@@ -6,15 +6,15 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.resource.iiif.v1.Quality;
 
-import java.io.File;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 
 public class MockFileProcessor implements FileProcessor {
 
     private Format sourceFormat;
-    private File file;
+    private Path file;
 
     @Override
     public Set<Format> getAvailableOutputFormats() {
@@ -27,7 +27,7 @@ public class MockFileProcessor implements FileProcessor {
     }
 
     @Override
-    public File getSourceFile() {
+    public Path getSourceFile() {
         return file;
     }
 
@@ -64,7 +64,7 @@ public class MockFileProcessor implements FileProcessor {
     }
 
     @Override
-    public void setSourceFile(File file) {
+    public void setSourceFile(Path file) {
         this.file = file;
     }
 
