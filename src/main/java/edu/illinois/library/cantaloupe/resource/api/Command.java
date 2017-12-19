@@ -19,6 +19,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
                 name = "PurgeCache",
                 value = PurgeCacheCommand.class),
         @JsonSubTypes.Type(
+                name = "PurgeInfoCache",
+                value = PurgeInfoCacheCommand.class),
+        @JsonSubTypes.Type(
                 name = "PurgeDelegateMethodInvocationCache",
                 value = PurgeDelegateMethodInvocationCacheCommand.class),
         @JsonSubTypes.Type(

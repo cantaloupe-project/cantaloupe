@@ -186,7 +186,7 @@ public class InfoService {
                 getBoolean(Key.INFO_CACHE_ENABLED, false);
     }
 
-    void purgeObjectCache() {
+    public void purgeObjectCache() {
         LOGGER.debug("purgeObjectCache()");
         objectCache.removeAll();
     }

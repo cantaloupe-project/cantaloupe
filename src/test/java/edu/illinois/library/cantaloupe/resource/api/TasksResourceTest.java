@@ -119,6 +119,16 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
     }
 
     @Test
+    public void testPOSTWithPurgeInfoCacheVerb() throws Exception {
+        client.setEntity("{ \"verb\": \"PurgeInfoCache\" }");
+        client.setContentType(MediaType.APPLICATION_JSON);
+        Response response = client.send();
+
+        assertEquals(202, response.getStatus());
+        assertNotNull(response.getHeaders().getFirstValue("Location"));
+    }
+
+    @Test
     public void testPOSTWithPurgeInvalidFromCacheVerb() throws Exception {
         client.setEntity("{ \"verb\": \"PurgeInvalidFromCache\" }");
         client.setContentType(MediaType.APPLICATION_JSON);
