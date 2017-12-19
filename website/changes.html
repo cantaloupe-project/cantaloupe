@@ -16,6 +16,7 @@ title: Change Log
       <li>The maximum size in IIIF Image API 2.x <code>info.json</code> responses is the full image size, rather than half size. (Thanks to @cbeer)</li>
       <li>The IIIF Image API 1.x endpoint returns a JPEG image, rather than GIF, when no client preference is expressed in the URI or <code>Accept</code> header.</li>
       <li>Certain derivative cache errors can be recovered from without causing an error response.</li>
+      <li>The <code>sizes</code> key in Image API 2.x information responses respects the <code>max_pixels</code> configuration option.</li>
       <li>Image and information endpoints return <code>HTTP 501 Not Implemented</code>, rather than <code>500 Internal Server Error</code>, when the selected processor does not support the requested source format.</li>
       <li>Image requests may include a <code>?response-content-disposition</code> query argument to suggest a response <code>Content-Disposition</code>.</li>
       <li>Added several HTTP API methods for cache management.</li>

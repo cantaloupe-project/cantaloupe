@@ -31,7 +31,7 @@ public class ImageInfoFactoryTest extends BaseTest {
 
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
-        config.setProperty(Key.MAX_PIXELS, 100);
+        config.setProperty(Key.MAX_PIXELS, 0);
 
         identifier = new Identifier("bla");
         imageUri = "http://example.org/bla";
@@ -127,6 +127,21 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
+    public void testNewImageInfoSizesMaxSize() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.MAX_PIXELS, 10000);
+
+        imageInfo = new ImageInfoFactory().newImageInfo(
+                identifier, imageUri, processor, processor.readImageInfo());
+        @SuppressWarnings("unchecked")
+        List<ImageInfo.Size> sizes =
+                (List<ImageInfo.Size>) imageInfo.get("sizes");
+        assertEquals(1, sizes.size());
+        assertEquals(74, (long) sizes.get(0).width);
+        assertEquals(65, (long) sizes.get(0).height);
+    }
+
+    @Test
     public void testNewImageInfoSizesWithRotatedImage() {
         // TODO: write this (need a bigger rotated image)
     }
@@ -201,19 +216,25 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoMaxArea() throws Exception {
+    public void testNewImageInfoMaxAreaWithPositiveMaxPixels() throws Exception {
         final Configuration config = Configuration.getInstance();
-        List<?> profile = (List<?>) imageInfo.get("profile");
+        config.setProperty(Key.MAX_PIXELS, 100);
 
-        // with max_pixels > 0
-        assertTrue(((Map<?, ?>) profile.get(1)).get("maxArea").
-                equals(config.getInt(Key.MAX_PIXELS)));
-
-        // with max_pixels == 0
-        config.setProperty(Key.MAX_PIXELS, 0);
         imageInfo = new ImageInfoFactory().newImageInfo(
                 identifier, imageUri, processor, processor.readImageInfo());
-        profile = (List<?>) imageInfo.get("profile");
+        List<?> profile = (List<?>) imageInfo.get("profile");
+        assertTrue(((Map<?, ?>) profile.get(1)).get("maxArea").
+                equals(config.getInt(Key.MAX_PIXELS)));
+    }
+
+    @Test
+    public void testNewImageInfoMaxAreaWithZeroMaxPixels() throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.MAX_PIXELS, 0);
+
+        imageInfo = new ImageInfoFactory().newImageInfo(
+                identifier, imageUri, processor, processor.readImageInfo());
+        List<?> profile = (List<?>) imageInfo.get("profile");
         assertFalse(((Map<?, ?>) profile.get(1)).containsKey("maxArea"));
     }
 

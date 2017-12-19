@@ -27,6 +27,26 @@ public class ImageInfoUtil {
         return factor;
     }
 
+    /**
+     * @param fullSize Full size of the source image.
+     * @param maxPixels Maximum allowed number of pixels.
+     * @return Minimum reduction factor to be able to fit below the maximum
+     *         allowed number of pixels.
+     */
+    public static int minReductionFactor(final Dimension fullSize,
+                                         final int maxPixels) {
+        if (maxPixels <= 0) {
+            throw new IllegalArgumentException("maxPixels must be a positive number.");
+        }
+        int factor = 0;
+        Dimension nextSize = new Dimension(fullSize.width, fullSize.height);
+
+        while (nextSize.width * nextSize.height > maxPixels) {
+            nextSize.width = Math.round(nextSize.width / 2f);
+            nextSize.height = Math.round(nextSize.height / 2f);
+            factor++;
+        }
+        return factor;
     }
 
     /**

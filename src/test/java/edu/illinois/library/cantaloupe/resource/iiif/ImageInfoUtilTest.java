@@ -28,6 +28,32 @@ public class ImageInfoUtilTest extends BaseTest {
     }
 
     @Test
+    public void testMinReductionFactor() {
+        Dimension fullSize = new Dimension(50, 50);
+        int maxPixels = 10000;
+        assertEquals(0, ImageInfoUtil.minReductionFactor(fullSize, maxPixels));
+
+        fullSize = new Dimension(100, 100);
+        maxPixels = 10000;
+        assertEquals(0, ImageInfoUtil.minReductionFactor(fullSize, maxPixels));
+
+        fullSize = new Dimension(200, 100);
+        maxPixels = 10000;
+        assertEquals(1, ImageInfoUtil.minReductionFactor(fullSize, maxPixels));
+
+        fullSize = new Dimension(300, 300);
+        maxPixels = 10000;
+        assertEquals(2, ImageInfoUtil.minReductionFactor(fullSize, maxPixels));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testMinReductionFactorWithZeroMaxPixels() {
+        Dimension fullSize = new Dimension(50, 50);
+        int maxPixels = 0;
+        ImageInfoUtil.minReductionFactor(fullSize, maxPixels);
+    }
+
+    @Test
     public void testSmallestTileSize() {
         Dimension fullSize = new Dimension(1024, 1024);
         int minTileSize = 100;

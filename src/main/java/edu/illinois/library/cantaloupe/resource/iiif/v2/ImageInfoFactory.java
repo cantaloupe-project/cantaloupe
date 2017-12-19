@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.resource.iiif.Feature;
 import edu.illinois.library.cantaloupe.resource.iiif.ImageInfoUtil;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
@@ -18,6 +17,7 @@ import javax.script.ScriptException;
 import java.awt.Dimension;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,13 +37,14 @@ class ImageInfoFactory {
 
     /** Will be populated in the static initializer. */
     private static final Set<ServiceFeature> SUPPORTED_SERVICE_FEATURES =
-            EnumSet.of(ServiceFeature.SIZE_BY_CONFINED_WIDTH_HEIGHT,
-                    ServiceFeature.SIZE_BY_WHITELISTED,
-                    ServiceFeature.BASE_URI_REDIRECT,
-                    ServiceFeature.CANONICAL_LINK_HEADER,
-                    ServiceFeature.CORS,
-                    ServiceFeature.JSON_LD_MEDIA_TYPE,
-                    ServiceFeature.PROFILE_LINK_HEADER);
+            Collections.unmodifiableSet(
+                    EnumSet.of(ServiceFeature.SIZE_BY_CONFINED_WIDTH_HEIGHT,
+                            ServiceFeature.SIZE_BY_WHITELISTED,
+                            ServiceFeature.BASE_URI_REDIRECT,
+                            ServiceFeature.CANONICAL_LINK_HEADER,
+                            ServiceFeature.CORS,
+                            ServiceFeature.JSON_LD_MEDIA_TYPE,
+                            ServiceFeature.PROFILE_LINK_HEADER));
 
     @SuppressWarnings("unchecked")
     ImageInfo<String,Object> newImageInfo(final Identifier identifier,
@@ -70,19 +71,26 @@ class ImageInfoFactory {
         final List<ImageInfo.Size> sizes = new ArrayList<>();
         responseInfo.put("sizes", sizes);
 
-        // Minimum size that will be used in info.json "sizes" keys.
+        // Minimum size that will be used in "sizes" keys.
         final int minSize = config.getInt(Key.IIIF_MIN_SIZE, 64);
+        // Maximum # of pixels that will be used in "sizes" keys.
+        final int maxPixels = config.getInt(Key.MAX_PIXELS, 0);
 
+        // The min reduction factor is the smallest number of reductions that
+        // are required in order to fit within max pixels.
+        final int minReductionFactor = (maxPixels > 0) ?
+                ImageInfoUtil.minReductionFactor(virtualSize, maxPixels) : 0;
+        // The max reduction factor is the maximum number of times the full
+        // image size can be halved until it's smaller than minSize.
         final int maxReductionFactor =
                 ImageInfoUtil.maxReductionFactor(virtualSize, minSize);
-        for (double i = 1; i <= Math.pow(2, maxReductionFactor); i *= 2) {
+
+        for (double i = Math.pow(2, minReductionFactor);
+             i <= Math.pow(2, maxReductionFactor);
+             i *= 2) {
             final int width = (int) Math.round(virtualSize.width / i);
             final int height = (int) Math.round(virtualSize.height / i);
-            if (width < minSize || height < minSize) {
-                break;
-            }
-            ImageInfo.Size size = new ImageInfo.Size(width, height);
-            sizes.add(0, size);
+            sizes.add(0, new ImageInfo.Size(width, height));
         }
 
         // tiles -- this is not a canonical listing of tiles that are
@@ -147,7 +155,6 @@ class ImageInfoFactory {
         profile.add(profileMap);
 
         // maxArea (maxWidth and maxHeight are currently not supported)
-        final int maxPixels = config.getInt(Key.MAX_PIXELS, 0);
         if (maxPixels > 0) {
             profileMap.put("maxArea", maxPixels);
         }
