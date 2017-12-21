@@ -350,10 +350,8 @@ public class InformationResourceTest extends ResourceTest {
         client = newClient("/" + IMAGE + "/info.json");
         Response response = client.send();
         Headers headers = response.getHeaders();
-        assertEquals(7, headers.size());
+        assertEquals(6, headers.size());
 
-        // Accept-Ranges
-        assertEquals("bytes", headers.getFirstValue("Accept-Ranges"));
         // Content-Type
         assertEquals("application/json;charset=UTF-8",
                 headers.getFirstValue("Content-Type"));

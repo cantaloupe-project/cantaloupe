@@ -412,10 +412,8 @@ public class ImageResourceTest extends ResourceTest {
         client = newClient("/" + IMAGE + "/full/full/0/color.jpg");
         Response response = client.send();
         Headers headers = response.getHeaders();
-        assertEquals(8, headers.size());
+        assertEquals(7, headers.size());
 
-        // Accept-Ranges
-        assertEquals("bytes", headers.getFirstValue("Accept-Ranges"));
         // Content-Type
         assertEquals("image/jpeg", headers.getFirstValue("Content-Type"));
         // Date

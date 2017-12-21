@@ -51,10 +51,8 @@ public class TaskResourceTest extends AbstractAPIResourceTest {
         Response response = createTask();
 
         Headers headers = response.getHeaders();
-        assertEquals(8, headers.size());
+        assertEquals(7, headers.size());
 
-        // Accept-Ranges
-        assertEquals("bytes", headers.getFirstValue("Accept-Ranges"));
         // Cache-Control
         assertEquals("no-cache", headers.getFirstValue("Cache-Control"));
         // Content-Type

@@ -154,10 +154,8 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
         client.setContentType(MediaType.APPLICATION_JSON);
         Response response = client.send();
         Headers headers = response.getHeaders();
-        assertEquals(9, headers.size());
+        assertEquals(8, headers.size());
 
-        // Accept-Ranges
-        assertEquals("bytes", headers.getFirstValue("Accept-Ranges"));
         // Cache-Control
         assertEquals("no-cache", headers.getFirstValue("Cache-Control"));
         // Content-Length

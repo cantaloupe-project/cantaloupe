@@ -177,12 +177,21 @@ public class RestletApplication extends Application {
 
     public RestletApplication() {
         super();
+
+        // Tell Restlet to use a custom status service for transforming
+        // uncaught exceptions into error responses.
         setStatusService(new CustomStatusService());
-        // http://restlet.com/blog/2015/12/15/understanding-and-using-cors/
+
+        // Enable CORS.
+        // See: http://restlet.com/blog/2015/12/15/understanding-and-using-cors/
         CorsService corsService = new CorsService();
         corsService.setAllowedOrigins(new HashSet<>(Collections.singletonList("*")));
         corsService.setAllowedCredentials(true);
         getServices().add(corsService);
+
+        // Disable support for ranging. This will tell Restlet not to honor the
+        // Range request header, as well as not to send an Accept-Ranges header.
+        getRangeService().setEnabled(false);
     }
 
     private Authenticator newAdminAuthenticator() {

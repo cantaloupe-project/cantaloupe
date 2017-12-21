@@ -65,10 +65,8 @@ public class CacheResourceTest extends AbstractAPIResourceTest {
         client.setMethod(Method.DELETE);
         Response response = client.send();
         Headers headers = response.getHeaders();
-        assertEquals(7, headers.size());
+        assertEquals(6, headers.size());
 
-        // Accept-Ranges
-        assertEquals("bytes", headers.getFirstValue("Accept-Ranges"));
         // Cache-Control
         assertEquals("no-cache", headers.getFirstValue("Cache-Control"));
         // Content-Type

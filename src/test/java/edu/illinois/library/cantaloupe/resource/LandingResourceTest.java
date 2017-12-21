@@ -39,10 +39,8 @@ public class LandingResourceTest extends ResourceTest {
         client = newClient("");
         Response response = client.send();
         Headers headers = response.getHeaders();
-        assertEquals(8, headers.size());
+        assertEquals(7, headers.size());
 
-        // Accept-Ranges
-        assertEquals("bytes", headers.getFirstValue("Accept-Ranges"));
         // Cache-Control
         assertTrue(headers.getFirstValue("Cache-Control").contains("public"));
         assertTrue(headers.getFirstValue("Cache-Control").contains("max-age="));
