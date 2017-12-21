@@ -140,12 +140,21 @@ public class WebApplication extends Application {
 
     public WebApplication() {
         super();
-        this.setStatusService(new CustomStatusService());
-        // http://restlet.com/blog/2015/12/15/understanding-and-using-cors/
+
+        // Tell Restlet to use a custom status service for transforming
+        // uncaught exceptions into error responses.
+        setStatusService(new CustomStatusService());
+
+        // Enable CORS.
+        // See: http://restlet.com/blog/2015/12/15/understanding-and-using-cors/
         CorsService corsService = new CorsService();
         corsService.setAllowedOrigins(new HashSet<>(Collections.singletonList("*")));
         corsService.setAllowedCredentials(true);
-        this.getServices().add(corsService);
+        getServices().add(corsService);
+
+        // Disable support for ranging. This will tell Restlet not to honor the
+        // Range request header, as well as not to send an Accept-Ranges header.
+        getRangeService().setEnabled(false);
     }
 
     private ChallengeAuthenticator createAdminAuthenticator()
