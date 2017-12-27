@@ -198,12 +198,15 @@ AmazonS3Resolver.lookup_strategy = BasicLookupStrategy
 #----------------------------------------
 
 # !! Name of your Azure account.
+# !! Leave blank if using URI with a SAS token in your object key.
 AzureStorageResolver.account_name =
 
 # !! Key of your Azure account.
+# !! Leave blank if using URI with a SAS token in your object key.
 AzureStorageResolver.account_key =
 
 # !! Name of the container containing images to be served.
+# !! Leave blank if using URI with the container in your object key.
 AzureStorageResolver.container_name =
 
 # Tells AzureStorageResolver how to look up objects. Allowed values are
