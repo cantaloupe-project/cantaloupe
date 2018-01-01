@@ -71,7 +71,7 @@ public class MediaTypeTest {
             }
 
             // TODO: detectMediaTypes() doesn't understand these
-            if (!new HashSet<>(Arrays.asList("avi", "bmp", "sgi", "webm")).
+            if (!new HashSet<>(Arrays.asList("avi", "bmp", "webm")).
                     contains(file.getFileName().toString())) {
                 assertTrue(result);
             }

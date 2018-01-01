@@ -50,9 +50,6 @@ public class FormatTest extends BaseTest {
         // PNG
         assertEquals(Format.PNG,
                 Format.inferFormat(new Identifier("bla.png")));
-        // SGI
-        assertEquals(Format.SGI,
-                Format.inferFormat(new Identifier("bla.sgi")));
         // TIF
         assertEquals(Format.TIF,
                 Format.inferFormat(new Identifier("bla.tif")));
@@ -94,8 +91,6 @@ public class FormatTest extends BaseTest {
         assertEquals(Format.PDF, Format.inferFormat("bla.pdf"));
         // PNG
         assertEquals(Format.PNG, Format.inferFormat("bla.png"));
-        // SGI
-        assertEquals(Format.SGI, Format.inferFormat("bla.sgi"));
         // TIF
         assertEquals(Format.TIF, Format.inferFormat("bla.tif"));
         // WEBM
@@ -132,9 +127,6 @@ public class FormatTest extends BaseTest {
         assertEquals(Arrays.asList("pdf"), Format.PDF.getExtensions());
         // PNG
         assertEquals(Arrays.asList("png"), Format.PNG.getExtensions());
-        // SGI
-        assertEquals(Arrays.asList("sgi", "rgb", "rgba", "bw", "int", "inta"),
-                Format.SGI.getExtensions());
         // TIF
         assertEquals(Arrays.asList("tif", "ptif", "tiff"),
                 Format.TIF.getExtensions());
@@ -160,7 +152,6 @@ public class FormatTest extends BaseTest {
         assertEquals(Format.ImageType.RASTER, Format.MPG.getImageType());
         assertEquals(Format.ImageType.VECTOR, Format.PDF.getImageType());
         assertEquals(Format.ImageType.RASTER, Format.PNG.getImageType());
-        assertEquals(Format.ImageType.RASTER, Format.SGI.getImageType());
         assertEquals(Format.ImageType.RASTER, Format.TIF.getImageType());
         assertEquals(Format.ImageType.RASTER, Format.WEBM.getImageType());
         assertEquals(Format.ImageType.RASTER, Format.WEBP.getImageType());
@@ -181,7 +172,6 @@ public class FormatTest extends BaseTest {
         assertEquals(8, Format.MPG.getMaxSampleSize());
         assertEquals(16, Format.PDF.getMaxSampleSize());
         assertEquals(16, Format.PNG.getMaxSampleSize());
-        assertEquals(16, Format.SGI.getMaxSampleSize());
         assertEquals(16, Format.TIF.getMaxSampleSize());
         assertEquals(8, Format.WEBM.getMaxSampleSize());
         assertEquals(8, Format.WEBP.getMaxSampleSize());
@@ -243,10 +233,6 @@ public class FormatTest extends BaseTest {
         assertEquals(Arrays.asList(
                 new MediaType("image/png")),
                 Format.PNG.getMediaTypes());
-        // SGI
-        assertEquals(Arrays.asList(
-                new MediaType("image/sgi")),
-                Format.SGI.getMediaTypes());
         // TIF
         assertEquals(Arrays.asList(
                 new MediaType("image/tiff")),
@@ -278,7 +264,6 @@ public class FormatTest extends BaseTest {
         assertEquals("MPEG", Format.MPG.getName());
         assertEquals("PDF", Format.PDF.getName());
         assertEquals("PNG", Format.PNG.getName());
-        assertEquals("SGI", Format.SGI.getName());
         assertEquals("TIFF", Format.TIF.getName());
         assertEquals("WebM", Format.WEBM.getName());
         assertEquals("WebP", Format.WEBP.getName());
@@ -299,7 +284,6 @@ public class FormatTest extends BaseTest {
         assertEquals("mpg", Format.MPG.getPreferredExtension());
         assertEquals("pdf", Format.PDF.getPreferredExtension());
         assertEquals("png", Format.PNG.getPreferredExtension());
-        assertEquals("sgi", Format.SGI.getPreferredExtension());
         assertEquals("tif", Format.TIF.getPreferredExtension());
         assertEquals("webm", Format.WEBM.getPreferredExtension());
         assertEquals("webp", Format.WEBP.getPreferredExtension());
@@ -332,8 +316,6 @@ public class FormatTest extends BaseTest {
                 Format.PDF.getPreferredMediaType().toString());
         assertEquals("image/png",
                 Format.PNG.getPreferredMediaType().toString());
-        assertEquals("image/sgi",
-                Format.SGI.getPreferredMediaType().toString());
         assertEquals("image/tiff",
                 Format.TIF.getPreferredMediaType().toString());
         assertEquals("video/webm",
@@ -358,7 +340,6 @@ public class FormatTest extends BaseTest {
         assertEquals(Format.Type.VIDEO, Format.MPG.getType());
         assertEquals(Format.Type.IMAGE, Format.PDF.getType());
         assertEquals(Format.Type.IMAGE, Format.PNG.getType());
-        assertEquals(Format.Type.IMAGE, Format.SGI.getType());
         assertEquals(Format.Type.IMAGE, Format.TIF.getType());
         assertEquals(Format.Type.VIDEO, Format.WEBM.getType());
         assertEquals(Format.Type.IMAGE, Format.WEBP.getType());
@@ -379,7 +360,6 @@ public class FormatTest extends BaseTest {
         assertFalse(Format.MPG.isImage());
         assertTrue(Format.PDF.isImage());
         assertTrue(Format.PNG.isImage());
-        assertTrue(Format.SGI.isImage());
         assertTrue(Format.TIF.isImage());
         assertFalse(Format.WEBM.isImage());
         assertTrue(Format.WEBP.isImage());
@@ -400,7 +380,6 @@ public class FormatTest extends BaseTest {
         assertTrue(Format.MPG.isVideo());
         assertFalse(Format.PDF.isVideo());
         assertFalse(Format.PNG.isVideo());
-        assertFalse(Format.SGI.isVideo());
         assertFalse(Format.TIF.isVideo());
         assertTrue(Format.WEBM.isVideo());
         assertFalse(Format.WEBP.isVideo());
@@ -420,7 +399,6 @@ public class FormatTest extends BaseTest {
         assertFalse(Format.MPG.supportsTransparency());
         assertFalse(Format.PDF.supportsTransparency());
         assertTrue(Format.PNG.supportsTransparency());
-        assertTrue(Format.SGI.supportsTransparency());
         assertTrue(Format.TIF.supportsTransparency());
         assertFalse(Format.WEBM.supportsTransparency());
         assertTrue(Format.WEBP.supportsTransparency());

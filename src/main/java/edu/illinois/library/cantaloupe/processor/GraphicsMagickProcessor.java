@@ -159,7 +159,6 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                     sourceFormats.add(Format.BMP);
                     sourceFormats.add(Format.DCM);
                     sourceFormats.add(Format.GIF);
-                    sourceFormats.add(Format.SGI);
                     outputFormats.add(Format.GIF);
 
                     for (Format format : sourceFormats) {
