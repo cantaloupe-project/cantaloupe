@@ -19,7 +19,7 @@ title: Home
 <hr>
 
 <figure style="margin-top: 2em">
-  <div id="openseadragon1" style="width: 100%"></div>
+  <div id="openseadragon1" style="width: 100%; min-height: 300px"></div>
   <figcaption>
     Andromeda Galaxy in <a href="https://openseadragon.github.io">OpenSeadragon</a>, powered by Cantaloupe
     <br>
@@ -98,23 +98,4 @@ title: Home
 </div>
 
 <script src="{{ site.baseurl }}/scripts/openseadragon.min.js"></script>
-<script type="text/javascript">
-    var viewer = OpenSeadragon({
-        id: "openseadragon1",
-        prefixUrl: "images/openseadragon/",
-        immediateRender: true,
-        showNavigator: true,
-        tileSources: "https://iiif.library.illinois.edu/dls/iiif/2/andromeda-pyramidal-tiled.tif"
-    });
-
-    $(window).on('resize', function() {
-        var img_width = parseFloat($('#image-width').text());
-        var img_height = parseFloat($('#image-height').text());
-        var elem = $('#openseadragon1');
-        elem.css('height', (img_height / img_width) * elem.width());
-    }).trigger('resize');
-
-    setTimeout(function() {
-        viewer.viewport.goHome({ 'immediately': true });
-    }, 100);
-</script>
+<script src="{{ site.baseurl }}/scripts/osd_init.js"></script>
