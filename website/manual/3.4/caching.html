@@ -131,9 +131,9 @@ cache.client.no_transform = true
 
 <p>The info cache does not respect the <code>cache.server.ttl_seconds</code> configuration key. Its content never expires.</p>
 
-<p>The maximum size of the info cache is hard-coded to a reasonable percentage of the maximum heap size, and is not configurable.</p>
+<p>The maximum size of the info cache is hard-coded to a reasonable percentage of the maximum heap size, and is not configurable. As infos are very small, the maximum size is unlikely to ever be reached.</p>
 
-<p>The info cache is not persisted; its contents will be lost when the application is stopped.</p>
+<p>The info cache is not persisted; its contents will be lost when the application exits.</p>
 
 <hr>
 
@@ -144,7 +144,7 @@ cache.client.no_transform = true
   <dt>Conservative (<code>cache.server.resolve_first = true</code>)</dt>
   <dd>Source images are looked up and verified to exist before cached representations are returned. This precludes returning a cached representation when the underlying resource no longer exists, but also impairs response times by a variable amount, depending on the resolver.</dd>
   <dt>Aggressive (<code>cache.server.resolve_first = false</code>)</dt>
-  <dd>Cached representations are returned immediately, if available. This is faster, but inconsistency can develop between the cache and the underlying source image storage, if the latter is not static.</dd>
+  <dd>Cached content is returned immediately, if available. This is faster, but inconsistency can develop between the cache and the underlying source image storage, if the latter is not static.</dd>
 </dl>
 
 <hr>
@@ -213,7 +213,7 @@ cache.client.no_transform = true
           <li>Intermediate subdirectories
             <sup><a href="#FilesystemCache-2">(2)</a></sup>
             <ul>
-              <li><span class="filename">{hashed identifier}{operation list string representation}.{output format extension}</span>
+              <li><span class="filename">{hashed identifier}_{hashed operation list string representation}.{output format extension}</span>
                 <sup><a href="#FilesystemCache-3">(3)</a></sup></li>
             </ul>
           </li>
@@ -237,32 +237,32 @@ cache.client.no_transform = true
 <ol>
   <li id="FilesystemCache-1">Empty unless <a href="#Source%20Cache">source caching</a> is enabled.</li>
   <li id="FilesystemCache-2">Some filesystems have per-directory file count limits, or thresholds beyond which performance starts to degrade. To work around this, cache files are stored in subdirectory trees consisting of leading fragments of identifier MD5 hashes, configurable by <code>FilesystemCache.dir.depth</code> and <code>FilesystemCache.dir.name_length</code>.</li>
-  <li id="FilesystemCache-3">Identifiers in filenames are MD5-hashed in order to allow for identifiers longer than the filesystem's filename length limit.</li>
+  <li id="FilesystemCache-3">Identifier and operation list strings in filenames are MD5-hashed in order to allow for lengths longer than the filesystem's filename length limit.</li>
 </ol>
 
 <p>Cache files are created with a <span class="filename">.tmp</span> extension and moved into place when closed for writing.</p>
 
 <p>This cache is process-safe: it is safe to point multiple server instances at the same cache directory.</p>
 
-<div class="alert alert-info">On macOS, files' last-modified time is used instead of their last-accessed time, as the latter is unreliable.</div>
+<div class="alert alert-info">On macOS, files' last-modified time is used instead of their last-accessed time, as the latter is not reliable.</div>
 
 <hr>
 
 <h4 id="HeapCache">HeapCache</h4>
 
-<p>HeapCache, available since version 3.4, caches derivative images and metadata in the Java heap, which is the main area of RAM available to the JVM. This is the fastest of the caches, with the main drawbacks being that it is limited to the amount of available heap and cannot be shared across instances.</p>
+<p>HeapCache, available since version 3.4, caches derivative images and metadata in the Java heap, which is the main area of RAM available to the JVM. This is the fastest of the caches, with the main drawback being that it cannot be shared across instances.</p>
 
-<p>Unlike most of the other caches, this one size-limits content rather than time-limiting it. When the target size (<code>HeapCache.target_size</code>) has been exceeded, the minimum number of least-recently-accessed items are purged that will reduce it back down to this size. (The configured target size may be safely changed while the application is running.)</p>
+<p>Unlike most of the other caches, this one does not age-limit content. When the target size (<code>HeapCache.target_size</code>) has been exceeded, the minimum number of least-recently-accessed items are purged that will reduce it back down to this size. (The configured target size may be safely changed while the application is running.)</p>
 
 <p>Because this cache is not time-limited, <code>cache.server.ttl_seconds</code> does not apply, and, if enabled, the <a href="#Automatic%20Maintenance">cache worker</a> will have nothing to do, so will remain idle.</p>
 
-<p>When using this cache, ensure that your heap is able to grow large enough to accommodate the desired target size (using the <code>-Xmx</code> VM option), and that you have enough RAM to accommodate this heap size.</p>
+<p>When using this cache, ensure that your heap is able to grow large enough to accommodate the desired target size (using the <code>-Xmx</code> VM option), and that you have enough RAM to accommodate this size.</p>
 
 <h5>Persistence</h5>
 
 <p>This cache can persist its contents to disk using the <code>HeapCache.persist</code> and <code>HeapCache.persist.filesystem.pathname</code> configuration keys. When persistence is enabled, the contents of the cache will be written to a file at shutdown, and loaded back in at startup. If persistence is disabled, the cache contents will be lost when the application exits.</p>
 
-<p>Some thought was given to storing cached data using the same on-disk format used by <a href="#FilesystemCache">FilesystemCache</a>, so that persisted data would be compatible between these caches. Unfortunately, this is currently not possible because of the one-way hashing used in the FilesystemCache format. Instead, the cache contents are serialized to a binary file.</p>
+<p>Some thought was given to storing cached data using the same on-disk format used by <a href="#FilesystemCache">FilesystemCache</a>, so that persisted data would be compatible between these caches. Unfortunately, this is not possible because of the one-way hashing used in the FilesystemCache format.</p>
 
 <hr>
 
@@ -339,7 +339,7 @@ CREATE INDEX identifier_idx ON {JdbcCache.info_table} (identifier);
 </dl>
 
 <div class="alert alert-info">
-  Note: Amazon S3 does not provide a last-accessed time in object metadata, meaning that the time-to-live will be on the basis of last-modified time (generally the same as creation time) instead.
+  Note: Amazon S3 does not provide a last-accessed time in object metadata, so the time-to-live will be on the basis of last-modified time instead.
 </div>
 
 <hr>
@@ -360,7 +360,7 @@ CREATE INDEX identifier_idx ON {JdbcCache.info_table} (identifier);
 </dl>
 
 <div class="alert alert-info">
-  Note: Azure Storage does not provide a last-accessed time in object metadata, meaning that the time-to-live will be on the basis of last-modified time (generally the same as creation time) instead.
+  Note: Azure Storage does not provide a last-accessed time in object metadata, so the time-to-live will be on the basis of last-modified time instead.
 </div>
 
 <hr>
@@ -377,4 +377,4 @@ CREATE INDEX identifier_idx ON {JdbcCache.info_table} (identifier);
   <li><code>RedisCache.database</code></li>
 </ul>
 
-<p>Note that unlike the other caches, cache policy is configured on the Redis side, and <code>cache.server.ttl_seconds</code> will have no effect with this cache. Likewise, if enabled, the <a href="#Automatic%20Maintenance">cache worker</a> will have nothing to do, so will remain idle.</p>
+<p>Unlike the other caches, cache policy is configured on the Redis side, and <code>cache.server.ttl_seconds</code> will have no effect with this cache. Likewise, if enabled, the <a href="#Automatic%20Maintenance">cache worker</a> will have nothing to do, so will remain idle.</p>

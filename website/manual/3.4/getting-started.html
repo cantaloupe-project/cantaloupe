@@ -34,13 +34,13 @@ title: Getting Started
 
 <h2 id="Running">Running</h2>
 
-<p>As of version 3.0, Cantaloupe is distributed as a custom <span class="filename">.war</span> file that can be run standalone (using a built-in web server) or deployed to a Servlet container such as Tomcat. There are pros and cons to both approaches, but standalone mode is generally recommended unless you know you need a container: it's simpler, lighter-weight, and it's isolated within its own JVM instance.</p>
+<p>Cantaloupe is distributed as a custom <span class="filename">.war</span> file that can be run standalone (using a built-in web server) or deployed to a Servlet container like Tomcat. If you have a choice, standalone mode is generally recommended, as it's less prone to conflicts with other applications.</p>
 
-<div class="alert alert-warning">Multiple web applications running in a container share the same Java Virtual Machine (JVM). The way in which Cantaloupe uses Java's ImageIO library, which is configured on a per-JVM basis, can conflict with other applications in the same container that use ImageIO. If you choose to run other applications in the same container, be aware of this and test all of your applications to ensure they are working correctly.</div>
+<div class="alert alert-warning">Multiple web applications running in a container share the same Java Virtual Machine (JVM) and can conflict with each other. If you choose to run other applications in the same container, be aware of this and test all of your applications to ensure they are working correctly.</div>
 
 <h3 id="Standalone">Standalone</h3>
 
-<p>From the command prompt (Mac/Linux):</p>
+<p>From the command prompt (macOS/Linux):</p>
 
 <pre>java -Dcantaloupe.config=/path/to/cantaloupe.properties -Xmx2g -jar Cantaloupe-<span class="version">3.4</span>.x.war</pre>
 

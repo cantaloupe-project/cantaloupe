@@ -4,17 +4,21 @@ title: Home
 ---
 
 <header>
-  <img src="{{ site.baseurl }}/images/cantaloupe.png" width="154" height="81">
-  <h1>
-    Cantaloupe
-    <br>
-    <small>High-performance dynamic image server in Java</small>
-  </h1>
+  <div class="media">
+    <div class="media-left media-middle">
+      <img src="{{ site.baseurl }}/images/cantaloupe.png" class="media-object" width="154" height="81">
+    </div>
+    <div class="media-body">
+      <h1 class="media-heading">Cantaloupe
+        <br>
+        <small>High-performance dynamic image server in Java</small></h1>
+    </div>
+  </div>
 </header>
 
-<p>Cantaloupe is an open-source image server enabling on-demand generation of derivatives of high-resolution source images. With available operations including cropping, scaling, and rotation, it can support deep-zooming image viewers, as well as on-the-fly thumbnail generation. Compliance with the <a href="http://iiif.io/">IIIF Image API</a> enables it to work with <a href="http://iiif.io/apps-demos/">a growing number of client applications</a>.</p>
+<p>Cantaloupe is an open-source dynamic image server for on-demand generation of derivatives of high-resolution source images. With available operations including cropping, scaling, and rotation, it can support deep-zooming image viewers, as well as on-the-fly thumbnail generation. Compliance with the <a href="http://iiif.io/">IIIF Image API</a> enables it to work with <a href="http://iiif.io/apps-demos/">a growing number of client applications</a>.</p>
 
-<p><!--Developed at the <a href="http://www.library.illinois.edu/">University of Illinois at Urbana-Champaign Library</a>, Cantaloupe augments an emerging digital image repository containing thousands of high-resolution scanned images. -->Project goals include performance, scalability, and extensibility, without sacrificing ease-of-use.</p>
+<p>Project goals include performance, scalability, and extensibility, without sacrificing ease-of-use.</p>
 
 <hr>
 
@@ -39,43 +43,34 @@ title: Home
     <ul>
       <li>Get started in minutes. A web server is built right in, or deploy to a container, if you want.</li>
       <li><strong>One human-friendly configuration file</strong> with extensive inline help.</li>
-      <li><strong>Self-contained</strong> for painless prototyping, deployment, and upgrading.</li>
     </ul>
 
     <h4>Flexible</h4>
     <ul>
-      <li>Drive deep-zooming image viewers, or create thumbnails for images, PDFs, and videos on-the-fly.</li>
-      <li>Use <strong>opaque image identifiers</strong> that do not reveal an underlying resource location for secure and stable URIs.</li>
+      <li>Drive deep-zooming image viewers and create thumbnails for images, PDFs, and videos on-the-fly.</li>
       <li>Serve images from multiple sources, with different settings, via the same application instance.</li>
-      <li>Dynamically embed custom keys in IIIF information responses.</li>
     </ul>
 
     <h4>Secure</h4>
     <ul>
-      <li><strong>Dynamic, selective image and textual watermarking</strong> with fine-grained controls.</li>
+      <li><strong>Dynamic, selective image and text watermarking</strong> with fine-grained controls.</li>
       <li><strong>On-the-fly redaction</strong> of image regions.</li>
       <li>Built-in support for HTTPS and HTTP Basic authentication.</li>
-      <li>Supports <strong>fine-grained authorization policies</strong> for integration into diverse infrastructures.</li>
-    </ul>
-  </div>
-
-  <div class="col-sm-6">
-    <h4>Standards-Compliant</h4>
-    <ul>
-      <li>Fully conformant to all versions of the IIIF Image API, with separate endpoints for versions 1 and 2.</li>
+      <li>Supports <strong>arbitrary authorization policies</strong> for integration into diverse infrastructures.</li>
     </ul>
 
     <h4>High-Quality</h4>
     <ul>
       <li>Selectable resample filters, sharpening levels, and compression levels to optimize output for speed or quality.</li>
-      <li>Embedded <strong>ICC color profiles</strong> are respected.</li>
     </ul>
 
     <h4>Metadata-Aware</h4>
     <ul>
       <li>Copy embedded <strong>EXIF, IPTC, XMP, and native metadata</strong> from source images to derivative images (with some formats).</li>
     </ul>
+  </div>
 
+  <div class="col-sm-6">
     <h4>Modular</h4>
     <ul>
       <li><strong>Pluggable resolvers</strong> for retrieving images from a variety of sources&mdash;including filesystems, databases, remote web servers, cloud and object storage&mdash;with optional scriptable "hooks" to enable dynamic resolver selection and image lookup.</li>
@@ -83,16 +78,21 @@ title: Home
       <li><strong>Pluggable caches</strong> with customizable strategies and available automatic maintenance.</li>
     </ul>
 
-    <h4>Manageable</h4>
-    <ul>
-      <li>HTTP methods for common management functions like purging the cache and updating the configuration.</li>
-    </ul>
-
     <h4>Fast</h4>
     <ul>
       <li><strong>Optimized JPEG2000 and TIFF readers</strong> capable of excellent performance with massive images.</li>
       <li>Available asynchronous filesystem, database, Redis, in-memory, and cloud storage caches to speed up response times and reduce server load.</li>
       <li>In-memory image metadata and delegate result caches to boost performance for frequently-accessed resources.</li>
+    </ul>
+
+    <h4>Manageable</h4>
+    <ul>
+      <li>HTTP methods for common management functions like purging the cache and updating the configuration.</li>
+    </ul>
+
+    <h4>Standards-Compliant</h4>
+    <ul>
+      <li>Fully conformant to all versions of the IIIF Image API, with separate endpoints for versions 1 and 2.</li>
     </ul>
   </div>
 </div>
