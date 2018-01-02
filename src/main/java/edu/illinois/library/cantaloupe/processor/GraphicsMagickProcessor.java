@@ -18,10 +18,10 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
+import edu.illinois.library.cantaloupe.process.ArrayListOutputConsumer;
+import edu.illinois.library.cantaloupe.process.Pipe;
+import edu.illinois.library.cantaloupe.process.ProcessStarter;
 import org.apache.commons.lang3.StringUtils;
-import org.im4java.process.ArrayListOutputConsumer;
-import org.im4java.process.Pipe;
-import org.im4java.process.ProcessStarter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
