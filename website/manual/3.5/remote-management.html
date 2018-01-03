@@ -1,0 +1,258 @@
+---
+layout: manual_3.5
+title: Remote Management
+---
+
+<h1>Remote Management</h1>
+
+<ul>
+  <li><a href="#Control%20Panel">Control Panel</a></li>
+  <li><a href="#HTTP%20API">HTTP API</a></li>
+</ul>
+
+<h2 id="Control Panel">Control Panel</h2>
+
+<p>The Control Panel is a web-based administrative interface with monitoring and configuration capabilities. It is disabled by default. To enable it, set <code>endpoint.admin.enabled</code> to <code>true</code> and set a username and secret in the corresponding <code>endpoint.admin.*</code> keys. Then, navigate to <span class="filename">/admin</span> in a web browser and log in.</p>
+
+<p>Changes made in the Control Panel will instantly update the application's configuration, although some changes will require a restart to take effect. They will also be written to the configuration file within a few seconds.</p>
+
+<hr>
+
+<h2 id="HTTP API">HTTP API</h2>
+
+<p>The HTTP API is disabled by default, but can be enabled by setting the <code>endpoint.api.enabled</code> configuration option to <code>true</code>.</p>
+
+<div class="alert alert-info">All API methods require HTTP Basic authentication. Credentials are set in <code>endpoint.api.username</code> and <code>endpoint.api.secret</code>.</div>
+
+<div class="alert alert-info">Methods that call <code>POST /tasks</code> will create an asynchronous task identified by a UUID and submit it to a processing queue. Its status can be checked via <code>GET /tasks/:uuid</code>. Task objects are retained in memory, but are not persisted, so checking a task after a restart will result in a <code>404 Not Found</code> response.</div>
+
+<h3>Configuration</h3>
+
+<ul>
+  <li><a href="#retrieve-configuration">Retrieve the configuration</a></li>
+  <li><a href="#update-configuration">Update the configuration</a></li>
+</ul>
+
+<h4 id="retrieve-configuration">Retrieve the configuration <small>since 3.3</small></h4>
+
+<table class="table table-striped table-bordered">
+  <tr>
+    <td>Request Method</td>
+    <td><code>GET</code></td>
+  </tr>
+  <tr>
+    <td>URI</td>
+    <td><span class="filename">/configuration</span></td>
+  </tr>
+  <tr>
+    <td>Expected Response Status</td>
+    <td><code>200 OK</code></td>
+  </tr>
+  <tr>
+    <td>Expected Response Content Type</td>
+    <td><code>application/json</code></td>
+  </tr>
+</table>
+
+<h4 id="update-configuration">Update the configuration <small>since 3.3</small></h4>
+
+<table class="table table-striped table-bordered">
+  <tr>
+    <td>Request Method</td>
+    <td><code>PUT</code></td>
+  </tr>
+  <tr>
+    <td>URI</td>
+    <td><span class="filename">/configuration</span></td>
+  </tr>
+  <tr>
+    <td>Request Content Type</td>
+    <td><code>application/json</code></td>
+  </tr>
+  <tr>
+    <td>Request Body</td>
+    <td>Should contain the configuration keys to change:
+      {% highlight json %}{
+  "config_key_1" : "some value",
+  "config_key_2" : "some value",
+  "config_key_3" : "some value"
+}{% endhighlight %}
+    (It isn't necessary to supply all keys; only the ones to change.)</td>
+  </tr>
+  <tr>
+    <td>Expected Response</td>
+    <td><code>200 OK</code></td>
+  </tr>
+  <tr>
+    <td>Notes</td>
+    <td>The in-memory configuration will be updated instantly, although some key changes won't take effect until the application is restarted. Changes will also be written to the configuration file within a few seconds.</td>
+  </tr>
+</table>
+
+<hr>
+
+<h3>Caching</h3>
+
+<ul>
+  <li><a href="#PurgeInvalidFromCache">Purge invalid/expired content from all caches</a></li>
+  <li><strike><a href="#PurgeItemFromCache-deprecated">Purge all content relating to an individual source image from all caches</a></strike> (deprecated version)</li>
+  <li><a href="#PurgeItemFromCache">Purge all content relating to an individual source image from all caches</a></li>
+  <li><a href="#PurgeCache">Purge all content from all caches</a></li>
+  <li><a href="#PurgeDelegateMethodInvocationCache">Purge the delegate method invocation cache</a></li>
+  <li><a href="#PurgeInfoCache">Purge the info cache</a>
+</ul>
+
+<h4 id="PurgeInvalidFromCache">Purge invalid/expired content from all caches <small>since 3.4</small></h4>
+
+<table class="table table-striped table-bordered">
+  <tr>
+    <td>Request Method</td>
+    <td><code>POST</code></td>
+  </tr>
+  <tr>
+    <td>URI</td>
+    <td><span class="filename">/tasks</span></td>
+  </tr>
+  <tr>
+    <td>Request Content Type</td>
+    <td><code>application/json</code></td>
+  </tr>
+  <tr>
+    <td>Request Body</td>
+    <td>{% highlight json %}{
+  "verb" : "PurgeInvalidFromCache"
+}{% endhighlight %}</td>
+  </tr>
+  <tr>
+    <td>Expected Response</td>
+    <td><code>204 Accepted</code> with task URI in <code>Location</code> header</td>
+  </tr>
+</table>
+
+<h4 id="PurgeItemFromCache-deprecated">Purge all content relating to an individual source image from all caches <small>since 3.3</small></h4>
+
+<div class="alert alert-warning">This method is deprecated and will be removed in version 4.0. Please use <a href="#PurgeItemFromCache">the method that will be replacing it</a>.</div>
+
+<table class="table table-striped table-bordered">
+  <tr>
+    <td>Request Method</td>
+    <td><code>DELETE</code></td>
+  </tr>
+  <tr>
+    <td>URI</td>
+    <td><span class="filename">/cache/:identifier</span></td>
+  </tr>
+  <tr>
+    <td>Expected Response</td>
+    <td><code>200 OK</code></td>
+  </tr>
+</table>
+
+<h4 id="PurgeItemFromCache">Purge all content relating to an individual source image from all caches <small>since 3.4</small></h4>
+
+<table class="table table-striped table-bordered">
+  <tr>
+    <td>Request Method</td>
+    <td><code>POST</code></td>
+  </tr>
+  <tr>
+    <td>URI</td>
+    <td><span class="filename">/tasks</span></td>
+  </tr>
+  <tr>
+    <td>Request Content Type</td>
+    <td><code>application/json</code></td>
+  </tr>
+  <tr>
+    <td>Request Body</td>
+    <td>{% highlight json %}{
+  "verb" : "PurgeItemFromCache",
+  "identifier" : "MyIdentifier"
+}{% endhighlight %}</td>
+  </tr>
+  <tr>
+    <td>Expected Response</td>
+    <td><code>204 Accepted</code> with task URI in <code>Location</code> header</td>
+  </tr>
+</table>
+
+<h4 id="PurgeCache">Purge all content from all caches <small>since 3.4</small></h4>
+
+<table class="table table-striped table-bordered">
+  <tr>
+    <td>Request Method</td>
+    <td><code>POST</code></td>
+  </tr>
+  <tr>
+    <td>URI</td>
+    <td><span class="filename">/tasks</span></td>
+  </tr>
+  <tr>
+    <td>Request Content Type</td>
+    <td><code>application/json</code></td>
+  </tr>
+  <tr>
+    <td>Request Body</td>
+    <td>{% highlight json %}{
+  "verb" : "PurgeCache"
+}{% endhighlight %}</td>
+  </tr>
+  <tr>
+    <td>Expected Response</td>
+    <td><code>204 Accepted</code> with task URI in <code>Location</code> header</td>
+  </tr>
+</table>
+
+<h4 id="PurgeDelegateMethodInvocationCache">Purge the delegate method invocation cache <small>since 3.4</small></h4>
+
+<table class="table table-striped table-bordered">
+  <tr>
+    <td>Request Method</td>
+    <td><code>POST</code></td>
+  </tr>
+  <tr>
+    <td>URI</td>
+    <td><span class="filename">/tasks</span></td>
+  </tr>
+  <tr>
+    <td>Request Content Type</td>
+    <td><code>application/json</code></td>
+  </tr>
+  <tr>
+    <td>Request Body</td>
+    <td>{% highlight json %}{
+  "verb" : "PurgeDelegateMethodInvocationCache"
+}{% endhighlight %}</td>
+  </tr>
+  <tr>
+    <td>Expected Response</td>
+    <td><code>204 Accepted</code> with task URI in <code>Location</code> header</td>
+  </tr>
+</table>
+
+<h4 id="PurgeInfoCache">Purge the info cache <small>since 3.4</small></h4>
+
+<table class="table table-striped table-bordered">
+  <tr>
+    <td>Request Method</td>
+    <td><code>POST</code></td>
+  </tr>
+  <tr>
+    <td>URI</td>
+    <td><span class="filename">/tasks</span></td>
+  </tr>
+  <tr>
+    <td>Request Content Type</td>
+    <td><code>application/json</code></td>
+  </tr>
+  <tr>
+    <td>Request Body</td>
+    <td>{% highlight json %}{
+  "verb" : "PurgeInfoCache"
+}{% endhighlight %}</td>
+  </tr>
+  <tr>
+    <td>Expected Response</td>
+    <td><code>204 Accepted</code> with task URI in <code>Location</code> header</td>
+  </tr>
+</table>

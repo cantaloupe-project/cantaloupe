@@ -1,0 +1,166 @@
+---
+layout: manual_3.5
+title: Deployment
+---
+
+<h1>Deployment</h1>
+
+<ul>
+  <li><a href="#Temporary%20Directory">Temporary Directory</a></li>
+  <li><a href="#Images">Images</a></li>
+  <li><a href="#Hardware">Hardware</a>
+    <ul>
+      <li><a href="#HardwareCPU">CPU</a></li>
+      <li><a href="#HardwareMemory">Memory</a></li>
+      <li><a href="#HardwareStorage">Storage</a></li>
+    </ul>
+  </li>
+  <li><a href="#Limiting">Limiting</a></li>
+  <li><a href="#Reverse-Proxying">Reverse-Proxying</a>
+    <ul>
+      <li><a href="#Reverse-ProxyingApache">Apache</a></li>
+      <li><a href="#Reverse-ProxyingNginx">nginx</a></li>
+    </ul>
+  </li>
+  <li><a href="#SSL/TLS">SSL/TLS</a></li>
+  <li><a href="#HTTP/2">HTTP/2</a></li>
+</ul>
+
+<p>This page gathers some miscellaneous notes on production deployment.</p>
+
+<hr>
+
+<h2 id="Temporary Directory">Temporary Directory</h2>
+
+<p>When running in standalone mode, the embedded Jetty server, by default, caches class files in the system temp directory, which most operating systems will periodically clean out. If this happens while Cantaloupe is running, it can lead to <code>NoClassDefFoundError</code>s that can only be remedied by restarting the application. Consider either reconfiguring your OS's temp-cleaning strategy to work only at boot or shutdown, or using the <code>temp_pathname</code> configuration key (since version 3.4) to use a different location for temporary data.</p>
+
+<hr>
+
+<h2 id="Images">Images</h2>
+
+<p>Some image formats are inherently more efficient to serve than others. If you have control over your source image formats, please read the <a href="images.html">Images</a> section for recommendations.</p>
+
+<hr>
+
+<h2 id="Hardware">Hardware</h2>
+
+<h3 id="HardwareCPU">CPU</h3>
+
+<p>Cantaloupe uses a thread-per-request model, and maintains its own thread pool to carry out certain tasks asynchronously. Also, some processors are able to spread image decoding work across multiple threads. As the operating system will schedule different threads on different CPU cores, response times will benefit from multiple fast cores, especially as load increases.</p>
+
+<p>That said, some source formats are more CPU-intensive than others. JPEG2000 via <a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a>, for example, will strain the CPU far more than uncompressed TIFF via <a href="processors.html#Java2dProcessor">Java2dProcessor</a>.</p>
+
+<h3 id="HardwareMemory">Memory</h3>
+
+<p>Memory requirements will vary greatly depending on source format, source image size, request image size, and the number of concurrent requests. Ideally, it's best to serve only source formats that support tiling or that can be selectively decoded (see <a href="images.html#Considerations">Image Considerations</a>).</p>
+
+<h3 id="HardwareStorage">Storage</h3>
+
+<p>Most source formats benefit from fast read performance&mdash;in terms of both latency and throughput&mdash;in the underlying storage system. Throughput is more important for less efficient source formats&mdash;like JPEG, PNG, and mono-resolution TIFF&mdash;especially as source image size increases. <a href="resolvers.html#FilesystemResolver">Local filesystem storage</a> usually performs best.</p>
+
+<hr>
+
+<h2 id="Limiting">Limiting</h2>
+
+<p>A <code>max_pixels</code> configuration option is available to limit the maximum returned size of processed images. This is a "safety net" to prevent clients from bogging down the server. It does not affect requests for full-sized unmodified images, which do not significantly load the server because they are streamed through with no processing.</p>
+
+<p>Note that the <code><a href="access-control.html#Authorization">authorized?</a></code> delegate script method can perform the same function as <code>max_pixels</code>, with more granular control.</p>
+
+<hr>
+
+<h2 id="Reverse-Proxying">Reverse-Proxying</h2>
+
+<p>Cantaloupe can run behind a reverse-proxy web server like Apache or nginx. The proxy should be set up to pass-through encoded URI characters without decoding them. It should also be configured to send the following headers:</p>
+
+<table class="table table-striped">
+  <tr>
+    <th>Header</th>
+    <th>Description</th>
+    <th>Required?</th>
+  </tr>
+  <tr>
+    <td style="white-space: nowrap"><code>X-Forwarded-Proto</code></td>
+    <td>Protocol of the client request; either <code>HTTP</code> or <code>HTTPS</code>.  If missing, HTTP will be assumed.</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><code>X-Forwarded-Host</code></td>
+    <td>FQDN of the client-facing reverse proxy.</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><code>X-Forwarded-Port</code></td>
+    <td>TCP port of the client-facing reverse proxy. Will default to 80 if missing.</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><code>X-Forwarded-Path</code></td>
+    <td>Path to use as a base path. Will default to none if missing.</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><code>X-Forwarded-For</code></td>
+    <td>Client IP address. If missing, any features that require a client IP address will either not work (such as IP-based authorization), or be incorrect (such as access logs).</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><code>X-IIIF-ID</code></td>
+    <td>Originally-requested image identifier. Should be set only when the proxy server will change the value of the identifier in the forwarded request; i.e. when the client is asking for a different identifier than the image server ends up seeing.</td>
+    <td>No</td>
+  </tr>
+</table>
+
+<p>If it is not possible to configure your reverse proxy to send the <code>X-Forwarded-*</code> headers, the <code>base_uri</code> configuration option can be used instead; set it to the URI of the client-facing reverse proxy including any base path.</p>
+
+<p>In a reverse-proxying scenario, you might want to disable the <a href="logging.html#Access%20Log">access log</a>, if it would be redundant.</p>
+
+<h3 id="Reverse-ProxyingApache">Apache</h3>
+
+<p>The following example will make a Cantaloupe server running at http://image-server:8182/ available at http://apache-server/.</p>
+
+<pre>&lt;VirtualHost *:80&gt;
+  # X-Forwarded-Host will be set automatically by the web server.
+  RequestHeader set X-Forwarded-Proto HTTP
+  RequestHeader set X-Forwarded-Port 80
+  RequestHeader set X-Forwarded-Path /
+
+  ServerName apache-server
+  AllowEncodedSlashes NoDecode
+  ProxyPassReverseCookiePath / /
+  ErrorLog logs/image-error.log
+  CustomLog logs/image-access.log combined
+
+  ProxyPass / http://image-server:8182/ nocanon
+  ProxyPassReverse / http://image-server:8182/
+  ProxyPassReverseCookieDomain image-server:8182 apache-server
+  ProxyPreserveHost on
+&lt;/VirtualHost&gt;
+</pre>
+
+<h3 id="Reverse-ProxyingNginx">nginx</h3>
+
+<p>The following example will make a Cantaloupe server running at http://image-server:8182/ available at http://nginx-server/.
+
+<pre>location / {
+    if ($request_uri ~* "/(.*)") {
+        proxy_pass http://image-server:8182/$1;
+    }
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_set_header X-Forwarded-Port $server_port;
+    proxy_set_header X-Forwarded-Path /;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_redirect http://image-server:8182/ /;
+}</pre>
+
+<hr>
+
+<h2 id="SSL/TLS">SSL/TLS</h2>
+
+<p>In standalone mode, Cantaloupe supports TLS connections over HTTPS, configurable via the <code>https.*</code> keys in the configuration file. The general process for getting this working is to add a signed x.509 certificate to either a Java KeyStore (JKS) or PKCS#12 key store, and then refer to the key store file with the <code>https.key_store_path</code> configuration option.</p>
+
+<p>HTTPS can also be enabled on a Servlet container or <a href="#Reverse-Proxying">reverse-proxying web server</a>, in which case Cantaloupe would require no special configuration.</p>
+
+<h2 id="HTTP/2">HTTP/2</h2>
+
+<p>HTTP/2 is supported since version 3.4 via the <code>http.http2.enabled</code> and <code>https.http2.enabled</code> configuration keys. H2C (unencrypted) works in Java 8 and 9, but H2S (encrypted) requires Java 9.</p>

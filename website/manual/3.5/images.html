@@ -1,0 +1,138 @@
+---
+layout: manual_3.5
+title: Images
+---
+
+<h1>Images</h1>
+
+<ul>
+  <li><a href="#Considerations">Considerations</a></li>
+  <li><a href="#Sample%20Sizes">Sample Sizes</a></li>
+  <li><a href="#Normalization">Normalization</a></li>
+  <li><a href="#Source%20Formats">Source Formats</a>
+    <ul>
+      <li><a href="#DICOM">DICOM</a></li>
+      <li><a href="#JPEG">JPEG</a></li>
+      <li><a href="#JPEG2000">JPEG2000</a></li>
+      <li><a href="#PNG">PNG</a></li>
+      <li><a href="#TIFF">TIFF</a>
+        <ul>
+          <li><a href="#Strip-Based%20vs.%20Tile-Based">Strip-Based vs. Tile-Based</a></li>
+          <li><a href="#Multi-Resolution">Multi-Resolution (Pyramidal) TIFF</a></li>
+          <li><a href="#BigTIFF">BigTIFF</a></li>
+          <li><a href="#Processor%20Considerations">Processor Considerations</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><a href="#Color%20Profiles">Color Profiles</a></li>
+  <li><a href="#Metadata">Metadata</a></li>
+</ul>
+
+<h2 id="Considerations">Considerations</h2>
+
+<p>Most requests to an image server will be for cropped tiles and/or downscaled derivatives of a source image. Both of these will contain fewer pixels than the entire source image. A basic image reader, disregarding efficiency, will try to read the entire source image into memory before the cropping and scaling operations are carried out. This works fine for small images, because they can be read quickly and won't consume much memory. But as pixel count increases, read time and memory consumption also increases; an increasing burden is placed on the server; and requests take longer to fulfill.</p>
+
+<p>It would be better if the image reader could read only the requested region, and even employ subsampling to read only the pixels within that region that are needed to satisfy the requested scale factor. This would require three things:</p>
+
+<ol>
+  <li>An image format that can be selectively read. Two such formats&mdash;<a href="#JPEG2000">JPEG2000</a> and <a href="#TIFF">multi-resolution tiled TIFF</a>&mdash;are detailed later in this section.</p></li>
+  <li>A reader capable of reading one of these formats selectively.</li>
+  <li>A data source capable of facilitating selective reads. Local filesystems are great for reading and seeking through arbitrary byte ranges, and most readers work best with them. (Some even require them.) Other sources may not be able to provide this kind of control.</li>
+</ol>
+
+<p>Cantaloupe tries to do the best it can with whatever source formats it is asked to serve, and from whatever data source. However, some image formats are inherently better suited for large sizes and some <a href="processors.html#Supported%20Source%20Formats">processor/format combinations</a> will perform better than others.</p>
+
+<hr>
+
+<h2 id="Sample Sizes">Sample Sizes</h2>
+
+<p>Most processors can read images that have more than 8 bits per sample. However, as most web clients can't display more than 8 bits per sample, version 3.4 introduces a <code>processor.limit_to_8_bits</code> configuration option that will cause all images with more than 8 bits per sample to be rescaled to 8 bits.</p>
+
+<h2 id="Normalization">Normalization</h2>
+
+<p>When set to <code>true</code>, the <code>processor.normalize</code> configuration option normalizes the pixel values to utilize the full dynamic range of the output image. This is useful when working with 16-bit source images (for example) that do not use a full 16 bits of dynamic range and would appear overly dark when scaled down to 8 bits.</p>
+
+<hr>
+
+<h2 id="Source Formats">Source Formats</h2>
+
+<h3 id="DICOM">DICOM</h3>
+
+<p><a href="http://dicom.nema.org/standard.html">DICOM</a> defines a group of medical imaging standards. Support for the DICOM file format debuted in version 3.3.</p>
+
+<p>This format has a lot of variations in terms of its internal data structures and compression. <a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a> and <a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> are likely to offer the best support for the widest range of images. <a href="processors.html#Java2dProcessor">Java2dProcessor</a> and <a href="processors.html#JaiProcessor">JaiProcessor</a> also support some, but not all, variations, using the <a href="http://www.dcm4che.org">dcm4che</a> ImageIO plugin.</p>
+
+<h3 id="JPEG">JPEG</h3>
+
+<p>Most processors that support image sources support this format, some perhaps more efficiently than others, though this is untested.</p>
+
+<p>JPEG is not an ideal format for delivery of high-resolution images because most readers need to read the entire image data into memory before decoding any part of it.</p>
+
+<h3 id="JPEG2000">JPEG2000</h3>
+
+<p>JPEG2000 uses advanced compression techniques to enable fast reduced-scale and region-of-interest decoding. With a performant decoder, it is well-suited for use with very large source images.</p>
+
+<p><a href="processors.html#KakaduProcessor">KakaduProcessor</a> is the most efficient processor for this format, and it performs very well, even with huge images. Unfortunately, Kakadu is not free.</p>
+
+<p><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> uses the <a href="http://www.openjpeg.org">OpenJPEG</a> decoder, which is one of the faster open-source JPEG2000 decoders. Another option to look at is <a href="https://github.com/GrokImageCompression/grok">Grok</a>, which might work with this processor, but is untested.</p>
+
+<p><a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a>'s JPEG2000 delegate, if installed, will also use the OpenJPEG library, but less efficiently as it won't use its region-extraction or level-reduction features.</p>
+
+<p><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> can read and write JPEG2000 using JasPer, if the necessary plugin is installed. This will probably be too slow to be usable for most purposes.</p>
+
+<p>There is an ImageIO plugin for JPEG2000 based on JJ2000 which would bring support to Java2dProcessor and JaiProcessor, but it is not included because it is too slow to be usable.</p>
+
+<h3 id="PNG">PNG</h3>
+
+<p>Most processors that support image sources support this format, some perhaps more efficiently than others, though this is untested.</p>
+
+<p>In general, this is not an ideal format for delivery of high-resolution images, for the reason explained in the <a href="#JPEG">JPEG</a> section.</p>
+
+<h3 id="TIFF">TIFF</h3>
+
+<p>TIFF is a common format that most processors can read. However, there are some criteria that source images must meet in order to be delivered efficiently.</p>
+
+<h4 id="Strip-Based vs. Tile-Based">Strip-Based vs. Tile-Based</h4>
+
+<p>The <a href="http://www.exif.org/TIFF6.pdf">Adobe TIFF 6.0 specification</a> permits arrangements of image data in either strips or tiles. Most TIFF encoders produce strip-based TIFFs unless told to do otherwise. These are increasingly slow to read as their size increases. <strong>High-resolution TIFFs should be tile-based</strong> in order to permit efficient region extraction. An easy way to check is with the <span class="filename">tiffdump</span> utility:</p>
+
+<pre>$ tiffdump image.tif</pre>
+
+<p>For strip-based TIFFs, this will print out some information including <code>StripOffsets</code>, <code>StripByteCounts</code>, and so on. For tile-based TIFFs, it will print <code>TileOffsets</code>, <code>TileByteCounts</code>, and so on, instead.</p>
+
+<h4 id="Multi-Resolution">Multi-Resolution (Pyramidal) TIFF</h4>
+
+<p>Multi-resolution TIFF is a special type of TIFF file that can be read more efficiently at reduced scales. In addition to the main image, a multi-resolution TIFF file will contain a sequence of progressively half-sized sub-images: for example, a 10000&times;10000 pixel main image would include versions of 5000&times;5000 pixels, 2500&times;2500 pixels, and so on, in the same file.</p>
+
+<p>Each of the levels in a multi-resolution TIFF file can be striped or tiled, just as in a mono-resolution file. Tiled and pyramidal encodings are complementary: the former improves efficiency with reduced regions at large scales, and the latter improves efficiency at reduced scales. For efficient deep zooming, TIFF images need to be pyramidal, and each level of the pyramid should be tiled.</p>
+
+<h4 id="BigTIFF">BigTIFF</h4>
+
+<p>Ordinary TIFF files are limited to 4 GB in size. BigTIFF uses a different data layout that enables them to scale far beyond this. All processors that understand TIFF also understand BigTIFF.</p>
+
+<h4 id="Processor Considerations">Processor Considerations</h4>
+
+<p>Most processors can "read the TIFF format," but not all can read it efficiently. Currently, <a href="processors.html#Java2dProcessor">Java2dProcessor</a> and <a href="processors.html#JaiProcessor">JaiProcessor</a> both support multi-resolution TIFF, which is to say that they read the embedded sub-images and choose the smallest one that can fulfill the request. Additionally, both exploit tiled sub-images. JaiProcessor, however, is able to use the JAI processing pipeline to do this more efficiently, so it is currently the best-performing processor for suitably-encoded high-resolution TIFF images.</p>
+
+<hr>
+
+<h2 id="Color Profiles">Color Profiles</h2>
+
+<p>Image files may have embedded color profiles, which map the color space in which an image was produced to its internal color data. This enables viewers to reproduce image colors accurately, as they were seen by the producer. By embedding a profile, the producer need not know anything about the displays on which an image will be viewed, and need not destructively modify the color values within the image data itself.</p>
+
+<p>Most processors support embedded color profiles and will automatically copy them into derivative images; see the <a href="processors.html#Supported%20Features">table of processor-supported features</a>.</p>
+
+<p>There is typically no need to embed a profile into profile-less images, as viewers will tend to automatically assume that these map to an sRGB space, and apply the conversion themselves. There is therefore no provision for embedding profiles into profile-less images.</p>
+
+<hr>
+
+<h2 id="Metadata">Metadata</h2>
+
+<p>Many image file formats are capable of storing supplementary technical and/or descriptive metadata alongside the actual image data. Formats may be able to store standard metadata formats like EXIF, IPTC IIM, and XMP, and they may also define their own metadata formats. More than one such format may be present even within the same file.</p>
+
+<p>When an image request is received&mdash;unless it calls for the full-sized unmodified source image&mdash;the image server will have to dynamically create and return a derivative image. As this is a whole new image, distinct from the source image, populating it with metadata would require an additional step.</p>
+
+<p>When <code>processor.metadata.preserve</code> is set to <code>true</code> in the configuration file, an effort will be made to copy metadata from source images into derivative images.</p>
+
+<p>This currently does not work in all processors; see the <a href="processors.html#Supported%20Features">Supported Features</a> table for a breakdown. It also does not generally work across formats.</p>
