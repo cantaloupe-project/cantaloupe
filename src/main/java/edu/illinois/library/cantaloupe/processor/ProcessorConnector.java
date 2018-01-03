@@ -15,7 +15,6 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -44,75 +43,77 @@ public class ProcessorConnector {
     }
 
     /**
-     * <p>Establishes the best connection between the processor and the
-     * resolver.</p>
+     * <p>Establishes the best (most efficient & compatible) connection between
+     * a processor and resolver.</p>
      *
      * <ul>
      *     <li>If the resolver is a {@link FileResolver}, the processor will
-     *     read from either a {@link File} or a {@link StreamSource}.</li>
-     *     <li>If the resolver is a {@link StreamResolver} (only) and the
-     *     processor is a {@link StreamProcessor} (only):
+     *     read from either a {@link Path} or a {@link StreamSource}.</li>
+     *     <li>If the resolver is <em>only</em> a {@link StreamResolver} and
+     *     the processor is <em>only</em> a {@link StreamProcessor}:
      *         <ul>
      *             <li>If {@link Key#STREAMPROCESSOR_RETRIEVAL_STRATEGY}
-     *             is set to <code>StreamStrategy</code>, the processor will
+     *             is set to {@literal StreamStrategy}, the processor will
      *             read from the {@link StreamSource} provided by the
      *             resolver.</li>
      *             <li>If {@link Key#STREAMPROCESSOR_RETRIEVAL_STRATEGY}
-     *             is set to <code>CacheStrategy</code>, the source image will
+     *             is set to {@literal CacheStrategy}, the source image will
      *             be downloaded to the source cache, and the processor will
      *             read the file returned by
      *             {@link SourceCache#getSourceImageFile(Identifier)}. This will
-     *             block, and other threads trying to access the same source
-     *             image will wait for it to download.</li>
+     *             block, so other threads trying to access the same source
+     *             image will have to wait for it to download.</li>
      *         </ul>
      *     </li>
-     *     <li>If the resolver is a {@link StreamResolver} (only) and the
-     *     processor is a {@link FileProcessor} (only):
+     *     <li>If the resolver is <em>only</em> a {@link StreamResolver} and
+     *     the processor is <em>only</em> a {@link FileProcessor}:
      *         <ul>
-     *             <li>If {@link Key#SOURCE_CACHE_ENABLED} is
-     *             <code>true</code>, the source image will be downloaded
-     *             to the source cache, and the processor will read the file
-     *             returned by
+     *             <li>If {@link Key#SOURCE_CACHE_ENABLED} is {@literal true},
+     *             the source image will be downloaded to the source cache, and
+     *             the processor will read the file returned by
      *             {@link SourceCache#getSourceImageFile(Identifier)}. This will
-     *             block, and other threads trying to access the same source
-     *             image will wait for it to download.</li>
+     *             block, so other threads trying to access the same source
+     *             image will have to wait for it to download.</li>
      *             <li>Otherwise, an {@link IncompatibleResolverException}
      *             will be thrown.</li>
      *         </ul>
      *     </li>
      * </ul>
      *
-     * <p>When this method completes, the processor is guaranteed to have its
-     * source set.</p>
+     * <p>The processor is guaranteed to have its source set.</p>
      */
     public void connect(Resolver resolver,
                         Processor processor,
-                        Identifier identifier)
-            throws IOException, CacheDisabledException,
-            IncompatibleResolverException {
+                        Identifier identifier) throws IOException,
+            CacheDisabledException, IncompatibleResolverException {
         final String resolverName = resolver.getClass().getSimpleName();
         final String processorName = processor.getClass().getSimpleName();
 
         if (resolver instanceof FileResolver) {
             if (processor instanceof FileProcessor) {
-                LOGGER.info("FileResolver -> FileProcessor connection " +
-                        "between {} and {}",
-                        resolverName, processorName);
+                LOGGER.info("{} -> {} connection between {} and {}",
+                        FileResolver.class.getSimpleName(),
+                        FileProcessor.class.getSimpleName(),
+                        resolverName,
+                        processorName);
                 ((FileProcessor) processor).setSourceFile(
                         ((FileResolver) resolver).getPath());
             } else {
                 // All FileResolvers are also StreamResolvers.
-                LOGGER.info("FileResolver -> StreamProcessor connection " +
-                        "between {} and {}",
-                        resolverName, processorName);
+                LOGGER.info("{} -> {} connection between {} and {}",
+                        FileResolver.class.getSimpleName(),
+                        StreamProcessor.class.getSimpleName(),
+                        resolverName,
+                        processorName);
                 ((StreamProcessor) processor).setStreamSource(
                         ((StreamResolver) resolver).newStreamSource());
             }
         } else { // resolver is a StreamResolver
             // StreamResolvers and FileProcessors can't work together.
             if (!(processor instanceof StreamProcessor)) {
-                LOGGER.info("Incompatible resolver and processor " +
-                        "(StreamResolver -> FileProcessor).");
+                LOGGER.info("Resolver and processor are incompatible ({} -> {})",
+                        StreamResolver.class.getSimpleName(),
+                        FileProcessor.class.getSimpleName());
                 SourceCache sourceCache = CacheFactory.getSourceCache();
                 if (sourceCache != null) {
                     LOGGER.debug("Source cache available.");
@@ -124,8 +125,9 @@ public class ProcessorConnector {
             } else {
                 switch (getStreamProcessorRetrievalStrategy()) {
                     case CACHE:
-                        LOGGER.info("Using CacheStrategy with {} as a StreamProcessor",
-                                processorName);
+                        LOGGER.info("Using CacheStrategy with {} as a {}",
+                                processorName,
+                                StreamProcessor.class.getSimpleName());
                         SourceCache sourceCache = CacheFactory.getSourceCache();
                         if (sourceCache != null) {
                             LOGGER.info("Source cache available.");
@@ -137,9 +139,11 @@ public class ProcessorConnector {
                         break;
                     default: // stream
                         // All FileResolvers are also StreamResolvers.
-                        LOGGER.info("StreamResolver -> StreamProcessor " +
-                                "connection between {} and {}",
-                                resolverName, processorName);
+                        LOGGER.info("{} -> {} connection between {} and {}",
+                                StreamResolver.class.getSimpleName(),
+                                StreamProcessor.class.getSimpleName(),
+                                resolverName,
+                                processorName);
                         ((StreamProcessor) processor).setStreamSource(
                                 ((StreamResolver) resolver).newStreamSource());
                         break;
@@ -151,8 +155,7 @@ public class ProcessorConnector {
     private void setSourceCacheAsSource(Resolver resolver,
                                         Processor processor,
                                         SourceCache sourceCache,
-                                        Identifier identifier)
-            throws IOException {
+                                        Identifier identifier) throws IOException {
         // This will block while a file is being written in another thread,
         // which will prevent the image from being downloaded multiple times.
         Path sourceFile = sourceCache.getSourceImageFile(identifier);
@@ -160,7 +163,10 @@ public class ProcessorConnector {
             downloadToSourceCache(resolver, sourceCache, identifier);
             sourceFile = sourceCache.getSourceImageFile(identifier);
         }
-        LOGGER.info("SourceCache -> FileProcessor connection between {} and {}",
+
+        LOGGER.info("{} -> {} connection between {} and {}",
+                SourceCache.class.getSimpleName(),
+                FileProcessor.class.getSimpleName(),
                 sourceCache.getClass().getSimpleName(),
                 processor.getClass().getSimpleName());
         if (processor instanceof FileProcessor) {
@@ -174,14 +180,15 @@ public class ProcessorConnector {
 
     private void downloadToSourceCache(Resolver resolver,
                                        SourceCache sourceCache,
-                                       Identifier identifier)
-            throws IOException {
+                                       Identifier identifier) throws IOException {
         // Download to the SourceCache and then read from it.
         try (InputStream inputStream =
                      ((StreamResolver) resolver).newStreamSource().newInputStream();
              OutputStream outputStream =
                      sourceCache.newSourceImageOutputStream(identifier)) {
-            LOGGER.info("Downloading {} to the source cache", identifier);
+            LOGGER.info("Downloading {} to {}",
+                    identifier,
+                    SourceCache.class.getSimpleName());
             IOUtils.copy(inputStream, outputStream);
         }
     }
