@@ -1,8 +1,10 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -11,6 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -25,6 +28,22 @@ public class ImageOverlayTest extends BaseTest {
     public void setUp() throws Exception {
         URI imageURI = TestUtil.getImage("jpg").toUri();
         instance = new ImageOverlay(imageURI, Position.BOTTOM_RIGHT, 5);
+    }
+
+    @Test
+    public void testGetStreamSourceReturnedInstanceIsReusable()
+            throws Exception {
+        StreamSource source = instance.getStreamSource();
+
+        try (InputStream is = source.newInputStream();
+             OutputStream os = new NullOutputStream()) {
+            IOUtils.copy(is, os);
+        }
+
+        try (InputStream is = source.newInputStream();
+             OutputStream os = new NullOutputStream()) {
+            IOUtils.copy(is, os);
+        }
     }
 
     @Test
@@ -43,7 +62,7 @@ public class ImageOverlayTest extends BaseTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testSetURIThrowsExceptionWhenFrozen() throws Exception {
+    public void testSetURIThrowsExceptionWhenFrozen() {
         instance.freeze();
         try {
             instance.setURI(new URI("http://example.org/cats"));

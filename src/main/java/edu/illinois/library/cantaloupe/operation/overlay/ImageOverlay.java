@@ -1,7 +1,10 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.operation.Operation;
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
 
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -38,6 +41,24 @@ public class ImageOverlay extends Overlay implements Operation {
     public ImageOverlay(URI uri, Position position, int inset) {
         super(position, inset);
         setURI(uri);
+    }
+
+    /**
+     * @return Source of streams from which to read the image data.
+     */
+    public StreamSource getStreamSource() {
+        return new StreamSource() {
+            @Override
+            public ImageInputStream newImageInputStream()
+                    throws IOException {
+                return ImageIO.createImageInputStream(newInputStream());
+            }
+
+            @Override
+            public InputStream newInputStream() throws IOException {
+                return openStream();
+            }
+        };
     }
 
     /**
