@@ -171,7 +171,7 @@ public class ImageAPIResourceTester {
             assertRecursiveFileCount(cacheDir, 0);
 
             // assert that the info does NOT exist in the info cache
-            assertEquals(0, InfoService.getInstance().getObjectCacheSize());
+            assertEquals(0, InfoService.getInstance().getInfoCache().size());
         } finally {
             client.stop();
         }

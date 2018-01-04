@@ -44,7 +44,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         assertRecursiveFileCount(cacheDir, 1);
 
         // assert that an info has been added to the info cache
-        assertEquals(1, InfoService.getInstance().getObjectCacheSize());
+        assertEquals(1, InfoService.getInstance().getInfoCache().size());
 
         // move the source image out of the way
         File movedFile = new File(sourceFile + ".tmp");
@@ -79,7 +79,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         assertRecursiveFileCount(cacheDir, 1);
 
         // assert that an info has been added to the info cache
-        assertEquals(1, InfoService.getInstance().getObjectCacheSize());
+        assertEquals(1, InfoService.getInstance().getInfoCache().size());
 
         // move the source image out of the way
         File movedFile = new File(sourceFile + ".tmp");
@@ -111,7 +111,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         assertRecursiveFileCount(cacheDir, 1);
 
         // assert that an info has NOT been added to the info cache
-        assertEquals(0, InfoService.getInstance().getObjectCacheSize());
+        assertEquals(0, InfoService.getInstance().getInfoCache().size());
 
         // move the source image out of the way
         File movedFile = new File(sourceFile + ".tmp");
@@ -146,7 +146,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         assertRecursiveFileCount(cacheDir, 1);
 
         // assert that an info has NOT been added to the info cache
-        assertEquals(0, InfoService.getInstance().getObjectCacheSize());
+        assertEquals(0, InfoService.getInstance().getInfoCache().size());
 
         // move the source image out of the way
         File movedFile = new File(sourceFile + ".tmp");
@@ -179,7 +179,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         assertRecursiveFileCount(cacheDir, 0);
 
         // assert that an info has been added to the info cache
-        assertEquals(1, InfoService.getInstance().getObjectCacheSize());
+        assertEquals(1, InfoService.getInstance().getInfoCache().size());
 
         // move the source image out of the way
         File movedFile = new File(sourceFile + ".tmp");
@@ -215,7 +215,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         assertRecursiveFileCount(cacheDir, 0);
 
         // assert that an info has been added to the info cache
-        assertEquals(1, InfoService.getInstance().getObjectCacheSize());
+        assertEquals(1, InfoService.getInstance().getInfoCache().size());
 
         // move the source image out of the way
         File movedFile = new File(sourceFile + ".tmp");
@@ -248,7 +248,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         assertRecursiveFileCount(cacheDir, 0);
 
         // assert that an info has NOT been added to the info cache
-        assertEquals(0, InfoService.getInstance().getObjectCacheSize());
+        assertEquals(0, InfoService.getInstance().getInfoCache().size());
 
         // move the source image out of the way
         File movedFile = new File(sourceFile + ".tmp");
@@ -284,7 +284,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         assertRecursiveFileCount(cacheDir, 0);
 
         // assert that an info has NOT been added to the info cache
-        assertEquals(0, InfoService.getInstance().getObjectCacheSize());
+        assertEquals(0, InfoService.getInstance().getInfoCache().size());
 
         // move the source image out of the way
         File movedFile = new File(sourceFile + ".tmp");

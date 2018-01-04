@@ -39,9 +39,9 @@ public class StatusResource extends AbstractAdminResource {
             }
 
             this.infoCache.put("size",
-                    InfoService.getInstance().getObjectCacheSize());
+                    InfoService.getInstance().getInfoCache().size());
             this.infoCache.put("maxSize",
-                    InfoService.getInstance().getObjectCacheMaxSize());
+                    InfoService.getInstance().getInfoCache().maxSize());
 
             Runtime runtime = Runtime.getRuntime();
             RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();

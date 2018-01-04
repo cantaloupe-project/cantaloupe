@@ -250,7 +250,7 @@ public class CacheFacadeTest extends BaseTest {
         instance.purge();
 
         // Assert that everything is gone.
-        assertEquals(0, InfoService.getInstance().getObjectCacheSize());
+        assertEquals(0, InfoService.getInstance().getInfoCache().size());
         assertNull(sourceCache.getSourceImageFile(identifier));
         assertNull(derivCache.getImageInfo(identifier));
         try (InputStream is = derivCache.newDerivativeImageInputStream(opList)) {
@@ -376,7 +376,7 @@ public class CacheFacadeTest extends BaseTest {
         Thread.sleep(1001);
 
         // Assert that everything is gone.
-        assertEquals(0, InfoService.getInstance().getObjectCacheSize());
+        assertEquals(0, InfoService.getInstance().getInfoCache().size());
         assertNull(sourceCache.getSourceImageFile(identifier));
         assertNull(derivCache.getImageInfo(identifier));
         try (InputStream is = derivCache.newDerivativeImageInputStream(opList)) {

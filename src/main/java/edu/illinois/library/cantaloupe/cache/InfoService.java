@@ -16,34 +16,20 @@ import java.io.IOException;
 /**
  * <p>Used to obtain {@link Info} instances in an efficient way, utilizing
  * (optionally) several tiers of caching.</p>
+ *
+ * @since 3.4
  */
-public class InfoService {
+public final class InfoService {
 
     private static final Logger LOGGER = LoggerFactory.
             getLogger(InfoService.class);
 
-    /**
-     * We can't know the average size of an info in advance, but 100 bytes is
-     * a reasonable estimate for an image with no other embedded subimages.
-     * Infos for multiresolution images may be bigger. It's better to
-     * overestimate this than underestimate it.
-     */
-    private static final int EXPECTED_AVERAGE_INFO_SIZE = 150;
-
-    /**
-     * Cached infos will consume, at most, this much of max heap.
-     *
-     * Of course, infos are tiny and in typical use they'll never consume
-     * anywhere near this much of a reasonable-sized heap.
-     */
-    private static final float MAX_HEAP_PERCENT = 0.1f;
-
     private static InfoService instance;
 
-    private final ObjectCache<Identifier, Info> objectCache;
+    private final InfoCache infoCache = new InfoCache();
 
     /**
-     * For testing purposes only.
+     * For testing only!
      */
     static synchronized void clearInstance() {
         instance = null;
@@ -57,20 +43,6 @@ public class InfoService {
             instance = new InfoService();
         }
         return instance;
-    }
-
-    private InfoService() {
-        final long maxByteSize =
-                Math.round(Runtime.getRuntime().maxMemory() * MAX_HEAP_PERCENT);
-        final long maxCount = Math.round(maxByteSize /
-                (float) EXPECTED_AVERAGE_INFO_SIZE);
-
-        LOGGER.info("Max {} capacity: {} ({}% max heap / {}-byte expected average info size)",
-                ObjectCache.class.getSimpleName(),
-                maxCount,
-                Math.round(MAX_HEAP_PERCENT * 100),
-                EXPECTED_AVERAGE_INFO_SIZE);
-        objectCache = new ObjectCache<>(maxCount);
     }
 
     /**
@@ -94,12 +66,12 @@ public class InfoService {
      * @see #getOrReadInfo(Identifier, Processor)
      */
     Info getInfo(final Identifier identifier) throws IOException {
-        // Check the local object cache.
-        Info info = objectCache.get(identifier);
+        // Check the info cache.
+        Info info = infoCache.get(identifier);
 
         if (info != null) {
             LOGGER.debug("getInfo(): retrieved info of {} from {}",
-                    identifier, objectCache.getClass().getSimpleName());
+                    identifier, infoCache.getClass().getSimpleName());
         } else {
             // Check the derivative cache.
             final DerivativeCache derivCache = CacheFactory.getDerivativeCache();
@@ -122,12 +94,11 @@ public class InfoService {
         return info;
     }
 
-    public long getObjectCacheMaxSize() {
-        return objectCache.maxSize();
-    }
-
-    public long getObjectCacheSize() {
-        return objectCache.size();
+    /**
+     * @return The backing info cache.
+     */
+    public InfoCache getInfoCache() {
+        return infoCache;
     }
 
     /**
@@ -185,12 +156,12 @@ public class InfoService {
 
     public void purgeObjectCache() {
         LOGGER.debug("purgeObjectCache()");
-        objectCache.removeAll();
+        infoCache.purge();
     }
 
     void purgeObjectCache(Identifier identifier) {
         LOGGER.debug("purgeObjectCache(): purging {}", identifier);
-        objectCache.remove(identifier);
+        infoCache.purge(identifier);
     }
 
     /**
@@ -200,11 +171,11 @@ public class InfoService {
         if (isObjectCacheEnabled()) {
             LOGGER.debug("putInObjectCache(): adding info: {} (new size: {})",
                     identifier,
-                    objectCache.size() + 1);
-            objectCache.put(identifier, info);
+                    infoCache.size() + 1);
+            infoCache.put(identifier, info);
         } else {
             LOGGER.debug("putInObjectCache(): {} is disabled; doing nothing",
-                    objectCache.getClass().getSimpleName());
+                    infoCache.getClass().getSimpleName());
         }
     }
 

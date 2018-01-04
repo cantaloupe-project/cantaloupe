@@ -98,25 +98,6 @@ public class InfoServiceTest extends BaseTest {
         assertNull(info);
     }
 
-    /* getObjectCacheSize() */
-
-    @Test
-    public void testGetObjectCacheSize() {
-        assertEquals(0, instance.getObjectCacheSize());
-
-        final Identifier identifier = new Identifier("cats");
-        final Info info = new Info(500, 300);
-        instance.putInObjectCache(identifier, info);
-        assertEquals(1, instance.getObjectCacheSize());
-    }
-
-    /* getObjectCacheMaxSize() */
-
-    @Test
-    public void testGetObjectCacheMaxSize() {
-        assertTrue(instance.getObjectCacheMaxSize() > 1000);
-    }
-
     /* getOrReadInfo() */
 
     @Test
@@ -182,10 +163,10 @@ public class InfoServiceTest extends BaseTest {
         final Identifier identifier = new Identifier("cats");
         final Info info = new Info(500, 300);
         instance.putInObjectCache(identifier, info);
-        assertEquals(1, instance.getObjectCacheSize());
+        assertEquals(1, instance.getInfoCache().size());
 
         instance.purgeObjectCache();
-        assertEquals(0, instance.getObjectCacheSize());
+        assertEquals(0, instance.getInfoCache().size());
     }
 
     /* purgeObjectCache(Identifier) */
@@ -197,10 +178,10 @@ public class InfoServiceTest extends BaseTest {
         final Info info = new Info(500, 300);
         instance.putInObjectCache(id1, info);
         instance.putInObjectCache(id2, info);
-        assertEquals(2, instance.getObjectCacheSize());
+        assertEquals(2, instance.getInfoCache().size());
 
         instance.purgeObjectCache(id1);
-        assertEquals(1, instance.getObjectCacheSize());
+        assertEquals(1, instance.getInfoCache().size());
     }
 
 }
