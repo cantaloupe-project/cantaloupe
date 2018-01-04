@@ -14,6 +14,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <jetty.version>9.4.7.v20170914</jetty.version>
+    <jruby.version>9.1.15.0</jruby.version>
     <restlet.version>2.3.11</restlet.version>
     <surefire.version>2.20.1</surefire.version>
   </properties>
@@ -356,13 +357,13 @@
     <dependency>
       <groupId>org.jruby</groupId>
       <artifactId>jruby-core</artifactId>
-      <version>9.1.13.0</version>
+      <version>${jruby.version}</version>
     </dependency>
     <!-- Needed by tests, but not necessary at compile time. -->
     <dependency>
       <groupId>org.jruby</groupId>
       <artifactId>jruby-stdlib</artifactId>
-      <version>9.1.13.0</version>
+      <version>${jruby.version}</version>
       <scope>runtime</scope>
     </dependency>
     <!-- Restlet is our REST framework. -->
