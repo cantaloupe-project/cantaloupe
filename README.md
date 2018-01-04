@@ -144,12 +144,14 @@ release branch for that release, and merged back into `develop`.
 9. Merge into `master`
 10. Create the release `.zip` archive with `mvn clean package`
 11. Verify that the `.zip` archive is as expected
-12. Tag the release: `git tag -a v{version} -m 'Tag v{version}'`
-13. Push the code: `git push origin master; git push origin release/x.x;
-    git push --tags`
-14. Add the `.zip` archive and change log info to the release tag on GitHub
-15. Deploy the updated website using `build/deploy_website.rb`
-16. Append `-SNAPSHOT` to the version in `pom.xml` and commit this change
+12. Push the code: `git push origin master; git push origin release/x.x`
+13. Wait for CI tests to pass
+14. Tag the release: `git tag -a v{version} -m 'Tag v{version}'`
+15. git push --tags
+16. Add the `.zip` archive and change log info to the release tag on GitHub
+17. Deploy the updated website using `build/deploy_website.rb`
+18. Append `-SNAPSHOT` to the version in `pom.xml` and commit this change
+19. Close the release's GitHub milestone
 
 ## License
 
