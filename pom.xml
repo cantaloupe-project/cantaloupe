@@ -68,7 +68,7 @@
       <artifactId>logback-core</artifactId>
       <version>1.2.3</version>
     </dependency>
-    <!-- Used by AmazonS3Resolver and AmazonS3Cache -->
+    <!-- Used by AmazonS3Resolver and S3Cache -->
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-core</artifactId>

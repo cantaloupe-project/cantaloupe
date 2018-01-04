@@ -389,7 +389,7 @@ cache.server.source = FilesystemCache
 cache.server.derivative.enabled = false
 
 # Available values are `FilesystemCache`, `JdbcCache`, `RedisCache`,
-# `HeapCache`, `AmazonS3Cache`, and `AzureStorageCache`.
+# `HeapCache`, `S3Cache`, and `AzureStorageCache`.
 cache.server.derivative =
 
 # Whether to use the Java heap as a "level 1" cache for image infos, either
@@ -472,28 +472,28 @@ JdbcCache.derivative_image_table = derivative_cache
 JdbcCache.info_table = info_cache
 
 #----------------------------------------
-# AmazonS3Cache
+# S3Cache
 #----------------------------------------
 
 # !! Credentials for your AWS account.
 # See: http://aws.amazon.com/security-credentials
 # Note that this info can be obtained from elsewhere rather than setting it
 # here; see the user manual.
-AmazonS3Cache.access_key_id =
-AmazonS3Cache.secret_key =
+S3Cache.access_key_id =
+S3Cache.secret_key =
 
 # !! Name of a bucket to use to hold cached data.
-AmazonS3Cache.bucket.name =
+S3Cache.bucket.name =
 
 # See: http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
-AmazonS3Cache.bucket.region =
+S3Cache.bucket.region =
 
 # !! String that will be prefixed to object keys.
-AmazonS3Cache.object_key_prefix =
+S3Cache.object_key_prefix =
 
 # !! Maximum number of concurrent HTTP connections to AWS. Leave blank to
 # use the default.
-AmazonS3Cache.max_connections =
+S3Cache.max_connections =
 
 #----------------------------------------
 # AzureStorageCache

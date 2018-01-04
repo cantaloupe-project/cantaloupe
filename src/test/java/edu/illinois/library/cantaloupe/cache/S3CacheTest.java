@@ -24,13 +24,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 
-public class AmazonS3CacheTest extends BaseTest {
+public class S3CacheTest extends BaseTest {
 
     private final int UPLOAD_WAIT = 3000;
 
     private Identifier identifier = new Identifier("jpg-rgb-64x56x8-baseline.jpg");
     private Info imageInfo = new Info(64, 56, Format.JPG);
-    private AmazonS3Cache instance;
+    private S3Cache instance;
     private OperationList opList = new OperationList(identifier, Format.JPG);
 
     private static String getAccessKeyId() {
@@ -63,13 +63,13 @@ public class AmazonS3CacheTest extends BaseTest {
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.CACHE_SERVER_TTL, 2);
-        config.setProperty(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX, "test/");
-        config.setProperty(Key.AMAZONS3CACHE_ACCESS_KEY_ID, getAccessKeyId());
-        config.setProperty(Key.AMAZONS3CACHE_BUCKET_NAME, getBucket());
-        config.setProperty(Key.AMAZONS3CACHE_SECRET_KEY, getSecretKey());
-        config.setProperty(Key.AMAZONS3CACHE_BUCKET_REGION, getRegion());
+        config.setProperty(Key.S3CACHE_OBJECT_KEY_PREFIX, "test/");
+        config.setProperty(Key.S3CACHE_ACCESS_KEY_ID, getAccessKeyId());
+        config.setProperty(Key.S3CACHE_BUCKET_NAME, getBucket());
+        config.setProperty(Key.S3CACHE_SECRET_KEY, getSecretKey());
+        config.setProperty(Key.S3CACHE_BUCKET_REGION, getRegion());
 
-        instance = new AmazonS3Cache();
+        instance = new S3Cache();
         instance.initialize();
     }
 
@@ -81,7 +81,7 @@ public class AmazonS3CacheTest extends BaseTest {
 
     private void assertObjectCount(int count) {
         S3Objects objects = S3Objects.inBucket(
-                AmazonS3Cache.getClientInstance(),
+                S3Cache.getClientInstance(),
                 instance.getBucketName());
         final AtomicInteger atint = new AtomicInteger(0);
         objects.iterator().forEachRemaining(t -> atint.incrementAndGet());
@@ -93,7 +93,7 @@ public class AmazonS3CacheTest extends BaseTest {
     @Test
     public void testGetBucketName() {
         assertEquals(
-                Configuration.getInstance().getString(Key.AMAZONS3CACHE_BUCKET_NAME),
+                Configuration.getInstance().getString(Key.S3CACHE_BUCKET_NAME),
                 instance.getBucketName());
     }
 
@@ -226,16 +226,16 @@ public class AmazonS3CacheTest extends BaseTest {
     public void testGetObjectKeyPrefix() {
         Configuration config = Configuration.getInstance();
 
-        config.setProperty(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX, "");
+        config.setProperty(Key.S3CACHE_OBJECT_KEY_PREFIX, "");
         assertEquals("", instance.getObjectKeyPrefix());
 
-        config.setProperty(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX, "/");
+        config.setProperty(Key.S3CACHE_OBJECT_KEY_PREFIX, "/");
         assertEquals("", instance.getObjectKeyPrefix());
 
-        config.setProperty(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX, "cats");
+        config.setProperty(Key.S3CACHE_OBJECT_KEY_PREFIX, "cats");
         assertEquals("cats/", instance.getObjectKeyPrefix());
 
-        config.setProperty(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX, "cats/");
+        config.setProperty(Key.S3CACHE_OBJECT_KEY_PREFIX, "cats/");
         assertEquals("cats/", instance.getObjectKeyPrefix());
     }
 

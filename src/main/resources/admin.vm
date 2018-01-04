@@ -2498,7 +2498,7 @@
                             </ul>
 
                             <div class="tab-content">
-                                <div role="tabpanel" class="tab-pane" id="AmazonS3Cache">
+                                <div role="tabpanel" class="tab-pane" id="S3Cache">
                                     <table class="table table-striped">
                                         <tr>
                                             <td>Access Key ID
@@ -2514,7 +2514,7 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="AmazonS3Cache.access_key_id"
+                                                       name="S3Cache.access_key_id"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -2532,7 +2532,7 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="AmazonS3Cache.secret_key"
+                                                       name="S3Cache.secret_key"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -2546,7 +2546,7 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="AmazonS3Cache.bucket.name"
+                                                       name="S3Cache.bucket.name"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -2561,7 +2561,7 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="AmazonS3Cache.bucket.region"
+                                                       name="S3Cache.bucket.region"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -2575,7 +2575,7 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="AmazonS3Cache.object_key_prefix"
+                                                       name="S3Cache.object_key_prefix"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -2589,7 +2589,7 @@
                                             <td>
                                                 <input class="form-control" type="number"
                                                        min="1"
-                                                       name="AmazonS3Cache.max_connections"
+                                                       name="S3Cache.max_connections"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>

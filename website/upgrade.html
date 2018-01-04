@@ -12,6 +12,12 @@ title: Upgrading
 <h2>From 3.4 to 3.5</h2>
 
 <ul>
+  <li>Rename the following keys:
+    <ul>
+      <li><code>AmazonS3Cache.*</code> to <code>S3Cache.*</code></li>
+    </ul>
+  </li>
+  <li>Change any <code>AmazonS3Cache</code> configuration values to <code>S3Cache</code>.</li>
   <li>Note that the <code>X-IIIF-ID</code> reverse proxy header is deprecated and will be removed in version 4. Use <code>X-Forwarded-ID</code> instead.</li>
 </ul>
 

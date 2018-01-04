@@ -29,7 +29,7 @@ title: Caching
           <li><a href="#FilesystemCache">FilesystemCache</a></li>
           <li><a href="#HeapCache">HeapCache</a></li>
           <li><a href="#JdbcCache">JdbcCache</a></li>
-          <li><a href="#AmazonS3Cache">AmazonS3Cache</a></li>
+          <li><a href="#S3Cache">S3Cache</a></li>
           <li><a href="#AzureStorageCache">AzureStorageCache</a></li>
           <li><a href="#RedisCache">RedisCache</a></li>
         </ul>
@@ -310,36 +310,36 @@ CREATE INDEX identifier_idx ON {JdbcCache.info_table} (identifier);
 
 <hr>
 
-<h4 id="AmazonS3Cache">AmazonS3Cache</h4>
+<h4 id="S3Cache">S3Cache</h4>
 
-<p>AmazonS3Cache caches derivative images and metadata into an Amazon Simple Storage Service (S3) bucket.</p>
+<p>S3Cache (previously named AmazonS3Cache) caches derivative images and metadata into an Amazon Simple Storage Service (S3) bucket.</p>
 
 <h5>Configuration</h5>
 
-<p>AmazonS3Cache is configured (excepting credentials) using the following configuration keys:</p>
+<p>S3Cache is configured (excepting credentials) using the following configuration keys:</p>
 
 <dl>
-  <dt><code>AmazonS3Cache.bucket.name</code></dt>
+  <dt><code>S3Cache.bucket.name</code></dt>
   <dd>Name of the bucket to contain cached content.</dd>
-  <dt><code>AmazonS3Cache.bucket.region</code></dt>
+  <dt><code>S3Cache.bucket.region</code></dt>
   <dd>Name of a region to send requests to, such as <code>us-east-1</code>. Can be commented out or left blank to use a default region. (See <a href="http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region">S3 Regions</a>.)</dd>
-  <dt><code>AmazonS3Cache.object_key_prefix</code></dt>
+  <dt><code>S3Cache.object_key_prefix</code></dt>
   <dd>String to prepend to object keys&mdash;for example, to achieve a virtual folder hierarchy.</dd>
 </dl>
 
 <h5>Credentials Sources</h5>
 
-<p>See the <a href="resolvers.html#AmazonS3ResolverCredentialsSources">Credentials Sources</a> information for AmazonS3Resolver. AmazonS3Cache works the same way, except that the credentials-related configuration keys, if you choose to use them, are different:</p>
+<p>See the <a href="resolvers.html#AmazonS3ResolverCredentialsSources">Credentials Sources</a> information for AmazonS3Resolver. S3Cache works the same way, except that the credentials-related configuration keys, if you choose to use them, are different:</p>
 
 <dl>
-  <dt><code>AmazonS3Cache.access_key_id</code></dt>
+  <dt><code>S3Cache.access_key_id</code></dt>
   <dd>An access key associated with your AWS account. (See <a href="http://aws.amazon.com/security-credentials">AWS Security Credentials</a>.)</dd>
-  <dt><code>AmazonS3Cache.secret_key</code></dt>
+  <dt><code>S3Cache.secret_key</code></dt>
   <dd>A secret key associated with your AWS account. (See <a href="http://aws.amazon.com/security-credentials">AWS Security Credentials</a>.)</dd>
 </dl>
 
 <div class="alert alert-info">
-  Note: Amazon S3 does not provide a last-accessed time in object metadata, so the time-to-live will be on the basis of last-modified time instead.
+  Note: S3 does not provide a last-accessed time in object metadata, so the time-to-live is on the basis of last-modified time instead.
 </div>
 
 <hr>

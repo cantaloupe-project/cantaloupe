@@ -536,14 +536,14 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.CACHE_SERVER_TTL).sendKeys("10");
         inputNamed(Key.CACHE_WORKER_ENABLED).click();
         inputNamed(Key.CACHE_WORKER_INTERVAL).sendKeys("25");
-        // AmazonS3Cache
-        css("#cl-caches li > a[href=\"#AmazonS3Cache\"]").click();
-        inputNamed(Key.AMAZONS3CACHE_ACCESS_KEY_ID).sendKeys("cats");
-        inputNamed(Key.AMAZONS3CACHE_SECRET_KEY).sendKeys("dogs");
-        inputNamed(Key.AMAZONS3CACHE_BUCKET_NAME).sendKeys("bucket");
-        inputNamed(Key.AMAZONS3CACHE_BUCKET_REGION).sendKeys("greenland");
-        inputNamed(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX).sendKeys("obj");
-        inputNamed(Key.AMAZONS3CACHE_MAX_CONNECTIONS).sendKeys("35");
+        // S3Cache
+        css("#cl-caches li > a[href=\"#S3Cache\"]").click();
+        inputNamed(Key.S3CACHE_ACCESS_KEY_ID).sendKeys("cats");
+        inputNamed(Key.S3CACHE_SECRET_KEY).sendKeys("dogs");
+        inputNamed(Key.S3CACHE_BUCKET_NAME).sendKeys("bucket");
+        inputNamed(Key.S3CACHE_BUCKET_REGION).sendKeys("greenland");
+        inputNamed(Key.S3CACHE_OBJECT_KEY_PREFIX).sendKeys("obj");
+        inputNamed(Key.S3CACHE_MAX_CONNECTIONS).sendKeys("35");
         // AzureStorageCache
         css("#cl-caches li > a[href=\"#AzureStorageCache\"]").click();
         inputNamed(Key.AZURESTORAGECACHE_ACCOUNT_NAME).sendKeys("bees");
@@ -603,13 +603,13 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertEquals(10, config.getInt(Key.CACHE_SERVER_TTL));
         assertTrue(config.getBoolean(Key.CACHE_WORKER_ENABLED));
         assertEquals(25, config.getInt(Key.CACHE_WORKER_INTERVAL));
-        // AmazonS3Cache
-        assertEquals("cats", config.getString(Key.AMAZONS3CACHE_ACCESS_KEY_ID));
-        assertEquals("dogs", config.getString(Key.AMAZONS3CACHE_SECRET_KEY));
-        assertEquals("bucket", config.getString(Key.AMAZONS3CACHE_BUCKET_NAME));
-        assertEquals("greenland", config.getString(Key.AMAZONS3CACHE_BUCKET_REGION));
-        assertEquals("obj", config.getString(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX));
-        assertEquals("35", config.getString(Key.AMAZONS3CACHE_MAX_CONNECTIONS));
+        // S3Cache
+        assertEquals("cats", config.getString(Key.S3CACHE_ACCESS_KEY_ID));
+        assertEquals("dogs", config.getString(Key.S3CACHE_SECRET_KEY));
+        assertEquals("bucket", config.getString(Key.S3CACHE_BUCKET_NAME));
+        assertEquals("greenland", config.getString(Key.S3CACHE_BUCKET_REGION));
+        assertEquals("obj", config.getString(Key.S3CACHE_OBJECT_KEY_PREFIX));
+        assertEquals("35", config.getString(Key.S3CACHE_MAX_CONNECTIONS));
         // AzureStorageCache
         assertEquals("bees", config.getString(Key.AZURESTORAGECACHE_ACCOUNT_NAME));
         assertEquals("birds", config.getString(Key.AZURESTORAGECACHE_ACCOUNT_KEY));
