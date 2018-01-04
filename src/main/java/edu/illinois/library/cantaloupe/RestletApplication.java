@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
@@ -20,6 +19,7 @@ import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
 import org.restlet.data.ChallengeScheme;
+import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Directory;
@@ -33,13 +33,16 @@ import org.restlet.service.CorsService;
 import org.restlet.service.StatusService;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -56,8 +59,13 @@ public class RestletApplication extends Application {
 
     private static class CustomStatusService extends StatusService {
 
+        private static final List<MediaType> SUPPORTED_MEDIA_TYPES =
+                Arrays.asList(MediaType.TEXT_PLAIN, MediaType.TEXT_HTML,
+                        MediaType.APPLICATION_XHTML);
+
         @Override
-        public Representation toRepresentation(Status status, Request request,
+        public Representation toRepresentation(Status status,
+                                               Request request,
                                                Response response) {
             String message = null, stackTrace = null;
             Throwable throwable = status.getThrowable();
@@ -68,13 +76,16 @@ public class RestletApplication extends Application {
                 message = throwable.getMessage();
                 Configuration config = Configuration.getInstance();
                 if (config.getBoolean(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES, false)) {
-                    StringWriter sw = new StringWriter();
-                    throwable.printStackTrace(new PrintWriter(sw));
-                    stackTrace = sw.toString();
+                    try (StringWriter sw = new StringWriter()) {
+                        throwable.printStackTrace(new PrintWriter(sw));
+                        stackTrace = sw.toString();
+                    } catch (IOException e) {
+                        // We are almost certain to never get here...
+                    }
                 }
             } else if (status.getDescription() != null) {
                 message = status.getDescription();
-            } else if (status == Status.CLIENT_ERROR_NOT_FOUND) {
+            } else if (Status.CLIENT_ERROR_NOT_FOUND.equals(status)) {
                 message = "No resource exists at this URL.";
             }
 
@@ -85,12 +96,37 @@ public class RestletApplication extends Application {
             templateVars.put("message", message);
             templateVars.put("stackTrace", stackTrace);
 
-            class AnonymousResource extends AbstractResource {}
-            return new AnonymousResource().template("/error.vm", templateVars);
+            // Negotiate a response representation content type.
+            // Web browsers will usually request `text/html` and
+            // `application/xhtml+xml` in order of priority. In the absence
+            // of either of those, we will prefer to return `text/plain`.
+            MediaType requestedType = request.getClientInfo().
+                    getPreferredMediaType(SUPPORTED_MEDIA_TYPES);
+            if (requestedType == null) {
+                requestedType = MediaType.TEXT_PLAIN;
+            }
+
+            // Use a template that best fits the representation's content type.
+            String template;
+            MediaType mediaType;
+            if (Arrays.asList("text/html", "application/xhtml+xml").
+                    contains(requestedType.toString())) {
+                template = "/error.html.vm";
+                mediaType = MediaType.TEXT_HTML;
+            } else {
+                template = "/error.txt.vm";
+                mediaType = MediaType.TEXT_PLAIN;
+            }
+
+            Representation rep = new AbstractResource() {}.
+                    template(template, templateVars);
+            rep.setMediaType(mediaType);
+            return rep;
         }
 
         @Override
-        public Status toStatus(Throwable t, Request request,
+        public Status toStatus(Throwable t,
+                               Request request,
                                Response response) {
             Status status;
             t = (t.getCause() != null) ? t.getCause() : t;

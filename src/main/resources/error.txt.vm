@@ -1,0 +1,10 @@
+$pageTitle
+
+#if ($message)
+$message
+#end
+
+
+#if ($stackTrace)
+$stackTrace
+#end
