@@ -2,10 +2,10 @@
 # and edit that.
 
 # Used by S3ResolverTest and S3CacheTest.
+s3.endpoint =
 s3.access_key_id =
 s3.secret_key =
 s3.bucket =
-s3.region = us-east-1
 
 # Used by AzureStorageResolverTest and AzureStorageCacheTest.
 azurestorage.account_name =

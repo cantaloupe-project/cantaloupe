@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.util;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,44 +13,21 @@ import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Creates an AWS client using the Builder pattern.
+ *
+ * @see <a href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/welcome.html">
+ *     AWS SDK for Java</a>
  */
-public class AWSClientBuilder {
-
-    private class CustomCredentialsProvider implements AWSCredentialsProvider {
-
-        @Override
-        public AWSCredentials getCredentials() {
-            return new AWSCredentials() {
-                @Override
-                public String getAWSAccessKeyId() {
-                    return accessKeyID;
-                }
-
-                @Override
-                public String getAWSSecretKey() {
-                    return secretKey;
-                }
-            };
-        }
-
-        @Override
-        public void refresh() {}
-
-    }
-
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(AWSClientBuilder.class);
+public final class AWSClientBuilder {
 
     private String accessKeyID;
+    private URI endpointURI;
     private int maxConnections = 100;
-    private String region;
     private String secretKey;
 
     /**
@@ -58,6 +36,16 @@ public class AWSClientBuilder {
      */
     public AWSClientBuilder accessKeyID(String accessKeyID) {
         this.accessKeyID = accessKeyID;
+        return this;
+    }
+
+    /**
+     * @param uri URI of the S3 endpoint. If not supplied, the AWS S3 endpoint
+     *            will be used.
+     * @return The instance.
+     */
+    public AWSClientBuilder endpointURI(URI uri) {
+        this.endpointURI = uri;
         return this;
     }
 
@@ -71,15 +59,6 @@ public class AWSClientBuilder {
     }
 
     /**
-     * @param region AWS region.
-     * @return The instance.
-     */
-    public AWSClientBuilder region(String region) {
-        this.region = region;
-        return this;
-    }
-
-    /**
      * @param secretKey AWS secret key.
      * @return The instance.
      */
@@ -89,38 +68,67 @@ public class AWSClientBuilder {
     }
 
     public AmazonS3 build() {
-        LOGGER.debug("Building an AWS client with region: {}; max connections: {}",
-                region, maxConnections);
+        return AmazonS3ClientBuilder
+                .standard()
+                .withEndpointConfiguration(getEndpointConfiguration())
+                .withPathStyleAccessEnabled(true)
+                .withClientConfiguration(getClientConfiguration())
+                .withCredentials(getCredentialsProviderChain())
+                .build();
+    }
 
+    private ClientConfiguration getClientConfiguration() {
         final ClientConfiguration clientConfig = new ClientConfiguration();
         // The AWS SDK default is 50.
         clientConfig.setMaxConnections(maxConnections);
-        
-    	List<AWSCredentialsProvider> creds = new ArrayList<>(
-    	        Arrays.asList(
-    	                new EnvironmentVariableCredentialsProvider(),
+        return clientConfig;
+    }
+
+    private AWSCredentialsProviderChain getCredentialsProviderChain() {
+        final List<AWSCredentialsProvider> creds = new ArrayList<>(
+                Arrays.asList(
+                        new EnvironmentVariableCredentialsProvider(),
                         new SystemPropertiesCredentialsProvider(),
                         new ProfileCredentialsProvider(),
                         new InstanceProfileCredentialsProvider(false)));
 
-        final AWSCredentialsProvider credsProvider =
-                new CustomCredentialsProvider();
-    	if (!credsProvider.getCredentials().getAWSAccessKeyId().isEmpty()) {
-    		creds.add(0, credsProvider);
-        }
-    	
-    	final AWSCredentialsProviderChain chain = new AWSCredentialsProviderChain(creds);
-    	
-        AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard()
-        		.withCredentials(chain)
-        		.withClientConfiguration(clientConfig);
-        
-        String regionStr = region;
-        if (regionStr != null && !regionStr.isEmpty()) {
-            builder.setRegion(regionStr);
-        }        
+        final AWSCredentialsProvider provider = new AWSCredentialsProvider () {
+            @Override
+            public AWSCredentials getCredentials() {
+                return new AWSCredentials() {
+                    @Override
+                    public String getAWSAccessKeyId() {
+                        return accessKeyID;
+                    }
 
-        return builder.build();
+                    @Override
+                    public String getAWSSecretKey() {
+                        return secretKey;
+                    }
+                };
+            }
+
+            @Override
+            public void refresh() {}
+
+        };
+
+        if (!provider.getCredentials().getAWSAccessKeyId().isEmpty()) {
+            creds.add(0, provider);
+        }
+        return new AWSCredentialsProviderChain(creds);
+    }
+
+    /**
+     * @return New instance, or {@literal null} if using the default endpoint.
+     */
+    private AwsClientBuilder.EndpointConfiguration getEndpointConfiguration() {
+        AwsClientBuilder.EndpointConfiguration endpointConfig = null;
+        if (endpointURI != null) {
+            endpointConfig = new AwsClientBuilder.EndpointConfiguration(
+                    endpointURI.toString(), null);
+        }
+        return endpointConfig;
     }
 
 }

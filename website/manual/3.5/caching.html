@@ -319,10 +319,10 @@ CREATE INDEX identifier_idx ON {JdbcCache.info_table} (identifier);
 <p>S3Cache is configured (excepting credentials) using the following configuration keys:</p>
 
 <dl>
+  <dt><code>S3Cache.endpoint</code></dt>
+  <dd>URI or hostname of an S3 endpont. For AWS endpoints, this will be a value like <code>s3.us-east-2.amazonaws.com</code>. (See the <a href="http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region">list of AWS S3 Regions</a>.)</dd>
   <dt><code>S3Cache.bucket.name</code></dt>
   <dd>Name of the bucket to contain cached content.</dd>
-  <dt><code>S3Cache.bucket.region</code></dt>
-  <dd>Name of a region to send requests to, such as <code>us-east-1</code>. Can be commented out or left blank to use a default region. (See <a href="http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region">S3 Regions</a>.)</dd>
   <dt><code>S3Cache.object_key_prefix</code></dt>
   <dd>String to prepend to object keys&mdash;for example, to achieve a virtual folder hierarchy.</dd>
 </dl>

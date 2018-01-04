@@ -26,6 +26,9 @@ import static org.junit.Assert.*;
 
 public class S3CacheTest extends BaseTest {
 
+    /**
+     * Time to wait for asynchronous uploads.
+     */
     private final int UPLOAD_WAIT = 3000;
 
     private Identifier identifier = new Identifier("jpg-rgb-64x56x8-baseline.jpg");
@@ -45,10 +48,10 @@ public class S3CacheTest extends BaseTest {
         return testConfig.getString(ConfigurationConstants.S3_BUCKET.getKey());
     }
 
-    private static String getRegion() {
+    private static String getEndpoint() {
         org.apache.commons.configuration.Configuration testConfig =
                 TestUtil.getTestConfig();
-        return testConfig.getString(ConfigurationConstants.S3_REGION.getKey());
+        return testConfig.getString(ConfigurationConstants.S3_ENDPOINT.getKey());
     }
 
     private static String getSecretKey() {
@@ -63,11 +66,11 @@ public class S3CacheTest extends BaseTest {
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.CACHE_SERVER_TTL, 2);
-        config.setProperty(Key.S3CACHE_OBJECT_KEY_PREFIX, "test/");
         config.setProperty(Key.S3CACHE_ACCESS_KEY_ID, getAccessKeyId());
         config.setProperty(Key.S3CACHE_BUCKET_NAME, getBucket());
+        config.setProperty(Key.S3CACHE_ENDPOINT, getEndpoint());
+        config.setProperty(Key.S3CACHE_OBJECT_KEY_PREFIX, "test/");
         config.setProperty(Key.S3CACHE_SECRET_KEY, getSecretKey());
-        config.setProperty(Key.S3CACHE_BUCKET_REGION, getRegion());
 
         instance = new S3Cache();
         instance.initialize();

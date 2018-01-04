@@ -715,9 +715,9 @@
               <runOrder>random</runOrder>
               <reuseForks>false</reuseForks>
               <excludes>
-                <exclude>Amazon*Test</exclude>
                 <exclude>Azure*Test</exclude>
                 <exclude>Kakadu*Test</exclude>
+                <exclude>S3*Test</exclude>
               </excludes>
             </configuration>
           </plugin>

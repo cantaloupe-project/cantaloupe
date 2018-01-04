@@ -1283,17 +1283,17 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Bucket Region
+                                            <td>Endpoint
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
                                                    data-content="See: &lt;a href=&quot;http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region&quot;&gt;
                                                    http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region&lt;/a&gt;
-                                                   for a list of regions.">?</a>
+                                                   for a list of AWS endpoints.">?</a>
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="S3Resolver.bucket.region"
+                                                       name="S3Resolver.endpoint"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -2551,17 +2551,17 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Bucket Region
+                                            <td>Endpoint
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
                                                    data-content="See: &lt;a href=&quot;http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region&quot;&gt;
                                                    http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region&lt;/a&gt;
-                                                   for a list of regions.">?</a>
+                                                   for a list of AWS endpoints.">?</a>
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="S3Cache.bucket.region"
+                                                       name="S3Cache.endpoint"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>

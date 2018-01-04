@@ -326,7 +326,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.S3RESOLVER_ACCESS_KEY_ID).sendKeys("123");
         inputNamed(Key.S3RESOLVER_SECRET_KEY).sendKeys("456");
         inputNamed(Key.S3RESOLVER_BUCKET_NAME).sendKeys("cats");
-        inputNamed(Key.S3RESOLVER_BUCKET_REGION).sendKeys("antarctica");
+        inputNamed(Key.S3RESOLVER_ENDPOINT).sendKeys("http://localhost:1234");
         selectNamed(Key.S3RESOLVER_LOOKUP_STRATEGY).
                 selectByValue("BasicLookupStrategy");
         inputNamed(Key.S3RESOLVER_MAX_CONNECTIONS).sendKeys("45");
@@ -377,8 +377,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getString(Key.S3RESOLVER_SECRET_KEY));
         assertEquals("cats",
                 config.getString(Key.S3RESOLVER_BUCKET_NAME));
-        assertEquals("antarctica",
-                config.getString(Key.S3RESOLVER_BUCKET_REGION));
+        assertEquals("http://localhost:1234",
+                config.getString(Key.S3RESOLVER_ENDPOINT));
         assertEquals("BasicLookupStrategy",
                 config.getString(Key.S3RESOLVER_LOOKUP_STRATEGY));
         assertEquals("45",
@@ -541,7 +541,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.S3CACHE_ACCESS_KEY_ID).sendKeys("cats");
         inputNamed(Key.S3CACHE_SECRET_KEY).sendKeys("dogs");
         inputNamed(Key.S3CACHE_BUCKET_NAME).sendKeys("bucket");
-        inputNamed(Key.S3CACHE_BUCKET_REGION).sendKeys("greenland");
+        inputNamed(Key.S3CACHE_ENDPOINT).sendKeys("localhost:1234");
         inputNamed(Key.S3CACHE_OBJECT_KEY_PREFIX).sendKeys("obj");
         inputNamed(Key.S3CACHE_MAX_CONNECTIONS).sendKeys("35");
         // AzureStorageCache
@@ -607,7 +607,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertEquals("cats", config.getString(Key.S3CACHE_ACCESS_KEY_ID));
         assertEquals("dogs", config.getString(Key.S3CACHE_SECRET_KEY));
         assertEquals("bucket", config.getString(Key.S3CACHE_BUCKET_NAME));
-        assertEquals("greenland", config.getString(Key.S3CACHE_BUCKET_REGION));
+        assertEquals("localhost:1234", config.getString(Key.S3CACHE_ENDPOINT));
         assertEquals("obj", config.getString(Key.S3CACHE_OBJECT_KEY_PREFIX));
         assertEquals("35", config.getString(Key.S3CACHE_MAX_CONNECTIONS));
         // AzureStorageCache

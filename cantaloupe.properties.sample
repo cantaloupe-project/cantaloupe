@@ -189,6 +189,11 @@ JdbcResolver.connection_timeout = 10
 # S3Resolver
 #----------------------------------------
 
+# !! Endpoint URI.
+# For AWS endpoints, see:
+# https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
+S3Resolver.endpoint =
+
 # !! Credentials for your AWS account.
 # See: http://aws.amazon.com/security-credentials
 # Note that this info can be obtained from elsewhere rather than setting
@@ -198,9 +203,6 @@ S3Resolver.secret_key =
 
 # !! Name of the bucket containing images to be served.
 S3Resolver.bucket.name =
-
-# !! See: http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
-S3Resolver.bucket.region =
 
 # Tells S3Resolver how to look up objects. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
@@ -474,6 +476,11 @@ JdbcCache.info_table = info_cache
 # S3Cache
 #----------------------------------------
 
+# !! Endpoint URI.
+# For AWS endpoints, see:
+# https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
+S3Cache.endpoint =
+
 # !! Credentials for your AWS account.
 # See: http://aws.amazon.com/security-credentials
 # Note that this info can be obtained from elsewhere rather than setting it
@@ -483,9 +490,6 @@ S3Cache.secret_key =
 
 # !! Name of a bucket to use to hold cached data.
 S3Cache.bucket.name =
-
-# See: http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
-S3Cache.bucket.region =
 
 # !! String that will be prefixed to object keys.
 S3Cache.object_key_prefix =

@@ -311,10 +311,10 @@ end
 <p>S3Resolver is configured (excepting credentials) using the following configuation keys:</p>
 
 <dl>
+  <dt><code>S3Resolver.endpoint</code></dt>
+  <dd>URI or hostname of an S3 endpont. For AWS endpoints, this will be a value like <code>s3.us-east-2.amazonaws.com</code>. (See the <a href="http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region">list of AWS S3 Regions</a>.)</dd>
   <dt><code>S3Resolver.bucket.name</code></dt>
   <dd>Name of the bucket containing the images to be served.</dd>
-  <dt><code>S3Resolver.bucket.region</code></dt>
-  <dd>Name of a region to send requests to, such as <code>us-east-1</code>.</dd>
   <dt><code>S3Resolver.lookup_strategy</code></dt>
   <dd>The strategy to use to look up images based on their URL identifier. See <a href="#S3ResolverLookupStrategies">Lookup Strategies</a>.</dd>
 </dl>

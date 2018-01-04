@@ -25,15 +25,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 /**
- * <p>Cache using an Amazon S3 bucket.</p>
+ * <p>Cache using an S3 bucket.</p>
  *
  * <p>To improve client-responsiveness, uploads are asynchronous.</p>
  *
- * <p>Keys are named according to the following template:</p>
+ * <p>Object keys are named according to the following template:</p>
  *
  * <dl>
  *     <dt>Images</dt>
@@ -189,10 +191,19 @@ class S3Cache implements DerivativeCache {
     static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
             final Configuration config = Configuration.getInstance();
+
+            URI endpointURI = null;
+            try {
+                endpointURI = new URI(config.getString(Key.S3CACHE_ENDPOINT));
+            } catch (URISyntaxException e) {
+                LOGGER.error("Invalid URI for {}: {}",
+                        Key.S3CACHE_ENDPOINT, e.getMessage());
+            }
+
             client = new AWSClientBuilder()
+                    .endpointURI(endpointURI)
                     .accessKeyID(config.getString(Key.S3CACHE_ACCESS_KEY_ID))
                     .secretKey(config.getString(Key.S3CACHE_SECRET_KEY))
-                    .region(config.getString(Key.S3CACHE_BUCKET_REGION))
                     .maxConnections(config.getInt(Key.S3CACHE_MAX_CONNECTIONS, 100))
                     .build();
         }

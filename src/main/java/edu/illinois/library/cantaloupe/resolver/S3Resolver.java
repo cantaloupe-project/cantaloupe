@@ -21,6 +21,8 @@ import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
 import java.util.Map;
@@ -100,10 +102,19 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
     private static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
             final Configuration config = Configuration.getInstance();
+
+            URI endpointURI = null;
+            try {
+                endpointURI = new URI(config.getString(Key.S3RESOLVER_ENDPOINT));
+            } catch (URISyntaxException e) {
+                LOGGER.error("Invalid URI for {}: {}",
+                        Key.S3RESOLVER_ENDPOINT, e.getMessage());
+            }
+
             client = new AWSClientBuilder()
+                    .endpointURI(endpointURI)
                     .accessKeyID(config.getString(Key.S3RESOLVER_ACCESS_KEY_ID))
                     .secretKey(config.getString(Key.S3RESOLVER_SECRET_KEY))
-                    .region(config.getString(Key.S3RESOLVER_BUCKET_REGION))
                     .maxConnections(config.getInt(Key.S3RESOLVER_MAX_CONNECTIONS, 100))
                     .build();
         }
@@ -194,7 +205,6 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
     }
 
     /**
-     * @return
      * @throws NoSuchFileException If the delegate script does not exist.
      * @throws IOException
      * @throws ScriptException If the delegate method throws an exception.

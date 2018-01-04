@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.CreateBucketRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -19,6 +21,8 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -35,7 +39,26 @@ public class S3ResolverTest extends AbstractResolverTest {
     private S3Resolver instance;
 
     @BeforeClass
-    public static void uploadFixtures() throws IOException {
+    public static void setupS3() throws IOException {
+        createBucket();
+        seedFixtures();
+    }
+
+    private static void createBucket() {
+        final AmazonS3 s3 = client();
+        final String bucketName = getBucket();
+
+        try {
+            s3.deleteBucket(bucketName);
+        } catch (AmazonS3Exception e) {
+            if (!e.getMessage().contains("bucket does not exist")) {
+                throw e;
+            }
+        }
+        s3.createBucket(new CreateBucketRequest(bucketName));
+    }
+
+    private static void seedFixtures() throws IOException {
         final AmazonS3 s3 = client();
         Path fixture = TestUtil.getImage("jpg-rgb-64x56x8-line.jpg");
 
@@ -63,9 +86,9 @@ public class S3ResolverTest extends AbstractResolverTest {
 
     private static AmazonS3 client() {
         return new AWSClientBuilder()
+                .endpointURI(getEndpoint())
                 .accessKeyID(getAccessKeyId())
                 .secretKey(getSecretKey())
-                .region(getRegion())
                 .build();
     }
 
@@ -81,10 +104,15 @@ public class S3ResolverTest extends AbstractResolverTest {
         return testConfig.getString(ConfigurationConstants.S3_BUCKET.getKey());
     }
 
-    private static String getRegion() {
+    private static URI getEndpoint() {
         org.apache.commons.configuration.Configuration testConfig =
                 TestUtil.getTestConfig();
-        return testConfig.getString(ConfigurationConstants.S3_REGION.getKey());
+        String endpointStr = testConfig.getString(ConfigurationConstants.S3_ENDPOINT.getKey());
+        try {
+            return new URI(endpointStr);
+        } catch (URISyntaxException e) {
+            return null;
+        }
     }
 
     private static String getSecretKey() {
@@ -121,7 +149,7 @@ public class S3ResolverTest extends AbstractResolverTest {
     void useBasicLookupStrategy() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.S3RESOLVER_BUCKET_NAME, getBucket());
-        config.setProperty(Key.S3RESOLVER_BUCKET_REGION, getRegion());
+        config.setProperty(Key.S3RESOLVER_ENDPOINT, getEndpoint());
         config.setProperty(Key.S3RESOLVER_ACCESS_KEY_ID, getAccessKeyId());
         config.setProperty(Key.S3RESOLVER_SECRET_KEY, getSecretKey());
         config.setProperty(Key.S3RESOLVER_LOOKUP_STRATEGY,
