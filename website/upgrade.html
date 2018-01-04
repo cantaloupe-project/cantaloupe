@@ -14,10 +14,13 @@ title: Upgrading
 <ul>
   <li>Rename the following keys:
     <ul>
+      <li><code>AmazonS3Resolver.*</code> to <code>S3Resolver.*</code></li>
       <li><code>AmazonS3Cache.*</code> to <code>S3Cache.*</code></li>
     </ul>
   </li>
+  <li>Change any <code>AmazonS3Resolver</code> configuration values to <code>S3Resolver</code>.</li>
   <li>Change any <code>AmazonS3Cache</code> configuration values to <code>S3Cache</code>.</li>
+  <li>In the delegate script, rename the <code>AmazonS3Resolver</code> module to <code>S3Resolver</code>
   <li>Note that the <code>X-IIIF-ID</code> reverse proxy header is deprecated and will be removed in version 4. Use <code>X-Forwarded-ID</code> instead.</li>
 </ul>
 

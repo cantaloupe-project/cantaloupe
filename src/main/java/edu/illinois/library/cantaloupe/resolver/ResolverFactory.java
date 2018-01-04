@@ -41,11 +41,11 @@ public class ResolverFactory {
      */
     public static Set<Resolver> getAllResolvers() {
         return new HashSet<>(Arrays.asList(
-                new AmazonS3Resolver(),
                 new AzureStorageResolver(),
                 new FilesystemResolver(),
                 new HttpResolver(),
-                new JdbcResolver()));
+                new JdbcResolver(),
+                new S3Resolver()));
     }
 
     /**

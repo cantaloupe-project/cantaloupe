@@ -118,8 +118,7 @@ endpoint.api.secret =
 
 # Specifies one resolver to translate the identifier in the URL to an image
 # source for all requests. Available values are `FilesystemResolver`,
-# `HttpResolver`, `JdbcResolver`, `AmazonS3Resolver`, and
-# `AzureStorageResolver`.
+# `HttpResolver`, `JdbcResolver`, `S3Resolver`, and `AzureStorageResolver`.
 resolver.static = FilesystemResolver
 
 # If true, `resolver.static` will be overridden, and the
@@ -187,30 +186,30 @@ JdbcResolver.password = postgres
 JdbcResolver.connection_timeout = 10
 
 #----------------------------------------
-# AmazonS3Resolver
+# S3Resolver
 #----------------------------------------
 
 # !! Credentials for your AWS account.
 # See: http://aws.amazon.com/security-credentials
 # Note that this info can be obtained from elsewhere rather than setting
 # it here; see the user manual.
-AmazonS3Resolver.access_key_id =
-AmazonS3Resolver.secret_key =
+S3Resolver.access_key_id =
+S3Resolver.secret_key =
 
 # !! Name of the bucket containing images to be served.
-AmazonS3Resolver.bucket.name =
+S3Resolver.bucket.name =
 
 # !! See: http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
-AmazonS3Resolver.bucket.region =
+S3Resolver.bucket.region =
 
-# Tells AmazonS3Resolver how to look up objects. Allowed values are
+# Tells S3Resolver how to look up objects. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
 # uses the delegate script for dynamic lookups; see the user manual.
-AmazonS3Resolver.lookup_strategy = BasicLookupStrategy
+S3Resolver.lookup_strategy = BasicLookupStrategy
 
 # !! Maximum number of concurrent HTTP connections to AWS. Leave blank to
 # use the default.
-AmazonS3Resolver.max_connections =
+S3Resolver.max_connections =
 
 #----------------------------------------
 # AzureStorageResolver

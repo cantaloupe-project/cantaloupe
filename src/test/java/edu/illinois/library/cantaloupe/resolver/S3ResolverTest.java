@@ -26,13 +26,13 @@ import java.nio.file.Path;
 import static org.junit.Assert.*;
 
 /**
- * Tests AmazonS3Resolver against Amazon S3. An AWS account is required.
+ * Tests S3Resolver against Amazon S3. An AWS account is required.
  */
-public class AmazonS3ResolverTest extends AbstractResolverTest {
+public class S3ResolverTest extends AbstractResolverTest {
 
     private static final String OBJECT_KEY = "jpeg.jpg";
 
-    private AmazonS3Resolver instance;
+    private S3Resolver instance;
 
     @BeforeClass
     public static void uploadFixtures() throws IOException {
@@ -110,8 +110,8 @@ public class AmazonS3ResolverTest extends AbstractResolverTest {
     }
 
     @Override
-    AmazonS3Resolver newInstance() {
-        AmazonS3Resolver instance = new AmazonS3Resolver();
+    S3Resolver newInstance() {
+        S3Resolver instance = new S3Resolver();
         instance.setIdentifier(new Identifier(OBJECT_KEY));
         instance.setContext(new RequestContext());
         return instance;
@@ -120,11 +120,11 @@ public class AmazonS3ResolverTest extends AbstractResolverTest {
     @Override
     void useBasicLookupStrategy() {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.AMAZONS3RESOLVER_BUCKET_NAME, getBucket());
-        config.setProperty(Key.AMAZONS3RESOLVER_BUCKET_REGION, getRegion());
-        config.setProperty(Key.AMAZONS3RESOLVER_ACCESS_KEY_ID, getAccessKeyId());
-        config.setProperty(Key.AMAZONS3RESOLVER_SECRET_KEY, getSecretKey());
-        config.setProperty(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY,
+        config.setProperty(Key.S3RESOLVER_BUCKET_NAME, getBucket());
+        config.setProperty(Key.S3RESOLVER_BUCKET_REGION, getRegion());
+        config.setProperty(Key.S3RESOLVER_ACCESS_KEY_ID, getAccessKeyId());
+        config.setProperty(Key.S3RESOLVER_SECRET_KEY, getSecretKey());
+        config.setProperty(Key.S3RESOLVER_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
     }
 
@@ -132,7 +132,7 @@ public class AmazonS3ResolverTest extends AbstractResolverTest {
     void useScriptLookupStrategy() {
         try {
             Configuration config = Configuration.getInstance();
-            config.setProperty(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY,
+            config.setProperty(Key.S3RESOLVER_LOOKUP_STRATEGY,
                     "ScriptLookupStrategy");
             config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
             config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,

@@ -68,7 +68,7 @@
       <artifactId>logback-core</artifactId>
       <version>1.2.3</version>
     </dependency>
-    <!-- Used by AmazonS3Resolver and S3Cache -->
+    <!-- Used by S3Resolver and S3Cache -->
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-core</artifactId>
@@ -686,7 +686,6 @@
               <runOrder>random</runOrder>
               <reuseForks>false</reuseForks>
               <excludes>
-                <exclude>AmazonS3*Test</exclude>
                 <exclude>AzureStorage*Test</exclude>
                 <exclude>FfmpegProcessorTest</exclude>
                 <exclude>GraphicsMagickProcessorTest</exclude>
@@ -694,6 +693,7 @@
                 <exclude>KakaduProcessorTest</exclude>
                 <exclude>OpenJpegProcessorTest</exclude>
                 <exclude>RedisCacheTest</exclude>
+                <exclude>S3*Test</exclude>
               </excludes>
             </configuration>
           </plugin>

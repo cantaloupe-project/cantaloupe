@@ -321,15 +321,15 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         selectNamed(Key.RESOLVER_DELEGATE).selectByValue("false");
         selectNamed(Key.RESOLVER_STATIC).
                 selectByVisibleText("FilesystemResolver");
-        // AmazonS3Resolver section
-        css("#cl-resolver li > a[href=\"#AmazonS3Resolver\"]").click();
-        inputNamed(Key.AMAZONS3RESOLVER_ACCESS_KEY_ID).sendKeys("123");
-        inputNamed(Key.AMAZONS3RESOLVER_SECRET_KEY).sendKeys("456");
-        inputNamed(Key.AMAZONS3RESOLVER_BUCKET_NAME).sendKeys("cats");
-        inputNamed(Key.AMAZONS3RESOLVER_BUCKET_REGION).sendKeys("antarctica");
-        selectNamed(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY).
+        // S3Resolver section
+        css("#cl-resolver li > a[href=\"#S3Resolver\"]").click();
+        inputNamed(Key.S3RESOLVER_ACCESS_KEY_ID).sendKeys("123");
+        inputNamed(Key.S3RESOLVER_SECRET_KEY).sendKeys("456");
+        inputNamed(Key.S3RESOLVER_BUCKET_NAME).sendKeys("cats");
+        inputNamed(Key.S3RESOLVER_BUCKET_REGION).sendKeys("antarctica");
+        selectNamed(Key.S3RESOLVER_LOOKUP_STRATEGY).
                 selectByValue("BasicLookupStrategy");
-        inputNamed(Key.AMAZONS3RESOLVER_MAX_CONNECTIONS).sendKeys("45");
+        inputNamed(Key.S3RESOLVER_MAX_CONNECTIONS).sendKeys("45");
         // AzureStorageResolver
         css("#cl-resolver li > a[href=\"#AzureStorageResolver\"]").click();
         inputNamed(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME).sendKeys("bla");
@@ -370,19 +370,19 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertFalse(config.getBoolean(Key.RESOLVER_DELEGATE));
         assertEquals("FilesystemResolver",
                 config.getString(Key.RESOLVER_STATIC));
-        // AmazonS3Resolver
+        // S3Resolver
         assertEquals("123",
-                config.getString(Key.AMAZONS3RESOLVER_ACCESS_KEY_ID));
+                config.getString(Key.S3RESOLVER_ACCESS_KEY_ID));
         assertEquals("456",
-                config.getString(Key.AMAZONS3RESOLVER_SECRET_KEY));
+                config.getString(Key.S3RESOLVER_SECRET_KEY));
         assertEquals("cats",
-                config.getString(Key.AMAZONS3RESOLVER_BUCKET_NAME));
+                config.getString(Key.S3RESOLVER_BUCKET_NAME));
         assertEquals("antarctica",
-                config.getString(Key.AMAZONS3RESOLVER_BUCKET_REGION));
+                config.getString(Key.S3RESOLVER_BUCKET_REGION));
         assertEquals("BasicLookupStrategy",
-                config.getString(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY));
+                config.getString(Key.S3RESOLVER_LOOKUP_STRATEGY));
         assertEquals("45",
-                config.getString(Key.AMAZONS3RESOLVER_MAX_CONNECTIONS));
+                config.getString(Key.S3RESOLVER_MAX_CONNECTIONS));
         // AzureStorageResolver
         assertEquals("bla",
                 config.getString(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME));
