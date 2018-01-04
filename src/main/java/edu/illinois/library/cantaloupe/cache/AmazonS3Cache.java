@@ -369,7 +369,7 @@ class AmazonS3Cache implements DerivativeCache {
     }
 
     @Override
-    public void purgeExpired() {
+    public void purgeInvalid() {
         final AmazonS3 s3 = getClientInstance();
         final String bucketName = getBucketName();
 
@@ -387,14 +387,14 @@ class AmazonS3Cache implements DerivativeCache {
             }
 
             if (listing.isTruncated()) {
-                LOGGER.debug("purgeExpired(): retrieving next batch");
+                LOGGER.debug("purgeInvalid(): retrieving next batch");
                 listing = s3.listNextBatchOfObjects(listing);
             } else {
                 break;
             }
         }
 
-        LOGGER.info("purgeExpired(): deleted {} of {} items",
+        LOGGER.info("purgeInvalid(): deleted {} of {} items",
                 deletedCount, count);
     }
 

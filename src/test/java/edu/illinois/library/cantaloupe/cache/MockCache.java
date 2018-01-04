@@ -64,7 +64,7 @@ class MockCache implements DerivativeCache, SourceCache {
     public void purge(OperationList opList) {}
 
     @Override
-    public void purgeExpired() {}
+    public void purgeInvalid() {}
 
     @Override
     public void put(Identifier identifier, Info imageInfo) {}

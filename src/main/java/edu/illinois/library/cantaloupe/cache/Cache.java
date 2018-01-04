@@ -63,13 +63,13 @@ public interface Cache {
     void purge(Identifier identifier) throws IOException;
 
     /**
-     * Deletes expired images and dimensions from the cache.
+     * Deletes invalid images and dimensions from the cache.
      *
      * @throws IOException Upon fatal error. Implementations should do the
      *         best they can to complete the operation and swallow and log
      *         non-fatal errors.
      */
-    void purgeExpired() throws IOException;
+    void purgeInvalid() throws IOException;
 
     /**
      * <p>Shuts down the instance, freeing any resource handles, stopping any

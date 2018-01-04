@@ -563,8 +563,8 @@ class HeapCache implements DerivativeCache {
      * Does nothing, as items in this cache never expire.
      */
     @Override
-    public void purgeExpired() {
-        LOGGER.info("purgeExpired() is not supported by this cache; aborting");
+    public void purgeInvalid() {
+        LOGGER.info("purgeInvalid() is not supported by this cache; aborting");
     }
 
     @Override

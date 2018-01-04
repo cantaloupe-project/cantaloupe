@@ -329,7 +329,7 @@ class AzureStorageCache implements DerivativeCache {
     }
 
     @Override
-    public void purgeExpired() throws IOException {
+    public void purgeInvalid() throws IOException {
         final String containerName = getContainerName();
         final CloudBlobClient client = getClientInstance();
 
@@ -348,7 +348,7 @@ class AzureStorageCache implements DerivativeCache {
                     }
                 }
             }
-            LOGGER.info("purgeExpired(): deleted {} of {} items",
+            LOGGER.info("purgeInvalid(): deleted {} of {} items",
                     deletedCount, count);
         } catch (URISyntaxException | StorageException e) {
             throw new IOException(e.getMessage(), e);

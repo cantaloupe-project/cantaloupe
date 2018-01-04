@@ -421,14 +421,14 @@ class JdbcCache implements DerivativeCache {
     }
 
     @Override
-    public void purgeExpired() throws IOException {
+    public void purgeInvalid() throws IOException {
         try (Connection connection = getConnection()) {
             connection.setAutoCommit(false);
             final int numDeletedDerivativeImages =
                     purgeExpiredDerivativeImages(connection);
             final int numDeletedInfos = purgeExpiredInfos(connection);
             connection.commit();
-            LOGGER.info("purgeExpired(): purged {} derivative images and {} info(s)",
+            LOGGER.info("purgeInvalid(): purged {} derivative images and {} info(s)",
                     numDeletedDerivativeImages, numDeletedInfos);
         } catch (SQLException e) {
             throw new IOException(e.getMessage(), e);

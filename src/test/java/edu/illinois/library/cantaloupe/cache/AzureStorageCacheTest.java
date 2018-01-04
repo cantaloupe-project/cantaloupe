@@ -274,10 +274,10 @@ public class AzureStorageCacheTest extends BaseTest {
         assertObjectCount(2);
     }
 
-    /* purgeExpired() */
+    /* purgeInvalid() */
 
     @Test
-    public void testPurgeExpired() throws Exception {
+    public void testPurgeInvalid() throws Exception {
         Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 2);
 
         // add an image
@@ -309,7 +309,7 @@ public class AzureStorageCacheTest extends BaseTest {
 
         assertObjectCount(4);
 
-        instance.purgeExpired();
+        instance.purgeInvalid();
 
         assertObjectCount(2);
     }

@@ -282,8 +282,8 @@ class RedisCache implements DerivativeCache {
      * No-op.
      */
     @Override
-    public void purgeExpired() {
-        LOGGER.info("purgeExpired(): " +
+    public void purgeInvalid() {
+        LOGGER.info("purgeInvalid(): " +
                 "nothing to do (expiration must be configured in Redis)");
     }
 

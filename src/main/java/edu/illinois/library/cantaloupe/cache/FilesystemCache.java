@@ -376,7 +376,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     private final Set<Identifier> infosBeingPurged =
             ConcurrentHashMap.newKeySet();
 
-    /** Toggled by purge() and purgeExpired(). */
+    /** Toggled by purge() and purgeInvalid(). */
     private final AtomicBoolean isGlobalPurgeInProgress =
             new AtomicBoolean(false);
 
@@ -937,16 +937,16 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * progress in another thread.</p>
      */
     @Override
-    public void purgeExpired() throws IOException {
+    public void purgeInvalid() throws IOException {
         if (isGlobalPurgeInProgress.get()) {
-            LOGGER.info("purgeExpired() called with a purge in progress. " +
+            LOGGER.info("purgeInvalid() called with a purge in progress. " +
                     "Aborting.");
             return;
         }
         synchronized (imagePurgeLock) {
             while (!imagesBeingPurged.isEmpty()) {
                 try {
-                    LOGGER.debug("purgeExpired(): waiting...");
+                    LOGGER.debug("purgeInvalid(): waiting...");
                     imagePurgeLock.wait();
                 } catch (InterruptedException e) {
                     break;
@@ -959,12 +959,12 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
             final ExpiredFileVisitor visitor = new ExpiredFileVisitor();
 
-            LOGGER.info("purgeExpired(): purging...");
+            LOGGER.info("purgeInvalid(): purging...");
             Files.walkFileTree(rootPath(),
                     EnumSet.of(FileVisitOption.FOLLOW_LINKS),
                     Integer.MAX_VALUE,
                     visitor);
-            LOGGER.info("purgeExpired(): purged {} item(s) totaling {} bytes",
+            LOGGER.info("purgeInvalid(): purged {} item(s) totaling {} bytes",
                     visitor.getDeletedFileCount(),
                     visitor.getDeletedFileSize());
         } finally {

@@ -207,7 +207,7 @@ public class FilesystemCacheTest extends BaseTest {
     }
 
     @Test
-    public void testCleanUpShouldNotDeleteUnexpiredFiles() throws Exception {
+    public void testCleanUpShouldNotDeleteValidFiles() throws Exception {
         OperationList ops = TestUtil.newOperationList();
 
         // create a new source image file
@@ -260,7 +260,7 @@ public class FilesystemCacheTest extends BaseTest {
     }
 
     @Test
-    public void testCleanUpShouldDeleteExpiredFiles() throws Exception {
+    public void testCleanUpShouldDeleteInvalidFiles() throws Exception {
         OperationList ops = TestUtil.newOperationList();
 
         // create a new source image file
@@ -616,7 +616,7 @@ public class FilesystemCacheTest extends BaseTest {
     }
 
     @Test
-    public void testPurgeExpired() throws Exception {
+    public void testPurgeInvalid() throws Exception {
         Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 1);
 
         Crop crop = new Crop();
@@ -644,7 +644,7 @@ public class FilesystemCacheTest extends BaseTest {
         imageFile = derivativeImageFile(ops);
         createEmptyFile(imageFile);
 
-        instance.purgeExpired();
+        instance.purgeInvalid();
         assertRecursiveFileCount(sourceImagePath, 0);
         assertRecursiveFileCount(derivativeImagePath, 1);
         assertRecursiveFileCount(infoPath, 0);

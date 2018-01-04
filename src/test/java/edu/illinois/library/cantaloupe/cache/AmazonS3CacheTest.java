@@ -263,7 +263,7 @@ public class AmazonS3CacheTest extends BaseTest {
         assertObjectCount(0);
     }
 
-    /* purge(OperationList */
+    /* purge(OperationList) */
 
     @Test
     public void testPurgeWithOperationList() throws Exception {
@@ -297,10 +297,10 @@ public class AmazonS3CacheTest extends BaseTest {
         assertObjectCount(2);
     }
 
-    /* purgeExpired() */
+    /* purgeInvalid() */
 
     @Test
-    public void testPurgeExpired() throws Exception {
+    public void testPurgeInvalid() throws Exception {
         Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 4);
 
         // add an image
@@ -335,7 +335,7 @@ public class AmazonS3CacheTest extends BaseTest {
         assertObjectCount(4);
 
         // purge it
-        instance.purgeExpired();
+        instance.purgeInvalid();
 
         assertObjectCount(2);
     }

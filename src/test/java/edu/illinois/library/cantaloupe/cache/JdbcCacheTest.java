@@ -196,11 +196,11 @@ public class JdbcCacheTest extends BaseTest {
         }
         instance.put(new Identifier("bees"), new Info(50, 40));
 
-        // existing, non-expired image
+        // existing, valid image
         Info actual = instance.getImageInfo(new Identifier("bees"));
         assertEquals(actual, new Info(50, 40));
 
-        // existing, expired image
+        // existing, invalid image
         assertNull(instance.getImageInfo(new Identifier("cats")));
         // nonexistent image
         assertNull(instance.getImageInfo(new Identifier("bogus")));
@@ -268,10 +268,10 @@ public class JdbcCacheTest extends BaseTest {
             Files.copy(TestUtil.getImage(IMAGE), bc);
         }
 
-        // existing, non-expired image
+        // existing, valid image
         assertNotNull(instance.newDerivativeImageInputStream(ops));
 
-        // existing, expired image
+        // existing, invalid image
         ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
         assertNull(instance.newDerivativeImageInputStream(ops));
@@ -411,10 +411,10 @@ public class JdbcCacheTest extends BaseTest {
         }
     }
 
-    /* purgeExpired() */
+    /* purgeInvalid() */
 
     @Test
-    public void testPurgeExpired() throws Exception {
+    public void testPurgeInvalid() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.CACHE_SERVER_TTL, 1);
 
@@ -431,10 +431,10 @@ public class JdbcCacheTest extends BaseTest {
         // ...info
         instance.put(new Identifier("bees"), new Info(50, 40));
 
-        instance.purgeExpired();
+        instance.purgeInvalid();
 
         try (Connection connection = JdbcCache.getConnection()) {
-            // assert that only the expired derivative images were purged
+            // assert that only the invalid derivative images were purged
             String sql = String.format("SELECT COUNT(%s) AS count FROM %s",
                     JdbcCache.DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
                     config.getString(Key.JDBCCACHE_DERIVATIVE_IMAGE_TABLE));
@@ -443,7 +443,7 @@ public class JdbcCacheTest extends BaseTest {
             resultSet.next();
             assertEquals(1, resultSet.getInt("count"));
 
-            // assert that only the expired infos were purged
+            // assert that only the invalid infos were purged
             sql = String.format("SELECT COUNT(%s) AS count FROM %s",
                     JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
                     config.getString(Key.JDBCCACHE_INFO_TABLE));

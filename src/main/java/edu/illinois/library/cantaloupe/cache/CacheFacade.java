@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -175,19 +174,19 @@ public final class CacheFacade {
     }
 
     /**
-     * @see Cache#purgeExpired
+     * @see Cache#purgeInvalid
      */
     public void purgeExpired() throws IOException {
         // Purge the derivative cache.
         DerivativeCache derivativeCache = getDerivativeCache();
         if (derivativeCache != null) {
-            derivativeCache.purgeExpired();
+            derivativeCache.purgeInvalid();
         }
 
         // Purge the source cache.
         SourceCache sourceCache = getSourceCache();
         if (sourceCache != null) {
-            sourceCache.purgeExpired();
+            sourceCache.purgeInvalid();
         }
     }
 

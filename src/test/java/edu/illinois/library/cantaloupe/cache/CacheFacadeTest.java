@@ -334,7 +334,7 @@ public class CacheFacadeTest extends BaseTest {
         }
     }
 
-    /* purgeExpired() */
+    /* purgeInvalid() */
 
     @Test
     public void testPurgeExpired() throws Exception {

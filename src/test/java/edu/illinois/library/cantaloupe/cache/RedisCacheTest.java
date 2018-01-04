@@ -209,10 +209,10 @@ public class RedisCacheTest extends BaseTest {
         assertNotNull(instance.newDerivativeImageInputStream(opList3));
     }
 
-    /* purgeExpired() */
+    /* purgeInvalid() */
 
     @Test
-    public void testPurgeExpired() {
+    public void testPurgeInvalid() {
         // Nothing to test
     }
 

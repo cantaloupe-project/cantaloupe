@@ -23,8 +23,8 @@ public interface SourceCache extends Cache {
 
     /**
      * <p>Returns a source image corresponding to the given identifier, or
-     * <code>null</code> if a non-expired source image corresponding to the
-     * given identifier does not exist in the cache..</p>
+     * {@literal null} if a valid source image corresponding to the given
+     * identifier does not exist in the cache..</p>
      *
      * <p>If an image corresponding to the given identifier exists in the
      * cache but is expired, implementations should delete it before

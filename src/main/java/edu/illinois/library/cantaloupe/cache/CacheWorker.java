@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 /**
- * Purges expired items from the cache.
+ * Purges invalid items from the cache.
  */
 class CacheWorker implements Runnable {
 
