@@ -98,8 +98,7 @@ public class AbstractResourceTest extends BaseTest {
     /* getRepresentationDisposition() */
 
     @Test
-    public void testGetRepresentationDispositionWithQueryArg()
-            throws Exception {
+    public void testGetRepresentationDispositionWithQueryArg() {
         final Identifier identifier = new Identifier("cats?/\\dogs");
         final Format outputFormat = Format.JPG;
 
@@ -161,8 +160,7 @@ public class AbstractResourceTest extends BaseTest {
     }
 
     @Test
-    public void testGetRepresentationDispositionFallsBackToNone()
-            throws Exception {
+    public void testGetRepresentationDispositionFallsBackToNone() {
         Configuration config = Configuration.getInstance();
 
         final Identifier identifier = new Identifier("cats?/\\dogs");
@@ -184,7 +182,7 @@ public class AbstractResourceTest extends BaseTest {
 
     @Test
     public void testTemplate() {
-        assertNotNull(resource.template("/error.vm"));
+        assertNotNull(resource.template("/error.html.vm"));
     }
 
 }
