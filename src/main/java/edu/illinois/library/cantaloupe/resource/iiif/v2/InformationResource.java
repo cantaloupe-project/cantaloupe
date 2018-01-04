@@ -28,14 +28,14 @@ import org.restlet.resource.Get;
  * Handles IIIF Image API 2.x information requests.
  *
  * @see <a href="http://iiif.io/api/image/2.1/#information-request">Information
- * Requests</a>
+ *      Requests</a>
  */
 public class InformationResource extends IIIF2Resource {
 
     /**
-     * Redirects <code>/{identifier}</code> to
-     * <code>/{identifier}/info.json</code>, respecting the Servlet context
-     * root and {@link #PUBLIC_IDENTIFIER_HEADER} header.
+     * Redirects {@literal /:identifier} to {@literal /:identifier/info.json},
+     * respecting the Servlet context root and
+     * {@link #PUBLIC_IDENTIFIER_HEADER} header.
      */
     public static class RedirectingResource extends IIIF2Resource {
         @Get
@@ -114,8 +114,8 @@ public class InformationResource extends IIIF2Resource {
 
     /**
      * @return Full image URI corresponding to the given identifier, respecting
-     *         the X-Forwarded-* and {@link #PUBLIC_IDENTIFIER_HEADER} reverse
-     *         proxy headers.
+     *         the {@literal X-Forwarded-*} and
+     *         {@link #PUBLIC_IDENTIFIER_HEADER} reverse proxy headers.
      */
     private String getImageURI() {
         return getPublicRootReference() + RestletApplication.IIIF_2_PATH + "/" +

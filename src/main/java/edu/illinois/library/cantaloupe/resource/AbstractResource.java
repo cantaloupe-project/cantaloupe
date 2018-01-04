@@ -53,7 +53,17 @@ public abstract class AbstractResource extends ServerResource {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(AbstractResource.class);
 
-    public static final String PUBLIC_IDENTIFIER_HEADER = "X-IIIF-ID";
+    /**
+     * Replaces {@link #PUBLIC_IDENTIFIER_HEADER_DEPRECATED}.
+     */
+    public static final String PUBLIC_IDENTIFIER_HEADER = "X-Forwarded-ID";
+
+    /**
+     * @deprecated Since version 3.5. Still respected, but superseded by
+     *             {@link #PUBLIC_IDENTIFIER_HEADER}.
+     */
+    @Deprecated
+    public static final String PUBLIC_IDENTIFIER_HEADER_DEPRECATED = "X-IIIF-ID";
 
     protected static final String RESPONSE_CONTENT_DISPOSITION_QUERY_ARG =
             "response-content-disposition";
@@ -391,8 +401,9 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * @return Value of the {@link #PUBLIC_IDENTIFIER_HEADER} header, if
-     *         available, or else the <code>identifier</code> URI path
+     * @return Value of either the {@link #PUBLIC_IDENTIFIER_HEADER} or
+     *         {@link #PUBLIC_IDENTIFIER_HEADER_DEPRECATED} headers, if
+     *         available, or else the {@literal identifier} URI path
      *         component.
      */
     protected String getPublicIdentifier() {
@@ -400,13 +411,19 @@ public abstract class AbstractResource extends ServerResource {
         final String urlID = (String) attrs.get("identifier");
         final String decodedID = Reference.decode(urlID);
         final String reSlashedID = decodeSlashes(decodedID);
-        final String headerID = getRequest().getHeaders().
-                getFirstValue(PUBLIC_IDENTIFIER_HEADER, true);
+
+        // Try to use the new header, if supplied.
+        String header = PUBLIC_IDENTIFIER_HEADER;
+        String headerID = getRequest().getHeaders().getFirstValue(header, true);
+        if (headerID == null || headerID.isEmpty()) {
+            // Fall back to the deprecated one.
+            header = PUBLIC_IDENTIFIER_HEADER_DEPRECATED;
+            headerID = getRequest().getHeaders().getFirstValue(header, true);
+        }
 
         LOGGER.debug("Public identifier requested: {} -> decoded: {} -> " +
                         "slashes substituted: {} | {} header: {}",
-                urlID, decodedID, reSlashedID, PUBLIC_IDENTIFIER_HEADER,
-                headerID);
+                urlID, decodedID, reSlashedID, header, headerID);
 
         return (headerID != null && !headerID.isEmpty()) ?
                 headerID : reSlashedID;

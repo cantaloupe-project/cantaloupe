@@ -252,6 +252,13 @@ public class InformationResourceTest extends ResourceTest {
         tester.testRedirectToInfoJSONWithDifferentPublicIdentifier(uri);
     }
 
+    @Test
+    public void testGETRedirectToInfoJSONWithDifferentDeprecatedPublicIdentifier()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE);
+        tester.testRedirectToInfoJSONWithDifferentDeprecatedPublicIdentifier(uri);
+    }
+
     /**
      * Checks that the server responds with HTTP 500 when a non-FileResolver is
      * used with a non-StreamProcessor.

@@ -17,7 +17,6 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.JSONRepresentation;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
-import edu.illinois.library.cantaloupe.resource.RequestContext;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
@@ -34,9 +33,9 @@ import org.restlet.resource.Get;
 public class InformationResource extends IIIF1Resource {
 
     /**
-     * Redirects <code>/{identifier}</code> to
-     * <code>/{identifier}/info.json</code>, respecting the Servlet context
-     * root and {@link #PUBLIC_IDENTIFIER_HEADER} header.
+     * Redirects {@literal /:identifier} to {@literal /:identifier/info.json},
+     * respecting the Servlet context root and
+     * {@link #PUBLIC_IDENTIFIER_HEADER} header.
      */
     public static class RedirectingResource extends IIIF1Resource {
         @Get
@@ -125,8 +124,8 @@ public class InformationResource extends IIIF1Resource {
 
     /**
      * @return Full image URI corresponding to the given identifier, respecting
-     *         the X-Forwarded-* and {@link #PUBLIC_IDENTIFIER_HEADER} reverse
-     *         proxy headers.
+     *         the {@literal X-Forwarded-*} and
+     *         {@link #PUBLIC_IDENTIFIER_HEADER} reverse proxy headers.
      */
     private String getImageURI() {
         return getPublicRootReference() + RestletApplication.IIIF_1_PATH + "/" +

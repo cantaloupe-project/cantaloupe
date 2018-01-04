@@ -90,7 +90,7 @@ title: Deployment
   </tr>
   <tr>
     <td><code>X-Forwarded-Port</code></td>
-    <td>TCP port of the client-facing reverse proxy. Will default to 80 if missing.</td>
+    <td>TCP port of the client-facing reverse proxy. The default protocol port (80 or 443) will be used if missing.</td>
     <td>No</td>
   </tr>
   <tr>
@@ -104,7 +104,13 @@ title: Deployment
     <td>No</td>
   </tr>
   <tr>
-    <td><code>X-IIIF-ID</code></td>
+    <td class="bg-warning"><code>X-IIIF-ID</code>
+    <strong>Deprecated</strong> in version 3.5. Use <code>X-Forwarded-ID</code> instead.</td>
+    <td class="bg-warning">Originally-requested image identifier. Should be set only when the proxy server will change the value of the identifier in the forwarded request; i.e. when the client is asking for a different identifier than the image server ends up seeing.</td>
+    <td class="bg-warning">No</td>
+  </tr>
+  <tr>
+    <td><code>X-Forwarded-ID</code></td>
     <td>Originally-requested image identifier. Should be set only when the proxy server will change the value of the identifier in the forwarded request; i.e. when the client is asking for a different identifier than the image server ends up seeing.</td>
     <td>No</td>
   </tr>

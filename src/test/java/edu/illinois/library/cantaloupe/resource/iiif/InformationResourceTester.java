@@ -398,4 +398,17 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         }
     }
 
+    public void testRedirectToInfoJSONWithDifferentDeprecatedPublicIdentifier(URI uri)
+            throws Exception {
+        Client client = newClient(uri);
+        client.getHeaders().set(AbstractResource.PUBLIC_IDENTIFIER_HEADER_DEPRECATED, "foxes");
+        try {
+            Response response = client.send();
+            assertEquals(303, response.getStatus());
+            assertTrue(response.getHeaders().getFirstValue("Location").endsWith("/foxes/info.json"));
+        } finally {
+            client.stop();
+        }
+    }
+
 }
