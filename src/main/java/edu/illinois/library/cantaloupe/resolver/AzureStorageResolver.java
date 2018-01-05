@@ -13,6 +13,7 @@ import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +21,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.NoSuchFileException;
 import java.security.InvalidKeyException;
@@ -117,14 +119,25 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
                         config.getString(Key.AZURESTORAGERESOLVER_CONTAINER_NAME);
                 LOGGER.info("Using container: {}", containerName);
 
-                final CloudBlobClient client = getClientInstance();
                 try {
-                    final CloudBlobContainer container =
-                            client.getContainerReference(containerName);
+                    final CloudBlockBlob blob;
                     final String objectKey = getObjectKey();
+                    //Add support for direct URI references.  See: https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#resource-uri-syntax
+                    //Add support for SAS Token Authentication.  See: https://docs.microsoft.com/en-us/azure/storage/common/storage-dotnet-shared-access-signature-part-1#how-a-shared-access-signature-works
+                    if(StringUtils.isEmpty(containerName)) {  //use URI with sas token + container + path directly
+                        final URI uri = URI.create(objectKey);
+                        LOGGER.info("Using full uri: {}", uri);
+                        LOGGER.info("Requesting {}", objectKey);
+                        blob = new CloudBlockBlob(uri);
+                    } else {  //use a fixed storage account with fixed container.
+                        final CloudBlobClient client = getClientInstance();
+                        final CloudBlobContainer container;
+                        LOGGER.info("Using account with fixed container: {}", containerName);
+                        container = client.getContainerReference(containerName);
+                        LOGGER.info("Requesting {}", objectKey);
+                        blob = container.getBlockBlobReference(objectKey);
+                    }
 
-                    LOGGER.info("Requesting {}", objectKey);
-                    final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
                     if (!blob.exists()) {
                         throw new NoSuchFileException("Not found: " + objectKey);
                     }
