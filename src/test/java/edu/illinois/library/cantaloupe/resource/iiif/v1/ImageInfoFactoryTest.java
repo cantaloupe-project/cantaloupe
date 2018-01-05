@@ -29,7 +29,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         imageUri = "http://example.org/bla";
         processor = new ProcessorFactory().newProcessor(Format.JPG);
         ((FileProcessor) processor).setSourceFile(
-                TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg").toFile());
+                TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
 
         info = new ImageInfoFactory().newImageInfo(imageUri, processor,
                 processor.readImageInfo());
@@ -41,7 +41,7 @@ public class ImageInfoFactoryTest extends BaseTest {
 
         processor = new ProcessorFactory().newProcessor(Format.JPG);
         ((FileProcessor) processor).setSourceFile(
-                TestUtil.getImage("jpg-rotated.jpg").toFile());
+                TestUtil.getImage("jpg-rotated.jpg"));
 
         info = new ImageInfoFactory().newImageInfo(imageUri, processor,
                 processor.readImageInfo());
@@ -104,7 +104,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     public void newImageInfoTileWidthWithTiledImage() throws Exception {
         processor.setSourceFormat(Format.TIF);
         ((FileProcessor) processor).setSourceFile(
-                TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif").toFile());
+                TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"));
         info = new ImageInfoFactory().newImageInfo(imageUri, processor,
                 processor.readImageInfo());
 
@@ -126,7 +126,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     public void newImageInfoTileHeightWithTiledImage() throws Exception {
         processor.setSourceFormat(Format.TIF);
         ((FileProcessor) processor).setSourceFile(
-                TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif").toFile());
+                TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"));
         info = new ImageInfoFactory().newImageInfo(imageUri, processor,
                 processor.readImageInfo());
 

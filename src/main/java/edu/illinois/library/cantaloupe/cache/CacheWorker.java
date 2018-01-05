@@ -3,6 +3,8 @@ package edu.illinois.library.cantaloupe.cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+
 /**
  * Purges expired items from the cache.
  */
@@ -20,12 +22,12 @@ class CacheWorker implements Runnable {
         CacheFacade cacheFacade = new CacheFacade();
         try {
             cacheFacade.purgeExpired();
-        } catch (CacheException e) {
+        } catch (IOException e) {
             LOGGER.error(e.getMessage());
         }
         try {
             cacheFacade.cleanUp();
-        } catch (CacheException e) {
+        } catch (IOException e) {
             LOGGER.error(e.getMessage());
         }
         LOGGER.info("Done working.");

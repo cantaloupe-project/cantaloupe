@@ -35,8 +35,15 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
     /**
      * Map of PropertiesConfigurations in order from leaf to trunk.
      */
-    private LinkedHashMap<File, PropertiesConfiguration> commonsConfigs =
+    private final LinkedHashMap<File, PropertiesConfiguration> commonsConfigs =
             new LinkedHashMap<>();
+
+    /**
+     * Checksum of the main configuration file contents. When the watcher
+     * receives a change event from the filesystem, it will compute the new
+     * checksum and reload only if they don't match. That's because there are
+     * often multiple events per change.
+     */
     private byte[] mainContentsChecksum = new byte[] {};
 
     /**
@@ -419,7 +426,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
             final File mainConfigFile = getFile();
             if (mainConfigFile != null) {
                 // Calculate the checksum of the file contents and compare it to
-                // what has already been loaded. If the checksums match, skip the
+                // what has already been loaded. If the sums match, skip the
                 // reload.
                 try {
                     byte[] fileBytes = Files.readAllBytes(mainConfigFile.toPath());

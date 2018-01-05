@@ -14,7 +14,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.util.AWSClientFactory;
+import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -25,8 +25,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 /**
  * <p>Cache using an Amazon S3 bucket.</p>
@@ -52,9 +52,10 @@ class AmazonS3Cache implements DerivativeCache {
     /**
      * <p>Wraps a {@link ByteArrayOutputStream} for upload to Amazon S3.</p>
      *
-     * <p>N.B. S3 does not allow uploads without a Content-Length header, which
-     * is impossible to provide when streaming an unknown amount of data. From
-     * the documentation of {@link PutObjectRequest}:</p>
+     * <p>N.B. S3 does not allow uploads without a <code>Content-Length</code>
+     * header, which is impossible to provide when streaming an unknown amount
+     * of data (which this class is going to be doing all the time). From the
+     * documentation of {@link PutObjectRequest}:</p>
      *
      * <blockquote>"When uploading directly from an input stream, content
      * length must be specified before data can be uploaded to Amazon S3. If
@@ -63,12 +64,11 @@ class AmazonS3Cache implements DerivativeCache {
      * content length be sent in the request headers before any of the data is
      * sent."</blockquote>
      *
-     * <p>Since it is therefore not possible to write an OutputStream of
-     * unknown length to the S3 client as the {@link Cache} interface requires,
-     * this class buffers written data in a byte array before uploading it to
-     * S3 upon closure. (The upload is submitted to the
-     * {@link ThreadPool} in order to allow {@link #close()} to return
-     * immediately.)</p>
+     * <p>Since it's not possible to write an OutputStream of unknown length
+     * to the S3 client as the {@link Cache} interface requires, this class
+     * buffers written data in a byte array before uploading it to S3 upon
+     * closure. (The upload is submitted to the {@link ThreadPool} in order to
+     * allow {@link #close()} to return immediately.)</p>
      */
     private static class AmazonS3OutputStream extends OutputStream {
 
@@ -129,7 +129,8 @@ class AmazonS3Cache implements DerivativeCache {
 
     private static class AmazonS3Upload implements Runnable {
 
-        private Logger logger = LoggerFactory.getLogger(AmazonS3Upload.class);
+        private static final Logger UPLOAD_LOGGER = LoggerFactory.
+                getLogger(AmazonS3Upload.class);
 
         private String bucketName;
         private ByteArrayOutputStream byteStream;
@@ -166,10 +167,12 @@ class AmazonS3Cache implements DerivativeCache {
                     bucketName, objectKey, is, metadata);
             final Stopwatch watch = new Stopwatch();
 
-            logger.info("Uploading {} bytes to {} in bucket {}",
+            UPLOAD_LOGGER.info("Uploading {} bytes to {} in bucket {}",
                     bytes.length, request.getKey(), request.getBucketName());
+
             s3.putObject(request);
-            logger.info("Wrote {} bytes to {} in bucket {} in {} msec",
+
+            UPLOAD_LOGGER.info("Wrote {} bytes to {} in bucket {} in {} msec",
                     bytes.length, request.getKey(), request.getBucketName(),
                     watch.timeElapsed());
         }
@@ -185,13 +188,23 @@ class AmazonS3Cache implements DerivativeCache {
     static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
             final Configuration config = Configuration.getInstance();
-            final AWSClientFactory factory = new AWSClientFactory(
-                    config.getString(Key.AMAZONS3CACHE_ACCESS_KEY_ID),
-                    config.getString(Key.AMAZONS3CACHE_SECRET_KEY),
-                    config.getString(Key.AMAZONS3CACHE_BUCKET_REGION));
-            client = factory.newClient();
+            client = new AWSClientBuilder()
+                    .accessKeyID(config.getString(Key.AMAZONS3CACHE_ACCESS_KEY_ID))
+                    .secretKey(config.getString(Key.AMAZONS3CACHE_SECRET_KEY))
+                    .region(config.getString(Key.AMAZONS3CACHE_BUCKET_REGION))
+                    .maxConnections(config.getInt(Key.AMAZONS3CACHE_MAX_CONNECTIONS, 100))
+                    .build();
         }
         return client;
+    }
+
+    /**
+     * @return Earliest valid instant, with second resolution.
+     */
+    private static Instant getEarliestValidInstant() {
+        final Configuration config = Configuration.getInstance();
+        return Instant.now().truncatedTo(ChronoUnit.SECONDS).
+                minusSeconds(config.getInt(Key.CACHE_SERVER_TTL));
     }
 
     String getBucketName() {
@@ -200,31 +213,51 @@ class AmazonS3Cache implements DerivativeCache {
     }
 
     @Override
-    public Info getImageInfo(Identifier identifier) throws CacheException {
+    public Info getImageInfo(Identifier identifier) throws IOException {
         final AmazonS3 s3 = getClientInstance();
         final String bucketName = getBucketName();
         final String objectKey = getObjectKey(identifier);
 
         final Stopwatch watch = new Stopwatch();
         try {
-            final String jsonStr = s3.getObjectAsString(bucketName, objectKey);
-            final Info info = Info.fromJSON(jsonStr);
-            LOGGER.info("getImageInfo(): read {} from bucket {} in {} msec",
-                    objectKey, bucketName, watch.timeElapsed());
-            return info;
-        } catch (AmazonS3Exception e) {
-            if (e.getStatusCode() == 404) {
-                return null;
+            S3Object object = s3.getObject(bucketName, objectKey);
+            if (isValid(object)) {
+                try (InputStream is = object.getObjectContent()) {
+                    final Info info = Info.fromJSON(is);
+                    LOGGER.info("getImageInfo(): read {} from bucket {} in {} msec",
+                            objectKey, bucketName, watch.timeElapsed());
+                    return info;
+                }
+            } else {
+                LOGGER.debug("{} in bucket {} is invalid; purging asynchronously",
+                        objectKey, bucketName);
+                purgeAsync(objectKey, bucketName);
             }
-            throw new CacheException(e.getMessage(), e);
-        } catch (IOException e) {
-            throw new CacheException(e.getMessage(), e);
+        } catch (AmazonS3Exception e) {
+            if (e.getStatusCode() != 404) {
+                throw new IOException(e.getMessage(), e);
+            }
         }
+        return null;
+    }
+
+    private boolean isValid(S3Object object) {
+        Instant earliestAllowed = getEarliestValidInstant();
+        Instant lastModified =
+                object.getObjectMetadata().getLastModified().toInstant();
+        // Both of these have second resolution, so add a millisecond.
+        return lastModified.plusMillis(1).isAfter(earliestAllowed);
+    }
+
+    private boolean isValid(S3ObjectSummary summary) {
+        Instant earliestAllowed = getEarliestValidInstant();
+        Instant lastModified = summary.getLastModified().toInstant();
+        return lastModified.isAfter(earliestAllowed);
     }
 
     @Override
     public InputStream newDerivativeImageInputStream(OperationList opList)
-            throws CacheException {
+            throws IOException {
         final AmazonS3 s3 = getClientInstance();
         final String bucketName = getBucketName();
         final String objectKey = getObjectKey(opList);
@@ -233,18 +266,25 @@ class AmazonS3Cache implements DerivativeCache {
         try {
             final S3Object object = s3.getObject(
                     new GetObjectRequest(bucketName, objectKey));
-            return object.getObjectContent();
-        } catch (AmazonS3Exception e) {
-            if (e.getStatusCode() == 404) {
-                return null;
+            if (isValid(object)) {
+                return object.getObjectContent();
+            } else {
+                object.close();
+
+                LOGGER.debug("{} in bucket {} is invalid; purging asynchronously",
+                        objectKey, bucketName);
+                purgeAsync(objectKey, bucketName);
             }
-            throw new CacheException(e.getMessage(), e);
+        } catch (AmazonS3Exception e) {
+            if (e.getStatusCode() != 404) {
+                throw new IOException(e.getMessage(), e);
+            }
         }
+        return null;
     }
 
     @Override
-    public OutputStream newDerivativeImageOutputStream(OperationList opList)
-            throws CacheException {
+    public OutputStream newDerivativeImageOutputStream(OperationList opList) {
         final String objectKey = getObjectKey(opList);
         final String bucketName = getBucketName();
         final AmazonS3 s3 = getClientInstance();
@@ -285,7 +325,7 @@ class AmazonS3Cache implements DerivativeCache {
     }
 
     @Override
-    public void purge() throws CacheException {
+    public void purge() {
         final AmazonS3 s3 = getClientInstance();
 
         ObjectListing listing = s3.listObjects(getBucketName(),
@@ -319,15 +359,19 @@ class AmazonS3Cache implements DerivativeCache {
         s3.deleteObject(getBucketName(), objectKey);
     }
 
+    private void purgeAsync(String objectKey, String bucketName) {
+        ThreadPool.getInstance().submit(() -> {
+            LOGGER.debug("purgeAsync(): deleting {} from bucket {}",
+                    objectKey, bucketName);
+            final AmazonS3 s3 = getClientInstance();
+            s3.deleteObject(bucketName, objectKey);
+        });
+    }
+
     @Override
-    public void purgeExpired() throws CacheException {
-        final Configuration config = Configuration.getInstance();
+    public void purgeExpired() {
         final AmazonS3 s3 = getClientInstance();
         final String bucketName = getBucketName();
-
-        Calendar c = Calendar.getInstance();
-        c.add(Calendar.SECOND, 0 - config.getInt(Key.CACHE_SERVER_TTL));
-        Date cutoffDate = c.getTime();
 
         ObjectListing listing = s3.listObjects(getBucketName(),
                 getObjectKeyPrefix());
@@ -336,7 +380,7 @@ class AmazonS3Cache implements DerivativeCache {
         while (true) {
             for (S3ObjectSummary summary : listing.getObjectSummaries()) {
                 count++;
-                if (summary.getLastModified().before(cutoffDate)) {
+                if (!isValid(summary)) {
                     s3.deleteObject(bucketName, summary.getKey());
                     deletedCount++;
                 }
@@ -390,24 +434,20 @@ class AmazonS3Cache implements DerivativeCache {
      * @param info       Info to upload to S3.
      */
     @Override
-    public void put(Identifier identifier, Info info) throws CacheException {
+    public void put(Identifier identifier, Info info) throws IOException {
         final AmazonS3 s3 = getClientInstance();
         final String objectKey = getObjectKey(identifier);
         final String bucketName = getBucketName();
 
-        try {
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            info.writeAsJSON(os);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        info.writeAsJSON(os);
 
-            final ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentType("application/json");
-            metadata.setContentEncoding("UTF-8");
-            metadata.setContentLength(os.size());
+        final ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType("application/json");
+        metadata.setContentEncoding("UTF-8");
+        metadata.setContentLength(os.size());
 
-            new AmazonS3Upload(s3, os, bucketName, objectKey, metadata).run();
-        } catch (IOException e) {
-            throw new CacheException(e.getMessage(), e);
-        }
+        new AmazonS3Upload(s3, os, bucketName, objectKey, metadata).run();
     }
 
 }

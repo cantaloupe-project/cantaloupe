@@ -95,7 +95,7 @@ public class ProcessorConnectorTest extends BaseTest {
         instance.connect(resolver, processor, IDENTIFIER);
 
         assertEquals(
-                ((FileResolver) resolver).getPath().toFile(),
+                ((FileResolver) resolver).getPath(),
                 ((FileProcessor) processor).getSourceFile());
     }
 
@@ -229,7 +229,7 @@ public class ProcessorConnectorTest extends BaseTest {
             instance.connect(resolver, processor, IDENTIFIER);
 
             assertEqualSources(
-                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER).toPath(),
+                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER),
                     ((StreamProcessor) processor).getStreamSource());
         } finally {
             server.stop();

@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
+import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.util.List;
 
@@ -65,18 +66,24 @@ public class InformationResource extends IIIF1Resource {
         // cache contains an info matching the request, skip all the setup and
         // just return the cached info.
         if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, false)) {
-            final Info info = cacheFacade.getInfo(identifier);
-            if (info != null) {
-                final Format format = info.getSourceFormat();
-                if (format != null && !Format.UNKNOWN.equals(format)) {
-                    final Processor processor = new ProcessorFactory().
-                            newProcessor(format);
-                    final ImageInfo imageInfo = new ImageInfoFactory().newImageInfo(
-                            getImageURI(), processor, info);
-                    addLinkHeader(imageInfo);
-                    commitCustomResponseHeaders();
-                    return newRepresentation(imageInfo);
+            try {
+                Info info = cacheFacade.getInfo(identifier);
+                if (info != null) {
+                    final Format format = info.getSourceFormat();
+                    if (format != null && !Format.UNKNOWN.equals(format)) {
+                        final Processor processor = new ProcessorFactory().
+                                newProcessor(format);
+                        final ImageInfo imageInfo =
+                                new ImageInfoFactory().newImageInfo(
+                                        getImageURI(), processor, info);
+                        addLinkHeader(imageInfo);
+                        commitCustomResponseHeaders();
+                        return newRepresentation(imageInfo);
+                    }
                 }
+            } catch (IOException e) {
+                // Don't rethrow -- it's still possible to service the request.
+                getLogger().severe(e.getMessage());
             }
         }
 

@@ -12,22 +12,27 @@ import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
 
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Set;
 
 final class TIFFImageReader extends AbstractImageReader {
 
+    private static final Logger LOGGER = LoggerFactory.
+            getLogger(TIFFImageReader.class);
+
     /**
      * @param sourceFile Source file to read.
      */
-    TIFFImageReader(File sourceFile) throws IOException {
+    TIFFImageReader(Path sourceFile) throws IOException {
         super(sourceFile, Format.TIF);
     }
 
@@ -69,6 +74,11 @@ final class TIFFImageReader extends AbstractImageReader {
     }
 
     @Override
+    Logger getLogger() {
+        return LOGGER;
+    }
+
+    @Override
     Metadata getMetadata(int imageIndex) throws IOException {
         final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
         final String metadataFormat = metadata.getNativeMetadataFormatName();
@@ -83,7 +93,7 @@ final class TIFFImageReader extends AbstractImageReader {
         impls[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.class.getName();
 
         // The Sun TIFF reader has moved in Java 9.
-        if (SystemUtils.getJavaVersion() >= 9) {
+        if (SystemUtils.getJavaMajorVersion() >= 9) {
             impls[1] = "com.sun.imageio.plugins.tiff.TIFFImageReader";
         } else {
             impls[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageReader";

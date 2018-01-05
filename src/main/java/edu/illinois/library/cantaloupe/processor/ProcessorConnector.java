@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.SourceCache;
 import edu.illinois.library.cantaloupe.cache.CacheDisabledException;
@@ -17,10 +16,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Establishes the best connection between a processor and a resolver.
@@ -87,8 +87,9 @@ public class ProcessorConnector {
      */
     public void connect(Resolver resolver,
                         Processor processor,
-                        Identifier identifier) throws IOException,
-            CacheException, IncompatibleResolverException {
+                        Identifier identifier)
+            throws IOException, CacheDisabledException,
+            IncompatibleResolverException {
         final String resolverName = resolver.getClass().getSimpleName();
         final String processorName = processor.getClass().getSimpleName();
 
@@ -98,7 +99,7 @@ public class ProcessorConnector {
                         "between {} and {}",
                         resolverName, processorName);
                 ((FileProcessor) processor).setSourceFile(
-                        ((FileResolver) resolver).getPath().toFile());
+                        ((FileResolver) resolver).getPath());
             } else {
                 // All FileResolvers are also StreamResolvers.
                 LOGGER.info("FileResolver -> StreamProcessor connection " +
@@ -151,10 +152,10 @@ public class ProcessorConnector {
                                         Processor processor,
                                         SourceCache sourceCache,
                                         Identifier identifier)
-            throws IOException, CacheException {
+            throws IOException {
         // This will block while a file is being written in another thread,
         // which will prevent the image from being downloaded multiple times.
-        File sourceFile = sourceCache.getSourceImageFile(identifier);
+        Path sourceFile = sourceCache.getSourceImageFile(identifier);
         if (sourceFile == null) {
             downloadToSourceCache(resolver, sourceCache, identifier);
             sourceFile = sourceCache.getSourceImageFile(identifier);
@@ -165,7 +166,7 @@ public class ProcessorConnector {
         if (processor instanceof FileProcessor) {
             ((FileProcessor) processor).setSourceFile(sourceFile);
         } else {
-            InputStream inputStream = new FileInputStream(sourceFile);
+            InputStream inputStream = Files.newInputStream(sourceFile);
             StreamSource streamSource = new InputStreamStreamSource(inputStream);
             ((StreamProcessor) processor).setStreamSource(streamSource);
         }
@@ -174,10 +175,10 @@ public class ProcessorConnector {
     private void downloadToSourceCache(Resolver resolver,
                                        SourceCache sourceCache,
                                        Identifier identifier)
-            throws IOException, CacheException {
+            throws IOException {
         // Download to the SourceCache and then read from it.
-        try (InputStream inputStream = ((StreamResolver) resolver).
-                newStreamSource().newInputStream();
+        try (InputStream inputStream =
+                     ((StreamResolver) resolver).newStreamSource().newInputStream();
              OutputStream outputStream =
                      sourceCache.newSourceImageOutputStream(identifier)) {
             LOGGER.info("Downloading {} to the source cache", identifier);

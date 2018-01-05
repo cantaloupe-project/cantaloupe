@@ -102,7 +102,7 @@ public abstract class ProcessorTest extends BaseTest {
                                 new FileInputStreamStreamSource(fixture);
                         ((StreamProcessor) proc).setStreamSource(source);
                     } else if (proc instanceof FileProcessor) {
-                        ((FileProcessor) proc).setSourceFile(fixture.toFile());
+                        ((FileProcessor) proc).setSourceFile(fixture);
                     }
 
                     try {
@@ -357,7 +357,7 @@ public abstract class ProcessorTest extends BaseTest {
                         sproc.setStreamSource(streamSource);
                     } else if (proc instanceof FileProcessor) {
                         FileProcessor fproc = (FileProcessor) proc;
-                        fproc.setSourceFile(fixture.toFile());
+                        fproc.setSourceFile(fixture);
                     }
 
                     try {
@@ -433,8 +433,7 @@ public abstract class ProcessorTest extends BaseTest {
      */
     private void doProcessTest(final Path fixture,
                                final Format sourceFormat,
-                               final OperationList opList)
-            throws ProcessorException {
+                               final OperationList opList) throws Exception {
         final Processor proc = newConfiguredProcessor(fixture, sourceFormat);
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -456,8 +455,7 @@ public abstract class ProcessorTest extends BaseTest {
     private void doProcessTest(final Path fixture,
                                final Format sourceFormat,
                                final OperationList opList,
-                               final OutputStream os)
-            throws ProcessorException {
+                               final OutputStream os) throws Exception {
         final Processor proc = newConfiguredProcessor(fixture, sourceFormat);
         try {
             proc.process(opList, proc.readImageInfo(), os);
@@ -474,7 +472,7 @@ public abstract class ProcessorTest extends BaseTest {
         proc.setSourceFormat(sourceFormat);
 
         if (proc instanceof FileProcessor) {
-            ((FileProcessor) proc).setSourceFile(fixture.toFile());
+            ((FileProcessor) proc).setSourceFile(fixture);
         } else if (proc instanceof StreamProcessor) {
             StreamSource source = new FileInputStreamStreamSource(fixture);
             ((StreamProcessor) proc).setStreamSource(source);

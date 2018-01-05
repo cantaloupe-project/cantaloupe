@@ -233,6 +233,7 @@ public class ApplicationServer {
             if (isHTTPEnabled()) {
                 ServerConnector connector;
                 HttpConfiguration config = new HttpConfiguration();
+                config.setSendDateHeader(false); // Restlet will take care of this
                 HttpConnectionFactory http1 =
                         new HttpConnectionFactory(config);
 
@@ -258,6 +259,7 @@ public class ApplicationServer {
             // https://www.eclipse.org/jetty/documentation/9.3.x/alpn-chapter.html
             if (isHTTPSEnabled()) {
                 HttpConfiguration config = new HttpConfiguration();
+                config.setSendDateHeader(false); // Restlet will take care of this
                 config.setSecureScheme("https");
                 config.setSecurePort(getHTTPSPort());
                 config.addCustomizer(new SecureRequestCustomizer());

@@ -29,8 +29,11 @@ simplest is probably to:
    equivalent.
 2. Set the main class to `edu.illinois.library.cantaloupe.StandaloneEntry` and
    add the `-Dcantaloupe.config=...` VM option.
-3. You might have to download `servlet-api-3.1.jar` and add it to your
-   classpath.
+3. You might have to download
+   [servlet-api-3.1.jar](http://central.maven.org/maven2/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar)
+   and add it to your classpath: `--class-path=/path/to/servlet-api-3.1.jar`
+
+   Or, in Java 9, your module path: `--module-path=/path/to/containing/dir`
 
 ## Test
 
@@ -39,16 +42,15 @@ whatever info you have.
 
 The tests are structured into three profiles:
 
-### Tests with no dependencies
+### 1. Tests with no dependencies
 
 `mvn clean test -Pnodeps` will run only the tests that have no dependencies
-on third-party services and do not require any tools or libraries to be
-installed.
+on third-party services and do not require any exteral tools or libraries.
 
-### Tests with free dependencies
+### 2. Tests with free dependencies
 
 `mvn clean test -Pfreedeps` will run all of the above tests, plus any that
-depend on open-source tools and libraries. These are the tests run in
+depend on open-source tools or libraries. These are the tests run in
 continuous integration. The following dependencies are required:
 
 * FFmpeg (for FfmpegProcessorTest)
@@ -57,7 +59,7 @@ continuous integration. The following dependencies are required:
 * OpenJPEG (for OpenJpegProcessorTest)
 * Redis (for RedisCacheTest)
 
-### All tests
+### 3. All tests
 
 `mvn clean test` will run all tests, including the ones above. The following
 dependencies are required in addition to the ones above:
@@ -71,10 +73,10 @@ dependencies are required in addition to the ones above:
 The website is built using [Jekyll](http://jekyllrb.com/). With that installed,
 run `jekyll serve` from the `website` directory. Then, open
 [http://localhost:4000/cantaloupe/](http://localhost:4000/cantaloupe/) in a
-web browser. Changes will be reloaded automatically.
+web browser.
 
 An effort is made to keep the documentation in sync with development on the
-same branch. The "Upgrading" and "Changes" sections in the above website are
+same branch. The "Upgrading" and "Changes" sections of the website are
 usually current.
 
 ## Contribute
@@ -128,10 +130,6 @@ Bugfixes that would increment a minor version of a release are applied to the
 release branch for that release, and merged back into `develop`.
 
 ## Releasing
-
-(This section is for the release manager only.)
-
-The release process consists of the following steps:
 
 1. Finalize the code to be released, addressing any relevant milestone issues,
    TODOs, etc.

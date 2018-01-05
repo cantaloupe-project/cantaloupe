@@ -14,11 +14,9 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
-import org.restlet.data.CacheDirective;
 import org.restlet.data.Header;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
-import org.restlet.resource.ResourceException;
 import org.restlet.util.Series;
 
 import java.awt.GraphicsEnvironment;
@@ -95,15 +93,6 @@ public class AdminResource extends AbstractAdminResource {
 
             return warnings;
         }
-    }
-
-    @Override
-    protected void doInit() throws ResourceException {
-        super.doInit();
-
-        // Add a "Cache-Control: no-cache" header because this page contains
-        // live information pertaining to the function of the application.
-        getResponseCacheDirectives().add(CacheDirective.noCache());
     }
 
     /**

@@ -42,7 +42,7 @@ public class JPEGImageWriterTest extends BaseTest {
     @Test
     public void testWriteWithBufferedImage() throws Exception {
         final Path fixture = TestUtil.getImage("jpg-xmp.jpg");
-        final JPEGImageReader reader = new JPEGImageReader(fixture.toFile());
+        final JPEGImageReader reader = new JPEGImageReader(fixture);
         try {
             final Metadata metadata = reader.getMetadata(0);
             final BufferedImage image = reader.read();
@@ -63,7 +63,7 @@ public class JPEGImageWriterTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
 
         final Path fixture = TestUtil.getImage("jpg-exif.jpg");
-        final JPEGImageReader reader = new JPEGImageReader(fixture.toFile());
+        final JPEGImageReader reader = new JPEGImageReader(fixture);
         try {
             final Metadata metadata = reader.getMetadata(0);
             final BufferedImage image = reader.read();
@@ -84,7 +84,7 @@ public class JPEGImageWriterTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
 
         final Path fixture = TestUtil.getImage("jpg-iptc.jpg");
-        final JPEGImageReader reader = new JPEGImageReader(fixture.toFile());
+        final JPEGImageReader reader = new JPEGImageReader(fixture);
         try {
             final Metadata metadata = reader.getMetadata(0);
             final BufferedImage image = reader.read();
@@ -105,7 +105,7 @@ public class JPEGImageWriterTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
 
         final Path fixture = TestUtil.getImage("jpg-xmp.jpg");
-        final JPEGImageReader reader = new JPEGImageReader(fixture.toFile());
+        final JPEGImageReader reader = new JPEGImageReader(fixture);
         try {
             final Metadata metadata = reader.getMetadata(0);
             final BufferedImage image = reader.read();
@@ -122,7 +122,7 @@ public class JPEGImageWriterTest extends BaseTest {
     @Test
     public void testWriteWithPlanarImage() throws Exception {
         final Path fixture = TestUtil.getImage("jpg-xmp.jpg");
-        final JPEGImageReader reader = new JPEGImageReader(fixture.toFile());
+        final JPEGImageReader reader = new JPEGImageReader(fixture);
         try {
             final Metadata metadata = reader.getMetadata(0);
             final PlanarImage image = PlanarImage.wrapRenderedImage(
@@ -144,7 +144,7 @@ public class JPEGImageWriterTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
 
         final Path fixture = TestUtil.getImage("jpg-exif.jpg");
-        final JPEGImageReader reader = new JPEGImageReader(fixture.toFile());
+        final JPEGImageReader reader = new JPEGImageReader(fixture);
         try {
             final Metadata metadata = reader.getMetadata(0);
             final PlanarImage image = PlanarImage.wrapRenderedImage(
@@ -166,7 +166,7 @@ public class JPEGImageWriterTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
 
         final Path fixture = TestUtil.getImage("jpg-iptc.jpg");
-        final JPEGImageReader reader = new JPEGImageReader(fixture.toFile());
+        final JPEGImageReader reader = new JPEGImageReader(fixture);
         try {
             final Metadata metadata = reader.getMetadata(0);
             final PlanarImage image = PlanarImage.wrapRenderedImage(
@@ -188,7 +188,7 @@ public class JPEGImageWriterTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
 
         final Path fixture = TestUtil.getImage("jpg-xmp.jpg");
-        final JPEGImageReader reader = new JPEGImageReader(fixture.toFile());
+        final JPEGImageReader reader = new JPEGImageReader(fixture);
         try {
             final Metadata metadata = reader.getMetadata(0);
             final PlanarImage image = PlanarImage.wrapRenderedImage(

@@ -101,15 +101,12 @@ class FilesystemResolver extends AbstractResolver
     @Override
     public Path getPath() throws IOException {
         if (path == null) {
-            final Configuration config = Configuration.getInstance();
-            switch (config.getString(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY)) {
-                case "BasicLookupStrategy":
-                    path = getPathWithBasicStrategy();
-                    break;
-                case "ScriptLookupStrategy":
+            final LookupStrategy strategy =
+                    LookupStrategy.fromKey(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY);
+            switch (strategy) {
+                case DELEGATE_SCRIPT:
                     try {
                         path = getPathWithScriptStrategy();
-                        break;
                     } catch (DelegateScriptDisabledException e) {
                         LOGGER.error(e.getMessage());
                         throw new IOException(e);
@@ -117,9 +114,10 @@ class FilesystemResolver extends AbstractResolver
                         LOGGER.error(e.getMessage(), e);
                         throw new IOException(e);
                     }
+                    break;
                 default:
-                    throw new IOException(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY +
-                            " is invalid or not set");
+                    path = getPathWithBasicStrategy();
+                    break;
             }
             LOGGER.info("Resolved {} to {}", identifier, path);
         }

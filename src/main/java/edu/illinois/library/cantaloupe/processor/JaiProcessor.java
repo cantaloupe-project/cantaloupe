@@ -127,7 +127,8 @@ class JaiProcessor extends AbstractImageIOProcessor
             final Orientation orientation = getEffectiveOrientation();
             final Dimension fullSize = imageInfo.getSize();
             final ReductionFactor rf = new ReductionFactor();
-            final Set<ImageReader.Hint> hints = new HashSet<>();
+            final Set<ImageReader.Hint> hints =
+                    EnumSet.noneOf(ImageReader.Hint.class);
 
             final boolean normalize = (opList.getFirst(Normalize.class) != null);
             if (normalize) {

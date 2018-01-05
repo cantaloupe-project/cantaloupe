@@ -5,9 +5,11 @@ title: Upgrading
 
 <h1>Upgrading</h1>
 
-<div class="alert alert-info">If you are skipping versions, work through this list backwards from your current version.</div>
+<p>If you are skipping versions, work through this page backwards from your current version.</p>
 
-<h2>From 3.3.4 to 3.4</h2>
+<p>Note that it's a good idea to use different configuration files for different versions.</p>
+
+<h2>From 3.3.x to 3.4</h2>
 
 <ul>
   <li>Add the following keys from the sample configuration:
@@ -19,12 +21,14 @@ title: Upgrading
       <li><code>endpoint.iiif.min_size</code></li>
       <li><code>endpoint.admin.username</code></li>
       <li><code>HttpResolver.trust_all_certs</code></li>
+      <li><code>HttpResolver.request_timeout</code></li>
+      <li><code>AmazonS3Resolver.max_connections</code></li>
       <li><code>processor.flv</code></li>
-      <li><code>processor.sgi</code></li>
       <li><code>processor.limit_to_8_bits</code></li>
       <li><code>cache.server.source.enabled</code></li>
       <li><code>cache.server.derivative.enabled</code></li>
       <li><code>cache.server.info.enabled</code></li>
+      <li><code>AmazonS3Cache.max_connections</code></li>
       <li><code>HeapCache.*</code></li>
       <li><code>RedisCache.*</code></li>
       <li><code>log.error.*</code></li>
@@ -42,11 +46,11 @@ title: Upgrading
     </ul>
   </li>
   <li>If you are using the delegate script, add a <code>context</code> argument to the method signature of any existing resolver delegates. See <span class="filename">delegates.rb.sample</span> for examples.</li>
-  <li>The <code>DELETE /cache/:identifier</code> HTTP API method is deprecated and will be removed in version 4.0. Begin migrating now to the updated equivalent in the HTTP API.</li>
-  <li>Managing the cache on the command line with VM arguments is deprecated and will be removed in version 4.0. Begin migrating now to the cache management methods in the HTTP API.</li>
+  <li>The <code>DELETE /cache/:identifier</code> HTTP API method is deprecated and will be removed in version 4. Begin migrating now to the updated equivalent.</li>
+  <li>Managing the cache on the command line with VM arguments is deprecated and will be removed in version 4. Begin migrating now to the cache management methods in the HTTP API.</li>
 </ul>
 
-<h2>From 3.3 to 3.3.4</h2>
+<h2>From 3.3 to 3.3.5</h2>
 
 <p>Nothing to do.</p>
 
@@ -220,9 +224,8 @@ title: Upgrading
     <pre>ALTER TABLE {JdbcCache.info_table} CHANGE COLUMN last_modified last_accessed;
 ALTER TABLE {JdbcCache.derivative_image_table} CHANGE COLUMN last_modified last_accessed;</pre>
   </li>
+  <li>Note that the information that used to be available on the landing page (<span class="filename">/</span>) has moved to the Control Panel (<span class="filename">/admin</span>). Log in with a username of "admin" and the password defined in the <code>admin.password</code> configuration option.</li>
 </ul>
-
-<div class="alert alert-info">Note that the information that used to be available on the landing page (<span class="filename">/</span>) has moved to the Control Panel (<span class="filename">/admin</span>). Log in with a username of "admin" and the password defined in the <code>admin.password</code> configuration option.</div>
 
 <h2>From 2.1.1 to 2.2</h2>
 
@@ -269,11 +272,9 @@ DELETE FROM {JdbcCache.info_table};</pre>
 
 <h2>From 1.x to 2.0</h2>
 
-<p>There are so many new and renamed configuration keys in this version that it is recommended to start over with a new configuration file. The inline comments, which serve as the primary source of configuration documentation, have also been updated.</p>
-
-<p>Also, because the cache naming format has changed, it will be necessary to purge your cache before using this version.</p>
-
-<div class="alert alert-info">
-  <p>Note that the Image API 2.0 endpoint, which used to be located at <span class="filename">/iiif</span>, has moved to <span class="filename">/iiif/2</a>.</p>
-  <p>Also, the landing page has moved to <span class="filename">/</span>.</p>
-</div>
+<ul>
+  <li>There are so many new and renamed configuration keys in this version that it's recommended to start over with a new configuration file. The inline comments, which serve as the primary source of configuration documentation, have also been updated.</li>
+  <li>Because the cache naming format has changed, it will be necessary to purge your cache before using this version.</li>
+  <li>The Image API 2.0 endpoint, which used to be located at <span class="filename">/iiif</span>, has moved to <span class="filename">/iiif/2</a>.</li>
+  <li>The landing page has moved to <span class="filename">/</span>.</li>
+</ul>

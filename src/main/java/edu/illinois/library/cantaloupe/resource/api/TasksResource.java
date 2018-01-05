@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.async.TaskQueue;
-import org.restlet.Request;
+import org.restlet.data.CharacterSet;
 import org.restlet.data.Status;
 import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
@@ -33,7 +33,6 @@ public class TasksResource extends AbstractAPIResource {
      * @return    Empty representation.
      */
     @Post("json")
-    @SuppressWarnings("unused")
     public Representation doPost(Representation rep) throws Exception {
         // N.B.: ObjectMapper will deserialize into the correct subclass.
         ObjectReader reader = new ObjectMapper().readerFor(Command.class);
@@ -57,7 +56,6 @@ public class TasksResource extends AbstractAPIResource {
 
             // Return 202 Accepted and a Location header pointing to the task
             // URI.
-            final Request request = getRequest();
             final String taskURI =
                     getPublicRootReference() +
                             RestletApplication.TASKS_PATH + "/" +
@@ -66,7 +64,10 @@ public class TasksResource extends AbstractAPIResource {
             setLocationRef(taskURI);
             setStatus(Status.SUCCESS_ACCEPTED);
             commitCustomResponseHeaders();
-            return new EmptyRepresentation();
+
+            Representation responseRep = new EmptyRepresentation();
+            responseRep.setCharacterSet(CharacterSet.UTF_8);
+            return responseRep;
         } catch (NullPointerException | JsonProcessingException e) {
             throw new IllegalArgumentException(e);
         }

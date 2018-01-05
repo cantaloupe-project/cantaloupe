@@ -21,10 +21,10 @@ import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.operation.overlay.ImageOverlay;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.overlay.Position;
+import edu.illinois.library.cantaloupe.process.ArrayListOutputConsumer;
+import edu.illinois.library.cantaloupe.process.Pipe;
+import edu.illinois.library.cantaloupe.process.ProcessStarter;
 import org.apache.commons.lang3.StringUtils;
-import org.im4java.process.ArrayListOutputConsumer;
-import org.im4java.process.Pipe;
-import org.im4java.process.ProcessStarter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -250,8 +250,6 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                             if (s.contains(" rw")) {
                                 outputFormats.add(Format.TIF);
                             }
-                        } else if (s.startsWith("SGI") && s.contains("  r")) {
-                            sourceFormats.add(Format.SGI);
                         } else if (s.startsWith("WEBP")) {
                             sourceFormats.add(Format.WEBP);
                             if (s.contains(" rw")) {
@@ -698,7 +696,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     }
 
     @Override
-    public Info readImageInfo() throws ProcessorException {
+    public Info readImageInfo() throws IOException {
         try (InputStream inputStream = streamSource.newInputStream()) {
             final List<String> args = new ArrayList<>();
             if (IMVersion.VERSION_7.equals(getIMVersion())) {
@@ -754,7 +752,11 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             throw new IOException("readImageInfo(): nothing received on " +
                     "stdout from command: " + cmdString);
         } catch (Exception e) {
-            throw new ProcessorException(e.getMessage(), e);
+            if (e instanceof IOException) {
+                throw (IOException) e;
+            } else {
+                throw new IOException(e.getMessage(), e);
+            }
         }
     }
 

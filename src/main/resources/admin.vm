@@ -1315,6 +1315,20 @@
                                                 </select>
                                             </td>
                                         </tr>
+                                        <tr>
+                                            <td>Max Connections
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Maximum number of concurrent HTTP connections to AWS.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="number"
+                                                       min="1"
+                                                       name="AmazonS3Resolver.max_connections"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
                                     </table>
                                 </div>
 
@@ -1453,6 +1467,20 @@
                                                         Trust Invalid Certificates
                                                     </label>
                                                 </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Request Timeout
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Request timeout in seconds.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="number" min="1"
+                                                       name="HttpResolver.request_timeout"
+                                                       data-requires-restart="false">
                                             </td>
                                         </tr>
                                         <tr>
@@ -2548,6 +2576,20 @@
                                             <td>
                                                 <input type="text" class="form-control"
                                                        name="AmazonS3Cache.object_key_prefix"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Max Connections
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Maximum number of concurrent HTTP connections to AWS.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="number"
+                                                       min="1"
+                                                       name="AmazonS3Cache.max_connections"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>

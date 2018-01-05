@@ -4,13 +4,11 @@ import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.http.HttpField;
 
 import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
 
 public final class Response {
 
     private byte[] body;
-    private final Map<String, String> headers = new HashMap<>();
+    private final Headers headers = new Headers();
     private int status;
     private Transport transport;
 
@@ -29,7 +27,7 @@ public final class Response {
         }
 
         for (HttpField field : jresponse.getHeaders()) {
-            response.getHeaders().put(field.getName(), field.getValue());
+            response.getHeaders().add(field.getName(), field.getValue());
         }
 
         return response;
@@ -47,7 +45,7 @@ public final class Response {
         }
     }
 
-    public Map<String, String> getHeaders() {
+    public Headers getHeaders() {
         return headers;
     }
 

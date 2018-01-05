@@ -31,7 +31,8 @@ public final class HTTPAssert {
         try {
             client.setURI(fromURI);
             Response response = client.send();
-            assertEquals(toURI.toString(), response.getHeaders().get("Location"));
+            assertEquals(toURI.toString(),
+                    response.getHeaders().getFirstValue("Location"));
             assertEquals(status, response.getStatus());
         } catch (Exception e) {
             fail(e.getMessage());

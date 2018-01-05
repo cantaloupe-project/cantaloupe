@@ -32,7 +32,7 @@ public class PNGImageWriterTest extends BaseTest {
     @Test
     public void testWriteWithBufferedImage() throws Exception {
         final Path fixture = TestUtil.getImage("png-xmp.png");
-        final PNGImageReader reader = new PNGImageReader(fixture.toFile());
+        final PNGImageReader reader = new PNGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final BufferedImage image = reader.read();
 
@@ -46,7 +46,7 @@ public class PNGImageWriterTest extends BaseTest {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final Path fixture = TestUtil.getImage("png-nativemetadata.png");
-        final PNGImageReader reader = new PNGImageReader(fixture.toFile());
+        final PNGImageReader reader = new PNGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final BufferedImage image = reader.read();
 
@@ -60,7 +60,7 @@ public class PNGImageWriterTest extends BaseTest {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final Path fixture = TestUtil.getImage("png-xmp.png");
-        final PNGImageReader reader = new PNGImageReader(fixture.toFile());
+        final PNGImageReader reader = new PNGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final BufferedImage image = reader.read();
 
@@ -72,7 +72,7 @@ public class PNGImageWriterTest extends BaseTest {
     @Test
     public void testWriteWithPlanarImage() throws Exception {
         final Path fixture = TestUtil.getImage("png-xmp.png");
-        final PNGImageReader reader = new PNGImageReader(fixture.toFile());
+        final PNGImageReader reader = new PNGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final PlanarImage image =
                 PlanarImage.wrapRenderedImage(reader.readRendered());
@@ -87,7 +87,7 @@ public class PNGImageWriterTest extends BaseTest {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final Path fixture = TestUtil.getImage("png-nativemetadata.png");
-        final PNGImageReader reader = new PNGImageReader(fixture.toFile());
+        final PNGImageReader reader = new PNGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final PlanarImage image =
                 PlanarImage.wrapRenderedImage(reader.readRendered());
@@ -102,7 +102,7 @@ public class PNGImageWriterTest extends BaseTest {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
         final Path fixture = TestUtil.getImage("png-xmp.png");
-        final PNGImageReader reader = new PNGImageReader(fixture.toFile());
+        final PNGImageReader reader = new PNGImageReader(fixture);
         final Metadata metadata = reader.getMetadata(0);
         final PlanarImage image =
                 PlanarImage.wrapRenderedImage(reader.readRendered());

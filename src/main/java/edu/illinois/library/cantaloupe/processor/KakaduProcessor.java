@@ -29,6 +29,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
@@ -48,6 +49,7 @@ import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
@@ -228,7 +230,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
      * kdu_jp2info.
      */
     @Override
-    public Info readImageInfo() throws ProcessorException {
+    public Info readImageInfo() throws IOException {
         try {
             if (infoDocument == null) {
                 readImageInfoDocument();
@@ -273,8 +275,9 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
                 }
             }
             return info;
-        } catch (Exception e) {
-            throw new ProcessorException(e.getMessage(), e);
+        } catch (SAXException | ParserConfigurationException |
+                XPathExpressionException e) {
+            throw new IOException(e.getMessage(), e);
         }
     }
 
@@ -287,7 +290,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
         final List<String> command = new ArrayList<>();
         command.add(getPath("kdu_jp2info"));
         command.add("-i");
-        command.add(sourceFile.getAbsolutePath());
+        command.add(sourceFile.toString());
         command.add("-siz");
 
         final ProcessBuilder pb = new ProcessBuilder(command);
@@ -353,7 +356,8 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
                         Format.TIF);
                 final BufferedImage image = reader.read();
                 try {
-                    Set<ImageReader.Hint> hints = new HashSet<>();
+                    Set<ImageReader.Hint> hints =
+                            EnumSet.noneOf(ImageReader.Hint.class);
                     if (!normalize) {
                         hints.add(ImageReader.Hint.ALREADY_CROPPED);
                     }
@@ -392,7 +396,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     }
 
     @Override
-    public void setSourceFile(File sourceFile) {
+    public void setSourceFile(Path sourceFile) {
         super.setSourceFile(sourceFile);
         reset();
     }
@@ -418,7 +422,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
         command.add("-resilient");
         command.add("-no_alpha");
         command.add("-i");
-        command.add(sourceFile.getAbsolutePath());
+        command.add(sourceFile.toString());
 
         for (Operation op : opList) {
             if (op instanceof Crop && !ignoreCrop) {

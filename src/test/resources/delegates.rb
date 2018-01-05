@@ -53,6 +53,16 @@ module Cantaloupe
 
   module AmazonS3Resolver
     def self.get_object_key(identifier, context)
+      if identifier.include?('key:')
+        parts = identifier.split(';')
+        struct = {}
+        parts.each do |part|
+          kv = part.split(':')
+          struct[kv[0]] = kv[1]
+        end
+        return struct
+      end
+
       identifier
     end
   end

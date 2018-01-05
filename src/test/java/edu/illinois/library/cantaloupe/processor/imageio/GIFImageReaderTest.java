@@ -18,7 +18,7 @@ public class GIFImageReaderTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new GIFImageReader(TestUtil.getImage("gif").toFile());
+        instance = new GIFImageReader(TestUtil.getImage("gif"));
     }
 
     @After
@@ -28,7 +28,7 @@ public class GIFImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testGetCompression() throws Exception {
+    public void testGetCompression() {
         assertEquals(Compression.LZW, instance.getCompression(0));
     }
 

@@ -14,19 +14,17 @@ import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatExceptio
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageTypeSpecifier;
-import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -42,9 +40,6 @@ abstract class AbstractImageReader {
     // Note: methods that return BufferedImages (for Java 2D) are arranged
     // toward the beginning of the class; methods that return RenderedImages
     // (for JAI) are toward the end.
-
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(AbstractImageReader.class);
 
     private Format format;
 
@@ -62,8 +57,7 @@ abstract class AbstractImageReader {
      *
      * @param inputFile Image file to read.
      */
-    AbstractImageReader(File inputFile, Format format)
-            throws IOException {
+    AbstractImageReader(Path inputFile, Format format) throws IOException {
         setSource(inputFile);
         setFormat(format);
 
@@ -111,16 +105,15 @@ abstract class AbstractImageReader {
         return (!preserveMetadata && !respectOrientation);
     }
 
-    void createReader() throws IOException {
+    private void createReader() throws IOException {
         if (inputStream == null) {
             throw new IOException("No source set.");
         }
 
-        iioReader = negotiateImageReader();
+        iioReader = negotiateIIOReader();
 
         if (iioReader != null) {
-            LOGGER.debug("createReader(): using {}",
-                    iioReader.getClass().getName());
+            getLogger().debug("Using {}", iioReader.getClass().getName());
 
             /*
             http://docs.oracle.com/javase/8/docs/api/javax/imageio/ImageReader.html#setInput(java.lang.Object,%20boolean,%20boolean)
@@ -133,13 +126,12 @@ abstract class AbstractImageReader {
             disregard this setting and return metadata normally.
             */
             final boolean ignoreMetadata = canIgnoreMetadata();
-            LOGGER.debug("createReader(): ignoring metadata? {}",
-                    ignoreMetadata);
+            getLogger().debug("Ignoring metadata? {}", ignoreMetadata);
 
             iioReader.setInput(inputStream, false, ignoreMetadata);
         } else {
-            throw new IOException("createReader(): unable to determine the " +
-                    "format of the source image.");
+            throw new IOException("Unable to determine the format of the" +
+                    "source image.");
         }
     }
 
@@ -163,6 +155,7 @@ abstract class AbstractImageReader {
         return iioReader;
     }
 
+    abstract Logger getLogger();
     abstract Metadata getMetadata(int imageIndex) throws IOException;
 
     /**
@@ -210,7 +203,7 @@ abstract class AbstractImageReader {
         return new Dimension(width, height);
     }
 
-    private javax.imageio.ImageReader negotiateImageReader() {
+    private javax.imageio.ImageReader negotiateIIOReader() {
         javax.imageio.ImageReader negotiatedReader = null;
 
         final List<javax.imageio.ImageReader> iioReaders =
@@ -219,6 +212,10 @@ abstract class AbstractImageReader {
 
         if (!iioReaders.isEmpty()) {
             final String[] preferredImplClasses = preferredIIOImplementations();
+
+            getLogger().debug("ImageIO plugin preferences: {}",
+                    (preferredImplClasses.length > 0) ?
+                            String.join(", ", preferredImplClasses) : "none");
 
             if (preferredImplClasses.length > 0) {
                 for (String preferredImplClass : preferredImplClasses) {
@@ -254,8 +251,8 @@ abstract class AbstractImageReader {
     }
 
     private void reset() throws IOException {
-        if (source instanceof File) {
-            setSource((File) source);
+        if (source instanceof Path) {
+            setSource((Path) source);
         } else {
             setSource((StreamSource) source);
         }
@@ -266,10 +263,10 @@ abstract class AbstractImageReader {
         this.format = format;
     }
 
-    void setSource(File inputFile) throws IOException {
+    void setSource(Path inputFile) throws IOException {
         dispose();
         source = inputFile;
-        inputStream = new FileImageInputStream(inputFile);
+        inputStream = ImageIO.createImageInputStream(inputFile.toFile());
     }
 
     void setSource(StreamSource streamSource) throws IOException {
@@ -359,7 +356,7 @@ abstract class AbstractImageReader {
         BufferedImage bestImage = null;
         if (!scale.hasEffect()) {
             bestImage = tileAwareRead(0, regionRect, hints);
-            LOGGER.debug("readSmallestUsableSubimage(): using a {}x{} source " +
+            getLogger().debug("readSmallestUsableSubimage(): using a {}x{} source " +
                             "image (0x reduction factor)",
                     bestImage.getWidth(), bestImage.getHeight());
         } else {
@@ -370,20 +367,18 @@ abstract class AbstractImageReader {
             // false, and getNumImages() can't find anything, it will return -1.
             int numImages = iioReader.getNumImages(false);
             if (numImages > 1) {
-                LOGGER.debug("readSmallestUsableSubimage(): " +
-                        "detected {} subimage(s)", numImages);
+                getLogger().debug("Detected {} subimage(s)", numImages);
             } else if (numImages == -1) {
                 numImages = iioReader.getNumImages(true);
                 if (numImages > 1) {
-                    LOGGER.debug("readSmallestUsableSubimage(): " +
-                            "scan revealed {} subimage(s)", numImages);
+                    getLogger().debug("Scan revealed {} subimage(s)", numImages);
                 }
             }
             // At this point, we know how many images are available.
             if (numImages == 1) {
                 bestImage = tileAwareRead(0, regionRect, hints);
-                LOGGER.debug("readSmallestUsableSubimage(): using a {}x{} " +
-                                "source image (0x reduction factor)",
+                getLogger().debug("readSmallestUsableSubimage(): using a " +
+                                "{}x{} source image (0x reduction factor)",
                         bestImage.getWidth(), bestImage.getHeight());
             } else if (numImages > 1) {
                 // Loop through the reduced images from smallest to largest to
@@ -397,8 +392,7 @@ abstract class AbstractImageReader {
                     if (fits(regionRect, scale, reducedScale)) {
                         rf.factor = ReductionFactor.
                                 forScale(reducedScale, 0).factor;
-                        LOGGER.debug("readSmallestUsableSubimage(): " +
-                                        "subimage {}: {}x{} - fits! " +
+                        getLogger().debug("Subimage {}: {}x{} - fits! " +
                                         "({}x reduction factor)",
                                 i + 1, subimageWidth, subimageHeight,
                                 rf.factor);
@@ -410,8 +404,7 @@ abstract class AbstractImageReader {
                         bestImage = tileAwareRead(i, reducedRect, hints);
                         break;
                     } else {
-                        LOGGER.debug("readSmallestUsableSubimage(): " +
-                                        "subimage {}: {}x{} - too small",
+                        getLogger().debug("Subimage {}: {}x{} - too small",
                                 i + 1, subimageWidth, subimageHeight);
                     }
                 }
@@ -447,7 +440,7 @@ abstract class AbstractImageReader {
         final Dimension imageSize = new Dimension(
                 iioReader.getWidth(imageIndex),
                 iioReader.getHeight(imageIndex));
-        LOGGER.debug("tileAwareRead(): acquiring region {},{}/{}x{} from {}x{} image",
+        getLogger().debug("Acquiring region {},{}/{}x{} from {}x{} image",
                 region.x, region.y, region.width, region.height,
                 imageSize.width, imageSize.height);
 
@@ -501,8 +494,7 @@ abstract class AbstractImageReader {
      *
      * @return RenderedImage
      */
-    RenderedImage readRendered() throws IOException,
-            UnsupportedSourceFormatException {
+    RenderedImage readRendered() throws IOException {
         return iioReader.readAsRenderedImage(0,
                 iioReader.getDefaultReadParam());
     }
@@ -562,8 +554,7 @@ abstract class AbstractImageReader {
         RenderedImage bestImage = null;
         if (!scale.hasEffect()) {
             bestImage = iioReader.readAsRenderedImage(0, param);
-            LOGGER.debug("readSmallestUsableSubimage(): using a {}x{} " +
-                            "source image (0x reduction factor)",
+            getLogger().debug("Using a {}x{} source image (0x reduction factor)",
                     bestImage.getWidth(), bestImage.getHeight());
         } else {
             // Pyramidal TIFFs will have > 1 image, each half the dimensions of
@@ -572,19 +563,18 @@ abstract class AbstractImageReader {
             // files, but is slower.
             int numImages = iioReader.getNumImages(false);
             if (numImages > 1) {
-                LOGGER.debug("readSmallestUsableSubimage(): detected {} " +
-                        "subimage(s)", numImages - 1);
+                getLogger().debug("Detected {} subimage(s)", numImages - 1);
             } else if (numImages == -1) {
                 numImages = iioReader.getNumImages(true);
                 if (numImages > 1) {
-                    LOGGER.debug("readSmallestUsableSubimage(): " +
-                            "scan revealed {} subimage(s)", numImages - 1);
+                    getLogger().debug("Scan revealed {} subimage(s)",
+                            numImages - 1);
                 }
             }
             if (numImages == 1) {
                 bestImage = iioReader.read(0, param);
-                LOGGER.debug("readSmallestUsableSubimage(): using a {}x{} " +
-                                "source image (0x reduction factor)",
+                getLogger().debug("Using a {}x{} source image (0x reduction " +
+                                "factor)",
                         bestImage.getWidth(), bestImage.getHeight());
             } else if (numImages > 1) {
                 // Loop through the reduced images from smallest to largest to
@@ -597,16 +587,14 @@ abstract class AbstractImageReader {
                             (double) fullSize.width;
                     if (fits(regionRect, scale, reducedScale)) {
                         rf.factor = ReductionFactor.forScale(reducedScale, 0).factor;
-                        LOGGER.debug("readSmallestUsableSubimage(): " +
-                                        "subimage {}: {}x{} - fits! " +
+                        getLogger().debug("Subimage {}: {}x{} - fits! " +
                                         "({}x reduction factor)",
                                 i + 1, subimageWidth, subimageHeight,
                                 rf.factor);
                         bestImage = iioReader.readAsRenderedImage(i, param);
                         break;
                     } else {
-                        LOGGER.debug("readSmallestUsableSubimage(): " +
-                                        "subimage {}: {}x{} - too small",
+                        getLogger().debug("Subimage {}: {}x{} - too small",
                                 i + 1, subimageWidth, subimageHeight);
                     }
                 }

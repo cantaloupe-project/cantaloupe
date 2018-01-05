@@ -15,10 +15,13 @@ title: Change Log
       <li>The minimum size in IIIF Image API 2.x <code>info.json</code> responses is configurable. (Thanks to @cbeer)</li>
       <li>The maximum size in IIIF Image API 2.x <code>info.json</code> responses is the full image size, rather than half size. (Thanks to @cbeer)</li>
       <li>The IIIF Image API 1.x endpoint returns a JPEG image, rather than GIF, when no client preference is expressed in the URI or <code>Accept</code> header.</li>
+      <li>Certain derivative cache errors can be recovered from without causing an error response.</li>
+      <li>The <code>sizes</code> key in Image API 2.x information responses respects the <code>max_pixels</code> configuration option.</li>
       <li>Image and information endpoints return <code>HTTP 501 Not Implemented</code>, rather than <code>500 Internal Server Error</code>, when the selected processor does not support the requested source format.</li>
-      <li>Image requests may include a <code>?response-content-disposition</code> query argument to suggest a response <code>Content-Disposition</code>.</li>
+      <li>Image requests may include a <code>?response-content-disposition</code> query argument to suggest a response <code>Content-Disposition</code> header value.</li>
       <li>Added several HTTP API methods for cache management.</li>
       <li>Changes to HTTP Basic authorization settings in all endpoints take effect without restarting.</li>
+      <li>All endpoints support the HTTP <code>OPTIONS</code> method.</li>
       <li>Status items in the Control Panel update automatically via AJAX.</li>
       <li>The username used to access the Control Panel is configurable.</li>
     </ul>
@@ -28,15 +31,16 @@ title: Change Log
       <li>Miscellaneous efficiency improvements across all resolvers.</li>
       <li>The <code>HttpResolver::get_url()</code> delegate method may return a hash containing authentication credentials.</li>
       <li>Added an option to HttpResolver to trust all certificates.</li>
+      <li>The request timeout of HttpResolver is configurable.</li>
       <li>AmazonS3Resolver and AzureStorageResolver attempt to infer a source format from the object/blob key if not able to do so from the identifier or from object/blob metadata.</li>
-      <li>AmazonS3Resolver falls back to obtaining credentials from various other sources (see the user manual) when they are not set in the config file. (Thanks to @jweisman)</li>
+      <li>The maxmimum number of AWS connections used by AmazonS3Resolver is configurable.</li>
+      <li>AmazonS3Resolver falls back to obtaining credentials from various other sources (see the user manual) when they are not set in the configuration file. (Thanks to @jweisman)</li>
       <li>Resolver delegates are passed an additional context parameter. (Thanks to @jonathangreen)</li>
     </ul>
   </li>
   <li>Processors
     <ul>
       <li>Added an option that enables Java2dProcessor, JaiProcessor, KakaduProcessor, and PdfBoxProcessor to preserve the sample depth of &gt;8-bits-per-sample source images.</li>
-      <li>GraphicsMagickProcessor and ImageMagickProcessor support SGI images.</li>
       <li>GraphicsMagickProcessor and ImageMagickProcessor respect the <code>processor.dpi</code> configuration key.</li>
       <li>GraphicsMagickProcessor supports the GIF output format.</li>
       <li>ImageMagickProcessor supports image overlays.</li>
@@ -55,7 +59,9 @@ title: Change Log
       <li>Added RedisCache.</li>
       <li>Added HeapCache.</li>
       <li>AmazonS3Cache uploads images to S3 asynchronously, enabling faster responses.</li>
+      <li>The maxmimum number of AWS connections used by AmazonS3Cache is configurable.</li>
       <li>AmazonS3Cache falls back to obtaining credentials from various other sources (see the user manual) when they are not set in the config file. (Thanks to @jweisman)</li>
+      <li>On macOS, FilesystemCache uses file last-modified times rather than last-accessed times as the latter are not reliable.</li>
     </ul>
   </li>
   <li>Other

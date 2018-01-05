@@ -3,31 +3,18 @@ package edu.illinois.library.cantaloupe.resource.admin;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
-import edu.illinois.library.cantaloupe.resource.ResourceTest;
-import org.junit.Before;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class StatusResourceTest extends ResourceTest {
-
-    private static final String USERNAME = "admin";
-    private static final String SECRET = "secret";
-
-    @Before
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-
-        final Configuration config = Configuration.getInstance();
-        config.setProperty(Key.ADMIN_USERNAME, USERNAME);
-        config.setProperty(Key.ADMIN_SECRET, SECRET);
-
-        client = newClient("", USERNAME, SECRET,
-                RestletApplication.ADMIN_REALM);
-    }
+public class StatusResourceTest extends AbstractAdminResourceTest {
 
     @Override
     protected String getEndpointPath() {
@@ -35,14 +22,7 @@ public class StatusResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testGet() throws Exception {
-        Response response = client.send();
-
-        assertTrue(response.getBodyAsString().contains("\"infoCache\":"));
-    }
-
-    @Test
-    public void testEnabled() throws Exception {
+    public void testGETWhenEnabled() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.ADMIN_ENABLED, true);
 
@@ -51,7 +31,7 @@ public class StatusResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testDisabled() throws Exception {
+    public void testGETWhenDisabled() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.ADMIN_ENABLED, false);
         try {
@@ -60,6 +40,43 @@ public class StatusResourceTest extends ResourceTest {
         } catch (ResourceException e) {
             assertEquals(403, e.getStatusCode());
         }
+    }
+
+    @Test
+    public void testGETResponseBody() throws Exception {
+        Response response = client.send();
+        assertTrue(response.getBodyAsString().contains("\"infoCache\":"));
+    }
+
+    @Test
+    public void testGETResponseHeaders() throws Exception {
+        Response response = client.send();
+        Headers headers = response.getHeaders();
+        assertEquals(7, headers.size());
+
+        // Cache-Control
+        assertEquals("no-cache", headers.getFirstValue("Cache-Control"));
+        // Content-Type
+        assertEquals("application/json;charset=UTF-8",
+                headers.getFirstValue("Content-Type"));
+        // Date
+        assertNotNull(headers.getFirstValue("Date"));
+        // Server
+        assertTrue(headers.getFirstValue("Server").contains("Restlet"));
+        // Transfer-Encoding
+        assertEquals("chunked", headers.getFirstValue("Transfer-Encoding"));
+        // Vary
+        List<String> parts =
+                Arrays.asList(StringUtils.split(headers.getFirstValue("Vary"), ", "));
+        assertEquals(5, parts.size());
+        assertTrue(parts.contains("Accept"));
+        assertTrue(parts.contains("Accept-Charset"));
+        assertTrue(parts.contains("Accept-Encoding"));
+        assertTrue(parts.contains("Accept-Language"));
+        assertTrue(parts.contains("Origin"));
+        // X-Powered-By
+        assertEquals("Cantaloupe/Unknown",
+                headers.getFirstValue("X-Powered-By"));
     }
 
 }

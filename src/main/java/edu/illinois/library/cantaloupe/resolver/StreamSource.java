@@ -11,13 +11,14 @@ import java.io.InputStream;
 public interface StreamSource {
 
     /**
-     * <p>Provides a new ImageInputStream to read from.</p>
+     * <p>Provides a new {@link ImageInputStream} to read from. May be called
+     * multiple times.</p>
      *
-     * <p>N.B. ImageInputStream is an ImageIO class that supports seeking,
-     * among other benefits, making it potentially much more efficient than an
-     * InputStream. Implementations are encouraged to return a full-fledged
-     * ImageInputStream, but if they can't, they can return a wrapped
-     * InputStream using {@link ImageIO#createImageInputStream(Object)}.</p>
+     * <p>N.B.: {@link ImageInputStream} is an ImageIO class that supports
+     * seeking, among other benefits, making it potentially much more efficient
+     * than an {@link InputStream}. If a first-class implementation can't be
+     * returned, then {@link ImageIO#createImageInputStream} can be used to
+     * return a wrapped {@link InputStream}.</p>
      *
      * @return New input stream to read from.
      * @throws IOException If there is any issue creating the stream.
@@ -25,7 +26,7 @@ public interface StreamSource {
     ImageInputStream newImageInputStream() throws IOException;
 
     /**
-     * Provides a new input stream to read from.
+     * Provides a new input stream to read from. May be called multiple times.
      *
      * @return New input stream to read from.
      * @throws IOException If there is any issue creating the stream.

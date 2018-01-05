@@ -78,7 +78,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
 
     @Test
     public void testProcessWithPageOption() throws Exception {
-        instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf").toFile());
+        instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
         final Info imageInfo = instance.readImageInfo();
 
         // page option missing
@@ -99,7 +99,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
     @Test
     public void testProcessWithIllegalPageOptionThrowsException()
             throws Exception {
-        instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf").toFile());
+        instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
         final Info imageInfo = instance.readImageInfo();
 
         // page "35"
@@ -116,7 +116,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
 
     @Test
     public void testValidate() throws Exception {
-        instance.setSourceFile(TestUtil.getImage("pdf.pdf").toFile());
+        instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
         OperationList ops = TestUtil.newOperationList();
         Dimension fullSize = new Dimension(1000, 1000);

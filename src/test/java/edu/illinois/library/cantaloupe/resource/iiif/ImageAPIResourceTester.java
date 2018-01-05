@@ -3,6 +3,8 @@ package edu.illinois.library.cantaloupe.resource.iiif;
 import edu.illinois.library.cantaloupe.ApplicationServer;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.cache.InfoService;
+import edu.illinois.library.cantaloupe.cache.MockBrokenDerivativeInputStreamCache;
+import edu.illinois.library.cantaloupe.cache.MockBrokenDerivativeOutputStreamCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Client;
@@ -94,7 +96,7 @@ public class ImageAPIResourceTester {
         try {
             Response response = client.send();
 
-            String header = response.getHeaders().get("Cache-Control");
+            String header = response.getHeaders().getFirstValue("Cache-Control");
             assertTrue(header.contains("max-age=1234"));
             assertTrue(header.contains("s-maxage=4567"));
             assertTrue(header.contains("public"));
@@ -131,7 +133,7 @@ public class ImageAPIResourceTester {
         Client client = newClient(uri);
         try {
             Response response = client.send();
-            assertNull(response.getHeaders().get("Cache-Control"));
+            assertNull(response.getHeaders().getFirstValue("Cache-Control"));
         } finally {
             client.stop();
         }
@@ -145,7 +147,7 @@ public class ImageAPIResourceTester {
         Client client = newClient(uri);
         try {
             Response response = client.send();
-            assertNull(response.getHeaders().get("Cache-Control"));
+            assertNull(response.getHeaders().getFirstValue("Cache-Control"));
         } finally {
             client.stop();
         }
@@ -212,6 +214,40 @@ public class ImageAPIResourceTester {
     }
 
     /**
+     * Tests recovery from an exception thrown by
+     * {@link edu.illinois.library.cantaloupe.cache.DerivativeCache#newDerivativeImageInputStream}.
+     */
+    public void testRecoveryFromDerivativeCacheNewDerivativeImageInputStreamException(URI uri)
+            throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
+        config.setProperty(Key.DERIVATIVE_CACHE,
+                MockBrokenDerivativeInputStreamCache.class.getSimpleName());
+        config.setProperty(Key.INFO_CACHE_ENABLED, false);
+        config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
+
+        Client client = newClient(uri);
+        client.send();
+    }
+
+    /**
+     * Tests recovery from an exception thrown by
+     * {@link edu.illinois.library.cantaloupe.cache.DerivativeCache#newDerivativeImageInputStream}.
+     */
+    public void testRecoveryFromDerivativeCacheNewDerivativeImageOutputStreamException(URI uri)
+            throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
+        config.setProperty(Key.DERIVATIVE_CACHE,
+                MockBrokenDerivativeOutputStreamCache.class.getSimpleName());
+        config.setProperty(Key.INFO_CACHE_ENABLED, false);
+        config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
+
+        Client client = newClient(uri);
+        client.send();
+    }
+
+    /**
      * Tests that the server responds with HTTP 500 when a non-
      * {@link edu.illinois.library.cantaloupe.resolver.FileResolver} is
      * used with a non-
@@ -243,17 +279,6 @@ public class ImageAPIResourceTester {
 
     public void testUnavailableSourceFormat(URI uri) {
         assertStatus(501, uri);
-    }
-
-    public void testXPoweredByHeader(URI uri) throws Exception {
-        Client client = newClient(uri);
-        try {
-            Response response = client.send();
-            String value = response.getHeaders().get("X-Powered-By");
-            assertEquals("Cantaloupe/Unknown", value);
-        } finally {
-            client.stop();
-        }
     }
 
     private void enableCacheControlHeaders() {

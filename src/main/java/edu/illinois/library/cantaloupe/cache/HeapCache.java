@@ -13,9 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -195,6 +193,11 @@ class HeapCache implements DerivativeCache {
         }
 
         @Override
+        public void flush() throws IOException {
+            wrappedStream.flush();
+        }
+
+        @Override
         public void write(int b) throws IOException {
             wrappedStream.write(b);
         }
@@ -285,26 +288,26 @@ class HeapCache implements DerivativeCache {
                 final Item item = cache.get(key);
                 if (key.getOperationList() != null) { // it's an image
                     final HeapCacheProtos.Image image =
-                            HeapCacheProtos.Image.newBuilder().
-                                    setLastAccessed(key.getLastAccessedTime()).
-                                    setIdentifier(key.getIdentifier()).
-                                    setOperationList(key.getOperationList()).
-                                    setData(ByteString.copyFrom(item.getData())).
-                                    build();
+                            HeapCacheProtos.Image.newBuilder()
+                                    .setLastAccessed(key.getLastAccessedTime())
+                                    .setIdentifier(key.getIdentifier())
+                                    .setOperationList(key.getOperationList())
+                                    .setData(ByteString.copyFrom(item.getData()))
+                                    .build();
                     cacheBuilder.addImage(image);
                 } else { // it's an info
                     final HeapCacheProtos.Info info =
-                            HeapCacheProtos.Info.newBuilder().
-                                    setLastAccessed(key.getLastAccessedTime()).
-                                    setIdentifier(key.getIdentifier()).
-                                    setJson(new String(item.getData(), "UTF-8")).
-                                    build();
+                            HeapCacheProtos.Info.newBuilder()
+                                    .setLastAccessed(key.getLastAccessedTime())
+                                    .setIdentifier(key.getIdentifier())
+                                    .setJson(new String(item.getData(), "UTF-8"))
+                                    .build();
                     cacheBuilder.addInfo(info);
                 }
                 it.remove();
             }
 
-            try (FileOutputStream fos = new FileOutputStream(path.toFile())) {
+            try (OutputStream fos = Files.newOutputStream(path)) {
                 cacheBuilder.build().writeTo(fos);
             }
 
@@ -341,16 +344,13 @@ class HeapCache implements DerivativeCache {
     }
 
     @Override
-    public Info getImageInfo(Identifier identifier) throws CacheException {
+    public Info getImageInfo(Identifier identifier) throws IOException {
         Info info = null;
         Item item = get(itemKey(identifier));
         if (item != null) {
             LOGGER.info("getImageInfo(): hit for {}", identifier);
-            try {
-                info = Info.fromJSON(new String(item.getData(), "UTF-8"));
-            } catch (IOException e) {
-                throw new CacheException(e.getMessage(), e);
-            }
+
+            info = Info.fromJSON(new String(item.getData(), "UTF-8"));
         }
         return info;
     }
@@ -448,9 +448,9 @@ class HeapCache implements DerivativeCache {
         if (Files.exists(path)) {
             LOGGER.info("loadFromPersistentStore(): reading {}...", path);
 
-            try (FileInputStream fis = new FileInputStream(path.toFile())) {
+            try (InputStream is = Files.newInputStream(path)) {
                 final HeapCacheProtos.Cache protoCache =
-                        HeapCacheProtos.Cache.parseFrom(fis);
+                        HeapCacheProtos.Cache.parseFrom(is);
 
                 // Read in the images.
                 for (HeapCacheProtos.Image image : protoCache.getImageList()) {
@@ -492,8 +492,7 @@ class HeapCache implements DerivativeCache {
     }
 
     @Override
-    public OutputStream newDerivativeImageOutputStream(OperationList opList)
-            throws CacheException {
+    public OutputStream newDerivativeImageOutputStream(OperationList opList) {
         final Key key = itemKey(opList);
         final Item item = cache.get(key);
         if (item != null) {
@@ -509,7 +508,7 @@ class HeapCache implements DerivativeCache {
     }
 
     @Override
-    public void purge() throws CacheException {
+    public void purge() {
         LOGGER.info("purge(): purging {} items", cache.size());
         cache.clear();
     }
@@ -569,19 +568,15 @@ class HeapCache implements DerivativeCache {
     }
 
     @Override
-    public void put(Identifier identifier, Info imageInfo)
-            throws CacheException {
+    public void put(Identifier identifier, Info imageInfo) throws IOException {
         LOGGER.info("put(): caching info for {}", identifier);
         isDirty.lazySet(true);
         Key key = itemKey(identifier);
-        try {
-            // Rather than storing the info instance itself, we store its JSON
-            // serialization, mainly in order to be able to easily get its size.
-            Item item = new Item(imageInfo.toJSON().getBytes("UTF-8"));
-            cache.putIfAbsent(key, item);
-        } catch (IOException e) {
-            throw new CacheException(e.getMessage(), e);
-        }
+
+        // Rather than storing the info instance itself, we store its JSON
+        // serialization, mainly in order to be able to easily get its size.
+        Item item = new Item(imageInfo.toJSON().getBytes("UTF-8"));
+        cache.putIfAbsent(key, item);
     }
 
     /**

@@ -18,7 +18,7 @@ public class BMPImageReaderTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new BMPImageReader(TestUtil.getImage("bmp").toFile());
+        instance = new BMPImageReader(TestUtil.getImage("bmp"));
     }
 
     @After
@@ -28,7 +28,7 @@ public class BMPImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testGetCompression() throws Exception {
+    public void testGetCompression() {
         assertEquals(Compression.UNCOMPRESSED, instance.getCompression(0));
     }
 

@@ -7,8 +7,8 @@ class PayloadTooLargeException extends ResourceException {
 
     PayloadTooLargeException() {
         super(Status.CLIENT_ERROR_FORBIDDEN,
-                "The requested image pixel area exceeds the threshold set in " +
-                        "the configuration.");
+                "The requested image pixel area exceeds the maximum " +
+                        "threshold set in the configuration.");
     }
 
 }

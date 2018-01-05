@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
-import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -15,13 +14,13 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 import static org.junit.Assert.*;
 
-public class JdbcResolverTest extends BaseTest {
+public class JdbcResolverTest extends AbstractResolverTest {
 
-    private static final Identifier IDENTIFIER =
-            new Identifier("jpg-rgb-64x56x8-baseline.jpg");
+    private static final String DB_IMAGE_FILENAME = "jpg.jpg";
 
     private JdbcResolver instance;
 
@@ -38,6 +37,33 @@ public class JdbcResolverTest extends BaseTest {
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").toString());
 
+        initializeEndpoint();
+
+        instance = newInstance();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+        destroyEndpoint();
+    }
+
+    @Override
+    void destroyEndpoint() throws Exception {
+        try (Connection conn = JdbcResolver.getConnection()) {
+            String sql = "DROP TABLE items;";
+            try (PreparedStatement statement = conn.prepareStatement(sql)) {
+                statement.execute();
+            } catch (SQLException e) {
+                if (!e.getMessage().contains("not found")) {
+                    throw e;
+                }
+            }
+        }
+    }
+
+    @Override
+    void initializeEndpoint() throws Exception {
         try (Connection conn = JdbcResolver.getConnection()) {
             // create the table
             String sql = "CREATE TABLE IF NOT EXISTS items (" +
@@ -52,49 +78,37 @@ public class JdbcResolverTest extends BaseTest {
             sql = "INSERT INTO items (filename, media_type, image) VALUES (?, ?, ?)";
 
             try (PreparedStatement statement = conn.prepareStatement(sql)) {
-                statement.setString(1, "jpg.jpg");
+                statement.setString(1, DB_IMAGE_FILENAME);
                 statement.setString(2, "image/jpeg");
                 statement.setBinaryStream(3,
-                        Files.newInputStream(TestUtil.getImage(IDENTIFIER.toString())));
+                        Files.newInputStream(TestUtil.getImage("jpg")));
                 statement.executeUpdate();
             }
         }
+    }
 
-        instance = new JdbcResolver();
-        instance.setIdentifier(IDENTIFIER);
+    @Override
+    JdbcResolver newInstance() {
+        JdbcResolver instance = new JdbcResolver();
+        instance.setIdentifier(new Identifier(DB_IMAGE_FILENAME));
         instance.setContext(new RequestContext());
+        return instance;
     }
 
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
-        try (Connection conn = JdbcResolver.getConnection()) {
-            String sql = "DROP TABLE items;";
-            try (PreparedStatement statement = conn.prepareStatement(sql)) {
-                statement.execute();
-            }
-        }
+    @Override
+    void useBasicLookupStrategy() {
+        useScriptLookupStrategy();
     }
 
-    /* checkAccess() */
-
-    @Test
-    public void testCheckAccessWithPresentImage() throws Exception {
-        instance.setIdentifier(new Identifier("jpg.jpg"));
-        instance.checkAccess();
-    }
-
-    @Test(expected = NoSuchFileException.class)
-    public void testCheckAccessWithMissingImage() throws Exception {
-        instance.setIdentifier(new Identifier("bogus"));
-        instance.checkAccess();
+    @Override
+    void useScriptLookupStrategy() {
+        // This resolver is always using ScriptLookupStrategy.
     }
 
     /* getSourceFormat() */
 
     @Test
     public void testGetSourceFormatWithPresentImage() throws Exception {
-        instance.setIdentifier(new Identifier("jpg.jpg"));
         assertEquals(Format.JPG, instance.getSourceFormat());
     }
 
@@ -134,7 +148,6 @@ public class JdbcResolverTest extends BaseTest {
 
     @Test
     public void testNewStreamSourceWithPresentImage() throws Exception {
-        instance.setIdentifier(new Identifier("jpg.jpg"));
         assertNotNull(instance.newStreamSource());
     }
 

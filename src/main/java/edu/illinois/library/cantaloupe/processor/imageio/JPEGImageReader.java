@@ -3,17 +3,22 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.metadata.IIOMetadata;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 final class JPEGImageReader extends AbstractImageReader {
+
+    private static final Logger LOGGER = LoggerFactory.
+            getLogger(JPEGImageReader.class);
 
     /**
      * @param sourceFile Source file to read.
      */
-    JPEGImageReader(File sourceFile) throws IOException {
+    JPEGImageReader(Path sourceFile) throws IOException {
         super(sourceFile, Format.JPG);
     }
 
@@ -25,8 +30,13 @@ final class JPEGImageReader extends AbstractImageReader {
     }
 
     @Override
-    Compression getCompression(int imageIndex) throws IOException {
+    Compression getCompression(int imageIndex) {
         return Compression.JPEG;
+    }
+
+    @Override
+    Logger getLogger() {
+        return LOGGER;
     }
 
     @Override

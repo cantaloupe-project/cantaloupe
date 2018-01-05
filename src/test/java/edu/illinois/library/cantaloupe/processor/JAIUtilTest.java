@@ -512,9 +512,7 @@ public class JAIUtilTest extends BaseTest {
                 Format.JPG);
         ImageReader reader = null;
         try {
-            reader = new ImageReader(
-                    TestUtil.getImage(name).toFile(),
-                    Format.PNG);
+            reader = new ImageReader(TestUtil.getImage(name), Format.PNG);
             RenderedImage image = reader.readRendered(
                     ops, Orientation.ROTATE_0, new ReductionFactor(), null);
             PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);

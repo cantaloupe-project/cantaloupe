@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -127,7 +128,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
      * output. The result is cached.
      */
     @Override
-    public Info readImageInfo() throws ProcessorException {
+    public Info readImageInfo() throws IOException {
         if (imageInfo == null) {
             final List<String> command = new ArrayList<>();
             command.add(getPath("ffprobe"));
@@ -139,29 +140,26 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
             command.add("stream=width,height,duration");
             command.add("-of");
             command.add("default=noprint_wrappers=1:nokey=1");
-            command.add(sourceFile.getAbsolutePath());
+            command.add(sourceFile.toString());
 
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
 
-            try {
-                LOGGER.info("Invoking {}", StringUtils.join(pb.command(), " "));
-                Process process = pb.start();
-                InputStream processInputStream = process.getInputStream();
-                try (BufferedReader reader =
-                             new BufferedReader(new InputStreamReader(processInputStream, "UTF-8"))) {
-                    int width = Integer.parseInt(reader.readLine());
-                    int height = Integer.parseInt(reader.readLine());
-                    try {
-                        durationSec = Double.parseDouble(reader.readLine());
-                    } catch (NumberFormatException e) {
-                        LOGGER.debug("readImageInfo(): {}", e.getMessage());
-                    }
-                    imageInfo = new Info(width, height, width, height,
-                            getSourceFormat());
+            LOGGER.info("Invoking {}", StringUtils.join(pb.command(), " "));
+            Process process = pb.start();
+
+            try (InputStream processInputStream = process.getInputStream();
+                 BufferedReader reader = new BufferedReader(
+                         new InputStreamReader(processInputStream, "UTF-8"))) {
+                int width = Integer.parseInt(reader.readLine());
+                int height = Integer.parseInt(reader.readLine());
+                try {
+                    durationSec = Double.parseDouble(reader.readLine());
+                } catch (NumberFormatException e) {
+                    LOGGER.debug("readImageInfo(): {}", e.getMessage());
                 }
-            } catch (IOException e) {
-                throw new ProcessorException(e.getMessage(), e);
+                imageInfo = new Info(width, height, width, height,
+                        getSourceFormat());
             }
         }
         return imageInfo;
@@ -228,7 +226,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
         final List<String> command = new ArrayList<>();
         command.add(getPath("ffmpeg"));
         command.add("-i");
-        command.add(sourceFile.getAbsolutePath());
+        command.add(sourceFile.toString());
 
         // Seeking to a particular time is supported via a "time" URL query
         // parameter which gets injected into an -ss flag. FFmpeg supports
@@ -261,7 +259,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
     }
 
     @Override
-    public void setSourceFile(File sourceFile) {
+    public void setSourceFile(Path sourceFile) {
         super.setSourceFile(sourceFile);
         reset();
     }
@@ -279,7 +277,11 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
         FileProcessor.super.validate(opList, fullSize);
 
         if (durationSec < 1) {
-            readImageInfo();
+            try {
+                readImageInfo();
+            } catch (IOException e) {
+                throw new ProcessorException(e.getMessage(), e);
+            }
         }
         // Check that the "time" option, if supplied, is in the correct format.
         final String timeStr = (String) opList.getOptions().get("time");

@@ -16,7 +16,8 @@ public class ResolverFactoryTest extends BaseTest {
     private ResolverFactory instance;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
         instance = new ResolverFactory();
     }
 
@@ -26,34 +27,32 @@ public class ResolverFactoryTest extends BaseTest {
     }
 
     @Test
-    public void newResolverWithStaticResolver() throws Exception {
+    public void newResolverWithValidStaticResolver() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.clear();
+        config.setProperty(Key.RESOLVER_STATIC, "FilesystemResolver");
 
         Identifier identifier = new Identifier("jdbc");
 
-        config.setProperty(Key.RESOLVER_STATIC, "FilesystemResolver");
         Resolver resolver = instance.newResolver(identifier, new RequestContext());
         assertTrue(resolver instanceof FilesystemResolver);
 
         config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
         resolver = instance.newResolver(identifier, new RequestContext());
         assertTrue(resolver instanceof HttpResolver);
+    }
 
-        // invalid resolver
-        try {
-            config.setProperty(Key.RESOLVER_STATIC, "BogusResolver");
-            instance.newResolver(identifier, new RequestContext());
-            fail("Expected exception");
-        } catch (ClassNotFoundException e) {
-            // pass
-        }
+    @Test(expected = ClassNotFoundException.class)
+    public void newResolverWithInvalidStaticResolver() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.RESOLVER_STATIC, "BogusResolver");
+
+        Identifier identifier = new Identifier("jdbc");
+        instance.newResolver(identifier, new RequestContext());
     }
 
     @Test
     public void newResolverUsingDelegateScript() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.clear();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").toString());
@@ -71,7 +70,6 @@ public class ResolverFactoryTest extends BaseTest {
     @Test
     public void getSelectionStrategy() {
         Configuration config = Configuration.getInstance();
-        config.clear();
 
         config.setProperty(Key.RESOLVER_DELEGATE, "false");
         assertEquals(ResolverFactory.SelectionStrategy.STATIC,

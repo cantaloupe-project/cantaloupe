@@ -8,6 +8,7 @@ import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.blob.ListBlobItem;
+import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -86,14 +87,13 @@ class AzureStorageCache implements DerivativeCache {
 
     }
 
-    private static Logger logger = LoggerFactory.
+    private static final Logger LOGGER = LoggerFactory.
             getLogger(AzureStorageCache.class);
 
     private static CloudBlobClient client;
 
     /**
-     * Set of blob keys currently being written to Azure Storage from any
-     * thread.
+     * Blob keys currently being written to Azure Storage from any thread.
      */
     private static final Set<String> uploadingKeys =
             new ConcurrentSkipListSet<>();
@@ -114,14 +114,14 @@ class AzureStorageCache implements DerivativeCache {
                 final CloudStorageAccount account =
                         CloudStorageAccount.parse(connectionString);
 
-                logger.info("Using account: {}", accountName);
+                LOGGER.info("Using account: {}", accountName);
 
                 client = account.createCloudBlobClient();
 
                 client.getContainerReference(getContainerName()).
                         createIfNotExists();
             } catch (StorageException | URISyntaxException | InvalidKeyException e) {
-                logger.error(e.getMessage());
+                LOGGER.error(e.getMessage());
             }
         }
         return client;
@@ -133,11 +133,18 @@ class AzureStorageCache implements DerivativeCache {
                 getString(Key.AZURESTORAGECACHE_CONTAINER_NAME).toLowerCase();
     }
 
-    @Override
-    public Info getImageInfo(Identifier identifier) throws CacheException {
-        final String containerName = getContainerName();
+    private static Date getLatestValidDate() {
+        final Configuration config = Configuration.getInstance();
+        final Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.SECOND, 0 - config.getInt(Key.CACHE_SERVER_TTL));
+        return cal.getTime();
+    }
 
+    @Override
+    public Info getImageInfo(Identifier identifier) throws IOException {
+        final String containerName = getContainerName();
         final CloudBlobClient client = getClientInstance();
+
         try {
             final Stopwatch watch = new Stopwatch();
             final CloudBlobContainer container =
@@ -146,20 +153,29 @@ class AzureStorageCache implements DerivativeCache {
 
             final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
             if (blob.exists()) {
-                Info info = Info.fromJSON(blob.openInputStream());
-                logger.info("getImageInfo(): read {} from container {} in {} msec",
-                        objectKey, containerName, watch.timeElapsed());
-                return info;
+                if (!isExpired(blob)) {
+                    try (InputStream is = blob.openInputStream()) {
+                        Info info = Info.fromJSON(is);
+                        LOGGER.info("getImageInfo(): read {} from container {} in {} msec",
+                                objectKey, containerName, watch.timeElapsed());
+                        return info;
+                    }
+                } else {
+                    LOGGER.debug("getImageInfo(): deleting invalid item " +
+                                    "asynchronously: {} in container {}",
+                            objectKey, containerName);
+                    purgeAsync(blob);
+                }
             }
-            return null;
-        } catch (IOException | URISyntaxException | StorageException e) {
-            throw new CacheException(e.getMessage(), e);
+        } catch (URISyntaxException | StorageException e) {
+            throw new IOException(e.getMessage(), e);
         }
+        return null;
     }
 
     @Override
     public InputStream newDerivativeImageInputStream(OperationList opList)
-            throws CacheException {
+            throws IOException {
         final String containerName = getContainerName();
 
         final CloudBlobClient client = getClientInstance();
@@ -168,21 +184,29 @@ class AzureStorageCache implements DerivativeCache {
                     client.getContainerReference(containerName);
             final String objectKey = getObjectKey(opList);
 
-            logger.info("newDerivativeImageInputStream(): bucket: {}; key: {}",
+            LOGGER.info("newDerivativeImageInputStream(): bucket: {}; key: {}",
                     containerName, objectKey);
             final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
             if (blob.exists()) {
-                return blob.openInputStream();
+                if (!isExpired(blob)) {
+                    return blob.openInputStream();
+                } else {
+                    LOGGER.debug("newDerivativeImageInputStream(): " +
+                                    "deleting invalid item asynchronously: " +
+                                    "{} in container {}",
+                            objectKey, containerName);
+                    purgeAsync(blob);
+                }
             }
             return null;
         } catch (URISyntaxException | StorageException e) {
-            throw new CacheException(e.getMessage(), e);
+            throw new IOException(e.getMessage(), e);
         }
     }
 
     @Override
     public OutputStream newDerivativeImageOutputStream(OperationList opList)
-            throws CacheException {
+            throws IOException {
         final String objectKey = getObjectKey(opList);
         if (!uploadingKeys.contains(objectKey)) {
             uploadingKeys.add(objectKey);
@@ -198,7 +222,7 @@ class AzureStorageCache implements DerivativeCache {
                 return new AzureStorageOutputStream(
                         objectKey, blob.openOutputStream(), uploadingKeys);
             } catch (URISyntaxException | StorageException e) {
-                throw new CacheException(e.getMessage(), e);
+                throw new IOException(e.getMessage(), e);
             }
         }
         return new NullOutputStream();
@@ -214,7 +238,7 @@ class AzureStorageCache implements DerivativeCache {
             return getObjectKeyPrefix() + "info/" +
                     URLEncoder.encode(identifier.toString(), "UTF-8") + ".json";
         } catch (UnsupportedEncodingException e) {
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         }
         return null;
     }
@@ -228,7 +252,7 @@ class AzureStorageCache implements DerivativeCache {
             return getObjectKeyPrefix() + "image/" +
                     URLEncoder.encode(opList.toString(), "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         }
         return null;
     }
@@ -246,8 +270,13 @@ class AzureStorageCache implements DerivativeCache {
         return StringUtils.stripEnd(prefix, "/") + "/";
     }
 
+    private boolean isExpired(CloudBlob blob) {
+        return blob.getProperties().getLastModified().
+                before(getLatestValidDate());
+    }
+
     @Override
-    public void purge() throws CacheException {
+    public void purge() throws IOException {
         final String containerName = getContainerName();
 
         final CloudBlobClient client = getClientInstance();
@@ -264,14 +293,14 @@ class AzureStorageCache implements DerivativeCache {
                     }
                 }
             }
-            logger.info("purge(): deleted {} items", count);
+            LOGGER.info("purge(): deleted {} items", count);
         } catch (URISyntaxException | StorageException e) {
-            throw new CacheException(e.getMessage(), e);
+            throw new IOException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void purge(OperationList opList) throws CacheException {
+    public void purge(OperationList opList) throws IOException {
         final String containerName = getContainerName();
 
         final CloudBlobClient client = getClientInstance();
@@ -283,20 +312,26 @@ class AzureStorageCache implements DerivativeCache {
             final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
             blob.deleteIfExists();
         } catch (URISyntaxException | StorageException e) {
-            throw new CacheException(e.getMessage(), e);
+            throw new IOException(e.getMessage(), e);
         }
     }
 
+    private void purgeAsync(CloudBlob blob) {
+        ThreadPool.getInstance().submit(() -> {
+            LOGGER.debug("purgeAsync(): {}", blob);
+            try {
+                blob.deleteIfExists();
+            } catch (StorageException e) {
+                LOGGER.warn("purgeAsync(): failed to delete {}: {}",
+                        blob, e.getMessage());
+            }
+        });
+    }
+
     @Override
-    public void purgeExpired() throws CacheException {
+    public void purgeExpired() throws IOException {
         final String containerName = getContainerName();
-
         final CloudBlobClient client = getClientInstance();
-
-        final Calendar c = Calendar.getInstance();
-        c.add(Calendar.SECOND, 0 - Configuration.getInstance().
-                getInt(Key.CACHE_SERVER_TTL));
-        final Date cutoffDate = c.getTime();
 
         try {
             final CloudBlobContainer container =
@@ -306,22 +341,22 @@ class AzureStorageCache implements DerivativeCache {
                 if (item instanceof CloudBlob) {
                     CloudBlob blob = (CloudBlob) item;
                     count++;
-                    if (blob.getProperties().getLastModified().before(cutoffDate)) {
+                    if (isExpired(blob)) {
                         if (blob.deleteIfExists()) {
                             deletedCount++;
                         }
                     }
                 }
             }
-            logger.info("purgeExpired(): deleted {} of {} items",
+            LOGGER.info("purgeExpired(): deleted {} of {} items",
                     deletedCount, count);
         } catch (URISyntaxException | StorageException e) {
-            throw new CacheException(e.getMessage(), e);
+            throw new IOException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void purge(Identifier identifier) throws CacheException {
+    public void purge(Identifier identifier) throws IOException {
         final String containerName = getContainerName();
 
         final CloudBlobClient client = getClientInstance();
@@ -333,13 +368,12 @@ class AzureStorageCache implements DerivativeCache {
             final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
             blob.deleteIfExists();
         } catch (URISyntaxException | StorageException e) {
-            throw new CacheException(e.getMessage(), e);
+            throw new IOException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void put(Identifier identifier, Info imageInfo)
-            throws CacheException {
+    public void put(Identifier identifier, Info imageInfo) throws IOException {
         final String objectKey = getObjectKey(identifier);
         if (!uploadingKeys.contains(objectKey)) {
             uploadingKeys.add(objectKey);
@@ -356,8 +390,8 @@ class AzureStorageCache implements DerivativeCache {
                 OutputStream os = new AzureStorageOutputStream(
                         objectKey, blob.openOutputStream(), uploadingKeys);
                 imageInfo.writeAsJSON(os);
-            } catch (IOException | URISyntaxException | StorageException e) {
-                throw new CacheException(e.getMessage(), e);
+            } catch (URISyntaxException | StorageException e) {
+                throw new IOException(e.getMessage(), e);
             }
         }
     }

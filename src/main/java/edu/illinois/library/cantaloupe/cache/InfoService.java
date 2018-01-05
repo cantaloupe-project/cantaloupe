@@ -6,11 +6,12 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.util.ObjectCache;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 /**
  * <p>Used to obtain {@link Info} instances in an efficient way, utilizing
@@ -24,7 +25,7 @@ public class InfoService {
     /**
      * We can't know the average size of an info in advance, but 100 bytes is
      * a reasonable estimate for an image with no other embedded subimages.
-     * Infos for multiresolution images will be bigger. It's better to
+     * Infos for multiresolution images may be bigger. It's better to
      * overestimate this than underestimate it.
      */
     private static final int EXPECTED_AVERAGE_INFO_SIZE = 150;
@@ -37,7 +38,7 @@ public class InfoService {
      */
     private static final float MAX_HEAP_PERCENT = 0.1f;
 
-    private static volatile InfoService instance;
+    private static InfoService instance;
 
     private final ObjectCache<Identifier, Info> objectCache;
 
@@ -51,18 +52,11 @@ public class InfoService {
     /**
      * @return Shared instance.
      */
-    public static InfoService getInstance() {
-        InfoService service = instance;
-        if (service == null) {
-            synchronized (InfoService.class) {
-                service = instance;
-                if (service == null) {
-                    instance = new InfoService();
-                    service = instance;
-                }
-            }
+    public static synchronized InfoService getInstance() {
+        if (instance == null) {
+            instance = new InfoService();
         }
-        return service;
+        return instance;
     }
 
     private InfoService() {
@@ -92,14 +86,14 @@ public class InfoService {
      *     {@link CacheFactory#getDerivativeCache()};</li>
      * </ol>
      *
-     * @param identifier Identifier of the source image for which to retrieve
-     *                   the info.
-     * @return           Info for the image with the given identifier.
-     * @throws CacheException     If there is an error reading or writing to or
-     *                            from the cache.
+     * @param identifier   Identifier of the source image for which to retrieve
+     *                     the info.
+     * @return             Info for the image with the given identifier.
+     * @throws IOException If there is an error reading or writing to or
+     *                     from the cache.
      * @see #getOrReadInfo(Identifier, Processor)
      */
-    Info getInfo(final Identifier identifier) throws CacheException {
+    Info getInfo(final Identifier identifier) throws IOException {
         // Check the local object cache.
         Info info = objectCache.get(identifier);
 
@@ -156,14 +150,12 @@ public class InfoService {
      *                   the info.
      * @param proc       Processor to use to read the info if necessary.
      * @return           Info for the image with the given identifier.
-     * @throws CacheException     If there is an error reading or writing to or
+     * @throws IOException        If there is an error reading or writing to or
      *                            from the cache.
-     * @throws ProcessorException If there is an error reading the info from
-     *                            the processor.
      * @see #getInfo(Identifier)
      */
     Info getOrReadInfo(final Identifier identifier, final Processor proc)
-            throws CacheException, ProcessorException {
+            throws IOException {
         // Try to retrieve it from an object or derivative cache.
         Info info = getInfo(identifier);
         if (info == null) {
@@ -191,7 +183,7 @@ public class InfoService {
                 getBoolean(Key.INFO_CACHE_ENABLED, false);
     }
 
-    void purgeObjectCache() {
+    public void purgeObjectCache() {
         LOGGER.debug("purgeObjectCache()");
         objectCache.removeAll();
     }
@@ -226,7 +218,7 @@ public class InfoService {
             putInObjectCache(identifier, info);
             try {
                 derivCache.put(identifier, info);
-            } catch (CacheException e) {
+            } catch (IOException e) {
                 LOGGER.error("putInCachesAsync(): {}", e.getMessage());
             }
             return null;
@@ -237,7 +229,7 @@ public class InfoService {
      * Reads the information of a source image from the given processor.
      */
     private Info readInfo(final Identifier identifier,
-                          final Processor proc) throws ProcessorException {
+                          final Processor proc) throws IOException {
         final Stopwatch watch = new Stopwatch();
         final Info info = proc.readImageInfo();
         LOGGER.debug("readInfo(): read {} from {} in {} msec",

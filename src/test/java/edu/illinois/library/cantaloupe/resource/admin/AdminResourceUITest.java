@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.resource.admin;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +21,7 @@ import static org.junit.Assert.*;
 /**
  * Functional test of the Control Panel using Selenium.
  */
-public class ControlPanelTest extends ResourceTest {
+public class AdminResourceUITest extends AbstractAdminResourceTest {
 
     private static final int WAIT_AFTER_SUBMIT = 2000;
     private static final String USERNAME = "admin";
@@ -330,6 +329,7 @@ public class ControlPanelTest extends ResourceTest {
         inputNamed(Key.AMAZONS3RESOLVER_BUCKET_REGION).sendKeys("antarctica");
         selectNamed(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY).
                 selectByValue("BasicLookupStrategy");
+        inputNamed(Key.AMAZONS3RESOLVER_MAX_CONNECTIONS).sendKeys("45");
         // AzureStorageResolver
         css("#cl-resolver li > a[href=\"#AzureStorageResolver\"]").click();
         inputNamed(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME).sendKeys("bla");
@@ -348,6 +348,7 @@ public class ControlPanelTest extends ResourceTest {
         selectNamed(Key.HTTPRESOLVER_LOOKUP_STRATEGY).
                 selectByValue("BasicLookupStrategy");
         inputNamed(Key.HTTPRESOLVER_TRUST_ALL_CERTS).click();
+        inputNamed(Key.HTTPRESOLVER_REQUEST_TIMEOUT).sendKeys("13");
         inputNamed(Key.HTTPRESOLVER_URL_PREFIX).sendKeys("http://prefix/");
         inputNamed(Key.HTTPRESOLVER_URL_SUFFIX).sendKeys("/suffix");
         inputNamed(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME).sendKeys("username");
@@ -380,6 +381,8 @@ public class ControlPanelTest extends ResourceTest {
                 config.getString(Key.AMAZONS3RESOLVER_BUCKET_REGION));
         assertEquals("BasicLookupStrategy",
                 config.getString(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY));
+        assertEquals("45",
+                config.getString(Key.AMAZONS3RESOLVER_MAX_CONNECTIONS));
         // AzureStorageResolver
         assertEquals("bla",
                 config.getString(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME));
@@ -401,6 +404,8 @@ public class ControlPanelTest extends ResourceTest {
                 config.getBoolean(Key.HTTPRESOLVER_TRUST_ALL_CERTS));
         assertEquals("BasicLookupStrategy",
                 config.getString(Key.HTTPRESOLVER_LOOKUP_STRATEGY));
+        assertEquals("13",
+                config.getString(Key.HTTPRESOLVER_REQUEST_TIMEOUT));
         assertEquals("http://prefix/",
                 config.getString(Key.HTTPRESOLVER_URL_PREFIX));
         assertEquals("/suffix",
@@ -538,6 +543,7 @@ public class ControlPanelTest extends ResourceTest {
         inputNamed(Key.AMAZONS3CACHE_BUCKET_NAME).sendKeys("bucket");
         inputNamed(Key.AMAZONS3CACHE_BUCKET_REGION).sendKeys("greenland");
         inputNamed(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX).sendKeys("obj");
+        inputNamed(Key.AMAZONS3CACHE_MAX_CONNECTIONS).sendKeys("35");
         // AzureStorageCache
         css("#cl-caches li > a[href=\"#AzureStorageCache\"]").click();
         inputNamed(Key.AZURESTORAGECACHE_ACCOUNT_NAME).sendKeys("bees");
@@ -603,6 +609,7 @@ public class ControlPanelTest extends ResourceTest {
         assertEquals("bucket", config.getString(Key.AMAZONS3CACHE_BUCKET_NAME));
         assertEquals("greenland", config.getString(Key.AMAZONS3CACHE_BUCKET_REGION));
         assertEquals("obj", config.getString(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX));
+        assertEquals("35", config.getString(Key.AMAZONS3CACHE_MAX_CONNECTIONS));
         // AzureStorageCache
         assertEquals("bees", config.getString(Key.AZURESTORAGECACHE_ACCOUNT_NAME));
         assertEquals("birds", config.getString(Key.AZURESTORAGECACHE_ACCOUNT_KEY));

@@ -21,7 +21,7 @@ public class TrailingSlashRemovingResourceTest extends ResourceTest {
         Response response = client.send();
 
         assertEquals(301, response.getStatus());
-        assertFalse(response.getHeaders().get("Location").endsWith("/"));
+        assertFalse(response.getHeaders().getFirstValue("Location").endsWith("/"));
         assertTrue(response.getBodyAsString().isEmpty());
     }
 
@@ -34,7 +34,7 @@ public class TrailingSlashRemovingResourceTest extends ResourceTest {
         Response response = client.send();
 
         assertEquals(301, response.getStatus());
-        assertTrue(response.getHeaders().get("Location").
+        assertTrue(response.getHeaders().getFirstValue("Location").
                 endsWith("/cats" + getEndpointPath()));
         assertTrue(response.getBodyAsString().isEmpty());
     }
@@ -42,14 +42,14 @@ public class TrailingSlashRemovingResourceTest extends ResourceTest {
     @Test
     public void testDoGetRespectsXForwardedHeaders() throws Exception {
         client = newClient("/");
-        client.getHeaders().put("X-Forwarded-Host", "http://example.org/");
-        client.getHeaders().put("X-Forwarded-Proto", "HTTP");
-        client.getHeaders().put("X-Forwarded-Port", "80");
-        client.getHeaders().put("X-Forwarded-Path", "/cats");
+        client.getHeaders().set("X-Forwarded-Host", "http://example.org/");
+        client.getHeaders().set("X-Forwarded-Proto", "HTTP");
+        client.getHeaders().set("X-Forwarded-Port", "80");
+        client.getHeaders().set("X-Forwarded-Path", "/cats");
         Response response = client.send();
 
         assertEquals(301, response.getStatus());
-        assertTrue(response.getHeaders().get("Location").
+        assertTrue(response.getHeaders().getFirstValue("Location").
                 endsWith("/cats" + getEndpointPath()));
         assertTrue(response.getBodyAsString().isEmpty());
     }

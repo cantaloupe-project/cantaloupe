@@ -4,6 +4,8 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 
+import java.io.IOException;
+
 /**
  * <p>Interface to be implemented by all caches. A cache stores and retrieves
  * unique images corresponding to {@link OperationList} objects, as well as
@@ -27,10 +29,10 @@ public interface Cache {
      *
      * <p>The default implementation does nothing.</p>
      *
-     * @throws CacheException
+     * @throws IOException
      * @see #shutdown()
      */
-    default void cleanUp() throws CacheException {}
+    default void cleanUp() throws IOException {}
 
     /**
      * <p>Implementations should perform all necessary initialization in this
@@ -43,31 +45,31 @@ public interface Cache {
     /**
      * Deletes the entire cache contents.
      *
-     * @throws CacheException Upon fatal error. Implementations should do the
+     * @throws IOException Upon fatal error. Implementations should do the
      *         best they can to complete the operation and swallow and log
      *         non-fatal errors.
      */
-    void purge() throws CacheException;
+    void purge() throws IOException;
 
     /**
      * Deletes all cached content (source image, derivative image(s), and
      * info) corresponding to the image with the given identifier.
      *
      * @param identifier
-     * @throws CacheException Upon fatal error. Implementations should do the
+     * @throws IOException Upon fatal error. Implementations should do the
      *         best they can to complete the operation and swallow and log
      *         non-fatal errors.
      */
-    void purge(Identifier identifier) throws CacheException;
+    void purge(Identifier identifier) throws IOException;
 
     /**
      * Deletes expired images and dimensions from the cache.
      *
-     * @throws CacheException Upon fatal error. Implementations should do the
+     * @throws IOException Upon fatal error. Implementations should do the
      *         best they can to complete the operation and swallow and log
      *         non-fatal errors.
      */
-    void purgeExpired() throws CacheException;
+    void purgeExpired() throws IOException;
 
     /**
      * <p>Shuts down the instance, freeing any resource handles, stopping any

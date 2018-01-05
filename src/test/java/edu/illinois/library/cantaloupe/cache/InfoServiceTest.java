@@ -40,14 +40,14 @@ public class InfoServiceTest extends BaseTest {
         FileProcessor proc = (FileProcessor) new ProcessorFactory().
                 newProcessor(Format.JPG);
         proc.setSourceFormat(Format.JPG);
-        proc.setSourceFile(TestUtil.getImage("jpg").toFile());
+        proc.setSourceFile(TestUtil.getImage("jpg"));
         return proc;
     }
 
     private FileProcessor newMockProcessor() throws Exception {
         FileProcessor proc = new MockFileProcessor();
         proc.setSourceFormat(Format.JPG);
-        proc.setSourceFile(TestUtil.getImage("jpg").toFile());
+        proc.setSourceFile(TestUtil.getImage("jpg"));
         return proc;
     }
 

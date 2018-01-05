@@ -108,6 +108,11 @@ final class TIFFImageWriter extends AbstractImageWriter {
         }
     }
 
+    @Override
+    Logger getLogger() {
+        return LOGGER;
+    }
+
     /**
      * @param writeParam Write parameters on which to base the metadata.
      * @param image Image to apply the metadata to.
@@ -158,7 +163,7 @@ final class TIFFImageWriter extends AbstractImageWriter {
         impls[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageWriter.class.getName();
 
         // The Sun TIFF writer has moved in Java 9.
-        if (SystemUtils.getJavaVersion() >= 9) {
+        if (SystemUtils.getJavaMajorVersion() >= 9) {
             impls[1] = "com.sun.imageio.plugins.tiff.TIFFImageWriter";
         } else {
             impls[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageWriter";

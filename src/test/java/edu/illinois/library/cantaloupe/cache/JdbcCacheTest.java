@@ -54,7 +54,7 @@ public class JdbcCacheTest extends BaseTest {
     }
 
     @After
-    public void tearDown() throws CacheException {
+    public void tearDown() throws Exception {
         instance.purge();
     }
 
@@ -155,17 +155,27 @@ public class JdbcCacheTest extends BaseTest {
         }
     }
 
+    /* earliestValidDate() */
+
+    @Test
+    public void testEarliestValidDate() {
+        // ttl = 0
+        assertEquals(new Date(Long.MIN_VALUE), instance.earliestValidDate());
+        // ttl = 50
+        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 50);
+        long expectedTime = Date.from(Instant.now().minus(Duration.ofSeconds(50))).getTime();
+        long actualTime = instance.earliestValidDate().getTime();
+        assertTrue(Math.abs(actualTime - expectedTime) < 100);
+    }
+
     /* getImageInfo(Identifier) */
 
     @Test
-    public void testGetImageInfoWithZeroTtl() throws CacheException {
+    public void testGetImageInfoWithZeroTtl() throws Exception {
         // existing image
-        try {
-            Info actual = instance.getImageInfo(new Identifier("cats"));
-            assertEquals(actual, new Info(50, 40));
-        } catch (CacheException e) {
-            fail();
-        }
+        Info actual = instance.getImageInfo(new Identifier("cats"));
+        assertEquals(actual, new Info(50, 40));
+
         // nonexistent image
         assertNull(instance.getImageInfo(new Identifier("bogus")));
     }
@@ -187,12 +197,9 @@ public class JdbcCacheTest extends BaseTest {
         instance.put(new Identifier("bees"), new Info(50, 40));
 
         // existing, non-expired image
-        try {
-            Info actual = instance.getImageInfo(new Identifier("bees"));
-            assertEquals(actual, new Info(50, 40));
-        } catch (CacheException e) {
-            fail();
-        }
+        Info actual = instance.getImageInfo(new Identifier("bees"));
+        assertEquals(actual, new Info(50, 40));
+
         // existing, expired image
         assertNull(instance.getImageInfo(new Identifier("cats")));
         // nonexistent image
@@ -220,8 +227,10 @@ public class JdbcCacheTest extends BaseTest {
             // run the clock
             Thread.sleep(10);
 
-            // update the last-accessed time
+            // this should cause the last-accessed time to update asynchronously
             instance.getImageInfo(identifier);
+
+            Thread.sleep(100);
 
             // get the new last-accessed time
             resultSet = statement.executeQuery();
@@ -236,7 +245,7 @@ public class JdbcCacheTest extends BaseTest {
     /* newDerivativeImageInputStream(OperationList) */
 
     @Test
-    public void testNewDerivativeImageInputStreamWithOpListWithZeroTtl()
+    public void testNewDerivativeImageInputStreamWithZeroTtl()
             throws Exception {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
@@ -244,7 +253,7 @@ public class JdbcCacheTest extends BaseTest {
     }
 
     @Test
-    public void testNewDerivativeImageInputStreamWithOpListWithNonzeroTtl()
+    public void testNewDerivativeImageInputStreamWithNonzeroTtl()
             throws Exception {
         Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 1);
 
@@ -274,7 +283,7 @@ public class JdbcCacheTest extends BaseTest {
     }
 
     @Test
-    public void testNewDerivativeImageInputStreamWithOpListUpdatesLastAccessedTime()
+    public void testNewDerivativeImageInputStreamUpdatesLastAccessedTime()
             throws Exception {
         final Configuration config = Configuration.getInstance();
 
@@ -296,8 +305,12 @@ public class JdbcCacheTest extends BaseTest {
             // run the clock
             Thread.sleep(10);
 
-            // update the last-accessed time
-            instance.newDerivativeImageInputStream(opList);
+            // Access the image to update the last-accessed time (this will
+            // happen asynchronously)
+            instance.newDerivativeImageInputStream(opList).close();
+
+            // wait for it to happen
+            Thread.sleep(100);
 
             // get the new last-accessed time
             resultSet = statement.executeQuery();
@@ -309,27 +322,33 @@ public class JdbcCacheTest extends BaseTest {
         }
     }
 
+    @Test
+    public void testNewDerivativeImageInputStreamWithInvalidImage()
+            throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.CACHE_SERVER_TTL, 1);
+
+        final OperationList opList = TestUtil.newOperationList();
+        opList.setIdentifier(new Identifier("cats"));
+
+        // write an image to the cache
+        try (OutputStream os = instance.newDerivativeImageOutputStream(opList)) {
+            Files.copy(TestUtil.getImage("jpg"), os);
+        }
+
+        // wait for it to expire
+        Thread.sleep(1100);
+
+        assertNull(instance.newDerivativeImageInputStream(opList));
+    }
+
     /* newDerivativeImageOutputStream(OperationList) */
 
     @Test
-    public void testNewDerivativeImageOutputStreamWithOperationList()
-            throws Exception {
+    public void testNewDerivativeImageOutputStream() throws Exception {
         OperationList ops = TestUtil.newOperationList();
         ops.setIdentifier(new Identifier("cats"));
         assertNotNull(instance.newDerivativeImageOutputStream(ops));
-    }
-
-    /* oldestValidDate() */
-
-    @Test
-    public void testOldestValidDate() {
-        // ttl = 0
-        assertEquals(new Date(Long.MIN_VALUE), instance.oldestValidDate());
-        // ttl = 50
-        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 50);
-        long expectedTime = Date.from(Instant.now().minus(Duration.ofSeconds(50))).getTime();
-        long actualTime = instance.oldestValidDate().getTime();
-        assertTrue(Math.abs(actualTime - expectedTime) < 100);
     }
 
     /* purge() */
@@ -467,7 +486,7 @@ public class JdbcCacheTest extends BaseTest {
     /* put(Identifier, Info) */
 
     @Test
-    public void testPutWithImageInfo() throws CacheException {
+    public void testPutWithImageInfo() throws Exception {
         Identifier identifier = new Identifier("birds");
         Info info = new Info(52, 52);
         instance.put(identifier, info);

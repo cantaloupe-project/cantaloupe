@@ -365,7 +365,6 @@ public class StandaloneEntryTest extends BaseTest {
      * Tests startup with the -Dcantaloupe.cache.purge=identifier VM option.
      */
     @Test
-    @Ignore // this test is too timing-sensitive and command-line purging is deprecated anyway
     public void mainWithPurgeIdentifierArgExits() throws Exception {
         exit.expectSystemExitWithStatus(0);
         System.clearProperty(StandaloneEntry.TEST_VM_ARGUMENT);
@@ -378,6 +377,7 @@ public class StandaloneEntryTest extends BaseTest {
      * Tests startup with the -Dcantaloupe.cache.purge_expired VM option.
      */
     @Test
+    @Ignore // this test is too timing-sensitive and command-line purging is deprecated anyway
     public void mainWithPurgeExpiredCacheArg() throws Exception {
         Path cacheDir = getCacheDir();
         Path imageDir = cacheDir.resolve("image");

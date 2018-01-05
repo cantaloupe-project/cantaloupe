@@ -2,6 +2,8 @@ package edu.illinois.library.cantaloupe.resource.admin;
 
 import edu.illinois.library.cantaloupe.cache.InfoService;
 import edu.illinois.library.cantaloupe.resource.JSONRepresentation;
+import edu.illinois.library.cantaloupe.script.InvocationCache;
+import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.util.TimeUtils;
 import org.restlet.representation.Representation;
@@ -27,13 +29,13 @@ public class StatusResource extends AbstractAdminResource {
 
         public Status() {
             try {
-                delegateMethodInvocationCache.put("size",
-                        ScriptEngineFactory.getScriptEngine().getInvocationCache().size());
-                delegateMethodInvocationCache.put("maxSize",
-                        ScriptEngineFactory.getScriptEngine().getInvocationCache().maxSize());
+                InvocationCache cache =
+                        ScriptEngineFactory.getScriptEngine().getInvocationCache();
+                delegateMethodInvocationCache.put("size", cache.size());
+                delegateMethodInvocationCache.put("maxSize", cache.maxSize());
             } catch (Exception e) {
-                // Not a big deal; if there's a significant problem it will be
-                // handled elsewhere.
+                // If this is significant it will be noticed & handled
+                // elsewhere.
             }
 
             this.infoCache.put("size",
@@ -55,7 +57,7 @@ public class StatusResource extends AbstractAdminResource {
     }
 
     @Get("json")
-    public Representation getConfiguration() throws Exception {
+    public Representation getConfiguration() {
         return new JSONRepresentation(new Status());
     }
 

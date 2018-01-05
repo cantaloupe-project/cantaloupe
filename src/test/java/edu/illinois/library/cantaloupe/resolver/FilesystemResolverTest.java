@@ -7,7 +7,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
-import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +21,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.util.Collections;
 import java.util.Set;
 
-public class FilesystemResolverTest extends BaseTest {
+public class FilesystemResolverTest extends AbstractResolverTest {
 
     private static final Identifier IDENTIFIER =
             new Identifier("jpg-rgb-64x56x8-baseline.jpg");
@@ -32,15 +31,29 @@ public class FilesystemResolverTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-
-        useBasicLookupStrategy();
-
-        instance = new FilesystemResolver();
-        instance.setIdentifier(IDENTIFIER);
-        instance.setContext(new RequestContext());
+        instance = newInstance();
     }
 
-    private void useBasicLookupStrategy() {
+    @Override
+    void destroyEndpoint() {
+        // nothing to do
+    }
+
+    @Override
+    void initializeEndpoint() {
+        // nothing to do
+    }
+
+    @Override
+    FilesystemResolver newInstance() {
+        FilesystemResolver instance = new FilesystemResolver();
+        instance.setIdentifier(IDENTIFIER);
+        instance.setContext(new RequestContext());
+        return instance;
+    }
+
+    @Override
+    void useBasicLookupStrategy() {
         try {
             Configuration config = Configuration.getInstance();
             config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
@@ -55,7 +68,8 @@ public class FilesystemResolverTest extends BaseTest {
         }
     }
 
-    private void useScriptLookupStrategy() {
+    @Override
+    void useScriptLookupStrategy() {
         try {
             Configuration config = Configuration.getInstance();
             config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
@@ -70,12 +84,6 @@ public class FilesystemResolverTest extends BaseTest {
 
     /* checkAccess() */
 
-    @Test
-    public void testCheckAccessUsingBasicLookupStrategyWithPresentReadableFile()
-            throws Exception {
-        instance.checkAccess();
-    }
-
     @Test(expected = AccessDeniedException.class)
     public void testCheckAccessUsingBasicLookupStrategyWithPresentUnreadableFile()
             throws Exception {
@@ -88,13 +96,6 @@ public class FilesystemResolverTest extends BaseTest {
         } finally {
             Files.setPosixFilePermissions(path, initialPermissions);
         }
-    }
-
-    @Test(expected = NoSuchFileException.class)
-    public void testCheckAccessUsingBasicLookupStrategyWithMissingFile()
-            throws Exception {
-        instance.setIdentifier(new Identifier("bogus"));
-        instance.checkAccess();
     }
 
     @Test

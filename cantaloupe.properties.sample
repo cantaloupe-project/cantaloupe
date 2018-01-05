@@ -148,13 +148,12 @@ FilesystemResolver.BasicLookupStrategy.path_suffix =
 # HttpResolver
 #----------------------------------------
 
-# Whether to trust insecure certificates when making HTTPS connections.
 HttpResolver.trust_all_certs = false
+HttpResolver.request_timeout = 10
 
 # Tells HttpResolver how to look up resources. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
-# uses the delegate script for dynamic lookups; see the user manual for
-# details.
+# uses the delegate script for dynamic lookups; see the user manual.
 HttpResolver.lookup_strategy = BasicLookupStrategy
 
 # URL that will be prefixed to the identifier in the request URL.
@@ -206,9 +205,12 @@ AmazonS3Resolver.bucket.region =
 
 # Tells AmazonS3Resolver how to look up objects. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
-# uses the delegate script for dynamic lookups; see the user manual for
-# details.
+# uses the delegate script for dynamic lookups; see the user manual.
 AmazonS3Resolver.lookup_strategy = BasicLookupStrategy
+
+# !! Maximum number of concurrent HTTP connections to AWS. Leave blank to
+# use the default.
+AmazonS3Resolver.max_connections =
 
 #----------------------------------------
 # AzureStorageResolver
@@ -223,8 +225,7 @@ AzureStorageResolver.container_name =
 
 # Tells AzureStorageResolver how to look up objects. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
-# uses the delegate script for dynamic lookups; see the user manual for
-# details.
+# uses the delegate script for dynamic lookups; see the user manual.
 AzureStorageResolver.lookup_strategy = BasicLookupStrategy
 
 ###########################################################################
@@ -253,7 +254,6 @@ processor.mp4 = FfmpegProcessor
 processor.mpg = FfmpegProcessor
 processor.pdf = PdfBoxProcessor
 processor.png =
-processor.sgi = ImageMagickProcessor
 processor.tif =
 processor.webm = FfmpegProcessor
 processor.webp = ImageMagickProcessor
@@ -490,6 +490,10 @@ AmazonS3Cache.bucket.region =
 
 # !! String that will be prefixed to object keys.
 AmazonS3Cache.object_key_prefix =
+
+# !! Maximum number of concurrent HTTP connections to AWS. Leave blank to
+# use the default.
+AmazonS3Cache.max_connections =
 
 #----------------------------------------
 # AzureStorageCache

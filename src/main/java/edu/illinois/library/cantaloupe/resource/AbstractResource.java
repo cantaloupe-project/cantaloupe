@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.auth.AuthInfo;
 import edu.illinois.library.cantaloupe.auth.Authorizer;
-import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -12,19 +11,21 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.Request;
 import org.restlet.data.CacheDirective;
+import org.restlet.data.Dimension;
 import org.restlet.data.Disposition;
 import org.restlet.data.Header;
 import org.restlet.data.Parameter;
 import org.restlet.data.Protocol;
 import org.restlet.data.Reference;
 import org.restlet.data.Status;
+import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
+import org.restlet.resource.Options;
 import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
 import org.restlet.util.Series;
@@ -32,10 +33,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
-import java.awt.Dimension;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,8 +57,6 @@ public abstract class AbstractResource extends ServerResource {
 
     protected static final String RESPONSE_CONTENT_DISPOSITION_QUERY_ARG =
             "response-content-disposition";
-
-    private static final String FILENAME_CHARACTERS = "[^A-Za-z0-9._-]";
 
     private Series<Header> bufferedResponseHeaders = new Series<>(Header.class);
 
@@ -185,13 +184,30 @@ public abstract class AbstractResource extends ServerResource {
     @Override
     protected void doInit() throws ResourceException {
         super.doInit();
+
+        // We don't honor the Range header as most responses will be streamed.
+        getResponse().getServerInfo().setAcceptingRanges(false);
+
         // "Dimensions" are added to the Vary header. Restlet doesn't supply
         // Origin by default, but it's needed.
         // See: https://github.com/medusa-project/cantaloupe/issues/107
-        getResponse().getDimensions().add(org.restlet.data.Dimension.ORIGIN);
+        getResponse().getDimensions().addAll(Arrays.asList(
+                Dimension.CHARACTER_SET,
+                Dimension.ENCODING,
+                Dimension.LANGUAGE,
+                Dimension.ORIGIN));
         getResponse().getHeaders().add("X-Powered-By",
                 "Cantaloupe/" + Application.getVersion());
         LOGGER.info("doInit(): handling {} {}", getMethod(), getReference());
+    }
+
+    /**
+     * Enables HTTP OPTIONS requests. Restlet will set the <code>Allow</code>
+     * header automatically.
+     */
+    @Options
+    public Representation doOptions() {
+        return new EmptyRepresentation();
     }
 
     /**
@@ -208,10 +224,11 @@ public abstract class AbstractResource extends ServerResource {
      *                               <code>false</code>.
      */
     protected final StringRepresentation checkAuthorization(
-            final OperationList opList, final Dimension fullSize)
+            final OperationList opList,
+            final java.awt.Dimension fullSize)
             throws IOException, ScriptException, AccessDeniedException {
         final Authorizer authorizer = new Authorizer(getReference().toString(),
-                getCanonicalClientIpAddress(),
+                getCanonicalClientIPAddress(),
                 getRequest().getHeaders().getValuesMap(),
                 getRequest().getCookies().getValuesMap());
         final AuthInfo info = authorizer.authorize(opList, fullSize);
@@ -250,7 +267,7 @@ public abstract class AbstractResource extends ServerResource {
     private String decodeSlashes(final String uriPathComponent) {
         final String substitute = Configuration.getInstance().
                 getString(Key.SLASH_SUBSTITUTE, "");
-        if (substitute.length() > 0) {
+        if (!substitute.isEmpty()) {
             return StringUtils.replace(uriPathComponent, substitute, "/");
         }
         return uriPathComponent;
@@ -316,7 +333,7 @@ public abstract class AbstractResource extends ServerResource {
      * @return Best guess at the user agent's IP address, respecting the
      *         <code>X-Forwarded-For</code> request header, if present.
      */
-    protected String getCanonicalClientIpAddress() {
+    protected String getCanonicalClientIPAddress() {
         String addr;
         // The value is supposed to be in the format: "client, proxy1, proxy2"
         final String forwardedFor =
@@ -345,7 +362,7 @@ public abstract class AbstractResource extends ServerResource {
         // Decode slash substitutes.
         final String identifier = decodeSlashes(decodedIdentifier);
 
-        LOGGER.debug("getIdentifier(): requested: {} / decoded: {} / " +
+        LOGGER.debug("Identifier requested: {} -> decoded: {} -> " +
                         "slashes substituted: {}",
                 urlIdentifier, decodedIdentifier, identifier);
 
@@ -362,8 +379,7 @@ public abstract class AbstractResource extends ServerResource {
      * @return           Info for the image with the given identifier.
      */
     protected final Info getOrReadInfo(final Identifier identifier,
-                                       final Processor proc)
-            throws ProcessorException, CacheException {
+                                       final Processor proc) throws IOException {
         Info info;
         if (!isBypassingCache()) {
             info = new CacheFacade().getOrReadInfo(identifier, proc);
@@ -384,10 +400,10 @@ public abstract class AbstractResource extends ServerResource {
         final String urlID = (String) attrs.get("identifier");
         final String decodedID = Reference.decode(urlID);
         final String reSlashedID = decodeSlashes(decodedID);
-        final String headerID = getRequest().getHeaders().getFirstValue(
-                PUBLIC_IDENTIFIER_HEADER, true);
+        final String headerID = getRequest().getHeaders().
+                getFirstValue(PUBLIC_IDENTIFIER_HEADER, true);
 
-        LOGGER.debug("Identifier requested: {} -> decoded: {} -> " +
+        LOGGER.debug("Public identifier requested: {} -> decoded: {} -> " +
                         "slashes substituted: {} | {} header: {}",
                 urlID, decodedID, reSlashedID, PUBLIC_IDENTIFIER_HEADER,
                 headerID);
@@ -454,7 +470,7 @@ public abstract class AbstractResource extends ServerResource {
                     // Filter out filename-unsafe characters as well as ".."
                     filename = StringUtil.sanitize(m.group(1),
                             Pattern.compile("\\.\\."),
-                            Pattern.compile(FILENAME_CHARACTERS));
+                            Pattern.compile(StringUtil.FILENAME_REGEX));
                 } else {
                     filename = getContentDispositionFilename(identifier,
                             outputFormat);
@@ -482,14 +498,14 @@ public abstract class AbstractResource extends ServerResource {
         final RequestContext context = new RequestContext();
         context.setRequestURI(getReference().toString());
         context.setRequestHeaders(getRequest().getHeaders().getValuesMap());
-        context.setClientIP(getCanonicalClientIpAddress());
+        context.setClientIP(getCanonicalClientIPAddress());
         context.setCookies(getRequest().getCookies().getValuesMap());
         return context;
     }
 
     private String getContentDispositionFilename(Identifier identifier,
                                                  Format outputFormat) {
-        return identifier.toString().replaceAll(FILENAME_CHARACTERS, "_") +
+        return identifier.toString().replaceAll(StringUtil.FILENAME_REGEX, "_") +
                 "." + outputFormat.getPreferredExtension();
     }
 
@@ -541,7 +557,8 @@ public abstract class AbstractResource extends ServerResource {
                                                final Format sourceFormat,
                                                final Info info)
             throws EmptyPayloadException, PayloadTooLargeException {
-        final Dimension resultingSize = opList.getResultingSize(info.getSize());
+        final java.awt.Dimension resultingSize =
+                opList.getResultingSize(info.getSize());
 
         if (resultingSize.width < 1 || resultingSize.height < 1) {
             throw new EmptyPayloadException();

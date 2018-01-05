@@ -18,7 +18,7 @@ public class DICOMImageReaderTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new DICOMImageReader(TestUtil.getImage("dcm").toFile());
+        instance = new DICOMImageReader(TestUtil.getImage("dcm"));
     }
 
     @After
@@ -28,7 +28,7 @@ public class DICOMImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testGetCompression() throws Exception {
+    public void testGetCompression() {
         assertEquals(Compression.UNCOMPRESSED, instance.getCompression(0));
     }
 

@@ -18,7 +18,7 @@ public class PNGImageReaderTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new PNGImageReader(TestUtil.getImage("png").toFile());
+        instance = new PNGImageReader(TestUtil.getImage("png"));
     }
 
     @After
@@ -28,7 +28,7 @@ public class PNGImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testGetCompression() throws Exception {
+    public void testGetCompression() {
         assertEquals(Compression.DEFLATE, instance.getCompression(0));
     }
 

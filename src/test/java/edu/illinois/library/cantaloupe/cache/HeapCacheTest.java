@@ -135,7 +135,7 @@ public class HeapCacheTest extends BaseTest {
     /* getImageInfo(Identifier) */
 
     @Test
-    public void testGetImageInfo() throws CacheException {
+    public void testGetImageInfo() throws Exception {
         // existing image
         Identifier identifier = new Identifier("cats");
         Info info = new Info(50, 40);
@@ -380,7 +380,7 @@ public class HeapCacheTest extends BaseTest {
     /* put(Identifier, Info) */
 
     @Test
-    public void testPut() throws CacheException {
+    public void testPut() throws Exception {
         // Test with existing info
         Identifier identifier = new Identifier("birds");
         Info info = new Info(52, 52);

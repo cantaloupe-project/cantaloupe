@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
+import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
@@ -15,11 +16,11 @@ import org.restlet.representation.OutputRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Restlet representation for images.
@@ -69,7 +70,6 @@ public class ImageRepresentation extends OutputRepresentation {
         // N.B. We don't need to close outputStream after writing to it;
         // Restlet will take care of that.
         if (!bypassCache) {
-            // The cache will be null if caching is disabled.
             final CacheFacade cacheFacade = new CacheFacade();
             if (cacheFacade.isDerivativeCacheAvailable()) {
                 // Try to get the image from the cache.
@@ -103,34 +103,35 @@ public class ImageRepresentation extends OutputRepresentation {
                                      cacheFacade.newDerivativeImageOutputStream(opList)) {
                             OutputStream teeStream = new TeeOutputStream(
                                     responseOutputStream, cacheOutputStream);
+                            LOGGER.debug("Writing to the response & " +
+                                    "derivative cache simultaneously");
                             doWrite(teeStream);
                         } catch (Throwable e) {
                             // The cached image has been incompletely written
                             // and is corrupt, so it must be purged. This may
-                            // happen in response to an OutOfMemoryError,
-                            // or when the connection has been closed
-                            // prematurely, as in the case of e.g. the client
-                            // hitting the stop button;
+                            // happen in response to a VM error like
+                            // OutOfMemoryError, or when the connection has
+                            // been closed prematurely, as in the case of e.g.
+                            // the client hitting the stop button.
                             LOGGER.info("write(): {}", e.getMessage());
                             cacheFacade.purge(opList);
+
+                            doWrite(responseOutputStream);
                         }
                     }
-                } catch (Exception e) {
-                    throw new IOException(e);
+                } catch (IOException e) {
+                    LOGGER.error("Failed to read from the derivative cache: {}",
+                            e.getMessage(), e);
+                    doWrite(responseOutputStream);
                 }
             } else {
-                try {
-                    doWrite(responseOutputStream);
-                } catch (Exception e) {
-                    throw new IOException(e);
-                }
+                LOGGER.debug("Derivative cache not available; writing " +
+                        "directly to the response");
+                doWrite(responseOutputStream);
             }
         } else {
-            try {
-                doWrite(responseOutputStream);
-            } catch (Exception e) {
-                throw new IOException(e);
-            }
+            LOGGER.debug("Writing directly to the response, bypassing the cache");
+            doWrite(responseOutputStream);
         }
     }
 
@@ -139,18 +140,18 @@ public class ImageRepresentation extends OutputRepresentation {
      *                     for writing to the response and the cache
      *                     pseudo-simultaneously. Will not be closed.
      */
-    private void doWrite(OutputStream outputStream) throws Exception {
+    private void doWrite(OutputStream outputStream)
+            throws IOException {
         final Stopwatch watch = new Stopwatch();
         // If the operations are effectively a no-op, the source image can be
         // streamed through with no processing.
         if (!opList.hasEffect(processor.getSourceFormat())) {
             if (processor instanceof FileProcessor &&
                     ((FileProcessor) processor).getSourceFile() != null) {
-                final File sourceFile =
-                        ((FileProcessor) processor).getSourceFile();
-                Files.copy(sourceFile.toPath(), outputStream);
+                Path sourceFile = ((FileProcessor) processor).getSourceFile();
+                Files.copy(sourceFile, outputStream);
             } else {
-                final StreamSource streamSource =
+                StreamSource streamSource =
                         ((StreamProcessor) processor).getStreamSource();
                 try (InputStream inputStream = streamSource.newInputStream()) {
                     IOUtils.copy(inputStream, outputStream);
@@ -159,11 +160,15 @@ public class ImageRepresentation extends OutputRepresentation {
             LOGGER.debug("Streamed with no processing in {} msec: {}",
                     watch.timeElapsed(), opList);
         } else {
-            processor.process(opList, imageInfo, outputStream);
+            try {
+                processor.process(opList, imageInfo, outputStream);
 
-            LOGGER.debug("{} processed in {} msec: {}",
-                    processor.getClass().getSimpleName(),
-                    watch.timeElapsed(), opList);
+                LOGGER.debug("{} processed in {} msec: {}",
+                        processor.getClass().getSimpleName(),
+                        watch.timeElapsed(), opList);
+            } catch (ProcessorException e) {
+                throw new IOException(e.getMessage(), e);
+            }
         }
     }
 

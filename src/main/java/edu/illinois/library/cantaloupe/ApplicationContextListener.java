@@ -1,14 +1,11 @@
 package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.async.ThreadPool;
-import edu.illinois.library.cantaloupe.cache.CacheException;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.cache.CacheWorkerRunner;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.logging.LoggerUtil;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.slf4j.Logger;
@@ -18,6 +15,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import java.awt.GraphicsEnvironment;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import static edu.illinois.library.cantaloupe.StandaloneEntry.CLEAN_CACHE_VM_ARGUMENT;
 import static edu.illinois.library.cantaloupe.StandaloneEntry.LIST_FONTS_VM_ARGUMENT;
@@ -117,7 +115,7 @@ public class ApplicationContextListener implements ServletContextListener {
                 }
                 exitUnlessTesting(0);
             }
-        } catch (CacheException e) {
+        } catch (IOException e) {
             System.err.println(e.getMessage());
             exitUnlessTesting(-1);
         }
@@ -147,9 +145,6 @@ public class ApplicationContextListener implements ServletContextListener {
                 Application.getVersion());
 
         handleVmArguments();
-
-        ImageReader.logImageIOReaders();
-        ImageWriter.logImageIOWriters();
 
         Configuration.getInstance().startWatching();
         CacheWorkerRunner.start();

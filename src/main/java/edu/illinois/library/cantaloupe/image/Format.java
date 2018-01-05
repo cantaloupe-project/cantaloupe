@@ -151,17 +151,6 @@ public enum Format {
             true),
 
     /**
-     * Silicon Graphics Image format.
-     */
-    SGI("SGI",
-            ImageType.RASTER,
-            Arrays.asList("image/sgi"),
-            Arrays.asList("sgi", "rgb", "rgba", "bw", "int", "inta"),
-            Type.IMAGE,
-            16,
-            true),
-
-    /**
      * Tagged Image File Format.
      */
     TIF("TIFF",

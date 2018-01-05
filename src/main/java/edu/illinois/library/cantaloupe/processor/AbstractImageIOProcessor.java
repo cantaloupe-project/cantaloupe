@@ -9,8 +9,8 @@ import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +25,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
     private static final Map<Format,Set<Format>> FORMATS =
             availableOutputFormats();
 
-    protected File sourceFile;
+    protected Path sourceFile;
     protected StreamSource streamSource;
 
     /**
@@ -53,25 +53,21 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
         return formats;
     }
 
-    public Info readImageInfo() throws ProcessorException {
-        try {
-            final Info info = new Info();
-            info.setSourceFormat(getSourceFormat());
+    public Info readImageInfo() throws IOException {
+        final Info info = new Info();
+        info.setSourceFormat(getSourceFormat());
 
-            final ImageReader reader = getReader();
-            final Orientation orientation = getEffectiveOrientation();
-            for (int i = 0, numResolutions = reader.getNumResolutions();
-                 i < numResolutions; i++) {
-                Info.Image image = new Info.Image();
-                image.setSize(reader.getSize(i));
-                image.setTileSize(reader.getTileSize(i));
-                image.setOrientation(orientation);
-                info.getImages().add(image);
-            }
-            return info;
-        } catch (IOException e) {
-            throw new ProcessorException(e.getMessage(), e);
+        final ImageReader reader = getReader();
+        final Orientation orientation = getEffectiveOrientation();
+        for (int i = 0, numResolutions = reader.getNumResolutions();
+             i < numResolutions; i++) {
+            Info.Image image = new Info.Image();
+            image.setSize(reader.getSize(i));
+            image.setTileSize(reader.getTileSize(i));
+            image.setOrientation(orientation);
+            info.getImages().add(image);
         }
+        return info;
     }
 
     /**
@@ -91,8 +87,8 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
     }
 
     /**
-     * ({@link #setSourceFile(File)} or {@link #setStreamSource(StreamSource)})
-     * and {@link #setSourceFormat(Format)} must be invoked first.
+     * ({@link #setSourceFile} or {@link #setStreamSource}) and
+     * {@link #setSourceFormat(Format)} must be invoked first.
      */
     protected ImageReader getReader() throws IOException {
         if (reader == null) {
@@ -105,7 +101,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
         return reader;
     }
 
-    public File getSourceFile() {
+    public Path getSourceFile() {
         return sourceFile;
     }
 
@@ -113,7 +109,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
         return streamSource;
     }
 
-    public void setSourceFile(File sourceFile) {
+    public void setSourceFile(Path sourceFile) {
         disposeReader();
         this.streamSource = null;
         this.sourceFile = sourceFile;

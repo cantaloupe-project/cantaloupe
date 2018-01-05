@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
-import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.AfterClass;
@@ -29,7 +28,7 @@ import static org.junit.Assert.*;
  * Tests AzureStorageResolver against Azure Storage. (Requires an Azure
  * account.)
  */
-public class AzureStorageResolverTest extends BaseTest {
+public class AzureStorageResolverTest extends AbstractResolverTest {
 
     private static final String OBJECT_KEY = "jpeg.jpg";
 
@@ -94,15 +93,29 @@ public class AzureStorageResolverTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-
-        useBasicLookupStrategy();
-
-        instance = new AzureStorageResolver();
-        instance.setIdentifier(new Identifier(OBJECT_KEY));
-        instance.setContext(new RequestContext());
+        instance = newInstance();
     }
 
-    private void useBasicLookupStrategy() {
+    @Override
+    void destroyEndpoint() {
+        // will be done in @AfterClass
+    }
+
+    @Override
+    void initializeEndpoint() {
+        // will be done in @BeforeClass
+    }
+
+    @Override
+    AzureStorageResolver newInstance() {
+        AzureStorageResolver instance = new AzureStorageResolver();
+        instance.setIdentifier(new Identifier(OBJECT_KEY));
+        instance.setContext(new RequestContext());
+        return instance;
+    }
+
+    @Override
+    void useBasicLookupStrategy() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.AZURESTORAGERESOLVER_CONTAINER_NAME,
                 getContainer());
@@ -114,7 +127,8 @@ public class AzureStorageResolverTest extends BaseTest {
                 "BasicLookupStrategy");
     }
 
-    private void useScriptLookupStrategy() {
+    @Override
+    void useScriptLookupStrategy() {
         try {
             Configuration config = Configuration.getInstance();
             config.setProperty(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY,
@@ -128,21 +142,8 @@ public class AzureStorageResolverTest extends BaseTest {
     }
 
     @Test
-    public void testCheckAccessUsingBasicLookupStrategyWithPresentReadableImage()
-            throws Exception {
-        instance.checkAccess();
-    }
-
-    @Test
     public void testCheckAccessUsingBasicLookupStrategyWithPresentUnreadableImage() {
         // TODO: write this
-    }
-
-    @Test(expected = NoSuchFileException.class)
-    public void testCheckAccessUsingBasicLookupStrategyWithMissingImage()
-            throws Exception {
-        instance.setIdentifier(new Identifier("bogus"));
-        instance.checkAccess();
     }
 
     @Test

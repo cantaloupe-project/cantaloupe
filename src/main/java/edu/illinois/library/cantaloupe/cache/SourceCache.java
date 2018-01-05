@@ -2,8 +2,9 @@ package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.image.Identifier;
 
-import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
 
 /**
  * <p>Interface to be implemented by caches that cache source images.</p>
@@ -21,36 +22,36 @@ import java.io.OutputStream;
 public interface SourceCache extends Cache {
 
     /**
-     * <p>Returns a File for a source image corresponding to the given
-     * identifier, or null if a non-expired source image corresponding to the
+     * <p>Returns a source image corresponding to the given identifier, or
+     * <code>null</code> if a non-expired source image corresponding to the
      * given identifier does not exist in the cache..</p>
      *
      * <p>If an image corresponding to the given identifier exists in the
-     * cache but is expired, implementations should delete it before returning
-     * null.</p>
+     * cache but is expired, implementations should delete it before
+     * returning.</p>
      *
      * <p>If the desired image is being written in another thread, this method
      * should block while waiting for it to complete.</p>
      *
-     * <p><strong>Clients must not use the returned File for
-     * writing.</strong> They should use
+     * <p><strong>Clients must not arbitrarily write to the returned
+     * path.</strong> They should use
      * {@link #newSourceImageOutputStream(Identifier)} instead.</p>
      *
      * @param identifier Identifier of an image to read from the cache.
      * @return File corresponding to the given identifier, or null if a
      *         non-expired image corresponding to the given identifier does not
      *         exist in the cache.
-     * @throws CacheException
+     * @throws IOException
      */
-    File getSourceImageFile(Identifier identifier) throws CacheException;
+    Path getSourceImageFile(Identifier identifier) throws IOException;
 
     /**
      * @param identifier Identifier of an image to write to the cache.
      * @return Output stream to which an image corresponding to the given
      *         identifier can be written.
-     * @throws CacheException
+     * @throws IOException
      */
     OutputStream newSourceImageOutputStream(Identifier identifier)
-            throws CacheException;
+            throws IOException;
 
 }
