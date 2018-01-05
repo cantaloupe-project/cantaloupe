@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
 /**
- * Image-server-unique image identifier.
+ * Immutable image-server-unique source image identifier.
  */
 public class Identifier implements Comparable<Identifier> {
 
@@ -20,32 +20,39 @@ public class Identifier implements Comparable<Identifier> {
 
     @Override
     public int compareTo(Identifier identifier) {
-        int last = this.toString().compareTo(identifier.toString());
-        return (last == 0) ?
-                this.toString().compareTo(identifier.toString()) : last;
+        return toString().compareTo(identifier.toString());
     }
 
+    /**
+     * @param obj Instance to compare.
+     * @return {@literal true} if {@literal obj} is a reference to the same
+     *         instance; {@literal true} if it is a different instance with the
+     *         same value; {@literal true} if it is a {@link String} instance
+     *         with the same value; {@literal false} otherwise.
+     */
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Identifier) {
-            return this.toString().equals(obj.toString());
+        if (obj == this) {
+            return true;
+        } else if (obj instanceof Identifier) {
+            return toString().equals(obj.toString());
         } else if (obj instanceof String) {
-            return this.toString().equals(obj);
+            return toString().equals(obj);
         }
         return super.equals(obj);
     }
 
     @Override
     public int hashCode(){
-        return this.toString().hashCode();
+        return toString().hashCode();
     }
 
     /**
-     * @return The value of the instance.
+     * @return Value of the instance.
      */
     @Override
     public String toString() {
-        return this.value;
+        return value;
     }
 
 }
