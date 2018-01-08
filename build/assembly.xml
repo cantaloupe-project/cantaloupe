@@ -14,7 +14,7 @@ http://maven.apache.org/plugins/maven-assembly-plugin/assembly.html
         <fileSet>
             <directory>target</directory>
             <includes>
-                <include>Cantaloupe-${project.version}.war</include>
+                <include>cantaloupe-${project.version}.war</include>
             </includes>
             <outputDirectory>.</outputDirectory>
         </fileSet>
