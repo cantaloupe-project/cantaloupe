@@ -10,7 +10,6 @@ import edu.illinois.library.cantaloupe.resource.LandingResource;
 import edu.illinois.library.cantaloupe.resource.TrailingSlashRemovingResource;
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
 import edu.illinois.library.cantaloupe.resource.admin.StatusResource;
-import edu.illinois.library.cantaloupe.resource.api.CacheResource;
 import edu.illinois.library.cantaloupe.resource.api.TaskResource;
 import edu.illinois.library.cantaloupe.resource.api.TasksResource;
 import edu.illinois.library.cantaloupe.resource.iiif.RedirectingResource;
@@ -199,7 +198,6 @@ public class RestletApplication extends Application {
     public static final String ADMIN_PATH = "/admin";
     public static final String ADMIN_CONFIG_PATH = "/admin/configuration";
     public static final String ADMIN_STATUS_PATH = "/status";
-    public static final String CACHE_PATH = "/cache";
     public static final String CONFIGURATION_PATH = "/configuration";
     public static final String IIIF_PATH = "/iiif";
     public static final String IIIF_1_PATH = "/iiif/1";
@@ -351,10 +349,6 @@ public class RestletApplication extends Application {
         Authenticator apiAuth = newAPIAuthenticator();
         apiAuth.setNext(edu.illinois.library.cantaloupe.resource.api.ConfigurationResource.class);
         router.attach(CONFIGURATION_PATH, apiAuth);
-
-        apiAuth = newAPIAuthenticator();
-        apiAuth.setNext(CacheResource.class);
-        router.attach(CACHE_PATH + "/{identifier}", apiAuth);
 
         apiAuth = newAPIAuthenticator();
         apiAuth.setNext(TasksResource.class);

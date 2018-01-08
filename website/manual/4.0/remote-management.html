@@ -95,7 +95,6 @@ title: Remote Management
 
 <ul>
   <li><a href="#PurgeInvalidFromCache">Purge invalid/expired content from all caches</a></li>
-  <li><strike><a href="#PurgeItemFromCache-deprecated">Purge all content relating to an individual source image from all caches</a></strike> (deprecated version)</li>
   <li><a href="#PurgeItemFromCache">Purge all content relating to an individual source image from all caches</a></li>
   <li><a href="#PurgeCache">Purge all content from all caches</a></li>
   <li><a href="#PurgeDelegateMethodInvocationCache">Purge the delegate method invocation cache</a></li>
@@ -126,25 +125,6 @@ title: Remote Management
   <tr>
     <td>Expected Response</td>
     <td><code>204 Accepted</code> with task URI in <code>Location</code> header</td>
-  </tr>
-</table>
-
-<h4 id="PurgeItemFromCache-deprecated">Purge all content relating to an individual source image from all caches <small>since 3.3</small></h4>
-
-<div class="alert alert-warning">This method is deprecated and will be removed in version 4.0. Please use <a href="#PurgeItemFromCache">the method that will be replacing it</a>.</div>
-
-<table class="table table-striped table-bordered">
-  <tr>
-    <td>Request Method</td>
-    <td><code>DELETE</code></td>
-  </tr>
-  <tr>
-    <td>URI</td>
-    <td><span class="filename">/cache/:identifier</span></td>
-  </tr>
-  <tr>
-    <td>Expected Response</td>
-    <td><code>200 OK</code></td>
   </tr>
 </table>
 
