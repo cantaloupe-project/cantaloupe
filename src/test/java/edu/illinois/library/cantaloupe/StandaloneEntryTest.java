@@ -1,21 +1,14 @@
 package edu.illinois.library.cantaloupe;
 
-import edu.illinois.library.cantaloupe.cache.CacheFactory;
-import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.DeletingFileVisitor;
 import edu.illinois.library.cantaloupe.util.SocketUtils;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
@@ -28,14 +21,12 @@ import org.restlet.resource.ClientResource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.assertRecursiveFileCount;
 import static org.junit.Assert.*;
 
 public class StandaloneEntryTest extends BaseTest {
@@ -120,9 +111,6 @@ public class StandaloneEntryTest extends BaseTest {
         httpClient.stop();
         deleteCacheDir();
         System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
-        System.clearProperty(StandaloneEntry.CLEAN_CACHE_VM_ARGUMENT);
-        System.clearProperty(StandaloneEntry.PURGE_CACHE_VM_ARGUMENT);
-        System.clearProperty(StandaloneEntry.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT);
         System.clearProperty(StandaloneEntry.LIST_FONTS_VM_ARGUMENT);
         resetOutput();
     }
@@ -231,189 +219,6 @@ public class StandaloneEntryTest extends BaseTest {
         ClientResource resource = getClientResource();
         resource.get();
         assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
-    }
-
-    /**
-     * Tests startup with the -Dcantaloupe.cache.clean VM option.
-     */
-    @Test
-    public void mainWithCleanCacheArg() throws Exception {
-        Path cacheDir = getCacheDir();
-        Path imageDir = cacheDir.resolve("image");
-        Path infoDir = cacheDir.resolve("info");
-        Files.createDirectories(imageDir);
-        Files.createDirectories(infoDir);
-
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
-        config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
-        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
-                getCacheDir().toString());
-        config.setProperty(Key.CACHE_SERVER_TTL, "1");
-
-        // TODO: write this
-
-        System.setProperty(StandaloneEntry.CLEAN_CACHE_VM_ARGUMENT, "");
-        StandaloneEntry.main("");
-    }
-
-    /**
-     * Tests startup with the -Dcantaloupe.cache.clean VM option.
-     */
-    @Test
-    public void mainWithCleanCacheArgExits() throws Exception {
-        exit.expectSystemExitWithStatus(0);
-        System.clearProperty(StandaloneEntry.TEST_VM_ARGUMENT);
-
-        System.setProperty(StandaloneEntry.CLEAN_CACHE_VM_ARGUMENT, "");
-        StandaloneEntry.main("");
-    }
-
-    /**
-     * Tests startup with the -Dcantaloupe.cache.purge VM option.
-     */
-    @Test
-    public void mainWithPurgeCacheArg() throws Exception {
-        redirectOutput();
-
-        final Path cacheDir = getCacheDir();
-
-        // set up the cache
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
-        config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
-        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME, cacheDir.toString());
-        config.setProperty(Key.CACHE_SERVER_TTL, "10");
-
-        // cache a dimension
-        DerivativeCache cache = CacheFactory.getDerivativeCache();
-        cache.put(new Identifier("cats"), new Info(500, 500));
-
-        // cache an image
-        OperationList ops = TestUtil.newOperationList();
-        ops.setIdentifier(new Identifier("dogs"));
-        ops.add(new Rotate(15));
-        try (OutputStream wbc = cache.newDerivativeImageOutputStream(ops)) {
-            Files.copy(TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"), wbc);
-        }
-
-        // assert that they've been cached
-        assertRecursiveFileCount(cacheDir, 2);
-
-        // purge the cache
-        System.setProperty(StandaloneEntry.PURGE_CACHE_VM_ARGUMENT, "");
-        StandaloneEntry.main("");
-
-        assertTrue(redirectedOutput.toString().contains("Purging the"));
-
-        Thread.sleep(100);
-
-        // assert that they've been purged
-        assertRecursiveFileCount(cacheDir, 0);
-    }
-
-    /**
-     * Tests startup with the -Dcantaloupe.cache.purge=identifier VM option.
-     */
-    @Test
-    public void mainWithPurgeIdentifierArg() throws Exception {
-        final Path cacheDir = getCacheDir();
-        final Path imageDir = cacheDir.resolve("image");
-        final Path infoDir = cacheDir.resolve("info");
-        Files.createDirectories(imageDir);
-        Files.createDirectories(infoDir);
-
-        // set up the cache
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
-        config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
-        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME, cacheDir.toString());
-        config.setProperty(Key.CACHE_SERVER_TTL, "10");
-
-        // cache a couple of dimensions
-        DerivativeCache cache = CacheFactory.getDerivativeCache();
-        cache.put(new Identifier("cats"), new Info(500, 500));
-        cache.put(new Identifier("dogs"), new Info(500, 500));
-
-        // cache a couple of images
-        OperationList ops = TestUtil.newOperationList();
-        ops.setIdentifier(new Identifier("cats"));
-        ops.add(new Rotate(15));
-        try (OutputStream wbc = cache.newDerivativeImageOutputStream(ops)) {
-            Files.copy(TestUtil.getImage("jpg"), wbc);
-        }
-
-        ops.setIdentifier(new Identifier("dogs"));
-        try (OutputStream wbc = cache.newDerivativeImageOutputStream(ops)) {
-            Files.copy(TestUtil.getImage("jpg"), wbc);
-        }
-
-        // assert that they've been cached
-        assertRecursiveFileCount(imageDir, 2);
-        assertRecursiveFileCount(infoDir, 2);
-
-        // purge one identifier
-        System.setProperty(StandaloneEntry.PURGE_CACHE_VM_ARGUMENT, "dogs");
-        StandaloneEntry.main("");
-
-        // assert that they've been purged
-        assertRecursiveFileCount(imageDir, 1);
-        assertRecursiveFileCount(infoDir, 1);
-    }
-
-    /**
-     * Tests startup with the -Dcantaloupe.cache.purge=identifier VM option.
-     */
-    @Test
-    public void mainWithPurgeIdentifierArgExits() throws Exception {
-        exit.expectSystemExitWithStatus(0);
-        System.clearProperty(StandaloneEntry.TEST_VM_ARGUMENT);
-
-        System.setProperty(StandaloneEntry.PURGE_CACHE_VM_ARGUMENT, "dogs");
-        StandaloneEntry.main("");
-    }
-
-    /**
-     * Tests startup with the -Dcantaloupe.cache.purge_expired VM option.
-     */
-    @Test
-    @Ignore // this test is too timing-sensitive and command-line purging is deprecated anyway
-    public void mainWithPurgeExpiredCacheArg() throws Exception {
-        Path cacheDir = getCacheDir();
-        Path imageDir = cacheDir.resolve("image");
-        Path infoDir = cacheDir.resolve("info");
-        Files.createDirectories(imageDir);
-        Files.createDirectories(infoDir);
-
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
-        config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
-        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME, cacheDir.toString());
-        config.setProperty(Key.CACHE_SERVER_TTL, "1");
-
-        Files.createTempFile(imageDir, "bla1", "tmp");
-        Files.createTempFile(infoDir, "bla1", "tmp");
-        Thread.sleep(3000);
-        Files.createTempFile(imageDir, "bla2", "tmp");
-        Files.createTempFile(infoDir, "bla2", "tmp");
-
-        System.setProperty(StandaloneEntry.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT, "");
-        StandaloneEntry.main("");
-
-        assertRecursiveFileCount(imageDir, 1);
-        assertRecursiveFileCount(infoDir, 1);
-    }
-
-    /**
-     * Tests startup with the -Dcantaloupe.cache.purge_expired VM option.
-     */
-    @Test
-    public void mainWithPurgeExpiredCacheArgExits() throws Exception {
-        exit.expectSystemExitWithStatus(0);
-        System.clearProperty(StandaloneEntry.TEST_VM_ARGUMENT);
-
-        System.setProperty(StandaloneEntry.PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT, "");
-        StandaloneEntry.main("");
     }
 
 }

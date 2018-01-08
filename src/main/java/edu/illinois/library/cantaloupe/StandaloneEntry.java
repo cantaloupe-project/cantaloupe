@@ -27,11 +27,6 @@ public class StandaloneEntry {
      */
     static final String LIST_FONTS_VM_ARGUMENT = "cantaloupe.list_fonts";
 
-    static final String CLEAN_CACHE_VM_ARGUMENT = "cantaloupe.cache.clean";
-    static final String PURGE_CACHE_VM_ARGUMENT = "cantaloupe.cache.purge";
-    static final String PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT =
-            "cantaloupe.cache.purge_expired";
-
     /**
      * When set to "true", calls to {@link System#exit} will be disabled,
      * necessary for testing output-to-console-followed-by-exit.
@@ -140,14 +135,6 @@ public class StandaloneEntry {
                 "VM options:\n" +
                 "-D" + ConfigurationFactory.CONFIG_VM_ARGUMENT + "=<config>" +
                 "           Configuration file (REQUIRED)\n" +
-                "-D" + PURGE_CACHE_VM_ARGUMENT +
-                "               Purge the cache\n" +
-                "-D" + PURGE_CACHE_VM_ARGUMENT + "=<identifier>" +
-                "  Purge items related to an identifier from the cache\n" +
-                "-D" + PURGE_EXPIRED_FROM_CACHE_VM_ARGUMENT +
-                "       Purge expired items from the cache\n" +
-                "-D" + CLEAN_CACHE_VM_ARGUMENT +
-                "               Clean the cache\n" +
                 "-D" + LIST_FONTS_VM_ARGUMENT +
                 "                List fonts\n";
     }
