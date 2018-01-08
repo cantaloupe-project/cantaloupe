@@ -253,69 +253,76 @@ class HeapCache implements DerivativeCache {
     private final AtomicBoolean isDirty = new AtomicBoolean(false);
     private final AtomicBoolean workerShouldWork = new AtomicBoolean(true);
 
+    private final Object dumpLock = new Object();
+
     /**
      * <p>Dumps the cache contents to the file specified by
      * {@link edu.illinois.library.cantaloupe.config.Key#HEAPCACHE_PATHNAME},
      * first deleting the file that already exists at that path, if any.</p>
      *
-     * <p>{@link edu.illinois.library.cantaloupe.config.Key#HEAPCACHE_PERSIST}
-     * is <strong>not</strong> respected.</p>
+     * <p>Concurrent calls will block.</p>
+     *
+     * <p>N.B.:
+     * {@link edu.illinois.library.cantaloupe.config.Key#HEAPCACHE_PERSIST} is
+     * <strong>not</strong> respected.</p>
      */
-    synchronized void dumpToPersistentStore() throws IOException {
-        final Configuration config = Configuration.getInstance();
-        final String pathname = config.getString(HEAPCACHE_PATHNAME);
-        if (pathname != null && pathname.length() > 0) {
-            final Path path = Paths.get(pathname);
-            // Delete any existing file that is in the way.
-            Files.deleteIfExists(path);
-            // Create any necessary directories up to the parent.
-            Files.createDirectories(path.getParent());
-            // Write out the contents.
-            LOGGER.info("dumpToPersistentStore(): dumping to {}...", path);
+    void dumpToPersistentStore() throws IOException {
+        synchronized (dumpLock) {
+            final Configuration config = Configuration.getInstance();
+            final String pathname = config.getString(HEAPCACHE_PATHNAME);
+            if (pathname != null && pathname.length() > 0) {
+                final Path path = Paths.get(pathname);
+                // Delete any existing file that is in the way.
+                Files.deleteIfExists(path);
+                // Create any necessary directories up to the parent.
+                Files.createDirectories(path.getParent());
+                // Write out the contents.
+                LOGGER.info("dumpToPersistentStore(): dumping to {}...", path);
 
-            final long size = size();
-            final long byteSize = getByteSize();
+                final long size = size();
+                final long byteSize = getByteSize();
 
-            final HeapCacheProtos.Cache.Builder cacheBuilder =
-                    HeapCacheProtos.Cache.newBuilder();
+                final HeapCacheProtos.Cache.Builder cacheBuilder =
+                        HeapCacheProtos.Cache.newBuilder();
 
-            // Iterate over the cache keys and add cache values one-by-one to
-            // the protobuf cache, removing them from the cache along the way
-            // to save memory.
-            final Iterator<Key> it = cache.keySet().iterator();
-            while (it.hasNext()) {
-                final Key key = it.next();
-                final Item item = cache.get(key);
-                if (key.getOperationList() != null) { // it's an image
-                    final HeapCacheProtos.Image image =
-                            HeapCacheProtos.Image.newBuilder()
-                                    .setLastAccessed(key.getLastAccessedTime())
-                                    .setIdentifier(key.getIdentifier())
-                                    .setOperationList(key.getOperationList())
-                                    .setData(ByteString.copyFrom(item.getData()))
-                                    .build();
-                    cacheBuilder.addImage(image);
-                } else { // it's an info
-                    final HeapCacheProtos.Info info =
-                            HeapCacheProtos.Info.newBuilder()
-                                    .setLastAccessed(key.getLastAccessedTime())
-                                    .setIdentifier(key.getIdentifier())
-                                    .setJson(new String(item.getData(), "UTF-8"))
-                                    .build();
-                    cacheBuilder.addInfo(info);
+                // Iterate over the cache keys and add cache values one-by-one to
+                // the protobuf cache, removing them from the cache along the way
+                // to save memory.
+                final Iterator<Key> it = cache.keySet().iterator();
+                while (it.hasNext()) {
+                    final Key key = it.next();
+                    final Item item = cache.get(key);
+                    if (key.getOperationList() != null) { // it's an image
+                        final HeapCacheProtos.Image image =
+                                HeapCacheProtos.Image.newBuilder()
+                                        .setLastAccessed(key.getLastAccessedTime())
+                                        .setIdentifier(key.getIdentifier())
+                                        .setOperationList(key.getOperationList())
+                                        .setData(ByteString.copyFrom(item.getData()))
+                                        .build();
+                        cacheBuilder.addImage(image);
+                    } else { // it's an info
+                        final HeapCacheProtos.Info info =
+                                HeapCacheProtos.Info.newBuilder()
+                                        .setLastAccessed(key.getLastAccessedTime())
+                                        .setIdentifier(key.getIdentifier())
+                                        .setJson(new String(item.getData(), "UTF-8"))
+                                        .build();
+                        cacheBuilder.addInfo(info);
+                    }
+                    it.remove();
                 }
-                it.remove();
-            }
 
-            try (OutputStream fos = Files.newOutputStream(path)) {
-                cacheBuilder.build().writeTo(fos);
-            }
+                try (OutputStream fos = Files.newOutputStream(path)) {
+                    cacheBuilder.build().writeTo(fos);
+                }
 
-            LOGGER.info("dumpToPersistentStore(): dumped {} items ({} bytes)",
-                    size, byteSize);
-        } else {
-            throw new IOException("dumpToPersistentStore(): " +
-                    HEAPCACHE_PATHNAME + " is not set");
+                LOGGER.info("dumpToPersistentStore(): dumped {} items ({} bytes)",
+                        size, byteSize);
+            } else {
+                throw new IOException("dumpToPersistentStore(): " +
+                        HEAPCACHE_PATHNAME + " is not set");
+            }
         }
     }
 
