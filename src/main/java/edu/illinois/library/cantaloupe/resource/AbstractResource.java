@@ -59,7 +59,7 @@ public abstract class AbstractResource extends ServerResource {
     public static final String PUBLIC_IDENTIFIER_HEADER = "X-Forwarded-ID";
 
     /**
-     * @deprecated Since version 3.5. Still respected, but superseded by
+     * @deprecated Since version 4.0. Still respected, but superseded by
      *             {@link #PUBLIC_IDENTIFIER_HEADER}.
      */
     @Deprecated
@@ -565,10 +565,6 @@ public abstract class AbstractResource extends ServerResource {
      *
      * <p>This does not check that any requested crop lies entirely within the
      * bounds of the source image.</p>
-     *
-     * @param opList
-     * @param sourceFormat
-     * @param info
      */
     protected final void validateRequestedArea(final OperationList opList,
                                                final Format sourceFormat,

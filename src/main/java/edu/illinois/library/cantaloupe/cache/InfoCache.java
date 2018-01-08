@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 /**
  * {@link ObjectCache}-backed cache for {@link Info} instances.
  *
- * @since 3.5
+ * @since 4.0
  */
 public final class InfoCache {
 

@@ -1,5 +1,5 @@
 ---
-layout: manual_3.5
+layout: manual_4.0
 title: Getting Started
 ---
 
@@ -42,11 +42,11 @@ title: Getting Started
 
 <p>From the command prompt (macOS/Linux):</p>
 
-<pre>java -Dcantaloupe.config=/path/to/cantaloupe.properties -Xmx2g -jar Cantaloupe-<span class="version">3.5</span>.x.war</pre>
+<pre>java -Dcantaloupe.config=/path/to/cantaloupe.properties -Xmx2g -jar Cantaloupe-<span class="version">4.0</span>.x.war</pre>
 
 <p>From the command prompt (Windows):</p>
 
-<pre>java -Dcantaloupe.config=C:\path\to\cantaloupe.properties -Xmx2g -jar Cantaloupe-<span class="version">3.5</span>.x.war</pre>
+<pre>java -Dcantaloupe.config=C:\path\to\cantaloupe.properties -Xmx2g -jar Cantaloupe-<span class="version">4.0</span>.x.war</pre>
 
 <p>Assuming you have an image named <span class="filename">image.tif</span>, try accessing:</p>
 
@@ -57,7 +57,7 @@ title: Getting Started
 
 <h3 id="Servlet Container">Servlet Container</h3>
 
-<p>Copy the <span class="filename">Cantaloupe-<span class="version">3.5</span>.x.war</span> file to your container's web application folder. (In Tomcat, this is <span class="filename">/webapps</span> inside the main Tomcat folder.)</p>
+<p>Copy the <span class="filename">Cantaloupe-<span class="version">4.0</span>.x.war</span> file to your container's web application folder. (In Tomcat, this is <span class="filename">/webapps</span> inside the main Tomcat folder.)</p>
 
 <p>Add the <code>-Dcantaloupe.config</code> VM argument to your container, in the same format as in the <a href="#Standalone">standalone</a> section. In Tomcat 8, this can be done by setting <code>CATALINA_OPTS</code>, located in <span class="filename">bin/setenv.sh</span> (Unix) or <span class="filename">bin/setenv.bat</span> (Windows) inside the main Tomcat folder:</p>
 
@@ -74,8 +74,8 @@ title: Getting Started
 <p>Assuming you have an image named <span class="filename">image.tif</span>, and a container listening on port 8080, try accessing:</p>
 
 <ul>
-  <li>http://localhost:8080/Cantaloupe-<span class="version">3.5</span>.x/iiif/2/image.tif/info.json</li>
-  <li>http://localhost:8080/Cantaloupe-<span class="version">3.5</span>.x/iiif/2/image.tif/0,0,200,200/full/0/default.jpg</li>
+  <li>http://localhost:8080/Cantaloupe-<span class="version">4.0</span>.x/iiif/2/image.tif/info.json</li>
+  <li>http://localhost:8080/Cantaloupe-<span class="version">4.0</span>.x/iiif/2/image.tif/0,0,200,200/full/0/default.jpg</li>
 </ul>
 
 <h3 id="Docker">Docker</h3>
