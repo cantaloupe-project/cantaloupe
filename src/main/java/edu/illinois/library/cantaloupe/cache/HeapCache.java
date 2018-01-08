@@ -268,10 +268,8 @@ class HeapCache implements DerivativeCache {
      */
     void dumpToPersistentStore() throws IOException {
         synchronized (dumpLock) {
-            final Configuration config = Configuration.getInstance();
-            final String pathname = config.getString(HEAPCACHE_PATHNAME);
-            if (pathname != null && pathname.length() > 0) {
-                final Path path = Paths.get(pathname);
+            final Path path = getPath();
+            if (path != null) {
                 // Delete any existing file that is in the way.
                 Files.deleteIfExists(path);
                 // Create any necessary directories up to the parent.
@@ -375,6 +373,20 @@ class HeapCache implements DerivativeCache {
     }
 
     /**
+     * @return Path representing the value of
+     *         {@link edu.illinois.library.cantaloupe.config.Key#HEAPCACHE_PATHNAME},
+     *         of {@literal null} if it is not set.
+     */
+    private Path getPath() {
+        final Configuration config = Configuration.getInstance();
+        String pathname = config.getString(HEAPCACHE_PATHNAME);
+        if (pathname != null) {
+            return Paths.get(pathname);
+        }
+        return null;
+    }
+
+    /**
      * @return Capacity of the instance based on the application configuration.
      * @throws ConfigurationException If the capacity in the configuration is
      *                                invalid.
@@ -411,8 +423,7 @@ class HeapCache implements DerivativeCache {
 
     @Override
     public void initialize() {
-        final Configuration config = Configuration.getInstance();
-        if (config.getBoolean(HEAPCACHE_PERSIST, false)) {
+        if (isPersistenceEnabled()) {
             loadFromPersistentStore();
         }
 
@@ -427,6 +438,17 @@ class HeapCache implements DerivativeCache {
 
     boolean isDirty() {
         return isDirty.get();
+    }
+
+    /**
+     * @return Value of
+     *         {@link edu.illinois.library.cantaloupe.config.Key#HEAPCACHE_PERSIST}
+     *         in the application configuration, or {@literal false} if it is
+     *         not set.
+     */
+    boolean isPersistenceEnabled() {
+        final Configuration config = Configuration.getInstance();
+        return config.getBoolean(HEAPCACHE_PERSIST, false);
     }
 
     /**
@@ -448,9 +470,7 @@ class HeapCache implements DerivativeCache {
     }
 
     synchronized void loadFromPersistentStore() {
-        final Configuration config = Configuration.getInstance();
-        final String pathname = config.getString(HEAPCACHE_PATHNAME);
-        final Path path = Paths.get(pathname);
+        final Path path = getPath();
 
         if (Files.exists(path)) {
             LOGGER.info("loadFromPersistentStore(): reading {}...", path);
@@ -599,8 +619,7 @@ class HeapCache implements DerivativeCache {
 
         // Dump the cache contents to disk, if the cache is dirty, and if
         // PERSIST_CONFIG_KEY is set to true.
-        final Configuration config = Configuration.getInstance();
-        if (isDirty() && config.getBoolean(HEAPCACHE_PERSIST, false)) {
+        if (isDirty() && isPersistenceEnabled()) {
             try {
                 dumpToPersistentStore();
             } catch (IOException e) {

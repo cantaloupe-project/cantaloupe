@@ -444,8 +444,8 @@ FilesystemCache.dir.name_length = 2
 # Ensure your heap can accommodate this size using the -Xmx= VM argument.
 HeapCache.target_size = 2G
 
-# If true, the cache contents will be written to a file on exit, and read
-# back in at startup.
+# If true, the cache contents will be written to a file on exit and during
+# cache worker shifts, and read back in at startup.
 HeapCache.persist = false
 
 # When the contents are persisted, this specifies the location of the cache

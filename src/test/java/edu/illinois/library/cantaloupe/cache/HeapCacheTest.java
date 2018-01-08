@@ -199,6 +199,19 @@ public class HeapCacheTest extends BaseTest {
         assertEquals(base * (long) Math.pow(1024, 5), instance.getTargetByteSize(), delta);
     }
 
+    /* isPersistenceEnabled() */
+
+    @Test
+    public void testIsPersistenceEnabled() {
+        Configuration config = Configuration.getInstance();
+
+        config.setProperty(Key.HEAPCACHE_PERSIST, true);
+        assertTrue(instance.isPersistenceEnabled());
+
+        config.setProperty(Key.HEAPCACHE_PERSIST, false);
+        assertFalse(instance.isPersistenceEnabled());
+    }
+
     /* loadFromPersistentStore() */
 
     @Test

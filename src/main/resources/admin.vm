@@ -2799,8 +2799,8 @@
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
                                                    data-content="If enabled, the cache contents will be
-                                                   written to a file on exit, and read back in at
-                                                   startup.">?</a>
+                                                   written to a file on exit and during cache worker shifts,
+                                                   and read back in at startup.">?</a>
                                             </td>
                                             <td>
                                                 <div class="checkbox">
