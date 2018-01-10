@@ -82,6 +82,9 @@ public class ImageWriter {
             case TIF:
                 wrappedWriter = new TIFFImageWriter(opList);
                 break;
+            default:
+                throw new IllegalArgumentException(
+                        "Unsupported output format: " + opList.getOutputFormat());
         }
     }
 
@@ -100,6 +103,9 @@ public class ImageWriter {
             case TIF:
                 wrappedWriter = new TIFFImageWriter(opList, sourceMetadata);
                 break;
+            default:
+                throw new IllegalArgumentException(
+                        "Unsupported output format: " + opList.getOutputFormat());
         }
     }
 

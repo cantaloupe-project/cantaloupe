@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
-import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,7 +118,8 @@ public class ImageReader {
      * Constructor for reading from files.
      *
      * @param sourceFile File to read from.
-     * @param format Format of the source image.
+     * @param format     Format of the source image.
+     * @throws IllegalArgumentException if the format is unsupported.
      */
     public ImageReader(Path sourceFile, Format format)
             throws IOException {
@@ -142,6 +142,8 @@ public class ImageReader {
             case TIF:
                 reader = new TIFFImageReader(sourceFile);
                 break;
+            default:
+                throw new IllegalArgumentException("Unsupported format: " + format);
         }
     }
 
@@ -149,7 +151,8 @@ public class ImageReader {
      * Constructor for reading from streams.
      *
      * @param streamSource Source of stream to read from.
-     * @param format Format of the source image.
+     * @param format       Format of the source image.
+     * @throws IllegalArgumentException if the format is unsupported.
      */
     public ImageReader(StreamSource streamSource, Format format)
             throws IOException {
@@ -172,6 +175,8 @@ public class ImageReader {
             case TIF:
                 reader = new TIFFImageReader(streamSource);
                 break;
+            default:
+                throw new IllegalArgumentException("Unsupported format: " + format);
         }
     }
 
@@ -290,8 +295,7 @@ public class ImageReader {
      *
      * @return RenderedImage
      */
-    public RenderedImage readRendered() throws IOException,
-            UnsupportedSourceFormatException {
+    public RenderedImage readRendered() throws IOException {
         return reader.readRendered();
     }
 

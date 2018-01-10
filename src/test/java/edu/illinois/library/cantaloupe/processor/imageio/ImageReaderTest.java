@@ -17,6 +17,7 @@ import org.junit.Test;
 import javax.imageio.ImageIO;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -53,6 +54,11 @@ public class ImageReaderTest extends BaseTest {
             }
         }
         assertEquals(formats, ImageReader.supportedFormats());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorWithUnsupportedFormat() throws Exception {
+        reader = new ImageReader(Paths.get("/dev/null"), Format.UNKNOWN);
     }
 
     @Test
