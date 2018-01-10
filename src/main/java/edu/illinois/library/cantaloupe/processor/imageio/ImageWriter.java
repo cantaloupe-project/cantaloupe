@@ -33,7 +33,6 @@ public class ImageWriter {
                     Format.PNG, Format.TIF));
 
     private AbstractImageWriter wrappedWriter;
-    private Metadata sourceMetadata;
 
     static {
         logImageIOWriters();
@@ -72,6 +71,24 @@ public class ImageWriter {
     public ImageWriter(final OperationList opList) {
         switch (opList.getOutputFormat()) {
             case GIF:
+                wrappedWriter = new GIFImageWriter(opList);
+                break;
+            case JPG:
+                wrappedWriter = new JPEGImageWriter(opList);
+                break;
+            case PNG:
+                wrappedWriter = new PNGImageWriter(opList);
+                break;
+            case TIF:
+                wrappedWriter = new TIFFImageWriter(opList);
+                break;
+        }
+    }
+
+    public ImageWriter(final OperationList opList,
+                       final Metadata sourceMetadata) {
+        switch (opList.getOutputFormat()) {
+            case GIF:
                 wrappedWriter = new GIFImageWriter(opList, sourceMetadata);
                 break;
             case JPG:
@@ -84,12 +101,6 @@ public class ImageWriter {
                 wrappedWriter = new TIFFImageWriter(opList, sourceMetadata);
                 break;
         }
-    }
-
-    public ImageWriter(final OperationList opList,
-                       final Metadata sourceMetadata) {
-        this(opList);
-        this.sourceMetadata = sourceMetadata;
     }
 
     /**

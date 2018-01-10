@@ -37,6 +37,10 @@ final class TIFFImageWriter extends AbstractImageWriter {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(TIFFImageWriter.class);
 
+    TIFFImageWriter(OperationList opList) {
+        super(opList);
+    }
+
     TIFFImageWriter(OperationList opList,
                     Metadata sourceMetadata) {
         super(opList, sourceMetadata);
