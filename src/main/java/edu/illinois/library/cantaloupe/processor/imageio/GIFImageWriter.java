@@ -33,8 +33,11 @@ final class GIFImageWriter extends AbstractImageWriter {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(BMPImageReader.class);
 
-    GIFImageWriter(OperationList opList,
-                   Metadata sourceMetadata) {
+    GIFImageWriter(OperationList opList) {
+        super(opList);
+    }
+
+    GIFImageWriter(OperationList opList, Metadata sourceMetadata) {
         super(opList, sourceMetadata);
     }
 

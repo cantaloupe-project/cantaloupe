@@ -32,6 +32,10 @@ final class JPEGImageWriter extends AbstractImageWriter {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(JPEGImageWriter.class);
 
+    JPEGImageWriter(OperationList opList) {
+        super(opList);
+    }
+
     JPEGImageWriter(OperationList opList,
                     Metadata sourceMetadata) {
         super(opList, sourceMetadata);

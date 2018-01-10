@@ -31,6 +31,10 @@ final class PNGImageWriter extends AbstractImageWriter {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(PNGImageWriter.class);
 
+    PNGImageWriter(OperationList opList) {
+        super(opList);
+    }
+
     PNGImageWriter(OperationList opList,
                    Metadata sourceMetadata) {
         super(opList, sourceMetadata);
