@@ -20,17 +20,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
@@ -50,7 +47,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
@@ -58,25 +54,25 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * <p>Processor using the Kakadu kdu_expand and kdu_jp2info command-line
- * tools. Written against version 7.7, but should work with other versions,
- * as long as their command-line interface is compatible. (There is also a JNI
- * binding available for Kakadu, but the author does not have access to the
- * Kakadu SDK.</p>
+ * <p>Processor using the Kakadu {@literal kdu_expand} and {@literal
+ * kdu_jp2info} command-line tools. Written against version 7.7, but should
+ * work with other versions, as long as their command-line interface is
+ * compatible.</p>
  *
- * <p>kdu_expand is used for cropping and an initial scale reduction factor,
- * and Java 2D for all remaining processing steps. kdu_expand generates TIFF
- * output which is streamed (more or less) directly to the ImageIO reader.
- * (TIFF is used in order to preserve embedded ICC profiles.)</p>
+ * <p>{@literal kdu_expand} is used for cropping and an initial scale reduction
+ * factor, and Java 2D for all remaining processing steps. {@literal
+ * kdu_expand} generates TIFF output which is streamed (with some buffering) to
+ * an ImageIO reader. (TIFF is used in order to preserve embedded ICC
+ * profiles.)</p>
  *
- * <p>kdu_expand reads and writes the files named in the <code>-i</code>
- * and <code>-o</code> flags passed to it, respectively. The file in the
- * <code>-o</code> flag must have a recognized image extension such as .bmp,
- * .tif, etc. This means that it's not possible to natively write into a
- * {@link ProcessBuilder} {@link InputStream}. Instead, we have to resort to
- * a trick whereby we create a symlink from /tmp/whatever.tif to /dev/stdout
- * (which only exists on Unix), which will enable us to accomplish this.
- * The temporary symlink is created in the static initializer and deleted on
+ * <p>{@literal kdu_expand} reads and writes the files named in the
+ * {@literal -i} and {@literal -o} flags passed to it, respectively. The file
+ * in the {@literal -o} flag must have a recognized image extension such as
+ * {@literal .bmp}, {@literal .tif}, etc. This means that it's not possible to
+ * natively write into an {@link InputStream} from a {@link Process}. Instead,
+ * we have to resort to a trick whereby we create a symlink from {@literal
+ * /tmp/whatever.tif} to {@literal /dev/stdout} (which only exists on Unix).
+ * The temporary symlink is created by {@link #initialize()} and deleted on
  * exit.</p>
  *
  * @see <a href="http://kakadusoftware.com/wp-content/uploads/2014/06/Usage_Examples-v7_7.txt">
@@ -85,24 +81,31 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(KakaduProcessor.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(KakaduProcessor.class);
 
     private static final short MAX_REDUCTION_FACTOR = 5;
 
-    /** Set by {@link #initialize()} */
+    /**
+     * Set by {@link #initialize()}.
+     */
     private static final AtomicBoolean initializationAttempted =
             new AtomicBoolean(false);
-    /** Set by {@link #initialize()} */
+
+    /**
+     * Set by {@link #initialize()}.
+     */
     private static InitializationException initializationException;
     private static Path stdoutSymlink;
 
-    /** will cache the output of kdu_jp2info */
+    /**
+     * Cache of the output of {@literal kdu_jp2info}.
+     */
     private Document infoDocument;
 
     /**
-     * Creates a unique symlink to /dev/stdout in a temporary directory, and
-     * sets it to delete on exit.
+     * Creates a unique symlink to {@literal /dev/stdout} in a temporary
+     * directory, and sets it to delete on exit.
      */
     private static void createStdoutSymlink() throws IOException {
         Path tempDir = Application.getTempPath();
@@ -117,7 +120,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     }
 
     /**
-     * @param binaryName Name of one of the kdu_* binaries
+     * @param binaryName Name of one of the Kakadu binaries.
      * @return Absolute path to the given binary.
      */
     private static String getPath(String binaryName) {
@@ -205,7 +208,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     /**
      * Computes the effective size of an image after all crop operations are
      * applied but excluding any scale operations, in order to use
-     * kdu_expand's -reduce argument.
+     * {@literal kdu_expand}'s {@literal -reduce} argument.
      */
     private Dimension getCroppedSize(OperationList opList, Dimension fullSize) {
         Dimension tileSize = (Dimension) fullSize.clone();
@@ -227,7 +230,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
     /**
      * Gets the size of the given image by parsing the XML output of
-     * kdu_jp2info.
+     * {@literal kdu_jp2info}.
      */
     @Override
     public Info readImageInfo() throws IOException {
@@ -235,55 +238,68 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
             if (infoDocument == null) {
                 readImageInfoDocument();
             }
-            // Run an XPath query to find the width and height
-            XPath xpath = XPathFactory.newInstance().newXPath();
-            XPathExpression expr = xpath.compile("//codestream/width");
-            final int width = (int) Math.round((double) expr.evaluate(
-                    infoDocument, XPathConstants.NUMBER));
-            expr = xpath.compile("//codestream/height");
-            final int height = (int) Math.round((double) expr.evaluate(
-                    infoDocument, XPathConstants.NUMBER));
 
-            final Info info = new Info(width, height,
-                    getSourceFormat());
+            int width = -1, height = -1;
+            final Info info = new Info(width, height, getSourceFormat());
+            final Info.Image infoImage = info.getImages().get(0);
 
-            // Run another XPath query to find tile sizes
-            expr = xpath.compile("//codestream/SIZ");
-            String result = (String) expr.evaluate(infoDocument,
-                    XPathConstants.STRING);
-            // Read the tile dimensions out of the Stiles={n,n} line
-            try (final Scanner scan = new Scanner(result)) {
-                while (scan.hasNextLine()) {
-                    String line = scan.nextLine().trim();
-                    if (line.startsWith("Stiles=")) {
-                        String[] parts = StringUtils.split(line, ",");
-                        if (parts.length == 2) {
-                            final int dim1 = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
-                            final int dim2 = Integer.parseInt(parts[1].replaceAll("[^0-9]", ""));
-                            int tileWidth, tileHeight;
-                            if (width > height) {
-                                tileWidth = Math.max(dim1, dim2);
-                                tileHeight = Math.min(dim1, dim2);
-                            } else {
-                                tileWidth = Math.min(dim1, dim2);
-                                tileHeight = Math.max(dim1, dim2);
+            // Find dimensions, which are located at /codestream/width
+            // and /codestream/height; and also tile sizes at /codestream/SIZ.
+            // This block was originally written using XPath queries, but DOM
+            // traversal appears to be a little bit (10-15%) faster.
+            NodeList nodes = infoDocument.getElementsByTagName("codestream");
+            if (nodes.getLength() > 0) {
+                Node codestreamNode = nodes.item(0);
+                NodeList codestreamChildren = codestreamNode.getChildNodes();
+                for (int i = 0; i < codestreamChildren.getLength(); i++) {
+                    Node node = codestreamChildren.item(i);
+                    if ("width".equals(node.getNodeName())) {
+                        width = Integer.parseInt(node.getTextContent().trim());
+                    } else if ("height".equals(node.getNodeName())) {
+                        height = Integer.parseInt(node.getTextContent().trim());
+                    } else if ("SIZ".equals(node.getNodeName())) {
+                        // Read the tile dimensions out of the Stiles={n,n} line
+                        try (final Scanner scan = new Scanner(node.getTextContent())) {
+                            while (scan.hasNextLine()) {
+                                String line = scan.nextLine().trim();
+                                if (line.startsWith("Stiles=")) {
+                                    String[] parts = StringUtils.split(line, ",");
+                                    if (parts.length == 2) {
+                                        final int dim1 = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
+                                        final int dim2 = Integer.parseInt(parts[1].replaceAll("[^0-9]", ""));
+                                        int tileWidth, tileHeight;
+                                        if (width > height) {
+                                            tileWidth = Math.max(dim1, dim2);
+                                            tileHeight = Math.min(dim1, dim2);
+                                        } else {
+                                            tileWidth = Math.min(dim1, dim2);
+                                            tileHeight = Math.max(dim1, dim2);
+                                        }
+                                        infoImage.tileWidth = tileWidth;
+                                        infoImage.tileHeight = tileHeight;
+                                    }
+                                }
                             }
-                            info.getImages().get(0).tileWidth = tileWidth;
-                            info.getImages().get(0).tileHeight = tileHeight;
                         }
                     }
                 }
             }
+
+            if (width > 0 && height > 0) {
+                infoImage.width = width;
+                infoImage.height = height;
+            } else {
+                throw new IllegalArgumentException("Unable to read dimensions");
+            }
             return info;
-        } catch (SAXException | ParserConfigurationException |
-                XPathExpressionException e) {
+        } catch (SAXException | ParserConfigurationException e) {
             throw new IOException(e.getMessage(), e);
         }
     }
 
     /**
-     * Executes kdu_jp2info and parses the output into a Document object,
-     * saved in an instance variable.
+     * Invokes {@literal kdu_jp2info} and parses the output into a
+     * {@link Document}, saved in an instance variable.
      */
     private void readImageInfoDocument()
             throws SAXException, IOException, ParserConfigurationException {
@@ -402,15 +418,14 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     }
 
     /**
-     * Gets a ProcessBuilder corresponding to the given parameters.
-     *
      * @param opList
      * @param imageSize  The full size of the source image.
      * @param reduction  The {@link ReductionFactor#factor} property will be
      *                   modified.
      * @param ignoreCrop Ignore any cropping directives provided in
-     *                   <code>opList</code>.
-     * @return kdu_expand command invocation string
+     *                   {@literal opList}.
+     * @return {@link ProcessBuilder} for invoking {@literal kdu_expand} with
+     *         arguments corresponding to the given arguments.
      */
     private ProcessBuilder getProcessBuilder(final OperationList opList,
                                              final Dimension imageSize,
