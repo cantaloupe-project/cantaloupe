@@ -8,7 +8,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.operation.Orientation;
+import edu.illinois.library.cantaloupe.processor.Processor;
 
 import java.awt.Dimension;
 import java.io.File;
@@ -19,13 +21,35 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <p>Contains JSON-serializable information about an image, such as its
- * format, dimensions, orientation, subimages, and tile sizes.</p>
+ * <p>Contains JSON-serializable information about an image, including its
+ * format, dimensions, orientation, subimages, and tile sizes&mdash;
+ * essentially a superset of characteristics of all {@link Format formats}
+ * supported by the application.</p>
+ *
+ * <p>Instances are format- and processor-agnostic. An instance describing a
+ * particular image {@link Processor#readImageInfo() returned from one
+ * processor} should be {@link #equals(Object) equal} to an instance describing
+ * the same image returned from a different processor. This preserves the
+ * freedom to change processor assignments without invalidating any
+ * {@link DerivativeCache#getImageInfo(Identifier) cached instances}.</p>
  *
  * <p>All sizes are raw pixel data sizes, disregarding orientation.</p>
  *
+ * <p>Instances ultimately originate from {@link Processor#readImageInfo()},
+ * but subsequently they can also be {@link DerivativeCache#put(Identifier,
+ * Info) cached}, perhaps for a very long time. For efficiency's sake, when an
+ * instance is needed, it will be preferentially acquired from the cache, and a
+ * processor will be used only as a last resort. As a result, changes to the
+ * class definition need to be implemented carefully so that older
+ * serializations remain deserializable. (The only alternative is requiring
+ * users to purge their cache when the class design changes.)</p>
+ *
+ * <p>Also when the class design changes, all
+ * {@link Processor#readImageInfo()} implementations need to be updated to deal
+ * with the changes.</p>
+ *
  * @see <a href="https://github.com/FasterXML/jackson-databind">jackson-databind
- * docs</a>
+ *      docs</a>
  */
 @JsonPropertyOrder({ "mediaType", "images" })
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -208,7 +232,7 @@ public final class Info {
     }
 
     /**
-     * @param width Main image width
+     * @param width  Main image width
      * @param height Main image height
      */
     public Info(int width, int height) {
@@ -216,7 +240,7 @@ public final class Info {
     }
 
     /**
-     * @param width Main image width
+     * @param width  Main image width
      * @param height Main image height
      * @param sourceFormat
      */
@@ -226,7 +250,7 @@ public final class Info {
     }
 
     /**
-     * @param size Main image size
+     * @param size     Main image size
      * @param tileSize Main image tile size
      */
     public Info(Dimension size, Dimension tileSize) {
@@ -237,9 +261,9 @@ public final class Info {
     }
 
     /**
-     * @param width Main image width
-     * @param height Main image height
-     * @param tileWidth Main image tile width
+     * @param width      Main image width
+     * @param height     Main image height
+     * @param tileWidth  Main image tile width
      * @param tileHeight Main image tile height
      */
     public Info(int width, int height, int tileWidth, int tileHeight) {
@@ -248,9 +272,9 @@ public final class Info {
     }
 
     /**
-     * @param width Main image width
-     * @param height Main image height
-     * @param tileWidth Main image tile width
+     * @param width      Main image width
+     * @param height     Main image height
+     * @param tileWidth  Main image tile width
      * @param tileHeight Main image tile height
      * @param sourceFormat
      */
@@ -284,12 +308,13 @@ public final class Info {
      * @since 3.4
      */
     @JsonGetter
+    @SuppressWarnings("unused")
     public MediaType getMediaType() {
         return mediaType;
     }
 
     /**
-     * @return Orientatino of the main image.
+     * @return Orientation of the main image.
      */
     @JsonIgnore
     public Orientation getOrientation() {
@@ -345,7 +370,7 @@ public final class Info {
 
     @Override
     public int hashCode() {
-        return new Long(getImages().hashCode() + mediaType.hashCode() +
+        return Long.valueOf(getImages().hashCode() +
                 getSourceFormat().hashCode()).hashCode();
     }
 
@@ -356,6 +381,7 @@ public final class Info {
      * @since 3.4
      */
     @JsonSetter
+    @SuppressWarnings("unused")
     public void setMediaType(MediaType mediaType) {
         this.mediaType = mediaType;
     }
