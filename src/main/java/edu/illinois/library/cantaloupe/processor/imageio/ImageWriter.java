@@ -25,8 +25,8 @@ import java.util.stream.Collectors;
  */
 public class ImageWriter {
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(ImageWriter.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(ImageWriter.class);
 
     private static final Set<Format> SUPPORTED_FORMATS =
             Collections.unmodifiableSet(EnumSet.of(Format.GIF, Format.JPG,
@@ -119,12 +119,23 @@ public class ImageWriter {
     /**
      * Writes the given image to the given output stream.
      *
-     * @param image Image to write
-     * @param outputStream Stream to write the image to
+     * @param image        Image to write.
+     * @param outputStream Stream to write the image to.
      */
     public void write(final RenderedImage image,
                       final OutputStream outputStream) throws IOException {
         wrappedWriter.write(image, outputStream);
+    }
+
+    /**
+     * Writes the given image sequence to the given output stream.
+     *
+     * @param sequence     Image sequence to write.
+     * @param outputStream Stream to write the image to.
+     */
+    public void write(final BufferedImageSequence sequence,
+                      final OutputStream outputStream) throws IOException {
+        wrappedWriter.write(sequence, outputStream);
     }
 
 }

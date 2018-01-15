@@ -37,24 +37,27 @@ import java.util.Set;
  */
 abstract class AbstractImageReader {
 
-    // Note: methods that return BufferedImages (for Java 2D) are arranged
-    // toward the beginning of the class; methods that return RenderedImages
-    // (for JAI) are toward the end.
-
+    /**
+     * Source format being read.
+     */
     private Format format;
 
-    /** Set in setSource(). */
-    protected ImageInputStream inputStream;
-
-    /** Assigned by createReader(). */
+    /**
+     * Assigned by {@link #createReader()}.
+     */
     javax.imageio.ImageReader iioReader;
 
-    /** Set in setSource(). */
+    /**
+     * Set by {@link #setSource}.
+     */
+    private ImageInputStream inputStream;
+
+    /**
+     * Set by {@link #setSource}.
+     */
     private Object source;
 
     /**
-     * Initializes an instance.
-     *
      * @param inputFile Image file to read.
      */
     AbstractImageReader(Path inputFile, Format format) throws IOException {
@@ -65,8 +68,6 @@ abstract class AbstractImageReader {
     }
 
     /**
-     * Initializes an instance.
-     *
      * @param streamSource Source of streams to read.
      */
     AbstractImageReader(StreamSource streamSource,
@@ -94,7 +95,7 @@ abstract class AbstractImageReader {
     }
 
     /**
-     * @return Whether the metadata will need to be read.
+     * @return Whether metadata can be skipped when reading.
      */
     private boolean canIgnoreMetadata() {
         final Configuration config = Configuration.getInstance();
@@ -156,13 +157,14 @@ abstract class AbstractImageReader {
     }
 
     abstract Logger getLogger();
+
     abstract Metadata getMetadata(int imageIndex) throws IOException;
 
     /**
-     * @return The number of images contained inside the source image.
+     * @return Number of images contained inside the source image.
      */
     int getNumResolutions() throws IOException {
-        // The boolean parameter tells getNumImages() whether to scan for
+        // The boolean argument tells getNumImages() whether to scan for
         // images, which seems to be necessary for some, but is slower.
         int numImages = iioReader.getNumImages(false);
         if (numImages == -1) {
@@ -172,19 +174,15 @@ abstract class AbstractImageReader {
     }
 
     /**
-     * Gets the dimensions of the source image.
-     *
-     * @return Dimensions in pixels
+     * @return Pixel dimensions of the source image.
      */
     Dimension getSize() throws IOException {
         return getSize(iioReader.getMinIndex());
     }
 
     /**
-     * Gets the dimensions of the image at the given index.
-     *
      * @param imageIndex
-     * @return Dimensions in pixels
+     * @return Pixel dimensions of the image at the given index.
      */
     Dimension getSize(int imageIndex) throws IOException {
         final int width = iioReader.getWidth(imageIndex);
@@ -203,6 +201,10 @@ abstract class AbstractImageReader {
         return new Dimension(width, height);
     }
 
+    /**
+     * Chooses the most appropriate ImageIO reader to use based on the return
+     * value of {@link #preferredIIOImplementations()}.
+     */
     private javax.imageio.ImageReader negotiateIIOReader() {
         javax.imageio.ImageReader negotiatedReader = null;
 
@@ -239,12 +241,12 @@ abstract class AbstractImageReader {
     }
 
     /**
-     * N.B. This method returns a list of strings rather than classes because
-     * some readers reside under the com.sun package which is private in
-     * Java 9.
+     * N.B.: This method returns a list of strings rather than {@link Class
+     * classes} because some readers reside under the {@link com.sun} package,
+     * which is encapsulated in Java 9.
      *
-     * @return Preferred reader implementation classes, in priority order, or
-     *         an empty array if there is no preference.
+     * @return Preferred reader implementation classes, in order of highest to
+     *         lowest priority, or an empty array if there is no preference.
      */
     String[] preferredIIOImplementations() {
         return new String[] {};
@@ -282,8 +284,6 @@ abstract class AbstractImageReader {
     /**
      * Expedient but not necessarily efficient method that reads a whole image
      * (excluding subimages) in one shot.
-     *
-     * @return Read image.
      */
     BufferedImage read() throws IOException {
         return iioReader.read(0);
@@ -304,10 +304,7 @@ abstract class AbstractImageReader {
      *                        returned image.
      * @param hints           Will be populated by information returned from
      *                        the reader.
-     * @return BufferedImage best matching the given parameters, guaranteed to
-     *         not be of {@link BufferedImage#TYPE_CUSTOM}. Clients should
-     *         check the hints set to see whether they need to perform
-     *         additional cropping.
+     * @return BufferedImage best matching the given parameters.
      */
     BufferedImage read(final OperationList ops,
                        final Orientation orientation,
@@ -315,7 +312,6 @@ abstract class AbstractImageReader {
                        final Set<ImageReader.Hint> hints)
             throws IOException, ProcessorException {
         BufferedImage image;
-
         Crop crop = (Crop) ops.getFirst(Crop.class);
         if (crop != null && !hints.contains(ImageReader.Hint.IGNORE_CROP)) {
             final Dimension fullSize = new Dimension(
@@ -336,20 +332,17 @@ abstract class AbstractImageReader {
      * Reads the smallest image that can fulfill the given crop and scale from
      * a multi-resolution image.
      *
-     * @param crop   Requested crop
-     * @param scale  Requested scale
-     * @param rf     The {@link ReductionFactor#factor} will be set to the
-     *               reduction factor of the returned image.
-     * @param hints  Will be populated by information returned by the reader.
-     * @return The smallest image fitting the requested crop and scale
-     *         operations from the given reader.
+     * @param crop  Requested crop
+     * @param scale Requested scale
+     * @param rf    Will be set to the reduction factor of the returned image.
+     * @param hints Will be populated by information returned by the reader.
+     * @return Smallest image fitting the requested crop and scale operations.
      */
     BufferedImage readSmallestUsableSubimage(
             final Crop crop,
             final Scale scale,
             final ReductionFactor rf,
-            final Set<ImageReader.Hint> hints)
-            throws IOException {
+            final Set<ImageReader.Hint> hints) throws IOException {
         final Dimension fullSize = new Dimension(
                 iioReader.getWidth(0), iioReader.getHeight(0));
         final Rectangle regionRect = crop.getRectangle(fullSize);
@@ -420,10 +413,10 @@ abstract class AbstractImageReader {
      * <p>This method is intended to be compatible with all source images, no
      * matter the data layout (tiled, striped, etc.).</p>
      *
-     * <p>This method may populate <code>hints</code> with
-     * {@link ImageReader.Hint#ALREADY_CROPPED}, in which case
-     * cropping will have already been performed according to the
-     * <code>requestedSourceArea</code> parameter.</p>
+     * <p>This method may populate {@literal hints} with
+     * {@link ImageReader.Hint#ALREADY_CROPPED}, in which case cropping will
+     * have already been performed according to the {@literal region}
+     * argument.</p>
      *
      * @param imageIndex Index of the image to read from the ImageReader.
      * @param region     Image region to retrieve. The returned image will be
@@ -431,7 +424,6 @@ abstract class AbstractImageReader {
      *                   bottom edge of the source image.
      * @param hints      Will be populated with information returned from the
      *                   reader.
-     * @return Image
      */
     private BufferedImage tileAwareRead(final int imageIndex,
                                         final Rectangle region,
@@ -462,10 +454,12 @@ abstract class AbstractImageReader {
                 To deal with this situation, we will try reading again,
                 ignoring the color profile. We need to reset the reader, and
                 then read into a grayscale BufferedImage.
+
+                This is of course a hack, credit/blame for which goes to:
+                http://stackoverflow.com/a/11571181
                 */
                 reset();
 
-                // Credit: http://stackoverflow.com/a/11571181
                 final Iterator<ImageTypeSpecifier> imageTypes =
                         iioReader.getImageTypes(0);
                 while (imageTypes.hasNext()) {
@@ -485,14 +479,23 @@ abstract class AbstractImageReader {
 
     }
 
+    /**
+     * Reads a sequence of images; useful for formats that support animation.
+     */
+    BufferedImageSequence readSequence() throws IOException {
+        BufferedImageSequence seq = new BufferedImageSequence();
+        for (int i = 0, count = getNumResolutions(); i < count; i++) {
+            seq.add(iioReader.read(i));
+        }
+        return seq;
+    }
+
     ////////////////////////////////////////////////////////////////////////
     /////////////////////// RenderedImage methods //////////////////////////
     ////////////////////////////////////////////////////////////////////////
 
     /**
      * Reads an image (excluding subimages).
-     *
-     * @return RenderedImage
      */
     RenderedImage readRendered() throws IOException {
         return iioReader.readAsRenderedImage(0,
@@ -511,7 +514,7 @@ abstract class AbstractImageReader {
      *                        returned image.
      * @param hints           Will be populated by information returned from
      *                        the reader.
-     * @return RenderedImage best matching the given parameters.
+     * @return Image best matching the given arguments.
      */
     RenderedImage readRendered(final OperationList ops,
                                final Orientation orientation,
@@ -536,8 +539,8 @@ abstract class AbstractImageReader {
      * Reads the smallest image that can fulfill the given crop and scale from
      * a multi-resolution image.
      *
-     * @param crop  Requested crop
-     * @param scale Requested scale
+     * @param crop  Requested crop.
+     * @param scale Requested scale.
      * @param rf    The {@link ReductionFactor#factor} will be set to the
      *              reduction factor of the returned image.
      * @return The smallest image fitting the requested crop and scale

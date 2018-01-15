@@ -52,8 +52,8 @@ public class ImageReader {
         IGNORE_CROP
     }
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(ImageReader.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(ImageReader.class);
 
     private static final Set<Format> SUPPORTED_FORMATS =
             Collections.unmodifiableSet(EnumSet.of(Format.BMP, Format.DCM,
@@ -214,7 +214,7 @@ public class ImageReader {
     }
 
     /**
-     * @return
+     * @return Number of subimages in the source image container.
      */
     public int getNumResolutions() throws IOException {
         return reader.getNumResolutions();
@@ -248,10 +248,10 @@ public class ImageReader {
     }
 
     /**
-     * Expedient but not necessarily efficient method that reads a whole
-     * image (excluding subimages) in one shot.
+     * Expedient but not necessarily efficient method that reads a whole image
+     * (excluding subimages) in one shot.
      *
-     * @return BufferedImage guaranteed to not be of type
+     * @return Image guaranteed to not be of type
      *         {@link BufferedImage#TYPE_CUSTOM}.
      */
     public BufferedImage read() throws IOException {
@@ -268,8 +268,7 @@ public class ImageReader {
      * @param opList          Note that if a
      *                        {@link edu.illinois.library.cantaloupe.operation.Crop}
      *                        operation is present, it will be modified
-     *                        according to the <code>orientation</code>
-     *                        argument.
+     *                        according to the {@literal orientation} argument.
      * @param orientation     Orientation of the source image data, e.g. as
      *                        reported by embedded metadata.
      * @param reductionFactor The {@link ReductionFactor#factor} property will
@@ -277,8 +276,7 @@ public class ImageReader {
      *                        the returned image.
      * @param hints           Will be populated by information returned from
      *                        the reader.
-     * @return BufferedImage best matching the given parameters, guaranteed to
-     *         not be of type {@link BufferedImage#TYPE_CUSTOM}. Clients should
+     * @return BufferedImage best matching the given parameters. Clients should
      *         check the hints set to see whether they need to perform
      *         additional cropping.
      */
@@ -306,8 +304,7 @@ public class ImageReader {
      * @param opList          Note that if a
      *                        {@link edu.illinois.library.cantaloupe.operation.Crop}
      *                        operation is present, it will be modified
-     *                        according to the <code>orientation</code>
-     *                        argument.
+     *                        according to the {@literal orientation} argument.
      * @param orientation     Orientation of the source image data, e.g. as
      *                        reported by embedded metadata.
      * @param reductionFactor The {@link ReductionFactor#factor} property will
@@ -315,7 +312,7 @@ public class ImageReader {
      *                        the returned image.
      * @param hints           Will be populated by information returned from
      *                        the reader.
-     * @return RenderedImage best matching the given parameters.
+     * @return Image best matching the given parameters.
      */
     public RenderedImage readRendered(final OperationList opList,
                                       final Orientation orientation,
@@ -323,6 +320,16 @@ public class ImageReader {
                                       final Set<ImageReader.Hint> hints)
             throws IOException, ProcessorException {
         return reader.readRendered(opList, orientation, reductionFactor, hints);
+    }
+
+    /**
+     * Expedient but not necessarily efficient method that reads all images of
+     * a sequence in one shot.
+     *
+     * @return List of images in sequence order.
+     */
+    public BufferedImageSequence readSequence() throws IOException {
+        return reader.readSequence();
     }
 
 }

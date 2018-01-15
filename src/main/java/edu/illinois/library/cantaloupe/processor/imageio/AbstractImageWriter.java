@@ -34,9 +34,10 @@ abstract class AbstractImageWriter {
     }
 
     /**
-     * @param opList Some operations can't be handled by processors and need
-     *               to be handled by a writer instead. Any writer operations
-     *               present in this list will be applied automatically.
+     * @param opList         Some operations can't be handled by processors and
+     *                       need to be handled by a writer instead. Any writer
+     *                       operations present in this list will be applied
+     *                       automatically.
      * @param sourceMetadata Metadata for the image being written as returned
      *                       from {@link ImageReader}.
      */
@@ -83,11 +84,10 @@ abstract class AbstractImageWriter {
 
     /**
      * @param writeParam Write parameters on which to base the metadata.
-     * @param image Image to apply the metadata to.
+     * @param image      Image to apply the metadata to.
      * @return Image metadata with added metadata corresponding to any
      *         writer-specific operations from
-     *         {@link #AbstractImageWriter(OperationList, Metadata)}
-     *         applied.
+     *         {@link #AbstractImageWriter(OperationList, Metadata)} applied.
      */
     IIOMetadata getMetadata(final ImageWriteParam writeParam,
                             final RenderedImage image) throws IOException {
@@ -143,12 +143,12 @@ abstract class AbstractImageWriter {
     }
 
     /**
-     * N.B. This method returns a list of strings rather than classes because
-     * some writers reside under the com.sun package which is private in
-     * Java 9.
+     * N.B.: This method returns a list of strings rather than classes because
+     * some writers reside under the {@link com.sun} package, which is private
+     * in Java 9.
      *
-     * @return Preferred writer implementation classes, in priority order, or
-     *         an empty array if there is no preference.
+     * @return Writer implementation classes in order of preference, or an
+     *         empty array if there is no preference.
      */
     String[] preferredIIOImplementations() {
         return new String[] {};
@@ -157,10 +157,23 @@ abstract class AbstractImageWriter {
     /**
      * Writes the given image to the given output stream.
      *
-     * @param image Image to write
-     * @param outputStream Stream to write the image to
+     * @param image        Image to write.
+     * @param outputStream Stream to write the image to.
      */
     abstract void write(RenderedImage image,
                         OutputStream outputStream) throws IOException;
+
+    /**
+     * Writes the given image sequence to the given output stream. This
+     * implementation throws an {@link UnsupportedOperationException} and must
+     * be overridden by writers that support image sequences.
+     *
+     * @param sequence      Image sequence to write.
+     * @param outputStream  Stream to write the image to
+     */
+    void write(BufferedImageSequence sequence,
+               OutputStream outputStream) throws IOException {
+        throw new UnsupportedOperationException();
+    }
 
 }

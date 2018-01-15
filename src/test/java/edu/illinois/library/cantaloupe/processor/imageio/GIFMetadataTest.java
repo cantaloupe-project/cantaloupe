@@ -28,7 +28,7 @@ public class GIFMetadataTest extends BaseTest {
         final Path srcFile = TestUtil.getImage(fixtureName);
         final Iterator<ImageReader> it = ImageIO.getImageReadersByFormatName("GIF");
         final ImageReader reader = it.next();
-        try (ImageInputStream is = ImageIO.createImageInputStream(srcFile)) {
+        try (ImageInputStream is = ImageIO.createImageInputStream(srcFile.toFile())) {
             reader.setInput(is);
             final IIOMetadata metadata = reader.getImageMetadata(0);
             return new GIFMetadata(metadata,
@@ -39,21 +39,46 @@ public class GIFMetadataTest extends BaseTest {
     }
 
     @Test
+    public void testGetFrameIntervalOfStaticImage() throws Exception {
+        assertEquals(0, newInstance("gif").getFrameInterval());
+    }
+
+    @Test
+    public void testGetFrameIntervalOfAnimatedImage() throws Exception {
+        assertEquals(150, newInstance("gif-animated-looping.gif").getFrameInterval());
+    }
+
+    @Test
+    public void testGetLoopCountWithStaticImage() throws Exception {
+        assertEquals(1, newInstance("gif").getLoopCount());
+    }
+
+    @Test
+    public void testGetLoopCountWithAnimatedLoopingImage() throws Exception {
+        assertEquals(0, newInstance("gif-animated-looping.gif").getLoopCount());
+    }
+
+    @Test
+    public void testGetLoopCountWithAnimatedNonLoopingImage() throws Exception {
+        assertEquals(1, newInstance("gif-animated-non-looping.gif").getLoopCount());
+    }
+
+    @Test
     @Ignore // Disabled because GIFMetadata.getXMP() and getXMPRDF() are disabled.
-    public void testGetOrientation() throws IOException {
+    public void testGetOrientation() throws Exception {
         assertEquals(Orientation.ROTATE_90,
                 newInstance("gif-rotated.gif").getOrientation());
     }
 
     @Test
     @Ignore // Disabled because GIFMetadata.getXMP() and getXMPRDF() are disabled.
-    public void testGetXmp() throws IOException {
+    public void testGetXMP() throws Exception {
         assertNotNull(newInstance("gif-xmp.gif").getXMP());
     }
 
     @Test
     @Ignore // Disabled because GIFMetadata.getXMP() and getXMPRDF() are disabled.
-    public void testGetXmpRdf() throws IOException {
+    public void testGetXMPRDF() throws Exception {
         RIOT.init();
         final String rdf = newInstance("gif-xmp.gif").getXMPRDF();
         System.out.println(rdf);

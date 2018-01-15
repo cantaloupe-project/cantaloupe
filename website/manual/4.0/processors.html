@@ -503,13 +503,15 @@ landing page, as well as in one of the tables below. A list of output formats su
     <th></th>
     <th><a href="#GraphicsMagickProcessor">GraphicsMagick</a></th>
     <th><a href="#ImageMagickProcessor">ImageMagick</a></th>
-    <th><a href="#Java2dProcessor">Java2D</a> &amp; <a href="#JaiProcessor">JAI</a></th>
+    <th><a href="#Java2dProcessor">Java2D</a></th>
+    <th><a href="#JaiProcessor">JAI</a></th>
     <th><a href="#KakaduProcessor">Kakadu</a></th>
     <th><a href="#OpenJpegProcessor">OpenJPEG</a></th>
     <th><a href="#PdfBoxProcessor">PDFBox</a></th>
   </tr>
   <tr>
     <td>BMP</td>
+    <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
@@ -522,21 +524,24 @@ landing page, as well as in one of the tables below. A list of output formats su
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="bg-warning">Not extensively tested</td>
+    <td class="bg-warning">Not extensively tested</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
   </tr>
   <tr>
     <td>GIF</td>
+    <td class="text-center bg-success">&check;<br>Animation not supported</td>
+    <td class="text-center bg-success">&check;<br>Animation not supported</td>
     <td class="text-center bg-success">&check;</td>
-    <td class="text-center bg-success">&check;</td>
-    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;<br>Animation not supported</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
   </tr>
   <tr>
     <td>JPEG</td>
+    <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
@@ -549,6 +554,7 @@ landing page, as well as in one of the tables below. A list of output formats su
     <td class="bg-warning">Uses JasPer (requires plugin); no level-reduction or ROI decoding</td>
     <td class="bg-warning">Uses OpenJPEG (requires delegate); no level-reduction or ROI decoding</td>
     <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-danger">&times;</td>
@@ -560,10 +566,12 @@ landing page, as well as in one of the tables below. A list of output formats su
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-success">&check;</td>
   </tr>
   <tr>
     <td>PNG</td>
+    <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
@@ -576,6 +584,7 @@ landing page, as well as in one of the tables below. A list of output formats su
     <td class="bg-warning">No multi-resolution or ROI decoding</td>
     <td class="bg-warning">No multi-resolution or ROI decoding</td>
     <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
@@ -584,6 +593,7 @@ landing page, as well as in one of the tables below. A list of output formats su
     <td>WebP</td>
     <td class="bg-success">Requires plugin</td>
     <td class="bg-success">Requires delegate</td>
+    <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>

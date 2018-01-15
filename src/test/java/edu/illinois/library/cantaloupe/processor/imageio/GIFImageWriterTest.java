@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
@@ -16,15 +17,15 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.PlanarImage;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
 
@@ -95,11 +96,43 @@ public class GIFImageWriterTest extends BaseTest {
         checkForMetadata();
     }
 
+    @Test
+    public void testWriteWithSequence() throws Exception {
+        Path image = TestUtil.getImage("gif-animated-looping.gif");
+        edu.illinois.library.cantaloupe.processor.imageio.ImageReader reader = null;
+        try {
+            reader = new ImageReader(image, Format.GIF);
+            BufferedImageSequence sequence = reader.readSequence();
+
+            try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                GIFImageWriter gifWriter = getWriter();
+                gifWriter.write(sequence, os);
+
+                try (ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray())) {
+                    reader.dispose();
+                    reader = null;
+                    try {
+                        reader = new ImageReader(new InputStreamStreamSource(is), Format.GIF);
+                        assertEquals(2, reader.getNumResolutions());
+                    } finally {
+                        if (reader != null) {
+                            reader.dispose();
+                        }
+                    }
+                }
+            }
+        } finally {
+            if (reader != null) {
+                reader.dispose();
+            }
+        }
+    }
+
     private void checkForIccProfile() throws Exception {
         // Read it back in
-        final Iterator<ImageReader> readers =
+        final Iterator<javax.imageio.ImageReader> readers =
                 ImageIO.getImageReadersByFormatName("GIF");
-        final ImageReader reader = readers.next();
+        final javax.imageio.ImageReader reader = readers.next();
         try (ImageInputStream iis = ImageIO.createImageInputStream(tempFile)) {
             reader.setInput(iis);
             // Check for the profile in its metadata
@@ -116,9 +149,9 @@ public class GIFImageWriterTest extends BaseTest {
     }
 
     private void checkForMetadata() throws Exception {
-        final Iterator<ImageReader> readers =
+        final Iterator<javax.imageio.ImageReader> readers =
                 ImageIO.getImageReadersByFormatName("GIF");
-        final ImageReader reader = readers.next();
+        final javax.imageio.ImageReader reader = readers.next();
         try (ImageInputStream iis = ImageIO.createImageInputStream(tempFile)) {
             reader.setInput(iis);
             final IIOMetadata metadata = reader.getImageMetadata(0);
@@ -135,9 +168,9 @@ public class GIFImageWriterTest extends BaseTest {
         }
     }
 
-    private GIFImageWriter getWriter() throws IOException {
+    private GIFImageWriter getWriter() {
         OperationList opList = new OperationList(new Identifier("cats"),
-                Format.JPG);
+                Format.GIF);
         if (Configuration.getInstance().
                 getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
             opList.add(new MetadataCopy());

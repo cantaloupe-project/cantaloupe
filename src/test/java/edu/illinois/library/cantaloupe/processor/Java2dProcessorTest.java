@@ -1,12 +1,18 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
+import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -59,6 +65,32 @@ public class Java2dProcessorTest extends ImageIOProcessorTest {
                 ProcessorFeature.SIZE_BY_WIDTH,
                 ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
         assertEquals(expectedFeatures, instance.getSupportedFeatures());
+    }
+
+    @Test
+    public void testProcessWithAnimatedGIF() throws Exception {
+        Path image = TestUtil.getImage("gif-animated-looping.gif");
+        OperationList ops = new OperationList(new Identifier("cats"), Format.GIF);
+        Info info = new Info(136, 200, Format.GIF);
+
+        instance.setSourceFile(image);
+        instance.setSourceFormat(Format.GIF);
+
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            instance.process(ops, info, os);
+
+            try (ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray())) {
+                ImageReader reader = null;
+                try {
+                    reader = new ImageReader(new InputStreamStreamSource(is), Format.GIF);
+                    assertEquals(2, reader.getNumResolutions());
+                } finally {
+                    if (reader != null) {
+                        reader.dispose();
+                    }
+                }
+            }
+        }
     }
 
 }
