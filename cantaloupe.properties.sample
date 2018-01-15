@@ -216,11 +216,16 @@ AmazonS3Resolver.max_connections =
 # AzureStorageResolver
 #----------------------------------------
 
-# !! Credentials for your Azure account.
+# !! Name of your Azure account.
+# Leave blank if using URI with a SAS token in your object key.
 AzureStorageResolver.account_name =
+
+# !! Key of your Azure account.
+# Leave blank if using URI with a SAS token in your object key.
 AzureStorageResolver.account_key =
 
 # !! Name of the container containing images to be served.
+# Leave blank if using URI with the container in your object key.
 AzureStorageResolver.container_name =
 
 # Tells AzureStorageResolver how to look up objects. Allowed values are
@@ -499,25 +504,15 @@ AmazonS3Cache.max_connections =
 # AzureStorageCache
 #----------------------------------------
 
+# !! Credentials for your Azure account.
+AzureStorageCache.account_name =
+AzureStorageCache.account_key =
 
-# !! Name of your Azure account.
-# !! Leave blank if using URI with a SAS token in your object key.
-AzureStorageResolver.account_name =
+# !! Name of the container containing cached images.
+AzureStorageCache.container_name =
 
-# !! Key of your Azure account.
-# !! Leave blank if using URI with a SAS token in your object key.
-AzureStorageResolver.account_key =
-
-# !! Name of the container containing images to be served.
-# !! Leave blank if using URI with the container in your object key.
-AzureStorageResolver.container_name =
-
-# Tells AzureStorageResolver how to look up objects. Allowed values are
-# `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
-# uses the delegate script for dynamic lookups; see the user manual for
-# details.
-AzureStorageResolver.lookup_strategy = BasicLookupStrategy
-
+# !! String that will be prefixed to object keys.
+AzureStorageCache.object_key_prefix =
 
 #----------------------------------------
 # RedisCache
