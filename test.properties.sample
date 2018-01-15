@@ -7,7 +7,9 @@ amazons3.secret_key =
 amazons3.bucket =
 amazons3.region = us-east-1
 
+
 # Used by AzureStorageResolverTest and AzureStorageCacheTest.
+# Note: leave blank to test sas and container specified in a URL to the object key.
 azurestorage.account_name =
 azurestorage.account_key =
 azurestorage.container =
