@@ -110,7 +110,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     private static void createStdoutSymlink() throws IOException {
         Path tempDir = Application.getTempPath();
 
-        final Path link = tempDir.resolve("cantaloupe-" +
+        final Path link = tempDir.resolve(Application.NAME + "-" +
                 KakaduProcessor.class.getSimpleName() + "-" +
                 UUID.randomUUID() + ".tif");
         final Path devStdout = Paths.get("/dev/stdout");

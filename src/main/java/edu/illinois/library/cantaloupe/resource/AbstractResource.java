@@ -207,7 +207,7 @@ public abstract class AbstractResource extends ServerResource {
                 Dimension.LANGUAGE,
                 Dimension.ORIGIN));
         getResponse().getHeaders().add("X-Powered-By",
-                "Cantaloupe/" + Application.getVersion());
+                Application.NAME + "/" + Application.getVersion());
         LOGGER.info("doInit(): handling {} {}", getMethod(), getReference());
     }
 

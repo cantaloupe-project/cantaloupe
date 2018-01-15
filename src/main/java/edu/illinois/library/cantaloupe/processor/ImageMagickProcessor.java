@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Compression;
@@ -78,8 +79,8 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     private static final Logger LOGGER = LoggerFactory.
             getLogger(ImageMagickProcessor.class);
 
-    static final String OVERLAY_TEMP_FILE_PREFIX =
-            "cantaloupe-" + ImageMagickProcessor.class.getSimpleName() + "-overlay";
+    static final String OVERLAY_TEMP_FILE_PREFIX = Application.NAME + "-" +
+            ImageMagickProcessor.class.getSimpleName() + "-overlay";
 
     private static AtomicBoolean initializationAttempted =
             new AtomicBoolean(false);

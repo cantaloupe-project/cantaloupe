@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Method;
@@ -75,7 +76,7 @@ public class TaskResourceTest extends AbstractAPIResourceTest {
         assertTrue(parts.contains("Accept-Language"));
         assertTrue(parts.contains("Origin"));
         // X-Powered-By
-        assertEquals("Cantaloupe/Unknown",
+        assertEquals(Application.NAME + "/" + Application.getVersion(),
                 headers.getFirstValue("X-Powered-By"));
     }
 

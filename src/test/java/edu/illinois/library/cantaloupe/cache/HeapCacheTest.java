@@ -84,7 +84,7 @@ public class HeapCacheTest extends BaseTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HEAPCACHE_PERSIST, true);
 
-        Path cacheFile = Files.createTempFile("cantaloupe", "tmp");
+        Path cacheFile = Files.createTempFile("heapcache", "tmp");
         try {
             Files.delete(cacheFile);
             config.setProperty(Key.HEAPCACHE_PATHNAME, cacheFile.toString());
@@ -219,7 +219,7 @@ public class HeapCacheTest extends BaseTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HEAPCACHE_PERSIST, true);
 
-        Path cacheFile = Files.createTempFile("cantaloupe", "tmp");
+        Path cacheFile = Files.createTempFile("heapcache", "tmp");
         try {
             Files.delete(cacheFile);
             config.setProperty(Key.HEAPCACHE_PATHNAME, cacheFile.toString());

@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Response;
@@ -64,7 +65,7 @@ public class LandingResourceTest extends ResourceTest {
         assertTrue(parts.contains("Accept-Language"));
         assertTrue(parts.contains("Origin"));
         // X-Powered-By
-        assertEquals("Cantaloupe/Unknown",
+        assertEquals(Application.NAME + "/" + Application.getVersion(),
                 headers.getFirstValue("X-Powered-By"));
     }
 

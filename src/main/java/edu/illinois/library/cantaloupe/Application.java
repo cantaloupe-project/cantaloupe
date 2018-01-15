@@ -27,7 +27,7 @@ public final class Application {
      */
     private static class LazyVersionReader {
 
-        private static String cachedVersion = null;
+        private static String cachedVersion;
 
         static {
             cachedVersion = readVersionFromManifest();
@@ -36,6 +36,8 @@ public final class Application {
             }
         }
     }
+
+    public static final String NAME = "Cantaloupe";
 
     /**
      * @return Path to the temp directory used by the application. If it does

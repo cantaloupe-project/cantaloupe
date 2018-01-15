@@ -108,7 +108,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
     private static void createStdoutSymlink() throws IOException {
         Path tempDir = Application.getTempPath();
 
-        final Path link = tempDir.resolve("cantaloupe-" +
+        final Path link = tempDir.resolve(Application.NAME + "-" +
                 OpenJpegProcessor.class.getSimpleName() + "-" +
                 UUID.randomUUID() + ".bmp");
         final Path devStdout = Paths.get("/dev/stdout");

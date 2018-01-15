@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -75,7 +76,7 @@ public class StatusResourceTest extends AbstractAdminResourceTest {
         assertTrue(parts.contains("Accept-Language"));
         assertTrue(parts.contains("Origin"));
         // X-Powered-By
-        assertEquals("Cantaloupe/Unknown",
+        assertEquals(Application.NAME + "/" + Application.getVersion(),
                 headers.getFirstValue("X-Powered-By"));
     }
 

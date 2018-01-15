@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -36,7 +37,7 @@ public class LandingResourceTest extends ResourceTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.IIIF_2_ENDPOINT_ENABLED, true);
         assertStatus(200, getHTTPURI(""));
-        assertRepresentationContains("Cantaloupe Image", getHTTPURI(""));
+        assertRepresentationContains(Application.NAME + " Image", getHTTPURI(""));
     }
 
     @Test
@@ -78,7 +79,7 @@ public class LandingResourceTest extends ResourceTest {
         assertTrue(parts.contains("Accept-Language"));
         assertTrue(parts.contains("Origin"));
         // X-Powered-By
-        assertEquals("Cantaloupe/Unknown",
+        assertEquals(Application.NAME + "/" + Application.getVersion(),
                 headers.getFirstValue("X-Powered-By"));
     }
 
