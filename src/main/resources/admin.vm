@@ -1339,7 +1339,8 @@
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Name of your Azure account.">?</a>
+                                                   data-content="Name of your Azure account. Leave blank if
+                                                   using URIs with a SAS token in your object key.">?</a>
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
@@ -1352,7 +1353,8 @@
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Key of your Azure account.">?</a>
+                                                   data-content="Key of your Azure account. Leave blank if
+                                                   using URIs with a SAS token in your object key.">?</a>
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
@@ -1366,7 +1368,8 @@
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
                                                    data-content="Name of the container containing images
-                                                   to be served.">?</a>
+                                                   to be served. Leave blank if using URIs with the container
+                                                   name in your object key.">?</a>
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
