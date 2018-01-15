@@ -163,7 +163,7 @@ abstract class AbstractImageReader {
     /**
      * @return Number of images contained inside the source image.
      */
-    int getNumResolutions() throws IOException {
+    int getNumImages() throws IOException {
         // The boolean argument tells getNumImages() whether to scan for
         // images, which seems to be necessary for some, but is slower.
         int numImages = iioReader.getNumImages(false);
@@ -484,7 +484,7 @@ abstract class AbstractImageReader {
      */
     BufferedImageSequence readSequence() throws IOException {
         BufferedImageSequence seq = new BufferedImageSequence();
-        for (int i = 0, count = getNumResolutions(); i < count; i++) {
+        for (int i = 0, count = getNumImages(); i < count; i++) {
             seq.add(iioReader.read(i));
         }
         return seq;

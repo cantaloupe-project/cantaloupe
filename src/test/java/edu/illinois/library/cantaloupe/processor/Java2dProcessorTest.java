@@ -83,7 +83,7 @@ public class Java2dProcessorTest extends ImageIOProcessorTest {
                 ImageReader reader = null;
                 try {
                     reader = new ImageReader(new InputStreamStreamSource(is), Format.GIF);
-                    assertEquals(2, reader.getNumResolutions());
+                    assertEquals(2, reader.getNumImages());
                 } finally {
                     if (reader != null) {
                         reader.dispose();

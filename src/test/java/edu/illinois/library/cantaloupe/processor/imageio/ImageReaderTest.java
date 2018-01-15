@@ -72,14 +72,16 @@ public class ImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testGetNumResolutions() throws Exception {
-        // monoresolution
-        assertEquals(1, reader.getNumResolutions());
-        // multiresolution
+    public void testGetNumImagesWithMonoResolutionImage() throws Exception {
+        assertEquals(1, reader.getNumImages());
+    }
+
+    @Test
+    public void testGetNumImagesWithMultiResolutionImage() throws Exception {
         reader = new ImageReader(
                 TestUtil.getImage("tif-rgb-multires-64x56x16-tiled-uncompressed.tif"),
                 Format.TIF);
-        assertEquals(3, reader.getNumResolutions());
+        assertEquals(3, reader.getNumImages());
     }
 
     @Test

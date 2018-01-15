@@ -91,8 +91,8 @@ public class TIFFImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testGetNumResolutions() throws Exception {
-        assertEquals(3, instance.getNumResolutions());
+    public void testGetNumImages() throws Exception {
+        assertEquals(3, instance.getNumImages());
     }
 
     @Test

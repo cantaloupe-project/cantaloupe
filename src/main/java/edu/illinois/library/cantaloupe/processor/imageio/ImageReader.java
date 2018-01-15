@@ -214,10 +214,11 @@ public class ImageReader {
     }
 
     /**
-     * @return Number of subimages in the source image container.
+     * @return Number of subimages in the source image container. These may be
+     *         different resolutions, or frames of an animation.
      */
-    public int getNumResolutions() throws IOException {
-        return reader.getNumResolutions();
+    public int getNumImages() throws IOException {
+        return reader.getNumImages();
     }
 
     /**

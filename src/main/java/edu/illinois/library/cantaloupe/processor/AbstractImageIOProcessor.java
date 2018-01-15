@@ -59,7 +59,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
 
         final ImageReader reader = getReader();
         final Orientation orientation = getEffectiveOrientation();
-        for (int i = 0, numResolutions = reader.getNumResolutions();
+        for (int i = 0, numResolutions = reader.getNumImages();
              i < numResolutions; i++) {
             Info.Image image = new Info.Image();
             image.setSize(reader.getSize(i));

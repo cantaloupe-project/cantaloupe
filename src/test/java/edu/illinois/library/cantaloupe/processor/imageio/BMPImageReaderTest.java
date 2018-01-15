@@ -43,8 +43,8 @@ public class BMPImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testGetNumResolutions() throws Exception {
-        assertEquals(1, instance.getNumResolutions());
+    public void testGetNumImages() throws Exception {
+        assertEquals(1, instance.getNumImages());
     }
 
     @Test
