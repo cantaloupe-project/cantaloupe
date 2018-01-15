@@ -462,7 +462,7 @@ public class Java2DUtilTest extends BaseTest {
     /* transformColor() */
 
     @Test
-    public void testTransformColorToBitonal() {
+    public void testTransformColorFromRGBToBitonal() {
         BufferedImage inImage = new BufferedImage(100, 100,
                 BufferedImage.TYPE_INT_RGB);
 
@@ -493,7 +493,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testTransformColorToGray() {
+    public void testTransformColorFromRGBToGray() {
         BufferedImage inImage = new BufferedImage(100, 100,
                 BufferedImage.TYPE_INT_RGB);
 
@@ -508,6 +508,24 @@ public class Java2DUtilTest extends BaseTest {
                 ColorTransform.GRAY);
 
         assertGray(outImage.getRGB(0, 0));
+    }
+
+    @Test
+    public void testTransformColorFromBitonalToBitonal() {
+        BufferedImage inImage = new BufferedImage(100, 100,
+                BufferedImage.TYPE_BYTE_BINARY);
+        BufferedImage outImage = Java2DUtil.transformColor(inImage,
+                ColorTransform.BITONAL);
+        assertSame(inImage, outImage);
+    }
+
+    @Test
+    public void testTransformColorFromGrayToGray() {
+        BufferedImage inImage = new BufferedImage(100, 100,
+                BufferedImage.TYPE_BYTE_GRAY);
+        BufferedImage outImage = Java2DUtil.transformColor(inImage,
+                ColorTransform.GRAY);
+        assertSame(inImage, outImage);
     }
 
     /* transposeImage() */
