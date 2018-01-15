@@ -73,6 +73,7 @@ public class AzureStorageResolverTest extends BaseTest {
         return client;
     }
 
+
     private static String getAccountName() {
         org.apache.commons.configuration.Configuration testConfig =
                 TestUtil.getTestConfig();

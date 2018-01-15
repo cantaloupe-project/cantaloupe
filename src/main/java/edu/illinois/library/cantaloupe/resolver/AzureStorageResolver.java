@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.StorageUri;
 import com.microsoft.azure.storage.blob.BlobInputStream;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
@@ -13,6 +14,7 @@ import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngine;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +23,7 @@ import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 
@@ -74,6 +77,8 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
             "AzureStorageResolver.account_name";
     static final String CONTAINER_NAME_CONFIG_KEY =
             "AzureStorageResolver.container_name";
+    static final String URI_CONFIG_KEY =
+            "AzureStorageResolver.uri";
     static final String LOOKUP_STRATEGY_CONFIG_KEY =
             "AzureStorageResolver.lookup_strategy";
 
@@ -98,6 +103,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
                 logger.info("Using account: {}", accountName);
 
                 client = account.createCloudBlobClient();
+
             } catch (URISyntaxException | InvalidKeyException e) {
                 logger.error(e.getMessage());
             }
@@ -110,19 +116,31 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
         return new AzureStorageStreamSource(getObject());
     }
 
+
     private CloudBlockBlob getObject() throws IOException {
         final Configuration config = ConfigurationFactory.getInstance();
         final String containerName = config.getString(CONTAINER_NAME_CONFIG_KEY);
-        logger.info("Using container: {}", containerName);
+        final String objectKey = getObjectKey();
+        final CloudBlockBlob blob;
 
-        final CloudBlobClient client = getClientInstance();
         try {
-            final CloudBlobContainer container =
-                    client.getContainerReference(containerName);
-            final String objectKey = getObjectKey();
+            final CloudBlobContainer container;
 
-            logger.info("Requesting {}", objectKey);
-            final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
+            //Add support for direct URI references.  See: https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#resource-uri-syntax
+            //Add support for SAS Token Authentication.  See: https://docs.microsoft.com/en-us/azure/storage/common/storage-dotnet-shared-access-signature-part-1#how-a-shared-access-signature-works
+            if(StringUtils.isEmpty(containerName)) {  //use URI with sas token + container + path directly
+                final URI uri = URI.create(objectKey);
+                logger.info("Using full uri: {}", uri);
+                logger.info("Requesting {}", objectKey);
+                blob = new CloudBlockBlob(uri);
+            } else {  //use a fixed storage account with fixed container.
+                final CloudBlobClient client = getClientInstance();
+                logger.info("Using account with fixed container: {}", containerName);
+                container = client.getContainerReference(containerName);
+                logger.info("Requesting {}", objectKey);
+                blob = container.getBlockBlobReference(objectKey);
+            }
+
             if (!blob.exists()) {
                 throw new FileNotFoundException("Not found: " + objectKey);
             }
