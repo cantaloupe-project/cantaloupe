@@ -898,14 +898,20 @@ public final class Java2DUtil {
         final Stopwatch watch = new Stopwatch();
         switch (colorTransform) {
             case GRAY:
-                filteredImage = new BufferedImage(inImage.getWidth(),
-                        inImage.getHeight(),
-                        BufferedImage.TYPE_BYTE_GRAY);
+                if (filteredImage.getType() != BufferedImage.TYPE_BYTE_GRAY) {
+                    filteredImage = new BufferedImage(
+                            inImage.getWidth(),
+                            inImage.getHeight(),
+                            BufferedImage.TYPE_BYTE_GRAY);
+                }
                 break;
             case BITONAL:
-                filteredImage = new BufferedImage(inImage.getWidth(),
-                        inImage.getHeight(),
-                        BufferedImage.TYPE_BYTE_BINARY);
+                if (filteredImage.getType() != BufferedImage.TYPE_BYTE_BINARY) {
+                    filteredImage = new BufferedImage(
+                            inImage.getWidth(),
+                            inImage.getHeight(),
+                            BufferedImage.TYPE_BYTE_BINARY);
+                }
                 break;
         }
         if (filteredImage != inImage) {
