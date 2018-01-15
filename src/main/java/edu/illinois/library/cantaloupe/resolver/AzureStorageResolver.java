@@ -73,13 +73,14 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     private static final String GET_KEY_DELEGATE_METHOD =
             "AzureStorageResolver::get_blob_key";
 
+    private static CloudStorageAccount account;
     private static CloudBlobClient client;
 
     private CloudBlockBlob cachedBlob;
     private IOException cachedBlobException;
 
-    private static synchronized CloudBlobClient getClientInstance() {
-        if (client == null) {
+    static synchronized CloudStorageAccount getAccount() {
+        if (account == null) {
             try {
                 final Configuration config = Configuration.getInstance();
                 final String accountName =
@@ -91,15 +92,19 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
                         "DefaultEndpointsProtocol=https;" +
                                 "AccountName=%s;" +
                                 "AccountKey=%s", accountName, accountKey);
-                final CloudStorageAccount account =
-                        CloudStorageAccount.parse(connectionString);
+                account = CloudStorageAccount.parse(connectionString);
 
                 LOGGER.info("Using account: {}", accountName);
-
-                client = account.createCloudBlobClient();
             } catch (URISyntaxException | InvalidKeyException e) {
                 LOGGER.error(e.getMessage());
             }
+        }
+        return account;
+    }
+
+    private static synchronized CloudBlobClient getClientInstance() {
+        if (client == null) {
+            client = getAccount().createCloudBlobClient();
         }
         return client;
     }

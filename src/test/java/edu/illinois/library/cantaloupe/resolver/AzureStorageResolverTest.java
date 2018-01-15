@@ -1,6 +1,12 @@
 package edu.illinois.library.cantaloupe.resolver;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.SharedAccessAccountPermissions;
+import com.microsoft.azure.storage.SharedAccessAccountPolicy;
+import com.microsoft.azure.storage.SharedAccessAccountResourceType;
+import com.microsoft.azure.storage.SharedAccessAccountService;
+import com.microsoft.azure.storage.SharedAccessProtocols;
+import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
@@ -21,6 +27,10 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.security.InvalidKeyException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.EnumSet;
 
 import static org.junit.Assert.*;
 
@@ -57,6 +67,13 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
         blob.deleteIfExists();
     }
 
+    private static void clearConfig() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.AZURESTORAGERESOLVER_CONTAINER_NAME, "");
+        config.setProperty(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME, "");
+        config.setProperty(Key.AZURESTORAGERESOLVER_ACCOUNT_KEY, "");
+    }
+
     private static CloudBlobClient client() throws Exception {
         final String accountName = getAccountName();
         final String accountKey = getAccountKey();
@@ -70,6 +87,29 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
         CloudBlobClient client = account.createCloudBlobClient();
         client.getContainerReference(getContainer()).createIfNotExists();
         return client;
+    }
+
+    private static String generateSAS()
+            throws StorageException, InvalidKeyException {
+        SharedAccessAccountPolicy policy = new SharedAccessAccountPolicy();
+        policy.setPermissions(EnumSet.of(
+                SharedAccessAccountPermissions.READ,
+                SharedAccessAccountPermissions.WRITE,
+                SharedAccessAccountPermissions.LIST));
+        policy.setServices(EnumSet.of(
+                SharedAccessAccountService.BLOB,
+                SharedAccessAccountService.FILE));
+        policy.setResourceTypes(EnumSet.of(
+                SharedAccessAccountResourceType.OBJECT));
+
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date());
+        c.add(Calendar.DATE, 365 * 100);
+        policy.setSharedAccessExpiryTime(c.getTime());
+        policy.setProtocols(SharedAccessProtocols.HTTPS_ONLY);
+
+        return AzureStorageResolver.getAccount()
+                .generateSharedAccessSignature(policy);
     }
 
     private static String getAccountName() {
@@ -88,6 +128,12 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
         org.apache.commons.configuration.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.AZURE_CONTAINER.getKey());
+    }
+
+    private static String getSASURI()
+            throws StorageException, InvalidKeyException {
+        return "https://" + getAccountName() + ".blob.core.windows.net/" +
+                getContainer() + "/" + OBJECT_KEY + "?" + generateSAS();
     }
 
     @Before
@@ -168,6 +214,13 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
     }
 
     @Test
+    public void testCheckAccessWithSAS() throws Exception {
+        instance.setIdentifier(new Identifier(getSASURI()));
+        clearConfig();
+        instance.checkAccess();
+    }
+
+    @Test
     public void testGetSourceFormatUsingBasicLookupStrategy()
             throws IOException {
         assertEquals(Format.JPG, instance.getSourceFormat());
@@ -197,6 +250,13 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
     }
 
     @Test
+    public void testGetSourceFormatWithSAS() throws Exception {
+        instance.setIdentifier(new Identifier(getSASURI()));
+        clearConfig();
+        instance.getSourceFormat();
+    }
+
+    @Test
     public void testNewStreamSourceUsingBasicLookupStrategy() throws Exception {
         instance.newStreamSource();
     }
@@ -206,6 +266,13 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
             throws Exception {
         useScriptLookupStrategy();
         assertNotNull(instance.newStreamSource());
+    }
+
+    @Test
+    public void testNewStreamSourceWithSAS() throws Exception {
+        instance.setIdentifier(new Identifier(getSASURI()));
+        clearConfig();
+        instance.newStreamSource();
     }
 
 }
