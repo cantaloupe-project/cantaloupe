@@ -16,6 +16,7 @@ import org.junit.Test;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
@@ -26,6 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 
@@ -519,6 +521,44 @@ abstract class HttpResolverTest extends AbstractResolverTest {
 
         instance.setIdentifier(identifier);
         assertNotNull(instance.newStreamSource());
+    }
+
+    @Test
+    public void testNoUnnecessaryRequests() throws Exception {
+        final AtomicInteger numHEADRequests = new AtomicInteger(0);
+        final AtomicInteger numGETRequests = new AtomicInteger(0);
+
+        server.setHandler(new DefaultHandler() {
+            @Override
+            public void handle(String target,
+                               Request baseRequest,
+                               HttpServletRequest request,
+                               HttpServletResponse response) {
+                switch (request.getMethod().toUpperCase()) {
+                    case "GET":
+                        numGETRequests.incrementAndGet();
+                        break;
+                    case "HEAD":
+                        numHEADRequests.incrementAndGet();
+                        break;
+                    default:
+                        throw new IllegalArgumentException("WTF");
+                }
+                baseRequest.setHandled(true);
+            }
+        });
+        server.start();
+
+        instance.checkAccess();
+        instance.getSourceFormat();
+
+        StreamSource source = instance.newStreamSource();
+        try (InputStream is = source.newInputStream()) {
+            is.read();
+        }
+
+        assertEquals(1, numHEADRequests.get());
+        assertEquals(1, numGETRequests.get());
     }
 
 }
