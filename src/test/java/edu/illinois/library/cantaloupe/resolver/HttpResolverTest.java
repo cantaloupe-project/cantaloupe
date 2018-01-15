@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resolver;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -559,6 +560,32 @@ abstract class HttpResolverTest extends AbstractResolverTest {
 
         assertEquals(1, numHEADRequests.get());
         assertEquals(1, numGETRequests.get());
+    }
+
+    @Test
+    public void testUserAgent() throws Exception {
+        server.setHandler(new DefaultHandler() {
+            @Override
+            public void handle(String target,
+                               Request baseRequest,
+                               HttpServletRequest request,
+                               HttpServletResponse response) {
+                String expected = String.format("%s/%s (%s/%s; java/%s; %s/%s)",
+                        HttpResolver.class.getSimpleName(),
+                        Application.getVersion(),
+                        Application.NAME,
+                        Application.getVersion(),
+                        System.getProperty("java.version"),
+                        System.getProperty("os.name"),
+                        System.getProperty("os.version"));
+                assertEquals(expected, baseRequest.getHeader("User-Agent"));
+
+                baseRequest.setHandled(true);
+            }
+        });
+        server.start();
+
+        instance.checkAccess();
     }
 
 }

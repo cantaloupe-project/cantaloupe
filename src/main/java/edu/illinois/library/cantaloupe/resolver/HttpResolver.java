@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resolver;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -154,8 +155,8 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
     }
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(HttpResolver.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(HttpResolver.class);
 
     private static final String GET_URL_DELEGATE_METHOD =
             "HttpResolver::get_url";
@@ -184,6 +185,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
             jettyClient = new HttpClient(transport, sslContextFactory);
             jettyClient.setFollowRedirects(true);
+            jettyClient.setUserAgentField(new HttpField("User-Agent", getUserAgent()));
 
             try {
                 jettyClient.start();
@@ -209,6 +211,17 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     private static int getRequestTimeout() {
         return Configuration.getInstance().
                 getInt(Key.HTTPRESOLVER_REQUEST_TIMEOUT, 10);
+    }
+
+    private static String getUserAgent() {
+        return String.format("%s/%s (%s/%s; java/%s; %s/%s)",
+                HttpResolver.class.getSimpleName(),
+                Application.getVersion(),
+                Application.NAME,
+                Application.getVersion(),
+                System.getProperty("java.version"),
+                System.getProperty("os.name"),
+                System.getProperty("os.version"));
     }
 
     @Override
