@@ -18,6 +18,7 @@ import javax.media.jai.JAI;
 import javax.media.jai.OpImage;
 import javax.media.jai.PlanarImage;
 import java.awt.image.BufferedImage;
+import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
@@ -187,15 +188,17 @@ final class JPEGImageWriter extends AbstractImageWriter {
     @SuppressWarnings("deprecation")
     private void write(PlanarImage image,
                        OutputStream outputStream) throws IOException {
-        // JPEGImageWriter will interpret a >3-band image as CMYK.
-        // So, select only the first 3 bands.
-        if (OpImage.getExpandedNumBands(image.getSampleModel(),
-                image.getColorModel()) > 3) {
-            ParameterBlock pb = new ParameterBlock();
-            pb.addSource(image);
-            final int[] bands = {0, 1, 2};
-            pb.add(bands);
-            image = JAI.create("bandselect", pb, null);
+        if (!(image.getColorModel() instanceof IndexColorModel)) {
+            // JPEGImageWriter will interpret a >3-band image as CMYK.
+            // So, select only the first 3 bands.
+            if (OpImage.getExpandedNumBands(image.getSampleModel(),
+                    image.getColorModel()) > 3) {
+                ParameterBlock pb = new ParameterBlock();
+                pb.addSource(image);
+                final int[] bands = {0, 1, 2};
+                pb.add(bands);
+                image = JAI.create("bandselect", pb, null);
+            }
         }
         final ImageWriteParam writeParam = getWriteParam();
         final IIOMetadata metadata = getMetadata(writeParam, image);
