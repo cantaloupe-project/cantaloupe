@@ -34,6 +34,7 @@ import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -613,9 +614,14 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 hashedPathFragment(identifier.toString()));
         final String expectedNamePrefix =
                 StringUtil.filesystemSafe(identifier.toString());
-        return Files.list(cachePath)
-                .filter(p -> p.getFileName().toString().startsWith(expectedNamePrefix))
-                .collect(Collectors.toSet());
+        try {
+            return Files.list(cachePath)
+                    .filter(p -> p.getFileName().toString().startsWith(expectedNamePrefix))
+                    .collect(Collectors.toSet());
+        } catch (NoSuchFileException e) {
+            LOGGER.warn("getDerivativeImageFiles(): {}", e.getMessage());
+            return Collections.emptySet();
+        }
     }
 
     @Override
