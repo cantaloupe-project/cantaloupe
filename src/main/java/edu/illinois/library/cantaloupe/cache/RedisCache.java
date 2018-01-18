@@ -99,7 +99,9 @@ class RedisCache implements DerivativeCache {
         @Override
         public void close() throws IOException {
             try {
-                bufferStream.close();
+                if (bufferStream != null) {
+                    bufferStream.close();
+                }
             } finally {
                 super.close();
             }
