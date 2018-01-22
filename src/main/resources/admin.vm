@@ -1862,8 +1862,9 @@
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
                                            data-content="Color of the background when an image
-                                               is rotated or alpha-flattened. Only affects output
-                                               formats that do not support transparency.">?</a>
+                                               is rotated or alpha-flattened, for output
+                                               formats that do not support transparency. This may
+                                               not be respected for indexed color derivative images.">?</a>
                                     </td>
                                     <td>
                                         <select class="form-control"

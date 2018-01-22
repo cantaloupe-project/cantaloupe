@@ -276,6 +276,7 @@ processor.normalize = false
 
 # Color of the background when an image is rotated or alpha-flattened, for
 # output formats that don't support transparency.
+# This may not be respected for indexed color derivative images.
 processor.background_color = black
 
 # Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
