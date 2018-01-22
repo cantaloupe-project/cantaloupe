@@ -1230,7 +1230,7 @@
                             </ul>
 
                             <div class="tab-content">
-                                <div role="tabpanel" class="tab-pane" id="AmazonS3Resolver">
+                                <div role="tabpanel" class="tab-pane" id="S3Resolver">
                                     <table class="table table-striped">
                                         <tr>
                                             <td>Access Key ID
@@ -1246,7 +1246,7 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="AmazonS3Resolver.access_key_id"
+                                                       name="S3Resolver.access_key_id"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -1264,7 +1264,7 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="AmazonS3Resolver.secret_key"
+                                                       name="S3Resolver.secret_key"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -1278,22 +1278,22 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="AmazonS3Resolver.bucket.name"
+                                                       name="S3Resolver.bucket.name"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Bucket Region
+                                            <td>Endpoint
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
                                                    data-content="See: &lt;a href=&quot;http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region&quot;&gt;
                                                    http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region&lt;/a&gt;
-                                                   for a list of regions.">?</a>
+                                                   for a list of AWS endpoints.">?</a>
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="AmazonS3Resolver.bucket.region"
+                                                       name="S3Resolver.endpoint"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -1308,7 +1308,7 @@
                                             </td>
                                             <td>
                                                 <select class="form-control"
-                                                        name="AmazonS3Resolver.lookup_strategy"
+                                                        name="S3Resolver.lookup_strategy"
                                                         data-requires-restart="false">
                                                     <option value="BasicLookupStrategy">Basic</option>
                                                     <option value="ScriptLookupStrategy">Delegate Script</option>
@@ -1325,7 +1325,7 @@
                                             <td>
                                                 <input class="form-control" type="number"
                                                        min="1"
-                                                       name="AmazonS3Resolver.max_connections"
+                                                       name="S3Resolver.max_connections"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -2501,7 +2501,7 @@
                             </ul>
 
                             <div class="tab-content">
-                                <div role="tabpanel" class="tab-pane" id="AmazonS3Cache">
+                                <div role="tabpanel" class="tab-pane" id="S3Cache">
                                     <table class="table table-striped">
                                         <tr>
                                             <td>Access Key ID
@@ -2517,7 +2517,7 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="AmazonS3Cache.access_key_id"
+                                                       name="S3Cache.access_key_id"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -2535,7 +2535,7 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="AmazonS3Cache.secret_key"
+                                                       name="S3Cache.secret_key"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -2549,22 +2549,22 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="AmazonS3Cache.bucket.name"
+                                                       name="S3Cache.bucket.name"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Bucket Region
+                                            <td>Endpoint
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
                                                    data-content="See: &lt;a href=&quot;http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region&quot;&gt;
                                                    http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region&lt;/a&gt;
-                                                   for a list of regions.">?</a>
+                                                   for a list of AWS endpoints.">?</a>
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="AmazonS3Cache.bucket.region"
+                                                       name="S3Cache.endpoint"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -2578,7 +2578,7 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
-                                                       name="AmazonS3Cache.object_key_prefix"
+                                                       name="S3Cache.object_key_prefix"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -2592,7 +2592,7 @@
                                             <td>
                                                 <input class="form-control" type="number"
                                                        min="1"
-                                                       name="AmazonS3Cache.max_connections"
+                                                       name="S3Cache.max_connections"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>

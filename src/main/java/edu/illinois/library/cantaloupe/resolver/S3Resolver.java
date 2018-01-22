@@ -21,26 +21,27 @@ import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
 import java.util.Map;
 
 /**
  * <p>Maps an identifier to an <a href="https://aws.amazon.com/s3/">Amazon
- * Simple Storage Service (S3)</a> object, for retrieving images from Amazon
- * S3.</p>
+ * Simple Storage Service (S3)</a> object, for retrieving images from S3.</p>
  *
  * <h1>Lookup Strategies</h1>
  *
  * <p>Two distinct lookup strategies are supported, defined by
- * {@link Key#AMAZONS3RESOLVER_LOOKUP_STRATEGY}. BasicLookupStrategy maps
+ * {@link Key#S3RESOLVER_LOOKUP_STRATEGY}. BasicLookupStrategy maps
  * identifiers directly to S3 object keys. ScriptLookupStrategy invokes a
  * delegate method to retrieve object keys dynamically.</p>
  *
  * @see <a href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/welcome.html">
  *     AWS SDK for Java</a>
  */
-class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
+class S3Resolver extends AbstractResolver implements StreamResolver {
 
     private static class ObjectInfo {
 
@@ -89,10 +90,10 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     }
 
     private static final Logger LOGGER = LoggerFactory.
-            getLogger(AmazonS3Resolver.class);
+            getLogger(S3Resolver.class);
 
     private static final String GET_KEY_DELEGATE_METHOD =
-            "AmazonS3Resolver::get_object_key";
+            "S3Resolver::get_object_key";
 
     private static AmazonS3 client;
 
@@ -101,11 +102,20 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     private static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
             final Configuration config = Configuration.getInstance();
+
+            URI endpointURI = null;
+            try {
+                endpointURI = new URI(config.getString(Key.S3RESOLVER_ENDPOINT));
+            } catch (URISyntaxException e) {
+                LOGGER.error("Invalid URI for {}: {}",
+                        Key.S3RESOLVER_ENDPOINT, e.getMessage());
+            }
+
             client = new AWSClientBuilder()
-                    .accessKeyID(config.getString(Key.AMAZONS3RESOLVER_ACCESS_KEY_ID))
-                    .secretKey(config.getString(Key.AMAZONS3RESOLVER_SECRET_KEY))
-                    .region(config.getString(Key.AMAZONS3RESOLVER_BUCKET_REGION))
-                    .maxConnections(config.getInt(Key.AMAZONS3RESOLVER_MAX_CONNECTIONS, 100))
+                    .endpointURI(endpointURI)
+                    .accessKeyID(config.getString(Key.S3RESOLVER_ACCESS_KEY_ID))
+                    .secretKey(config.getString(Key.S3RESOLVER_SECRET_KEY))
+                    .maxConnections(config.getInt(Key.S3RESOLVER_MAX_CONNECTIONS, 100))
                     .build();
         }
         return client;
@@ -161,7 +171,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
         ObjectInfo objectInfo;
 
         final LookupStrategy strategy =
-                LookupStrategy.fromKey(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY);
+                LookupStrategy.fromKey(Key.S3RESOLVER_LOOKUP_STRATEGY);
         switch (strategy) {
             case DELEGATE_SCRIPT:
                 try {
@@ -179,7 +189,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
                     } else {
                         objectKey = (String) object;
                         bucketName = config.getString(
-                                Key.AMAZONS3RESOLVER_BUCKET_NAME);
+                                Key.S3RESOLVER_BUCKET_NAME);
                     }
                     objectInfo = new ObjectInfo(objectKey, bucketName);
                 } catch (ScriptException | DelegateScriptDisabledException e) {
@@ -188,14 +198,13 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
                 break;
             default:
                 objectInfo = new ObjectInfo(identifier.toString(),
-                        config.getString(Key.AMAZONS3RESOLVER_BUCKET_NAME));
+                        config.getString(Key.S3RESOLVER_BUCKET_NAME));
                 break;
         }
         return objectInfo;
     }
 
     /**
-     * @return
      * @throws NoSuchFileException If the delegate script does not exist.
      * @throws IOException
      * @throws ScriptException If the delegate method throws an exception.

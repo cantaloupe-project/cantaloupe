@@ -33,12 +33,12 @@ public final class CacheFactory {
      */
     public static Set<DerivativeCache> getAllDerivativeCaches() {
         return new HashSet<>(Arrays.asList(
-                new AmazonS3Cache(),
                 new AzureStorageCache(),
                 new FilesystemCache(),
                 new HeapCache(),
                 new JdbcCache(),
-                new RedisCache()));
+                new RedisCache(),
+                new S3Cache()));
     }
 
     /**

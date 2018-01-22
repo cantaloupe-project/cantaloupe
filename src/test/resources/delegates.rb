@@ -51,7 +51,7 @@ module Cantaloupe
     end
   end
 
-  module AmazonS3Resolver
+  module S3Resolver
     def self.get_object_key(identifier, context)
       if identifier.include?('key:')
         parts = identifier.split(';')

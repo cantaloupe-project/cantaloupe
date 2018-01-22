@@ -321,15 +321,15 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         selectNamed(Key.RESOLVER_DELEGATE).selectByValue("false");
         selectNamed(Key.RESOLVER_STATIC).
                 selectByVisibleText("FilesystemResolver");
-        // AmazonS3Resolver section
-        css("#cl-resolver li > a[href=\"#AmazonS3Resolver\"]").click();
-        inputNamed(Key.AMAZONS3RESOLVER_ACCESS_KEY_ID).sendKeys("123");
-        inputNamed(Key.AMAZONS3RESOLVER_SECRET_KEY).sendKeys("456");
-        inputNamed(Key.AMAZONS3RESOLVER_BUCKET_NAME).sendKeys("cats");
-        inputNamed(Key.AMAZONS3RESOLVER_BUCKET_REGION).sendKeys("antarctica");
-        selectNamed(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY).
+        // S3Resolver section
+        css("#cl-resolver li > a[href=\"#S3Resolver\"]").click();
+        inputNamed(Key.S3RESOLVER_ACCESS_KEY_ID).sendKeys("123");
+        inputNamed(Key.S3RESOLVER_SECRET_KEY).sendKeys("456");
+        inputNamed(Key.S3RESOLVER_BUCKET_NAME).sendKeys("cats");
+        inputNamed(Key.S3RESOLVER_ENDPOINT).sendKeys("http://localhost:1234");
+        selectNamed(Key.S3RESOLVER_LOOKUP_STRATEGY).
                 selectByValue("BasicLookupStrategy");
-        inputNamed(Key.AMAZONS3RESOLVER_MAX_CONNECTIONS).sendKeys("45");
+        inputNamed(Key.S3RESOLVER_MAX_CONNECTIONS).sendKeys("45");
         // AzureStorageResolver
         css("#cl-resolver li > a[href=\"#AzureStorageResolver\"]").click();
         inputNamed(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME).sendKeys("bla");
@@ -370,19 +370,19 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertFalse(config.getBoolean(Key.RESOLVER_DELEGATE));
         assertEquals("FilesystemResolver",
                 config.getString(Key.RESOLVER_STATIC));
-        // AmazonS3Resolver
+        // S3Resolver
         assertEquals("123",
-                config.getString(Key.AMAZONS3RESOLVER_ACCESS_KEY_ID));
+                config.getString(Key.S3RESOLVER_ACCESS_KEY_ID));
         assertEquals("456",
-                config.getString(Key.AMAZONS3RESOLVER_SECRET_KEY));
+                config.getString(Key.S3RESOLVER_SECRET_KEY));
         assertEquals("cats",
-                config.getString(Key.AMAZONS3RESOLVER_BUCKET_NAME));
-        assertEquals("antarctica",
-                config.getString(Key.AMAZONS3RESOLVER_BUCKET_REGION));
+                config.getString(Key.S3RESOLVER_BUCKET_NAME));
+        assertEquals("http://localhost:1234",
+                config.getString(Key.S3RESOLVER_ENDPOINT));
         assertEquals("BasicLookupStrategy",
-                config.getString(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY));
+                config.getString(Key.S3RESOLVER_LOOKUP_STRATEGY));
         assertEquals("45",
-                config.getString(Key.AMAZONS3RESOLVER_MAX_CONNECTIONS));
+                config.getString(Key.S3RESOLVER_MAX_CONNECTIONS));
         // AzureStorageResolver
         assertEquals("bla",
                 config.getString(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME));
@@ -536,14 +536,14 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.CACHE_SERVER_TTL).sendKeys("10");
         inputNamed(Key.CACHE_WORKER_ENABLED).click();
         inputNamed(Key.CACHE_WORKER_INTERVAL).sendKeys("25");
-        // AmazonS3Cache
-        css("#cl-caches li > a[href=\"#AmazonS3Cache\"]").click();
-        inputNamed(Key.AMAZONS3CACHE_ACCESS_KEY_ID).sendKeys("cats");
-        inputNamed(Key.AMAZONS3CACHE_SECRET_KEY).sendKeys("dogs");
-        inputNamed(Key.AMAZONS3CACHE_BUCKET_NAME).sendKeys("bucket");
-        inputNamed(Key.AMAZONS3CACHE_BUCKET_REGION).sendKeys("greenland");
-        inputNamed(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX).sendKeys("obj");
-        inputNamed(Key.AMAZONS3CACHE_MAX_CONNECTIONS).sendKeys("35");
+        // S3Cache
+        css("#cl-caches li > a[href=\"#S3Cache\"]").click();
+        inputNamed(Key.S3CACHE_ACCESS_KEY_ID).sendKeys("cats");
+        inputNamed(Key.S3CACHE_SECRET_KEY).sendKeys("dogs");
+        inputNamed(Key.S3CACHE_BUCKET_NAME).sendKeys("bucket");
+        inputNamed(Key.S3CACHE_ENDPOINT).sendKeys("localhost:1234");
+        inputNamed(Key.S3CACHE_OBJECT_KEY_PREFIX).sendKeys("obj");
+        inputNamed(Key.S3CACHE_MAX_CONNECTIONS).sendKeys("35");
         // AzureStorageCache
         css("#cl-caches li > a[href=\"#AzureStorageCache\"]").click();
         inputNamed(Key.AZURESTORAGECACHE_ACCOUNT_NAME).sendKeys("bees");
@@ -603,13 +603,13 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertEquals(10, config.getInt(Key.CACHE_SERVER_TTL));
         assertTrue(config.getBoolean(Key.CACHE_WORKER_ENABLED));
         assertEquals(25, config.getInt(Key.CACHE_WORKER_INTERVAL));
-        // AmazonS3Cache
-        assertEquals("cats", config.getString(Key.AMAZONS3CACHE_ACCESS_KEY_ID));
-        assertEquals("dogs", config.getString(Key.AMAZONS3CACHE_SECRET_KEY));
-        assertEquals("bucket", config.getString(Key.AMAZONS3CACHE_BUCKET_NAME));
-        assertEquals("greenland", config.getString(Key.AMAZONS3CACHE_BUCKET_REGION));
-        assertEquals("obj", config.getString(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX));
-        assertEquals("35", config.getString(Key.AMAZONS3CACHE_MAX_CONNECTIONS));
+        // S3Cache
+        assertEquals("cats", config.getString(Key.S3CACHE_ACCESS_KEY_ID));
+        assertEquals("dogs", config.getString(Key.S3CACHE_SECRET_KEY));
+        assertEquals("bucket", config.getString(Key.S3CACHE_BUCKET_NAME));
+        assertEquals("localhost:1234", config.getString(Key.S3CACHE_ENDPOINT));
+        assertEquals("obj", config.getString(Key.S3CACHE_OBJECT_KEY_PREFIX));
+        assertEquals("35", config.getString(Key.S3CACHE_MAX_CONNECTIONS));
         // AzureStorageCache
         assertEquals("bees", config.getString(Key.AZURESTORAGECACHE_ACCOUNT_NAME));
         assertEquals("birds", config.getString(Key.AZURESTORAGECACHE_ACCOUNT_KEY));

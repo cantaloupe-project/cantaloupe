@@ -95,7 +95,7 @@ module Cantaloupe
 
   end
 
-  module AmazonS3Resolver
+  module S3Resolver
 
     ##
     # @param identifier [String] Image identifier

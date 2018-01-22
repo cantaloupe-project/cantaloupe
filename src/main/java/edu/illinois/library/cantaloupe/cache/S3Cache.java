@@ -25,34 +25,36 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 /**
- * <p>Cache using an Amazon S3 bucket.</p>
+ * <p>Cache using an S3 bucket.</p>
  *
  * <p>To improve client-responsiveness, uploads are asynchronous.</p>
  *
- * <p>Keys are named according to the following template:</p>
+ * <p>Object keys are named according to the following template:</p>
  *
  * <dl>
  *     <dt>Images</dt>
- *     <dd><code>{@link Key#AMAZONS3CACHE_OBJECT_KEY_PREFIX}/image/{op list
- *     string representation}</code></dd>
+ *     <dd><code>{@link Key#S3CACHE_OBJECT_KEY_PREFIX}/image/{op list string
+ *     representation}</code></dd>
  *     <dt>Info</dt>
- *     <dd><code>{@link Key#AMAZONS3CACHE_OBJECT_KEY_PREFIX}/info/{identifier}.json</code></dd>
+ *     <dd><code>{@link Key#S3CACHE_OBJECT_KEY_PREFIX}/info/{identifier}.json</code></dd>
  * </dl>
  *
  * @see <a href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/welcome.html">
  *     AWS SDK for Java</a>
  * @since 3.0
  */
-class AmazonS3Cache implements DerivativeCache {
+class S3Cache implements DerivativeCache {
 
     /**
-     * <p>Wraps a {@link ByteArrayOutputStream} for upload to Amazon S3.</p>
+     * <p>Wraps a {@link ByteArrayOutputStream} for upload to S3.</p>
      *
-     * <p>N.B. S3 does not allow uploads without a <code>Content-Length</code>
+     * <p>N.B.: S3 does not allow uploads without a <code>Content-Length</code>
      * header, which is impossible to provide when streaming an unknown amount
      * of data (which this class is going to be doing all the time). From the
      * documentation of {@link PutObjectRequest}:</p>
@@ -64,13 +66,14 @@ class AmazonS3Cache implements DerivativeCache {
      * content length be sent in the request headers before any of the data is
      * sent."</blockquote>
      *
-     * <p>Since it's not possible to write an OutputStream of unknown length
-     * to the S3 client as the {@link Cache} interface requires, this class
-     * buffers written data in a byte array before uploading it to S3 upon
-     * closure. (The upload is submitted to the {@link ThreadPool} in order to
-     * allow {@link #close()} to return immediately.)</p>
+     * <p>Since it's not possible to write an {@link OutputStream} of unknown
+     * length to the S3 client as the {@link Cache} interface requires, this
+     * class buffers written data in a byte array before uploading it to S3
+     * upon closure. (The upload is submitted to the
+     * {@link ThreadPool#getInstance() application thread pool} in order to
+     * endable {@link #close()} to return immediately.)</p>
      */
-    private static class AmazonS3OutputStream extends OutputStream {
+    private static class S3OutputStream extends OutputStream {
 
         private final ByteArrayOutputStream bufferStream =
                 new ByteArrayOutputStream();
@@ -85,10 +88,10 @@ class AmazonS3Cache implements DerivativeCache {
          * @param objectKey  S3 object key.
          * @param metadata   S3 object metadata.
          */
-        AmazonS3OutputStream(final AmazonS3 s3,
-                             final String bucketName,
-                             final String objectKey,
-                             final ObjectMetadata metadata) {
+        S3OutputStream(final AmazonS3 s3,
+                       final String bucketName,
+                       final String objectKey,
+                       final ObjectMetadata metadata) {
             this.bucketName = bucketName;
             this.s3 = s3;
             this.objectKey = objectKey;
@@ -101,7 +104,7 @@ class AmazonS3Cache implements DerivativeCache {
             // progress indicator is still spinning while it waits for the
             // connection to close. Uploading in a separate thread will allow
             // this to happen immediately.
-            ThreadPool.getInstance().submit(new AmazonS3Upload(
+            ThreadPool.getInstance().submit(new S3Upload(
                     s3, bufferStream, bucketName, objectKey, metadata));
         }
 
@@ -127,10 +130,10 @@ class AmazonS3Cache implements DerivativeCache {
 
     }
 
-    private static class AmazonS3Upload implements Runnable {
+    private static class S3Upload implements Runnable {
 
         private static final Logger UPLOAD_LOGGER = LoggerFactory.
-                getLogger(AmazonS3Upload.class);
+                getLogger(S3Upload.class);
 
         private String bucketName;
         private ByteArrayOutputStream byteStream;
@@ -145,11 +148,11 @@ class AmazonS3Cache implements DerivativeCache {
          * @param objectKey  S3 object key.
          * @param metadata   S3 object metadata.
          */
-        AmazonS3Upload(AmazonS3 s3,
-                       ByteArrayOutputStream byteStream,
-                       String bucketName,
-                       String objectKey,
-                       ObjectMetadata metadata) {
+        S3Upload(AmazonS3 s3,
+                 ByteArrayOutputStream byteStream,
+                 String bucketName,
+                 String objectKey,
+                 ObjectMetadata metadata) {
             this.bucketName = bucketName;
             this.byteStream = byteStream;
             this.s3 = s3;
@@ -180,7 +183,7 @@ class AmazonS3Cache implements DerivativeCache {
     }
 
     private static final Logger LOGGER = LoggerFactory.
-            getLogger(AmazonS3Cache.class);
+            getLogger(S3Cache.class);
 
     /** Lazy-initialized by {@link #getClientInstance} */
     private static AmazonS3 client;
@@ -188,11 +191,20 @@ class AmazonS3Cache implements DerivativeCache {
     static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
             final Configuration config = Configuration.getInstance();
+
+            URI endpointURI = null;
+            try {
+                endpointURI = new URI(config.getString(Key.S3CACHE_ENDPOINT));
+            } catch (URISyntaxException e) {
+                LOGGER.error("Invalid URI for {}: {}",
+                        Key.S3CACHE_ENDPOINT, e.getMessage());
+            }
+
             client = new AWSClientBuilder()
-                    .accessKeyID(config.getString(Key.AMAZONS3CACHE_ACCESS_KEY_ID))
-                    .secretKey(config.getString(Key.AMAZONS3CACHE_SECRET_KEY))
-                    .region(config.getString(Key.AMAZONS3CACHE_BUCKET_REGION))
-                    .maxConnections(config.getInt(Key.AMAZONS3CACHE_MAX_CONNECTIONS, 100))
+                    .endpointURI(endpointURI)
+                    .accessKeyID(config.getString(Key.S3CACHE_ACCESS_KEY_ID))
+                    .secretKey(config.getString(Key.S3CACHE_SECRET_KEY))
+                    .maxConnections(config.getInt(Key.S3CACHE_MAX_CONNECTIONS, 100))
                     .build();
         }
         return client;
@@ -209,7 +221,7 @@ class AmazonS3Cache implements DerivativeCache {
 
     String getBucketName() {
         return Configuration.getInstance().
-                getString(Key.AMAZONS3CACHE_BUCKET_NAME);
+                getString(Key.S3CACHE_BUCKET_NAME);
     }
 
     @Override
@@ -291,7 +303,7 @@ class AmazonS3Cache implements DerivativeCache {
         final ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentType(
                 opList.getOutputFormat().getPreferredMediaType().toString());
-        return new AmazonS3OutputStream(s3, bucketName, objectKey, metadata);
+        return new S3OutputStream(s3, bucketName, objectKey, metadata);
     }
 
     /**
@@ -312,12 +324,12 @@ class AmazonS3Cache implements DerivativeCache {
     }
 
     /**
-     * @return Value of {@link Key#AMAZONS3CACHE_OBJECT_KEY_PREFIX}
+     * @return Value of {@link Key#S3CACHE_OBJECT_KEY_PREFIX}
      *         with trailing slash.
      */
     String getObjectKeyPrefix() {
         String prefix = Configuration.getInstance().
-                getString(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX);
+                getString(Key.S3CACHE_OBJECT_KEY_PREFIX);
         if (prefix.length() < 1 || prefix.equals("/")) {
             return "";
         }
@@ -447,7 +459,7 @@ class AmazonS3Cache implements DerivativeCache {
         metadata.setContentEncoding("UTF-8");
         metadata.setContentLength(os.size());
 
-        new AmazonS3Upload(s3, os, bucketName, objectKey, metadata).run();
+        new S3Upload(s3, os, bucketName, objectKey, metadata).run();
     }
 
 }

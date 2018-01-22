@@ -1,11 +1,11 @@
 # Cantaloupe unit test configuration file. DO NOT EDIT; copy to test.properties
 # and edit that.
 
-# Used by AmazonS3ResolverTest and AmazonS3CacheTest.
-amazons3.access_key_id =
-amazons3.secret_key =
-amazons3.bucket =
-amazons3.region = us-east-1
+# Used by S3ResolverTest and S3CacheTest.
+s3.endpoint =
+s3.access_key_id =
+s3.secret_key =
+s3.bucket =
 
 
 # Used by AzureStorageResolverTest and AzureStorageCacheTest.

@@ -29,7 +29,7 @@ title: Caching
           <li><a href="#FilesystemCache">FilesystemCache</a></li>
           <li><a href="#HeapCache">HeapCache</a></li>
           <li><a href="#JdbcCache">JdbcCache</a></li>
-          <li><a href="#AmazonS3Cache">AmazonS3Cache</a></li>
+          <li><a href="#S3Cache">S3Cache</a></li>
           <li><a href="#AzureStorageCache">AzureStorageCache</a></li>
           <li><a href="#RedisCache">RedisCache</a></li>
         </ul>
@@ -84,7 +84,7 @@ cache.client.no_transform = true
 
 <p>As explained in the <a href="resolvers.html">Resolvers</a> section, though, images do not have to be served from a local filesystem&mdash;they can also be served from a remote web server, cloud storage, or wherever. The source cache can be beneficial when one of these non-filesystem sources performs poorer than ideal. Setting <code>cache.server.source</code> to <code>FilesystemCache</code> will cause all source images from non-FilesystemResolvers to be automatically downloaded and stored in the source cache.</p>
 
-<p>Another reason for a source cache is to work around the <a href="processors.html#Resolver%20Compatibility">incompatibility between certain processors and resolvers</a>. Some processors are only capable of reading source images located on the filesystem. By setting <code>StreamProcessor.retrieval_strategy</code> to <code>CacheStrategy</code>, and then <a href="#FilesystemCache">configuring FilesystemCache</a>, the source cache will be utilized to deal with incompatible processor/resolver situations by automatically pre-downloading source images, This makes it possible to use something like <a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> with <a href="resolvers.html#AmazonS3Resolver">AmazonS3Resolver</a>.</p>
+<p>Another reason for a source cache is to work around the <a href="processors.html#Resolver%20Compatibility">incompatibility between certain processors and resolvers</a>. Some processors are only capable of reading source images located on the filesystem. By setting <code>StreamProcessor.retrieval_strategy</code> to <code>CacheStrategy</code>, and then <a href="#FilesystemCache">configuring FilesystemCache</a>, the source cache will be utilized to deal with incompatible processor/resolver situations by automatically pre-downloading source images, This makes it possible to use something like <a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> with <a href="resolvers.html#S3Resolver">S3Resolver</a>.</p>
 
 <p>The source cache is integrated into the larger caching architecture, so all of the information about <a href="#Modes%20of%20Operation">modes of operation</a> and <a href="#Maintenance">maintenance</a> is applicable to both the source and derivative caches.</p>
 
@@ -310,36 +310,36 @@ CREATE INDEX identifier_idx ON {JdbcCache.info_table} (identifier);
 
 <hr>
 
-<h4 id="AmazonS3Cache">AmazonS3Cache</h4>
+<h4 id="S3Cache">S3Cache</h4>
 
-<p>AmazonS3Cache caches derivative images and metadata into an Amazon Simple Storage Service (S3) bucket.</p>
+<p>S3Cache (previously named AmazonS3Cache) caches derivative images and metadata into an Amazon Simple Storage Service (S3) bucket.</p>
 
 <h5>Configuration</h5>
 
-<p>AmazonS3Cache is configured (excepting credentials) using the following configuration keys:</p>
+<p>S3Cache is configured (excepting credentials) using the following configuration keys:</p>
 
 <dl>
-  <dt><code>AmazonS3Cache.bucket.name</code></dt>
+  <dt><code>S3Cache.endpoint</code></dt>
+  <dd>URI or hostname of an S3 endpont. For AWS endpoints, this will be a value like <code>s3.us-east-2.amazonaws.com</code>. (See the <a href="http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region">list of AWS S3 Regions</a>.)</dd>
+  <dt><code>S3Cache.bucket.name</code></dt>
   <dd>Name of the bucket to contain cached content.</dd>
-  <dt><code>AmazonS3Cache.bucket.region</code></dt>
-  <dd>Name of a region to send requests to, such as <code>us-east-1</code>. Can be commented out or left blank to use a default region. (See <a href="http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region">S3 Regions</a>.)</dd>
-  <dt><code>AmazonS3Cache.object_key_prefix</code></dt>
+  <dt><code>S3Cache.object_key_prefix</code></dt>
   <dd>String to prepend to object keys&mdash;for example, to achieve a virtual folder hierarchy.</dd>
 </dl>
 
 <h5>Credentials Sources</h5>
 
-<p>See the <a href="resolvers.html#AmazonS3ResolverCredentialsSources">Credentials Sources</a> information for AmazonS3Resolver. AmazonS3Cache works the same way, except that the credentials-related configuration keys, if you choose to use them, are different:</p>
+<p>See the <a href="resolvers.html#S3ResolverCredentialsSources">Credentials Sources</a> information for S3Resolver. S3Cache works the same way, except that the credentials-related configuration keys, if you choose to use them, are different:</p>
 
 <dl>
-  <dt><code>AmazonS3Cache.access_key_id</code></dt>
+  <dt><code>S3Cache.access_key_id</code></dt>
   <dd>An access key associated with your AWS account. (See <a href="http://aws.amazon.com/security-credentials">AWS Security Credentials</a>.)</dd>
-  <dt><code>AmazonS3Cache.secret_key</code></dt>
+  <dt><code>S3Cache.secret_key</code></dt>
   <dd>A secret key associated with your AWS account. (See <a href="http://aws.amazon.com/security-credentials">AWS Security Credentials</a>.)</dd>
 </dl>
 
 <div class="alert alert-info">
-  Note: Amazon S3 does not provide a last-accessed time in object metadata, so the time-to-live will be on the basis of last-modified time instead.
+  Note: S3 does not provide a last-accessed time in object metadata, so the time-to-live is on the basis of last-modified time instead.
 </div>
 
 <hr>

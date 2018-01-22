@@ -11,10 +11,11 @@ public enum ConfigurationConstants {
     REDIS_PASSWORD("redis.password"),
     REDIS_PORT("redis.port"),
     REDIS_SSL("redis.ssl"),
-    S3_ACCESS_KEY_ID("amazons3.access_key_id"),
-    S3_BUCKET("amazons3.bucket"),
-    S3_REGION("amazons3.region"),
-    S3_SECRET_KEY("amazons3.secret_key");
+    S3_ACCESS_KEY_ID("s3.access_key_id"),
+    S3_BUCKET("s3.bucket"),
+    S3_ENDPOINT("s3.endpoint"),
+    S3_REGION("s3.region"),
+    S3_SECRET_KEY("s3.secret_key");
 
     private String key;
 
