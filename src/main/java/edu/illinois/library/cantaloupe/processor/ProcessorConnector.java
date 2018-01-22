@@ -23,24 +23,70 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Establishes the best connection between a processor and a resolver.
+ * Establishes the best connection between a {@link Resolver} and a
+ * {@link Processor}.
  */
-public class ProcessorConnector {
+public final class ProcessorConnector {
 
+    /**
+     * Strategy used by {@link StreamProcessor}s to read content.
+     */
     enum StreamProcessorRetrievalStrategy {
-        STREAM, CACHE
+
+        /**
+         * Content is streamed into a reader from its source. When multiple
+         * threads need to read the same image simultaneously, all will stream
+         * it from the source simultaneously.
+         */
+        STREAM("StreamStrategy"),
+
+        /**
+         * Source content is downloaded into a {@link SourceCache} before
+         * being read. When multiple threads need to read the same image and it
+         * has not yet been cached, they will wait (on a monitor) for the image
+         * to download.
+         */
+        CACHE("CacheStrategy");
+
+        private final String configValue;
+
+        StreamProcessorRetrievalStrategy(String configValue) {
+            this.configValue = configValue;
+        }
+
+        /**
+         * @return Representative string value of the strategy in the
+         *         application configuration.
+         */
+        public String getConfigValue() {
+            return configValue;
+        }
+
+        @Override
+        public String toString() {
+            return getConfigValue();
+        }
+
     }
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(ProcessorConnector.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(ProcessorConnector.class);
 
+    /**
+     * Maximum number of a times a source image download will be attempted.
+     */
+    private static final short MAX_NUM_SOURCE_CACHE_RETRIEVAL_ATTEMPTS = 2;
+
+    /**
+     * @return Strategy from the application configuration, or a default.
+     */
     public static StreamProcessorRetrievalStrategy
     getStreamProcessorRetrievalStrategy() {
-        return Configuration.getInstance().getString(
-                Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
-                "StreamStrategy").equals("StreamStrategy") ?
-                StreamProcessorRetrievalStrategy.STREAM :
-                StreamProcessorRetrievalStrategy.CACHE;
+        final String configValue = Configuration.getInstance().getString(
+                Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY);
+        return StreamProcessorRetrievalStrategy.CACHE.getConfigValue().equals(configValue) ?
+                StreamProcessorRetrievalStrategy.CACHE :
+                StreamProcessorRetrievalStrategy.STREAM;
     }
 
     /**
@@ -53,29 +99,28 @@ public class ProcessorConnector {
      *     <li>If the resolver is a {@link StreamResolver} (only) and the
      *     processor is a {@link StreamProcessor} (only):
      *         <ul>
-     *             <li>If {@link Key#STREAMPROCESSOR_RETRIEVAL_STRATEGY}
-     *             is set to <code>StreamStrategy</code>, the processor will
+     *             <li>If using {@link
+     *             StreamProcessorRetrievalStrategy#STREAM}, the processor will
      *             read from the {@link StreamSource} provided by the
      *             resolver.</li>
-     *             <li>If {@link Key#STREAMPROCESSOR_RETRIEVAL_STRATEGY}
-     *             is set to <code>CacheStrategy</code>, the source image will
-     *             be downloaded to the source cache, and the processor will
-     *             read the file returned by
-     *             {@link SourceCache#getSourceImageFile(Identifier)}. This will
-     *             block, and other threads trying to access the same source
-     *             image will wait for it to download.</li>
+     *             <li>If using {@link
+     *             StreamProcessorRetrievalStrategy#CACHE}, the source image
+     *             will be downloaded to the source cache, and the processor
+     *             will read the file returned by {@link
+     *             SourceCache#getSourceImageFile(Identifier)}. This will
+     *             block all threads that are calling with the same argument,
+     *             forcing them to wait for it to download.</li>
      *         </ul>
      *     </li>
      *     <li>If the resolver is a {@link StreamResolver} (only) and the
      *     processor is a {@link FileProcessor} (only):
      *         <ul>
-     *             <li>If {@link Key#SOURCE_CACHE_ENABLED} is
-     *             <code>true</code>, the source image will be downloaded
-     *             to the source cache, and the processor will read the file
-     *             returned by
-     *             {@link SourceCache#getSourceImageFile(Identifier)}. This will
-     *             block, and other threads trying to access the same source
-     *             image will wait for it to download.</li>
+     *             <li>If {@link Key#SOURCE_CACHE_ENABLED} is set to {@literal
+     *             true}, the source image will be downloaded to the source
+     *             cache, and the processor will read the file returned by
+     *             {@link SourceCache#getSourceImageFile(Identifier)}. This
+     *             will block all threads that are calling with the same
+     *             argument, forcing them to wait for it to download.</li>
      *             <li>Otherwise, an {@link IncompatibleResolverException}
      *             will be thrown.</li>
      *         </ul>
@@ -124,8 +169,10 @@ public class ProcessorConnector {
             } else {
                 switch (getStreamProcessorRetrievalStrategy()) {
                     case CACHE:
-                        LOGGER.info("Using CacheStrategy with {} as a StreamProcessor",
-                                processorName);
+                        LOGGER.info("Using {} with {} as a {}",
+                                StreamProcessorRetrievalStrategy.CACHE,
+                                processorName,
+                                StreamProcessor.class.getSimpleName());
                         SourceCache sourceCache = CacheFactory.getSourceCache();
                         if (sourceCache != null) {
                             LOGGER.info("Source cache available.");
@@ -148,41 +195,85 @@ public class ProcessorConnector {
         }
     }
 
+    /**
+     * Acquires the source image with the given identifier from the given
+     * source cache, downloading it if necessary, and configures the given
+     * processor to read it. Up to
+     * {@link #MAX_NUM_SOURCE_CACHE_RETRIEVAL_ATTEMPTS} attempts are made.
+     *
+     * @param resolver     Resolver to read the source image from, if necessary.
+     * @param processor    Processor to configure.
+     * @param sourceCache  Source cache from which to read the source image,
+     *                     and to which to download it, if necessary.
+     * @param identifier   Identifier of the source image.
+     * @throws IOException if anything goes wrong on the final attempt.
+     */
     private void setSourceCacheAsSource(Resolver resolver,
                                         Processor processor,
                                         SourceCache sourceCache,
-                                        Identifier identifier)
-            throws IOException {
-        // This will block while a file is being written in another thread,
-        // which will prevent the image from being downloaded multiple times.
-        Path sourceFile = sourceCache.getSourceImageFile(identifier);
-        if (sourceFile == null) {
-            downloadToSourceCache(resolver, sourceCache, identifier);
-            sourceFile = sourceCache.getSourceImageFile(identifier);
-        }
-        LOGGER.info("SourceCache -> FileProcessor connection between {} and {}",
-                sourceCache.getClass().getSimpleName(),
-                processor.getClass().getSimpleName());
-        if (processor instanceof FileProcessor) {
-            ((FileProcessor) processor).setSourceFile(sourceFile);
-        } else {
-            InputStream inputStream = Files.newInputStream(sourceFile);
-            StreamSource streamSource = new InputStreamStreamSource(inputStream);
-            ((StreamProcessor) processor).setStreamSource(streamSource);
-        }
+                                        Identifier identifier) throws IOException {
+        boolean succeeded = false;
+        short numAttempts = 0;
+        do {
+            numAttempts++;
+            try {
+                // This will block while a file is being written in another
+                // thread, which will prevent the image from being downloaded
+                // multiple times, and maybe enable other threads to get the
+                // image sooner.
+                // If it throws an exception, we will log it and retry a few
+                // times, and only rethrow it on the last try.
+                Path sourceFile = sourceCache.getSourceImageFile(identifier);
+                if (sourceFile == null) {
+                    downloadToSourceCache(resolver, sourceCache, identifier);
+                    sourceFile = sourceCache.getSourceImageFile(identifier);
+                }
+
+                LOGGER.info("{} -> {} connection between {} and {}",
+                        SourceCache.class.getSimpleName(),
+                        FileProcessor.class.getSimpleName(),
+                        sourceCache.getClass().getSimpleName(),
+                        processor.getClass().getSimpleName());
+                if (processor instanceof FileProcessor) {
+                    ((FileProcessor) processor).setSourceFile(sourceFile);
+                } else {
+                    InputStream inputStream = Files.newInputStream(sourceFile);
+                    StreamSource streamSource = new InputStreamStreamSource(inputStream);
+                    ((StreamProcessor) processor).setStreamSource(streamSource);
+                }
+                succeeded = true;
+            } catch (IOException e) {
+                LOGGER.error("setSourceCacheAsSource(): {} (attempt {} of {})",
+                        e.getMessage(),
+                        numAttempts,
+                        MAX_NUM_SOURCE_CACHE_RETRIEVAL_ATTEMPTS);
+                if (numAttempts == MAX_NUM_SOURCE_CACHE_RETRIEVAL_ATTEMPTS) {
+                    throw e;
+                }
+            }
+        } while (!succeeded &&
+                numAttempts < MAX_NUM_SOURCE_CACHE_RETRIEVAL_ATTEMPTS);
     }
 
+    /**
+     * Downloads the source image with the given identifier from the given
+     * resolver to the given source cache.
+     *
+     * @param resolver     Resolver to read from.
+     * @param sourceCache  Source cache to write to.
+     * @param identifier   Identifier of the source image.
+     * @throws IOException if anything goes wrong.
+     */
     private void downloadToSourceCache(Resolver resolver,
                                        SourceCache sourceCache,
-                                       Identifier identifier)
-            throws IOException {
-        // Download to the SourceCache and then read from it.
-        try (InputStream inputStream =
-                     ((StreamResolver) resolver).newStreamSource().newInputStream();
-             OutputStream outputStream =
-                     sourceCache.newSourceImageOutputStream(identifier)) {
-            LOGGER.info("Downloading {} to the source cache", identifier);
-            IOUtils.copy(inputStream, outputStream);
+                                       Identifier identifier) throws IOException {
+        final StreamSource source = ((StreamResolver) resolver).newStreamSource();
+        try (InputStream is = source.newInputStream();
+             OutputStream os = sourceCache.newSourceImageOutputStream(identifier)) {
+            LOGGER.info("Downloading {} to {}",
+                    identifier,
+                    SourceCache.class.getSimpleName());
+            IOUtils.copy(is, os);
         }
     }
 

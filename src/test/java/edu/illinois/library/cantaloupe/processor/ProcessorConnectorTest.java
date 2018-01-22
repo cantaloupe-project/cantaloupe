@@ -2,6 +2,10 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.CacheDisabledException;
+import edu.illinois.library.cantaloupe.cache.MockBrokenSourceImageFileCache;
+import edu.illinois.library.cantaloupe.cache.MockBrokenSourceInputStreamCache;
+import edu.illinois.library.cantaloupe.cache.MockUnreliableSourceImageFileCache;
+import edu.illinois.library.cantaloupe.cache.MockUnreliableSourceOutputStreamCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -32,6 +36,26 @@ import java.util.Arrays;
 import static org.junit.Assert.*;
 
 public class ProcessorConnectorTest extends BaseTest {
+
+    public static class StreamProcessorRetrievalStrategyTest extends BaseTest {
+
+        @Test
+        public void testGetConfigValue() {
+            assertEquals("CacheStrategy",
+                    ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE.getConfigValue());
+            assertEquals("StreamStrategy",
+                    ProcessorConnector.StreamProcessorRetrievalStrategy.STREAM.getConfigValue());
+        }
+
+        @Test
+        public void testToString() {
+            assertEquals("CacheStrategy",
+                    ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE.toString());
+            assertEquals("StreamStrategy",
+                    ProcessorConnector.StreamProcessorRetrievalStrategy.STREAM.toString());
+        }
+
+    }
 
     private static final Identifier IDENTIFIER =
             new Identifier("jpg-rgb-64x56x8-baseline.jpg");
@@ -71,23 +95,28 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void getStreamProcessorRetrievalStrategy() {
+    public void testGetStreamProcessorRetrievalStrategy() {
         final Configuration config = Configuration.getInstance();
-        // stream
+        // config set to stream
         config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
                 "StreamStrategy");
         assertEquals(ProcessorConnector.StreamProcessorRetrievalStrategy.STREAM,
                 ProcessorConnector.getStreamProcessorRetrievalStrategy());
 
-        // cache
+        // config set to cache
         config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
-                "CacheStrategy");
+                ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE.getConfigValue());
         assertEquals(ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE,
+                ProcessorConnector.getStreamProcessorRetrievalStrategy());
+
+        // config not set
+        config.clearProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY);
+        assertEquals(ProcessorConnector.StreamProcessorRetrievalStrategy.STREAM,
                 ProcessorConnector.getStreamProcessorRetrievalStrategy());
     }
 
     @Test
-    public void connectWithFileResolverAndFileProcessor() throws Exception {
+    public void testConnectWithFileResolverAndFileProcessor() throws Exception {
         final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER,
                 new RequestContext());
         final Processor processor = new ProcessorFactory().newProcessor(Format.JPG);
@@ -100,7 +129,8 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void connectWithFileResolverAndStreamProcessor() throws Exception {
+    public void testConnectWithFileResolverAndStreamProcessor()
+            throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_FALLBACK, "ImageMagickProcessor");
 
@@ -116,8 +146,8 @@ public class ProcessorConnectorTest extends BaseTest {
         assertEqualSources(ss1, ss2);
     }
 
-    @Test
-    public void connectWithStreamResolverAndFileProcessorWithSourceCacheDisabled()
+    @Test(expected = IncompatibleResolverException.class)
+    public void testConnectWithStreamResolverAndFileProcessorWithSourceCacheDisabled()
             throws Exception {
         final Identifier identifier = new Identifier("jp2");
         Configuration config = Configuration.getInstance();
@@ -128,16 +158,12 @@ public class ProcessorConnectorTest extends BaseTest {
                 newResolver(identifier, new RequestContext());
         final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
 
-        try {
-            instance.connect(resolver, processor, identifier);
-            fail("Expected exception");
-        } catch (IncompatibleResolverException e) {
-            // pass
-        }
+        instance.connect(resolver, processor, identifier);
     }
 
     @Test
-    public void connectWithStreamResolverAndFileProcessor() throws Exception {
+    public void testConnectWithStreamResolverAndFileProcessor()
+            throws Exception {
         final WebServer server = new WebServer();
         final Path cacheFolder = Files.createTempDirectory("test");
         final Identifier identifier = new Identifier("jp2");
@@ -173,7 +199,7 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void connectWithStreamResolverAndStreamProcessorWithStreamStrategy()
+    public void testConnectWithStreamResolverAndStreamProcessorWithStreamStrategy()
             throws Exception {
         final WebServer server = new WebServer();
         try {
@@ -202,7 +228,7 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void connectWithStreamResolverAndStreamProcessorWithCacheStrategy()
+    public void testConnectWithStreamResolverAndStreamProcessorWithCacheStrategyAndSourceCacheEnabled()
             throws Exception {
         final WebServer server = new WebServer();
         final Path cacheFolder = Files.createTempDirectory("test");
@@ -218,7 +244,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
             config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
             config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
-                    "CacheStrategy");
+                    ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE.getConfigValue());
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     cacheFolder.toString());
 
@@ -237,8 +263,168 @@ public class ProcessorConnectorTest extends BaseTest {
         }
     }
 
+    /**
+     * Tests that {@link ProcessorConnector#connect} passes through an
+     * {@link IOException} thrown by {@link
+     * edu.illinois.library.cantaloupe.cache.SourceCache#getSourceImageFile(Identifier)}
+     * when using
+     * {@link edu.illinois.library.cantaloupe.processor.ProcessorConnector.StreamProcessorRetrievalStrategy#CACHE}.
+     */
+    @Test(expected = IOException.class)
+    public void testConnectWithStreamResolverAndStreamProcessorWithCacheStrategyAndSourceCacheGetSourceImageFileThrowingException()
+            throws Exception {
+        final WebServer server = new WebServer();
+        try {
+            server.start();
+
+            Configuration config = Configuration.getInstance();
+            config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
+            config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
+                    "BasicLookupStrategy");
+            config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
+                    server.getHTTPURI() + "/");
+            config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
+            config.setProperty(Key.SOURCE_CACHE,
+                    MockBrokenSourceImageFileCache.class.getSimpleName());
+            config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
+                    ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE.getConfigValue());
+
+            final Resolver resolver = new ResolverFactory().
+                    newResolver(IDENTIFIER, new RequestContext());
+            final Processor processor = new MockStreamProcessor();
+
+            instance.connect(resolver, processor, IDENTIFIER);
+
+            assertEqualSources(
+                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER),
+                    ((StreamProcessor) processor).getStreamSource());
+        } finally {
+            server.stop();
+        }
+    }
+
+    /**
+     * Tests that {@link ProcessorConnector#connect} passes through an
+     * {@link IOException} thrown by {@link
+     * edu.illinois.library.cantaloupe.cache.SourceCache#newSourceImageOutputStream(Identifier)}
+     * when using
+     * {@link edu.illinois.library.cantaloupe.processor.ProcessorConnector.StreamProcessorRetrievalStrategy#CACHE}.
+     */
+    @Test(expected = IOException.class)
+    public void testConnectWithStreamResolverAndStreamProcessorWithCacheStrategyAndSourceCacheNewSourceImageOutputStreamThrowingException()
+            throws Exception {
+        final WebServer server = new WebServer();
+        try {
+            server.start();
+
+            Configuration config = Configuration.getInstance();
+            config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
+            config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
+                    "BasicLookupStrategy");
+            config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
+                    server.getHTTPURI() + "/");
+            config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
+            config.setProperty(Key.SOURCE_CACHE,
+                    MockBrokenSourceInputStreamCache.class.getSimpleName());
+            config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
+                    ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE.getConfigValue());
+
+            final Resolver resolver = new ResolverFactory().
+                    newResolver(IDENTIFIER, new RequestContext());
+            final Processor processor = new MockStreamProcessor();
+
+            instance.connect(resolver, processor, IDENTIFIER);
+
+            assertEqualSources(
+                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER),
+                    ((StreamProcessor) processor).getStreamSource());
+        } finally {
+            server.stop();
+        }
+    }
+
+    /**
+     * Tests that {@link ProcessorConnector#connect} recovers when using
+     * {@link edu.illinois.library.cantaloupe.processor.ProcessorConnector.StreamProcessorRetrievalStrategy#CACHE}
+     * and {@link
+     * edu.illinois.library.cantaloupe.cache.SourceCache#getSourceImageFile(Identifier)}
+     * throws an {@link IOException} only once.
+     */
     @Test
-    public void connectWithStreamResolverAndStreamProcessorWithCacheStrategyAndSourceCacheDisabled()
+    public void testConnectWithStreamResolverAndStreamProcessorWithCacheStrategyAndSourceCacheGetSourceImageFileRetries()
+            throws Exception {
+        final WebServer server = new WebServer();
+        try {
+            server.start();
+
+            Configuration config = Configuration.getInstance();
+            config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
+            config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
+                    "BasicLookupStrategy");
+            config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
+                    server.getHTTPURI() + "/");
+            config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
+            config.setProperty(Key.SOURCE_CACHE,
+                    MockUnreliableSourceImageFileCache.class.getSimpleName());
+            config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
+                    ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE.getConfigValue());
+
+            final Resolver resolver = new ResolverFactory().
+                    newResolver(IDENTIFIER, new RequestContext());
+            final Processor processor = new MockStreamProcessor();
+
+            instance.connect(resolver, processor, IDENTIFIER);
+
+            assertEqualSources(
+                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER),
+                    ((StreamProcessor) processor).getStreamSource());
+        } finally {
+            server.stop();
+        }
+    }
+
+    /**
+     * Tests that {@link ProcessorConnector#connect} recovers when using
+     * {@link edu.illinois.library.cantaloupe.processor.ProcessorConnector.StreamProcessorRetrievalStrategy#CACHE}
+     * and {@link
+     * edu.illinois.library.cantaloupe.cache.SourceCache#newSourceImageOutputStream(Identifier)}
+     * throws an {@link IOException} only once.
+     */
+    @Test
+    public void testConnectWithStreamResolverAndStreamProcessorWithCacheStrategyAndSourceCacheNewSourceImageOutputStreamRetries()
+            throws Exception {
+        final WebServer server = new WebServer();
+        try {
+            server.start();
+
+            Configuration config = Configuration.getInstance();
+            config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
+            config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
+                    "BasicLookupStrategy");
+            config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
+                    server.getHTTPURI() + "/");
+            config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
+            config.setProperty(Key.SOURCE_CACHE,
+                    MockUnreliableSourceOutputStreamCache.class.getSimpleName());
+            config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
+                    ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE.getConfigValue());
+
+            final Resolver resolver = new ResolverFactory().
+                    newResolver(IDENTIFIER, new RequestContext());
+            final Processor processor = new MockStreamProcessor();
+
+            instance.connect(resolver, processor, IDENTIFIER);
+
+            assertEqualSources(
+                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER),
+                    ((StreamProcessor) processor).getStreamSource());
+        } finally {
+            server.stop();
+        }
+    }
+
+    @Test(expected = CacheDisabledException.class)
+    public void testConnectWithStreamResolverAndStreamProcessorWithCacheStrategyAndSourceCacheDisabled()
             throws Exception {
         final WebServer server = new WebServer();
         final Path cacheFolder = Files.createTempDirectory("test");
@@ -252,7 +438,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                     server.getHTTPURI() + "/");
             config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
-                    "CacheStrategy");
+                    ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE.getConfigValue());
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     cacheFolder.toString());
 
@@ -260,12 +446,7 @@ public class ProcessorConnectorTest extends BaseTest {
                     newResolver(IDENTIFIER, new RequestContext());
             final Processor processor = new MockStreamProcessor();
 
-            try {
-                instance.connect(resolver, processor, IDENTIFIER);
-                fail("Expected exception");
-            } catch (CacheDisabledException e) {
-                // pass
-            }
+            instance.connect(resolver, processor, IDENTIFIER);
         } finally {
             server.stop();
             recursiveDeleteOnExit(cacheFolder);
