@@ -27,8 +27,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.security.InvalidKeyException;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
@@ -87,8 +87,8 @@ class AzureStorageCache implements DerivativeCache {
 
     }
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(AzureStorageCache.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(AzureStorageCache.class);
 
     private static CloudBlobClient client;
 
@@ -133,11 +133,12 @@ class AzureStorageCache implements DerivativeCache {
                 getString(Key.AZURESTORAGECACHE_CONTAINER_NAME).toLowerCase();
     }
 
-    private static Date getLatestValidDate() {
+    private static Instant getEarliestValidInstant() {
         final Configuration config = Configuration.getInstance();
-        final Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.SECOND, 0 - config.getInt(Key.CACHE_SERVER_TTL));
-        return cal.getTime();
+        final long ttl = config.getInt(Key.CACHE_SERVER_TTL);
+        return (ttl > 0) ?
+                Instant.now().truncatedTo(ChronoUnit.SECONDS).minusSeconds(ttl) :
+                Instant.MIN;
     }
 
     @Override
@@ -153,7 +154,7 @@ class AzureStorageCache implements DerivativeCache {
 
             final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
             if (blob.exists()) {
-                if (!isExpired(blob)) {
+                if (isValid(blob)) {
                     try (InputStream is = blob.openInputStream()) {
                         Info info = Info.fromJSON(is);
                         LOGGER.info("getImageInfo(): read {} from container {} in {} msec",
@@ -188,7 +189,7 @@ class AzureStorageCache implements DerivativeCache {
                     containerName, objectKey);
             final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
             if (blob.exists()) {
-                if (!isExpired(blob)) {
+                if (isValid(blob)) {
                     return blob.openInputStream();
                 } else {
                     LOGGER.debug("newDerivativeImageInputStream(): " +
@@ -270,9 +271,9 @@ class AzureStorageCache implements DerivativeCache {
         return StringUtils.stripEnd(prefix, "/") + "/";
     }
 
-    private boolean isExpired(CloudBlob blob) {
-        return blob.getProperties().getLastModified().
-                before(getLatestValidDate());
+    private boolean isValid(CloudBlob blob) {
+        return blob.getProperties().getLastModified().toInstant().
+                isAfter(getEarliestValidInstant());
     }
 
     @Override
@@ -341,7 +342,7 @@ class AzureStorageCache implements DerivativeCache {
                 if (item instanceof CloudBlob) {
                     CloudBlob blob = (CloudBlob) item;
                     count++;
-                    if (isExpired(blob)) {
+                    if (!isValid(blob)) {
                         if (blob.deleteIfExists()) {
                             deletedCount++;
                         }

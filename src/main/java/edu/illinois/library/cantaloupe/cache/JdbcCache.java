@@ -299,11 +299,11 @@ class JdbcCache implements DerivativeCache {
 
     Timestamp earliestValidDate() {
         final long ttl = Configuration.getInstance().
-                getLong(Key.CACHE_SERVER_TTL, 0);
+                getLong(Key.CACHE_SERVER_TTL);
         if (ttl > 0) {
             return new Timestamp(System.currentTimeMillis() - ttl * 1000);
         } else {
-            return new Timestamp(Long.MIN_VALUE);
+            return new Timestamp(0);
         }
     }
 

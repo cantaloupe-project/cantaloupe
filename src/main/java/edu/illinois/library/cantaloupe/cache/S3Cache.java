@@ -182,8 +182,8 @@ class S3Cache implements DerivativeCache {
 
     }
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(S3Cache.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(S3Cache.class);
 
     /** Lazy-initialized by {@link #getClientInstance} */
     private static AmazonS3 client;
@@ -215,13 +215,14 @@ class S3Cache implements DerivativeCache {
      */
     private static Instant getEarliestValidInstant() {
         final Configuration config = Configuration.getInstance();
-        return Instant.now().truncatedTo(ChronoUnit.SECONDS).
-                minusSeconds(config.getInt(Key.CACHE_SERVER_TTL));
+        final long ttl = config.getInt(Key.CACHE_SERVER_TTL);
+        return (ttl > 0) ?
+                Instant.now().truncatedTo(ChronoUnit.SECONDS).minusSeconds(ttl) :
+                Instant.MIN;
     }
 
     String getBucketName() {
-        return Configuration.getInstance().
-                getString(Key.S3CACHE_BUCKET_NAME);
+        return Configuration.getInstance().getString(Key.S3CACHE_BUCKET_NAME);
     }
 
     @Override
@@ -346,8 +347,12 @@ class S3Cache implements DerivativeCache {
 
         while (true) {
             for (S3ObjectSummary summary : listing.getObjectSummaries()) {
-                s3.deleteObject(getBucketName(), summary.getKey());
-                count++;
+                try {
+                    s3.deleteObject(getBucketName(), summary.getKey());
+                    count++;
+                } catch (AmazonS3Exception e) {
+                    LOGGER.warn("purge(): {}", e.getMessage());
+                }
             }
 
             if (listing.isTruncated()) {

@@ -1,9 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
@@ -22,7 +19,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,12 +28,11 @@ import static edu.illinois.library.cantaloupe.cache.FilesystemCache.*;
 import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.assertRecursiveFileCount;
 import static org.junit.Assert.*;
 
-public class FilesystemCacheTest extends BaseTest {
+public class FilesystemCacheTest extends AbstractCacheTest {
 
     private Path fixturePath;
     private Path sourceImagePath;
     private Path derivativeImagePath;
-    private Path infoPath;
     private FilesystemCache instance;
 
     @Before
@@ -47,16 +42,8 @@ public class FilesystemCacheTest extends BaseTest {
         fixturePath = Files.createTempDirectory("test").resolve("cache");
         sourceImagePath = fixturePath.resolve("source");
         derivativeImagePath = fixturePath.resolve("image");
-        infoPath = fixturePath.resolve("info");
 
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.FILESYSTEMCACHE_DIRECTORY_DEPTH, 3);
-        config.setProperty(Key.FILESYSTEMCACHE_DIRECTORY_NAME_LENGTH, 2);
-        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
-                fixturePath.toString());
-        config.setProperty(Key.CACHE_SERVER_TTL, 0);
-
-        instance = new FilesystemCache();
+        instance = newInstance();
     }
 
     @After
@@ -64,21 +51,24 @@ public class FilesystemCacheTest extends BaseTest {
         Files.walkFileTree(fixturePath, new DeletingFileVisitor());
     }
 
+    @Override
+    FilesystemCache newInstance() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.FILESYSTEMCACHE_DIRECTORY_DEPTH, 3);
+        config.setProperty(Key.FILESYSTEMCACHE_DIRECTORY_NAME_LENGTH, 2);
+        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
+                fixturePath.toString());
+
+        return new FilesystemCache();
+    }
+
     private void createEmptyFile(Path path) throws IOException {
         Files.createDirectories(path.getParent());
         Files.createFile(path);
     }
 
-    private void sleep(int msec) {
-        try {
-            Thread.sleep(msec);
-        } catch (InterruptedException e) {
-            System.err.println(e.getMessage());
-        }
-    }
-
-    private void writeStringToFile(Path path, String contents)
-            throws IOException {
+    private void writeStringToFile(Path path,
+                                   String contents) throws IOException {
         Files.createDirectories(path.getParent());
         Files.write(path, contents.getBytes("UTF-8"));
     }
@@ -206,8 +196,10 @@ public class FilesystemCacheTest extends BaseTest {
                 FilesystemCache.tempFileSuffix());
     }
 
+    /* cleanUp() */
+
     @Test
-    public void testCleanUpShouldNotDeleteValidFiles() throws Exception {
+    public void testCleanUpDoesNotDeleteValidFiles() throws Exception {
         OperationList ops = TestUtil.newOperationList();
 
         // create a new source image file
@@ -260,7 +252,7 @@ public class FilesystemCacheTest extends BaseTest {
     }
 
     @Test
-    public void testCleanUpShouldDeleteInvalidFiles() throws Exception {
+    public void testCleanUpDeletesInvalidFiles() throws Exception {
         OperationList ops = TestUtil.newOperationList();
 
         // create a new source image file
@@ -306,7 +298,7 @@ public class FilesystemCacheTest extends BaseTest {
 
         instance.setMinCleanableAge(10);
 
-        sleep(1000);
+        Thread.sleep(1000);
 
         instance.cleanUp();
 
@@ -333,41 +325,7 @@ public class FilesystemCacheTest extends BaseTest {
         assertEquals(3, instance.getDerivativeImageFiles(identifier).size());
     }
 
-    @Test
-    public void testGetImageInfoWithZeroTTL() throws Exception {
-        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 0);
-
-        Identifier identifier = new Identifier("test");
-        Path file = infoFile(identifier);
-        createEmptyFile(file);
-
-        ObjectMapper mapper = new ObjectMapper();
-        Info info = new Info(50, 50);
-        mapper.writeValue(file.toFile(), info);
-        assertEquals(info, instance.getImageInfo(identifier));
-    }
-
-    @Test
-    public void testGetImageInfoWithNonZeroTTL() throws Exception {
-        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 1);
-
-        Identifier identifier = new Identifier("test");
-        Path file = infoFile(identifier);
-        Files.createDirectories(file.getParent());
-        Files.createFile(file);
-
-        ObjectMapper mapper = new ObjectMapper();
-        Info info = new Info(50, 50);
-        mapper.writeValue(file.toFile(), info);
-
-        sleep(1100);
-        assertNull(instance.getImageInfo(identifier));
-    }
-
-    @Test
-    public void testGetImageInfoConcurrently() {
-        // This is tested in testPutConcurrently()
-    }
+    /* getSourceImageFile(Identifier) */
 
     @Test
     public void testGetSourceImageFileWithZeroTTL() throws Exception {
@@ -392,11 +350,11 @@ public class FilesystemCacheTest extends BaseTest {
         Files.createFile(cacheFile);
         assertNotNull(instance.getSourceImageFile(identifier));
 
-        sleep(1100);
+        Thread.sleep(1100);
 
         assertNull(instance.getSourceImageFile(identifier));
 
-        sleep(1000);
+        Thread.sleep(1000);
 
         assertFalse(Files.exists(cacheFile));
     }
@@ -417,76 +375,7 @@ public class FilesystemCacheTest extends BaseTest {
         }).run();
     }
 
-    @Test
-    public void testNewDerivativeImageInputStreamWithZeroTTL()
-            throws Exception {
-        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 0);
-
-        OperationList ops = TestUtil.newOperationList();
-        try (InputStream is = instance.newDerivativeImageInputStream(ops)) {
-            assertNull(is);
-        }
-
-        Path imageFile = derivativeImageFile(ops);
-        createEmptyFile(imageFile);
-        try (InputStream is = instance.newDerivativeImageInputStream(ops)) {
-            assertNotNull(is);
-        }
-    }
-
-    @Test
-    public void testNewDerivativeImageInputStreamWithNonzeroTTL()
-            throws Exception {
-        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 1);
-
-        OperationList ops = TestUtil.newOperationList();
-        Path cacheFile = derivativeImageFile(ops);
-        createEmptyFile(cacheFile);
-        try (InputStream is = instance.newDerivativeImageInputStream(ops)) {
-            assertNotNull(is);
-        }
-
-        sleep(1100);
-
-        try (InputStream is = instance.newDerivativeImageInputStream(ops)) {
-            assertNull(is);
-        }
-
-        sleep(1000);
-
-        assertFalse(Files.exists(cacheFile));
-    }
-
-    @Test
-    public void testNewDerivativeImageInputStreamConcurrently()
-            throws Exception {
-        OperationList ops = TestUtil.newOperationList();
-
-        new ConcurrentReaderWriter(() -> {
-            try (OutputStream os =
-                         instance.newDerivativeImageOutputStream(ops)) {
-                Files.copy(TestUtil.getImage("jpg"), os);
-            }
-            return null;
-        }, () -> {
-            try (InputStream is = instance.newDerivativeImageInputStream(ops)) {
-                if (is != null) {
-                    while (is.read() != -1) {
-                        // consume the stream fully
-                    }
-                }
-            }
-            return null;
-        }).run();
-    }
-
-    @Test
-    public void testNewDerivativeImageOutputStream() throws Exception {
-        OperationList ops = TestUtil.newOperationList();
-        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
-            assertNotNull(os);
-        }
-    }
+    /* newDerivativeImageOutputStream(OperationList) */
 
     @Test
     public void testNewDerivativeImageOutputStreamCreatesFolder()
@@ -500,10 +389,7 @@ public class FilesystemCacheTest extends BaseTest {
         }
     }
 
-    @Test
-    public void testNewDerivativeImageOutputStreamConcurrently() {
-        // tested in testNewDerivativeImageInputStreamConcurrently()
-    }
+    /* newSourceImageOutputStream(Identifier) */
 
     @Test
     public void testNewSourceImageOutputStream() throws Exception {
@@ -513,8 +399,7 @@ public class FilesystemCacheTest extends BaseTest {
     }
 
     @Test
-    public void testNewSourceImageOutputStreamCreatesFolder()
-            throws Exception {
+    public void testNewSourceImageOutputStreamCreatesFolder() throws Exception {
         Files.walkFileTree(sourceImagePath, new DeletingFileVisitor());
         assertFalse(Files.exists(sourceImagePath));
 
@@ -527,152 +412,6 @@ public class FilesystemCacheTest extends BaseTest {
     @Test
     public void testNewSourceImageOutputStreamConcurrently() {
         // Tested in testGetSourceImageFileConcurrently()
-    }
-
-    @Test
-    public void testPurge() throws Exception {
-        OperationList ops = TestUtil.newOperationList();
-
-        // create a new source image file
-        Path sourceImageFile = sourceImageFile(ops.getIdentifier());
-        createEmptyFile(sourceImageFile);
-
-        // create a new derivative image file
-        Path derivativeImageFile = derivativeImageFile(ops);
-        createEmptyFile(derivativeImageFile);
-
-        // create a new info file
-        Path infoFile = infoFile(ops.getIdentifier());
-        createEmptyFile(infoFile);
-
-        // change the op list
-        ops.setIdentifier(new Identifier("dogs"));
-        ops.add(new Rotate(15));
-
-        // create a new derivative image file based on the changed op list
-        derivativeImageFile = derivativeImageFile(ops);
-        createEmptyFile(derivativeImageFile);
-
-        instance.purge();
-
-        assertRecursiveFileCount(fixturePath, 0);
-    }
-
-    @Test
-    public void testPurgeWithIdentifier() throws Exception {
-        OperationList ops = TestUtil.newOperationList();
-
-        Identifier id1 = new Identifier("dogs");
-        ops.setIdentifier(id1);
-
-        // create a new source image
-        Path sourceImageFile = sourceImageFile(ops.getIdentifier());
-        createEmptyFile(sourceImageFile);
-
-        // create a new derivative image
-        Path derivativeImageFile = derivativeImageFile(ops);
-        createEmptyFile(derivativeImageFile);
-
-        // create a new info
-        Path infoFile = infoFile(ops.getIdentifier());
-        createEmptyFile(infoFile);
-
-        Identifier id2 = new Identifier("ferrets");
-        ops.setIdentifier(id2);
-        ops.add(new Rotate(15));
-
-        sourceImageFile = sourceImageFile(ops.getIdentifier());
-        createEmptyFile(sourceImageFile);
-
-        derivativeImageFile = derivativeImageFile(ops);
-        createEmptyFile(derivativeImageFile);
-
-        infoFile = infoFile(ops.getIdentifier());
-        createEmptyFile(infoFile);
-
-        assertRecursiveFileCount(sourceImagePath, 2);
-        assertRecursiveFileCount(derivativeImagePath, 2);
-        assertRecursiveFileCount(infoPath, 2);
-        instance.purge(id1);
-        assertRecursiveFileCount(sourceImagePath, 1);
-        assertRecursiveFileCount(derivativeImagePath, 1);
-        assertRecursiveFileCount(infoPath, 1);
-        instance.purge(id2);
-        assertRecursiveFileCount(sourceImagePath, 0);
-        assertRecursiveFileCount(derivativeImagePath, 0);
-        assertRecursiveFileCount(infoPath, 0);
-    }
-
-    @Test
-    public void testPurgeWithOperationList() throws Exception {
-        OperationList ops = TestUtil.newOperationList();
-
-        final Path imageFile = derivativeImageFile(ops);
-        createEmptyFile(imageFile);
-
-        instance.purge(ops);
-
-        assertRecursiveFileCount(derivativeImagePath, 0);
-    }
-
-    @Test
-    public void testPurgeInvalid() throws Exception {
-        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 1);
-
-        Crop crop = new Crop();
-        crop.setFull(true);
-
-        // add a source image
-        OperationList ops = TestUtil.newOperationList();
-        Path imageFile = sourceImageFile(ops.getIdentifier());
-        createEmptyFile(imageFile);
-
-        // add a derivative image
-        ops = TestUtil.newOperationList();
-        imageFile = derivativeImageFile(ops);
-        createEmptyFile(imageFile);
-
-        // add an info
-        Path infoFile = infoFile(ops.getIdentifier());
-        createEmptyFile(infoFile);
-
-        // wait for them to expire
-        sleep(1500);
-
-        // add a changed derivative
-        ops.setIdentifier(new Identifier("dogs"));
-        imageFile = derivativeImageFile(ops);
-        createEmptyFile(imageFile);
-
-        instance.purgeInvalid();
-        assertRecursiveFileCount(sourceImagePath, 0);
-        assertRecursiveFileCount(derivativeImagePath, 1);
-        assertRecursiveFileCount(infoPath, 0);
-    }
-
-    @Test
-    public void testPut() throws Exception {
-        Identifier identifier = new Identifier("cats");
-        Info info = new Info(52, 42);
-        instance.put(identifier, info);
-        assertEquals(info, instance.getImageInfo(identifier));
-    }
-
-    @Test
-    public void testPutConcurrently() throws Exception {
-        final Identifier identifier = new Identifier("monkeys");
-        final Info info = new Info(52, 42);
-
-        new ConcurrentReaderWriter(() -> {
-            instance.put(identifier, info);
-            return null;
-        }, () -> {
-            Info otherInfo = instance.getImageInfo(identifier);
-            if (otherInfo != null && !info.equals(otherInfo)) {
-                fail();
-            }
-            return null;
-        }).run();
     }
 
 }
