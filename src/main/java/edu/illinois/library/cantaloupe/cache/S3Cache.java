@@ -218,7 +218,7 @@ class S3Cache implements DerivativeCache {
         final long ttl = config.getInt(Key.CACHE_SERVER_TTL);
         return (ttl > 0) ?
                 Instant.now().truncatedTo(ChronoUnit.SECONDS).minusSeconds(ttl) :
-                Instant.MIN;
+                Instant.EPOCH;
     }
 
     String getBucketName() {
@@ -233,7 +233,7 @@ class S3Cache implements DerivativeCache {
 
         final Stopwatch watch = new Stopwatch();
         try {
-            S3Object object = s3.getObject(bucketName, objectKey);
+            final S3Object object = s3.getObject(bucketName, objectKey);
             if (isValid(object)) {
                 try (InputStream is = object.getObjectContent()) {
                     final Info info = Info.fromJSON(is);
@@ -242,6 +242,7 @@ class S3Cache implements DerivativeCache {
                     return info;
                 }
             } else {
+                object.close();
                 LOGGER.debug("{} in bucket {} is invalid; purging asynchronously",
                         objectKey, bucketName);
                 purgeAsync(objectKey, bucketName);
