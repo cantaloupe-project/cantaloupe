@@ -203,8 +203,10 @@ class AmazonS3Cache implements DerivativeCache {
      */
     private static Instant getEarliestValidInstant() {
         final Configuration config = Configuration.getInstance();
-        return Instant.now().truncatedTo(ChronoUnit.SECONDS).
-                minusSeconds(config.getInt(Key.CACHE_SERVER_TTL));
+        final long ttl = config.getInt(Key.CACHE_SERVER_TTL);
+        return (ttl > 0) ?
+                Instant.now().truncatedTo(ChronoUnit.SECONDS).minusSeconds(ttl) :
+                Instant.EPOCH;
     }
 
     String getBucketName() {
