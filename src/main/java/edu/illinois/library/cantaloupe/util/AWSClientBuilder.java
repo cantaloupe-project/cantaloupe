@@ -9,6 +9,8 @@ import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSCredentialsProviderChain;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.AnonymousAWSCredentials;
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
@@ -73,7 +75,7 @@ public final class AWSClientBuilder {
                 .withEndpointConfiguration(getEndpointConfiguration())
                 .withPathStyleAccessEnabled(true)
                 .withClientConfiguration(getClientConfiguration())
-                .withCredentials(getCredentialsProviderChain())
+                .withCredentials(getCredentialsProvider())
                 .build();
     }
 
@@ -84,7 +86,12 @@ public final class AWSClientBuilder {
         return clientConfig;
     }
 
-    private AWSCredentialsProviderChain getCredentialsProviderChain() {
+    private AWSCredentialsProvider getCredentialsProvider() {
+        if ((accessKeyID == null || accessKeyID.isEmpty()) &&
+                (secretKey == null || secretKey.isEmpty())) {
+            return new AWSStaticCredentialsProvider(new AnonymousAWSCredentials());
+        }
+
         final List<AWSCredentialsProvider> creds = new ArrayList<>(
                 Arrays.asList(
                         new EnvironmentVariableCredentialsProvider(),

@@ -66,8 +66,6 @@ dependencies are required in addition to the ones above:
 
 * Kakadu (for KakaduProcessorTest)
 * A Microsoft Azure account
-* Either an AWS account, or an S3 endpoint like [Minio](https://minio.io) (for
-  S3CacheTest and S3ResolverTest)
 
 ## Build the website
 

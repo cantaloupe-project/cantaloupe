@@ -13,6 +13,8 @@ import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
+import edu.illinois.library.cantaloupe.util.SocketUtils;
+import io.findify.s3mock.S3Mock;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -36,12 +38,24 @@ public class S3ResolverTest extends AbstractResolverTest {
 
     private static final String OBJECT_KEY = "jpeg.jpg";
 
+    private static S3Mock mockS3;
+    private static int mockS3Port;
+
     private S3Resolver instance;
 
     @BeforeClass
-    public static void setupS3() throws IOException {
+    public static void beforeClass() throws IOException {
+        startServiceIfNecessary();
         createBucket();
         seedFixtures();
+    }
+
+    @AfterClass
+    public static void afterClass() {
+        deleteFixtures();
+        if (mockS3 != null) {
+            mockS3.stop();
+        }
     }
 
     private static void createBucket() {
@@ -51,9 +65,7 @@ public class S3ResolverTest extends AbstractResolverTest {
         try {
             s3.deleteBucket(bucketName);
         } catch (AmazonS3Exception e) {
-            if (!e.getMessage().contains("bucket does not exist")) {
-                throw e;
-            }
+            // This probably means it already exists. We'll find out shortly.
         }
         s3.createBucket(new CreateBucketRequest(bucketName));
     }
@@ -78,10 +90,19 @@ public class S3ResolverTest extends AbstractResolverTest {
         }
     }
 
-    @AfterClass
-    public static void deleteFixtures() {
-        final AmazonS3 s3 = client();
-        s3.deleteObject(getBucket(), OBJECT_KEY);
+    /**
+     * Starts a mock S3 service if {@link #getAccessKeyId()} and
+     * {@link #getSecretKey()} return an empty value.
+     */
+    private static void startServiceIfNecessary() {
+        if ("localhost".equals(getEndpoint().getHost())) {
+            mockS3Port = SocketUtils.getOpenPort();
+            mockS3 = new S3Mock.Builder()
+                    .withPort(mockS3Port)
+                    .withInMemoryBackend()
+                    .build();
+            mockS3.start();
+        }
     }
 
     private static AmazonS3 client() {
@@ -90,6 +111,11 @@ public class S3ResolverTest extends AbstractResolverTest {
                 .accessKeyID(getAccessKeyId())
                 .secretKey(getSecretKey())
                 .build();
+    }
+
+    private static void deleteFixtures() {
+        final AmazonS3 s3 = client();
+        s3.deleteObject(getBucket(), OBJECT_KEY);
     }
 
     private static String getAccessKeyId() {
@@ -108,6 +134,9 @@ public class S3ResolverTest extends AbstractResolverTest {
         org.apache.commons.configuration.Configuration testConfig =
                 TestUtil.getTestConfig();
         String endpointStr = testConfig.getString(ConfigurationConstants.S3_ENDPOINT.getKey());
+        if (endpointStr == null || endpointStr.isEmpty()) {
+            endpointStr = "http://localhost:" + mockS3Port;
+        }
         try {
             return new URI(endpointStr);
         } catch (URISyntaxException e) {
