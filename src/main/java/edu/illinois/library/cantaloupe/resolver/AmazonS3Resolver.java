@@ -172,7 +172,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
         ObjectInfo objectInfo;
 
         final LookupStrategy strategy =
-                LookupStrategy.fromKey(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY);
+                LookupStrategy.from(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY);
         switch (strategy) {
             case DELEGATE_SCRIPT:
                 try {

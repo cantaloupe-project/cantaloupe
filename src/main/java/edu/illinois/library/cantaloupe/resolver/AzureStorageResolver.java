@@ -142,7 +142,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
 
     private String getObjectKey() throws IOException {
         final LookupStrategy strategy =
-                LookupStrategy.fromKey(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY);
+                LookupStrategy.from(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY);
         switch (strategy) {
             case DELEGATE_SCRIPT:
                 try {

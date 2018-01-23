@@ -335,7 +335,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     ResourceInfo getResourceInfo() throws Exception {
         if (resourceInfo == null) {
             final LookupStrategy strategy =
-                    LookupStrategy.fromKey(Key.HTTPRESOLVER_LOOKUP_STRATEGY);
+                    LookupStrategy.from(Key.HTTPRESOLVER_LOOKUP_STRATEGY);
             switch (strategy) {
                 case DELEGATE_SCRIPT:
                     resourceInfo = getResourceInfoUsingScriptStrategy();

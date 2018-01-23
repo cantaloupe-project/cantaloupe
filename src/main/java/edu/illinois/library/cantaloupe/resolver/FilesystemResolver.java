@@ -102,7 +102,7 @@ class FilesystemResolver extends AbstractResolver
     public Path getPath() throws IOException {
         if (path == null) {
             final LookupStrategy strategy =
-                    LookupStrategy.fromKey(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY);
+                    LookupStrategy.from(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY);
             switch (strategy) {
                 case DELEGATE_SCRIPT:
                     try {
