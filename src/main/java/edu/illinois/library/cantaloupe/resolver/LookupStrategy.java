@@ -7,7 +7,7 @@ enum LookupStrategy {
 
     BASIC, DELEGATE_SCRIPT;
 
-    static LookupStrategy fromKey(Key key) {
+    static LookupStrategy from(Key key) {
         final Configuration config = Configuration.getInstance();
 
         switch (config.getString(key)) {
