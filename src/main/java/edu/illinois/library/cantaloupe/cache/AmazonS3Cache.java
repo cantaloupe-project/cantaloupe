@@ -220,7 +220,7 @@ class AmazonS3Cache implements DerivativeCache {
 
         final Stopwatch watch = new Stopwatch();
         try {
-            S3Object object = s3.getObject(bucketName, objectKey);
+            final S3Object object = s3.getObject(bucketName, objectKey);
             if (isValid(object)) {
                 try (InputStream is = object.getObjectContent()) {
                     final Info info = Info.fromJSON(is);
@@ -229,6 +229,7 @@ class AmazonS3Cache implements DerivativeCache {
                     return info;
                 }
             } else {
+                object.close();
                 LOGGER.debug("{} in bucket {} is invalid; purging asynchronously",
                         objectKey, bucketName);
                 purgeAsync(objectKey, bucketName);
