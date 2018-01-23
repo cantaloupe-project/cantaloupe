@@ -20,16 +20,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.FileSystems;
 import java.nio.file.FileVisitOption;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -95,8 +90,8 @@ import java.util.stream.Collectors;
  *     <li>The hash algorithm is specified by {@link #HASH_ALGORITHM}.</li>
  *     <li>Identifiers in filenames are hashed in order to allow for identifiers
  *     longer than the filesystem's filename length limit.</li>
- *     <li>Cache files are created with a .tmp extension and moved into place
- *     when closed for writing.</li>
+ *     <li>Cache files are created with a {@literal .tmp} extension and moved
+ *     into place when closed for writing.</li>
  * </ol>
  *
  * <h1>Notes</h1>
@@ -228,128 +223,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
     }
 
-    /**
-     * Used by {@link Files#walkFileTree} to delete all stale temporary and
-     * zero-byte files within a directory.
-     */
-    private static class DetritalFileVisitor extends SimpleFileVisitor<Path> {
-
-        private static final Logger DFV_LOGGER = LoggerFactory.
-                getLogger(DetritalFileVisitor.class);
-
-        private long deletedFileCount = 0;
-        private long deletedFileSize = 0;
-        private final PathMatcher matcher;
-        private final long minCleanableAge;
-
-        DetritalFileVisitor(long minCleanableAge) {
-            this.minCleanableAge = minCleanableAge;
-            matcher = FileSystems.getDefault().
-                    getPathMatcher("glob:*" + TEMP_EXTENSION);
-        }
-
-        private void delete(Path path) {
-            try {
-                final long size = Files.size(path);
-                Files.deleteIfExists(path);
-                deletedFileCount++;
-                deletedFileSize += size;
-            } catch (IOException e) {
-                DFV_LOGGER.warn(e.getMessage(), e);
-            }
-        }
-
-        long getDeletedFileCount() {
-            return deletedFileCount;
-        }
-
-        long getDeletedFileSize() {
-            return deletedFileSize;
-        }
-
-        private void test(Path path) {
-            try {
-                // Try to avoid matching temp files that may still be open for
-                // writing by assuming that files last modified long enough ago
-                // are closed.
-                if (System.currentTimeMillis()
-                        - Files.getLastModifiedTime(path).toMillis() > minCleanableAge) {
-                    // Delete temp files.
-                    if (matcher.matches(path.getFileName())) {
-                        delete(path);
-                    } else {
-                        // Delete zero-byte files.
-                        if (Files.size(path) == 0) {
-                            delete(path);
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                DFV_LOGGER.error(e.getMessage(), e);
-            }
-        }
-
-        @Override
-        public FileVisitResult visitFile(Path file,
-                                         BasicFileAttributes attrs) {
-            test(file);
-            return FileVisitResult.CONTINUE;
-        }
-
-        @Override
-        public FileVisitResult visitFileFailed(Path file, IOException e) {
-            DFV_LOGGER.warn("visitFileFailed(): {}", e.getMessage());
-            return FileVisitResult.CONTINUE;
-        }
-
-    }
-
-    /**
-     * Used by {@link Files#walkFileTree} to delete all expired files within
-     * a directory.
-     */
-    private static class ExpiredFileVisitor extends SimpleFileVisitor<Path> {
-
-        private static final Logger EFV_LOGGER = LoggerFactory.
-                getLogger(ExpiredFileVisitor.class);
-
-        private long deletedFileCount = 0;
-        private long deletedFileSize = 0;
-
-        long getDeletedFileCount() {
-            return deletedFileCount;
-        }
-
-        long getDeletedFileSize() {
-            return deletedFileSize;
-        }
-
-        @Override
-        public FileVisitResult visitFile(Path path,
-                                         BasicFileAttributes attrs) {
-            try {
-                if (Files.isRegularFile(path) && isExpired(path)) {
-                    final long size = Files.size(path);
-                    Files.deleteIfExists(path);
-                    deletedFileCount++;
-                    deletedFileSize += size;
-                }
-            } catch (IOException e) {
-                EFV_LOGGER.warn(e.getMessage(), e);
-            }
-            return FileVisitResult.CONTINUE;
-        }
-
-        @Override
-        public FileVisitResult visitFileFailed(Path file, IOException e) {
-            EFV_LOGGER.warn("visitFileFailed(): {}", e.getMessage());
-            return FileVisitResult.CONTINUE;
-        }
-
-    }
-
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(FilesystemCache.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(FilesystemCache.class);
 
     // Algorithm used for hashing identifiers to create filenames & pathnames.
     // Will be passed to MessageDigest.getInstance(). MD5 is chosen for its
@@ -362,37 +237,49 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     private static final String INFO_EXTENSION = ".json";
     private static final String TEMP_EXTENSION = ".tmp";
 
-    /** Set of {@link Identifier}s or {@link OperationList}s) for which image
-     * files are currently being written from any thread. */
+    /**
+     * Set of {@link Identifier}s or {@link OperationList}s) for which image
+     * files are currently being written from any thread.
+     */
     private static final Set<Object> imagesBeingWritten =
             ConcurrentHashMap.newKeySet();
 
-    /** Set of Operations for which image files are currently being purged by
-     * purge(OperationList) from any thread. */
+    /**
+     * Set of {@link OperationList}s for which image files are currently being
+     * purged by {@link #purge(OperationList)} from any thread.
+     */
     private final Set<OperationList> imagesBeingPurged =
             ConcurrentHashMap.newKeySet();
 
-    /** Set of identifiers for which info files are currently being purged by
-     * purge(Identifier) from any thread. */
+    /**
+     * Set of identifiers for which info files are currently being purged by
+     * {@link #purge(Identifier)} from any thread.
+     */
     private final Set<Identifier> infosBeingPurged =
             ConcurrentHashMap.newKeySet();
 
-    /** Toggled by purge() and purgeInvalid(). */
+    /**
+     * Toggled by {@link #purge()} and {@link #purgeInvalid()}.
+     */
     private final AtomicBoolean isGlobalPurgeInProgress =
             new AtomicBoolean(false);
 
     private long minCleanableAge = 1000 * 60 * 10;
 
-    /** Several different lock objects for context-dependent synchronization.
-     * Reduces contention for the instance. */
+    /**
+     * Several different lock objects for context-dependent synchronization.
+     * Reduces contention for the instance.
+     */
     private final Object derivativeImageWriteLock = new Object();
     private final Object imagePurgeLock = new Object();
     private final Object infoPurgeLock = new Object();
     private final Object sourceImageWriteLock = new Object();
 
-    /** Rather than using a global lock, per-identifier locks allow for
+    /**
+     * Rather than using a global lock, per-identifier locks allow for
      * simultaneous writes to different infos. Map entries are added on demand
-     * and never removed. */
+     * and never removed.
+     */
     private final Map<Identifier,ReadWriteLock> infoLocks =
             new ConcurrentHashMap<>();
 
@@ -458,7 +345,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      *         {@link Key#CACHE_SERVER_TTL} is 0, <code>false</code> will be
      *         returned.
      */
-    private static boolean isExpired(Path file) throws IOException {
+    static boolean isExpired(Path file) throws IOException {
         final long ttlMsec = 1000 * Configuration.getInstance().
                 getLong(Key.CACHE_SERVER_TTL, 0);
         final long age = System.currentTimeMillis()
@@ -585,14 +472,17 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     /**
-     * Cleans up temporary and zero-byte files.
+     * Deletes temporary and zero-byte files.
+     *
+     * @see DetritalFileVisitor
      */
     @Override
     public void cleanUp() throws IOException {
         final Path path = rootPath();
 
         LOGGER.info("cleanUp(): cleaning directory: {}", path);
-        DetritalFileVisitor visitor = new DetritalFileVisitor(minCleanableAge);
+        DetritalFileVisitor visitor =
+                new DetritalFileVisitor(minCleanableAge, TEMP_EXTENSION);
 
         Files.walkFileTree(path,
                 EnumSet.of(FileVisitOption.FOLLOW_LINKS),
