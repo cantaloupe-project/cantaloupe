@@ -335,8 +335,12 @@ class AmazonS3Cache implements DerivativeCache {
 
         while (true) {
             for (S3ObjectSummary summary : listing.getObjectSummaries()) {
-                s3.deleteObject(getBucketName(), summary.getKey());
-                count++;
+                try {
+                    s3.deleteObject(getBucketName(), summary.getKey());
+                    count++;
+                } catch (AmazonS3Exception e) {
+                    LOGGER.warn("purge(): {}", e.getMessage());
+                }
             }
 
             if (listing.isTruncated()) {
