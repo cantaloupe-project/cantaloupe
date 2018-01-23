@@ -111,6 +111,10 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
         return client;
     }
 
+    /**
+     * N.B.: Either the returned instance, or the return value of
+     * {@link S3Object#getObjectContent()}, must be closed.
+     */
     private static S3Object fetchObject(ObjectInfo info) throws IOException {
         final AmazonS3 s3 = getClientInstance();
         try {
@@ -129,7 +133,14 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
     @Override
     public void checkAccess() throws IOException {
-        getObject();
+        S3Object object = null;
+        try {
+            object = getObject();
+        } finally {
+            if (object != null) {
+                object.close();
+            }
+        }
     }
 
     /**
