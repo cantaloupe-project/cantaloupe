@@ -37,9 +37,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -47,39 +45,43 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * <p>Processor using the OpenJPEG opj_decompress and opj_dump command-line
- * tools.</p>
+ * <p>Processor using the OpenJPEG {@literal opj_decompress} command-line
+ * tool.</p>
  *
- * <p>opj_decompress is used for cropping and an initial scale reduction
- * factor, and Java 2D is used for all remaining processing steps.
- * opj_decompress produces BMP output which is streamed to an ImageIO reader.
- * (BMP does not copy embedded ICC profiles into output images, but
- * opj_decompress converts the RGB source data itself. BMP also doesn't support
- * more than 8 bits per sample, which means that this processor can't respect
- * {@link Encode#getMaxSampleSize()}, and all output is &le; 8 bits.)</p>
+ * <p>{@literal opj_decompress} is used for cropping and an initial scale
+ * reduction factor, and Java 2D is used for all remaining processing steps.
+ * It produces BMP output which is streamed to an ImageIO reader. (BMP does not
+ * copy embedded ICC profiles into output images, but {@literal opj_decompress}
+ * converts the RGB source data itself. BMP also doesn't support more than 8
+ * bits per sample, which means that this processor can't respect {@link
+ * Encode#getMaxSampleSize()}, and all output is &le; 8 bits.)</p>
  *
- * <p>opj_decompress reads and writes the files named in the <code>-i</code>
- * and <code>-o</code> flags passed to it, respectively. The file in the
- * <code>-o</code> flag must have a <code>.bmp</code> extension. This means
- * that it's not possible to natively write to the {@link InputStream} of a
- * {@link Process}. Instead, we have to resort to a special trick whereby we
- * create a symlink from <code>/tmp/whatever.bmp</code> to
- * <code>/dev/stdout</code>, which will enable us to accomplish this. The
- * temporary symlink is created in the static initializer and deleted on
- * exit.</p>
+ * <p>{@literal opj_decompress} reads and writes the files named in the
+ * {@literal -i} and {@literal -o} arguments passed to it, respectively. The
+ * file in the {@literal -o} argument must have a {@literal .bmp} extension.
+ * This means that it's not possible to natively write to a {@link
+ * Process#getInputStream() process input stream}. Instead, we have to resort
+ * to a special trick whereby we create a symlink from
+ * {@literal /tmp/whatever.bmp} to {@literal /dev/stdout}, which will enable us
+ * to accomplish this. The temporary symlink is created in the static
+ * initializer and deleted on exit.</p>
  *
- * <p>Unfortunately, Windows doesn't have anything like
- * <code>/dev/stdout</code>, and so this processor won't work there.</p>
+ * <p>Unfortunately, Windows doesn't have anything like {@literal /dev/stdout},
+ * so this processor won't work there.</p>
  *
  * <p><strong>opj_decompress version 2.2.0 is highly recommended.</strong>
  * Earlier versions echo log messages to stdout, which can cause problems with
  * some images.</p>
+ *
+ * <p>Although {@literal opj_decompress} is used for reading images,
+ * {@literal opj_dump} is <strong>not</strong> used for reading metadata.
+ * ImageIO is used instead, as it is more efficient.</p>
  */
 class OpenJpegProcessor extends AbstractJava2DProcessor
         implements FileProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(OpenJpegProcessor.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(OpenJpegProcessor.class);
 
     private static final short MAX_REDUCTION_FACTOR = 5;
 
@@ -96,9 +98,6 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
     private static boolean isQuietModeSupported = true;
 
     private static Path stdoutSymlink;
-
-    // will cache opj_dump output
-    private String imageInfo;
 
     /**
      * Creates a unique symlink to /dev/stdout in a temporary directory, and
@@ -136,8 +135,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         initializationAttempted.set(true);
 
         try {
-            // Check for the presence of opj_dump and opj_decompress.
-            invoke("opj_dump");
+            // Check for the presence of opj_decompress.
             invoke("opj_decompress");
 
             // Due to a quirk of opj_decompress, this processor requires access to
@@ -284,84 +282,20 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
     }
 
     /**
-     * Gets the size of the given image by parsing the output of opj_dump.
+     * <p>Reads image information using ImageIO.</p>
+     *
+     * <p>This override disposes the reader since it won't be used for anything
+     * else.</p>
      */
     @Override
     public Info readImageInfo() throws IOException {
-        if (imageInfo == null) {
-            doReadImageInfo();
+        Info info;
+        try {
+            info = super.readImageInfo();
+        } finally {
+            getReader().dispose();
         }
-        final Info.Image image = new Info.Image();
-
-        try (final Scanner scan = new Scanner(imageInfo)) {
-            while (scan.hasNextLine()) {
-                String line = scan.nextLine().trim();
-                if (line.startsWith("x1=")) {
-                    String[] parts = StringUtils.split(line, ",");
-                    for (int i = 0; i < 2; i++) {
-                        String[] kv = StringUtils.split(parts[i], "=");
-                        if (kv.length == 2) {
-                            if (i == 0) {
-                                image.width = Integer.parseInt(kv[1].trim());
-                            } else {
-                                image.height = Integer.parseInt(kv[1].trim());
-                            }
-                        }
-                    }
-                } else if (line.startsWith("tdx=")) {
-                    String[] parts = StringUtils.split(line, ",");
-                    if (parts.length == 2) {
-                        final int dim1 = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
-                        final int dim2 = Integer.parseInt(parts[1].replaceAll("[^0-9]", ""));
-                        int tileWidth, tileHeight;
-                        if (image.width > image.height) {
-                            tileWidth = Math.max(dim1, dim2);
-                            tileHeight = Math.min(dim1, dim2);
-                        } else {
-                            tileWidth = Math.min(dim1, dim2);
-                            tileHeight = Math.max(dim1, dim2);
-                        }
-                        image.tileWidth = tileWidth;
-                        image.tileHeight = tileHeight;
-                    }
-                }
-            }
-        }
-        final Info info = new Info();
-        info.setSourceFormat(getSourceFormat());
-        info.getImages().add(image);
         return info;
-
-    }
-
-    private void doReadImageInfo() throws IOException {
-        final List<String> command = new ArrayList<>();
-        command.add(getPath("opj_dump"));
-        command.add("-i");
-        command.add(sourceFile.toString());
-
-        ProcessBuilder pb = new ProcessBuilder(command);
-        pb.redirectErrorStream(true);
-        LOGGER.info("Invoking {}", String.join(" ", pb.command()));
-        Process process = pb.start();
-
-        try (InputStream processInputStream =
-                     new BufferedInputStream(process.getInputStream())) {
-            String opjOutput = IOUtils.toString(processInputStream, "UTF-8");
-
-            // A typical error message looks like:
-            // [ERROR] Unknown input file format: /path/to/file.jp2
-            // Known file formats are *.j2k, *.jp2, *.jpc or *.jpt
-            if (opjOutput.startsWith("[ERROR]")) {
-                final String opjMessage =
-                        opjOutput.substring(opjOutput.lastIndexOf("ERROR]") + 7,
-                                opjOutput.indexOf("\n")).trim();
-                throw new IOException("Failed to read the source file. " +
-                        "(opj_dump says: " + opjMessage + ")");
-            } else {
-                imageInfo = opjOutput;
-            }
-        }
     }
 
     @Override
@@ -444,12 +378,6 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         }
     }
 
-    @Override
-    public void setSourceFile(Path sourceFile) {
-        super.setSourceFile(sourceFile);
-        reset();
-    }
-
     /**
      * Gets a ProcessBuilder corresponding to the given parameters.
      *
@@ -509,10 +437,6 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         command.add(stdoutSymlink.toString());
 
         return new ProcessBuilder(command);
-    }
-
-    private void reset() {
-        imageInfo = null;
     }
 
 }

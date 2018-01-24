@@ -59,12 +59,18 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
 
         final ImageReader reader = getReader();
         final Orientation orientation = getEffectiveOrientation();
-        for (int i = 0, numResolutions = reader.getNumImages();
-             i < numResolutions; i++) {
+        for (int i = 0, numImages = reader.getNumImages(); i < numImages; i++) {
             Info.Image image = new Info.Image();
+            image.setOrientation(orientation);
             image.setSize(reader.getSize(i));
             image.setTileSize(reader.getTileSize(i));
-            image.setOrientation(orientation);
+            // JP2 tile dimensions are inverted, so swap them
+            if ((image.width > image.height && image.tileWidth < image.tileHeight) ||
+                    (image.width < image.height && image.tileWidth > image.tileHeight)) {
+                int tmp = image.tileWidth;
+                image.tileWidth = image.tileHeight;
+                image.tileHeight = tmp;
+            }
             info.getImages().add(image);
         }
         return info;

@@ -14,19 +14,10 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
@@ -36,7 +27,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.math.RoundingMode;
 import java.nio.file.Files;
@@ -47,16 +37,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * <p>Processor using the Kakadu {@literal kdu_expand} and {@literal
- * kdu_jp2info} command-line tools. Written against version 7.7, but should
- * work with other versions, as long as their command-line interface is
- * compatible.</p>
+ * <p>Processor using the Kakadu {@literal kdu_expand} command-line tool.
+ * Written against version 7.7, but should work with other versions, as long as
+ * their command-line interface is compatible.</p>
  *
  * <p>{@literal kdu_expand} is used for cropping and an initial scale reduction
  * factor, and Java 2D for all remaining processing steps. {@literal
@@ -73,6 +61,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * /tmp/whatever.tif} to {@literal /dev/stdout} (which only exists on Unix).
  * The temporary symlink is created by {@link #initialize()} and deleted on
  * exit.</p>
+ *
+ * <p>Although {@literal kdu_expand} is used for reading images,
+ * {@literal kdu_jp2info} is <strong>not</strong> used for reading metadata.
+ * ImageIO is used instead, as it is more efficient.</p>
  *
  * @see <a href="http://kakadusoftware.com/wp-content/uploads/2014/06/Usage_Examples-v7_7.txt">
  *     Usage Examples for the Demonstration Applications Supplied with Kakadu
@@ -96,11 +88,6 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
      */
     private static InitializationException initializationException;
     private static Path stdoutSymlink;
-
-    /**
-     * Cache of the output of {@literal kdu_jp2info}.
-     */
-    private Document infoDocument;
 
     /**
      * Creates a unique symlink to {@literal /dev/stdout} in a temporary
@@ -138,8 +125,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
         initializationAttempted.set(true);
 
         try {
-            // Check for the presence of kdu_jp2info.
-            invoke("kdu_jp2info");
+            // Check for the presence of kdu_expand.
             invoke("kdu_expand");
 
             // Due to a quirk of kdu_expand, this processor requires access to
@@ -228,116 +214,20 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     }
 
     /**
-     * Gets the size of the given image by parsing the XML output of
-     * {@literal kdu_jp2info}.
+     * <p>Reads image information using ImageIO.</p>
+     *
+     * <p>This override disposes the reader since it won't be used for anything
+     * else.</p>
      */
     @Override
     public Info readImageInfo() throws IOException {
+        Info info;
         try {
-            if (infoDocument == null) {
-                readImageInfoDocument();
-            }
-
-            int width = -1, height = -1;
-            final Info info = new Info(width, height, getSourceFormat());
-            final Info.Image infoImage = info.getImages().get(0);
-
-            // Find dimensions, which are located at /codestream/width
-            // and /codestream/height; and also tile sizes at /codestream/SIZ.
-            // This block was originally written using XPath queries, but DOM
-            // traversal appears to be a little bit (10-15%) faster.
-            NodeList nodes = infoDocument.getElementsByTagName("codestream");
-            if (nodes.getLength() > 0) {
-                Node codestreamNode = nodes.item(0);
-                NodeList codestreamChildren = codestreamNode.getChildNodes();
-                for (int i = 0; i < codestreamChildren.getLength(); i++) {
-                    Node node = codestreamChildren.item(i);
-                    if ("width".equals(node.getNodeName())) {
-                        width = Integer.parseInt(node.getTextContent().trim());
-                    } else if ("height".equals(node.getNodeName())) {
-                        height = Integer.parseInt(node.getTextContent().trim());
-                    } else if ("SIZ".equals(node.getNodeName())) {
-                        // Read the tile dimensions out of the Stiles={n,n} line
-                        try (final Scanner scan = new Scanner(node.getTextContent())) {
-                            while (scan.hasNextLine()) {
-                                String line = scan.nextLine().trim();
-                                if (line.startsWith("Stiles=")) {
-                                    String[] parts = StringUtils.split(line, ",");
-                                    if (parts.length == 2) {
-                                        final int dim1 = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
-                                        final int dim2 = Integer.parseInt(parts[1].replaceAll("[^0-9]", ""));
-                                        int tileWidth, tileHeight;
-                                        if (width > height) {
-                                            tileWidth = Math.max(dim1, dim2);
-                                            tileHeight = Math.min(dim1, dim2);
-                                        } else {
-                                            tileWidth = Math.min(dim1, dim2);
-                                            tileHeight = Math.max(dim1, dim2);
-                                        }
-                                        infoImage.tileWidth = tileWidth;
-                                        infoImage.tileHeight = tileHeight;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (width > 0 && height > 0) {
-                infoImage.width = width;
-                infoImage.height = height;
-            } else {
-                throw new IllegalArgumentException("Unable to read dimensions");
-            }
-            return info;
-        } catch (SAXException | ParserConfigurationException e) {
-            throw new IOException(e.getMessage(), e);
+            info = super.readImageInfo();
+        } finally {
+            getReader().dispose();
         }
-    }
-
-    /**
-     * Invokes {@literal kdu_jp2info} and parses the output into a
-     * {@link Document}, saved in an instance variable.
-     */
-    private void readImageInfoDocument()
-            throws SAXException, IOException, ParserConfigurationException {
-        final List<String> command = new ArrayList<>();
-        command.add(getPath("kdu_jp2info"));
-        command.add("-i");
-        command.add(sourceFile.toString());
-        command.add("-siz");
-
-        final ProcessBuilder pb = new ProcessBuilder(command);
-        pb.redirectErrorStream(true);
-        LOGGER.info("Invoking {}", String.join(" ", pb.command()));
-        Process process = pb.start();
-        ByteArrayOutputStream outputBucket = new ByteArrayOutputStream();
-
-        try (InputStream processInputStream =
-                     new BufferedInputStream(process.getInputStream())) {
-            IOUtils.copy(processInputStream, outputBucket);
-            // This will be an XML string if all went well, otherwise it will
-            // be non-XML text.
-            final String kduOutput = toString(outputBucket).trim();
-
-            // A typical error message looks like:
-            // -------------
-            // Kakadu Error:
-            // Input file is neither a raw codestream nor a box-structured file.  Not a
-            // JPEG2000 file.
-            if (kduOutput.startsWith("--")) {
-                final String kduMessage =
-                        kduOutput.substring(kduOutput.lastIndexOf("Kakadu Error:") + 13).
-                                replace("\n", " ").trim();
-                throw new IOException("Failed to read the source file. " +
-                        "(kdu_jp2info output: " + kduMessage + ")");
-            } else {
-                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-                DocumentBuilder db = dbf.newDocumentBuilder();
-                infoDocument = db.parse(new InputSource(new StringReader(kduOutput)));
-            }
-        }
+        return info;
     }
 
     @Override
@@ -407,12 +297,6 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
             }
             throw new ProcessorException(msg, e);
         }
-    }
-
-    @Override
-    public void setSourceFile(Path sourceFile) {
-        super.setSourceFile(sourceFile);
-        reset();
     }
 
     /**
@@ -509,10 +393,6 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
         command.add(stdoutSymlink.toString());
 
         return new ProcessBuilder(command);
-    }
-
-    private void reset() {
-        infoDocument = null;
     }
 
 }

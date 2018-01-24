@@ -135,6 +135,9 @@ public class ImageReader {
             case GIF:
                 reader = new GIFImageReader(sourceFile);
                 break;
+            case JP2:
+                reader = new JPEG2000ImageReader(sourceFile);
+                break;
             case JPG:
                 reader = new JPEGImageReader(sourceFile);
                 break;
@@ -183,6 +186,9 @@ public class ImageReader {
             case GIF:
                 reader = new GIFImageReader(inputStream);
                 break;
+            case JP2:
+                reader = new JPEG2000ImageReader(inputStream);
+                break;
             case JPG:
                 reader = new JPEGImageReader(inputStream);
                 break;
@@ -215,6 +221,9 @@ public class ImageReader {
                 break;
             case GIF:
                 reader = new GIFImageReader(streamSource);
+                break;
+            case JP2:
+                reader = new JPEG2000ImageReader(streamSource);
                 break;
             case JPG:
                 reader = new JPEGImageReader(streamSource);
