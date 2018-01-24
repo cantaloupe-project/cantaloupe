@@ -104,6 +104,12 @@ public class SizeTest extends BaseTest {
             // pass
         }
         try {
+            Size.fromUri("pct:50,30");
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+        try {
             Size.fromUri("120,cats");
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
@@ -117,6 +123,12 @@ public class SizeTest extends BaseTest {
         }
         try {
             Size.fromUri("!cats,120");
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+        try {
+            Size.fromUri("!120,");
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             // pass
