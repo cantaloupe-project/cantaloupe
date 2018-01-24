@@ -6,7 +6,7 @@
 s3.endpoint =
 s3.access_key_id =
 s3.secret_key =
-s3.bucket =
+s3.bucket = edu.illinois.library.cantaloupe.test
 
 # Used by AzureStorageResolverTest and AzureStorageCacheTest.
 # Note: leave blank to test sas and container specified in a URL to the object key.
