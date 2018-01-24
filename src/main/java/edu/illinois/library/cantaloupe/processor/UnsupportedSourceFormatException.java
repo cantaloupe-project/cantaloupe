@@ -4,6 +4,18 @@ import edu.illinois.library.cantaloupe.image.Format;
 
 public class UnsupportedSourceFormatException extends ProcessorException {
 
+    private static String getMessage(Processor proc, Format format) {
+        String msg;
+        if (Format.UNKNOWN.equals(format)) {
+            msg = proc.getClass().getSimpleName() + " only supports known " +
+                    "source formats";
+        } else {
+            msg = proc.getClass().getSimpleName() + " does not support the " +
+                    format.getName() + " source format";
+        }
+        return msg;
+    }
+
     public UnsupportedSourceFormatException() {
         super("Unsupported source format");
     }
@@ -17,9 +29,7 @@ public class UnsupportedSourceFormatException extends ProcessorException {
     }
 
     public UnsupportedSourceFormatException(Processor proc, Format format) {
-        super(proc.getClass().getSimpleName() + " does not support " +
-                (format.equals(Format.UNKNOWN) ? "this" :
-                        "the " + format.getName()) + " source format");
+        super(getMessage(proc, format));
     }
 
 }
