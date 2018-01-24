@@ -8,7 +8,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.operation.overlay.ImageOverlay;
 import edu.illinois.library.cantaloupe.operation.overlay.Position;
-import edu.illinois.library.cantaloupe.resolver.FileInputStreamStreamSource;
+import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -277,7 +277,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
         Info imageInfo;
 
         // page option missing
-        instance.setStreamSource(new FileInputStreamStreamSource(fixture));
+        instance.setStreamSource(new PathStreamSource(fixture));
         imageInfo = instance.readImageInfo();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -286,7 +286,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
         page1 = outputStream.toByteArray();
 
         // page option present
-        instance.setStreamSource(new FileInputStreamStreamSource(fixture));
+        instance.setStreamSource(new PathStreamSource(fixture));
 
         ops = TestUtil.newOperationList();
         ops.getOptions().put("page", "2");
@@ -306,7 +306,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
             return;
         }
 
-        instance.setStreamSource(new FileInputStreamStreamSource(
+        instance.setStreamSource(new PathStreamSource(
                 TestUtil.getImage("pdf.pdf")));
 
         OperationList ops = TestUtil.newOperationList();

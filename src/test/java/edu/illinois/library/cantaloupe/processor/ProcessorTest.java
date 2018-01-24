@@ -10,7 +10,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Transpose;
-import edu.illinois.library.cantaloupe.resolver.FileInputStreamStreamSource;
+import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -99,7 +99,7 @@ public abstract class ProcessorTest extends BaseTest {
 
                     if (proc instanceof StreamProcessor) {
                         StreamSource source =
-                                new FileInputStreamStreamSource(fixture);
+                                new PathStreamSource(fixture);
                         ((StreamProcessor) proc).setStreamSource(source);
                     } else if (proc instanceof FileProcessor) {
                         ((FileProcessor) proc).setSourceFile(fixture);
@@ -353,7 +353,7 @@ public abstract class ProcessorTest extends BaseTest {
                     if (proc instanceof StreamProcessor) {
                         StreamProcessor sproc = (StreamProcessor) proc;
                         StreamSource streamSource =
-                                new FileInputStreamStreamSource(fixture);
+                                new PathStreamSource(fixture);
                         sproc.setStreamSource(streamSource);
                     } else if (proc instanceof FileProcessor) {
                         FileProcessor fproc = (FileProcessor) proc;
@@ -474,7 +474,7 @@ public abstract class ProcessorTest extends BaseTest {
         if (proc instanceof FileProcessor) {
             ((FileProcessor) proc).setSourceFile(fixture);
         } else if (proc instanceof StreamProcessor) {
-            StreamSource source = new FileInputStreamStreamSource(fixture);
+            StreamSource source = new PathStreamSource(fixture);
             ((StreamProcessor) proc).setStreamSource(source);
         }
         return proc;

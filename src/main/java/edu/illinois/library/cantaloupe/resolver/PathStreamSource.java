@@ -2,25 +2,19 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Convenience class that provides a {@link StreamSource} for an
- * {@link File}.
+ * Convenience class that provides a {@link StreamSource} for a {@link Path}.
  */
-public class FileInputStreamStreamSource implements StreamSource {
+public class PathStreamSource implements StreamSource {
 
     private final Path path;
 
-    public FileInputStreamStreamSource(File file) {
-        this.path = file.toPath();
-    }
-
-    public FileInputStreamStreamSource(Path path) {
+    public PathStreamSource(Path path) {
         this.path = path;
     }
 

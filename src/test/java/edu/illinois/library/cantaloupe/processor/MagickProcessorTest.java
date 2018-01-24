@@ -9,7 +9,7 @@ import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
-import edu.illinois.library.cantaloupe.resolver.FileInputStreamStreamSource;
+import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -106,7 +106,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final StreamProcessor instance = (StreamProcessor) newInstance();
         instance.setSourceFormat(Format.JPG);
-        StreamSource streamSource = new FileInputStreamStreamSource(
+        StreamSource streamSource = new PathStreamSource(
                 TestUtil.getImage("jpg-xmp.jpg"));
         instance.setStreamSource(streamSource);
         instance.process(ops, imageInfo, outputStream);
@@ -154,7 +154,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final StreamProcessor instance = (StreamProcessor) newInstance();
         instance.setSourceFormat(Format.JPG);
-        StreamSource streamSource = new FileInputStreamStreamSource(
+        StreamSource streamSource = new PathStreamSource(
                 TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
         instance.setStreamSource(streamSource);
         instance.process(ops, imageInfo, outputStream);
@@ -181,7 +181,7 @@ abstract class MagickProcessorTest extends ProcessorTest {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final StreamProcessor instance = (StreamProcessor) newInstance();
         instance.setSourceFormat(Format.JPG);
-        StreamSource streamSource = new FileInputStreamStreamSource(
+        StreamSource streamSource = new PathStreamSource(
                 TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
         instance.setStreamSource(streamSource);
         instance.process(ops, imageInfo, outputStream);
