@@ -306,8 +306,48 @@ public class CacheFacadeTest extends BaseTest {
     /* purgeAsync(Identifier) */
 
     @Test
-    public void testPurgeAsyncWithIdentifier() {
-        // TODO: write this
+    public void testPurgeAsyncWithIdentifier() throws Exception {
+        enableDerivativeCache();
+        enableSourceCache();
+        SourceCache sourceCache = CacheFactory.getSourceCache();
+        DerivativeCache derivCache = CacheFactory.getDerivativeCache();
+
+        Identifier identifier = new Identifier("jpg");
+        OperationList opList = new OperationList(identifier, Format.JPG);
+        Info info = new Info();
+
+        // Add identifier to the source cache.
+        try (InputStream is = Files.newInputStream(TestUtil.getImage("jpg"));
+             OutputStream os = sourceCache.newSourceImageOutputStream(identifier)) {
+            IOUtils.copy(is, os);
+        }
+
+        // Add opList to the derivative cache.
+        try (InputStream is = Files.newInputStream(TestUtil.getImage("jpg"));
+             OutputStream os = instance.newDerivativeImageOutputStream(opList)) {
+            IOUtils.copy(is, os);
+        }
+
+        // Add info to the derivative cache.
+        derivCache.put(identifier, info);
+
+        // Assert that everything has been added.
+        assertNotNull(sourceCache.getSourceImageFile(identifier));
+        assertNotNull(derivCache.getImageInfo(identifier));
+        try (InputStream is = derivCache.newDerivativeImageInputStream(opList)) {
+            assertNotNull(is);
+        }
+
+        instance.purgeAsync(identifier);
+
+        Thread.sleep(2000);
+
+        // Assert that everything is gone.
+        assertNull(sourceCache.getSourceImageFile(identifier));
+        assertNull(derivCache.getImageInfo(identifier));
+        try (InputStream is = derivCache.newDerivativeImageInputStream(opList)) {
+            assertNull(is);
+        }
     }
 
     /* purge(OperationList) */

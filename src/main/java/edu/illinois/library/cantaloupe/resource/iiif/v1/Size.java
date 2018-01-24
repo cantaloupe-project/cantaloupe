@@ -42,11 +42,11 @@ class Size {
     private Integer width;
 
     /**
-     * @param uriSize The "size" component of an IIIF URI.
-     * @return
+     * @param uriSize The {@literal size} component of a URI.
+     * @return Size corresponding to the given URI size component.
      * @throws IllegalArgumentException
      */
-    public static Size fromUri(String uriSize) throws IllegalArgumentException {
+    public static Size fromUri(String uriSize) {
         Size size = new Size();
         try {
             if (uriSize.equals("full")) {
@@ -64,8 +64,10 @@ class Size {
                 } else if (uriSize.startsWith("!")) {
                     size.setScaleMode(ScaleMode.ASPECT_FIT_INSIDE);
                     String[] parts = StringUtils.stripStart(uriSize, "!").split(",");
-                    size.setWidth(Integer.parseInt(parts[0]));
-                    size.setHeight(Integer.parseInt(parts[1]));
+                    if (parts.length == 2) {
+                        size.setWidth(Integer.parseInt(parts[0]));
+                        size.setHeight(Integer.parseInt(parts[1]));
+                    }
                 } else {
                     size.setScaleMode(ScaleMode.NON_ASPECT_FILL);
                     String[] parts = uriSize.split(",");
