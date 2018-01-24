@@ -2370,6 +2370,21 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td>Source Cache Time-To-Live
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Amount of time source cache content
+                                           remains valid. Set to blank or 0 for forever.">?</a>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control"
+                                               name="cache.server.source.ttl_seconds"
+                                               min="0"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td>Derivative Cache
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
@@ -2405,6 +2420,21 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td>Derivative Cache Time-To-Live
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Amount of time derivative cache content
+                                           remains valid. Set to blank or 0 for forever.">?</a>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control"
+                                               name="cache.server.derivative.ttl_seconds"
+                                               min="0"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td>Info Cache
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
@@ -2422,22 +2452,6 @@
                                                 Enabled
                                             </label>
                                         </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Time-To-Live
-                                        <a tabindex="0" class="btn btn-sm cl-help"
-                                           role="button" data-toggle="popover"
-                                           data-trigger="focus"
-                                           data-content="Time before a cached image becomes
-                                                   stale and needs to be reloaded. Set to 0 for
-                                                   &quot;never.&quot;">?</a>
-                                    </td>
-                                    <td>
-                                        <input type="number" class="form-control"
-                                               name="cache.server.ttl_seconds"
-                                               min="0"
-                                               data-requires-restart="false">
                                     </td>
                                 </tr>
                                 <tr>

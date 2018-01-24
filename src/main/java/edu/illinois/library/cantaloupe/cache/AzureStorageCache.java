@@ -135,7 +135,7 @@ class AzureStorageCache implements DerivativeCache {
 
     private static Instant getEarliestValidInstant() {
         final Configuration config = Configuration.getInstance();
-        final long ttl = config.getInt(Key.CACHE_SERVER_TTL);
+        final long ttl = config.getInt(Key.DERIVATIVE_CACHE_TTL);
         return (ttl > 0) ?
                 Instant.now().truncatedTo(ChronoUnit.SECONDS).minusSeconds(ttl) :
                 Instant.MIN;

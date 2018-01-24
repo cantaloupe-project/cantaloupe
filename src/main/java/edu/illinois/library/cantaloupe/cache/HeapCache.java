@@ -44,7 +44,7 @@ import static edu.illinois.library.cantaloupe.config.Key.*;
  * size may be safely changed while the application is running.)</p>
  *
  * <p>Because this cache is not time-limited,
- * {@link edu.illinois.library.cantaloupe.config.Key#CACHE_SERVER_TTL} does not
+ * {@link edu.illinois.library.cantaloupe.config.Key#DERIVATIVE_CACHE_TTL} does not
  * apply.</p>
  *
  * <p>The cache supports startup/shutdown persistence, using

@@ -22,12 +22,15 @@ title: Upgrading
     <ul>
       <li><code>S3Resolver.endpoint</code></li>
       <li><code>S3Cache.endpoint</code></li>
+      <li><code>cache.server.source.ttl_seconds</code></li>
+      <li><code>cache.server.derivative.ttl_seconds</code></li>
     </ul>
   </li>
   <li>Remove the following keys from the configuration:
     <ul>
       <li><code>S3Resolver.bucket.region</code></li>
       <li><code>S3Cache.bucket.region</code></li>
+      <li><code>cache.server.ttl_seconds</code></li>
     </ul>
   </li>
   <li>Change any <code>AmazonS3Resolver</code> configuration values to <code>S3Resolver</code>.</li>

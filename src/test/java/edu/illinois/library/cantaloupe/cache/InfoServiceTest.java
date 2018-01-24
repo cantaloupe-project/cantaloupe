@@ -58,7 +58,7 @@ public class InfoServiceTest extends BaseTest {
             config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     Files.createTempDirectory("test").toString());
-            config.setProperty(Key.CACHE_SERVER_TTL, "10");
+            config.setProperty(Key.DERIVATIVE_CACHE_TTL, "10");
         } catch (IOException e) {
             fail(e.getMessage());
         }

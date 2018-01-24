@@ -437,7 +437,7 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
         config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
         config.setProperty(Key.FILESYSTEMCACHE_PATHNAME, cacheDir.toString());
-        config.setProperty(Key.CACHE_SERVER_TTL, 60);
+        config.setProperty(Key.DERIVATIVE_CACHE_TTL, 60);
         config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, true);
         config.setProperty(Key.CACHE_SERVER_PURGE_MISSING, purgeMissing);
 

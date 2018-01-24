@@ -129,11 +129,9 @@ cache.client.no_transform = true
 
 <p>The info cache is cluster-safe: when multiple instances are sharing the same derivative cache, there will never (for more than a short period of time) be an info in an instance's info cache that isn't also present in the derivative cache.</p>
 
-<p>The info cache does not respect the <code>cache.server.ttl_seconds</code> configuration key. Its content never expires.</p>
-
 <p>The maximum size of the info cache is hard-coded to a reasonable percentage of the maximum heap size, and is not configurable. As infos are very small, the maximum size is unlikely to ever be reached.</p>
 
-<p>The info cache is not persisted; its contents will be lost when the application exits.</p>
+<p>The info cache's content never expires, but it is not persisted, so it will be lost when the application exits.</p>
 
 <hr>
 
@@ -181,7 +179,7 @@ cache.client.no_transform = true
 
 <ol>
   <li>Performing maintenance more often;</li>
-  <li>Reducing the time-to-live (using the <code>cache.server.ttl_seconds</code> configuration key);</li>
+  <li>Reducing the time-to-live (using the <code>cache.server.derivative.ttl_seconds</code> configuration key);</li>
   <li>Increasing the threshold by allocating more storage to the cache.</li>
 </ol>
 
@@ -254,7 +252,7 @@ cache.client.no_transform = true
 
 <p>Unlike most of the other caches, this one does not age-limit content. When the target size (<code>HeapCache.target_size</code>) has been exceeded, the minimum number of least-recently-accessed items are purged that will reduce it back down to this size. (The configured target size may be safely changed while the application is running.)</p>
 
-<p>Because this cache is not time-limited, <code>cache.server.ttl_seconds</code> does not apply, and, if enabled, the <a href="#Automatic%20Maintenance">cache worker</a> will have nothing to do, so will remain idle.</p>
+<p>Because this cache is not time-limited, <code>cache.server.derivative.ttl_seconds</code> does not apply, and, if enabled, the <a href="#Automatic%20Maintenance">cache worker</a> will remain idle.</p>
 
 <p>When using this cache, ensure that your heap is able to grow large enough to accommodate the desired target size (using the <code>-Xmx</code> VM option), and that you have enough RAM to accommodate this size.</p>
 
@@ -377,4 +375,4 @@ CREATE INDEX identifier_idx ON {JdbcCache.info_table} (identifier);
   <li><code>RedisCache.database</code></li>
 </ul>
 
-<p>Unlike the other caches, cache policy is configured on the Redis side, and <code>cache.server.ttl_seconds</code> will have no effect with this cache. Likewise, if enabled, the <a href="#Automatic%20Maintenance">cache worker</a> will have nothing to do, so will remain idle.</p>
+<p>Unlike the other caches, cache policy is configured on the Redis side, and <code>cache.server.derivative.ttl_seconds</code> will have no effect with this cache. Likewise, if enabled, the <a href="#Automatic%20Maintenance">cache worker</a> will remain idle.</p>

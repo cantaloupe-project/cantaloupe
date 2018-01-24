@@ -392,6 +392,10 @@ cache.server.source.enabled = false
 # FilesystemCache is the only available source cache.
 cache.server.source = FilesystemCache
 
+# Amount of time source cache content remains valid. Set to blank or 0
+# for forever.
+cache.server.source.ttl_seconds = 3600
+
 # Enables the derivative (processed image) cache.
 cache.server.derivative.enabled = false
 
@@ -399,13 +403,13 @@ cache.server.derivative.enabled = false
 # `HeapCache`, `S3Cache`, and `AzureStorageCache`.
 cache.server.derivative =
 
+# Amount of time derivative cache content remains valid. Set to blank or 0
+# for forever.
+cache.server.derivative.ttl_seconds = 2592000
+
 # Whether to use the Java heap as a "level 1" cache for image infos, either
 # independently or in front of a "level 2" derivative cache (if enabled).
 cache.server.info.enabled = true
-
-# Time before cached content (excluding info cache content) becomes invalid.
-# Set to blank or 0 for never.
-cache.server.ttl_seconds = 2592000
 
 # If true, when a resolver reports that the requested source image has gone
 # missing, all cached information relating to it (if any) will be deleted.

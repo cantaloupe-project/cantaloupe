@@ -51,7 +51,7 @@ abstract class AbstractCacheTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 300);
+        Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 300);
     }
 
     /* getImageInfo(Identifier) */
@@ -71,7 +71,7 @@ abstract class AbstractCacheTest extends BaseTest {
     @Test
     public void testGetImageInfoWithExistingInvalidImage() throws Exception {
         final DerivativeCache instance = newInstance();
-        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 1);
+        Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 1);
 
         Identifier identifier = new Identifier("cats");
         Info info = new Info(50, 40);
@@ -99,7 +99,7 @@ abstract class AbstractCacheTest extends BaseTest {
     public void testNewDerivativeImageInputStreamWithZeroTTL()
             throws Exception {
         final DerivativeCache instance = newInstance();
-        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 0);
+        Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 0);
 
         OperationList opList = new OperationList(new Identifier("cats"), Format.JPG);
         Path imageFile = TestUtil.getImage(IMAGE);
@@ -125,7 +125,7 @@ abstract class AbstractCacheTest extends BaseTest {
     public void testNewDerivativeImageInputStreamWithNonzeroTTL()
             throws Exception {
         final DerivativeCache instance = newInstance();
-        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 3);
+        Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 3);
 
         OperationList ops = new OperationList(new Identifier("cats"), Format.JPG);
         Path fixture = TestUtil.getImage(IMAGE);
@@ -333,7 +333,7 @@ abstract class AbstractCacheTest extends BaseTest {
         Identifier id1 = new Identifier(IMAGE);
         OperationList ops1 = new OperationList(id1, Format.JPG);
         Info info1 = new Info(62, 35);
-        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 2);
+        Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 2);
 
         // add an image
         Path fixture = TestUtil.getImage(id1.toString());

@@ -322,7 +322,7 @@ public class ImageAPIResourceTester {
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
         config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
         config.setProperty(Key.FILESYSTEMCACHE_PATHNAME, cacheDir.toString());
-        config.setProperty(Key.CACHE_SERVER_TTL, 10);
+        config.setProperty(Key.DERIVATIVE_CACHE_TTL, 10);
 
         assertRecursiveFileCount(cacheDir, 0);
 

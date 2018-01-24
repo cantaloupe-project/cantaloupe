@@ -58,7 +58,6 @@ public enum Key {
     BASIC_AUTH_USERNAME("endpoint.public.auth.basic.username"),
     CACHE_SERVER_PURGE_MISSING("cache.server.purge_missing"),
     CACHE_SERVER_RESOLVE_FIRST("cache.server.resolve_first"),
-    CACHE_SERVER_TTL("cache.server.ttl_seconds"),
     CACHE_WORKER_ENABLED("cache.server.worker.enabled"),
     CACHE_WORKER_INTERVAL("cache.server.worker.interval"),
     CLIENT_CACHE_ENABLED("cache.client.enabled"),
@@ -76,6 +75,7 @@ public enum Key {
     DELEGATE_SCRIPT_PATHNAME("delegate_script.pathname"),
     DERIVATIVE_CACHE("cache.server.derivative"),
     DERIVATIVE_CACHE_ENABLED("cache.server.derivative.enabled"),
+    DERIVATIVE_CACHE_TTL("cache.server.derivative.ttl_seconds"),
     ERROR_LOG_FILEAPPENDER_ENABLED("log.error.FileAppender.enabled"),
     ERROR_LOG_FILEAPPENDER_PATHNAME("log.error.FileAppender.pathname"),
     ERROR_LOG_ROLLINGFILEAPPENDER_ENABLED("log.error.RollingFileAppender.enabled"),
@@ -190,6 +190,7 @@ public enum Key {
     SLASH_SUBSTITUTE("slash_substitute"),
     SOURCE_CACHE("cache.server.source"),
     SOURCE_CACHE_ENABLED("cache.server.source.enabled"),
+    SOURCE_CACHE_TTL("cache.server.source.ttl_seconds"),
     STREAMPROCESSOR_RETRIEVAL_STRATEGY("StreamProcessor.retrieval_strategy"),
     TEMP_PATHNAME("temp_pathname");
 

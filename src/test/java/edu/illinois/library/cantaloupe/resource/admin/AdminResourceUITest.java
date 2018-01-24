@@ -528,12 +528,13 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.CLIENT_CACHE_NO_TRANSFORM).click();
         selectNamed(Key.SOURCE_CACHE).selectByVisibleText("FilesystemCache");
         inputNamed(Key.SOURCE_CACHE_ENABLED).click();
+        inputNamed(Key.SOURCE_CACHE_TTL).sendKeys("10");
         selectNamed(Key.DERIVATIVE_CACHE).selectByVisibleText("FilesystemCache");
         inputNamed(Key.DERIVATIVE_CACHE_ENABLED).click();
+        inputNamed(Key.DERIVATIVE_CACHE_TTL).sendKeys("15");
         inputNamed(Key.INFO_CACHE_ENABLED).click();
         inputNamed(Key.CACHE_SERVER_PURGE_MISSING).click();
         inputNamed(Key.CACHE_SERVER_RESOLVE_FIRST).click();
-        inputNamed(Key.CACHE_SERVER_TTL).sendKeys("10");
         inputNamed(Key.CACHE_WORKER_ENABLED).click();
         inputNamed(Key.CACHE_WORKER_INTERVAL).sendKeys("25");
         // S3Cache
@@ -595,12 +596,13 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertTrue(config.getBoolean(Key.CLIENT_CACHE_NO_TRANSFORM));
         assertEquals("FilesystemCache", config.getString(Key.SOURCE_CACHE));
         assertTrue(config.getBoolean(Key.SOURCE_CACHE_ENABLED));
+        assertEquals(10, config.getInt(Key.SOURCE_CACHE_TTL));
         assertEquals("FilesystemCache", config.getString(Key.DERIVATIVE_CACHE));
         assertTrue(config.getBoolean(Key.DERIVATIVE_CACHE_ENABLED));
         assertTrue(config.getBoolean(Key.INFO_CACHE_ENABLED));
+        assertEquals(15, config.getInt(Key.DERIVATIVE_CACHE_TTL));
         assertTrue(config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING));
         assertTrue(config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST));
-        assertEquals(10, config.getInt(Key.CACHE_SERVER_TTL));
         assertTrue(config.getBoolean(Key.CACHE_WORKER_ENABLED));
         assertEquals(25, config.getInt(Key.CACHE_WORKER_INTERVAL));
         // S3Cache

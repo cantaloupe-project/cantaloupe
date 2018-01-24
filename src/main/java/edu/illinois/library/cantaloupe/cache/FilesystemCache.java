@@ -297,7 +297,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     private static FileTime getLastAccessedTime(Path file) throws IOException {
         try {
             // Last-accessed time is not reliable on macOS+APFS as of 10.13.2.
-            // TODO: what about HFS+?
             if (SystemUtils.IS_OS_MAC) {
                 LOGGER.debug("macOS detected; using last-modified time " +
                         "instead of last-accessed time.");
@@ -339,19 +338,28 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     /**
+     * Determines whether the given file is expired by comparing the result of
+     * {@link #getLastAccessedTime(Path)} to either
+     * {@link Key#DERIVATIVE_CACHE_TTL} or {@link Key#SOURCE_CACHE_TTL},
+     * depending on the given path. If the selected key is set to {@literal 0},
+     * {@literal false} will be returned.
+     *
      * @param file Path to check.
-     * @return Whether the given file is expired based on
-     *         {@link Key#CACHE_SERVER_TTL} and its last-accessed time. If
-     *         {@link Key#CACHE_SERVER_TTL} is 0, <code>false</code> will be
-     *         returned.
+     * @return Whether the given file is expired.
      */
     static boolean isExpired(Path file) throws IOException {
-        final long ttlMsec = 1000 * Configuration.getInstance().
-                getLong(Key.CACHE_SERVER_TTL, 0);
-        final long age = System.currentTimeMillis()
+        final Configuration config = Configuration.getInstance();
+
+        final long ttlSec = file.startsWith(rootSourceImagePath()) ?
+                config.getLong(Key.SOURCE_CACHE_TTL, 0) :
+                config.getLong(Key.DERIVATIVE_CACHE_TTL, 0);
+        final long ttlMsec = 1000 * ttlSec;
+        final long fileAge = System.currentTimeMillis()
                 - getLastAccessedTime(file).toMillis();
-        LOGGER.debug("Age of {}: {} msec", file.getFileName(), age);
-        return (ttlMsec > 0 && age > ttlMsec);
+
+        LOGGER.debug("Age of {}: {} msec", file.getFileName(), fileAge);
+
+        return (ttlMsec > 0 && fileAge > ttlMsec);
     }
 
     /**

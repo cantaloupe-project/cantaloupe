@@ -18,7 +18,6 @@ import org.junit.Test;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,7 +25,6 @@ import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 
 import static org.junit.Assert.*;
 
@@ -173,11 +171,11 @@ public class JdbcCacheTest extends AbstractCacheTest {
         final Configuration config = Configuration.getInstance();
 
         // ttl = 0
-        config.setProperty(Key.CACHE_SERVER_TTL, 0);
+        config.setProperty(Key.DERIVATIVE_CACHE_TTL, 0);
         assertEquals(new Timestamp(0), instance.earliestValidDate());
 
         // ttl = 50
-        config.setProperty(Key.CACHE_SERVER_TTL, 50);
+        config.setProperty(Key.DERIVATIVE_CACHE_TTL, 50);
         Instant expected = Instant.now().minus(Duration.ofSeconds(50)).
                 truncatedTo(ChronoUnit.SECONDS);
         Instant actual = instance.earliestValidDate().toInstant().

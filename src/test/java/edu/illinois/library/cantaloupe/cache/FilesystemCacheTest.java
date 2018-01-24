@@ -31,6 +31,7 @@ import static org.junit.Assert.*;
 public class FilesystemCacheTest extends AbstractCacheTest {
 
     private Path fixturePath;
+    private Path infoPath;
     private Path sourceImagePath;
     private Path derivativeImagePath;
     private FilesystemCache instance;
@@ -42,6 +43,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         fixturePath = Files.createTempDirectory("test").resolve("cache");
         sourceImagePath = fixturePath.resolve("source");
         derivativeImagePath = fixturePath.resolve("image");
+        infoPath = fixturePath.resolve("info");
 
         instance = newInstance();
     }
@@ -329,7 +331,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
 
     @Test
     public void testGetSourceImageFileWithZeroTTL() throws Exception {
-        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 0);
+        Configuration.getInstance().setProperty(Key.SOURCE_CACHE_TTL, 0);
 
         Identifier identifier = new Identifier("cats");
         assertNull(instance.getSourceImageFile(identifier));
@@ -342,7 +344,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
 
     @Test
     public void testGetSourceImageFileWithNonzeroTTL() throws Exception {
-        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 1);
+        Configuration.getInstance().setProperty(Key.SOURCE_CACHE_TTL, 1);
 
         Identifier identifier = new Identifier("cats");
         Path cacheFile = sourceImageFile(identifier);
@@ -375,20 +377,6 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         }).run();
     }
 
-    /* newDerivativeImageOutputStream(OperationList) */
-
-    @Test
-    public void testNewDerivativeImageOutputStreamCreatesFolder()
-            throws Exception {
-        Files.walkFileTree(derivativeImagePath, new DeletingFileVisitor());
-        assertFalse(Files.exists(derivativeImagePath));
-
-        OperationList ops = TestUtil.newOperationList();
-        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
-            assertTrue(Files.exists(derivativeImagePath));
-        }
-    }
-
     /* newSourceImageOutputStream(Identifier) */
 
     @Test
@@ -412,6 +400,129 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     @Test
     public void testNewSourceImageOutputStreamConcurrently() {
         // Tested in testGetSourceImageFileConcurrently()
+    }
+
+    /**
+     * Override that also tests the source cache.
+     */
+    @Override
+    @Test
+    public void testPurge() throws Exception {
+        OperationList ops = TestUtil.newOperationList();
+
+        // create a new source image file
+        Path sourceImageFile = sourceImageFile(ops.getIdentifier());
+        createEmptyFile(sourceImageFile);
+
+        // create a new derivative image file
+        Path derivativeImageFile = derivativeImageFile(ops);
+        createEmptyFile(derivativeImageFile);
+
+        // create a new info file
+        Path infoFile = infoFile(ops.getIdentifier());
+        createEmptyFile(infoFile);
+
+        // change the op list
+        ops.setIdentifier(new Identifier("dogs"));
+        ops.add(new Rotate(15));
+
+        // create a new derivative image file based on the changed op list
+        derivativeImageFile = derivativeImageFile(ops);
+        createEmptyFile(derivativeImageFile);
+
+        instance.purge();
+
+        assertRecursiveFileCount(fixturePath, 0);
+    }
+
+    /**
+     * Override that also tests the source cache.
+     */
+    @Override
+    @Test
+    public void testPurgeWithIdentifier() throws Exception {
+        OperationList ops = TestUtil.newOperationList();
+
+        Identifier id1 = new Identifier("dogs");
+        ops.setIdentifier(id1);
+
+        // create a new source image
+        Path sourceImageFile = sourceImageFile(ops.getIdentifier());
+        createEmptyFile(sourceImageFile);
+
+        // create a new derivative image
+        Path derivativeImageFile = derivativeImageFile(ops);
+        createEmptyFile(derivativeImageFile);
+
+        // create a new info
+        Path infoFile = infoFile(ops.getIdentifier());
+        createEmptyFile(infoFile);
+
+        Identifier id2 = new Identifier("ferrets");
+        ops.setIdentifier(id2);
+        ops.add(new Rotate(15));
+
+        sourceImageFile = sourceImageFile(ops.getIdentifier());
+        createEmptyFile(sourceImageFile);
+
+        derivativeImageFile = derivativeImageFile(ops);
+        createEmptyFile(derivativeImageFile);
+
+        infoFile = infoFile(ops.getIdentifier());
+        createEmptyFile(infoFile);
+
+        assertRecursiveFileCount(sourceImagePath, 2);
+        assertRecursiveFileCount(derivativeImagePath, 2);
+        assertRecursiveFileCount(infoPath, 2);
+        instance.purge(id1);
+        assertRecursiveFileCount(sourceImagePath, 1);
+        assertRecursiveFileCount(derivativeImagePath, 1);
+        assertRecursiveFileCount(infoPath, 1);
+        instance.purge(id2);
+        assertRecursiveFileCount(sourceImagePath, 0);
+        assertRecursiveFileCount(derivativeImagePath, 0);
+        assertRecursiveFileCount(infoPath, 0);
+    }
+
+    /**
+     * Override that also tests the source cache.
+     */
+    @Override
+    @Test
+    public void testPurgeInvalid() throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.SOURCE_CACHE_TTL, 1);
+        config.setProperty(Key.DERIVATIVE_CACHE_TTL, 1);
+
+        Crop crop = new Crop();
+        crop.setFull(true);
+
+        // add a source image
+        OperationList ops = TestUtil.newOperationList();
+        Path imageFile = sourceImageFile(ops.getIdentifier());
+        createEmptyFile(imageFile);
+
+        // add a derivative image
+        ops = TestUtil.newOperationList();
+        imageFile = derivativeImageFile(ops);
+        createEmptyFile(imageFile);
+
+        // add an info
+        Path infoFile = infoFile(ops.getIdentifier());
+        createEmptyFile(infoFile);
+
+        // wait for them to expire
+        Thread.sleep(1500);
+
+        // add a changed derivative
+        ops.setIdentifier(new Identifier("dogs"));
+        imageFile = derivativeImageFile(ops);
+        createEmptyFile(imageFile);
+
+        instance.purgeInvalid();
+        assertRecursiveFileCount(sourceImagePath, 0);
+        assertRecursiveFileCount(derivativeImagePath, 1);
+        assertRecursiveFileCount(infoPath, 0);
     }
 
 }
