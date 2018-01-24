@@ -18,6 +18,7 @@ import org.w3c.dom.NodeList;
 
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
@@ -34,6 +35,13 @@ final class TIFFImageReader extends AbstractImageReader {
      */
     TIFFImageReader(Path sourceFile) throws IOException {
         super(sourceFile, Format.TIF);
+    }
+
+    /**
+     * @param inputStream Stream to read.
+     */
+    TIFFImageReader(ImageInputStream inputStream) throws IOException {
+        super(inputStream, Format.TIF);
     }
 
     /**

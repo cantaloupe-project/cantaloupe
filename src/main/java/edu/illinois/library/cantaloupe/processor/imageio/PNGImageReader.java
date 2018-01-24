@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -20,6 +21,13 @@ final class PNGImageReader extends AbstractImageReader {
      */
     PNGImageReader(Path sourceFile) throws IOException {
         super(sourceFile, Format.PNG);
+    }
+
+    /**
+     * @param inputStream Stream to read.
+     */
+    PNGImageReader(ImageInputStream inputStream) throws IOException {
+        super(inputStream, Format.PNG);
     }
 
     /**

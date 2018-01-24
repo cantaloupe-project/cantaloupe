@@ -11,10 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -115,14 +117,14 @@ public class ImageReader {
     }
 
     /**
-     * Constructor for reading from files.
+     * Creates a reusable instance for reading from files.
      *
      * @param sourceFile File to read from.
      * @param format     Format of the source image.
      * @throws IllegalArgumentException if the format is unsupported.
      */
-    public ImageReader(Path sourceFile, Format format)
-            throws IOException {
+    public ImageReader(Path sourceFile,
+                       Format format) throws IOException {
         switch (format) {
             case BMP:
                 reader = new BMPImageReader(sourceFile);
@@ -148,14 +150,62 @@ public class ImageReader {
     }
 
     /**
-     * Constructor for reading from streams.
+     * <p>Creates a non-reusable instance.</p>
+     *
+     * <p>{@link #ImageReader(ImageInputStream, Format)} should be preferred
+     * when a first-class {@link ImageInputStream} can be provided.</p>
+     *
+     * @param inputStream Stream to read from.
+     * @param format      Format of the source image.
+     * @throws IllegalArgumentException if the format is unsupported.
+     */
+    public ImageReader(InputStream inputStream,
+                       Format format) throws IOException {
+        this(ImageIO.createImageInputStream(inputStream), format);
+    }
+
+    /**
+     * Creates a non-reusable instance.
+     *
+     * @param inputStream Stream to read from.
+     * @param format      Format of the source image.
+     * @throws IllegalArgumentException if the format is unsupported.
+     */
+    public ImageReader(ImageInputStream inputStream,
+                       Format format) throws IOException {
+        switch (format) {
+            case BMP:
+                reader = new BMPImageReader(inputStream);
+                break;
+            case DCM:
+                reader = new DICOMImageReader(inputStream);
+                break;
+            case GIF:
+                reader = new GIFImageReader(inputStream);
+                break;
+            case JPG:
+                reader = new JPEGImageReader(inputStream);
+                break;
+            case PNG:
+                reader = new PNGImageReader(inputStream);
+                break;
+            case TIF:
+                reader = new TIFFImageReader(inputStream);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported format: " + format);
+        }
+    }
+
+    /**
+     * Creates a reusable instance for reading from streams.
      *
      * @param streamSource Source of stream to read from.
      * @param format       Format of the source image.
      * @throws IllegalArgumentException if the format is unsupported.
      */
-    public ImageReader(StreamSource streamSource, Format format)
-            throws IOException {
+    public ImageReader(StreamSource streamSource,
+                       Format format) throws IOException {
         switch (format) {
             case BMP:
                 reader = new BMPImageReader(streamSource);
@@ -287,15 +337,6 @@ public class ImageReader {
                               final Set<Hint> hints)
             throws IOException, ProcessorException {
         return reader.read(opList, orientation, reductionFactor, hints);
-    }
-
-    /**
-     * Reads an image (excluding subimages).
-     *
-     * @return RenderedImage
-     */
-    public RenderedImage readRendered() throws IOException {
-        return reader.readRendered();
     }
 
     /**

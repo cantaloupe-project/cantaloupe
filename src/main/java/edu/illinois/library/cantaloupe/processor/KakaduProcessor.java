@@ -14,7 +14,6 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
-import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -368,8 +367,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
                         new StreamCopier(processErrorStream, errorBucket));
 
                 final ImageReader reader = new ImageReader(
-                        new InputStreamStreamSource(processInputStream),
-                        Format.TIF);
+                        processInputStream, Format.TIF);
                 final BufferedImage image = reader.read();
                 try {
                     Set<ImageReader.Hint> hints =

@@ -53,7 +53,7 @@ abstract class AbstractImageReader {
     private ImageInputStream inputStream;
 
     /**
-     * Set by {@link #setSource}.
+     * Set by {@link #setSource}. May be {@literal null}.
      */
     private Object source;
 
@@ -62,6 +62,19 @@ abstract class AbstractImageReader {
      */
     AbstractImageReader(Path inputFile, Format format) throws IOException {
         setSource(inputFile);
+        setFormat(format);
+
+        createReader();
+    }
+
+    /**
+     * Creates a non-reusable instance.
+     *
+     * @param inputStream Stream to read.
+     */
+    AbstractImageReader(ImageInputStream inputStream,
+                        Format format) throws IOException {
+        setSource(inputStream);
         setFormat(format);
 
         createReader();
@@ -252,8 +265,16 @@ abstract class AbstractImageReader {
         return new String[] {};
     }
 
+    /**
+     * Resets the source, closing any existing source input stream and creating
+     * a new one.
+     *
+     * @throws UnsupportedOperationException if the instance is not reusable.
+     */
     private void reset() throws IOException {
-        if (source instanceof Path) {
+        if (source == null) {
+            throw new UnsupportedOperationException("Instance is not reusable");
+        } else if (source instanceof Path) {
             setSource((Path) source);
         } else {
             setSource((StreamSource) source);
@@ -268,13 +289,31 @@ abstract class AbstractImageReader {
     void setSource(Path inputFile) throws IOException {
         dispose();
         source = inputFile;
-        inputStream = ImageIO.createImageInputStream(inputFile.toFile());
+        try {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+        } finally {
+            inputStream = ImageIO.createImageInputStream(inputFile.toFile());
+        }
+    }
+
+    void setSource(ImageInputStream inputStream) {
+        dispose();
+        source = null;
+        this.inputStream = inputStream;
     }
 
     void setSource(StreamSource streamSource) throws IOException {
         dispose();
         source = streamSource;
-        inputStream = streamSource.newImageInputStream();
+        try {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+        } finally {
+            inputStream = streamSource.newImageInputStream();
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -450,12 +489,13 @@ abstract class AbstractImageReader {
                 incompatible with the source image data.
                 (JPEGImageReader is not very lenient.)
                 See: https://github.com/medusa-project/cantaloupe/issues/41
+                and also the docs for e.i.l.c.p.imageio.JPEGImageReader.
 
                 To deal with this situation, we will try reading again,
                 ignoring the color profile. We need to reset the reader, and
                 then read into a grayscale BufferedImage.
 
-                This is of course a hack, credit/blame for which goes to:
+                This is of course a filthy hack, credit/blame for which goes to:
                 http://stackoverflow.com/a/11571181
                 */
                 reset();

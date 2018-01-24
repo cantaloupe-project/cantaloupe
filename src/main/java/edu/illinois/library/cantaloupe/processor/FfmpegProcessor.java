@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
-import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -184,8 +183,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
                         new StreamCopier(processErrorStream, errorBucket));
 
                 final ImageReader reader = new ImageReader(
-                        new InputStreamStreamSource(processInputStream),
-                        Format.BMP);
+                        processInputStream, Format.BMP);
                 final BufferedImage image = reader.read();
                 try {
                     postProcess(image, null, opList, imageInfo, null,

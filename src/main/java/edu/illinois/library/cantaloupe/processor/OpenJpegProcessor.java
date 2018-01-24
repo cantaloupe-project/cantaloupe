@@ -15,7 +15,6 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
-import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -403,8 +402,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                         new StreamCopier(processErrorStream, errorBucket));
 
                 final ImageReader reader = new ImageReader(
-                        new InputStreamStreamSource(processInputStream),
-                        Format.BMP);
+                        processInputStream, Format.BMP);
                 final BufferedImage image = reader.read();
                 try {
                     Set<ImageReader.Hint> hints =

@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
@@ -112,7 +111,7 @@ public class GIFImageWriterTest extends BaseTest {
                     reader.dispose();
                     reader = null;
                     try {
-                        reader = new ImageReader(new InputStreamStreamSource(is), Format.GIF);
+                        reader = new ImageReader(is, Format.GIF);
                         assertEquals(2, reader.getNumImages());
                     } finally {
                         if (reader != null) {

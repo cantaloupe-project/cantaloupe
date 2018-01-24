@@ -7,19 +7,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 
 final class DICOMImageReader extends AbstractImageReader {
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(DICOMImageReader.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(DICOMImageReader.class);
 
     /**
      * @param sourceFile Source file to read.
      */
     DICOMImageReader(Path sourceFile) throws IOException {
         super(sourceFile, Format.DCM);
+    }
+
+    /**
+     * @param inputStream Stream to read.
+     */
+    DICOMImageReader(ImageInputStream inputStream) throws IOException {
+        super(inputStream, Format.DCM);
     }
 
     /**

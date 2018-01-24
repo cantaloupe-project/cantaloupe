@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
-import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
@@ -82,7 +81,7 @@ public class Java2dProcessorTest extends ImageIOProcessorTest {
             try (ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray())) {
                 ImageReader reader = null;
                 try {
-                    reader = new ImageReader(new InputStreamStreamSource(is), Format.GIF);
+                    reader = new ImageReader(is, Format.GIF);
                     assertEquals(2, reader.getNumImages());
                 } finally {
                     if (reader != null) {
