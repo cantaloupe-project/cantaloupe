@@ -140,17 +140,11 @@ public class ProcessorFactoryTest extends BaseTest {
      * Assert that an {@link UnsupportedSourceFormatException} is thrown for
      * {@link Format#UNKNOWN}.
      */
-    @Test
+    @Test(expected = UnsupportedSourceFormatException.class)
     public void testNewProcessorWithUnknownFormat() throws Exception {
         Configuration.getInstance().setProperty(Key.PROCESSOR_FALLBACK,
                 Java2dProcessor.class.getSimpleName());
-        try {
-            instance.newProcessor(Format.UNKNOWN);
-            fail("Expected exception");
-        } catch (UnsupportedSourceFormatException e) {
-            assertEquals(e.getMessage(),
-                    "Java2dProcessor does not support this source format");
-        }
+        instance.newProcessor(Format.UNKNOWN);
     }
 
     @Test(expected = InitializationException.class)
