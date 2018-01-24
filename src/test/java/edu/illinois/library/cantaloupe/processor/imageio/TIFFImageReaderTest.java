@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -123,6 +124,13 @@ public class TIFFImageReaderTest extends BaseTest {
     }
 
     @Test
+    public void testRead() throws Exception {
+        BufferedImage result = instance.read();
+        assertEquals(64, result.getWidth());
+        assertEquals(56, result.getHeight());
+    }
+
+    @Test
     public void testReadWithMonoResolutionImageAndNoScaleFactor() throws Exception {
         OperationList ops = new OperationList(new Identifier("cats"), Format.JPG);
         Crop crop = new Crop();
@@ -148,6 +156,13 @@ public class TIFFImageReaderTest extends BaseTest {
     @Test
     public void testReadWithMultiResolutionImage() {
         // TODO: write this
+    }
+
+    @Test
+    public void testReadRendered() throws Exception {
+        RenderedImage result = instance.read();
+        assertEquals(64, result.getWidth());
+        assertEquals(56, result.getHeight());
     }
 
 }

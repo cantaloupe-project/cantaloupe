@@ -1,6 +1,13 @@
 package edu.illinois.library.cantaloupe.processor.imageio;
 
 import edu.illinois.library.cantaloupe.image.Compression;
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.Orientation;
+import edu.illinois.library.cantaloupe.operation.ReductionFactor;
+import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
@@ -8,6 +15,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -68,13 +79,33 @@ public class BMPImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testRead() {
-        // TODO: write this
+    public void testRead() throws Exception {
+        BufferedImage result = instance.read();
+        assertEquals(100, result.getWidth());
+        assertEquals(88, result.getHeight());
     }
 
     @Test
-    public void testReadWithArguments() {
-        // TODO: write this
+    public void testReadWithArguments() throws Exception {
+        OperationList ops = new OperationList(new Identifier("cats"), Format.JPG);
+        Crop crop = new Crop();
+        crop.setX(10f);
+        crop.setY(10f);
+        crop.setWidth(40f);
+        crop.setHeight(40f);
+        ops.add(crop);
+        Scale scale = new Scale(35, 35, Scale.Mode.ASPECT_FIT_INSIDE);
+        ops.add(scale);
+        Orientation orientation = Orientation.ROTATE_0;
+        ReductionFactor rf = new ReductionFactor();
+        Set<ImageReader.Hint> hints = new HashSet<>();
+
+        BufferedImage image = instance.read(ops, orientation, rf, hints);
+
+        assertEquals(40, image.getWidth());
+        assertEquals(40, image.getHeight());
+        assertEquals(0, rf.factor);
+        assertTrue(hints.contains(ImageReader.Hint.ALREADY_CROPPED));
     }
 
     @Test
@@ -83,8 +114,10 @@ public class BMPImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testReadRendered() {
-        // TODO: write this
+    public void testReadRendered() throws Exception {
+        RenderedImage result = instance.read();
+        assertEquals(100, result.getWidth());
+        assertEquals(88, result.getHeight());
     }
 
     @Test

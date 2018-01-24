@@ -22,14 +22,14 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-public class GIFImageReaderTest extends BaseTest {
+public class JPEG2000ImageReaderTest extends BaseTest {
 
-    private GIFImageReader instance;
+    private JPEG2000ImageReader instance;
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new GIFImageReader(TestUtil.getImage("gif"));
+        instance = new JPEG2000ImageReader(TestUtil.getImage("jp2"));
     }
 
     @After
@@ -40,7 +40,7 @@ public class GIFImageReaderTest extends BaseTest {
 
     @Test
     public void testGetCompression() {
-        assertEquals(Compression.LZW, instance.getCompression(0));
+        assertEquals(Compression.JPEG2000, instance.getCompression(0));
     }
 
     @Test
@@ -128,19 +128,6 @@ public class GIFImageReaderTest extends BaseTest {
     @Test
     public void testReadSmallestUsableSubimageReturningRenderedImage() {
         // TODO: write this
-    }
-
-    @Test
-    public void testReadSequenceWithStaticImage() throws Exception {
-        BufferedImageSequence seq = instance.readSequence();
-        assertEquals(1, seq.length());
-    }
-
-    @Test
-    public void testReadSequenceWithAnimatedImage() throws Exception {
-        instance = new GIFImageReader(TestUtil.getImage("gif-animated-looping.gif"));
-        BufferedImageSequence seq = instance.readSequence();
-        assertEquals(2, seq.length());
     }
 
 }

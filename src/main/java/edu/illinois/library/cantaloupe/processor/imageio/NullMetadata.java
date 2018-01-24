@@ -6,6 +6,10 @@ import javax.imageio.metadata.IIOMetadata;
 
 class NullMetadata extends AbstractMetadata implements Metadata {
 
+    NullMetadata() {
+        super(null, null);
+    }
+
     /**
      * @param metadata
      * @param formatName
