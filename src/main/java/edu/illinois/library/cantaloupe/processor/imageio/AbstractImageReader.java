@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Orientation;
@@ -330,7 +331,9 @@ abstract class AbstractImageReader {
 
     /**
      * <p>Attempts to read an image as efficiently as possible, exploiting its
-     * tile layout and/or subimages, if possible.</p>
+     * tile layout, if possible.</p>
+     *
+     * <p>This implementation is optimized for mono-resolution images.</p>
      *
      * <p>After reading, clients should check the reader hints to see whether
      * the returned image will require cropping.</p>
@@ -343,7 +346,7 @@ abstract class AbstractImageReader {
      *                        returned image.
      * @param hints           Will be populated by information returned from
      *                        the reader.
-     * @return BufferedImage best matching the given parameters.
+     * @return                Image best matching the given arguments.
      */
     BufferedImage read(final OperationList ops,
                        final Orientation orientation,
@@ -375,7 +378,8 @@ abstract class AbstractImageReader {
      * @param scale Requested scale
      * @param rf    Will be set to the reduction factor of the returned image.
      * @param hints Will be populated by information returned by the reader.
-     * @return Smallest image fitting the requested crop and scale operations.
+     * @return      Smallest image fitting the requested crop and scale
+     *              operations.
      */
     BufferedImage readSmallestUsableSubimage(
             final Crop crop,
@@ -543,7 +547,7 @@ abstract class AbstractImageReader {
     }
 
     /**
-     * <p>Attempts to reads an image as efficiently as possible, exploiting its
+     * <p>Attempts to reads an image as efficiently as possible, utilizing its
      * tile layout and/or subimages, if possible.</p>
      *
      * @param ops
@@ -553,21 +557,31 @@ abstract class AbstractImageReader {
      *                        be modified to reflect the reduction factor of the
      *                        returned image.
      * @param hints           Will be populated by information returned from
-     *                        the reader.
-     * @return Image best matching the given arguments.
+     *                        the reader. May also contain hints for the
+     *                        reader. May be {@literal null}.
+     * @return                Image best matching the given arguments.
      */
-    RenderedImage readRendered(final OperationList ops,
-                               final Orientation orientation,
-                               final ReductionFactor reductionFactor,
-                               final Set<ImageReader.Hint> hints)
+    public RenderedImage readRendered(final OperationList ops,
+                                      final Orientation orientation,
+                                      final ReductionFactor reductionFactor,
+                                      final Set<ImageReader.Hint> hints)
             throws IOException, ProcessorException {
-        RenderedImage image;
         Crop crop = (Crop) ops.getFirst(Crop.class);
-        if (crop != null && !hints.contains(ImageReader.Hint.IGNORE_CROP)) {
-            image = iioReader.readAsRenderedImage(0,
-                    iioReader.getDefaultReadParam());
+        if (crop == null) {
+            crop = new Crop();
+            crop.setFull(true);
+        }
+
+        Scale scale = (Scale) ops.getFirst(Scale.class);
+        if (scale == null) {
+            scale = new Scale();
+        }
+
+        RenderedImage image;
+        if (hints != null && hints.contains(ImageReader.Hint.IGNORE_CROP)) {
+            image = readRendered();
         } else {
-            image = iioReader.read(0);
+            image = readSmallestUsableSubimage(crop, scale, reductionFactor);
         }
         if (image == null) {
             throw new UnsupportedSourceFormatException(iioReader.getFormatName());
@@ -583,8 +597,8 @@ abstract class AbstractImageReader {
      * @param scale Requested scale.
      * @param rf    The {@link ReductionFactor#factor} will be set to the
      *              reduction factor of the returned image.
-     * @return The smallest image fitting the requested crop and scale
-     *         operations from the given reader.
+     * @return      The smallest image fitting the requested crop and scale
+     *              operations from the given reader.
      */
     RenderedImage readSmallestUsableSubimage(final Crop crop,
                                              final Scale scale,
@@ -651,8 +665,9 @@ abstract class AbstractImageReader {
      *                     coordinates.
      * @param scale        Requested scale.
      * @param reducedScale Reduced scale of a pyramid level.
-     * @return Whether the given source image region can be satisfied by the
-     *         given reduced scale at the requested scale.
+     * @return             Whether the given source image region can be
+     *                     satisfied by the given reduced scale at the
+     *                     requested scale.
      */
     private boolean fits(Rectangle regionRect,
                          Scale scale,

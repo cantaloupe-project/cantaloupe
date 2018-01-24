@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.processor.imageio;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.operation.Scale;
@@ -20,15 +19,14 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Set;
 
 final class TIFFImageReader extends AbstractImageReader {
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(TIFFImageReader.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(TIFFImageReader.class);
 
     static {
         // See: https://github.com/geosolutions-it/imageio-ext/wiki/TIFF-plugin
@@ -101,11 +99,13 @@ final class TIFFImageReader extends AbstractImageReader {
     @Override
     String[] preferredIIOImplementations() {
         // N.B.: The GeoSolutions TIFF reader supports BigTIFF among other
-        // enhancements. The Sun reader will do as a fallback.
+        // enhancements. The Sun reader will do as a fallback, although there
+        // shouldn't be any need to fall back.
         String[] impls = new String[2];
         impls[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.class.getName();
 
-        // The Sun TIFF reader has moved in Java 9.
+        // In Java 9, the Sun TIFF reader has moved out of the JAI ImageIO
+        // Tools and into the JDK.
         if (SystemUtils.getJavaMajorVersion() >= 9) {
             impls[1] = "com.sun.imageio.plugins.tiff.TIFFImageReader";
         } else {
@@ -115,16 +115,11 @@ final class TIFFImageReader extends AbstractImageReader {
         return impls;
     }
 
-    ////////////////////////////////////////////////////////////////////////
-    /////////////////////// BufferedImage methods //////////////////////////
-    ////////////////////////////////////////////////////////////////////////
-
     /**
-     * <p>Attempts to read an image as efficiently as possible, utilizing its
-     * tile layout and/or subimages, if possible.</p>
+     * <p>Override that is both multi-resolution- and tile-aware.</p>
      *
      * <p>After reading, clients should check the reader hints to see whether
-     * the returned image will require cropping.</p>
+     * the returned image will require additional cropping.</p>
      *
      * @param ops
      * @param orientation     Orientation of the source image data as reported
@@ -134,10 +129,9 @@ final class TIFFImageReader extends AbstractImageReader {
      *                        returned image.
      * @param hints           Will be populated by information returned from
      *                        the reader.
-     * @return BufferedImage best matching the given parameters, guaranteed to
-     *         not be of {@link BufferedImage#TYPE_CUSTOM}. Clients should
-     *         check the hints set to see whether they need to perform
-     *         additional cropping.
+     * @return                Image best matching the given arguments. Clients
+     *                        should check the hints set to see whether they
+     *                        need to perform additional cropping.
      */
     @Override
     public BufferedImage read(final OperationList ops,
@@ -145,16 +139,15 @@ final class TIFFImageReader extends AbstractImageReader {
                               final ReductionFactor reductionFactor,
                               final Set<ImageReader.Hint> hints)
             throws IOException, ProcessorException {
-        Crop crop = new Crop();
-        crop.setFull(true);
-        Scale scale = new Scale();
+        Crop crop = (Crop) ops.getFirst(Crop.class);
+        if (crop == null) {
+            crop = new Crop();
+            crop.setFull(true);
+        }
 
-        for (Operation op : ops) {
-            if (op instanceof Crop) {
-                crop = (Crop) op;
-            } else if (op instanceof Scale) {
-                scale = (Scale) op;
-            }
+        Scale scale = (Scale) ops.getFirst(Scale.class);
+        if (scale == null) {
+            scale = new Scale();
         }
 
         BufferedImage image;
@@ -163,55 +156,6 @@ final class TIFFImageReader extends AbstractImageReader {
         } else {
             image = readSmallestUsableSubimage(crop, scale, reductionFactor,
                     hints);
-        }
-        if (image == null) {
-            throw new UnsupportedSourceFormatException(iioReader.getFormatName());
-        }
-        return image;
-    }
-
-    ////////////////////////////////////////////////////////////////////////
-    /////////////////////// RenderedImage methods //////////////////////////
-    ////////////////////////////////////////////////////////////////////////
-
-    /**
-     * <p>Attempts to reads an image as efficiently as possible, utilizing its
-     * tile layout and/or subimages, if possible.</p>
-     *
-     * @param ops
-     * @param orientation     Orientation of the source image data, e.g. as
-     *                        reported by embedded metadata.
-     * @param reductionFactor {@link ReductionFactor#factor} property will be
-     *                        modified to reflect the reduction factor of the
-     *                        returned image.
-     * @param hints           Will be populated by information returned from
-     *                        the reader. May also contain hints for the
-     *                        reader. May be <code>null</code>.
-     * @return RenderedImage best matching the given parameters.
-     */
-    @Override // TODO: I forgot why this is overridden; why isn't the parent tile-aware?
-    public RenderedImage readRendered(final OperationList ops,
-                                      final Orientation orientation,
-                                      final ReductionFactor reductionFactor,
-                                      Set<ImageReader.Hint> hints)
-            throws IOException, ProcessorException {
-        Crop crop = new Crop();
-        crop.setFull(true);
-        Scale scale = new Scale();
-
-        for (Operation op : ops) {
-            if (op instanceof Crop) {
-                crop = (Crop) op;
-            } else if (op instanceof Scale) {
-                scale = (Scale) op;
-            }
-        }
-
-        RenderedImage image;
-        if (hints != null && hints.contains(ImageReader.Hint.IGNORE_CROP)) {
-            image = readRendered();
-        } else {
-            image = readSmallestUsableSubimage(crop, scale, reductionFactor);
         }
         if (image == null) {
             throw new UnsupportedSourceFormatException(iioReader.getFormatName());
