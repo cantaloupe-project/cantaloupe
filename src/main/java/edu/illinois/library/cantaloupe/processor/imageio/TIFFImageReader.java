@@ -30,6 +30,11 @@ final class TIFFImageReader extends AbstractImageReader {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(TIFFImageReader.class);
 
+    static {
+        // See: https://github.com/geosolutions-it/imageio-ext/wiki/TIFF-plugin
+        System.setProperty("it.geosolutions.imageio.tiff.lazy", "true");
+    }
+
     /**
      * @param sourceFile Source file to read.
      */
