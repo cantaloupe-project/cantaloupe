@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.perf;
+package edu.illinois.library.cantaloupe.processor.imageio;
 
 import java.util.concurrent.TimeUnit;
 
@@ -14,15 +14,19 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
-import edu.illinois.library.cantaloupe.processor.imageio.TIFFImageReaderTest;
+import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.*;
 
 /**
  * Executes benchmark to compare the speed of reading TIFF files.
  */
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
-@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Warmup(iterations = WARMUP_ITERATIONS,
+        time = WARMUP_TIME,
+        timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = MEASUREMENT_ITERATIONS,
+        time = MEASUREMENT_TIME,
+        timeUnit = TimeUnit.SECONDS)
 @State(Scope.Benchmark)
 @Fork(value = 1, jvmArgs = { "-server", "-Xms128M", "-Xmx128M", "-Dcantaloupe.config=memory" })
 public class TIFFImageReaderPerformance extends TIFFImageReaderTest {
@@ -38,16 +42,19 @@ public class TIFFImageReaderPerformance extends TIFFImageReaderTest {
     }
 
     @Benchmark
+    @Override
     public void testGetCompressionWithUncompressedImage() throws Exception {
         super.testGetCompressionWithUncompressedImage();
     }
 
     @Benchmark
+    @Override
     public void testGetMetadata() throws Exception {
         super.testGetMetadata();
     }
 
     @Benchmark
+    @Override
     public void testReadWithMonoResolutionImageAndNoScaleFactor() throws Exception {
         super.testReadWithMonoResolutionImageAndNoScaleFactor();
     }

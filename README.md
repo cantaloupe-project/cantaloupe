@@ -40,7 +40,7 @@ simplest is probably to:
 For testing, copy `test.properties.sample` to `test.properties` and fill in
 whatever info you have.
 
-The tests are structured into three profiles:
+The tests are structured into four profiles:
 
 ### 1. Tests with no dependencies
 
@@ -66,6 +66,11 @@ dependencies are required in addition to the ones above:
 
 * Kakadu (for KakaduProcessorTest)
 * A Microsoft Azure account
+
+### 4. Performance tests
+
+Performance tests use [JMH](http://openjdk.java.net/projects/code-tools/jmh/).
+Run them with `mvn clean test -Pbenchmark`.
 
 ## Build the website
 
