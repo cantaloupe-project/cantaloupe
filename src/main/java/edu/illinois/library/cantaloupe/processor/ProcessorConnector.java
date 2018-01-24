@@ -7,7 +7,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resolver.FileResolver;
-import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
+import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -241,8 +240,7 @@ public final class ProcessorConnector {
                 if (processor instanceof FileProcessor) {
                     ((FileProcessor) processor).setSourceFile(sourceFile);
                 } else {
-                    InputStream inputStream = Files.newInputStream(sourceFile);
-                    StreamSource streamSource = new InputStreamStreamSource(inputStream);
+                    StreamSource streamSource = new PathStreamSource(sourceFile);
                     ((StreamProcessor) processor).setStreamSource(streamSource);
                 }
                 succeeded = true;
