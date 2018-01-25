@@ -48,7 +48,7 @@ public class AWSClientBuilder {
             LoggerFactory.getLogger(AWSClientBuilder.class);
 
     private String accessKeyID;
-    private int maxConnections = 100;
+    private int maxConnections = 200;
     private String region;
     private String secretKey;
 
