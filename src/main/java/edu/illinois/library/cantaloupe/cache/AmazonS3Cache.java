@@ -96,13 +96,20 @@ class AmazonS3Cache implements DerivativeCache {
         }
 
         @Override
-        public void close() {
-            // At this point, the client has received all image data, but its
-            // progress indicator is still spinning while it waits for the
-            // connection to close. Uploading in a separate thread will allow
-            // this to happen immediately.
-            ThreadPool.getInstance().submit(new AmazonS3Upload(
-                    s3, bufferStream, bucketName, objectKey, metadata));
+        public void close() throws IOException {
+            try {
+                bufferStream.close();
+
+                // At this point, the client has received all image data, but its
+                // progress indicator is still spinning while it waits for the
+                // connection to close. Uploading in a separate thread will allow
+                // this to happen immediately.
+                ThreadPool.getInstance().submit(new AmazonS3Upload(
+                        s3, bufferStream.toByteArray(), bucketName, objectKey,
+                        metadata));
+            } finally {
+                super.close();
+            }
         }
 
         @Override
@@ -129,29 +136,29 @@ class AmazonS3Cache implements DerivativeCache {
 
     private static class AmazonS3Upload implements Runnable {
 
-        private static final Logger UPLOAD_LOGGER = LoggerFactory.
-                getLogger(AmazonS3Upload.class);
+        private static final Logger UPLOAD_LOGGER =
+                LoggerFactory.getLogger(AmazonS3Upload.class);
 
         private String bucketName;
-        private ByteArrayOutputStream byteStream;
+        private byte[] data;
         private ObjectMetadata metadata;
         private String objectKey;
         private AmazonS3 s3;
 
         /**
          * @param s3         S3 client.
-         * @param byteStream Data to upload.
+         * @param data       Data to upload.
          * @param bucketName S3 bucket name.
          * @param objectKey  S3 object key.
          * @param metadata   S3 object metadata.
          */
         AmazonS3Upload(AmazonS3 s3,
-                       ByteArrayOutputStream byteStream,
+                       byte[] data,
                        String bucketName,
                        String objectKey,
                        ObjectMetadata metadata) {
             this.bucketName = bucketName;
-            this.byteStream = byteStream;
+            this.data = data;
             this.s3 = s3;
             this.metadata = metadata;
             this.objectKey = objectKey;
@@ -159,21 +166,20 @@ class AmazonS3Cache implements DerivativeCache {
 
         @Override
         public void run() {
-            byte[] bytes = byteStream.toByteArray();
-            metadata.setContentLength(bytes.length);
+            metadata.setContentLength(data.length);
 
-            ByteArrayInputStream is = new ByteArrayInputStream(bytes);
+            ByteArrayInputStream is = new ByteArrayInputStream(data);
             PutObjectRequest request = new PutObjectRequest(
                     bucketName, objectKey, is, metadata);
             final Stopwatch watch = new Stopwatch();
 
             UPLOAD_LOGGER.info("Uploading {} bytes to {} in bucket {}",
-                    bytes.length, request.getKey(), request.getBucketName());
+                    data.length, request.getKey(), request.getBucketName());
 
             s3.putObject(request);
 
             UPLOAD_LOGGER.info("Wrote {} bytes to {} in bucket {} in {} msec",
-                    bytes.length, request.getKey(), request.getBucketName(),
+                    data.length, request.getKey(), request.getBucketName(),
                     watch.timeElapsed());
         }
 
@@ -182,7 +188,9 @@ class AmazonS3Cache implements DerivativeCache {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(AmazonS3Cache.class);
 
-    /** Lazy-initialized by {@link #getClientInstance} */
+    /**
+     * Lazy-initialized by {@link #getClientInstance}.
+     */
     private static AmazonS3 client;
 
     static synchronized AmazonS3 getClientInstance() {
@@ -331,7 +339,8 @@ class AmazonS3Cache implements DerivativeCache {
     public void purge() {
         final AmazonS3 s3 = getClientInstance();
 
-        ObjectListing listing = s3.listObjects(getBucketName(),
+        ObjectListing listing = s3.listObjects(
+                getBucketName(),
                 getObjectKeyPrefix());
         int count = 0;
 
@@ -380,7 +389,8 @@ class AmazonS3Cache implements DerivativeCache {
         final AmazonS3 s3 = getClientInstance();
         final String bucketName = getBucketName();
 
-        ObjectListing listing = s3.listObjects(getBucketName(),
+        ObjectListing listing = s3.listObjects(
+                getBucketName(),
                 getObjectKeyPrefix());
         int count = 0, deletedCount = 0;
 
@@ -414,7 +424,8 @@ class AmazonS3Cache implements DerivativeCache {
         final AmazonS3 s3 = getClientInstance();
         final String bucketName = getBucketName();
 
-        ObjectListing listing = s3.listObjects(getBucketName(),
+        ObjectListing listing = s3.listObjects(
+                getBucketName(),
                 getObjectKeyPrefix() + "image/" + identifier.toString());
         int count = 0;
 
@@ -446,15 +457,17 @@ class AmazonS3Cache implements DerivativeCache {
         final String objectKey = getObjectKey(identifier);
         final String bucketName = getBucketName();
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        info.writeAsJSON(os);
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            info.writeAsJSON(os);
 
-        final ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentType("application/json");
-        metadata.setContentEncoding("UTF-8");
-        metadata.setContentLength(os.size());
+            final ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentType("application/json");
+            metadata.setContentEncoding("UTF-8");
+            metadata.setContentLength(os.size());
 
-        new AmazonS3Upload(s3, os, bucketName, objectKey, metadata).run();
+            new AmazonS3Upload(s3, os.toByteArray(), bucketName, objectKey,
+                    metadata).run();
+        }
     }
 
 }
