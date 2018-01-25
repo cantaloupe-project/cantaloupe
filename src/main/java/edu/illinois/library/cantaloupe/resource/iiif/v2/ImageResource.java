@@ -96,8 +96,9 @@ public class ImageResource extends IIIF2Resource {
                     addLinkHeader(params);
                     commitCustomResponseHeaders();
                     return new CachedImageRepresentation(
+                            cacheStream,
                             params.getOutputFormat().getPreferredMediaType(),
-                            disposition, cacheStream);
+                            disposition);
                 } else {
                     Format infoFormat = info.getSourceFormat();
                     if (infoFormat != null) {

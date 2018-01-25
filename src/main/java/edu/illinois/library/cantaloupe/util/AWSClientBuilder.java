@@ -29,7 +29,7 @@ public final class AWSClientBuilder {
 
     private String accessKeyID;
     private URI endpointURI;
-    private int maxConnections = 100;
+    private int maxConnections = 200;
     private String secretKey;
 
     /**
