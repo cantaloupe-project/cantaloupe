@@ -2047,7 +2047,7 @@
                                         <select class="form-control"
                                                 name="StreamProcessor.retrieval_strategy"
                                                 data-restart-required="false">
-                                            <option value="StreamStrategy">Stream Each Request (StreamStrategy)</option>
+                                            <option value="StreamStrategy">Stream From Resolver (StreamStrategy)</option>
                                             <option value="CacheStrategy">Cache in Source Cache (CacheStrategy)</option>
                                         </select>
                                     </td>
