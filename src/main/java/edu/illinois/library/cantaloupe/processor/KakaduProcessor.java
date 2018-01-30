@@ -487,6 +487,10 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
                     if (reduction.factor > 0) {
                         command.add("-reduce");
                         command.add(reduction.factor + "");
+                    } else if (reduction.factor < 0) {
+                        // Don't allow a negative factor because kdu_expand
+                        // can only reduce, not enlarge.
+                        reduction.factor = 0;
                     }
                 }
             }
