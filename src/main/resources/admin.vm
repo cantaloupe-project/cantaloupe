@@ -1825,11 +1825,8 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="Controls the resolution of vector
-                                               rasterization (of e.g. PDFs) at a scale of 1.
-                                               Requests for scales less than 0.5 or larger than
-                                               2 will automatically use a lower or higher multiple
-                                               of this.">?</a>
+                                           data-content="Resolution of vector rasterization (of e.g.
+                                           PDFs) at a scale of 1.">?</a>
                                     </td>
                                     <td>
                                         <input class="form-control" type="number"

@@ -211,9 +211,8 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
             reductionFactor = new ReductionFactor();
         }
         if (readerHints == null) {
-            readerHints = Collections.emptySet();
+            readerHints = EnumSet.noneOf(ImageReader.Hint.class);
         }
-
         if (opList.getFirst(Normalize.class) != null) {
             image = Java2DUtil.stretchContrast(image);
         }
@@ -265,7 +264,8 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
         // Apply remaining operations.
         for (Operation op : opList) {
             if (op.hasEffect(fullSize, opList)) {
-                if (op instanceof Scale) {
+                if (op instanceof Scale &&
+                        !readerHints.contains(ImageReader.Hint.IGNORE_SCALE)) {
                     image = Java2DUtil.scaleImage(image, (Scale) op,
                             reductionFactor);
                 } else if (op instanceof Transpose) {

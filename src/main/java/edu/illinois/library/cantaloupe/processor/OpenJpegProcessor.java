@@ -428,6 +428,10 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                     if (reduction.factor > 0) {
                         command.add("-r");
                         command.add(reduction.factor + "");
+                    } else if (reduction.factor < 0) {
+                        // Don't allow a negative factor because opj_decompress
+                        // can only reduce, not enlarge.
+                        reduction.factor = 0;
                     }
                 }
             }

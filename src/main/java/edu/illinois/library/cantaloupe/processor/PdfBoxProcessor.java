@@ -1,11 +1,14 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
+import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.apache.commons.io.IOUtils;
@@ -21,6 +24,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -85,56 +90,74 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                         OutputStream outputStream) throws ProcessorException {
         super.process(opList, imageInfo, outputStream);
 
+        final Set<ImageReader.Hint> hints =
+                EnumSet.noneOf(ImageReader.Hint.class);
+        Scale scale = (Scale) opList.getFirst(Scale.class);
+        if (scale == null) {
+            scale = new Scale();
+        }
+        // If the op list contains a scale operation that is not
+        // NON_ASPECT_FILL, we can use a scale-appropriate rasterization
+        // DPI and omit the scale step.
+        if (!Scale.Mode.NON_ASPECT_FILL.equals(scale.getMode())) {
+            hints.add(ImageReader.Hint.IGNORE_SCALE);
+        }
+
+        ReductionFactor reductionFactor = new ReductionFactor();
+        Float pct = scale.getResultingScale(imageInfo.getSize());
+        if (pct != null) {
+            reductionFactor = ReductionFactor.forScale(pct);
+        }
+
+        // This processor supports a "page" URI query argument.
+        int page = getPageNumber(opList.getOptions());
+
         try {
-            // If the op list contains a scale operation, see if we can use
-            // a reduction factor in order to use a scale-appropriate
-            // rasterization DPI.
-            Scale scale = (Scale) opList.getFirst(Scale.class);
-            if (scale == null) {
-                scale = new Scale();
-            }
-            ReductionFactor reductionFactor = new ReductionFactor();
-            Float pct = scale.getResultingScale(imageInfo.getSize());
-            if (pct != null) {
-                reductionFactor = ReductionFactor.forScale(pct);
-            }
+            BufferedImage image =
+                    readImage(page - 1, scale, imageInfo.getSize());
 
-            // This processor supports a "page" URI query option.
-            Integer page = 1;
-            String pageStr = (String) opList.getOptions().get("page");
-            if (pageStr != null) {
-                try {
-                    page = Integer.parseInt(pageStr);
-                } catch (NumberFormatException e) {
-                    LOGGER.info("Page number from URI query string is not " +
-                            "an integer; using page 1.");
-                }
-            }
-            page = Math.max(page, 1);
-
-            final BufferedImage image = readImage(page - 1, reductionFactor.factor);
-            postProcess(image, null, opList, imageInfo, reductionFactor,
+            postProcess(image, hints, opList, imageInfo, reductionFactor,
                     outputStream);
         } catch (IOException | IndexOutOfBoundsException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
     }
 
-    private BufferedImage readImage() throws IOException {
-        return readImage(0, 0);
+    /**
+     * @param options Operation list options map.
+     * @return Page number from the given options map, or {@literal 1} if not
+     *         found.
+     */
+    private int getPageNumber(Map<String,Object> options) {
+        Integer page = 1;
+        String pageStr = (String) options.get("page");
+        if (pageStr != null) {
+            try {
+                page = Integer.parseInt(pageStr);
+            } catch (NumberFormatException e) {
+                LOGGER.info("Page number from URI query string is not " +
+                        "an integer; using page 1.");
+            }
+        }
+        return Math.max(page, 1);
     }
 
     /**
-     * @param pageIndex
-     * @param reductionFactor Scale factor by which to reduce the image (or
-     *                        enlarge it if negative).
-     * @return Rasterized first page of the PDF.
+     * @return Rasterized page of the PDF.
      */
     private BufferedImage readImage(int pageIndex,
-                                    int reductionFactor) throws IOException {
-        float dpi = new RasterizationHelper().getDPI(reductionFactor);
-        LOGGER.debug("readImage(): using a DPI of {} ({}x reduction factor)",
-                Math.round(dpi), reductionFactor);
+                                    Scale scale,
+                                    Dimension fullSize) throws IOException {
+        float dpi = new RasterizationHelper().getDPI(scale, fullSize);
+        return readImage(pageIndex, dpi);
+    }
+
+    /**
+     * @return Rasterized page of the PDF.
+     */
+    private BufferedImage readImage(int pageIndex,
+                                    float dpi) throws IOException {
+        LOGGER.debug("DPI: {}", dpi);
         try {
             loadDocument();
             // If the given page index is out of bounds, the renderer will
@@ -149,9 +172,14 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     @Override
     public Info readImageInfo() throws IOException {
         if (imageSize == null) {
-            // This is a very inefficient method of getting the size.
-            // Unfortunately, it's the only choice PDFBox offers.
-            BufferedImage image = readImage();
+            // PDF doesn't have native dimensions, so get the dimensions at
+            // the current DPI setting.
+            // This is a very inefficient method of getting a size.
+            // Unfortunately, it seems to be the only way.
+            final Configuration config = Configuration.getInstance();
+            final int dpi = config.getInt(Key.PROCESSOR_DPI, 150);
+
+            BufferedImage image = readImage(0, dpi);
             imageSize = new Dimension(image.getWidth(), image.getHeight());
         }
         return new Info(imageSize.width, imageSize.height,

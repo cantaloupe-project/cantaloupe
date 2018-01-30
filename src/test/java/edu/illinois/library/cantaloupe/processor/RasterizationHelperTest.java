@@ -13,7 +13,6 @@ import static org.junit.Assert.*;
 
 public class RasterizationHelperTest extends BaseTest {
 
-    private static final int DEFAULT_DPI = 150;
     private static final float FUDGE = 0.00001f;
 
     private RasterizationHelper instance;
@@ -21,36 +20,63 @@ public class RasterizationHelperTest extends BaseTest {
     @Before
     public void setUp() {
         instance = new RasterizationHelper();
+        instance.setBaseDPI(150);
+    }
 
-        Configuration.getInstance().setProperty(Key.PROCESSOR_DPI, DEFAULT_DPI);
+    @Test
+    public void testConstructor() {
+        final int baseDPI = 200;
+        Configuration.getInstance().setProperty(Key.PROCESSOR_DPI, baseDPI);
+        instance = new RasterizationHelper();
+        assertEquals(baseDPI, instance.getDPI(0), FUDGE);
     }
 
     @Test
     public void testGetDPIWithReductionFactor() {
-        assertEquals(DEFAULT_DPI * 2f, instance.getDPI(-1), FUDGE);
-        assertEquals(DEFAULT_DPI, instance.getDPI(0), FUDGE);
-        assertEquals(DEFAULT_DPI / 2f, instance.getDPI(1), FUDGE);
-        assertEquals(DEFAULT_DPI / 4f, instance.getDPI(2), FUDGE);
+        assertEquals(instance.getBaseDPI() * 2f, instance.getDPI(-1), FUDGE);
+        assertEquals(instance.getBaseDPI(), instance.getDPI(0), FUDGE);
+        assertEquals(instance.getBaseDPI() / 2f, instance.getDPI(1), FUDGE);
+        assertEquals(instance.getBaseDPI() / 4f, instance.getDPI(2), FUDGE);
     }
 
     @Test
-    public void testGetDPIWithScale() {
+    public void testGetDPIWithHalfScale() {
         final Dimension fullSize = new Dimension(1000, 1000);
+        final Scale scale = new Scale(0.5f);
+        assertEquals(instance.getBaseDPI() / 2f,
+                instance.getDPI(scale, fullSize), FUDGE);
+    }
 
-        Scale scale = new Scale(0.5f);
-        assertEquals(DEFAULT_DPI / 2f, instance.getDPI(scale, fullSize), FUDGE);
+    @Test
+    public void testGetDPIWith1xScale() {
+        final Dimension fullSize = new Dimension(1000, 1000);
+        final Scale scale = new Scale(1);
+        assertEquals(instance.getBaseDPI(),
+                instance.getDPI(scale, fullSize), FUDGE);
+    }
 
-        scale = new Scale(1);
-        assertEquals(DEFAULT_DPI, instance.getDPI(scale, fullSize), FUDGE);
+    @Test
+    public void testGetDPIWith2xScale() {
+        final Dimension fullSize = new Dimension(1000, 1000);
+        final Scale scale = new Scale(2);
+        assertEquals(instance.getBaseDPI() * 2f,
+                instance.getDPI(scale, fullSize), FUDGE);
+    }
 
-        scale = new Scale(2);
-        assertEquals(DEFAULT_DPI * 2f, instance.getDPI(scale, fullSize), FUDGE);
+    @Test
+    public void testGetDPIWith3xScale() {
+        final Dimension fullSize = new Dimension(1000, 1000);
+        final Scale scale = new Scale(3);
+        assertEquals(instance.getBaseDPI() * 3f,
+                instance.getDPI(scale, fullSize), FUDGE);
+    }
 
-        scale = new Scale(3);
-        assertEquals(DEFAULT_DPI * 2f, instance.getDPI(scale, fullSize), FUDGE);
-
-        scale = new Scale(4);
-        assertEquals(DEFAULT_DPI * 4f, instance.getDPI(scale, fullSize), FUDGE);
+    @Test
+    public void testGetDPIWith4xScale() {
+        final Dimension fullSize = new Dimension(1000, 1000);
+        final Scale scale = new Scale(4);
+        assertEquals(instance.getBaseDPI() * 4f,
+                instance.getDPI(scale, fullSize), FUDGE);
     }
 
 }
