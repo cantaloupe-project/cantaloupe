@@ -265,9 +265,7 @@ processor.fallback = Java2dProcessor
 # Global Processor Configuration
 #----------------------------------------
 
-# Controls the resolution of vector rasterization (of e.g. PDFs) at a scale
-# of 1. Requests for scales less than 1/2 or larger than 2 will automatically
-# use a lower or higher multiple of this.
+# Resolution of vector rasterization (of e.g. PDFs) at a scale of 1.
 processor.dpi = 150
 
 # Expands contrast to utilize available dynamic range. This forces the entire
