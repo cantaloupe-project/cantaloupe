@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Scale;
 
 import java.awt.Dimension;
@@ -14,7 +13,7 @@ class RasterizationHelper {
 
     private static final int FALLBACK_DPI = 150;
 
-    private int baseDPI = FALLBACK_DPI;
+    private int baseDPI;
 
     RasterizationHelper() {
         baseDPI = Configuration.getInstance().
@@ -22,7 +21,14 @@ class RasterizationHelper {
     }
 
     /**
-     * @param reductionFactor
+     * @return DPI at 1x scale.
+     */
+    int getBaseDPI() {
+        return baseDPI;
+    }
+
+    /**
+     * @param reductionFactor May be positive, zero, or negative.
      * @return DPI appropriate for the given reduction factor.
      */
     float getDPI(int reductionFactor) {
@@ -39,12 +45,18 @@ class RasterizationHelper {
     }
 
     float getDPI(Scale scale, Dimension fullSize) {
-        ReductionFactor reductionFactor = new ReductionFactor();
         Float pct = scale.getResultingScale(fullSize);
         if (pct != null) {
-            reductionFactor = ReductionFactor.forScale(pct);
+            return baseDPI * scale.getResultingScale(fullSize);
         }
-        return getDPI(reductionFactor.factor);
+        return baseDPI;
+    }
+
+    /**
+     * @param dpi DPI at 1x scale.
+     */
+    void setBaseDPI(int dpi) {
+        this.baseDPI = dpi;
     }
 
 }
