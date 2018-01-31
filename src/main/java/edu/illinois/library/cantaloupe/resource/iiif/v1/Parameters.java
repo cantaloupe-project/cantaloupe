@@ -4,11 +4,12 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
+import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Reference;
 
 /**
- * Encapsulates the parameters of an IIIF request.
+ * Encapsulates the parameters of a request URI.
  *
  * @see <a href="http://iiif.io/api/image/1.1/#parameters">IIIF Image API
  * 1.1</a>
@@ -24,27 +25,32 @@ class Parameters implements Comparable<Parameters> {
 
     /**
      * @param paramsStr URI path fragment beginning from the identifier onward
-     * @throws IllegalArgumentException if the given string does not have the
-     * correct format
+     * @throws IllegalClientArgumentException if the argument does not have the
+     *         correct format, or any of its components are invalid.
      */
-    public static Parameters fromUri(String paramsStr)
-            throws IllegalArgumentException {
+    public static Parameters fromUri(String paramsStr) {
         Parameters params = new Parameters();
         String[] parts = StringUtils.split(paramsStr, "/");
-        if (parts.length == 5) {
-            params.setIdentifier(new Identifier(Reference.decode(parts[0])));
-            params.setRegion(Region.fromUri(parts[1]));
-            params.setSize(Size.fromUri(parts[2]));
-            params.setRotation(Rotation.fromUri(parts[3]));
-            String[] subparts = StringUtils.split(parts[4], ".");
-            if (subparts.length == 2) {
-                params.setQuality(Quality.valueOf(subparts[0].toUpperCase()));
-                params.setOutputFormat(Format.valueOf(subparts[1].toUpperCase()));
+        try {
+            if (parts.length == 5) {
+                params.setIdentifier(new Identifier(Reference.decode(parts[0])));
+                params.setRegion(Region.fromUri(parts[1]));
+                params.setSize(Size.fromUri(parts[2]));
+                params.setRotation(Rotation.fromUri(parts[3]));
+                String[] subparts = StringUtils.split(parts[4], ".");
+                if (subparts.length == 2) {
+                    params.setQuality(Quality.valueOf(subparts[0].toUpperCase()));
+                    params.setOutputFormat(Format.valueOf(subparts[1].toUpperCase()));
+                } else {
+                    throw new IllegalClientArgumentException("Invalid parameters format");
+                }
             } else {
-                throw new IllegalArgumentException("Invalid parameters format");
+                throw new IllegalClientArgumentException("Invalid parameters format");
             }
-        } else {
-            throw new IllegalArgumentException("Invalid parameters format");
+        } catch (IllegalClientArgumentException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw new IllegalClientArgumentException(e.getMessage(), e);
         }
         return params;
     }
@@ -69,7 +75,11 @@ class Parameters implements Comparable<Parameters> {
         setRegion(Region.fromUri(region));
         setSize(Size.fromUri(size));
         setRotation(Rotation.fromUri(rotation));
-        setQuality(Quality.valueOf(quality.toUpperCase()));
+        try {
+            setQuality(Quality.valueOf(quality.toUpperCase()));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalClientArgumentException(e.getMessage(), e);
+        }
         try {
             setOutputFormat(Format.valueOf(format.toUpperCase()));
         } catch (IllegalArgumentException e) {
@@ -79,8 +89,8 @@ class Parameters implements Comparable<Parameters> {
 
     @Override
     public int compareTo(Parameters params) {
-        int last = this.toString().compareTo(params.toString());
-        return (last == 0) ? this.toString().compareTo(params.toString()) : last;
+        int last = toString().compareTo(params.toString());
+        return (last == 0) ? toString().compareTo(params.toString()) : last;
     }
 
     @Override
@@ -168,7 +178,7 @@ class Parameters implements Comparable<Parameters> {
     }
 
     /**
-     * @return IIIF URI parameters with no leading slash.
+     * @return URI parameters with no leading slash.
      */
     public String toString() {
         return String.format("%s/%s/%s/%s/%s.%s", getIdentifier(), getRegion(),

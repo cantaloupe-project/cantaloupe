@@ -368,7 +368,7 @@ public class Version2_0ConformanceTest extends ResourceTest {
      */
     @Test
     public void testNegativeRotation() {
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/full/-15/native.jpg"));
+        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/full/-15/default.jpg"));
     }
 
     /**
@@ -377,7 +377,7 @@ public class Version2_0ConformanceTest extends ResourceTest {
      */
     @Test
     public void testGreaterThanFullRotation() {
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/full/4855/native.jpg"));
+        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/full/4855/default.jpg"));
     }
 
     /**

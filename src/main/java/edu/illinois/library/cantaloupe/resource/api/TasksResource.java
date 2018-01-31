@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.async.TaskQueue;
+import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import org.restlet.data.CharacterSet;
 import org.restlet.data.Status;
 import org.restlet.representation.EmptyRepresentation;
@@ -56,10 +57,9 @@ public class TasksResource extends AbstractAPIResource {
 
             // Return 202 Accepted and a Location header pointing to the task
             // URI.
-            final String taskURI =
-                    getPublicRootReference() +
-                            RestletApplication.TASKS_PATH + "/" +
-                            task.getUUID().toString();
+            final String taskURI = getPublicRootReference() +
+                    RestletApplication.TASKS_PATH + "/" +
+                    task.getUUID().toString();
 
             setLocationRef(taskURI);
             setStatus(Status.SUCCESS_ACCEPTED);
@@ -69,7 +69,7 @@ public class TasksResource extends AbstractAPIResource {
             responseRep.setCharacterSet(CharacterSet.UTF_8);
             return responseRep;
         } catch (NullPointerException | JsonProcessingException e) {
-            throw new IllegalArgumentException(e);
+            throw new IllegalClientArgumentException(e.getMessage(), e);
         }
     }
 

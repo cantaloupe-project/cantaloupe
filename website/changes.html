@@ -46,9 +46,10 @@ title: Change Log
 <ul>
   <li>Improved efficiency when handling a request for a bitonal or gray image when the source image is already bitonal or gray. (Thanks to @adam-vessey)</li>
   <li>Fixed upscaling by percent in KakaduProcessor and OpenJpegProcessor.</li>
-  <li>Improved the efficiency and quality of scaling in PdfBoxProcessor.</li>
+  <li>Efficiency improvements in PdfBoxProcessor.</li>
   <li>Improved the reliability of source cache downloading and content acquisition.</li>
   <li>Miscellaneous reliability improvements in AmazonS3Cache.</li>
+  <li>Server misconfigurations cause HTTP 500 (Internal Server Error) responses rather than HTTP 400 (Bad Request).</li>
 </ul>
 
 <h2>3.4</h2>

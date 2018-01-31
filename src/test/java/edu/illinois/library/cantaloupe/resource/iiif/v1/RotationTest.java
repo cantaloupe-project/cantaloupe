@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
+import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -8,16 +9,16 @@ import static org.junit.Assert.*;
 
 public class RotationTest extends BaseTest {
 
-    private static final float FUDGE = 0.0000001f;
+    private static final float DELTA = 0.0000001f;
 
-    private Rotation rotation;
+    private Rotation instance;
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
 
-        this.rotation = new Rotation();
-        assertEquals(0f, this.rotation.getDegrees(), FUDGE);
+        this.instance = new Rotation();
+        assertEquals(0f, this.instance.getDegrees(), DELTA);
     }
 
     /* fromUri(String) */
@@ -28,10 +29,10 @@ public class RotationTest extends BaseTest {
     @Test
     public void testFromUri() {
         Rotation r = Rotation.fromUri("35");
-        assertEquals(35f, r.getDegrees(), FUDGE);
+        assertEquals(35f, r.getDegrees(), DELTA);
 
         r = Rotation.fromUri("35.5");
-        assertEquals(35.5f, r.getDegrees(), FUDGE);
+        assertEquals(35.5f, r.getDegrees(), DELTA);
     }
 
     /**
@@ -41,7 +42,7 @@ public class RotationTest extends BaseTest {
     public void testFromUriWithLargeValue() {
         try {
             Rotation.fromUri("720");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalClientArgumentException e) {
             assertEquals("Degrees must be between 0 and 360", e.getMessage());
         }
     }
@@ -53,7 +54,7 @@ public class RotationTest extends BaseTest {
     public void testFromUriWithNegativeValue() {
         try {
             Rotation.fromUri("-35");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalClientArgumentException e) {
             assertEquals("Degrees must be between 0 and 360", e.getMessage());
         }
     }
@@ -61,20 +62,20 @@ public class RotationTest extends BaseTest {
     @Test
     public void testCompareTo() {
         Rotation r2 = new Rotation();
-        assertEquals(0, this.rotation.compareTo(r2));
+        assertEquals(0, this.instance.compareTo(r2));
         r2.setDegrees(15);
-        assertEquals(-1, this.rotation.compareTo(r2));
+        assertEquals(-1, this.instance.compareTo(r2));
         r2.setDegrees(0);
-        this.rotation.setDegrees(30);
-        assertEquals(1, this.rotation.compareTo(r2));
+        this.instance.setDegrees(30);
+        assertEquals(1, this.instance.compareTo(r2));
     }
 
     @Test
     public void testEquals() {
         Rotation r2 = new Rotation();
-        assertTrue(r2.equals(this.rotation));
+        assertTrue(r2.equals(this.instance));
         r2.setDegrees(15);
-        assertFalse(r2.equals(this.rotation));
+        assertFalse(r2.equals(this.instance));
     }
 
     /* setDegrees() */
@@ -82,16 +83,16 @@ public class RotationTest extends BaseTest {
     @Test
     public void testSetDegrees() {
         float degrees = 50.0f;
-        this.rotation.setDegrees(degrees);
-        assertEquals(degrees, this.rotation.getDegrees(), FUDGE);
+        this.instance.setDegrees(degrees);
+        assertEquals(degrees, this.instance.getDegrees(), DELTA);
     }
 
     @Test
     public void testSetLargeDegrees() {
         float degrees = 530.0f;
         try {
-            this.rotation.setDegrees(degrees);
-        } catch (IllegalArgumentException e) {
+            this.instance.setDegrees(degrees);
+        } catch (IllegalClientArgumentException e) {
             assertEquals("Degrees must be between 0 and 360", e.getMessage());
         }
     }
@@ -100,15 +101,15 @@ public class RotationTest extends BaseTest {
     public void testSetNegativeDegrees() {
         float degrees = -50.0f;
         try {
-            this.rotation.setDegrees(degrees);
-        } catch (IllegalArgumentException e) {
+            this.instance.setDegrees(degrees);
+        } catch (IllegalClientArgumentException e) {
             assertEquals("Degrees must be between 0 and 360", e.getMessage());
         }
     }
 
     @Test
     public void testToRotate() {
-        assertTrue(this.rotation.equals(this.rotation.toRotate()));
+        assertTrue(this.instance.equals(this.instance.toRotate()));
     }
 
     @Test

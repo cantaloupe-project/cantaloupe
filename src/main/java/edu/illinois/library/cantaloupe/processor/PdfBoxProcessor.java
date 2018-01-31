@@ -13,6 +13,8 @@ import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,15 +174,31 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     @Override
     public Info readImageInfo() throws IOException {
         if (imageSize == null) {
-            // PDF doesn't have native dimensions, so get the dimensions at
-            // the current DPI setting.
-            // This is a very inefficient method of getting a size.
-            // Unfortunately, it seems to be the only way.
+            loadDocument();
+
+            // PDF doesn't have native dimensions, so figure out the dimensions
+            // at the current DPI setting.
+            // Changing this setting will affect the returned info, which
+            // could have implications for info caching. Also, we hope that
+            // every page will have the same dimensions...
             final Configuration config = Configuration.getInstance();
             final int dpi = config.getInt(Key.PROCESSOR_DPI, 150);
+            final float scale = dpi / 72f;
 
-            BufferedImage image = readImage(0, dpi);
-            imageSize = new Dimension(image.getWidth(), image.getHeight());
+            final PDPage page = doc.getPage(0);
+            final PDRectangle cropBox = page.getCropBox();
+            final float widthPt = cropBox.getWidth();
+            final float heightPt = cropBox.getHeight();
+            final int rotationAngle = page.getRotation();
+
+            int widthPx = Math.round(widthPt * scale);
+            int heightPx = Math.round(heightPt * scale);
+            if (rotationAngle == 90 || rotationAngle == 270) {
+                int tmp = widthPx;
+                widthPx = heightPx;
+                heightPx = tmp;
+            }
+            imageSize = new Dimension(widthPx, heightPx);
         }
         return new Info(imageSize.width, imageSize.height,
                 imageSize.width, imageSize.height, getSourceFormat());
