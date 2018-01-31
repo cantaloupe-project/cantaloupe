@@ -4,12 +4,14 @@
  * License: The BSD 3-Clause License
  * http://opensource.org/licenses/BSD-3-Clause
  */
-package com.mortennobel.imagescaling;
+package edu.illinois.library.cantaloupe.processor.resample;
 
 public interface ResampleFilter {
-    public float getSamplingRadius();
+
+    float getSamplingRadius();
 
     float apply(float v);
 
-	public abstract String getName();
+    String getName();
+
 }

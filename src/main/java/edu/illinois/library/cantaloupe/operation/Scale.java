@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.operation;
 
-import com.mortennobel.imagescaling.ResampleFilter;
-import com.mortennobel.imagescaling.ResampleFilters;
+import edu.illinois.library.cantaloupe.processor.resample.ResampleFilter;
+import edu.illinois.library.cantaloupe.processor.resample.ResampleFilters;
 import edu.illinois.library.cantaloupe.util.StringUtil;
 
 import java.awt.Dimension;

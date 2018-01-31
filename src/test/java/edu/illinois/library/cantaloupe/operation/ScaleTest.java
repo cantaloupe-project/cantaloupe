@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.operation;
 
-import com.mortennobel.imagescaling.ResampleFilters;
+import edu.illinois.library.cantaloupe.processor.resample.ResampleFilters;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;

@@ -4,20 +4,20 @@
  * License: The BSD 3-Clause License
  * http://opensource.org/licenses/BSD-3-Clause
  */
-package com.mortennobel.imagescaling;
+package edu.illinois.library.cantaloupe.processor.resample;
 
 /**
  * @author Heinz Doerr
  */
 final class BiCubicHighFreqResponse extends BiCubicFilter {
 
-	public BiCubicHighFreqResponse() {
-		super(-1.f);
-	}
+    BiCubicHighFreqResponse() {
+        super(-1.f);
+    }
 
-	@Override
-	public String getName() {
-		return "BiCubicHighFreqResponse";
-	}
+    @Override
+    public String getName() {
+        return "BiCubicHighFreqResponse";
+    }
 
 }

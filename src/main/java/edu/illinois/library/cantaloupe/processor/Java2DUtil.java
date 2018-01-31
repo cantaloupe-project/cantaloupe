@@ -1,8 +1,5 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import com.mortennobel.imagescaling.ResampleFilter;
-import com.mortennobel.imagescaling.ResampleOp;
-
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
@@ -20,6 +17,8 @@ import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.overlay.StringOverlay;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
+import edu.illinois.library.cantaloupe.processor.resample.ResampleFilter;
+import edu.illinois.library.cantaloupe.processor.resample.ResampleOp;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -727,7 +726,7 @@ public final class Java2DUtil {
             targetSize = scale.getResultingSize(sourceSize);
         }
 
-        // com.mortennobel.imagescaling.ResampleFilter requires a target size
+        // ResampleFilter requires a target size
         // of at least 3 pixels on a side.
         // OpenSeadragon has been known to request smaller.
         targetSize.width = (targetSize.width < 3) ? 3 : targetSize.width;
