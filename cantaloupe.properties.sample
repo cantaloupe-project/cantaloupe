@@ -81,7 +81,7 @@ endpoint.public.auth.basic.enabled = false
 endpoint.public.auth.basic.username = myself
 endpoint.public.auth.basic.secret = mypassword
 
-endpoint.iiif.1.enabled = true
+endpoint.iiif.1.enabled = false
 endpoint.iiif.2.enabled = true
 
 # Controls the response Content-Disposition header for images. Allowed
