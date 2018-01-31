@@ -15,6 +15,7 @@ import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatExceptio
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
+import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Disposition;
@@ -122,7 +123,11 @@ public class ImageResource extends IIIF1Resource {
 
         validateRequestedArea(ops, sourceFormat, info);
 
-        processor.validate(ops, fullSize);
+        try {
+            processor.validate(ops, fullSize);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalClientArgumentException(e.getMessage(), e);
+        }
 
         addLinkHeader(processor);
 
@@ -225,8 +230,8 @@ public class ImageResource extends IIIF1Resource {
     private Format negotiateOutputFormat(Set<Format> limitToFormats) {
         // Transform limitToFormats into a list in order of the application's
         // format preference, in case the client supplies something like */*.
-        final List<Format> appPreferredFormats = new ArrayList<>();
-        appPreferredFormats.addAll(limitToFormats);
+        final List<Format> appPreferredFormats =
+                new ArrayList<>(limitToFormats);
         appPreferredFormats.sort((Format o1, Format o2) -> {
             // Default format goes first.
             if (DEFAULT_FORMAT.equals(o1)) {

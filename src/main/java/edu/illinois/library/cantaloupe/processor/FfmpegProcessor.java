@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import org.apache.commons.lang3.StringUtils;
@@ -270,8 +269,8 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
     }
 
     @Override
-    public void validate(OperationList opList, Dimension fullSize)
-            throws ValidationException, ProcessorException {
+    public void validate(OperationList opList,
+                         Dimension fullSize) throws ProcessorException {
         FileProcessor.super.validate(opList, fullSize);
 
         if (durationSec < 1) {

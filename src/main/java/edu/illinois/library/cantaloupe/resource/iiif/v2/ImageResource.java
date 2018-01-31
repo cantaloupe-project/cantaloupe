@@ -16,6 +16,7 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
+import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import org.restlet.data.Disposition;
@@ -143,7 +144,11 @@ public class ImageResource extends IIIF2Resource {
 
         validateRequestedArea(ops, sourceFormat, info);
 
-        processor.validate(ops, fullSize);
+        try {
+            processor.validate(ops, fullSize);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalClientArgumentException(e.getMessage(), e);
+        }
 
         if (config.getBoolean(Key.IIIF_2_RESTRICT_TO_SIZES, false)) {
             final ImageInfo<String, Object> imageInfo =

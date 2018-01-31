@@ -66,8 +66,8 @@ public interface Operation {
      *
      * @param fullSize Full size of the source image on which the operation
      *                 is being applied.
-     * @throws ValidationException If the instance is invalid.
+     * @throws IllegalArgumentException if the instance is invalid.
      */
-    default void validate(Dimension fullSize) throws ValidationException {};
+    default void validate(Dimension fullSize) throws IllegalArgumentException {};
 
 }

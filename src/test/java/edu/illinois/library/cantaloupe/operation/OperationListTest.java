@@ -20,7 +20,6 @@ import org.junit.Test;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.net.URI;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -751,7 +750,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void validateWithValidInstance() throws ValidationException {
+    public void validateWithValidInstance() {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(
                 new Identifier("cats"),
@@ -760,8 +759,8 @@ public class OperationListTest extends BaseTest {
         ops.validate(fullSize);
     }
 
-    @Test(expected = ValidationException.class)
-    public void validateWithOutOfBoundsCrop() throws ValidationException {
+    @Test(expected = IllegalArgumentException.class)
+    public void validateWithOutOfBoundsCrop() {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(new Identifier("cats"),
                 Format.JPG,

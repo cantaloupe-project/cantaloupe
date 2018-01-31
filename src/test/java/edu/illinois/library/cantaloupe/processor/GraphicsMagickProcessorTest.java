@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
@@ -219,7 +218,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
         try {
             instance.validate(ops, fullSize);
             fail("Expected exception");
-        } catch (ValidationException e) {
+        } catch (IllegalArgumentException e) {
             // pass
         }
 
@@ -227,7 +226,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
         try {
             instance.validate(ops, fullSize);
             fail("Expected exception");
-        } catch (ValidationException e) {
+        } catch (IllegalArgumentException e) {
             // pass
         }
     }

@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.output.NullOutputStream;
@@ -129,7 +128,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
         try {
             instance.validate(ops, fullSize);
             fail("Expected exception");
-        } catch (ValidationException e) {
+        } catch (IllegalArgumentException e) {
             // pass
         }
 
@@ -137,7 +136,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
         try {
             instance.validate(ops, fullSize);
             fail("Expected exception");
-        } catch (ValidationException e) {
+        } catch (IllegalArgumentException e) {
             // pass
         }
 
@@ -145,7 +144,7 @@ public class PdfBoxProcessorTest extends ProcessorTest {
         try {
             instance.validate(ops, fullSize);
             fail("Expected exception");
-        } catch (ValidationException e) {
+        } catch (IllegalArgumentException e) {
             // pass
         }
     }

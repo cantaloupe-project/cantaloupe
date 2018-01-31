@@ -7,7 +7,6 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
@@ -217,8 +216,8 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     }
 
     @Override
-    public void validate(OperationList opList, Dimension fullSize)
-            throws ValidationException, ProcessorException {
+    public void validate(OperationList opList,
+                         Dimension fullSize) throws ProcessorException {
         StreamProcessor.super.validate(opList, fullSize);
 
         // Check the format of the "page" option, if present.
@@ -231,7 +230,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                     try {
                         loadDocument();
                         if (page > doc.getNumberOfPages()) {
-                            throw new ValidationException(
+                            throw new IllegalArgumentException(
                                     "Page number is out-of-bounds.");
                         }
                     } catch (IOException e) {
@@ -239,11 +238,11 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                         throw new ProcessorException(e.getMessage(), e);
                     }
                 } else {
-                    throw new ValidationException(
+                    throw new IllegalArgumentException(
                             "Page number is out-of-bounds.");
                 }
             } catch (NumberFormatException e) {
-                throw new ValidationException("Invalid page number.");
+                throw new IllegalArgumentException("Invalid page number.");
             }
         }
     }

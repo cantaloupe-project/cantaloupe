@@ -18,7 +18,6 @@ import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
-import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.operation.overlay.ImageOverlay;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.overlay.Position;
@@ -762,8 +761,8 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     }
 
     @Override
-    public void validate(OperationList opList, Dimension fullSize)
-            throws ValidationException, ProcessorException {
+    public void validate(OperationList opList,
+                         Dimension fullSize) throws ProcessorException {
         StreamProcessor.super.validate(opList, fullSize);
 
         // Check the format of the "page" option, if present.
@@ -773,11 +772,11 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             try {
                 final int page = Integer.parseInt(pageStr);
                 if (page < 1) {
-                    throw new ValidationException(
+                    throw new IllegalArgumentException(
                             "Page number is out-of-bounds.");
                 }
             } catch (NumberFormatException e) {
-                throw new ValidationException("Invalid page number.");
+                throw new IllegalArgumentException("Invalid page number.");
             }
         }
     }

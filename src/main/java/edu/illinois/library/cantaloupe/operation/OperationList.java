@@ -616,13 +616,11 @@ public final class OperationList implements Comparable<OperationList>,
     }
 
     /**
-     * Validates the instance, throwing a {@link ValidationException} if
-     * invalid.
-     *
      * @param fullSize Full size of the source image on which the instance is
      *                 being applied.
+     * @throws IllegalArgumentException if the instance is invalid.
      */
-    public void validate(Dimension fullSize) throws ValidationException {
+    public void validate(Dimension fullSize) {
         for (Operation op : this) {
             op.validate(fullSize);
         }

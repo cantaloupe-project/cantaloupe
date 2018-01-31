@@ -448,11 +448,11 @@ public class Crop implements Operation {
      * {@inheritDoc}
      */
     @Override
-    public void validate(Dimension fullSize) throws ValidationException {
+    public void validate(Dimension fullSize) {
         if (!isFull()) {
             Dimension resultingSize = getResultingSize(fullSize);
             if (resultingSize.width < 1 || resultingSize.height < 1) {
-                throw new ValidationException(
+                throw new IllegalArgumentException(
                         "Crop area is outside the bounds of the source image.");
             }
         }

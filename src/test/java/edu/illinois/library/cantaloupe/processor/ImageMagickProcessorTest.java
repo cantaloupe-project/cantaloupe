@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.operation.overlay.ImageOverlay;
 import edu.illinois.library.cantaloupe.operation.overlay.Position;
 import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
@@ -320,7 +319,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
         try {
             instance.validate(ops, fullSize);
             fail("Expected exception");
-        } catch (ValidationException e) {
+        } catch (IllegalArgumentException e) {
             // pass
         }
 
@@ -328,7 +327,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
         try {
             instance.validate(ops, fullSize);
             fail("Expected exception");
-        } catch (ValidationException e) {
+        } catch (IllegalArgumentException e) {
             // pass
         }
     }

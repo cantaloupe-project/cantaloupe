@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
@@ -143,7 +142,6 @@ public class RestletApplication extends Application {
             if (t instanceof ResourceException) {
                 status = ((ResourceException) t).getStatus();
             } else if (t instanceof IllegalClientArgumentException ||
-                    t instanceof ValidationException ||
                     t instanceof UnsupportedEncodingException) {
                 status = new Status(Status.CLIENT_ERROR_BAD_REQUEST, t);
             } else if (t instanceof UnsupportedOutputFormatException) {

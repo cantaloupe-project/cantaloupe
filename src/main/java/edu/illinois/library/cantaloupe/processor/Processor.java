@@ -3,14 +3,13 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 import java.awt.Dimension;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -102,18 +101,18 @@ public interface Processor {
      *     implementations implement {@link FileProcessor} or
      *     {@link StreamProcessor}:
      *     <ul>
-     *         <li>If {@link FileProcessor#setSourceFile(File)} has been
-     *         called, but not
-     *         {@link StreamProcessor#setStreamSource(StreamSource)},
-     *         implementations should read from a file.</li>
+     *         <li>If {@link FileProcessor#setSourceFile(Path)} has been
+     *         called, but not {@link
+     *         StreamProcessor#setStreamSource(StreamSource)}, implementations
+     *         should read from a file.</li>
      *         <li>If vice versa, or if both have been called, implementations
      *         should read from a stream.</li>
      *     </ul>
      *     </li>
      *     <li>Operations should be applied in the order they are iterated.
      *     For the sake of efficiency, implementations should check whether
-     *     each one is a no-op using
-     *     {@link edu.illinois.library.cantaloupe.operation.Operation#hasEffect(Dimension, OperationList)}
+     *     each one is a no-op using {@link
+     *     edu.illinois.library.cantaloupe.operation.Operation#hasEffect(Dimension, OperationList)}
      *     before performing it.</li>
      *     <li>The OperationList will be in a frozen (immutable) state.
      *     Implementations are discouraged from performing their own operations
@@ -128,19 +127,19 @@ public interface Processor {
      *     info.</li>
      * </ul>
      *
-     * @param opList Operation list to process. As it will be equal to the one
-     *               passed to {@link #validate}, there is no need to validate
-     *               it again.
-     * @param sourceInfo Information about the source image. This will be equal
-     *                   to the return value of {@link #readImageInfo}, but it
-     *                   might not be the same instance, as it may have come
-     *                   from a cache.
+     * @param opList       Operation list to process. As it will be equal to
+     *                     the one passed to {@link #validate}, there is no
+     *                     need to validate it again.
+     * @param sourceInfo   Information about the source image. This will be
+     *                     equal to the return value of {@link #readImageInfo},
+     *                     but it might not be the same instance, as it may
+     *                     have come from a cache.
      * @param outputStream Stream to write the image to, which should not be
      *                     closed.
      * @throws UnsupportedOutputFormatException Implementations can extend
      *                                          {@link AbstractProcessor} and
-     *                                          call super to get this check for
-     *                                          free.
+     *                                          call super to get this check
+     *                                          for free.
      * @throws ProcessorException If anything goes wrong.
      */
     void process(OperationList opList, Info sourceInfo,
@@ -150,14 +149,15 @@ public interface Processor {
      * <p>Reads and returns information about the source image.</p>
      *
      * @return Information about the source image.
-     * @throws ProcessorException If anything goes wrong.
+     * @throws IOException if anything goes wrong.
      */
     Info readImageInfo() throws IOException;
 
     /**
      * @param format Format of the source image. Will never be
      *               {@link Format#UNKNOWN}.
-     * @throws UnsupportedSourceFormatException
+     * @throws UnsupportedSourceFormatException if the instance does not
+     *         support the given format.
      */
     void setSourceFormat(Format format) throws UnsupportedSourceFormatException;
 
@@ -181,12 +181,12 @@ public interface Processor {
      *
      * @param opList OperationList to process. Will be equal to the one passed
      *               to {@link #process}.
-     * @throws ValidationException If validation fails.
-     * @throws ProcessorException  If there is some issue performing the
-     *                             validation.
+     * @throws IllegalArgumentException if validation fails.
+     * @throws ProcessorException       if there is an error in performing the
+     *                                  validation.
      */
-    default void validate(OperationList opList, Dimension fullSize)
-            throws ValidationException, ProcessorException {
+    default void validate(OperationList opList,
+                          Dimension fullSize) throws ProcessorException {
         opList.validate(fullSize);
     }
 
