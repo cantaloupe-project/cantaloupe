@@ -4,7 +4,7 @@ import edu.illinois.library.cantaloupe.resource.JSONRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 
-import java.io.FileNotFoundException;
+import java.nio.file.NoSuchFileException;
 import java.util.Map;
 import java.util.UUID;
 
@@ -22,17 +22,16 @@ public class TaskResource extends AbstractAPIResource {
         final String uuidStr = (String) attrs.get("uuid");
 
         try {
-            TaskMonitor monitor = TasksResource.getTaskMonitor();
             final UUID uuid = UUID.fromString(uuidStr);
             APITask<?> task = TasksResource.getTaskMonitor().get(uuid);
 
             if (task != null) {
                 return new JSONRepresentation(task);
             } else {
-                throw new IllegalArgumentException();
+                throw new NoSuchFileException("No such task");
             }
         } catch (IllegalArgumentException e) {
-            throw new FileNotFoundException("No such task");
+            throw new NoSuchFileException("No such task");
         }
     }
 

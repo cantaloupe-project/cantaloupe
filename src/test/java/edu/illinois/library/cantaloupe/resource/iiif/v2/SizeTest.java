@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
+import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -8,14 +9,14 @@ import static org.junit.Assert.*;
 
 public class SizeTest extends BaseTest {
 
-    private static final float FUDGE = 0.0000001f;
+    private static final float DELTA = 0.0000001f;
 
-    private Size size;
+    private Size instance;
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        this.size = new Size();
+        this.instance = new Size();
     }
 
     /* fromUri(String) */
@@ -44,7 +45,7 @@ public class SizeTest extends BaseTest {
     @Test
     public void testFromUriWidthScaled() {
         Size s = Size.fromUri("50,");
-        assertEquals(new Integer(50), s.getWidth());
+        assertEquals(Integer.valueOf(50), s.getWidth());
         assertEquals(Size.ScaleMode.ASPECT_FIT_WIDTH, s.getScaleMode());
     }
 
@@ -54,7 +55,7 @@ public class SizeTest extends BaseTest {
     @Test
     public void testFromUriHeightScaled() {
         Size s = Size.fromUri(",50");
-        assertEquals(new Integer(50), s.getHeight());
+        assertEquals(Integer.valueOf(50), s.getHeight());
         assertEquals(Size.ScaleMode.ASPECT_FIT_HEIGHT, s.getScaleMode());
     }
 
@@ -64,7 +65,7 @@ public class SizeTest extends BaseTest {
     @Test
     public void testFromUriPercentageScaled() {
         Size s = Size.fromUri("pct:50");
-        assertEquals(new Float(50), s.getPercent());
+        assertEquals(Float.valueOf(50), s.getPercent());
     }
 
     /**
@@ -73,8 +74,8 @@ public class SizeTest extends BaseTest {
     @Test
     public void testFromUriAbsoluteScaled() {
         Size s = Size.fromUri("50,40");
-        assertEquals(new Integer(50), s.getWidth());
-        assertEquals(new Integer(40), s.getHeight());
+        assertEquals(Integer.valueOf(50), s.getWidth());
+        assertEquals(Integer.valueOf(40), s.getHeight());
         assertEquals(Size.ScaleMode.NON_ASPECT_FILL, s.getScaleMode());
     }
 
@@ -84,92 +85,81 @@ public class SizeTest extends BaseTest {
     @Test
     public void testFromUriScaleToFit() {
         Size s = Size.fromUri("!50,40");
-        assertEquals(new Integer(50), s.getWidth());
-        assertEquals(new Integer(40), s.getHeight());
+        assertEquals(Integer.valueOf(50), s.getWidth());
+        assertEquals(Integer.valueOf(40), s.getHeight());
         assertEquals(Size.ScaleMode.ASPECT_FIT_INSIDE, s.getScaleMode());
     }
 
-    @Test
-    public void testFromUriWithInvalidArgument() {
-        try {
-            Size.fromUri("cats");
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
-        try {
-            Size.fromUri("pct:cats");
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
-        try {
-            Size.fromUri("pct:50,30");
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
-        try {
-            Size.fromUri("120,cats");
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
-        try {
-            Size.fromUri("cats,120");
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
-        try {
-            Size.fromUri("!cats,120");
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
-        try {
-            Size.fromUri("!120,");
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testFromUriWithInvalidArgument1() {
+        Size.fromUri("cats");
+    }
+
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testFromUriWithInvalidArgument2() {
+        Size.fromUri("pct:cats");
+    }
+
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testFromUriWithInvalidArgument3() {
+        Size.fromUri("pct:50,30");
+    }
+
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testFromUriWithInvalidArgument4() {
+        Size.fromUri("120,cats");
+    }
+
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testFromUriWithInvalidArgument5() {
+        Size.fromUri("cats,120");
+    }
+
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testFromUriWithInvalidArgument6() {
+        Size.fromUri("!cats,120");
+    }
+
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testFromUriWithInvalidArgument7() {
+        Size.fromUri("!120,");
     }
 
     /* equals() */
 
     @Test
     public void testEquals() {
-        size.setScaleMode(Size.ScaleMode.ASPECT_FIT_INSIDE);
-        size.setWidth(300);
-        size.setHeight(200);
+        instance.setScaleMode(Size.ScaleMode.ASPECT_FIT_INSIDE);
+        instance.setWidth(300);
+        instance.setHeight(200);
         Size size2 = new Size();
         size2.setScaleMode(Size.ScaleMode.ASPECT_FIT_INSIDE);
         size2.setWidth(300);
         size2.setHeight(200);
-        assertEquals(size, size2);
+        assertEquals(instance, size2);
 
         size2.setScaleMode(Size.ScaleMode.ASPECT_FIT_WIDTH);
-        assertNotEquals(size, size2);
+        assertNotEquals(instance, size2);
 
         size2.setScaleMode(Size.ScaleMode.ASPECT_FIT_INSIDE);
         size2.setWidth(299);
-        assertNotEquals(size, size2);
+        assertNotEquals(instance, size2);
 
         size2.setWidth(300);
         size2.setHeight(199);
-        assertNotEquals(size, size2);
+        assertNotEquals(instance, size2);
 
         size2.setHeight(200);
         size2.setScaleMode(null);
-        assertNotEquals(size, size2);
+        assertNotEquals(instance, size2);
 
         size2.setScaleMode(Size.ScaleMode.ASPECT_FIT_INSIDE);
         size2.setWidth(null);
-        assertNotEquals(size, size2);
+        assertNotEquals(instance, size2);
 
         size2.setWidth(300);
         size2.setHeight(null);
-        assertNotEquals(size, size2);
+        assertNotEquals(instance, size2);
     }
 
     /* setHeight() */
@@ -177,16 +167,16 @@ public class SizeTest extends BaseTest {
     @Test
     public void testSetHeight() {
         Integer height = 50;
-        this.size.setHeight(height);
-        assertEquals(height, this.size.getHeight());
+        this.instance.setHeight(height);
+        assertEquals(height, this.instance.getHeight());
     }
 
     @Test
     public void testSetNegativeHeight() {
         try {
-            this.size.setHeight(-1);
+            this.instance.setHeight(-1);
             fail("Expected exception");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalClientArgumentException e) {
             assertEquals("Height must be a positive integer", e.getMessage());
         }
     }
@@ -194,9 +184,9 @@ public class SizeTest extends BaseTest {
     @Test
     public void testSetZeroHeight() {
         try {
-            this.size.setHeight(0);
+            this.instance.setHeight(0);
             fail("Expected exception");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalClientArgumentException e) {
             assertEquals("Height must be a positive integer", e.getMessage());
         }
     }
@@ -206,16 +196,16 @@ public class SizeTest extends BaseTest {
     @Test
     public void testSetPercent() {
         float percent = 50f;
-        this.size.setPercent(percent);
-        assertEquals(percent, this.size.getPercent(), FUDGE);
+        this.instance.setPercent(percent);
+        assertEquals(percent, this.instance.getPercent(), DELTA);
     }
 
     @Test
     public void testSetNegativePercent() {
         try {
-            this.size.setPercent(-1.0f);
+            this.instance.setPercent(-1.0f);
             fail("Expected exception");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalClientArgumentException e) {
             assertEquals("Percent must be positive", e.getMessage());
         }
     }
@@ -223,9 +213,9 @@ public class SizeTest extends BaseTest {
     @Test
     public void testSetZeroPercent() {
         try {
-            this.size.setPercent(0f);
+            this.instance.setPercent(0f);
             fail("Expected exception");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalClientArgumentException e) {
             assertEquals("Percent must be positive", e.getMessage());
         }
     }
@@ -235,16 +225,16 @@ public class SizeTest extends BaseTest {
     @Test
     public void testSetWidth() {
         Integer width = 50;
-        this.size.setWidth(width);
-        assertEquals(width, this.size.getWidth());
+        this.instance.setWidth(width);
+        assertEquals(width, this.instance.getWidth());
     }
 
     @Test
     public void testSetNegativeWidth() {
         try {
-            this.size.setWidth(-1);
+            this.instance.setWidth(-1);
             fail("Expected exception");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalClientArgumentException e) {
             assertEquals("Width must be a positive integer", e.getMessage());
         }
     }
@@ -252,9 +242,9 @@ public class SizeTest extends BaseTest {
     @Test
     public void testSetZeroWidth() {
         try {
-            this.size.setWidth(0);
+            this.instance.setWidth(0);
             fail("Expected exception");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalClientArgumentException e) {
             assertEquals("Width must be a positive integer", e.getMessage());
         }
     }

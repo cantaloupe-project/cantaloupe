@@ -1,10 +1,11 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.util.StringUtil;
 
 /**
- * Encapsulates the "region" component of an IIIF request URI.
+ * Encapsulates the "region" component of a URI.
  *
  * @see <a href="http://iiif.io/api/image/1.1/#parameters-region">IIIF Image
  * API 1.1</a>
@@ -19,12 +20,11 @@ class Region {
     private Float y;
 
     /**
-     * @param uriRegion The "region" component of an IIIF URI.
-     * @return
-     * @throws IllegalArgumentException
+     * @param uriRegion Region component of a URI.
+     * @return Region corresponding to the argument.
+     * @throws IllegalClientArgumentException if the argument is invalid.
      */
-    public static Region fromUri(String uriRegion)
-            throws IllegalArgumentException {
+    public static Region fromUri(String uriRegion) {
         Region region = new Region();
 
         if (uriRegion.equals("full")) {
@@ -47,7 +47,7 @@ class Region {
                 region.setWidth(Float.parseFloat(parts[2]));
                 region.setHeight(Float.parseFloat(parts[3]));
             } else {
-                throw new IllegalArgumentException("Invalid region");
+                throw new IllegalClientArgumentException("Invalid region");
             }
         }
         return region;
@@ -58,32 +58,32 @@ class Region {
         if (obj == this) {
             return true;
         }
-        final float fudge = 0.0001f;
+        final float delta = 0.0001f;
         if (obj instanceof Region) {
             final Region region = (Region) obj;
             return isFull() == region.isFull() &&
                     isPercent() == region.isPercent() &&
-                    Math.abs(getX() - region.getX()) < fudge &&
-                    Math.abs(getY() - region.getY()) < fudge &&
-                    Math.abs(getWidth() - region.getWidth()) < fudge &&
-                    Math.abs(getHeight() - region.getHeight()) < fudge;
+                    Math.abs(getX() - region.getX()) < delta &&
+                    Math.abs(getY() - region.getY()) < delta &&
+                    Math.abs(getWidth() - region.getWidth()) < delta &&
+                    Math.abs(getHeight() - region.getHeight()) < delta;
         }
         if (obj instanceof Crop) {
             final Crop crop = (Crop) obj;
             if (this.isPercent()) {
                 return isFull() == crop.isFull() &&
                         isPercent() == crop.getUnit().equals(Crop.Unit.PERCENT) &&
-                        Math.abs(getX() - crop.getX() * 100) < fudge &&
-                        Math.abs(getY() - crop.getY() * 100) < fudge &&
-                        Math.abs(getWidth() - crop.getWidth() * 100) < fudge &&
-                        Math.abs(getHeight() - crop.getHeight() * 100) < fudge;
+                        Math.abs(getX() - crop.getX() * 100) < delta &&
+                        Math.abs(getY() - crop.getY() * 100) < delta &&
+                        Math.abs(getWidth() - crop.getWidth() * 100) < delta &&
+                        Math.abs(getHeight() - crop.getHeight() * 100) < delta;
             }
             return isFull() == crop.isFull() &&
                     isPercent() == crop.getUnit().equals(Crop.Unit.PERCENT) &&
-                    Math.abs(getX() - crop.getX()) < fudge &&
-                    Math.abs(getY() - crop.getY()) < fudge &&
-                    Math.abs(getWidth() - crop.getWidth()) < fudge &&
-                    Math.abs(getHeight() - crop.getHeight()) < fudge;
+                    Math.abs(getX() - crop.getX()) < delta &&
+                    Math.abs(getY() - crop.getY()) < delta &&
+                    Math.abs(getWidth() - crop.getWidth()) < delta &&
+                    Math.abs(getHeight() - crop.getHeight()) < delta;
         }
         return super.equals(obj);
     }
@@ -121,9 +121,10 @@ class Region {
         this.isFull = isFull;
     }
 
-    public void setHeight(Float height) throws IllegalArgumentException {
+    public void setHeight(Float height) {
         if (height <= 0) {
-            throw new IllegalArgumentException("Height must be a positive integer");
+            throw new IllegalClientArgumentException(
+                    "Height must be a positive integer");
         }
         this.height = height;
     }
@@ -132,23 +133,24 @@ class Region {
         this.isPercent = isPercent;
     }
 
-    public void setWidth(Float width) throws IllegalArgumentException {
+    public void setWidth(Float width) {
         if (width <= 0) {
-            throw new IllegalArgumentException("Width must be a positive integer");
+            throw new IllegalClientArgumentException(
+                    "Width must be a positive integer");
         }
         this.width = width;
     }
 
-    public void setX(Float x) throws IllegalArgumentException {
+    public void setX(Float x) {
         if (x < 0) {
-            throw new IllegalArgumentException("X must be a positive float");
+            throw new IllegalClientArgumentException("X must be a positive float");
         }
         this.x = x;
     }
 
-    public void setY(Float y) throws IllegalArgumentException {
+    public void setY(Float y) {
         if (y < 0) {
-            throw new IllegalArgumentException("Y must be a positive float");
+            throw new IllegalClientArgumentException("Y must be a positive float");
         }
         this.y = y;
     }
@@ -175,7 +177,7 @@ class Region {
     }
 
     /**
-     * @return Value compatible with the region component of an IIIF URI.
+     * @return Value compatible with the region component of a URI.
      */
     public String toString() {
         String str = "";

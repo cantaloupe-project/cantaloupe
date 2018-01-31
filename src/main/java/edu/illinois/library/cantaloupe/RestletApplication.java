@@ -1,12 +1,12 @@
 package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
+import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.LandingResource;
 import edu.illinois.library.cantaloupe.resource.TrailingSlashRemovingResource;
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
@@ -89,15 +89,25 @@ public class RestletApplication extends Application {
             return new AnonymousResource().template("/error.vm", templateVars);
         }
 
+        /**
+         * <p>Returns a {@link Status} appropriate for the given {@link
+         * Throwable}.</p>
+         *
+         * <p>Note that illegal arguments from the client, which would be
+         * intended to produce a 400 status, should be represented
+         * by {@link IllegalClientArgumentException}. In contrast, {@link
+         * IllegalArgumentException} will produce a 500 response.</p>
+         */
         @Override
-        public Status toStatus(Throwable t, Request request,
+        public Status toStatus(Throwable t,
+                               Request request,
                                Response response) {
             Status status;
             t = (t.getCause() != null) ? t.getCause() : t;
 
             if (t instanceof ResourceException) {
                 status = ((ResourceException) t).getStatus();
-            } else if (t instanceof IllegalArgumentException ||
+            } else if (t instanceof IllegalClientArgumentException ||
                     t instanceof ValidationException ||
                     t instanceof UnsupportedEncodingException) {
                 status = new Status(Status.CLIENT_ERROR_BAD_REQUEST, t);

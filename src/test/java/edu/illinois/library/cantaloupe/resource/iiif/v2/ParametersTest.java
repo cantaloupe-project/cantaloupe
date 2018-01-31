@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
+import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,15 +19,20 @@ import static org.junit.Assert.*;
 
 public class ParametersTest extends BaseTest {
 
-    private static final float FUDGE = 0.00000001f;
+    private static final float DELTA = 0.00000001f;
 
     private Parameters instance;
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new Parameters(new Identifier("identifier"), "0,0,200,200",
-                "pct:50", "5", "default", "jpg");
+        instance = new Parameters(
+                new Identifier("identifier"),
+                "0,0,200,200",
+                "pct:50",
+                "5",
+                "default",
+                "jpg");
     }
 
     @Test
@@ -34,23 +40,20 @@ public class ParametersTest extends BaseTest {
         instance = Parameters.fromUri("bla/20,20,50,50/pct:90/15/bitonal.jpg");
         assertEquals("bla", instance.getIdentifier().toString());
         assertEquals("20,20,50,50", instance.getRegion().toString());
-        assertEquals(90f, instance.getSize().getPercent(), FUDGE);
-        assertEquals(15f, instance.getRotation().getDegrees(), FUDGE);
+        assertEquals(90f, instance.getSize().getPercent(), DELTA);
+        assertEquals(15f, instance.getRotation().getDegrees(), DELTA);
         assertEquals(Quality.BITONAL, instance.getQuality());
         assertEquals(Format.JPG, instance.getOutputFormat());
+    }
 
-        try {
-            Parameters.fromUri("bla/20,20,50,50/15/bitonal.jpg");
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
-        try {
-            Parameters.fromUri("bla/20,20,50,50/pct:90/15/bitonal");
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testFromUriWithInvalidURI1() {
+        Parameters.fromUri("bla/20,20,50,50/15/bitonal.jpg");
+    }
+
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testFromUriWithInvalidURI2() {
+        Parameters.fromUri("bla/20,20,50,50/pct:90/15/bitonal");
     }
 
     @Test(expected = UnsupportedOutputFormatException.class)
@@ -66,7 +69,7 @@ public class ParametersTest extends BaseTest {
     }
 
     @Test
-    public void testToOperationList() throws Exception {
+    public void testToOperationList() {
         final OperationList opList = instance.toOperationList();
         Iterator<Operation> it = opList.iterator();
         assertTrue(it.next() instanceof Crop);

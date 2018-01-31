@@ -4,23 +4,22 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
+import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.data.Reference;
 import org.restlet.data.Form;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 /**
- * Encapsulates the parameters of an IIIF request.
+ * Encapsulates the parameters of a request.
  *
  * @see <a href="http://iiif.io/api/request/2.0/#request-request-parameters">IIIF
  *      Image API 2.0</a>
+ * @see <a href="http://iiif.io/api/request/2.0/#request-request-parameters">IIIF
+ *      Image API 2.1</a>
  */
 class Parameters implements Comparable<Parameters> {
-
-    private static Logger logger = LoggerFactory.getLogger(Parameters.class);
 
     private Format outputFormat;
     private Identifier identifier;
@@ -31,12 +30,11 @@ class Parameters implements Comparable<Parameters> {
     private Size size;
 
     /**
-     * @param paramsStr URI path fragment beginning from the identifier onward
-     * @throws IllegalArgumentException if the <code>params</code> is not in
-     * the correct format
+     * @param paramsStr URI path fragment beginning from the identifier onward.
+     * @throws IllegalClientArgumentException if the argument is not in the
+     *         correct format.
      */
-    public static Parameters fromUri(String paramsStr)
-            throws IllegalArgumentException {
+    public static Parameters fromUri(String paramsStr) {
         Parameters params = new Parameters();
         String[] parts = StringUtils.split(paramsStr, "/");
         if (parts.length == 5) {
@@ -49,10 +47,10 @@ class Parameters implements Comparable<Parameters> {
                 params.setQuality(Quality.valueOf(subparts[0].toUpperCase()));
                 params.setOutputFormat(Format.valueOf(subparts[1].toUpperCase()));
             } else {
-                throw new IllegalArgumentException("Invalid parameters format");
+                throw new IllegalClientArgumentException("Invalid parameters format");
             }
         } else {
-            throw new IllegalArgumentException("Invalid parameters format");
+            throw new IllegalClientArgumentException("Invalid parameters format");
         }
         return params;
     }
@@ -62,22 +60,33 @@ class Parameters implements Comparable<Parameters> {
      */
     public Parameters() {}
 
-     /**
+    /**
      * @param identifier Decoded identifier.
      * @param region From URI
      * @param size From URI
      * @param rotation From URI
      * @param quality From URI
      * @param format From URI
+     * @throws UnsupportedOutputFormatException if the {@literal format}
+     *         argument is invalid.
+     * @throws IllegalClientArgumentException if any of the other arguments are
+     *         invalid.
      */
-    public Parameters(Identifier identifier, String region, String size,
-                      String rotation, String quality, String format)
-            throws UnsupportedOutputFormatException {
+    public Parameters(Identifier identifier,
+                      String region,
+                      String size,
+                      String rotation,
+                      String quality,
+                      String format) throws UnsupportedOutputFormatException {
         setIdentifier(identifier);
-        setQuality(Quality.valueOf(quality.toUpperCase()));
         setRegion(Region.fromUri(region));
-        setRotation(Rotation.fromUri(rotation));
         setSize(Size.fromUri(size));
+        setRotation(Rotation.fromUri(rotation));
+        try {
+            setQuality(Quality.valueOf(quality.toUpperCase()));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalClientArgumentException(e.getMessage(), e);
+        }
         try {
             setOutputFormat(Format.valueOf(format.toUpperCase()));
         } catch (IllegalArgumentException e) {
@@ -114,9 +123,9 @@ class Parameters implements Comparable<Parameters> {
     }
 
     /**
-     * @return The URL query. This enables processors to support options and
-     * operations not available in the parameters. Query keys and values are
-     * unsanitized.
+     * @return The URI query. This enables processors to support options and
+     *         operations not available in the parameters. Query keys and
+     *         values are not sanitized.
      */
     public Form getQuery() {
         return query;
@@ -190,7 +199,7 @@ class Parameters implements Comparable<Parameters> {
     }
 
     /**
-     * @return IIIF URI parameters with no leading slash.
+     * @return URI parameters with no leading slash.
      */
     public String toString() {
         String str = String.format("%s/%s/%s/%s/%s.%s", getIdentifier(),
@@ -200,7 +209,7 @@ class Parameters implements Comparable<Parameters> {
             try {
                 str += "?" + this.getQuery().encode();
             } catch (IOException e) {
-                logger.error("Failed to encode query: {}", this.getQuery());
+                throw new IllegalClientArgumentException(e.getMessage(), e);
             }
         }
         return str;

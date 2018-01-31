@@ -1,31 +1,44 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.operation.Scale;
+import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Encapsulates the "size" component of an IIIF request URI.
+ * Encapsulates the "size" component of a URI.
  *
  * @see <a href="http://iiif.io/api/image/2.0/#size">IIIF Image API 2.0</a>
+ * @see <a href="http://iiif.io/api/image/2.1/#size">IIIF Image API 2.1</a>
  */
 class Size {
 
     enum ScaleMode {
 
-        /** <code>,h</code> in an IIIF request URI */
+        /**
+         * Represents a size argument in {@literal ,h} format.
+         */
         ASPECT_FIT_HEIGHT(Scale.Mode.ASPECT_FIT_HEIGHT),
 
-        /** <code>w,</code> in an IIIF request URI */
+        /**
+         * Represents a size argument in {@literal w,} format.
+         */
         ASPECT_FIT_WIDTH(Scale.Mode.ASPECT_FIT_WIDTH),
 
-        /** <code>!w,h</code> in an IIIF request URI */
+        /**
+         * Represents a size argument in {@literal !w,h} format.
+         */
         ASPECT_FIT_INSIDE(Scale.Mode.ASPECT_FIT_INSIDE),
 
-        /** <code>max</code> or <code>full</code> in an IIIF request URI */
+        /**
+         * Represents a {@literal full} (Image API 2.0 & 2.1) or {@literal max}
+         * (Image API 2.1) size argument.
+         */
         MAX(Scale.Mode.FULL),
 
-        /** <code>w,h</code> in an IIIF request URI */
+        /**
+         * Represents a size argument in {@literal w,h} format.
+         */
         NON_ASPECT_FILL(Scale.Mode.NON_ASPECT_FILL);
 
         private Scale.Mode equivalentScaleMode;
@@ -47,8 +60,8 @@ class Size {
 
     /**
      * @param uriSize The {@literal size} component of a URI.
-     * @return Size corresponding to the given URI size component.
-     * @throws IllegalArgumentException
+     * @return        Size corresponding to the argument.
+     * @throws IllegalClientArgumentException if the argument is invalid.
      */
     public static Size fromUri(String uriSize) {
         Size size = new Size();
@@ -79,12 +92,14 @@ class Size {
                         size.setWidth(Integer.parseInt(parts[0]));
                         size.setHeight(Integer.parseInt(parts[1]));
                     } else {
-                        throw new IllegalArgumentException("Invalid size");
+                        throw new IllegalClientArgumentException("Invalid size");
                     }
                 }
             }
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid size");
+        } catch (IllegalClientArgumentException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw new IllegalClientArgumentException("Invalid size");
         }
         return size;
     }
@@ -124,20 +139,21 @@ class Size {
         return toString().hashCode();
     }
 
-    public void setHeight(Integer height) throws IllegalArgumentException {
+    public void setHeight(Integer height) {
         if (height != null && height <= 0) {
-            throw new IllegalArgumentException("Height must be a positive integer");
+            throw new IllegalClientArgumentException(
+                    "Height must be a positive integer");
         }
         this.height = height;
     }
 
     /**
      * @param percent Float from 0-100
-     * @throws IllegalArgumentException
+     * @throws IllegalClientArgumentException
      */
-    public void setPercent(Float percent) throws IllegalArgumentException {
+    public void setPercent(Float percent) {
         if (percent != null && percent <= 0) {
-            throw new IllegalArgumentException("Percent must be positive");
+            throw new IllegalClientArgumentException("Percent must be positive");
         }
         this.percent = percent;
     }
@@ -146,9 +162,10 @@ class Size {
         this.scaleMode = scaleMode;
     }
 
-    public void setWidth(Integer width) throws IllegalArgumentException {
+    public void setWidth(Integer width) {
         if (width != null && width <= 0) {
-            throw new IllegalArgumentException("Width must be a positive integer");
+            throw new IllegalClientArgumentException(
+                    "Width must be a positive integer");
         }
         this.width = width;
     }
@@ -171,25 +188,25 @@ class Size {
     }
 
     /**
-     * @return Value compatible with the size component of an IIIF URI.
+     * @return Value compatible with the size component of a URI.
      */
     public String toString() {
         String str = "";
-        if (ScaleMode.MAX.equals(this.getScaleMode())) {
+        if (ScaleMode.MAX.equals(getScaleMode())) {
             // Use "full" because "max" is not available in Image API 2.0.
             str += "full";
-        } else if (this.getPercent() != null) {
-            str += "pct:" + StringUtil.removeTrailingZeroes(this.getPercent());
+        } else if (getPercent() != null) {
+            str += "pct:" + StringUtil.removeTrailingZeroes(getPercent());
         } else {
-            if (this.getScaleMode() == ScaleMode.ASPECT_FIT_INSIDE) {
+            if (ScaleMode.ASPECT_FIT_INSIDE.equals(getScaleMode())) {
                 str += "!";
             }
-            if (this.getWidth() != null && this.getWidth() > 0) {
-                str += this.getWidth();
+            if (getWidth() != null && getWidth() > 0) {
+                str += getWidth();
             }
             str += ",";
-            if (this.getHeight() != null && this.getHeight() > 0) {
-                str += this.getHeight();
+            if (getHeight() != null && getHeight() > 0) {
+                str += getHeight();
             }
         }
         return str;
