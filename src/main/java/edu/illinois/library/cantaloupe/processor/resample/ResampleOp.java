@@ -6,8 +6,11 @@
  */
 package edu.illinois.library.cantaloupe.processor.resample;
 
+import edu.illinois.library.cantaloupe.async.ThreadPool;
+
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -228,39 +231,38 @@ public class ResampleOp extends AdvancedResizeOp {
         horizontalSubsamplingData = createSubSampling(filter, srcWidth, dstWidth);
         verticalSubsamplingData = createSubSampling(filter, srcHeight, dstHeight);
 
+        final ThreadPool threadPool = ThreadPool.getInstance();
 
+        final CountDownLatch inputLatch = new CountDownLatch(numberOfThreads - 1);
         final BufferedImage scrImgCopy = srcImage;
         final byte[][] workPixelsCopy = workPixels;
-        Thread[] threads = new Thread[numberOfThreads - 1];
+
         for (int i = 1; i < numberOfThreads; i++) {
             final int finalI = i;
-            threads[i - 1] = new Thread(new Runnable() {
-                public void run() {
-                    horizontallyFromSrcToWork(scrImgCopy, workPixelsCopy,
-                            finalI, numberOfThreads);
-                }
+            threadPool.submit(() -> {
+                horizontallyFromSrcToWork(scrImgCopy, workPixelsCopy, finalI,
+                        numberOfThreads);
+                inputLatch.countDown();
             });
-            threads[i - 1].start();
         }
         horizontallyFromSrcToWork(scrImgCopy, workPixelsCopy, 0, numberOfThreads);
-        waitForAllThreads(threads);
+        waitOnLatch(inputLatch);
 
+        final CountDownLatch outputLatch = new CountDownLatch(numberOfThreads - 1);
         byte[] outPixels = new byte[dstWidth * dstHeight * nrChannels];
 
         // Apply filter to sample vertically from Work to Dst.
         final byte[] outPixelsCopy = outPixels;
         for (int i = 1; i < numberOfThreads; i++) {
             final int finalI = i;
-            threads[i - 1] = new Thread(new Runnable() {
-                public void run() {
-                    verticalFromWorkToDst(workPixelsCopy, outPixelsCopy,
-                            finalI, numberOfThreads);
-                }
+            threadPool.submit(() -> {
+                verticalFromWorkToDst(workPixelsCopy, outPixelsCopy, finalI,
+                        numberOfThreads);
+                outputLatch.countDown();
             });
-            threads[i - 1].start();
         }
         verticalFromWorkToDst(workPixelsCopy, outPixelsCopy, 0, numberOfThreads);
-        waitForAllThreads(threads);
+        waitOnLatch(outputLatch);
 
         //noinspection UnusedAssignment
         workPixels = null; // free memory
@@ -271,8 +273,8 @@ public class ResampleOp extends AdvancedResizeOp {
             int nrDestChannels = ImageUtils.numberOfChannels(destImage);
             if (nrDestChannels != nrChannels) {
                 String errorMgs = String.format("Destination image must be " +
-                        "compatible width source image. Source image had %d " +
-                        "channels destination image had %d channels",
+                                "compatible width source image. Source image had %d " +
+                                "channels destination image had %d channels",
                         nrChannels, nrDestChannels);
                 throw new RuntimeException(errorMgs);
             }
@@ -289,11 +291,9 @@ public class ResampleOp extends AdvancedResizeOp {
         return out;
     }
 
-    private void waitForAllThreads(Thread[] threads) {
+    private void waitOnLatch(CountDownLatch latch) {
         try {
-            for (Thread t : threads) {
-                t.join(Long.MAX_VALUE);
-            }
+            latch.await();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException(e);
