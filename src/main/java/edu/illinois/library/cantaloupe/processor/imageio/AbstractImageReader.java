@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Orientation;
@@ -18,7 +17,6 @@ import org.slf4j.Logger;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
-import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -206,8 +204,8 @@ abstract class AbstractImageReader {
 
     /**
      * @param imageIndex
-     * @return Tile size of the image at the given index. If the image is not
-     *         tiled, the full image dimensions are returned.
+     * @return Tile size of the image at the given index, or the full image
+     *         dimensions if the image is not tiled.
      */
     Dimension getTileSize(int imageIndex) throws IOException {
         final int width = iioReader.getTileWidth(imageIndex);
@@ -272,7 +270,7 @@ abstract class AbstractImageReader {
      *
      * @throws UnsupportedOperationException if the instance is not reusable.
      */
-    private void reset() throws IOException {
+    void reset() throws IOException {
         if (source == null) {
             throw new UnsupportedOperationException("Instance is not reusable");
         } else if (source instanceof Path) {
@@ -472,9 +470,8 @@ abstract class AbstractImageReader {
                                         final Rectangle region,
                                         final Set<ImageReader.Hint> hints)
             throws IOException {
-        final Dimension imageSize = new Dimension(
-                iioReader.getWidth(imageIndex),
-                iioReader.getHeight(imageIndex));
+        final Dimension imageSize = getSize();
+
         getLogger().debug("Acquiring region {},{}/{}x{} from {}x{} image",
                 region.x, region.y, region.width, region.height,
                 imageSize.width, imageSize.height);
@@ -483,44 +480,7 @@ abstract class AbstractImageReader {
         final ImageReadParam param = iioReader.getDefaultReadParam();
         param.setSourceRegion(region);
 
-        try {
-            return iioReader.read(imageIndex, param);
-        } catch (IllegalArgumentException e) {
-            if (e.getMessage().contains("Numbers of source Raster bands " +
-                    "and source color space components do not match")) {
-                /*
-                This probably means that the embedded ICC profile is
-                incompatible with the source image data.
-                (JPEGImageReader is not very lenient.)
-                See: https://github.com/medusa-project/cantaloupe/issues/41
-                and also the docs for e.i.l.c.p.imageio.JPEGImageReader.
-
-                To deal with this situation, we will try reading again,
-                ignoring the color profile. We need to reset the reader, and
-                then read into a grayscale BufferedImage.
-
-                This is of course a filthy hack, credit/blame for which goes to:
-                http://stackoverflow.com/a/11571181
-                */
-                reset();
-
-                final Iterator<ImageTypeSpecifier> imageTypes =
-                        iioReader.getImageTypes(0);
-                while (imageTypes.hasNext()) {
-                    final ImageTypeSpecifier imageTypeSpecifier = imageTypes.next();
-                    final int bufferedImageType = imageTypeSpecifier.getBufferedImageType();
-                    if (bufferedImageType == BufferedImage.TYPE_BYTE_GRAY) {
-                        param.setDestinationType(imageTypeSpecifier);
-                        break;
-                    }
-                }
-
-                return iioReader.read(imageIndex, param);
-            } else {
-                throw e;
-            }
-        }
-
+        return iioReader.read(imageIndex, param);
     }
 
     /**
@@ -600,9 +560,9 @@ abstract class AbstractImageReader {
      * @return      The smallest image fitting the requested crop and scale
      *              operations from the given reader.
      */
-    RenderedImage readSmallestUsableSubimage(final Crop crop,
-                                             final Scale scale,
-                                             final ReductionFactor rf)
+    private RenderedImage readSmallestUsableSubimage(final Crop crop,
+                                                     final Scale scale,
+                                                     final ReductionFactor rf)
             throws IOException {
         final Dimension fullSize = new Dimension(
                 iioReader.getWidth(0), iioReader.getHeight(0));
