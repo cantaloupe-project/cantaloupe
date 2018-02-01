@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Client;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -445,8 +446,7 @@ public class ImageResourceTester extends ImageAPIResourceTester {
 
         try {
             opList.applyNonEndpointMutations(
-                    new Dimension(64, 56),
-                    Orientation.ROTATE_0,
+                    new Info(64, 56),
                     "",
                     new URI("http://example.org/"),
                     new HashMap<>(),

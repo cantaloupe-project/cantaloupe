@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.overlay.BasicStringOverlayServiceTest;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.overlay.Position;
@@ -160,20 +161,20 @@ public class OperationListTest extends BaseTest {
     @Test
     public void applyNonEndpointMutationsWithOrientationMutatesCrop()
             throws Exception {
-        final Dimension fullSize = new Dimension(2000,1000);
+        final Info info = new Info(2000, 1000);
+        info.getImages().get(0).setOrientation(Orientation.ROTATE_90);
         final OperationList opList = new OperationList(new Identifier("cats"),
                 Format.JPG, new Crop(0, 0, 70, 30));
 
         opList.applyNonEndpointMutations(
-                fullSize,
-                Orientation.ROTATE_90,
+                info,
                 "127.0.0.1",
                 new URI("http://example.org/"),
                 new HashMap<>(),
                 new HashMap<>());
 
         Crop expectedCrop = new Crop(0, 0, 70, 30);
-        expectedCrop.applyOrientation(Orientation.ROTATE_90, fullSize);
+        expectedCrop.applyOrientation(Orientation.ROTATE_90, info.getSize());
         Crop actualCrop = (Crop) opList.getFirst(Crop.class);
         assertEquals(expectedCrop, actualCrop);
     }
@@ -181,13 +182,13 @@ public class OperationListTest extends BaseTest {
     @Test
     public void applyNonEndpointMutationsWithOrientationMutatesRotate()
             throws Exception {
-        final Dimension fullSize = new Dimension(2000,1000);
+        final Info info = new Info(2000, 1000);
+        info.getImages().get(0).setOrientation(Orientation.ROTATE_90);
         final OperationList opList = new OperationList(new Identifier("cats"),
                 Format.JPG, new Crop(0, 0, 70, 30), new Rotate(45));
 
         opList.applyNonEndpointMutations(
-                fullSize,
-                Orientation.ROTATE_90,
+                info,
                 "127.0.0.1",
                 new URI("http://example.org/"),
                 new HashMap<>(),
@@ -209,8 +210,7 @@ public class OperationListTest extends BaseTest {
                 Format.JPG, new Rotate(45));
 
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000),
-                Orientation.ROTATE_0,
+                new Info(2000, 1000),
                 "127.0.0.1",
                 new URI("http://example.org/"),
                 new HashMap<>(),
@@ -230,8 +230,7 @@ public class OperationListTest extends BaseTest {
         final OperationList opList = new OperationList(new Identifier("cats"),
                 Format.JPG);
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000),
-                Orientation.ROTATE_0,
+                new Info(2000, 1000),
                 "127.0.0.1",
                 new URI("http://example.org/"),
                 new HashMap<>(),
@@ -254,8 +253,7 @@ public class OperationListTest extends BaseTest {
         final OperationList opList = new OperationList(new Identifier("cats"),
                 Format.JPG);
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000),
-                Orientation.ROTATE_0,
+                new Info(2000, 1000),
                 "127.0.0.1",
                 new URI("http://example.org/"),
                 new HashMap<>(),
@@ -274,8 +272,7 @@ public class OperationListTest extends BaseTest {
         OperationList opList = new OperationList(new Identifier("cats"),
                 Format.TIF, new Crop());
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000),
-                Orientation.ROTATE_0,
+                new Info(2000, 1000),
                 "127.0.0.1",
                 new URI("http://example.org/"),
                 new HashMap<>(),
@@ -289,8 +286,7 @@ public class OperationListTest extends BaseTest {
         opList = new OperationList(new Identifier("cats"), Format.TIF,
                 new Scale(1.5f));
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000),
-                Orientation.ROTATE_0,
+                new Info(2000, 1000),
                 "127.0.0.1",
                 new URI("http://example.org/"),
                 new HashMap<>(),
@@ -304,8 +300,7 @@ public class OperationListTest extends BaseTest {
         opList = new OperationList(new Identifier("cats"), Format.TIF,
                 new Scale(0.5f));
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000),
-                Orientation.ROTATE_0,
+                new Info(2000, 1000),
                 "127.0.0.1",
                 new URI("http://example.org/"),
                 new HashMap<>(),
@@ -323,8 +318,7 @@ public class OperationListTest extends BaseTest {
         final OperationList opList = new OperationList(new Identifier("cats"),
                 Format.TIF);
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000),
-                Orientation.ROTATE_0,
+                new Info(2000, 1000),
                 "127.0.0.1",
                 new URI("http://example.org/"),
                 new HashMap<>(),
@@ -341,8 +335,7 @@ public class OperationListTest extends BaseTest {
         final OperationList opList = new OperationList(
                 new Identifier("cats"), Format.TIF);
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000),
-                Orientation.ROTATE_0,
+                new Info(2000, 1000),
                 "127.0.0.1",
                 new URI("http://example.org/"),
                 new HashMap<>(),
@@ -360,8 +353,7 @@ public class OperationListTest extends BaseTest {
         final OperationList opList = new OperationList(new Identifier("cats"),
                 Format.JPG);
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000),
-                Orientation.ROTATE_0,
+                new Info(2000, 1000),
                 "127.0.0.1",
                 new URI("http://example.org/"),
                 new HashMap<>(),
@@ -380,8 +372,7 @@ public class OperationListTest extends BaseTest {
         final OperationList opList = new OperationList(new Identifier("cats"),
                 Format.JPG);
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000),
-                Orientation.ROTATE_0,
+                new Info(2000, 1000),
                 "127.0.0.1",
                 new URI("http://example.org/"),
                 new HashMap<>(),
@@ -401,8 +392,7 @@ public class OperationListTest extends BaseTest {
         OperationList opList = new OperationList(new Identifier("cats"),
                 Format.TIF, new Scale(0.5f));
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000),
-                Orientation.ROTATE_0,
+                new Info(2000, 1000),
                 "127.0.0.1",
                 new URI("http://example.org/"),
                 new HashMap<>(),
@@ -415,8 +405,7 @@ public class OperationListTest extends BaseTest {
         opList = new OperationList(new Identifier("cats"), Format.TIF,
                 new Scale(1.5f));
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000),
-                Orientation.ROTATE_0,
+                new Info(2000, 1000),
                 "127.0.0.1",
                 new URI("http://example.org/"),
                 new HashMap<>(),
@@ -431,11 +420,11 @@ public class OperationListTest extends BaseTest {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_SHARPEN, 0.2f);
 
+        final Info info = new Info(2000, 1000);
         final OperationList opList = new OperationList(new Identifier("cats"),
                 Format.TIF);
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000),
-                Orientation.ROTATE_0,
+                info,
                 "127.0.0.1",
                 new URI("http://example.org/"),
                 new HashMap<>(),
@@ -457,8 +446,7 @@ public class OperationListTest extends BaseTest {
         final OperationList opList = new OperationList(new Identifier("cats"),
                 Format.TIF);
         opList.applyNonEndpointMutations(
-                new Dimension(2000,1000),
-                Orientation.ROTATE_0,
+                new Info(2000, 1000),
                 "127.0.0.1",
                 new URI("http://example.org/"),
                 new HashMap<>(),
@@ -474,15 +462,14 @@ public class OperationListTest extends BaseTest {
     @Test(expected = IllegalStateException.class)
     public void applyNonEndpointMutationsWhileFrozen()
             throws Exception {
-        final Dimension fullSize = new Dimension(2000,1000);
+        final Info info = new Info(2000, 1000);
         final OperationList opList = new OperationList(new Identifier("cats"),
                 Format.JPG, new Crop(0, 0, 70, 30));
 
         opList.freeze();
 
         opList.applyNonEndpointMutations(
-                fullSize,
-                Orientation.ROTATE_90,
+                info,
                 "127.0.0.1",
                 new URI("http://example.org/"),
                 new HashMap<>(),

@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.overlay.OverlayService;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
@@ -135,21 +136,19 @@ public final class OperationList implements Comparable<OperationList>,
      * operations according to either/both the application configuration and
      * delegate method return values.</p>
      *
-     * <p>This method should be called <strong>after</strong> all endpoint
+     * <p>This method must be called <strong>after</strong> all endpoint
      * operations have been added, as it may modify them. It will have the
      * side-effect of freezing the instance.</p>
      *
-     * @param sourceImageSize        Full size of the source image.
-     * @param sourceImageOrientation Orientation of the source image.
-     * @param clientIp               Client IP address.
-     * @param requestURI             Request URL.
-     * @param requestHeaders         Request headers.
-     * @param cookies                Client cookies.
+     * @param info           Source image info.
+     * @param clientIp       Client IP address.
+     * @param requestURI     Request URL.
+     * @param requestHeaders Request headers.
+     * @param cookies        Client cookies.
      * @throws IllegalArgumentException If the instance's output format has not
      *                                  been set.
      */
-    public void applyNonEndpointMutations(final Dimension sourceImageSize,
-                                          final Orientation sourceImageOrientation,
+    public void applyNonEndpointMutations(final Info info,
                                           final String clientIp,
                                           final URI requestURI,
                                           final Map<String,String> requestHeaders,
@@ -163,9 +162,11 @@ public final class OperationList implements Comparable<OperationList>,
         }
 
         final Configuration config = Configuration.getInstance();
+        final Dimension sourceImageSize = info.getSize();
 
         // If the source image has a different orientation, adjust any Crop
         // and Rotate operations accordingly.
+        final Orientation sourceImageOrientation = info.getOrientation();
         if (sourceImageOrientation != null) {
             Crop crop = (Crop) getFirst(Crop.class);
             if (crop != null) {

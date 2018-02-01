@@ -77,8 +77,7 @@ public class ImageResource extends IIIF2Resource {
         if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)) {
             final Info info = cacheFacade.getInfo(identifier);
             if (info != null) {
-                ops.applyNonEndpointMutations(info.getSize(),
-                        info.getOrientation(),
+                ops.applyNonEndpointMutations(info,
                         getCanonicalClientIPAddress(),
                         getReference().toUri(),
                         getRequest().getHeaders().getValuesMap(),
@@ -172,8 +171,7 @@ public class ImageResource extends IIIF2Resource {
         }
 
         try {
-            ops.applyNonEndpointMutations(fullSize,
-                    info.getOrientation(),
+            ops.applyNonEndpointMutations(info,
                     getCanonicalClientIPAddress(),
                     getReference().toUri(),
                     getRequest().getHeaders().getValuesMap(),

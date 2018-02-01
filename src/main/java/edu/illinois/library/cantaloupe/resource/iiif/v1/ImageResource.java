@@ -131,8 +131,7 @@ public class ImageResource extends IIIF1Resource {
 
         addLinkHeader(processor);
 
-        ops.applyNonEndpointMutations(fullSize,
-                info.getOrientation(),
+        ops.applyNonEndpointMutations(info,
                 getCanonicalClientIPAddress(),
                 getReference().toUri(),
                 getRequest().getHeaders().getValuesMap(),
