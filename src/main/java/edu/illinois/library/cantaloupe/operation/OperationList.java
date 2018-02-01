@@ -34,6 +34,16 @@ import java.util.stream.Stream;
  * <p>Normalized list of {@link Operation image transform operations}
  * corresponding to an image identified by its {@link Identifier}.</p>
  *
+ * <p>This class has a dual purpose:</p>
+ *
+ * <ol>
+ *     <li>To assemble and store a list of image transform operations;</li>
+ *     <li>To uniquely identify a post-processed ("derivative") image that has
+ *     undergone processing using the instance. For example, the return values
+ *     of {@link #toString()} and {@link #toFilename()} may be used in cache
+ *     keys.</li>
+ * </ol>
+ *
  * <p>Endpoints translate request parameters into instances of this class, in
  * order to pass them off into {@link
  * edu.illinois.library.cantaloupe.processor.Processor processors} and
@@ -41,7 +51,7 @@ import java.util.stream.Stream;
  *
  * <p>Processors should iterate the operations in the list and apply them
  * (generally in order) as best they can. Instances will have an associated
- * {@link #getOutputFormat() output format} but
+ * {@link #getOutputFormat() output format}, but
  * {@link #applyNonEndpointMutations} will also add a more comprehensive
  * {@link Encode} operation, based on it, to the list, which processors should
  * look at instead.</p>
@@ -69,6 +79,7 @@ public final class OperationList implements Comparable<OperationList>,
     public OperationList(Identifier identifier, Format outputFormat,
                          Operation... operations) {
         this(identifier, outputFormat);
+
         for (Operation op : operations) {
             add(op);
         }
@@ -92,7 +103,7 @@ public final class OperationList implements Comparable<OperationList>,
      * class in the list. If there are no such instances in the list, the
      * operation will be added to the end of the list.
      *
-     * @param op Operation to add.
+     * @param op         Operation to add.
      * @param afterClass The operation will be added after the last
      *                   instance of this class in the list.
      * @throws IllegalStateException If the instance is frozen.
@@ -113,7 +124,7 @@ public final class OperationList implements Comparable<OperationList>,
      * class in the list. If there are no such instances in the list, the
      * operation will be added to the end of the list.
      *
-     * @param op Operation to add.
+     * @param op          Operation to add.
      * @param beforeClass The operation will be added before the first
      *                    instance of this class in the list.
      * @throws IllegalStateException If the instance is frozen.
@@ -138,14 +149,14 @@ public final class OperationList implements Comparable<OperationList>,
      *
      * <p>This method must be called <strong>after</strong> all endpoint
      * operations have been added, as it may modify them. It will have the
-     * side-effect of freezing the instance.</p>
+     * side-effect of {@link #freeze() freezing the instance}.</p>
      *
      * @param info           Source image info.
      * @param clientIp       Client IP address.
      * @param requestURI     Request URL.
      * @param requestHeaders Request headers.
      * @param cookies        Client cookies.
-     * @throws IllegalArgumentException If the instance's output format has not
+     * @throws IllegalArgumentException if the instance's output format has not
      *                                  been set.
      */
     public void applyNonEndpointMutations(final Info info,
@@ -356,8 +367,8 @@ public final class OperationList implements Comparable<OperationList>,
     private int firstIndexOf(Class<? extends Operation> clazz) {
         int index = 0;
         boolean found = false;
-        for (int i = 0, count = operations.size(); i < count; i++) {
-            if (clazz.isAssignableFrom(operations.get(i).getClass())) {
+        for (Operation operation : operations) {
+            if (clazz.isAssignableFrom(operation.getClass())) {
                 found = true;
                 break;
             }
@@ -378,8 +389,8 @@ public final class OperationList implements Comparable<OperationList>,
 
     /**
      * @param opClass Class to get the first instance of.
-     * @return The first instance of <code>opClass</code> in the list, or
-     *         <code>null</code> if there is no operation of that class in the
+     * @return The first instance of {@literal opClass} in the list, or
+     *         {@literal null} if there is no operation of that class in the
      *         list.
      */
     public Operation getFirst(Class<? extends Operation> opClass) {
@@ -423,8 +434,8 @@ public final class OperationList implements Comparable<OperationList>,
     /**
      * @param fullSize Full size of the source image to which the instance is
      *                 being applied.
-     * @return Resulting dimensions when all operations are applied in sequence
-     *         to an image of the given full size.
+     * @return         Resulting dimensions when all operations are applied in
+     *                 sequence to an image of the given full size.
      */
     public Dimension getResultingSize(Dimension fullSize) {
         Dimension size = new Dimension(fullSize.width, fullSize.height);

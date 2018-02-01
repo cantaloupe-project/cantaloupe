@@ -40,6 +40,8 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     private static final Logger LOGGER = LoggerFactory.
             getLogger(PdfBoxProcessor.class);
 
+    private static final int FALLBACK_DPI = 150;
+
     private PDDocument doc;
     private InputStream docInputStream;
     private Dimension imageSize;
@@ -177,11 +179,15 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
 
             // PDF doesn't have native dimensions, so figure out the dimensions
             // at the current DPI setting.
+            //
             // Changing this setting will affect the returned info, which
             // could have implications for info caching. Also, we hope that
             // every page will have the same dimensions...
+            //
+            // N.B.: Accessing the application configuration from a processor
+            // is VERY BAD PRACTICE but we have to in this case.
             final Configuration config = Configuration.getInstance();
-            final int dpi = config.getInt(Key.PROCESSOR_DPI, 150);
+            final int dpi = config.getInt(Key.PROCESSOR_DPI, FALLBACK_DPI);
             final float scale = dpi / 72f;
 
             final PDPage page = doc.getPage(0);
