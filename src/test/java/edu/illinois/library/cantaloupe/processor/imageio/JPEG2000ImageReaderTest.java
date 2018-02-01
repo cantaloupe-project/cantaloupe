@@ -78,15 +78,13 @@ public class JPEG2000ImageReaderTest extends BaseTest {
         assertEquals(0, instance.preferredIIOImplementations().length);
     }
 
-    @Test
-    public void testRead() throws Exception {
-        BufferedImage result = instance.read();
-        assertEquals(100, result.getWidth());
-        assertEquals(88, result.getHeight());
+    @Test(expected = UnsupportedOperationException.class)
+    public void testRead() {
+        instance.read();
     }
 
-    @Test
-    public void testReadWithArguments() throws Exception {
+    @Test(expected = UnsupportedOperationException.class)
+    public void testReadWithArguments() {
         OperationList ops = new OperationList(new Identifier("cats"), Format.JPG);
         Crop crop = new Crop();
         crop.setX(10f);
@@ -100,34 +98,35 @@ public class JPEG2000ImageReaderTest extends BaseTest {
         ReductionFactor rf = new ReductionFactor();
         Set<ImageReader.Hint> hints = new HashSet<>();
 
-        BufferedImage image = instance.read(ops, orientation, rf, hints);
-
-        assertEquals(40, image.getWidth());
-        assertEquals(40, image.getHeight());
-        assertEquals(0, rf.factor);
-        assertTrue(hints.contains(ImageReader.Hint.ALREADY_CROPPED));
+        instance.read(ops, orientation, rf, hints);
     }
 
-    @Test
-    public void testReadSmallestUsableSubimageReturningBufferedImage() {
-        // TODO: write this
+    @Test(expected = UnsupportedOperationException.class)
+    public void testReadRendered() {
+        instance.read();
     }
 
-    @Test
-    public void testReadRendered() throws Exception {
-        RenderedImage result = instance.read();
-        assertEquals(100, result.getWidth());
-        assertEquals(88, result.getHeight());
-    }
-
-    @Test
+    @Test(expected = UnsupportedOperationException.class)
     public void testReadRenderedWithArguments() {
-        // TODO: write this
+        OperationList ops = new OperationList(new Identifier("cats"), Format.JPG);
+        Crop crop = new Crop();
+        crop.setX(10f);
+        crop.setY(10f);
+        crop.setWidth(40f);
+        crop.setHeight(40f);
+        ops.add(crop);
+        Scale scale = new Scale(35, 35, Scale.Mode.ASPECT_FIT_INSIDE);
+        ops.add(scale);
+        Orientation orientation = Orientation.ROTATE_0;
+        ReductionFactor rf = new ReductionFactor();
+        Set<ImageReader.Hint> hints = new HashSet<>();
+
+        instance.readRendered(ops, orientation, rf, hints);
     }
 
-    @Test
-    public void testReadSmallestUsableSubimageReturningRenderedImage() {
-        // TODO: write this
+    @Test(expected = UnsupportedOperationException.class)
+    public void testReadSequence() {
+        instance.readSequence();
     }
 
 }
