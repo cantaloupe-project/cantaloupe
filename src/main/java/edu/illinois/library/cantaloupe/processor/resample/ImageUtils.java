@@ -55,14 +55,14 @@ class ImageUtils {
      * @param img
      * @param y
      * @param w
-     * @param array Array into which the pixels will be copied.
+     * @param array Array into which the pixels will be read.
      * @param temp  must be either null or a array with length of width * height.
      */
-    public static void getPixelsBGR(BufferedImage img,
-                                    int y,
-                                    int w,
-                                    byte[] array,
-                                    int[] temp) {
+    public static void readPixelsBGR(BufferedImage img,
+                                     int y,
+                                     int w,
+                                     byte[] array,
+                                     int[] temp) {
         final int x = 0;
         final int h = 1;
 
@@ -155,7 +155,6 @@ class ImageUtils {
         }
     }
 
-
     private static void ints2bytes(int[] in, byte[] out,
                                    int index1, int index2, int index3) {
         for (int i = 0; i < in.length; i++) {
@@ -211,7 +210,7 @@ class ImageUtils {
         return out;
     }
 
-    public static BufferedImage convert(BufferedImage src, int bufImgType) {
+    static BufferedImage convert(BufferedImage src, int bufImgType) {
         BufferedImage img = new BufferedImage(src.getWidth(), src.getHeight(), bufImgType);
         Graphics2D g2d = img.createGraphics();
         g2d.drawImage(src, 0, 0, null);
