@@ -81,9 +81,12 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     static final String OVERLAY_TEMP_FILE_PREFIX = Application.NAME + "-" +
             ImageMagickProcessor.class.getSimpleName() + "-overlay";
 
-    private static AtomicBoolean initializationAttempted =
+    private static final AtomicBoolean initializationAttempted =
             new AtomicBoolean(false);
     private static InitializationException initializationException;
+
+    private static final AtomicBoolean checkedVersion =
+            new AtomicBoolean(false);
 
     // ImageMagick 7 uses a `magick` command. Earlier versions use `convert`
     // and `identify`. IM7 may provide aliases for these.
@@ -107,7 +110,9 @@ class ImageMagickProcessor extends AbstractMagickProcessor
      * @return ImageMagick version.
      */
     static synchronized IMVersion getIMVersion() {
-        if (imVersion == null) {
+        if (!checkedVersion.get()) {
+            checkedVersion.set(true);
+
             // Search for the IM 7+ `magick` command
             final ProcessBuilder pb = new ProcessBuilder();
             List<String> command = new ArrayList<>();
@@ -278,6 +283,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         initializationAttempted.set(false);
         initializationException = null;
         supportedFormats.clear();
+        checkedVersion.set(false);
         imVersion = null;
     }
 
@@ -286,6 +292,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
      */
     static synchronized void setIMVersion(IMVersion version) {
         imVersion = version;
+        checkedVersion.set(true);
     }
 
     ImageMagickProcessor() {
