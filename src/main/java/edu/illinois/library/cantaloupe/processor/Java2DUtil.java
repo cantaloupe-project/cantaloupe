@@ -104,15 +104,15 @@ public final class Java2DUtil {
             LoggerFactory.getLogger(Java2DUtil.class);
 
     /**
-     * See the inline documentation in scaleImage() for a rationale for
-     * choosing this.
+     * See the inline documentation in {@link #scale(BufferedImage, Scale,
+     * ReductionFactor)} for a rationale for choosing this.
      */
     private static final Scale.Filter DEFAULT_DOWNSCALE_FILTER =
             Scale.Filter.BOX;
 
     /**
-     * See the inline documentation in scaleImage() for a rationale for
-     * choosing this.
+     * See the inline documentation in {@link #scale(BufferedImage, Scale,
+     * ReductionFactor)} for a rationale for choosing this.
      */
     private static final Scale.Filter DEFAULT_UPSCALE_FILTER =
             Scale.Filter.BICUBIC;
@@ -197,9 +197,9 @@ public final class Java2DUtil {
      * @return        Cropped image, or the input image if the given operation
      *                is a no-op.
      */
-    static BufferedImage cropImage(final BufferedImage inImage,
-                                   final Crop crop) {
-        return cropImage(inImage, crop, new ReductionFactor());
+    static BufferedImage crop(final BufferedImage inImage,
+                              final Crop crop) {
+        return crop(inImage, crop, new ReductionFactor());
     }
 
     /**
@@ -218,9 +218,9 @@ public final class Java2DUtil {
      * @return        Cropped image, or the input image if the given operation
      *                is a no-op.
      */
-    static BufferedImage cropImage(final BufferedImage inImage,
-                                   final Crop crop,
-                                   final ReductionFactor rf) {
+    static BufferedImage crop(final BufferedImage inImage,
+                              final Crop crop,
+                              final ReductionFactor rf) {
         final Dimension croppedSize = crop.getResultingSize(
                 new Dimension(inImage.getWidth(), inImage.getHeight()));
         BufferedImage croppedImage;
@@ -235,7 +235,7 @@ public final class Java2DUtil {
             croppedImage = inImage.getSubimage(cropRegion.x, cropRegion.y,
                     cropRegion.width, cropRegion.height);
 
-            LOGGER.debug("cropImage(): cropped {}x{} image to {} in {} msec",
+            LOGGER.debug("crop(): cropped {}x{} image to {} in {} msec",
                     inImage.getWidth(), inImage.getHeight(), crop,
                     watch.timeElapsed());
         }
@@ -668,8 +668,8 @@ public final class Java2DUtil {
      * @return        Rotated image, or the input image if the given rotation
      *                is a no-op.
      */
-    static BufferedImage rotateImage(final BufferedImage inImage,
-                                     final Rotate rotate) {
+    static BufferedImage rotate(final BufferedImage inImage,
+                                final Rotate rotate) {
         BufferedImage rotatedImage = inImage;
         if (rotate.hasEffect()) {
             final Stopwatch watch = new Stopwatch();
@@ -709,7 +709,7 @@ public final class Java2DUtil {
                     RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
             g2d.drawImage(inImage, tx, null);
-            LOGGER.debug("rotateImage() executed in {} msec",
+            LOGGER.debug("rotate() executed in {} msec",
                     watch.timeElapsed());
         }
         return rotatedImage;
@@ -725,9 +725,9 @@ public final class Java2DUtil {
      * @return        Downscaled image, or the input image if the given scale
      *                is a no-op.
      */
-    static BufferedImage scaleImage(final BufferedImage inImage,
-                                    final Scale scale) {
-        return scaleImage(inImage, scale, new ReductionFactor(0));
+    static BufferedImage scale(final BufferedImage inImage,
+                               final Scale scale) {
+        return scale(inImage, scale, new ReductionFactor(0));
     }
 
     /**
@@ -747,9 +747,9 @@ public final class Java2DUtil {
      * @return        Downscaled image, or the input image if the given scale
      *                is a no-op.
      */
-    static BufferedImage scaleImage(final BufferedImage inImage,
-                                    final Scale scale,
-                                    final ReductionFactor rf) {
+    static BufferedImage scale(final BufferedImage inImage,
+                               final Scale scale,
+                               final ReductionFactor rf) {
         /*
         This method uses the image scaling code in
         com.mortennobel.imagescaling (see
@@ -843,7 +843,7 @@ public final class Java2DUtil {
 
             scaledImage = resampleOp.filter(inImage, null);
 
-            LOGGER.debug("scaleImage(): scaled {}x{} image to {}x{} using " +
+            LOGGER.debug("scale(): scaled {}x{} image to {}x{} using " +
                             "a {} filter in {} msec",
                     sourceSize.width, sourceSize.height,
                     targetSize.width, targetSize.height,
@@ -857,8 +857,8 @@ public final class Java2DUtil {
      * @param sharpen Sharpen operation.
      * @return        Sharpened image.
      */
-    static BufferedImage sharpenImage(final BufferedImage inImage,
-                                      final Sharpen sharpen) {
+    static BufferedImage sharpen(final BufferedImage inImage,
+                                 final Sharpen sharpen) {
         BufferedImage sharpenedImage = inImage;
         if (sharpen.hasEffect()) {
             if (inImage.getWidth() > 2 && inImage.getHeight() > 2) {
@@ -869,10 +869,10 @@ public final class Java2DUtil {
                 resampleOp.setUnsharpenMask(sharpen.getAmount());
                 sharpenedImage = resampleOp.filter(inImage, null);
 
-                LOGGER.debug("sharpenImage(): sharpened by {} in {} msec",
+                LOGGER.debug("sharpen(): sharpened by {} in {} msec",
                         sharpen.getAmount(), watch.timeElapsed());
             } else {
-                LOGGER.debug("sharpenImage(): image must be at least 3 " +
+                LOGGER.debug("sharpen(): image must be at least 3 " +
                         "pixels on a side; skipping");
             }
         }
@@ -1023,8 +1023,8 @@ public final class Java2DUtil {
      * @param transpose Operation to apply.
      * @return          Transposed image.
      */
-    static BufferedImage transposeImage(final BufferedImage inImage,
-                                        final Transpose transpose) {
+    static BufferedImage transpose(final BufferedImage inImage,
+                                   final Transpose transpose) {
         final Stopwatch watch = new Stopwatch();
         AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
         switch (transpose) {
@@ -1039,7 +1039,7 @@ public final class Java2DUtil {
                 AffineTransformOp.TYPE_BILINEAR);
         BufferedImage outImage = op.filter(inImage, null);
 
-        LOGGER.debug("transposeImage(): transposed image in {} msec",
+        LOGGER.debug("transpose(): transposed image in {} msec",
                 watch.timeElapsed());
         return outImage;
     }

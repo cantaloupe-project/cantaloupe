@@ -244,7 +244,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
                 crop = (Crop) op;
                 if (crop.hasEffect(fullSize, opList) &&
                         !readerHints.contains(ImageReader.Hint.ALREADY_CROPPED)) {
-                    image = Java2DUtil.cropImage(image, crop, reductionFactor);
+                    image = Java2DUtil.crop(image, crop, reductionFactor);
                 }
             }
         }
@@ -266,16 +266,16 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
             if (op.hasEffect(fullSize, opList)) {
                 if (op instanceof Scale &&
                         !readerHints.contains(ImageReader.Hint.IGNORE_SCALE)) {
-                    image = Java2DUtil.scaleImage(image, (Scale) op,
+                    image = Java2DUtil.scale(image, (Scale) op,
                             reductionFactor);
                 } else if (op instanceof Transpose) {
-                    image = Java2DUtil.transposeImage(image, (Transpose) op);
+                    image = Java2DUtil.transpose(image, (Transpose) op);
                 } else if (op instanceof Rotate) {
-                    image = Java2DUtil.rotateImage(image, (Rotate) op);
+                    image = Java2DUtil.rotate(image, (Rotate) op);
                 } else if (op instanceof ColorTransform) {
                     image = Java2DUtil.transformColor(image, (ColorTransform) op);
                 } else if (op instanceof Sharpen) {
-                    image = Java2DUtil.sharpenImage(image, (Sharpen) op);
+                    image = Java2DUtil.sharpen(image, (Sharpen) op);
                 } else if (op instanceof Overlay) {
                     image = Java2DUtil.applyOverlay(image, (Overlay) op);
                 }

@@ -199,10 +199,10 @@ public class Java2DUtilTest extends BaseTest {
         assertTrue(blue > 240);
     }
 
-    /* cropImage() */
+    /* crop() */
 
     @Test
-    public void testCropImage() {
+    public void testCrop() {
         final float fudge = 0.0000001f;
         final int width = 200, height = 100;
         BufferedImage inImage = newColorImage(width, height, 8, false);
@@ -211,7 +211,7 @@ public class Java2DUtilTest extends BaseTest {
         // full
         Crop crop = new Crop();
         crop.setFull(true);
-        outImage = Java2DUtil.cropImage(inImage, crop);
+        outImage = Java2DUtil.crop(inImage, crop);
         assertSame(inImage, outImage);
 
         // square crop
@@ -219,7 +219,7 @@ public class Java2DUtilTest extends BaseTest {
         crop.setShape(Crop.Shape.SQUARE);
         crop.setWidth(50f);
         crop.setHeight(50f);
-        outImage = Java2DUtil.cropImage(inImage, crop);
+        outImage = Java2DUtil.crop(inImage, crop);
         assertEquals(height, outImage.getWidth());
         assertEquals(height, outImage.getHeight());
 
@@ -227,7 +227,7 @@ public class Java2DUtilTest extends BaseTest {
         crop = new Crop();
         crop.setWidth(50f);
         crop.setHeight(50f);
-        outImage = Java2DUtil.cropImage(inImage, crop);
+        outImage = Java2DUtil.crop(inImage, crop);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
@@ -238,13 +238,13 @@ public class Java2DUtilTest extends BaseTest {
         crop.setY(0.5f);
         crop.setWidth(0.5f);
         crop.setHeight(0.5f);
-        outImage = Java2DUtil.cropImage(inImage, crop);
+        outImage = Java2DUtil.crop(inImage, crop);
         assertEquals(width * 0.5f, outImage.getWidth(), fudge);
         assertEquals(height * 0.5f, outImage.getHeight(), fudge);
     }
 
     @Test
-    public void testCropImageWithReductionFactor() {
+    public void testCropWithReductionFactor() {
         final float fudge = 0.0000001f;
         final int width = 100, height = 100;
         BufferedImage inImage = newColorImage(width, height, 8, false);
@@ -254,7 +254,7 @@ public class Java2DUtilTest extends BaseTest {
         Crop crop = new Crop();
         crop.setFull(true);
         ReductionFactor rf = new ReductionFactor(1);
-        outImage = Java2DUtil.cropImage(inImage, crop, rf);
+        outImage = Java2DUtil.crop(inImage, crop, rf);
         assertSame(inImage, outImage);
 
         // pixel crop
@@ -262,7 +262,7 @@ public class Java2DUtilTest extends BaseTest {
         crop.setWidth(width / 2f);
         crop.setHeight(height / 2f);
         rf = new ReductionFactor(1);
-        outImage = Java2DUtil.cropImage(inImage, crop, rf);
+        outImage = Java2DUtil.crop(inImage, crop, rf);
         assertEquals(width / 4f, outImage.getWidth(), fudge);
         assertEquals(height / 4f, outImage.getHeight(), fudge);
 
@@ -274,7 +274,7 @@ public class Java2DUtilTest extends BaseTest {
         crop.setWidth(0.5f);
         crop.setHeight(0.5f);
         rf = new ReductionFactor(1);
-        outImage = Java2DUtil.cropImage(inImage, crop, rf);
+        outImage = Java2DUtil.crop(inImage, crop, rf);
         assertEquals(width / 4f, outImage.getWidth(), fudge);
         assertEquals(height / 4f, outImage.getHeight(), fudge);
     }
@@ -413,16 +413,16 @@ public class Java2DUtilTest extends BaseTest {
         assertArrayEquals(expected, outImage.getRaster().getPixel(0, 0, actual));
     }
 
-    /* rotateImage() */
+    /* rotate() */
 
     @Test
-    public void testRotateImageDimensions() {
+    public void testRotateDimensions() {
         BufferedImage inImage = newColorImage(8, false);
         final int sourceWidth = inImage.getWidth();
         final int sourceHeight = inImage.getHeight();
 
         Rotate rotate = new Rotate(15);
-        BufferedImage outImage = Java2DUtil.rotateImage(inImage, rotate);
+        BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
 
         final double radians = Math.toRadians(rotate.getDegrees());
         final int expectedWidth = (int) Math.round(Math.abs(sourceWidth *
@@ -437,10 +437,10 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRotateImageWith8BitGray() {
+    public void testRotateWith8BitGray() {
         BufferedImage inImage = newGrayImage(8, false);
         Rotate rotate = new Rotate(15);
-        BufferedImage outImage = Java2DUtil.rotateImage(inImage, rotate);
+        BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
 
         assertFalse(outImage.getColorModel().hasAlpha());
         assertEquals(8, outImage.getColorModel().getComponentSize(0));
@@ -448,10 +448,10 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRotateImageWith8BitGrayWithAlpha() {
+    public void testRotateWith8BitGrayWithAlpha() {
         BufferedImage inImage = newGrayImage(8, true);
         Rotate rotate = new Rotate(15);
-        BufferedImage outImage = Java2DUtil.rotateImage(inImage, rotate);
+        BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
 
         assertTrue(outImage.getColorModel().hasAlpha());
         assertEquals(8, outImage.getColorModel().getComponentSize(0));
@@ -459,10 +459,10 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRotateImageWith8BitRGB() {
+    public void testRotateWith8BitRGB() {
         BufferedImage inImage = newColorImage(8, false);
         Rotate rotate = new Rotate(15);
-        BufferedImage outImage = Java2DUtil.rotateImage(inImage, rotate);
+        BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
 
         assertFalse(outImage.getColorModel().hasAlpha());
         assertEquals(8, outImage.getColorModel().getComponentSize(0));
@@ -470,10 +470,10 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRotateImageWith8BitRGBA() {
+    public void testRotateWith8BitRGBA() {
         BufferedImage inImage = newColorImage(8, true);
         Rotate rotate = new Rotate(15);
-        BufferedImage outImage = Java2DUtil.rotateImage(inImage, rotate);
+        BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
 
         assertTrue(outImage.getColorModel().hasAlpha());
         assertEquals(8, outImage.getColorModel().getComponentSize(0));
@@ -481,10 +481,10 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRotateImageWith16BitGray() {
+    public void testRotateWith16BitGray() {
         BufferedImage inImage = newGrayImage(16, false);
         Rotate rotate = new Rotate(15);
-        BufferedImage outImage = Java2DUtil.rotateImage(inImage, rotate);
+        BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
 
         assertFalse(outImage.getColorModel().hasAlpha());
         assertEquals(16, outImage.getColorModel().getComponentSize(0));
@@ -492,10 +492,10 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRotateImageWith16BitGrayWithAlpha() {
+    public void testRotateWith16BitGrayWithAlpha() {
         BufferedImage inImage = newGrayImage(16, true);
         Rotate rotate = new Rotate(15);
-        BufferedImage outImage = Java2DUtil.rotateImage(inImage, rotate);
+        BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
 
         assertTrue(outImage.getColorModel().hasAlpha());
         assertEquals(16, outImage.getColorModel().getComponentSize(0));
@@ -503,10 +503,10 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRotateImageWith16BitRGB() {
+    public void testRotateWith16BitRGB() {
         BufferedImage inImage = newColorImage(16, false);
         Rotate rotate = new Rotate(15);
-        BufferedImage outImage = Java2DUtil.rotateImage(inImage, rotate);
+        BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
 
         assertFalse(outImage.getColorModel().hasAlpha());
         assertEquals(16, outImage.getColorModel().getComponentSize(0));
@@ -514,39 +514,39 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRotateImageWith16BitRGBA() {
+    public void testRotateWith16BitRGBA() {
         BufferedImage inImage = newColorImage(16, true);
         Rotate rotate = new Rotate(15);
-        BufferedImage outImage = Java2DUtil.rotateImage(inImage, rotate);
+        BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
 
         assertTrue(outImage.getColorModel().hasAlpha());
         assertEquals(16, outImage.getColorModel().getComponentSize(0));
         assertEquals(BufferedImage.TYPE_CUSTOM, outImage.getType());
     }
 
-    /* scaleImage(BufferedImage, Scale) */
+    /* scale(BufferedImage, Scale) */
 
     @Test
-    public void testScaleImage() {
+    public void testScale() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
         BufferedImage outImage;
 
         // Scale.Mode.FULL
         Scale scale = new Scale();
-        outImage = Java2DUtil.scaleImage(inImage, scale);
+        outImage = Java2DUtil.scale(inImage, scale);
         assertSame(inImage, outImage);
 
         // Scale.Mode.ASPECT_FIT_WIDTH
         scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         scale.setWidth(50);
-        outImage = Java2DUtil.scaleImage(inImage, scale);
+        outImage = Java2DUtil.scale(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_HEIGHT
         scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
         scale.setHeight(50);
-        outImage = Java2DUtil.scaleImage(inImage, scale);
+        outImage = Java2DUtil.scale(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
@@ -554,7 +554,7 @@ public class Java2DUtilTest extends BaseTest {
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setWidth(50);
         scale.setHeight(50);
-        outImage = Java2DUtil.scaleImage(inImage, scale);
+        outImage = Java2DUtil.scale(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
@@ -562,60 +562,60 @@ public class Java2DUtilTest extends BaseTest {
         scale.setMode(Scale.Mode.NON_ASPECT_FILL);
         scale.setWidth(80);
         scale.setHeight(50);
-        outImage = Java2DUtil.scaleImage(inImage, scale);
+        outImage = Java2DUtil.scale(inImage, scale);
         assertEquals(80, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // scale-by percent
         scale = new Scale(0.25f);
-        outImage = Java2DUtil.scaleImage(inImage, scale);
+        outImage = Java2DUtil.scale(inImage, scale);
         assertEquals(25, outImage.getWidth());
         assertEquals(25, outImage.getHeight());
     }
 
-    /* scaleImage(BufferedImage, Scale, ReductionFactor) */
+    /* scale(BufferedImage, Scale, ReductionFactor) */
 
     @Test
-    public void testScaleImageWithReductionFactor() {
+    public void testScaleWithReductionFactor() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
         BufferedImage outImage;
 
         // Scale.Mode.ASPECT_FIT_WIDTH
         Scale scale = new Scale(50, null, Scale.Mode.ASPECT_FIT_WIDTH);
         ReductionFactor rf = new ReductionFactor(1);
-        outImage = Java2DUtil.scaleImage(inImage, scale, rf);
+        outImage = Java2DUtil.scale(inImage, scale, rf);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_HEIGHT
         scale = new Scale(null, 50, Scale.Mode.ASPECT_FIT_HEIGHT);
         rf = new ReductionFactor(1);
-        outImage = Java2DUtil.scaleImage(inImage, scale, rf);
+        outImage = Java2DUtil.scale(inImage, scale, rf);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // Scale.Mode.ASPECT_FIT_INSIDE
         scale = new Scale(50, 50, Scale.Mode.ASPECT_FIT_INSIDE);
         rf = new ReductionFactor(1);
-        outImage = Java2DUtil.scaleImage(inImage, scale, rf);
+        outImage = Java2DUtil.scale(inImage, scale, rf);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // scale-by-percent
         scale = new Scale(0.25f);
         rf = new ReductionFactor(2);
-        outImage = Java2DUtil.scaleImage(inImage, scale, rf);
+        outImage = Java2DUtil.scale(inImage, scale, rf);
         assertEquals(100, outImage.getWidth());
         assertEquals(100, outImage.getHeight());
     }
 
-    /* sharpenImage() */
+    /* sharpen() */
 
     @Test
-    public void testSharpenImage() {
+    public void testSharpen() {
         BufferedImage inImage = newColorImage(20, 20, 8, false);
         Sharpen sharpen = new Sharpen(0.1f);
-        BufferedImage outImage = Java2DUtil.sharpenImage(inImage, sharpen);
+        BufferedImage outImage = Java2DUtil.sharpen(inImage, sharpen);
 
         assertEquals(20, outImage.getWidth());
         assertEquals(20, outImage.getHeight());
@@ -769,13 +769,13 @@ public class Java2DUtilTest extends BaseTest {
         assertSame(inImage, outImage);
     }
 
-    /* transposeImage() */
+    /* transpose() */
 
     @Test
     public void testTransposeImage() {
         BufferedImage inImage = newColorImage(200, 100, 8, false);
         Transpose transpose = Transpose.HORIZONTAL;
-        BufferedImage outImage = Java2DUtil.transposeImage(inImage, transpose);
+        BufferedImage outImage = Java2DUtil.transpose(inImage, transpose);
 
         assertEquals(200, outImage.getWidth());
         assertEquals(100, outImage.getHeight());
