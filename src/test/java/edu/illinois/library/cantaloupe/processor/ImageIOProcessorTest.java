@@ -18,7 +18,7 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
-abstract class ImageIOProcessorTest extends ProcessorTest {
+abstract class ImageIOProcessorTest extends AbstractProcessorTest {
 
     @Test
     public void testGetAvailableOutputFormats() throws Exception {

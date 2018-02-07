@@ -22,7 +22,7 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-public class PdfBoxProcessorTest extends ProcessorTest {
+public class PdfBoxProcessorTest extends AbstractProcessorTest {
 
     private PdfBoxProcessor instance;
 

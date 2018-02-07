@@ -33,7 +33,7 @@ import java.util.Set;
 import static edu.illinois.library.cantaloupe.test.Assert.ImageAssert.*;
 import static org.junit.Assert.*;
 
-abstract class MagickProcessorTest extends ProcessorTest {
+abstract class MagickProcessorTest extends AbstractProcessorTest {
 
     abstract protected HashMap<Format, Set<Format>> getAvailableOutputFormats()
             throws IOException;

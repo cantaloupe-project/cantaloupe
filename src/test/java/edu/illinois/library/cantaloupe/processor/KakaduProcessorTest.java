@@ -16,7 +16,7 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-public class KakaduProcessorTest extends ProcessorTest {
+public class KakaduProcessorTest extends AbstractProcessorTest {
 
     private KakaduProcessor instance;
 

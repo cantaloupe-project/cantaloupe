@@ -62,8 +62,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 class GraphicsMagickProcessor extends AbstractMagickProcessor
         implements StreamProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(GraphicsMagickProcessor.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(GraphicsMagickProcessor.class);
 
     private static final String BINARY_NAME = "gm";
 
@@ -71,7 +71,9 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             new AtomicBoolean(false);
     private static InitializationException initializationException;
 
-    /** Initialized by readFormats(). */
+    /**
+     * Initialized by {@link #readFormats()}.
+     */
     private static final Map<Format, Set<Format>> supportedFormats =
             new HashMap<>();
 
@@ -97,7 +99,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
 
     /**
      * @return Map of available output formats for all known source formats,
-     *         based on information reported by <code>gm version</code>. The
+     *         based on information reported by {@literal gm version}. The
      *         result is cached.
      */
     private static synchronized Map<Format, Set<Format>> readFormats() {
@@ -290,20 +292,26 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
 
                     args.add("-resize");
                     if (scale.getPercent() != null) {
-                        final String arg = (scale.getPercent() * 100) + "%";
-                        args.add(arg);
-                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                        args.add(scale.getWidth().toString());
-                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                        args.add(scale.getHeight().toString());
-                    } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
-                        final String arg = String.format("%dx%d!",
-                                scale.getWidth(), scale.getHeight());
-                        args.add(arg);
-                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                        final String arg = String.format("%dx%d",
-                                scale.getWidth(), scale.getHeight());
-                        args.add(arg);
+                        args.add((scale.getPercent() * 100) + "%");
+                    } else {
+                        switch (scale.getMode()) {
+                            case ASPECT_FIT_WIDTH:
+                                args.add(scale.getWidth().toString() + "x");
+                                break;
+                            case ASPECT_FIT_HEIGHT:
+                                args.add("x" + scale.getHeight().toString());
+                                break;
+                            case NON_ASPECT_FILL:
+                                String arg = String.format("%dx%d!",
+                                        scale.getWidth(), scale.getHeight());
+                                args.add(arg);
+                                break;
+                            case ASPECT_FIT_INSIDE:
+                                arg = String.format("%dx%d",
+                                        scale.getWidth(), scale.getHeight());
+                                args.add(arg);
+                                break;
+                        }
                     }
                 }
             } else if (op instanceof Transpose) {
@@ -371,9 +379,9 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
 
     /**
      * @param filter
-     * @return String suitable for passing to `gm convert`'s
-     *         <code>-filter</code> argument, or <code>null</code> if an
-     *         equivalent is unknown.
+     * @return String suitable for passing to {@literal gm convert}'s
+     *         {@literal -filter} argument, or {@literal null} if an equivalent
+     *         is unknown.
      */
     private String getGMFilter(Scale.Filter filter) {
         // http://www.graphicsmagick.org/GraphicsMagick.html#details-filter
@@ -399,9 +407,9 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     }
 
     /**
-     * @param pageStr Client-provided page number.
+     * @param pageStr      Client-provided page number.
      * @param sourceFormat Format of the source image.
-     * @return ImageMagick image index argument.
+     * @return             GraphicsMagick image index argument.
      */
     private int getGMImageIndex(String pageStr, Format sourceFormat) {
         int index = 0;
@@ -418,9 +426,9 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     }
 
     /**
-     * @param compression May be <code>null</code>.
-     * @return String suitable for passing to gm convert's
-     *         <code>-compress</code> argument.
+     * @param compression May be {@literal null}.
+     * @return            String suitable for passing to {@literal
+     *                    gm convert}'s {@literal -compress} argument.
      */
     private String getGMTIFFCompression(Compression compression) {
         if (compression != null) {
@@ -522,7 +530,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
         StreamProcessor.super.validate(opList, fullSize);
 
         // Check the format of the "page" option, if present.
-        // TODO: move this to OperationList.validate() and remove Processor.validate()
+        // TODO: move this to OperationList.validate()
         final String pageStr = (String) opList.getOptions().get("page");
         if (pageStr != null) {
             try {
