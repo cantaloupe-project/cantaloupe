@@ -11,6 +11,7 @@ import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -39,7 +40,7 @@ public interface Processor {
      * non-null value, which signifies that the instance is in an unusable
      * state.</p>
      *
-     * <p>This default implementation returns <code>null</code>.</p>
+     * <p>This default implementation returns {@literal null}.</p>
      *
      * @see #getWarnings()
      * @since 3.4
@@ -80,7 +81,7 @@ public interface Processor {
      * <p>An instance with warnings is still usable.</p>
      *
      * <p>The return value of {@link #getInitializationException()}, if not
-     * <code>null</code>, should not be duplicated here.</p>
+     * {@literal null}, should not be duplicated here.</p>
      *
      * <p>This default implementation returns an empty list.</p>
      *
@@ -101,40 +102,40 @@ public interface Processor {
      *     <li>The source to read from will differ depending on whether
      *     implementations implement {@link FileProcessor} or
      *     {@link StreamProcessor}:
-     *     <ul>
-     *         <li>If {@link FileProcessor#setSourceFile(File)} has been
-     *         called, but not
-     *         {@link StreamProcessor#setStreamSource(StreamSource)},
-     *         implementations should read from a file.</li>
-     *         <li>If vice versa, or if both have been called, implementations
-     *         should read from a stream.</li>
-     *     </ul>
+     *         <ul>
+     *             <li>If {@link FileProcessor#setSourceFile(Path)} has been
+     *             called, but not {@link
+     *             StreamProcessor#setStreamSource(StreamSource)},
+     *             implementations should read from a file.</li>
+     *             <li>If vice versa, or if both have been called,
+     *             implementations should read from a stream.</li>
+     *         </ul>
      *     </li>
-     *     <li>Operations should be applied in the order they are iterated.
-     *     For the sake of efficiency, implementations should check whether
-     *     each one is a no-op using
+     *     <li>{@link edu.illinois.library.cantaloupe.operation.Operation}s
+     *     should be applied in the order they are iterated. For efficiency's
+     *     sake, implementations should check whether each one is a no-op using
      *     {@link edu.illinois.library.cantaloupe.operation.Operation#hasEffect(Dimension, OperationList)}
      *     before performing it.</li>
-     *     <li>The OperationList will be in a frozen (immutable) state.
+     *     <li>The {@link OperationList} will be in a frozen (immutable) state.
      *     Implementations are discouraged from performing their own operations
-     *     separate from the ones in the list, as this could interfere with the
-     *     caching architecture.</li>
+     *     separate from the ones in the list, as this could cause problems
+     *     with caching.</li>
      *     <li>In addition to operations, the operation list may contain a
-     *     number of options accessible via its
-     *     {@link OperationList#getOptions()} method, which implementations
-     *     should respect, where applicable. These typically come from the
-     *     configuration, so implementations should not try to read the
-     *     configuration themselves, except to get their own processor-specific
-     *     info.</li>
+     *     number of {@link OperationList#getOptions() options}, which
+     *     implementations should respect, where applicable. These typically
+     *     come from the configuration, so implementations should not try to
+     *     read the configuration themselves, except to get their own
+     *     processor-specific info, as this could cause problems with
+     *     caching.</li>
      * </ul>
      *
-     * @param opList Operation list to process. As it will be equal to the one
-     *               passed to {@link #validate}, there is no need to validate
-     *               it again.
-     * @param sourceInfo Information about the source image. This will be equal
-     *                   to the return value of {@link #readImageInfo}, but it
-     *                   might not be the same instance, as it may have come
-     *                   from a cache.
+     * @param opList       Operation list to process. As it will be equal to
+     *                     the one passed to {@link #validate}, there is no
+     *                     need to validate it again.
+     * @param sourceInfo   Information about the source image. This will be
+     *                     equal to the return value of {@link #readImageInfo},
+     *                     but it might not be the same instance, as it may
+     *                     have come from a cache.
      * @param outputStream Stream to write the image to, which should not be
      *                     closed.
      * @throws UnsupportedOutputFormatException Implementations can extend
@@ -143,21 +144,23 @@ public interface Processor {
      *                                          free.
      * @throws ProcessorException If anything goes wrong.
      */
-    void process(OperationList opList, Info sourceInfo,
+    void process(OperationList opList,
+                 Info sourceInfo,
                  OutputStream outputStream) throws ProcessorException;
 
     /**
      * <p>Reads and returns information about the source image.</p>
      *
      * @return Information about the source image.
-     * @throws ProcessorException If anything goes wrong.
+     * @throws IOException if anything goes wrong.
      */
     Info readImageInfo() throws IOException;
 
     /**
      * @param format Format of the source image. Will never be
      *               {@link Format#UNKNOWN}.
-     * @throws UnsupportedSourceFormatException
+     * @throws UnsupportedSourceFormatException if the given format is not
+     *                                          supported.
      */
     void setSourceFormat(Format format) throws UnsupportedSourceFormatException;
 
@@ -171,18 +174,19 @@ public interface Processor {
      * <p>Notes:</p>
      *
      * <ul>
-     *     <li>This method is mainly for validating processor-specific options
-     *     in the list's options map. Implementations that don't use these will
-     *     not need to override this.</li>
-     *     <li>Implementations should call <code>super</code>.</li>
+     *     <li>This method is only for validating processor-specific options
+     *     in the list's {@link OperationList#getOptions() options map}.
+     *     Implementations that don't use these will not need to override
+     *     this.</li>
+     *     <li>Implementations should call {@literal super}.</li>
      *     <li>It is guaranteed that this method, if called, will always be
      *     called before {@link #process}.</li>
      * </ul>
      *
-     * @param opList OperationList to process. Will be equal to the one passed
+     * @param opList Operation list to process. Will be equal to the one passed
      *               to {@link #process}.
-     * @throws ValidationException If validation fails.
-     * @throws ProcessorException  If there is some issue performing the
+     * @throws ValidationException if validation fails.
+     * @throws ProcessorException  if there is some issue performing the
      *                             validation.
      */
     default void validate(OperationList opList, Dimension fullSize)
