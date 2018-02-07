@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.EnumSet;
@@ -17,7 +16,7 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-public class OpenJpegProcessorTest extends ProcessorTest {
+public class OpenJpegProcessorTest extends AbstractProcessorTest {
 
     private OpenJpegProcessor instance;
 

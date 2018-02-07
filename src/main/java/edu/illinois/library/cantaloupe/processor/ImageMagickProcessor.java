@@ -75,8 +75,8 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         VERSION_PRE_7, VERSION_7
     }
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(ImageMagickProcessor.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(ImageMagickProcessor.class);
 
     static final String OVERLAY_TEMP_FILE_PREFIX = Application.NAME + "-" +
             ImageMagickProcessor.class.getSimpleName() + "-overlay";
@@ -103,7 +103,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     /**
      * <p>Checks the ImageMagick version by attempting to invoke the `magick`
      * command. If the invocation fails, we assume that we are using version
-     * <= 6.</p>
+     * &le; 6.</p>
      *
      * <p>The result is cached.</p>
      *
@@ -178,8 +178,8 @@ class ImageMagickProcessor extends AbstractMagickProcessor
 
     /**
      * @return Map of available output formats for all known source formats,
-     *         based on information reported by
-     *         <code>identify -list format</code>.
+     *         based on information reported by {@literal
+     *         identify -list format}.
      */
     private static synchronized Map<Format, Set<Format>> readFormats() {
         if (supportedFormats.isEmpty()) {
@@ -408,20 +408,26 @@ class ImageMagickProcessor extends AbstractMagickProcessor
 
                     args.add("-resize");
                     if (scale.getPercent() != null) {
-                        final String arg = (scale.getPercent() * 100) + "%";
-                        args.add(arg);
-                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_WIDTH) {
-                        args.add(scale.getWidth().toString());
-                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_HEIGHT) {
-                        args.add(scale.getHeight().toString());
-                    } else if (scale.getMode() == Scale.Mode.NON_ASPECT_FILL) {
-                        final String arg = String.format("%dx%d!",
-                                scale.getWidth(), scale.getHeight());
-                        args.add(arg);
-                    } else if (scale.getMode() == Scale.Mode.ASPECT_FIT_INSIDE) {
-                        final String arg = String.format("%dx%d",
-                                scale.getWidth(), scale.getHeight());
-                        args.add(arg);
+                        args.add((scale.getPercent() * 100) + "%");
+                    } else {
+                        switch (scale.getMode()) {
+                            case ASPECT_FIT_WIDTH:
+                                args.add(scale.getWidth().toString() + "x");
+                                break;
+                            case ASPECT_FIT_HEIGHT:
+                                args.add("x" + scale.getHeight().toString());
+                                break;
+                            case NON_ASPECT_FILL:
+                                String arg = String.format("%dx%d!",
+                                        scale.getWidth(), scale.getHeight());
+                                args.add(arg);
+                                break;
+                            case ASPECT_FIT_INSIDE:
+                                arg = String.format("%dx%d",
+                                        scale.getWidth(), scale.getHeight());
+                                args.add(arg);
+                                break;
+                        }
                     }
                 }
             } else if (op instanceof Transpose) {
@@ -513,9 +519,8 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     }
 
     /**
-     * @param filter
-     * @return String suitable for passing to convert's <code>-filter</code>
-     *         argument, or <code>null</code> if an equivalent is unknown.
+     * @return String suitable for passing to convert's {@literal -filter}
+     *         argument, or {@literal null} if an equivalent is unknown.
      */
     private String getIMFilter(Scale.Filter filter) {
         // http://www.imagemagick.org/Usage/filter/
@@ -541,9 +546,9 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     }
 
     /**
-     * @param pageStr Client-provided page number.
+     * @param pageStr      Client-provided page number.
      * @param sourceFormat Format of the source image.
-     * @return ImageMagick image index argument.
+     * @return             ImageMagick image index argument.
      */
     private int getIMImageIndex(String pageStr, Format sourceFormat) {
         int index = 0;
@@ -623,9 +628,9 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     }
 
     /**
-     * @param compression May be <code>null</code>.
-     * @return String suitable for passing to convert's <code>-compress</code>
-     *         argument.
+     * @param compression May be {@literal null}.
+     * @return            String suitable for passing to {@literal convert}'s
+     *                    {@literal -compress} argument.
      */
     private String getIMTIFFCompression(Compression compression) {
         if (compression != null) {
@@ -773,7 +778,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         StreamProcessor.super.validate(opList, fullSize);
 
         // Check the format of the "page" option, if present.
-        // TODO: move this to OperationList.validate() and remove Processor.validate()
+        // TODO: move this to OperationList.validate()
         final String pageStr = (String) opList.getOptions().get("page");
         if (pageStr != null) {
             try {

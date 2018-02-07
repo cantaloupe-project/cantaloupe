@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
 /**
  * For this to work, the ffmpeg and ffprobe binaries must be on the PATH.
  */
-public class FfmpegProcessorTest extends ProcessorTest {
+public class FfmpegProcessorTest extends AbstractProcessorTest {
 
     private FfmpegProcessor instance;
 
