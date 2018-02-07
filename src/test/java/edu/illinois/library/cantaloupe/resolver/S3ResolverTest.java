@@ -199,6 +199,8 @@ public class S3ResolverTest extends AbstractResolverTest {
         }
     }
 
+    /* checkAccess() */
+
     @Test
     public void testCheckAccessUsingBasicLookupStrategyWithPresentUnreadableImage() {
         // TODO: write this
@@ -244,6 +246,37 @@ public class S3ResolverTest extends AbstractResolverTest {
         instance.checkAccess();
     }
 
+    /* getObjectInfo() */
+
+    @Test
+    public void testGetObjectInfo() throws Exception {
+        assertNotNull(instance.getObjectInfo());
+    }
+
+    @Test
+    public void testGetObjectInfoUsingBasicLookupStrategyWithPrefixAndSuffix()
+            throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.S3RESOLVER_PATH_PREFIX, "/prefix/");
+        config.setProperty(Key.S3RESOLVER_PATH_SUFFIX, "/suffix");
+
+        instance.setIdentifier(new Identifier("id"));
+        assertEquals("/prefix/id/suffix", instance.getObjectInfo().getKey());
+    }
+
+    @Test
+    public void testGetObjectInfoUsingBasicLookupStrategyWithoutPrefixOrSuffix()
+            throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.S3RESOLVER_PATH_PREFIX, "");
+        config.setProperty(Key.S3RESOLVER_PATH_SUFFIX, "");
+
+        instance.setIdentifier(new Identifier("id"));
+        assertEquals("id", instance.getObjectInfo().getKey());
+    }
+
+    /* getSourceFormat() */
+
     @Test
     public void testGetSourceFormatUsingBasicLookupStrategy()
             throws IOException {
@@ -272,6 +305,8 @@ public class S3ResolverTest extends AbstractResolverTest {
     public void testGetSourceFormatWithImageWithNoExtension() {
         // TODO: write this
     }
+
+    /* newStreamSource() */
 
     @Test
     public void testNewStreamSourceUsingBasicLookupStrategy() throws Exception {

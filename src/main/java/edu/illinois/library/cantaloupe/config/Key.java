@@ -186,6 +186,8 @@ public enum Key {
     S3RESOLVER_ENDPOINT("S3Resolver.endpoint"),
     S3RESOLVER_LOOKUP_STRATEGY("S3Resolver.lookup_strategy"),
     S3RESOLVER_MAX_CONNECTIONS("S3Resolver.max_connections"),
+    S3RESOLVER_PATH_PREFIX("S3Resolver.BasicLookupStrategy.path_prefix"),
+    S3RESOLVER_PATH_SUFFIX("S3Resolver.BasicLookupStrategy.path_suffix"),
     S3RESOLVER_SECRET_KEY("S3Resolver.secret_key"),
     SLASH_SUBSTITUTE("slash_substitute"),
     SOURCE_CACHE("cache.server.source"),

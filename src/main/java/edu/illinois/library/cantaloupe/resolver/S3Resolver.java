@@ -43,7 +43,7 @@ import java.util.Map;
  */
 class S3Resolver extends AbstractResolver implements StreamResolver {
 
-    private static class ObjectInfo {
+    static class ObjectInfo {
 
         private String bucketName;
         private String key;
@@ -89,8 +89,8 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
 
     }
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(S3Resolver.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(S3Resolver.class);
 
     private static final String GET_KEY_DELEGATE_METHOD =
             "S3Resolver::get_object_key";
@@ -157,11 +157,12 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
      * N.B.: Either the returned instance, or the return value of
      * {@link S3Object#getObjectContent()}, must be closed.
      *
-     * @throws NoSuchFileException if an object corresponding to the set
-     *         identifier does not exist.
-     * @throws AccessDeniedException if an object corresponding to the set
-     *         identifier is not readable.
-     * @throws IOException if there is some other issue accessing the object.
+     * @throws NoSuchFileException   if the object corresponding to {@link
+     *                               #identifier} does not exist.
+     * @throws AccessDeniedException if the object corresponding to {@link
+     *                               #identifier} is not readable.
+     * @throws IOException           if there is some other issue accessing the
+     *                               object.
      */
     private S3Object getObject() throws IOException {
         if (cachedAccessException != null) {
@@ -177,48 +178,48 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
         }
     }
 
-    private ObjectInfo getObjectInfo() throws IOException {
-        final Configuration config = Configuration.getInstance();
+    ObjectInfo getObjectInfo() throws IOException {
         ObjectInfo objectInfo;
 
         switch (LookupStrategy.from(Key.S3RESOLVER_LOOKUP_STRATEGY)) {
             case DELEGATE_SCRIPT:
                 try {
-                    String bucketName, objectKey;
-                    Object object = getObjectInfoWithDelegateStrategy();
-                    if (object instanceof Map) {
-                        Map<?, ?> map = (Map<?, ?>) object;
-                        if (map.containsKey("bucket") && map.containsKey("key")) {
-                            bucketName = map.get("bucket").toString();
-                            objectKey = map.get("key").toString();
-                        } else {
-                            throw new IllegalArgumentException(
-                                    "Hash does not include bucket and key");
-                        }
-                    } else {
-                        objectKey = (String) object;
-                        bucketName = config.getString(
-                                Key.S3RESOLVER_BUCKET_NAME);
-                    }
-                    objectInfo = new ObjectInfo(objectKey, bucketName);
+                    objectInfo = getObjectInfoUsingDelegateStrategy();
                 } catch (ScriptException | DelegateScriptDisabledException e) {
                     throw new IOException(e);
                 }
                 break;
             default:
-                objectInfo = new ObjectInfo(identifier.toString(),
-                        config.getString(Key.S3RESOLVER_BUCKET_NAME));
+                objectInfo = getObjectInfoUsingBasicStrategy();
                 break;
         }
         return objectInfo;
     }
 
     /**
-     * @throws NoSuchFileException If the delegate script does not exist.
-     * @throws IOException
-     * @throws ScriptException If the delegate method throws an exception.
+     * @return Object info based on {@link #identifier} and the application
+     *         configuration.
      */
-    private Object getObjectInfoWithDelegateStrategy()
+    private ObjectInfo getObjectInfoUsingBasicStrategy() {
+        final Configuration config = Configuration.getInstance();
+        final String bucketName = config.getString(Key.S3RESOLVER_BUCKET_NAME);
+        final String keyPrefix = config.getString(Key.S3RESOLVER_PATH_PREFIX, "");
+        final String keySuffix = config.getString(Key.S3RESOLVER_PATH_SUFFIX, "");
+        final String key = keyPrefix + identifier.toString() + keySuffix;
+        return new ObjectInfo(key, bucketName);
+    }
+
+    /**
+     * @return Object info drawn from the {@link #GET_KEY_DELEGATE_METHOD}
+     *         delegate method.
+     * @throws IllegalArgumentException if the return value of the delegate
+     *                                  method is invalid.
+     * @throws NoSuchFileException      if the delegate script does not exist.
+     * @throws ScriptException          if the delegate method throws an
+     *                                  exception.
+     * @throws IOException              if something else goes wrong.
+     */
+    private ObjectInfo getObjectInfoUsingDelegateStrategy()
             throws IOException, ScriptException,
             DelegateScriptDisabledException {
         final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
@@ -228,7 +229,24 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
             throw new NoSuchFileException(GET_KEY_DELEGATE_METHOD +
                     " returned nil for " + identifier);
         }
-        return result;
+
+        String bucketName, objectKey;
+
+        if (result instanceof Map) {
+            Map<?, ?> map = (Map<?, ?>) result;
+            if (map.containsKey("bucket") && map.containsKey("key")) {
+                bucketName = map.get("bucket").toString();
+                objectKey = map.get("key").toString();
+            } else {
+                throw new IllegalArgumentException(
+                        "Hash does not include bucket and key");
+            }
+        } else {
+            objectKey = (String) result;
+            bucketName = Configuration.getInstance().
+                    getString(Key.S3RESOLVER_BUCKET_NAME);
+        }
+        return new ObjectInfo(objectKey, bucketName);
     }
 
     @Override

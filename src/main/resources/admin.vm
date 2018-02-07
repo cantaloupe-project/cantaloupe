@@ -1329,6 +1329,35 @@
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
+                                        <tr>
+                                            <td>Path Prefix
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Path within the bucket that will be prefixed to the
+                                                   identifier in the URL. &lt;strong&gt;Trailing
+                                                   slash is important&lt;/strong&gt;.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="S3Resolver.BasicLookupStrategy.path_prefix"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Path Suffix
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Path or extension that will be suffixed to the
+                                                   identifier in the URL.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="S3Resolver.BasicLookupStrategy.path_suffix"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
                                     </table>
                                 </div>
 

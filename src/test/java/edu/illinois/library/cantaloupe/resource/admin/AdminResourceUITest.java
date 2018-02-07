@@ -327,9 +327,11 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.S3RESOLVER_SECRET_KEY).sendKeys("456");
         inputNamed(Key.S3RESOLVER_BUCKET_NAME).sendKeys("cats");
         inputNamed(Key.S3RESOLVER_ENDPOINT).sendKeys("http://localhost:1234");
+        inputNamed(Key.S3RESOLVER_MAX_CONNECTIONS).sendKeys("45");
         selectNamed(Key.S3RESOLVER_LOOKUP_STRATEGY).
                 selectByValue("BasicLookupStrategy");
-        inputNamed(Key.S3RESOLVER_MAX_CONNECTIONS).sendKeys("45");
+        inputNamed(Key.S3RESOLVER_PATH_PREFIX).sendKeys("/s3prefix");
+        inputNamed(Key.S3RESOLVER_PATH_SUFFIX).sendKeys("/s3suffix");
         // AzureStorageResolver
         css("#cl-resolver li > a[href=\"#AzureStorageResolver\"]").click();
         inputNamed(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME).sendKeys("bla");
@@ -379,10 +381,14 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getString(Key.S3RESOLVER_BUCKET_NAME));
         assertEquals("http://localhost:1234",
                 config.getString(Key.S3RESOLVER_ENDPOINT));
-        assertEquals("BasicLookupStrategy",
-                config.getString(Key.S3RESOLVER_LOOKUP_STRATEGY));
         assertEquals("45",
                 config.getString(Key.S3RESOLVER_MAX_CONNECTIONS));
+        assertEquals("BasicLookupStrategy",
+                config.getString(Key.S3RESOLVER_LOOKUP_STRATEGY));
+        assertEquals("/s3prefix",
+                config.getString(Key.S3RESOLVER_PATH_PREFIX));
+        assertEquals("/s3suffix",
+                config.getString(Key.S3RESOLVER_PATH_SUFFIX));
         // AzureStorageResolver
         assertEquals("bla",
                 config.getString(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME));
