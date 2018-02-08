@@ -98,6 +98,8 @@ public enum Key {
     HTTP_ENABLED("http.enabled"),
     HTTP_HTTP2_ENABLED("http.http2.enabled"),
     HTTP_HOST("http.host"),
+    HTTP_MAX_THREADS("http.max_threads"),
+    HTTP_MIN_THREADS("http.min_threads"),
     HTTP_PORT("http.port"),
     HTTPRESOLVER_BASIC_AUTH_SECRET("HttpResolver.auth.basic.secret"),
     HTTPRESOLVER_BASIC_AUTH_USERNAME("HttpResolver.auth.basic.username"),

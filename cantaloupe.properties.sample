@@ -32,8 +32,14 @@ https.key_store_password = myPassword
 https.key_store_path = /path/to/keystore.jks
 https.key_password = myPassword
 
-# !! Maximum size of the HTTP(S) request queue. Set to 0 to use the default.
-http.accept_queue_limit = 0
+# !! Maximum size of the HTTP(S) request queue. Leave blank to use the
+# default.
+http.accept_queue_limit =
+
+# !! Constrains the size of the web server's thread pool. Leave blank to
+# use the defaults.
+http.min_threads =
+http.max_threads =
 
 # Base URI to use for internal links, such as Link headers and JSON-LD
 # @id values, in a reverse-proxy context. This should only be used when

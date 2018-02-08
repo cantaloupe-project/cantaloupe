@@ -14,7 +14,11 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
+
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>Provides the embedded Servlet container in standalone mode.</p>
@@ -28,20 +32,48 @@ public class ApplicationServer {
 
     private static final int IDLE_TIMEOUT = 30000;
 
-    private int acceptQueueLimit = 0;
+    /**
+     * {@literal 0} tells Jetty to use an OS default.
+     */
+    static final int DEFAULT_ACCEPT_QUEUE_LIMIT = 0;
+
+    static final String DEFAULT_HTTP_HOST = "0.0.0.0";
+
+    static final int DEFAULT_HTTP_PORT = 8182;
+
+    static final String DEFAULT_HTTPS_HOST = "0.0.0.0";
+
+    static final int DEFAULT_HTTPS_PORT = 8183;
+
+    /**
+     * Minimum number of threads in the pool. {@literal 8} is the default in
+     * Jetty 9.4.
+     */
+    static final int DEFAULT_MIN_THREADS = 8;
+
+    /**
+     * Maximum number of threads in the pool. {@literal 200} is the default in
+     * Jetty 9.4, but, this being a resource-intensive application, we will
+     * lower that a bit.
+     */
+    static final int DEFAULT_MAX_THREADS = 150;
+
+    private int acceptQueueLimit            = DEFAULT_ACCEPT_QUEUE_LIMIT;
     private boolean isHTTPEnabled;
-    private String httpHost = "0.0.0.0";
-    private int httpPort = 8182;
+    private String httpHost                 = DEFAULT_HTTP_HOST;
+    private int httpPort                    = DEFAULT_HTTP_PORT;
     private boolean isHTTPSEnabled;
-    private String httpsHost = "0.0.0.0";
+    private String httpsHost                = DEFAULT_HTTPS_HOST;
     private String httpsKeyPassword;
     private String httpsKeyStorePassword;
     private String httpsKeyStorePath;
     private String httpsKeyStoreType;
-    private int httpsPort = 8183;
-    private boolean isInsecureHTTP2Enabled = true;
-    private boolean isSecureHTTP2Enabled = true;
-    private boolean isStarted = false;
+    private int httpsPort                   = DEFAULT_HTTPS_PORT;
+    private boolean isInsecureHTTP2Enabled;
+    private boolean isSecureHTTP2Enabled;
+    private boolean isStarted;
+    private int minThreads                  = DEFAULT_MIN_THREADS;
+    private int maxThreads                  = DEFAULT_MAX_THREADS;
     private Server server;
 
     /**
@@ -51,19 +83,20 @@ public class ApplicationServer {
     }
 
     /**
-     * Initializes the instance with defaults from a Configuration object.
+     * Initializes the instance with defaults from a {@link Configuration}
+     * object.
      */
     public ApplicationServer(Configuration config) {
         this();
 
-        setAcceptQueueLimit(config.getInt(Key.HTTP_ACCEPT_QUEUE_LIMIT, 0));
         setHTTPEnabled(config.getBoolean(Key.HTTP_ENABLED, false));
-        setHTTPHost(config.getString(Key.HTTP_HOST, "0.0.0.0"));
-        setHTTPPort(config.getInt(Key.HTTP_PORT, 8182));
+        setHTTPHost(config.getString(Key.HTTP_HOST, DEFAULT_HTTP_HOST));
+        setHTTPPort(config.getInt(Key.HTTP_PORT, DEFAULT_HTTP_PORT));
         setInsecureHTTP2Enabled(
                 config.getBoolean(Key.HTTP_HTTP2_ENABLED, true));
+
         setHTTPSEnabled(config.getBoolean(Key.HTTPS_ENABLED, false));
-        setHTTPSHost(config.getString(Key.HTTPS_HOST, "0.0.0.0"));
+        setHTTPSHost(config.getString(Key.HTTPS_HOST, DEFAULT_HTTPS_HOST));
         setHTTPSKeyPassword(config.getString(Key.HTTPS_KEY_PASSWORD));
         setHTTPSKeyStorePassword(
                 config.getString(Key.HTTPS_KEY_STORE_PASSWORD));
@@ -71,9 +104,14 @@ public class ApplicationServer {
                 config.getString(Key.HTTPS_KEY_STORE_PATH));
         setHTTPSKeyStoreType(
                 config.getString(Key.HTTPS_KEY_STORE_TYPE));
-        setHTTPSPort(config.getInt(Key.HTTPS_PORT, 8183));
+        setHTTPSPort(config.getInt(Key.HTTPS_PORT, DEFAULT_HTTPS_PORT));
         setSecureHTTP2Enabled(
                 config.getBoolean(Key.HTTPS_HTTP2_ENABLED, true));
+
+        setAcceptQueueLimit(config.getInt(Key.HTTP_ACCEPT_QUEUE_LIMIT,
+                DEFAULT_ACCEPT_QUEUE_LIMIT));
+        setMaxThreads(config.getInt(Key.HTTP_MAX_THREADS, DEFAULT_MAX_THREADS));
+        setMinThreads(config.getInt(Key.HTTP_MIN_THREADS, DEFAULT_MIN_THREADS));
     }
 
     private void createServer() {
@@ -102,7 +140,12 @@ public class ApplicationServer {
             context.setWar("src/main/webapp");
         }
 
-        server = new Server();
+        ExecutorThreadPool pool = new ExecutorThreadPool(
+                getMinThreads(), getMaxThreads(),
+                IDLE_TIMEOUT, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>());
+
+        server = new Server(pool);
         context.setServer(server);
         server.setHandler(context);
     }
@@ -141,6 +184,14 @@ public class ApplicationServer {
 
     public int getHTTPSPort() {
         return httpsPort;
+    }
+
+    public int getMaxThreads() {
+        return maxThreads;
+    }
+
+    public int getMinThreads() {
+        return minThreads;
     }
 
     public boolean isHTTPEnabled() {
@@ -215,14 +266,20 @@ public class ApplicationServer {
         this.isInsecureHTTP2Enabled = enabled;
     }
 
+    public void setMaxThreads(int maxThreads) {
+        this.maxThreads = maxThreads;
+    }
+
+    public void setMinThreads(int minThreads) {
+        this.minThreads = minThreads;
+    }
+
     public void setSecureHTTP2Enabled(boolean enabled) {
         this.isSecureHTTP2Enabled = enabled;
     }
 
     /**
      * Starts the HTTP and/or HTTPS servers.
-     *
-     * @throws Exception
      */
     public void start() throws Exception {
         if (!isStarted) {

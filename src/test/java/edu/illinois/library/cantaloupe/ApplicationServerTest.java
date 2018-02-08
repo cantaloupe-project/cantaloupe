@@ -52,7 +52,8 @@ public class ApplicationServerTest extends BaseTest {
     @Test
     public void getHTTPHost() {
         // default
-        assertEquals("0.0.0.0", instance.getHTTPHost());
+        assertEquals(ApplicationServer.DEFAULT_HTTP_HOST,
+                instance.getHTTPHost());
         // explicitly set
         instance.setHTTPHost("127.0.0.1");
         assertEquals("127.0.0.1", instance.getHTTPHost());
@@ -61,7 +62,8 @@ public class ApplicationServerTest extends BaseTest {
     @Test
     public void getHTTPPort() {
         // default
-        assertEquals(8182, instance.getHTTPPort());
+        assertEquals(ApplicationServer.DEFAULT_HTTP_PORT,
+                instance.getHTTPPort());
         // explicitly set
         instance.setHTTPPort(5000);
         assertEquals(5000, instance.getHTTPPort());
@@ -70,7 +72,8 @@ public class ApplicationServerTest extends BaseTest {
     @Test
     public void getHTTPSHost() {
         // default
-        assertEquals("0.0.0.0", instance.getHTTPSHost());
+        assertEquals(ApplicationServer.DEFAULT_HTTPS_HOST,
+                instance.getHTTPSHost());
         // explicitly set
         instance.setHTTPSHost("127.0.0.1");
         assertEquals("127.0.0.1", instance.getHTTPSHost());
@@ -115,10 +118,31 @@ public class ApplicationServerTest extends BaseTest {
     @Test
     public void getHTTPSPort() {
         // default
-        assertEquals(8183, instance.getHTTPSPort());
+        assertEquals(ApplicationServer.DEFAULT_HTTPS_PORT,
+                instance.getHTTPSPort());
         // explicitly set
         instance.setHTTPSPort(5000);
         assertEquals(5000, instance.getHTTPSPort());
+    }
+
+    @Test
+    public void getMaxThreads() {
+        // default
+        assertEquals(ApplicationServer.DEFAULT_MAX_THREADS,
+                instance.getMaxThreads());
+        // explicitly set
+        instance.setMaxThreads(45);
+        assertEquals(45, instance.getMaxThreads());
+    }
+
+    @Test
+    public void getMinThreads() {
+        // default
+        assertEquals(ApplicationServer.DEFAULT_MIN_THREADS,
+                instance.getMinThreads());
+        // explicitly set
+        instance.setMinThreads(45);
+        assertEquals(45, instance.getMinThreads());
     }
 
     @Test
@@ -142,19 +166,19 @@ public class ApplicationServerTest extends BaseTest {
     @Test
     public void isInsecureHTTP2Enabled() {
         // default
-        assertTrue(instance.isInsecureHTTP2Enabled());
-        // explicitly set
-        instance.setInsecureHTTP2Enabled(false);
         assertFalse(instance.isInsecureHTTP2Enabled());
+        // explicitly set
+        instance.setInsecureHTTP2Enabled(true);
+        assertTrue(instance.isInsecureHTTP2Enabled());
     }
 
     @Test
     public void isSecureHTTP2Enabled() {
         // default
-        assertTrue(instance.isSecureHTTP2Enabled());
-        // explicitly set
-        instance.setSecureHTTP2Enabled(false);
         assertFalse(instance.isSecureHTTP2Enabled());
+        // explicitly set
+        instance.setSecureHTTP2Enabled(true);
+        assertTrue(instance.isSecureHTTP2Enabled());
     }
 
     @Test
