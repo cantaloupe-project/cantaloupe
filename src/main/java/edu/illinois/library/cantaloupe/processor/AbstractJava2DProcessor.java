@@ -31,7 +31,8 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
 
@@ -124,15 +125,15 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
 
     /**
      * Variation of {@link #postProcess(BufferedImage, Set, OperationList,
-     * Info, ReductionFactor, OutputStream)} for processing
-     * {@link BufferedImageSequence image sequences}, such as to support
-     * animated GIFs.
+     * Info, ReductionFactor, OutputStream)} for processing {@link
+     * BufferedImageSequence image sequences}, such as to support animated
+     * GIFs.
      *
      * @param sequence     Sequence containing one or more images, which will
      *                     be replaced with the post-processed versions.
      * @param opList       Operations to apply to each image in the sequence.
      * @param info         Information about the source image.
-     * @param outputStream Output stream to write the resulting image to.
+     * @param outputStream Stream to write the resulting image to.
      * @throws IllegalArgumentException if the sequence is empty.
      */
     void postProcess(final BufferedImageSequence sequence,
@@ -141,22 +142,23 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
                      final OutputStream outputStream) throws IOException {
         final int numFrames = sequence.length();
 
-        // 1. If the sequence contains only one frame, process the frame in the
-        //    current thread.
-        // 2. If it contains more than one frame, spread the work across as
+        // 1. If the sequence contains no frames, throw an exception.
+        // 2. If it contains only one frame, process the frame in the current
+        //    thread.
+        // 3. If it contains more than one frame, spread the work across as
         //    many threads as there are CPUs.
-        // 3. If it contains no frames, throw an exception.
-        if (numFrames == 1) {
+        if (numFrames < 1) {
+            throw new IllegalArgumentException("Empty sequence");
+        } else if (numFrames == 1) {
             BufferedImage image = sequence.get(0);
             image = doPostProcess(image, opList, info);
             sequence.set(0, image);
-        } else if (numFrames > 1) {
+        } else {
             final int numThreads =
                     Math.min(numFrames, Runtime.getRuntime().availableProcessors());
             final int framesPerThread =
                     (int) Math.ceil(numFrames / (float) numThreads);
-            final AtomicInteger numProcessed = new AtomicInteger(0);
-            final Object monitor = new Object();
+            final CountDownLatch latch = new CountDownLatch(numFrames);
 
             for (short thread = 0; thread < numThreads; thread++) {
                 final int startFrame = thread * framesPerThread;
@@ -167,27 +169,18 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
                         BufferedImage image = sequence.get(frameNum);
                         image = doPostProcess(image, opList, info);
                         sequence.set(frameNum, image);
-                        numProcessed.incrementAndGet();
-                    }
-                    synchronized (monitor) {
-                        monitor.notifyAll();
+                        latch.countDown();
                     }
                     return null;
                 });
             }
 
             // Wait for all threads to finish.
-            while (numProcessed.get() < numFrames) {
-                try {
-                    synchronized (monitor) {
-                        monitor.wait();
-                    }
-                } catch (InterruptedException e) {
-                    // no-op
-                }
+            try {
+                latch.await(5, TimeUnit.MINUTES); // hopefully not this long...
+            } catch (InterruptedException e) {
+                // Done.
             }
-        } else {
-            throw new IllegalArgumentException("Empty sequence");
         }
 
         Metadata metadata = getReader().getMetadata(0);
