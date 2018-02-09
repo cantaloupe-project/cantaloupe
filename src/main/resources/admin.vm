@@ -224,7 +224,7 @@
                                             <label>
                                                 <input type="checkbox"
                                                        name="delegate_script.enabled"
-                                                       data-requires-restart="true">
+                                                       data-requires-restart="false">
                                                 Enabled
                                             </label>
                                         </div>

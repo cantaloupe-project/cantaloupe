@@ -65,14 +65,14 @@ print_stack_trace_on_error_pages = true
 # DELEGATE SCRIPT
 ###########################################################################
 
-# !! Enables the delegate script: a Ruby script containing various delegate
+# Enables the delegate script: a Ruby script containing various delegate
 # methods. (See the user manual.)
 delegate_script.enabled = false
 
 # !! This can be an absolute path, or a filename; if only a filename is
 # specified, it will be searched for in the same folder as this file, and
 # then the current working directory.
-delegate_script.pathname = delegates-3.4.rb
+delegate_script.pathname = delegates.rb
 
 # Enables the invocation cache, which caches method invocations and return
 # values in memory. See the user manual for more information.

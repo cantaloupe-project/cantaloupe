@@ -35,16 +35,15 @@ public final class ScriptEngineFactory {
      * @throws ScriptException
      */
     public static synchronized ScriptEngine getScriptEngine()
-            throws IOException, DelegateScriptDisabledException,
-            ScriptException {
-        if (scriptEngine == null) {
-            final Configuration config = Configuration.getInstance();
-            if (config.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false)) {
-                scriptEngine = new RubyScriptEngine();
-                scriptEngine.load(FileUtils.readFileToString(getScriptFile()));
-            } else {
-                throw new DelegateScriptDisabledException();
-            }
+            throws IOException, DelegateScriptDisabledException, ScriptException {
+        final Configuration config = Configuration.getInstance();
+        final boolean enabled = config.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false);
+
+        if (!enabled) {
+            throw new DelegateScriptDisabledException();
+        } else if (scriptEngine == null) {
+            scriptEngine = new RubyScriptEngine();
+            scriptEngine.load(FileUtils.readFileToString(getScriptFile()));
         }
         return scriptEngine;
     }
