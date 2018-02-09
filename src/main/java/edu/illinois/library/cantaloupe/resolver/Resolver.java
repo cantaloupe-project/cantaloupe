@@ -18,7 +18,8 @@ import java.nio.file.NoSuchFileException;
  *     <li>{@link #setIdentifier(Identifier)} and
  *     {@link #setContext(RequestContext)} (in either order)</li>
  *     <li>{@link #checkAccess()}</li>
- *     <li>Other methods</li>
+ *     <li>Any other methods</li>
+ *     <li>{@link #shutdown()}</li>
  * </ol>
  */
 public interface Resolver {
@@ -39,8 +40,8 @@ public interface Resolver {
     /**
      * @return The expected source format of the image corresponding to the
      *         identifier set by {@link #setIdentifier}, or
-     *         {@link Format#UNKNOWN} if unknown; never <code>null</code>.
-     * @throws IOException If anything goes wrong.
+     *         {@link Format#UNKNOWN} if unknown; never {@literal null}.
+     * @throws IOException if anything goes wrong.
      */
     Format getSourceFormat() throws IOException;
 
@@ -55,8 +56,8 @@ public interface Resolver {
     void setContext(RequestContext context);
 
     /**
-     * <p>Shuts the instance and any of its shared resource handles, threads,
-     * etc.</p>
+     * <p>Shuts down the instance and any of its shared resource handles,
+     * threads, etc.</p>
      *
      * <p>Will only be called at the end of the application lifecycle,</p>
      *
