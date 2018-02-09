@@ -241,8 +241,10 @@ class S3Cache implements DerivativeCache {
 
         final Stopwatch watch = new Stopwatch();
         try {
-            final S3Object object = s3.getObject(bucketName, objectKey);
-            if (isValid(object)) {
+            final ObjectMetadata metadata =
+                    s3.getObjectMetadata(bucketName, objectKey);
+            if (isValid(metadata)) {
+                final S3Object object = s3.getObject(bucketName, objectKey);
                 try (InputStream is =
                              new BufferedInputStream(object.getObjectContent())) {
                     final Info info = Info.fromJSON(is);
@@ -253,7 +255,7 @@ class S3Cache implements DerivativeCache {
             } else {
                 LOGGER.debug("{} in bucket {} is invalid; purging asynchronously",
                         objectKey, bucketName);
-                purgeAsync(object);
+                purgeAsync(bucketName, objectKey);
             }
         } catch (AmazonS3Exception e) {
             if (e.getStatusCode() != 404) {
@@ -263,10 +265,9 @@ class S3Cache implements DerivativeCache {
         return null;
     }
 
-    private boolean isValid(S3Object object) {
+    private boolean isValid(ObjectMetadata metadata) {
         Instant earliestAllowed = getEarliestValidInstant();
-        Instant lastModified =
-                object.getObjectMetadata().getLastModified().toInstant();
+        Instant lastModified = metadata.getLastModified().toInstant();
         // Both of these have second resolution, so add a millisecond.
         return lastModified.plusMillis(1).isAfter(earliestAllowed);
     }
@@ -274,7 +275,8 @@ class S3Cache implements DerivativeCache {
     private boolean isValid(S3ObjectSummary summary) {
         Instant earliestAllowed = getEarliestValidInstant();
         Instant lastModified = summary.getLastModified().toInstant();
-        return lastModified.isAfter(earliestAllowed);
+        // Both of these have second resolution, so add a millisecond.
+        return lastModified.plusMillis(1).isAfter(earliestAllowed);
     }
 
     @Override
@@ -286,13 +288,15 @@ class S3Cache implements DerivativeCache {
         LOGGER.info("newDerivativeImageInputStream(): bucket: {}; key: {}",
                 bucketName, objectKey);
         try {
-            final S3Object object = s3.getObject(bucketName, objectKey);
-            if (isValid(object)) {
+            final ObjectMetadata metadata =
+                    s3.getObjectMetadata(bucketName, objectKey);
+            if (isValid(metadata)) {
+                final S3Object object = s3.getObject(bucketName, objectKey);
                 return object.getObjectContent();
             } else {
                 LOGGER.debug("{} in bucket {} is invalid; purging asynchronously",
                         objectKey, bucketName);
-                purgeAsync(object);
+                purgeAsync(bucketName, objectKey);
             }
         } catch (AmazonS3Exception e) {
             if (e.getStatusCode() != 404) {
@@ -383,42 +387,13 @@ class S3Cache implements DerivativeCache {
         s3.deleteObject(getBucketName(), objectKey);
     }
 
-    /**
-     * @param object Unclosed instance whose content may have been partially,
-     *               fully, or not at all consumed.
-     */
-    private void purgeAsync(final S3Object object) {
+    private void purgeAsync(final String bucketName, final String key) {
         ThreadPool.getInstance().submit(() -> {
-            final String bucketName = object.getBucketName();
-            final String key = object.getKey();
-            try {
-                // The AWS SDK logs a warning when an S3Object (which is really
-                // just a wrapped InputStream) is closed before being fully
-                // consumed. So, we will consume it.
-                //
-                // The alternative is requiring clients to send an extra
-                // request (e.g. HEAD to check object validity) before a GET to
-                // retrieve S3Object content. We are trading extra expense
-                // here, in a non-request thread, for less expense in the
-                // request thread.
-                LOGGER.debug("purgeAsync(): consuming {} in bucket {}",
-                        key, bucketName);
+            final AmazonS3 s3 = getClientInstance();
 
-                try (InputStream is =
-                             new BufferedInputStream(object.getObjectContent())) {
-                    while (is.read() != -1) {
-                        // continue
-                    }
-                }
-
-                final AmazonS3 s3 = getClientInstance();
-
-                LOGGER.debug("purgeAsync(): deleting {} from bucket {}",
-                        key, bucketName);
-                s3.deleteObject(bucketName, key);
-            } finally {
-                object.close();
-            }
+            LOGGER.debug("purgeAsync(): deleting {} from bucket {}",
+                    key, bucketName);
+            s3.deleteObject(bucketName, key);
             return null;
         });
     }

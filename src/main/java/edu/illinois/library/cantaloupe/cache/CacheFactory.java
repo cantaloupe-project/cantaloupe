@@ -11,25 +11,26 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Used to obtain an instance of the current {@link Cache} according to the
- * application configuration.
+ * Used to obtain {@link Cache} instances according to the application
+ * configuration.
  */
 public final class CacheFactory {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(CacheFactory.class);
-
-    /** Lazy-initialized by {@link #getDerivativeCache()}. */
-    private static volatile DerivativeCache derivativeCache;
-
-    private static Thread derivativeCacheShutdownHook;
-
-    /** Lazy-initialized by {@link #getSourceCache()}. */
-    private static volatile SourceCache sourceCache;
-
-    private static Thread sourceCacheShutdownHook;
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(CacheFactory.class);
 
     /**
-     * @return Set of single instances of all available derivative caches.
+     * Initialized by {@link #getDerivativeCache()}.
+     */
+    private static volatile DerivativeCache derivativeCache;
+
+    /**
+     * Initialized by {@link #getSourceCache()}.
+     */
+    private static volatile SourceCache sourceCache;
+
+    /**
+     * @return Set of instances of all available derivative caches.
      */
     public static Set<DerivativeCache> getAllDerivativeCaches() {
         return new HashSet<>(Arrays.asList(
@@ -54,7 +55,7 @@ public final class CacheFactory {
      *
      * <p>This method respects live changes in application configuration.</p>
      *
-     * @return The shared DerivativeCache instance, or <code>null</code> if a
+     * @return The shared DerivativeCache instance, or {@literal null} if a
      *         derivative cache is not available.
      */
     public static DerivativeCache getDerivativeCache() {
@@ -64,8 +65,7 @@ public final class CacheFactory {
         DerivativeCache cache = null;
         final Configuration config = Configuration.getInstance();
         if (config.getBoolean(Key.DERIVATIVE_CACHE_ENABLED, false)) {
-            final String unqualifiedName =
-                    config.getString(Key.DERIVATIVE_CACHE);
+            final String unqualifiedName = config.getString(Key.DERIVATIVE_CACHE);
             if (unqualifiedName != null && unqualifiedName.length() > 0) {
                 final String qualifiedName =
                         CacheFactory.class.getPackage().getName() + "." +
@@ -103,7 +103,7 @@ public final class CacheFactory {
      *
      * <p>This method respects live changes in application configuration.</p>
      *
-     * @return The shared SourceCache instance, or <code>null</code> if a
+     * @return The shared SourceCache instance, or {@literal null} if a
      *         source cache is not available.
      */
     public static SourceCache getSourceCache() {
@@ -119,8 +119,7 @@ public final class CacheFactory {
                         CacheFactory.class.getPackage().getName() + "." +
                                 unqualifiedName;
                 cache = sourceCache;
-                if (cache == null ||
-                        !cache.getClass().getName().equals(qualifiedName)) {
+                if (cache == null || !cache.getClass().getName().equals(qualifiedName)) {
                     synchronized (CacheFactory.class) {
                         if (cache == null ||
                                 !cache.getClass().getName().equals(qualifiedName)) {
@@ -145,54 +144,46 @@ public final class CacheFactory {
         return cache;
     }
 
+    public static synchronized void shutdownCaches() {
+        LOGGER.debug("Shutting down caches");
+
+        derivativeCache.shutdown();
+        sourceCache.shutdown();
+    }
+
     /**
-     * Shuts down any existing derivative cache and removes its shutdown hook,
-     * then sets the current derivative cache to the given instance and adds
-     * a shutdown hook for it; then initializes it.
+     * Shuts down any existing derivative cache, then sets the current
+     * derivative cache to the given instance and initializes it.
      *
      * @param cache Derivative cache to use.
      */
     private static synchronized void setDerivativeCache(DerivativeCache cache) {
-        final Runtime runtime = Runtime.getRuntime();
-        if (derivativeCacheShutdownHook != null) {
-            runtime.removeShutdownHook(derivativeCacheShutdownHook);
-        }
         if (derivativeCache != null) {
-            LOGGER.debug("setDerivativeCache(): calling Cache.shutdown()");
+            LOGGER.debug("setDerivativeCache(): shutting down the current instance");
             derivativeCache.shutdown();
         }
 
         derivativeCache = cache;
-        derivativeCacheShutdownHook =
-                new Thread(() -> derivativeCache.shutdown());
-        runtime.addShutdownHook(derivativeCacheShutdownHook);
 
-        LOGGER.debug("setDerivativeCache(): calling Cache.initialize()");
+        LOGGER.debug("setDerivativeCache(): initializing the new instance");
         derivativeCache.initialize();
     }
 
     /**
-     * Shuts down any existing source cache and removes its shutdown hook,
-     * then sets the current source cache to the given instance and adds
-     * a shutdown hook for it; then initializes it.
+     * Shuts down any existing source cache, then sets the current source cache
+     * to the given instance and initializes it.
      *
      * @param cache Source cache to use.
      */
     private static synchronized void setSourceCache(SourceCache cache) {
-        final Runtime runtime = Runtime.getRuntime();
-        if (sourceCacheShutdownHook != null) {
-            runtime.removeShutdownHook(sourceCacheShutdownHook);
-        }
         if (sourceCache != null) {
-            LOGGER.debug("setSourceCache(): calling Cache.shutdown()");
+            LOGGER.debug("setSourceCache(): shutting down the current instance");
             sourceCache.shutdown();
         }
 
         sourceCache = cache;
-        sourceCacheShutdownHook = new Thread(sourceCache::shutdown);
-        runtime.addShutdownHook(sourceCacheShutdownHook);
 
-        LOGGER.debug("setSourceCache(): calling Cache.initialize()");
+        LOGGER.debug("setSourceCache(): initializing the new instance");
         sourceCache.initialize();
     }
 

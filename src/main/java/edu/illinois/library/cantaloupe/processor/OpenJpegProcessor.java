@@ -349,10 +349,9 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                     final int code = process.waitFor();
                     if (code != 0) {
                         LOGGER.warn("opj_decompress returned with code {}", code);
-                        final String errorStr = toString(errorBucket);
-                        if (errorStr.length() > 0) {
-                            throw new ProcessorException(errorStr);
-                        }
+                        String errorStr = toString(errorBucket);
+                        errorStr += "\nPathname: " + getSourceFile();
+                        throw new ProcessorException(errorStr);
                     }
                 } finally {
                     reader.dispose();

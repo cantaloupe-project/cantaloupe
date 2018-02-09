@@ -416,4 +416,19 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         this.identifier = identifier;
     }
 
+    /**
+     * Stops the shared Jetty client.
+     */
+    @Override
+    public synchronized void shutdown() {
+        if (jettyClient != null) {
+            try {
+                jettyClient.stop();
+                jettyClient = null;
+            } catch (Exception e) {
+                LOGGER.error("shutdown(): {}", e.getMessage());
+            }
+        }
+    }
+
 }
