@@ -6,6 +6,8 @@ import edu.illinois.library.cantaloupe.cache.CacheWorkerRunner;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.logging.LoggerUtil;
+import edu.illinois.library.cantaloupe.resolver.Resolver;
+import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
 import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.slf4j.Logger;
@@ -163,9 +165,14 @@ public class ApplicationContextListener implements ServletContextListener {
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
         LOGGER.info("Shutting down...");
+
+        // Stop the cache worker runner.
         CacheWorkerRunner.stop();
+
+        // Stop the configuration file watcher.
         Configuration.getInstance().stopWatching();
-        ThreadPool.getInstance().shutdown();
+
+        // Stop the delegate script file watcher.
         try {
             ScriptEngineFactory.getScriptEngine().stopWatching();
         } catch (DelegateScriptDisabledException e) {
@@ -175,6 +182,12 @@ public class ApplicationContextListener implements ServletContextListener {
         } catch (Exception e) {
             LOGGER.error("contextDestroyed(): {}", e.getMessage());
         }
+
+        // Shut down all resolvers.
+        ResolverFactory.getAllResolvers().forEach(Resolver::shutdown);
+
+        // Shut down the application thread pool.
+        ThreadPool.getInstance().shutdown();
     }
 
 }

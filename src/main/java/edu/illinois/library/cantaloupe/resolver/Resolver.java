@@ -53,4 +53,17 @@ public interface Resolver {
      * @param context The context for the resolver. Passed to delegate method.
      */
     void setContext(RequestContext context);
+
+    /**
+     * <p>Shuts the instance and any of its shared resource handles, threads,
+     * etc.</p>
+     *
+     * <p>Will only be called at the end of the application lifecycle,</p>
+     *
+     * <p>Implementations must be thread-safe.</p>
+     *
+     * <p>The default implementation does nothing.</p>
+     */
+    default void shutdown() {}
+
 }
