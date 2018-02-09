@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.cache.CacheWorkerRunner;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.logging.LoggerUtil;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
@@ -130,26 +131,16 @@ public class ApplicationContextListener implements ServletContextListener {
         // time, had not been initialized yet. So, reload it.
         LoggerUtil.reloadConfiguration();
 
-        final int mb = 1024 * 1024;
-        final Runtime runtime = Runtime.getRuntime();
-        LOGGER.info(System.getProperty("java.vendor") + " " +
-                System.getProperty("java.vm.name") + " " +
-                System.getProperty("java.version") + " / " +
-                System.getProperty("java.vm.info"));
-        LOGGER.info("Java home: {}", System.getProperty("java.home"));
-        LOGGER.info("{} available processor cores",
-                runtime.availableProcessors());
-        LOGGER.info("Heap total: {}MB; max: {}MB",
-                runtime.totalMemory() / mb,
-                runtime.maxMemory() / mb);
-        LOGGER.info("Effective temp directory: {}", Application.getTempPath());
-        LOGGER.info("\uD83C\uDF48 Starting Cantaloupe {}",
-                Application.getVersion());
+        logSystemInfo();
 
         handleVmArguments();
 
-        Configuration.getInstance().startWatching();
-        CacheWorkerRunner.start();
+        final Configuration config = Configuration.getInstance();
+
+        // Start the configuration file watcher.
+        config.startWatching();
+
+        // Start the delegate script file watcher.
         try {
             ScriptEngineFactory.getScriptEngine().startWatching();
         } catch (DelegateScriptDisabledException e) {
@@ -160,6 +151,11 @@ public class ApplicationContextListener implements ServletContextListener {
         } catch (Exception e) {
             LOGGER.error("contextInitialized(): {}", e.getMessage());
         }
+
+        // Start the cache worker, if necessary.
+        if (config.getBoolean(Key.CACHE_WORKER_ENABLED, false)) {
+            CacheWorkerRunner.getInstance().start();
+        }
     }
 
     @Override
@@ -167,7 +163,7 @@ public class ApplicationContextListener implements ServletContextListener {
         LOGGER.info("Shutting down...");
 
         // Stop the cache worker runner.
-        CacheWorkerRunner.stop();
+        CacheWorkerRunner.getInstance().stop();
 
         // Stop the configuration file watcher.
         Configuration.getInstance().stopWatching();
@@ -188,6 +184,27 @@ public class ApplicationContextListener implements ServletContextListener {
 
         // Shut down the application thread pool.
         ThreadPool.getInstance().shutdown();
+    }
+
+    private void logSystemInfo() {
+        final int mb = 1024 * 1024;
+        final Runtime runtime = Runtime.getRuntime();
+
+        LOGGER.info(System.getProperty("java.vendor") + " " +
+                System.getProperty("java.vm.name") + " " +
+                System.getProperty("java.version") + " / " +
+                System.getProperty("java.vm.info"));
+        LOGGER.info("Java home: {}",
+                System.getProperty("java.home"));
+        LOGGER.info("{} available processor cores",
+                runtime.availableProcessors());
+        LOGGER.info("Heap total: {}MB; max: {}MB",
+                runtime.totalMemory() / mb,
+                runtime.maxMemory() / mb);
+        LOGGER.info("Effective temp directory: {}",
+                Application.getTempPath());
+        LOGGER.info("\uD83C\uDF48 Starting Cantaloupe {}",
+                Application.getVersion());
     }
 
 }

@@ -12,30 +12,57 @@ import java.util.concurrent.TimeUnit;
 
 public final class CacheWorkerRunner {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(
-            CacheWorkerRunner.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(CacheWorkerRunner.class);
 
-    private static ScheduledExecutorService executorService;
-    private static ScheduledFuture<?> future;
+    private static CacheWorkerRunner instance;
 
-    public static synchronized void start() {
-        final Configuration config = Configuration.getInstance();
-        if (config.getBoolean(Key.CACHE_WORKER_ENABLED, false)) {
-            executorService = Executors.newSingleThreadScheduledExecutor();
-            future = executorService.scheduleAtFixedRate(
-                    new CacheWorker(), 5,
-                    config.getInt(Key.CACHE_WORKER_INTERVAL, -1),
-                    TimeUnit.SECONDS);
-        }
+    private ScheduledExecutorService executorService;
+    private ScheduledFuture<?> future;
+
+    /**
+     * For testing only!
+     */
+    static synchronized void clearInstance() {
+        instance = null;
     }
 
-    public static synchronized void stop() {
+    /**
+     * @return Singleton instance.
+     */
+    public static synchronized CacheWorkerRunner getInstance() {
+        if (instance == null) {
+            instance = new CacheWorkerRunner();
+        }
+        return instance;
+    }
+
+    public synchronized void start() {
+        final Configuration config = Configuration.getInstance();
+        final int initialDelay = 5;
+        final int interval = config.getInt(Key.CACHE_WORKER_INTERVAL, -1);
+
+        LOGGER.info("Starting the cache worker ({} second delay, {} second interval)",
+                initialDelay, interval);
+
+        executorService = Executors.newSingleThreadScheduledExecutor();
+        future = executorService.scheduleAtFixedRate(
+                new CacheWorker(),
+                initialDelay,
+                interval,
+                TimeUnit.SECONDS);
+    }
+
+    public synchronized void stop() {
         LOGGER.info("Stopping the cache worker...");
+
         if (future != null) {
             future.cancel(true);
+            future = null;
         }
         if (executorService != null) {
             executorService.shutdown();
+            executorService = null;
         }
     }
 
