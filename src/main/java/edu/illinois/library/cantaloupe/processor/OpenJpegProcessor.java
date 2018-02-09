@@ -38,7 +38,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
@@ -417,10 +416,9 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                     final int code = process.waitFor();
                     if (code != 0) {
                         LOGGER.warn("opj_decompress returned with code {}", code);
-                        final String errorStr = toString(errorBucket);
-                        if (errorStr.length() > 0) {
-                            throw new ProcessorException(errorStr);
-                        }
+                        String errorStr = toString(errorBucket);
+                        errorStr += "\nPathname: " + getSourceFile();
+                        throw new ProcessorException(errorStr);
                     }
                 } finally {
                     reader.dispose();
