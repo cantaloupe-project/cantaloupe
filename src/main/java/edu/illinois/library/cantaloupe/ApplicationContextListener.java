@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.CacheWorkerRunner;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -132,7 +133,6 @@ public class ApplicationContextListener implements ServletContextListener {
         LoggerUtil.reloadConfiguration();
 
         logSystemInfo();
-
         handleVmArguments();
 
         final Configuration config = Configuration.getInstance();
@@ -178,6 +178,9 @@ public class ApplicationContextListener implements ServletContextListener {
         } catch (Exception e) {
             LOGGER.error("contextDestroyed(): {}", e.getMessage());
         }
+
+        // Shut down all caches.
+        CacheFactory.shutdownCaches();
 
         // Shut down all resolvers.
         ResolverFactory.getAllResolvers().forEach(Resolver::shutdown);
