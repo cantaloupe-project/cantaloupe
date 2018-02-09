@@ -147,8 +147,12 @@ public final class CacheFactory {
     public static synchronized void shutdownCaches() {
         LOGGER.debug("Shutting down caches");
 
-        derivativeCache.shutdown();
-        sourceCache.shutdown();
+        if (derivativeCache != null) {
+            derivativeCache.shutdown();
+        }
+        if (sourceCache != null) {
+            sourceCache.shutdown();
+        }
     }
 
     /**
