@@ -437,7 +437,8 @@ cache.server.resolve_first = false
 # items in the background.
 cache.server.worker.enabled = false
 
-# !! The cache worker will start its shifts this many seconds apart.
+# !! The cache worker will wait this many seconds before starting its
+# next shift.
 cache.server.worker.interval = 86400
 
 #----------------------------------------

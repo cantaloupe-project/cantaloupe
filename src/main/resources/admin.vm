@@ -2986,8 +2986,8 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="The cache worker will wait this many
-                                           seconds before starting work again.">?</a>
+                                           data-content="The cache worker will wait this many seconds
+                                           before starting its next shift.">?</a>
                                     </td>
                                     <td>
                                         <input class="form-control" type="number"

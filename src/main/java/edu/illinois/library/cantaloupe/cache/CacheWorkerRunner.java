@@ -40,16 +40,16 @@ public final class CacheWorkerRunner {
     public synchronized void start() {
         final Configuration config = Configuration.getInstance();
         final int initialDelay = 5;
-        final int interval = config.getInt(Key.CACHE_WORKER_INTERVAL, -1);
+        final int delay = config.getInt(Key.CACHE_WORKER_INTERVAL, -1);
 
-        LOGGER.info("Starting the cache worker ({} second delay, {} second interval)",
-                initialDelay, interval);
+        LOGGER.info("Starting the cache worker ({} second initial delay, {} second delay)",
+                initialDelay, delay);
 
         executorService = Executors.newSingleThreadScheduledExecutor();
-        future = executorService.scheduleAtFixedRate(
+        future = executorService.scheduleWithFixedDelay(
                 new CacheWorker(),
                 initialDelay,
-                interval,
+                delay,
                 TimeUnit.SECONDS);
     }
 

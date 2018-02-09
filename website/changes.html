@@ -34,6 +34,7 @@ title: Change Log
       <li>AmazonS3Cache has been renamed to S3Cache, and supports non-AWS endpoints.</li>
       <li>The time-to-live of the source and derivative caches is independently configurable.</li>
       <li>The cache worker dumps the contents of HeapCache during its shifts, if both are enabled and if HeapCache persistence is also enabled.</li>
+      <li>The cache worker's work interval specifies the amount of time between the end of one shift and the beginning of the next, rather between the start of one shift and the next.</li>
       <li>The deprecated <code>DELETE /cache/:identifier</code> HTTP API method has been removed.</li>
     </ul>
   </li>
