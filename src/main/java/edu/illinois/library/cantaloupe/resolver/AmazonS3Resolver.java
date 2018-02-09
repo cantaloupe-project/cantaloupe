@@ -251,4 +251,12 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
         return new S3ObjectStreamSource(getObjectInfo());
     }
 
+    @Override
+    public synchronized void shutdown() {
+        if (client != null) {
+            client.shutdown();
+            client = null;
+        }
+    }
+
 }

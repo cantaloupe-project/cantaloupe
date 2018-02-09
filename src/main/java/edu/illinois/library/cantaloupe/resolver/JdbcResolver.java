@@ -234,4 +234,12 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
         }
     }
 
+    @Override
+    public synchronized void shutdown() {
+        if (dataSource != null) {
+            dataSource.close();
+            dataSource = null;
+        }
+    }
+
 }
