@@ -157,15 +157,20 @@ public final class ProcessorConnector {
                 ((StreamProcessor) processor).setStreamSource(
                         ((StreamResolver) resolver).newStreamSource());
             }
-        } else { // resolver is a StreamResolver
-            // StreamResolvers and FileProcessors can't work together.
+        } else {
+            // The resolver is a StreamResolver.
+            // StreamResolvers and FileProcessors can't work together, but the
+            // source cache, if available, can work around that.
             if (!(processor instanceof StreamProcessor)) {
-                LOGGER.info("Resolver and processor are incompatible ({} -> {})",
-                        StreamResolver.class.getSimpleName(),
-                        FileProcessor.class.getSimpleName());
                 SourceCache sourceCache = CacheFactory.getSourceCache();
                 if (sourceCache != null) {
-                    LOGGER.debug("Source cache available.");
+                    LOGGER.debug("Using the source cache to work around the " +
+                                    "incompatibility of {} (a {}) and {} (a {})",
+                            resolver.getClass().getSimpleName(),
+                            StreamResolver.class.getSimpleName(),
+                            processor.getClass().getSimpleName(),
+                            FileProcessor.class.getSimpleName());
+
                     setSourceCacheAsSource(resolver, processor, sourceCache,
                             identifier);
                 } else {
@@ -257,8 +262,8 @@ public final class ProcessorConnector {
                     throw e;
                 }
             }
-        } while (!succeeded &&
-                numAttempts < MAX_NUM_SOURCE_CACHE_RETRIEVAL_ATTEMPTS);
+        }
+        while (!succeeded && numAttempts < MAX_NUM_SOURCE_CACHE_RETRIEVAL_ATTEMPTS);
     }
 
     /**
