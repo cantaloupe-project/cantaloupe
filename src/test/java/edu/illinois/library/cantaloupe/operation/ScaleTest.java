@@ -14,7 +14,6 @@ import static org.junit.Assert.*;
 
 public class ScaleTest extends BaseTest {
 
-
     public static class FilterTest extends BaseTest {
 
         @Test
@@ -146,6 +145,11 @@ public class ScaleTest extends BaseTest {
         instance = new Scale();
         instance.setPercent(0.5f);
         assertEquals(0.5f, instance.getResultingScale(fullSize), fudge);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void getResultingSizeWithNullArgument() {
+        instance.getResultingSize(null);
     }
 
     @Test

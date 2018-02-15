@@ -259,9 +259,14 @@ public class Scale implements Operation {
      * @param fullSize
      * @return Resulting dimensions when the scale is applied to the given full
      *         size.
+     * @throws IllegalArgumentException if {@literal fullSize} is {@literal
+     *         null}.
      */
     @Override
     public Dimension getResultingSize(Dimension fullSize) {
+        if (fullSize == null) {
+            throw new IllegalArgumentException("fullSize is null");
+        }
         Dimension size = new Dimension(fullSize.width, fullSize.height);
         if (this.getPercent() != null) {
             size.width *= this.getPercent();
