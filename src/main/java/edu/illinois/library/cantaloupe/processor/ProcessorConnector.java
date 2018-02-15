@@ -15,6 +15,8 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -69,6 +71,8 @@ public final class ProcessorConnector {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ProcessorConnector.class);
+
+    private static final int STREAM_BUFFER_SIZE = 32768; // TODO: optimize this
 
     /**
      * Maximum number of a times a source image download will be attempted.
@@ -270,8 +274,12 @@ public final class ProcessorConnector {
                                        SourceCache sourceCache,
                                        Identifier identifier) throws IOException {
         final StreamSource source = ((StreamResolver) resolver).newStreamSource();
-        try (InputStream is = source.newInputStream();
-             OutputStream os = sourceCache.newSourceImageOutputStream(identifier)) {
+        try (InputStream is = new BufferedInputStream(
+                source.newInputStream(),
+                STREAM_BUFFER_SIZE);
+             OutputStream os = new BufferedOutputStream(
+                     sourceCache.newSourceImageOutputStream(identifier),
+                     STREAM_BUFFER_SIZE)) {
             LOGGER.info("Downloading {} to {}",
                     identifier,
                     SourceCache.class.getSimpleName());
