@@ -38,7 +38,7 @@ public class ApplicationContextListener implements ServletContextListener {
         // Tell Restlet to use SLF4J instead of java.util.logging. This needs
         // to be performed before Restlet has been initialized.
         System.setProperty("org.restlet.engine.loggerFacadeClass",
-                org.restlet.ext.slf4j.Slf4jLoggerFacade.class.getSimpleName());
+                org.restlet.ext.slf4j.Slf4jLoggerFacade.class.getName());
     }
 
     private void handleVmArguments() {
