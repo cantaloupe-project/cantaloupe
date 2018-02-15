@@ -293,7 +293,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
      * @return Ordered list of all keys from all config files.
      */
     private Iterator<String> readKeys() {
-        final List<String> allKeys = new ArrayList<>();
+        final List<String> allKeys = new ArrayList<>(Key.values().length + 100);
         for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
             final Iterator<String> it = commonsConfig.getKeys();
             while (it.hasNext()) {

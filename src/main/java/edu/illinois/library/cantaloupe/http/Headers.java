@@ -59,7 +59,7 @@ public final class Headers implements Iterable<Header> {
     }
 
     public void removeAll(String name) {
-        final Collection<Header> toRemove = new ArrayList<>();
+        final Collection<Header> toRemove = new ArrayList<>(headers.size());
         for (Header header : headers) {
             if (name.equals(header.getName())) {
                 toRemove.add(header);

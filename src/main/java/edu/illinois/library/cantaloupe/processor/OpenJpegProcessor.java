@@ -392,7 +392,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                                              final Dimension imageSize,
                                              final ReductionFactor reduction,
                                              final boolean ignoreCrop) {
-        final List<String> command = new ArrayList<>();
+        final List<String> command = new ArrayList<>(30);
         command.add(getPath("opj_decompress"));
 
         if (isQuietModeSupported()) {

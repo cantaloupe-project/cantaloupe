@@ -200,7 +200,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
 
     private List<String> getConvertArguments(final OperationList ops,
                                              final Info imageInfo) {
-        final List<String> args = new ArrayList<>();
+        final List<String> args = new ArrayList<>(30);
         args.add(getPath());
         args.add("convert");
 

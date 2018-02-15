@@ -312,7 +312,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
                                              final Dimension imageSize,
                                              final ReductionFactor reduction,
                                              final boolean ignoreCrop) {
-        final List<String> command = new ArrayList<>();
+        final List<String> command = new ArrayList<>(30);
         command.add(getPath("kdu_expand"));
         command.add("-quiet");
         command.add("-resilient");

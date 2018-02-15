@@ -312,7 +312,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
 
     private List<String> getConvertArguments(final OperationList ops,
                                              final Info imageInfo) {
-        final List<String> args = new ArrayList<>();
+        final List<String> args = new ArrayList<>(30);
 
         if (IMVersion.VERSION_7.equals(getIMVersion())) {
             args.add(getPath("magick"));

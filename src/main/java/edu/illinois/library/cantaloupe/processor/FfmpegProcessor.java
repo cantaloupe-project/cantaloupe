@@ -220,7 +220,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
      * @return Command string corresponding to the given operation list.
      */
     private ProcessBuilder getProcessBuilder(OperationList opList) {
-        final List<String> command = new ArrayList<>();
+        final List<String> command = new ArrayList<>(20);
         command.add(getPath("ffmpeg"));
         command.add("-i");
         command.add(sourceFile.toString());
