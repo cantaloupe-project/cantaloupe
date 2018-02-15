@@ -114,6 +114,13 @@ public class CropTest extends BaseTest {
         instance.applyOrientation(Orientation.ROTATE_90, fullSize);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void getRectangleWithNullSize() {
+        Crop crop = new Crop();
+        crop.setFull(true);
+        crop.getRectangle(null);
+    }
+
     @Test
     public void getRectangleWithFull() {
         final Dimension fullSize = new Dimension(300, 200);

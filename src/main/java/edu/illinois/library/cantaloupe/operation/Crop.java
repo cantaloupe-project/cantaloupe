@@ -166,8 +166,13 @@ public class Crop implements Operation {
      * @param rf Factor by which the image has been reduced.
      * @return Crop coordinates relative to the given full-sized image
      *         dimensions.
+     * @throws IllegalArgumentException if {@literal imageSize} is {@literal
+     *         null}.
      */
     public Rectangle getRectangle(Dimension imageSize, ReductionFactor rf) {
+        if (imageSize == null) {
+            throw new IllegalArgumentException("imageSize is null");
+        }
         final double scale = rf.getScale();
         final double regionX = getX() * scale;
         final double regionY = getY() * scale;
