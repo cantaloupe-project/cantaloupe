@@ -62,7 +62,7 @@ public class AmazonS3CacheTest extends BaseTest {
         super.setUp();
 
         final Configuration config = Configuration.getInstance();
-        config.setProperty(Key.CACHE_SERVER_TTL, 2);
+        config.setProperty(Key.CACHE_SERVER_TTL, 4);
         config.setProperty(Key.AMAZONS3CACHE_OBJECT_KEY_PREFIX, "test/");
         config.setProperty(Key.AMAZONS3CACHE_ACCESS_KEY_ID, getAccessKeyId());
         config.setProperty(Key.AMAZONS3CACHE_BUCKET_NAME, getBucket());
@@ -176,7 +176,7 @@ public class AmazonS3CacheTest extends BaseTest {
         }
 
         // wait for it to invalidate
-        Thread.sleep(2100);
+        Thread.sleep(5100);
 
         // assert that it has been purged
         try (InputStream is = instance.newDerivativeImageInputStream(opList)) {
@@ -301,8 +301,6 @@ public class AmazonS3CacheTest extends BaseTest {
 
     @Test
     public void testPurgeExpired() throws Exception {
-        Configuration.getInstance().setProperty(Key.CACHE_SERVER_TTL, 4);
-
         // add an image
         Path fixture1 = TestUtil.getImage(identifier.toString());
         try (OutputStream outputStream =
@@ -313,7 +311,7 @@ public class AmazonS3CacheTest extends BaseTest {
         // add an Info
         instance.put(identifier, imageInfo);
 
-        Thread.sleep(2000);
+        Thread.sleep(5000);
 
         // add another image
         Path fixture2 = TestUtil.getImage("gif-rgb-64x56x8.gif");
