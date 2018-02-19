@@ -57,14 +57,17 @@ code {
   background-color: #f0f0f0;
   color: #606060; }
 
+var {
+  font-family: Menlo, Monaco, Consolas, monospace;
+  font-size: 90% }
+
 ul.toc, ul.toc ul {
   margin-left: 1.5em;
   padding-left: 0em; }
 
 div.benefits ul {
   margin-left: 1.2em;
-  padding-left: 0px;
-}
+  padding-left: 0px; }
 
 span.filename {
   font-family: monospace; }

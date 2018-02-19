@@ -5,6 +5,9 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
+import edu.illinois.library.cantaloupe.script.DelegateProxy;
+import edu.illinois.library.cantaloupe.script.DelegateProxyService;
+import edu.illinois.library.cantaloupe.script.DisabledException;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -90,8 +93,17 @@ public class JdbcResolverTest extends AbstractResolverTest {
     @Override
     JdbcResolver newInstance() {
         JdbcResolver instance = new JdbcResolver();
-        instance.setIdentifier(new Identifier(DB_IMAGE_FILENAME));
-        instance.setContext(new RequestContext());
+
+        try {
+            Identifier identifier = new Identifier(DB_IMAGE_FILENAME);
+            RequestContext context = new RequestContext();
+            context.setIdentifier(identifier);
+            DelegateProxyService service = DelegateProxyService.getInstance();
+            DelegateProxy proxy = service.newDelegateProxy(context);
+            instance.setDelegateProxy(proxy);
+            instance.setIdentifier(identifier);
+        } catch (DisabledException ignore) {}
+
         return instance;
     }
 
@@ -105,6 +117,23 @@ public class JdbcResolverTest extends AbstractResolverTest {
         // This resolver is always using ScriptLookupStrategy.
     }
 
+    /* checkAccess() */
+
+    @Override
+    @Test(expected = NoSuchFileException.class)
+    public void testCheckAccessUsingBasicLookupStrategyWithMissingImage()
+            throws Exception {
+        Identifier identifier = new Identifier("bogus");
+        RequestContext context = new RequestContext();
+        context.setIdentifier(identifier);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
+        instance.setIdentifier(identifier);
+
+        instance.checkAccess();
+    }
+
     /* getSourceFormat() */
 
     @Test
@@ -114,7 +143,14 @@ public class JdbcResolverTest extends AbstractResolverTest {
 
     @Test
     public void testGetSourceFormatWithMissingImage() throws Exception {
-        instance.setIdentifier(new Identifier("bogus"));
+        Identifier identifier = new Identifier("bogus");
+        RequestContext context = new RequestContext();
+        context.setIdentifier(identifier);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
+        instance.setIdentifier(identifier);
+
         assertEquals(Format.UNKNOWN, instance.getSourceFormat());
     }
 
@@ -122,7 +158,14 @@ public class JdbcResolverTest extends AbstractResolverTest {
 
     @Test
     public void testGetDatabaseIdentifier() throws Exception {
-        instance.setIdentifier(new Identifier("cats.jpg"));
+        Identifier identifier = new Identifier("cats.jpg");
+        RequestContext context = new RequestContext();
+        context.setIdentifier(identifier);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
+        instance.setIdentifier(identifier);
+
         String result = instance.getDatabaseIdentifier();
         assertEquals("cats.jpg", result);
     }
@@ -131,6 +174,14 @@ public class JdbcResolverTest extends AbstractResolverTest {
 
     @Test
     public void testGetLookupSQL() throws Exception {
+        Identifier identifier = new Identifier("cats.jpg");
+        RequestContext context = new RequestContext();
+        context.setIdentifier(identifier);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
+        instance.setIdentifier(identifier);
+
         String result = instance.getLookupSQL();
         assertEquals("SELECT image FROM items WHERE filename = ?", result);
     }

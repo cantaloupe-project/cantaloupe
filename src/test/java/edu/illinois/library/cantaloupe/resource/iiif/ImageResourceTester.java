@@ -8,15 +8,12 @@ import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 
-import java.awt.Dimension;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
 import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.*;
@@ -445,12 +442,7 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         Client client = newClient(uri);
 
         try {
-            opList.applyNonEndpointMutations(
-                    new Info(64, 56),
-                    "",
-                    new URI("http://example.org/"),
-                    new HashMap<>(),
-                    new HashMap<>());
+            opList.applyNonEndpointMutations(new Info(64, 56), null);
 
             assertRecursiveFileCount(cacheDir, 0);
 

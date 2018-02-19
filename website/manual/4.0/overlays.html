@@ -73,29 +73,26 @@ title: Overlays
 <p>With the <code>overlay()</code> delegate method, you can tell the image server whether to apply an overlay in response to a particular request, and what its properties should be. As an example:</p>
 
 {% highlight ruby %}
-module Cantaloupe
-  ##
-  # See the argument & return value documentation in delegates.rb.sample.
-  #
-  def self.overlay(identifier, operations, resulting_size, output_format,
-                   request_uri, request_headers, client_ip, cookies)
+class CustomDelegate
+  def overlay
     # If the resulting image is less than this many pixels on a side, don't
     # apply an overlay.
     min_size_cutoff = 300
-    return false if resulting_size['width'] < min_size_cutoff or
+    resulting_size = context['resulting_size']
+    return nil if resulting_size['width'] < min_size_cutoff or
         resulting_size['height'] < min_size_cutoff
 
     # Don't render an overlay for clients on localhost.
-    return false if %w(127.0.0.1 ::1/128).include?(client_ip)
+    return nil if %w(127.0.0.1 ::1/128).include?(context['client_ip'])
 
     # Don't render an overlay on GIF images.
-    return false if output_format['media_type'] == 'image/gif'
+    return nil if context['output_format'] == 'image/gif'
 
     # Don't render an overlay on images of cantaloupes.
-    return false if identifier.downcase.include?('cantaloupe')
+    return nil if context['identifier'].downcase.include?('cantaloupe')
 
     # Render an image overlay for iOS clients.
-    if request_headers.
+    if context['request_headers'].
         select{ |k,v| k.downcase == 'user-agent' and v.include?('iOS') }.any?
       return {
         'image' => '/path/to/ios-overlay.png',

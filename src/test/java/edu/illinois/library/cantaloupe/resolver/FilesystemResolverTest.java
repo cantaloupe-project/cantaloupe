@@ -7,6 +7,8 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
+import edu.illinois.library.cantaloupe.script.DelegateProxy;
+import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,7 +50,6 @@ public class FilesystemResolverTest extends AbstractResolverTest {
     FilesystemResolver newInstance() {
         FilesystemResolver instance = new FilesystemResolver();
         instance.setIdentifier(IDENTIFIER);
-        instance.setContext(new RequestContext());
         return instance;
     }
 
@@ -102,8 +103,16 @@ public class FilesystemResolverTest extends AbstractResolverTest {
     public void testCheckAccessUsingScriptLookupStrategyWithPresentReadableFile()
             throws Exception {
         useScriptLookupStrategy();
-        instance.setIdentifier(
-                new Identifier(TestUtil.getImage(IDENTIFIER.toString()).toString()));
+
+        Identifier identifier = new Identifier(
+                TestUtil.getImage(IDENTIFIER.toString()).toString());
+        RequestContext context = new RequestContext();
+        context.setIdentifier(identifier);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
+
+        instance.setIdentifier(identifier);
         instance.checkAccess();
     }
 
@@ -112,8 +121,15 @@ public class FilesystemResolverTest extends AbstractResolverTest {
             throws Exception {
         useScriptLookupStrategy();
 
-        instance.setIdentifier(
-                new Identifier(TestUtil.getImage(IDENTIFIER.toString()).toString()));
+        Identifier identifier = new Identifier(
+                TestUtil.getImage(IDENTIFIER.toString()).toString());
+        RequestContext context = new RequestContext();
+        context.setIdentifier(identifier);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
+        instance.setIdentifier(identifier);
+
         Path path = instance.getPath();
         Set<PosixFilePermission> initialPermissions =
                 Files.getPosixFilePermissions(path);
@@ -129,7 +145,15 @@ public class FilesystemResolverTest extends AbstractResolverTest {
     public void testCheckAccessUsingScriptLookupStrategyWithMissingFile()
             throws Exception {
         useScriptLookupStrategy();
-        instance.setIdentifier(new Identifier("bogus"));
+
+        Identifier identifier = new Identifier("missing");
+        RequestContext context = new RequestContext();
+        context.setIdentifier(identifier);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
+
+        instance.setIdentifier(identifier);
         instance.checkAccess();
     }
 
@@ -200,7 +224,14 @@ public class FilesystemResolverTest extends AbstractResolverTest {
     @Test
     public void testGetPathWithScriptLookupStrategy() throws Exception {
         useScriptLookupStrategy();
-        assertEquals("/bla/" + IDENTIFIER, instance.getPath().toString());
+
+        RequestContext context = new RequestContext();
+        context.setIdentifier(IDENTIFIER);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
+
+        assertEquals(IDENTIFIER.toString(), instance.getPath().toString());
     }
 
     /* getSourceFormat() */

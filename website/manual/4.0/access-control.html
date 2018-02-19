@@ -50,7 +50,6 @@ endpoint.public.auth.basic.secret = mypassword
 <h3 id="Authorization Examples">Examples</h3>
 
 <ul>
-  <li><a href="#example-1">Inspect the arguments</a></li>
   <li><a href="#example-2">Allow only requests for half-scale images or smaller</a></li>
   <li><a href="#example-3">Allow only requests for identifiers matching a certain pattern</a></li>
   <li><a href="#example-4">Allow only requests for images set as "public" in a MySQL database</a></li>
@@ -61,36 +60,11 @@ endpoint.public.auth.basic.secret = mypassword
   <li><a href="#example-9">Redirect to another URL</a></li>
 </ul>
 
-<h4 id="example-1">Inspect the parameters</h4>
-
-<p>This method will print the method arguments to the console.</p>
-
-{% highlight ruby %}
-module Cantaloupe
-  def self.authorized?(identifier, full_size, operations, resulting_size,
-                       output_format, request_uri, request_headers, client_ip,
-                       cookies)
-    puts "identifier: #{identifier}"
-    puts "full_size: #{full_size}"
-    puts "operations: #{operations}"
-    puts "resulting_size: #{resulting_size}"
-    puts "output_format: #{output_format}"
-    puts "request_uri: #{request_uri}"
-    puts "request_headers: #{request_headers}"
-    puts "client_ip: #{client_ip}"
-    puts "cookies: #{cookies}"
-    true
-  end
-end
-{% endhighlight %}
-
 <h4 id="example-2">Allow only requests for half-scale images or smaller</h4>
 
 {% highlight ruby %}
-module Cantaloupe
-  def self.authorized?(identifier, full_size, operations, resulting_size,
-                       output_format, request_uri, request_headers, client_ip,
-                       cookies)
+class CustomDelegate
+  def authorized?
     scale = operations.select{ |op| op['class'] == 'Scale' }.first
     if scale
       max_scale = 0.5
@@ -105,10 +79,10 @@ end
 <h4 id="example-3">Allow only requests for identifiers matching a certain pattern</h4>
 
 {% highlight ruby %}
-module Cantaloupe
-  def self.authorized?(identifier, full_size, operations, resulting_size,
-                       output_format, request_uri, request_headers, client_ip,
-                       cookies)
+class CustomDelegate
+  def authorized?
+    identifier = context['identifier']
+
     # Allow only identifiers that don't include "_restricted"
     return !identifier.include?('_restricted')
     # Allow only identifiers that start with "_public"
@@ -121,24 +95,22 @@ end
 
 <h4 id="example-4">Allow only requests for images set as "public" in a MySQL database</h4>
 
-<p>(You will need to install the <a href="https://dev.mysql.com/downloads/connector/j/">MySQL JDBC driver</a> first.)</p>
+<p>(The <a href="https://dev.mysql.com/downloads/connector/j/">MySQL JDBC driver</a> will need to be installed first.)</p>
 
-<div class="alert alert-danger">Note: The parameters passed to <code>authorized?</code> are not guaranteed to be safe. <code>identifier</code>, for example, will be exactly as the application receives it. Prefer prepared statements over string concatenation in order to reduce vulnerability to injection attacks.</div>
+<div class="alert alert-danger">Note: The arguments in the context hash are not sanitized. <code>context['identifier']</code>, for example, will be exactly as the application receives it. Prefer prepared statements over string concatenation in order to reduce vulnerability to injection attacks.</div>
 
 {% highlight ruby %}
-module Cantaloupe
-  def self.authorized?(identifier, full_size, operations, resulting_size,
-                       output_format, request_uri, request_headers, client_ip,
-                       cookies)
-    require "rubygems"
-    require "jdbc/mysql"
-    require "java"
+require 'rubygems'
+require 'jdbc/mysql'
+require 'java'
 
+class CustomDelegate
+  def authorized?
     authorized = false
 
     Java::com.mysql.jdbc.Driver
-    url = "jdbc:mysql://HOST/DATABASE"
-    conn = java.sql.DriverManager.get_connection(url, "USERNAME", "PASSWORD")
+    url = 'jdbc:mysql://HOST/DATABASE'
+    conn = java.sql.DriverManager.get_connection(url, 'USERNAME', 'PASSWORD')
     stmt = conn.create_statement
 
     begin
@@ -147,7 +119,7 @@ module Cantaloupe
           WHERE identifier = ?
           LIMIT 1}
       stmt = conn.prepare_statement(query)
-      stmt.setString(1, identifier);
+      stmt.setString(1, context['identifier']);
       result_set = stmt.execute_query
       while result_set.next do
         authorized = result_set.getBoolean(1)
@@ -164,10 +136,8 @@ end
 <h4 id="example-5">Allow only JPEG output</h4>
 
 {% highlight ruby %}
-module Cantaloupe
-  def self.authorized?(identifier, full_size, operations, resulting_size,
-                       output_format, request_uri, request_headers, client_ip,
-                       cookies)
+class CustomDelegate
+  def authorized?
     output_format['media_type'] == 'image/jpeg'
   end
 end
@@ -175,14 +145,13 @@ end
 
 <h4 id="example-6">Allow only certain user agents</h4>
 
-<div class="alert alert-warning">This is not foolproof&mdash;if a client knows what User-Agent you are checking for, they can spoof it.</div>
+<div class="alert alert-warning">This is not foolproof&mdash;if a client knows what <var>User-Agent</var> you are checking for, they can spoof it.</div>
 
 {% highlight ruby %}
-module Cantaloupe
-  def self.authorized?(identifier, full_size, operations, resulting_size,
-                       output_format, request_uri, request_headers, client_ip,
-                       cookies)
-    agent = request_headers.select{ |h, v| h.downcase == 'user-agent' }.first
+class CustomDelegate
+  def authorized?
+    headers = context['request_headers']
+    agent = headers.select{ |h, v| h.downcase == 'user-agent' }.first
     agent.start_with?('MyAllowedUserAgent/')
   end
 end
@@ -191,10 +160,8 @@ end
 <h4 id="example-7">Allow only requests that supply a valid token in a header</h4>
 
 {% highlight ruby %}
-module Cantaloupe
-  def self.authorized?(identifier, full_size, operations, resulting_size,
-                       output_format, request_uri, request_headers, client_ip,
-                       cookies)
+class CustomDelegate
+  def authorized?
     headers['X-MyToken'] == ... # write code to authorize the token
   end
 end
@@ -207,11 +174,9 @@ end
 <p>(Also see <a href="redaction.html">redaction</a>.)</p>
 
 {% highlight ruby %}
-module Cantaloupe
-  def self.authorized?(identifier, full_size, operations, resulting_size,
-                       output_format, request_uri, request_headers, client_ip,
-                       cookies)
-    crop = operations.select{ |op| op['class'] == 'Crop' }.first
+class CustomDelegate
+  def authorized?
+    crop = context['operations'].select{ |op| op['class'] == 'Crop' }.first
     if crop
       max_x = full_size['width'] / 2
       max_y = full_size['height'] / 2
@@ -226,10 +191,8 @@ end
 <h4 id="example-9">Redirect to another URL</h4>
 
 {% highlight ruby %}
-module Cantaloupe
-  def self.authorized?(identifier, full_size, operations, resulting_size,
-                       output_format, request_uri, request_headers, client_ip,
-                       cookies)
+class CustomDelegate
+  def redirect
     {
       'location' => 'http://example.org/some-other-url',
       'status_code' => 302

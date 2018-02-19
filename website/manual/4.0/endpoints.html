@@ -56,18 +56,8 @@ title: Endpoints
 <p>Custom keys can be added to the information JSON response, such as to declare <a href="http://iiif.io/api/annex/services/">service profiles</a> or, beginning in Image API 2.1, an optional rights statement and/or logo. The <a href="delegate-script.html">delegate script</a> needs to implement the <code>extra_iiif2_information_response_keys()</code> method. An example implementation follows:</p>
 
 {% highlight ruby %}
-module Cantaloupe
-  ##
-  # Used to add additional keys to the information JSON response. including
-  # `attribution`, `license`, `logo`, `service`, and custom keys. See
-  # [http://iiif.io/api/image/2.1/#image-information](the Image API
-  # specification).
-  #
-  # @param identifier [String] Image identifier
-  # @return [Hash] Hash that will be merged into IIIF Image API 2.x
-  #                information responses. Return an empty hash to add nothing.
-  #
-  def self.extra_iiif2_information_response_keys(identifier)
+class CustomDelegate
+  def extra_iiif2_information_response_keys
     {
         'attribution' =>  'Copyright My Great Organization. All rights '\
                           'reserved.',

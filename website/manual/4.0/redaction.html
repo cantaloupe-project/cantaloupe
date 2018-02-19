@@ -34,16 +34,13 @@ title: Redaction
 <h2 id="Example">Example</h2>
 
 {% highlight ruby %}
-module Cantaloupe
-  ##
-  # See the argument and return value documentation in delegates.rb.sample.
-  #
-  def self.redactions(identifier, request_headers, client_ip, cookies)
+class CustomDelegate
+  def redactions
     redactions = []
     # Add two redactions to an image with an identifier of "sample" for all
     # clients except localhost.
-    if identifier == 'sample'
-      unless %w(127.0.0.1 ::1/128).include?(client_ip)
+    if context['identifier'] == 'sample'
+      unless %w(127.0.0.1 ::1/128).include?(context['client_ip'])
         redactions << {
             'x' => 50,
             'y' => 65,

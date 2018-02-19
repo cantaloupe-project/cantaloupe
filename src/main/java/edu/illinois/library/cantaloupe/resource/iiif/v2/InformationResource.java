@@ -75,7 +75,7 @@ public class InformationResource extends IIIF2Resource {
                         final Processor processor = new ProcessorFactory().
                                 newProcessor(format);
                         commitCustomResponseHeaders();
-                        return newRepresentation(identifier, info, processor);
+                        return newRepresentation(info, processor);
                     }
                 }
             } catch (IOException e) {
@@ -84,8 +84,8 @@ public class InformationResource extends IIIF2Resource {
             }
         }
 
-        final Resolver resolver = new ResolverFactory().
-                newResolver(identifier, getRequestContext());
+        final Resolver resolver = new ResolverFactory().newResolver(
+                identifier, getDelegateProxy());
 
         try {
             resolver.checkAccess();
@@ -109,7 +109,8 @@ public class InformationResource extends IIIF2Resource {
         final Info info = getOrReadInfo(identifier, processor);
 
         commitCustomResponseHeaders();
-        return newRepresentation(identifier, info, processor);
+
+        return newRepresentation(info, processor);
     }
 
     /**
@@ -137,12 +138,11 @@ public class InformationResource extends IIIF2Resource {
         return mediaType;
     }
 
-    private Representation newRepresentation(Identifier identifier,
-                                             Info info,
+    private Representation newRepresentation(Info info,
                                              Processor processor) {
         final ImageInfo<String, Object> imageInfo =
                 new ImageInfoFactory().newImageInfo(
-                        identifier, getImageURI(), processor, info);
+                        getImageURI(), processor, info, getDelegateProxy());
         final MediaType mediaType = getNegotiatedMediaType();
         return new JSONRepresentation(imageInfo, mediaType);
     }

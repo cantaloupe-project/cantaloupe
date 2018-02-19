@@ -10,6 +10,8 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
+import edu.illinois.library.cantaloupe.script.DelegateProxy;
+import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
@@ -31,9 +33,6 @@ import java.nio.file.Path;
 
 import static org.junit.Assert.*;
 
-/**
- * Tests S3Resolver against Amazon S3. An AWS account is required.
- */
 public class S3ResolverTest extends AbstractResolverTest {
 
     private static final String OBJECT_KEY = "jpeg.jpg";
@@ -170,7 +169,6 @@ public class S3ResolverTest extends AbstractResolverTest {
     S3Resolver newInstance() {
         S3Resolver instance = new S3Resolver();
         instance.setIdentifier(new Identifier(OBJECT_KEY));
-        instance.setContext(new RequestContext());
         return instance;
     }
 
@@ -194,7 +192,14 @@ public class S3ResolverTest extends AbstractResolverTest {
             config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
             config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                     TestUtil.getFixture("delegates.rb"));
-        } catch (IOException e) {
+
+            Identifier identifier = new Identifier(OBJECT_KEY);
+            RequestContext context = new RequestContext();
+            context.setIdentifier(identifier);
+            DelegateProxyService service = DelegateProxyService.getInstance();
+            DelegateProxy proxy = service.newDelegateProxy(context);
+            instance.setDelegateProxy(proxy);
+        } catch (Exception e) {
             fail();
         }
     }
@@ -223,7 +228,14 @@ public class S3ResolverTest extends AbstractResolverTest {
             throws Exception {
         useScriptLookupStrategy();
 
-        instance.setIdentifier(new Identifier("bogus"));
+        Identifier identifier = new Identifier("bogus");
+        RequestContext context = new RequestContext();
+        context.setIdentifier(identifier);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
+        instance.setIdentifier(identifier);
+
         instance.checkAccess();
     }
 
@@ -242,7 +254,14 @@ public class S3ResolverTest extends AbstractResolverTest {
             throws Exception {
         useScriptLookupStrategy();
 
-        instance.setIdentifier(new Identifier("key:" + OBJECT_KEY));
+        Identifier identifier = new Identifier("key:" + OBJECT_KEY);
+        RequestContext context = new RequestContext();
+        context.setIdentifier(identifier);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
+        instance.setIdentifier(identifier);
+
         instance.checkAccess();
     }
 

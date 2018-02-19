@@ -8,9 +8,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.MediaType;
-import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
-import edu.illinois.library.cantaloupe.script.ScriptEngine;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.script.DelegateMethod;
 import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
 
 import org.slf4j.Logger;
@@ -91,9 +89,6 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(S3Resolver.class);
-
-    private static final String GET_KEY_DELEGATE_METHOD =
-            "S3Resolver::get_object_key";
 
     private static AmazonS3 client;
 
@@ -185,7 +180,7 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
             case DELEGATE_SCRIPT:
                 try {
                     objectInfo = getObjectInfoUsingDelegateStrategy();
-                } catch (ScriptException | DelegateScriptDisabledException e) {
+                } catch (ScriptException e) {
                     throw new IOException(e);
                 }
                 break;
@@ -210,42 +205,34 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
     }
 
     /**
-     * @return Object info drawn from the {@link #GET_KEY_DELEGATE_METHOD}
-     *         delegate method.
+     * @return Object info drawn from the {@link
+     *         DelegateMethod#S3RESOLVER_OBJECT_INFO} delegate method.
      * @throws IllegalArgumentException if the return value of the delegate
      *                                  method is invalid.
      * @throws NoSuchFileException      if the delegate script does not exist.
      * @throws ScriptException          if the delegate method throws an
      *                                  exception.
-     * @throws IOException              if something else goes wrong.
      */
     private ObjectInfo getObjectInfoUsingDelegateStrategy()
-            throws IOException, ScriptException,
-            DelegateScriptDisabledException {
-        final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final Object result = engine.invoke(GET_KEY_DELEGATE_METHOD,
-                identifier.toString(), context.asMap());
-        if (result == null) {
-            throw new NoSuchFileException(GET_KEY_DELEGATE_METHOD +
+            throws ScriptException, NoSuchFileException {
+        Map<String,String> result = getDelegateProxy().getS3ResolverObjectInfo();
+
+        if (result.isEmpty()) {
+            throw new NoSuchFileException(
+                    DelegateMethod.S3RESOLVER_OBJECT_INFO +
                     " returned nil for " + identifier);
         }
 
         String bucketName, objectKey;
 
-        if (result instanceof Map) {
-            Map<?, ?> map = (Map<?, ?>) result;
-            if (map.containsKey("bucket") && map.containsKey("key")) {
-                bucketName = map.get("bucket").toString();
-                objectKey = map.get("key").toString();
-            } else {
-                throw new IllegalArgumentException(
-                        "Hash does not include bucket and key");
-            }
+        if (result.containsKey("bucket") && result.containsKey("key")) {
+            bucketName = result.get("bucket");
+            objectKey = result.get("key");
         } else {
-            objectKey = (String) result;
-            bucketName = Configuration.getInstance().
-                    getString(Key.S3RESOLVER_BUCKET_NAME);
+            throw new IllegalArgumentException(
+                    "Returned hash does not include bucket and key");
         }
+
         return new ObjectInfo(objectKey, bucketName);
     }
 

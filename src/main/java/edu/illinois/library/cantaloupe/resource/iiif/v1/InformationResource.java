@@ -34,8 +34,8 @@ public class InformationResource extends IIIF1Resource {
 
     /**
      * Redirects {@literal /:identifier} to {@literal /:identifier/info.json},
-     * respecting the Servlet context root and
-     * {@link #PUBLIC_IDENTIFIER_HEADER} header.
+     * respecting the Servlet context root and {@link
+     * #PUBLIC_IDENTIFIER_HEADER} header.
      */
     public static class RedirectingResource extends IIIF1Resource {
         @Get
@@ -86,8 +86,8 @@ public class InformationResource extends IIIF1Resource {
             }
         }
 
-        final Resolver resolver = new ResolverFactory().
-                newResolver(identifier, getRequestContext());
+        final Resolver resolver = new ResolverFactory().newResolver(
+                identifier, getDelegateProxy());
 
         try {
             resolver.checkAccess();

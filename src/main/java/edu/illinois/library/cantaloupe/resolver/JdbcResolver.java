@@ -5,9 +5,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.MediaType;
-import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
-import edu.illinois.library.cantaloupe.script.ScriptEngine;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.script.DelegateMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,13 +74,6 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(JdbcResolver.class);
 
-    private static final String GET_DATABASE_IDENTIFIER_DELEGATE_METHOD =
-            "JdbcResolver::get_database_identifier";
-    private static final String GET_LOOKUP_SQL_DELEGATE_METHOD =
-            "JdbcResolver::get_lookup_sql";
-    private static final String GET_MEDIA_TYPE_DELEGATE_METHOD =
-            "JdbcResolver::get_media_type";
-
     private static HikariDataSource dataSource;
 
     /**
@@ -124,7 +115,7 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
         try (Connection connection = getConnection()) {
             final String sql = getLookupSQL();
             if (!sql.contains("?")) {
-                throw new IOException(GET_LOOKUP_SQL_DELEGATE_METHOD +
+                throw new IOException(DelegateMethod.JDBCRESOLVER_LOOKUP_SQL +
                         " implementation does not support prepared statements");
             }
 
@@ -138,8 +129,7 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
                     }
                 }
             }
-        } catch (ScriptException | SQLException |
-                DelegateScriptDisabledException e) {
+        } catch (ScriptException | SQLException e) {
             throw new IOException(e.getMessage(), e);
         }
     }
@@ -179,8 +169,7 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
                 } else {
                     sourceFormat = Format.UNKNOWN;
                 }
-            } catch (ScriptException | SQLException |
-                    DelegateScriptDisabledException e) {
+            } catch (ScriptException | SQLException e) {
                 throw new IOException(e.getMessage(), e);
             }
         }
@@ -188,48 +177,40 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     }
 
     /**
-     * @return Result of the {@link #GET_DATABASE_IDENTIFIER_DELEGATE_METHOD}
+     * @return Result of the {@link
+     *         DelegateMethod#JDBCRESOLVER_DATABASE_IDENTIFIER} method.
+     */
+    String getDatabaseIdentifier() throws ScriptException {
+        return getDelegateProxy().getJdbcResolverDatabaseIdentifier();
+    }
+
+    /**
+     * @return Result of the {@link DelegateMethod#JDBCRESOLVER_LOOKUP_SQL}
      *         method.
      */
-    String getDatabaseIdentifier() throws IOException,
-            ScriptException, DelegateScriptDisabledException {
-        final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final Object result = engine.invoke(
-                GET_DATABASE_IDENTIFIER_DELEGATE_METHOD,
-                identifier.toString(), context.asMap());
-        return (String) result;
-    }
+    String getLookupSQL() throws IOException, ScriptException {
+        final String sql = getDelegateProxy().getJdbcResolverLookupSQL();
 
-    /**
-     * @return Result of the {@link #GET_LOOKUP_SQL_DELEGATE_METHOD} method.
-     */
-    String getLookupSQL() throws IOException, ScriptException,
-            DelegateScriptDisabledException {
-        final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final Object result = engine.invoke(GET_LOOKUP_SQL_DELEGATE_METHOD);
-        final String resultStr = (String) result;
-        if (!resultStr.contains("?")) {
-            throw new IOException(GET_LOOKUP_SQL_DELEGATE_METHOD +
+        if (!sql.contains("?")) {
+            throw new IOException(DelegateMethod.JDBCRESOLVER_LOOKUP_SQL +
                     " implementation does not support prepared statements");
         }
-        return resultStr;
+        return sql;
     }
 
     /**
-     * @return Result of the {@link #GET_MEDIA_TYPE_DELEGATE_METHOD} method.
+     * @return Result of the {@link DelegateMethod#JDBCRESOLVER_MEDIA_TYPE}
+     *         method.
      */
-    String getMediaType() throws IOException, ScriptException,
-            DelegateScriptDisabledException {
-        final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final Object result = engine.invoke(GET_MEDIA_TYPE_DELEGATE_METHOD);
-        return (String) result;
+    String getMediaType() throws ScriptException {
+        return getDelegateProxy().getJdbcResolverMediaType();
     }
 
     @Override
     public StreamSource newStreamSource() throws IOException {
         try {
             return new JdbcStreamSource(getLookupSQL(), getDatabaseIdentifier());
-        } catch (ScriptException | DelegateScriptDisabledException e) {
+        } catch (ScriptException e) {
             throw new IOException(e.getMessage(), e);
         }
     }

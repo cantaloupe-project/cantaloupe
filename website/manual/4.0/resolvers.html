@@ -43,8 +43,10 @@ title: Resolvers
 <p>To enable dynamic resolver selection, set the <code>resolver.delegate</code> configuration key to <code>true</code>. Then, implement the <code>get_resolver(identifier)</code> method in the delegate script, which takes an identifier argument and returns a resolver name. For example:</p>
 
 {% highlight ruby %}
-module Cantaloupe
-  def self.get_resolver(identifier)
+class CustomDelegate
+  def resolver
+    identifier = context['identifier']
+
     # Here, you would perform some kind of analysis on `identifier`:
     # parse it, look it up in a web service or database...
     # and then return the name of the resolver to use to serve it.
@@ -132,34 +134,36 @@ require 'java'
 java_import 'org.postgresql.Driver'
 java_import 'java.sql.DriverManager'
 
-module Cantaloupe
-  module FilesystemResolver
-    JDBC_URL = 'jdbc:postgresql://localhost:5432/mydatabase'
-    JDBC_USER = 'myuser'
-    JDBC_PASSWORD = 'mypassword'
+class CustomDelegate
 
-    # DriverManager is actually java.sql.DriverManager
-    # (https://docs.oracle.com/javase/8/docs/api/java/sql/DriverManager.html);
-    # we are calling Java API via JRuby.
-    # By making the connection static, we can avoid reconnecting every time
-    # get_pathname() is called, which would be slow and expensive.
-    @@conn = DriverManager.get_connection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
+  JDBC_URL = 'jdbc:postgresql://localhost:5432/mydatabase'
+  JDBC_USER = 'myuser'
+  JDBC_PASSWORD = 'mypassword'
 
-    def self.get_pathname(identifier, context)
-      begin
-        # Note the use of prepared statements to prevent SQL injection.
-        sql = 'SELECT pathname FROM images WHERE identifier = ? LIMIT 1'
-        stmt = @@conn.prepare_statement(sql)
-        stmt.set_string(1, identifier.to_s)
-        results = stmt.execute_query
-        results.next
-        pathname = results.getString(1)
-        return (pathname.length > 0) ? pathname : nil
-      ensure
-        stmt.close if stmt
-      end
+  # DriverManager is actually java.sql.DriverManager
+  # (https://docs.oracle.com/javase/8/docs/api/java/sql/DriverManager.html);
+  # we are calling Java API via JRuby.
+  # By making the connection static, we can avoid reconnecting every time
+  # get_pathname() is called, which would be slow and expensive.
+  @@conn = DriverManager.get_connection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
+
+  def filesystemresolver_pathname
+    identifier = context['identifier']
+    begin
+      # Note the use of prepared statements, which are safer than
+      # string concatenation.
+      sql = 'SELECT pathname FROM images WHERE identifier = ? LIMIT 1'
+      stmt = @@conn.prepare_statement(sql)
+      stmt.set_string(1, identifier.to_s)
+      results = stmt.execute_query
+      results.next
+      pathname = results.getString(1)
+      return (pathname.length > 0) ? pathname : nil
+    ensure
+      stmt.close if stmt
     end
   end
+
 end
 {% endhighlight %}
 
@@ -173,19 +177,18 @@ end
 require 'net/http'
 require 'cgi'
 
-module Cantaloupe
-  module FilesystemResolver
-    def self.get_pathname(identifier, context)
-      uri = 'http://example.org/webservice/' + CGI.escape(identifier)
-      uri = URI.parse(uri)
+class CustomDelegate
+  def filesystemresolver_pathname
+    identifier = context['identifier']
+    uri = 'http://example.org/webservice/' + CGI.escape(identifier)
+    uri = URI.parse(uri)
 
-      http = Net::HTTP.new(uri.host, uri.port)
-      request = Net::HTTP::Get.new(uri.request_uri)
-      response = http.request(request)
-      return nil if response.code.to_i >= 400
+    http = Net::HTTP.new(uri.host, uri.port)
+    request = Net::HTTP::Get.new(uri.request_uri)
+    response = http.request(request)
+    return nil if response.code.to_i >= 400
 
-      (response.body.length > 0) ? response.body.strip : nil
-    end
+    (response.body.length > 0) ? response.body.strip : nil
   end
 end
 {% endhighlight %}
@@ -208,8 +211,8 @@ end
 
 {% highlight properties %}
 # Note trailing slash!
-HttpResolver.url_prefix = http://example.org/images/
-HttpResolver.url_suffix =
+HttpResolver.BasicLookupStrategy.url_prefix = http://example.org/images/
+HttpResolver.BasicLookupStrategy.url_suffix =
 {% endhighlight %}
 
 <p>An identifier of <code>image.jpg</code> in the URL will resolve to
@@ -254,14 +257,12 @@ jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre
 <p>This method takes in an unencoded URL identifier and returns the corresponding database value of the identifier.</p>
 
 {% highlight ruby %}
-module Cantaloupe
-  module JdbcResolver
-    get_database_identifier(url_identifier)
-      # If URL identifiers map directly to values in the database, simply
-      # return url_identifier. Otherwise, you could transform it, perform
-      # a service request to look it up, etc.
-      url_identifier
-    end
+class CustomDelegate
+  def jdbcresolver_database_identifier
+    # If URL identifiers map directly to values in the database, simply
+    # return the identifier from the request context. Otherwise, you
+    # could transform it, perform a service request to look it up, etc.
+    context['identifier']
   end
 end
 {% endhighlight %}
@@ -271,13 +272,11 @@ end
 <p>This method returns a media (MIME) type corresponding to the value returned by the <code><a href="#JdbcResolverIdentifierMethod">get_database_identifier</a></code> method. If the media type is stored in the database, this example will return an SQL statement to retrieve it.</p>
 
 {% highlight ruby %}
-module Cantaloupe
-  module JdbcResolver
-    def get_media_type
-      'SELECT media_type ' +
-          'FROM some_table ' +
-          'WHERE some_identifier = ?'
-    end
+class CustomDelegate
+  def jdbcresolver_media_type
+    'SELECT media_type ' +
+        'FROM some_table ' +
+        'WHERE some_identifier = ?'
   end
 end
 {% endhighlight %}
@@ -289,13 +288,11 @@ end
 <p>The <code>get_lookup_sql</code> method returns an SQL statement that selects the BLOB value corresponding to the value returned by the <code><a href="#JdbcResolverIdentifierMethod">get_database_identifier</a></code> method.</p>
 
 {% highlight ruby %}
-module Cantaloupe
-  module JdbcResolver
-    def get_lookup_sql
-      'SELECT image_blob_column '
-          'FROM some_table '
-          'WHERE some_identifier = ?'
-    end
+class CustomDelegate
+  def jdbcresolver_lookup_sql
+    'SELECT image_blob_column '
+        'FROM some_table '
+        'WHERE some_identifier = ?'
   end
 end
 {% endhighlight %}
@@ -327,7 +324,6 @@ end
   <dt>Configuration File</dt>
   <dd>
     <p>Credentials can be set via the following keys in the configuration file:</p>
-
     <dl>
       <dt><code>S3Resolver.access_key_id</code></dt>
       <dd>An access key associated with your AWS account. (See <a href="http://aws.amazon.com/security-credentials">AWS Security Credentials</a>.)</dd>

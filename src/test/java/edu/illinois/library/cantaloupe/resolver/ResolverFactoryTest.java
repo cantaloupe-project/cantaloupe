@@ -4,6 +4,8 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
+import edu.illinois.library.cantaloupe.script.DelegateProxy;
+import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
@@ -33,11 +35,11 @@ public class ResolverFactoryTest extends BaseTest {
 
         Identifier identifier = new Identifier("jdbc");
 
-        Resolver resolver = instance.newResolver(identifier, new RequestContext());
+        Resolver resolver = instance.newResolver(identifier, null);
         assertTrue(resolver instanceof FilesystemResolver);
 
         config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
-        resolver = instance.newResolver(identifier, new RequestContext());
+        resolver = instance.newResolver(identifier, null);
         assertTrue(resolver instanceof HttpResolver);
     }
 
@@ -47,7 +49,7 @@ public class ResolverFactoryTest extends BaseTest {
         config.setProperty(Key.RESOLVER_STATIC, "BogusResolver");
 
         Identifier identifier = new Identifier("jdbc");
-        instance.newResolver(identifier, new RequestContext());
+        instance.newResolver(identifier, null);
     }
 
     @Test
@@ -59,11 +61,21 @@ public class ResolverFactoryTest extends BaseTest {
         config.setProperty(Key.RESOLVER_DELEGATE, true);
 
         Identifier identifier = new Identifier("http");
-        Resolver resolver = instance.newResolver(identifier, new RequestContext());
+        RequestContext context = new RequestContext();
+        context.setIdentifier(identifier);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+
+        Resolver resolver = instance.newResolver(identifier, proxy);
         assertTrue(resolver instanceof HttpResolver);
 
         identifier = new Identifier("anythingelse");
-        resolver = instance.newResolver(identifier, new RequestContext());
+        context = new RequestContext();
+        context.setIdentifier(identifier);
+        service = DelegateProxyService.getInstance();
+        proxy = service.newDelegateProxy(context);
+
+        resolver = instance.newResolver(identifier, proxy);
         assertTrue(resolver instanceof FilesystemResolver);
     }
 

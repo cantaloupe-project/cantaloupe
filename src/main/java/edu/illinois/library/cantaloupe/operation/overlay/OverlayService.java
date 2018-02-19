@@ -3,29 +3,30 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
+import edu.illinois.library.cantaloupe.script.DelegateProxy;
 
 import javax.script.ScriptException;
 import java.awt.Dimension;
-import java.io.IOException;
-import java.net.URI;
-import java.util.Map;
 
 /**
  * Provides information about overlays, including whether they are enabled,
  * and access to new {@link Overlay} instances, if so.
  */
-public class OverlayService {
+public final class OverlayService {
 
     enum Strategy {
-        /** Uses <code>overlays.BasicStrategy.*</code> configuration keys to
-         * get global overlay properties. */
+
+        /**
+         * Gets global overlay properties from configuration keys.
+         */
         BASIC,
 
-        /** Uses the result of a delegate method to get overlay properties
-         * per-request. */
+        /**
+         * Uses the result of a delegate method to get overlay properties
+         * per-request.
+         */
         DELEGATE_METHOD
+
     }
 
     private boolean isEnabled = false;
@@ -41,27 +42,17 @@ public class OverlayService {
      * configuration, or the delegate method return value, depending on the
      * setting of {@link Key#OVERLAY_STRATEGY}.
      *
-     * @param opList Required for ScriptStrategy.
-     * @param fullSize Required for ScriptStrategy.
-     * @param requestURI Required for ScriptStrategy.
-     * @param requestHeaders Required for ScriptStrategy.
-     * @param clientIP Required for ScriptStrategy.
-     * @param cookies Required for ScriptStrategy.
-     * @return Overlay respecting the overlay strategy and given arguments,
-     *         or <code>null</code>.
+     * @param delegateProxy Required for {@link Strategy#DELEGATE_METHOD}.
+     *                      May be {@literal null}.
+     * @return              Overlay respecting the overlay strategy and given
+     *                      arguments, or {@literal null}.
      */
-    public Overlay newOverlay(OperationList opList,
-                              Dimension fullSize,
-                              URI requestURI,
-                              Map<String,String> requestHeaders,
-                              String clientIP,
-                              Map<String,String> cookies)
-            throws IOException, ScriptException,
-            DelegateScriptDisabledException, ConfigurationException {
+    public Overlay newOverlay(DelegateProxy delegateProxy)
+            throws ScriptException, ConfigurationException {
+        final Configuration config = Configuration.getInstance();
         switch (getStrategy()) {
             case BASIC:
-                switch (Configuration.getInstance().
-                        getString(Key.OVERLAY_TYPE, "")) {
+                switch (config.getString(Key.OVERLAY_TYPE, "")) {
                     case "image":
                         return new BasicImageOverlayService().getOverlay();
                     case "string":
@@ -69,9 +60,7 @@ public class OverlayService {
                 }
                 break;
             case DELEGATE_METHOD:
-                return new DelegateOverlayService().getOverlay(
-                        opList, fullSize, requestURI, requestHeaders, clientIP,
-                        cookies);
+                return new DelegateOverlayService().getOverlay(delegateProxy);
         }
         return null;
     }

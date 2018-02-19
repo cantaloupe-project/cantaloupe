@@ -3,10 +3,12 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.resource.RequestContext;
+import edu.illinois.library.cantaloupe.script.DelegateProxy;
+import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
@@ -20,7 +22,6 @@ import static org.junit.Assert.*;
 
 public class ImageInfoFactoryTest extends BaseTest {
 
-    private Identifier identifier;
     private String imageUri;
     private ImageInfo<String, Object> imageInfo;
     private Processor processor;
@@ -33,26 +34,24 @@ public class ImageInfoFactoryTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
         config.setProperty(Key.MAX_PIXELS, 0);
 
-        identifier = new Identifier("bla");
         imageUri = "http://example.org/bla";
         processor = new ProcessorFactory().newProcessor(Format.JPG);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
         imageInfo = new ImageInfoFactory().newImageInfo(
-                identifier, imageUri, processor, processor.readImageInfo());
+                imageUri, processor, processor.readImageInfo(), null);
     }
 
     private void setUpForRotatedImage() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_RESPECT_ORIENTATION, true);
 
-        identifier = new Identifier("bla");
         processor = new ProcessorFactory().newProcessor(Format.JPG);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rotated.jpg"));
 
         imageInfo = new ImageInfoFactory().newImageInfo(
-                identifier, imageUri, processor, processor.readImageInfo());
+                imageUri, processor, processor.readImageInfo(), null);
     }
 
     @Test
@@ -115,7 +114,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         config.setProperty(Key.IIIF_MIN_SIZE, 200);
 
         imageInfo = new ImageInfoFactory().newImageInfo(
-                identifier, imageUri, processor, processor.readImageInfo());
+                imageUri, processor, processor.readImageInfo(), null);
         @SuppressWarnings("unchecked")
         List<ImageInfo.Size> sizes =
                 (List<ImageInfo.Size>) imageInfo.get("sizes");
@@ -132,7 +131,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         config.setProperty(Key.MAX_PIXELS, 10000);
 
         imageInfo = new ImageInfoFactory().newImageInfo(
-                identifier, imageUri, processor, processor.readImageInfo());
+                imageUri, processor, processor.readImageInfo(), null);
         @SuppressWarnings("unchecked")
         List<ImageInfo.Size> sizes =
                 (List<ImageInfo.Size>) imageInfo.get("sizes");
@@ -178,7 +177,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"));
         imageInfo = new ImageInfoFactory().newImageInfo(
-                identifier, imageUri, processor, processor.readImageInfo());
+                imageUri, processor, processor.readImageInfo(), null);
 
         @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =
@@ -221,7 +220,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         config.setProperty(Key.MAX_PIXELS, 100);
 
         imageInfo = new ImageInfoFactory().newImageInfo(
-                identifier, imageUri, processor, processor.readImageInfo());
+                imageUri, processor, processor.readImageInfo(), null);
         List<?> profile = (List<?>) imageInfo.get("profile");
         assertTrue(((Map<?, ?>) profile.get(1)).get("maxArea").
                 equals(config.getInt(Key.MAX_PIXELS)));
@@ -233,7 +232,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         config.setProperty(Key.MAX_PIXELS, 0);
 
         imageInfo = new ImageInfoFactory().newImageInfo(
-                identifier, imageUri, processor, processor.readImageInfo());
+                imageUri, processor, processor.readImageInfo(), null);
         List<?> profile = (List<?>) imageInfo.get("profile");
         assertFalse(((Map<?, ?>) profile.get(1)).containsKey("maxArea"));
     }
@@ -258,8 +257,13 @@ public class ImageInfoFactoryTest extends BaseTest {
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").toString());
-        imageInfo = new ImageInfoFactory().newImageInfo(identifier, imageUri,
-                processor, processor.readImageInfo());
+
+        RequestContext context = new RequestContext();
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+
+        imageInfo = new ImageInfoFactory().newImageInfo(
+                imageUri, processor, processor.readImageInfo(), proxy);
 
         assertEquals("Copyright My Great Organization. All rights reserved.",
                 imageInfo.get("attribution"));

@@ -1,154 +1,177 @@
+require 'java'
 require 'uri'
 
-module Cantaloupe
+class CustomDelegate
 
-  def self.authorized?(identifier, full_size, operations, resulting_size,
-      output_format, request_uri, request_headers, client_ip, cookies)
-    case identifier
-      when 'forbidden.jpg'
-        return false
+  attr_accessor :context
+
+  def redirect
+    case context['identifier']
       when 'redirect.jpg'
         return {
-          'location' => 'http://example.org/',
-          'status_code' => 303
+            'location' => 'http://example.org/',
+            'status_code' => 303
         }
     end
-    true
+    nil
   end
 
-  def self.extra_iiif2_information_response_keys(identifier)
-    {
-        'attribution' =>  'Copyright My Great Organization. All rights reserved.',
-        'license' =>  'http://example.org/license.html',
-        'service' => {
-            '@context' => 'http://iiif.io/api/annex/services/physdim/1/context.json',
-            'profile' => 'http://iiif.io/api/annex/services/physdim',
-            'physicalScale' => 0.0025,
-            'physicalUnits' => 'in'
-        }
-    }
-  end
-
-  def self.get_resolver(identifier)
-    if identifier == 'http'
-      return 'HttpResolver'
-    elsif identifier == 'jdbc'
-      return 'JdbcResolver'
-    else
-      return 'FilesystemResolver'
+  def authorized?
+    case context['identifier']
+      when 'forbidden.jpg'
+        return false
+      else
+        true
     end
   end
 
-  module FilesystemResolver
-    def self.get_pathname(identifier, context)
-      identifier.start_with?('/') ? identifier : '/bla/' + identifier
-    end
-  end
-
-  module AzureStorageResolver
-    def self.get_blob_key(identifier, context)
-      identifier
-    end
-  end
-
-  module S3Resolver
-    def self.get_object_key(identifier, context)
-      if identifier.include?('key:')
-        parts = identifier.split(';')
-        struct = {}
-        parts.each do |part|
-          kv = part.split(':')
-          struct[kv[0]] = kv[1]
-        end
-        return struct
-      end
-
-      identifier
-    end
-  end
-
-  module HttpResolver
-    ##
-    # Used by HttpResolverTest
-    #
-    def self.get_url(identifier, context)
-      # Supply a localhost URL to return the same URL.
-      if identifier.start_with?('http://localhost') or
-          identifier.start_with?('https://localhost')
-        return identifier
-      # Supply a valid URL prefixed with "valid-auth-" to return a valid URL
-      # with valid auth info.
-      elsif identifier.start_with?('valid-auth-')
+  def extra_iiif2_information_response_keys
+    case context['identifier']
+      when 'bogus'
+        return nil
+      when 'empty'
+        return {}
+      else
         return {
-            'uri' => identifier.gsub('valid-auth-', ''),
-            'username' => 'user',
+            'attribution' => 'Copyright My Great Organization. All rights reserved.',
+            'license' => 'http://example.org/license.html',
+            'service' => {
+                '@context' => 'http://iiif.io/api/annex/services/physdim/1/context.json',
+                'profile' => 'http://iiif.io/api/annex/services/physdim',
+                'physicalScale' => 0.0025,
+                'physicalUnits' => 'in'
+            }
+        }
+    end
+  end
+
+  def resolver
+    case context['identifier']
+      when 'http'
+        return 'HttpResolver'
+      when 'jdbc'
+        return 'JdbcResolver'
+      when 'bogus'
+        return nil
+      else
+        return 'FilesystemResolver'
+    end
+  end
+
+  def azurestorageresolver_blob_key
+    context['identifier'] != 'missing' ? context['identifier'] : nil
+  end
+
+  def filesystemresolver_pathname
+    context['identifier'] != 'missing' ? context['identifier'] : nil
+  end
+
+  def httpresolver_resource_info
+    identifier = context['identifier']
+
+    ########################## DelegateProxyTest ############################
+
+    case identifier
+      when 'DelegateProxyTest-String'
+        return 'http://example.org/foxes'
+      when 'DelegateProxyTest-Hash'
+        return { 'uri' => 'http://example.org/birds' }
+    end
+
+    ########################### HttpResolverTest #############################
+
+    # Supply a localhost URL to return the same URL.
+    if identifier.start_with?('http://localhost') or
+        identifier.start_with?('https://localhost')
+      return { 'uri' => identifier }
+    # Supply a valid URL prefixed with "valid-auth-" to return a valid URL
+    # with valid auth info.
+    elsif identifier.start_with?('valid-auth-')
+      return {
+          'uri' => identifier.gsub('valid-auth-', ''),
+          'username' => 'user',
+          'secret' => 'secret'
+      }
+    # Supply a valid URL prefixed with "invalid-auth-" to return a valid URL
+    # with invalid auth info.
+    elsif identifier.start_with?('invalid-auth-')
+      return {
+          'uri' => identifier.gsub('invalid-auth-', ''),
+          'username' => 'user',
+          'secret' => 'bogus'
+      }
+    elsif context['client_ip'] == '1.2.3.4'
+      if context['request_headers']['X-Forwarded-Proto'] == 'https'
+        return {
+            'uri' => 'https://other-example.org/bleh/' + URI.escape(identifier)
+        }
+      else
+        return {
+            'uri' => 'http://other-example.org/bleh/' + URI.escape(identifier)
+        }
+      end
+    end
+
+    case identifier
+      when 'http-jpg-rgb-64x56x8-baseline.jpg'
+        return {
+            'uri' => 'http://example.org/bla/' + URI.escape(identifier)
+        }
+      when 'https-jpg-rgb-64x56x8-baseline.jpg'
+        return {
+            'uri' => 'https://example.org/bla/' + URI.escape(identifier)
+        }
+      when 'http-jpg-rgb-64x56x8-plane.jpg'
+        return {
+            'uri' => 'http://example.org/bla/' + URI.escape(identifier),
+            'username' => 'username',
             'secret' => 'secret'
         }
-      # Supply a valid URL prefixed with "invalid-auth-" to return a valid URL
-      # with invalid auth info.
-      elsif identifier.start_with?('invalid-auth-')
+      when 'https-jpg-rgb-64x56x8-plane.jpg'
         return {
-            'uri' => identifier.gsub('invalid-auth-', ''),
-            'username' => 'user',
-            'secret' => 'bogus'
+            'uri' => 'https://example.org/bla/' + URI.escape(identifier),
+            'username' => 'username',
+            'secret' => 'secret'
         }
-      end
+    end
+    nil
+  end
 
-      if context['clientIP'] == '1.2.3.4'
-        if context['headers']['X-Forwarded-Proto'] == 'https'
-          return 'https://other-example.org/bleh/' + URI.escape(identifier)
-        else
-          return 'http://other-example.org/bleh/' + URI.escape(identifier)
-        end
-      end
+  def jdbcresolver_database_identifier
+    context['identifier']
+  end
 
-      case identifier
-        when 'http-jpg-rgb-64x56x8-baseline.jpg'
-          return 'http://example.org/bla/' + URI.escape(identifier)
-        when 'https-jpg-rgb-64x56x8-baseline.jpg'
-          return 'https://example.org/bla/' + URI.escape(identifier)
-        when 'http-jpg-rgb-64x56x8-plane.jpg'
-          return {
-              'uri' => 'http://example.org/bla/' + URI.escape(identifier),
-              'username' => 'username',
-              'secret' => 'secret'
-          }
-        when 'https-jpg-rgb-64x56x8-plane.jpg'
-          return {
-              'uri' => 'https://example.org/bla/' + URI.escape(identifier),
-              'username' => 'username',
-              'secret' => 'secret'
-          }
+  def jdbcresolver_media_type
+    'SELECT media_type FROM items WHERE filename = ?'
+  end
+
+  def jdbcresolver_lookup_sql
+    'SELECT image FROM items WHERE filename = ?'
+  end
+
+  def s3resolver_object_info
+    identifier = context['identifier']
+
+    if identifier.start_with?('key:')
+      parts = identifier.split(';')
+      struct = {}
+      parts.each do |part|
+        kv = part.split(':')
+        struct[kv[0]] = kv[1]
       end
-      nil
+      return struct
+    elsif identifier == 'bogus'
+      return nil
+    else
+      {
+          'key' => identifier,
+          'bucket' => 'test.cantaloupe.library.illinois.edu'
+      }
     end
   end
 
-  module JdbcResolver
-    def self.get_database_identifier(identifier, context)
-      identifier
-    end
-
-    def self.get_media_type
-      'SELECT media_type FROM items WHERE filename = ?'
-    end
-
-    def self.get_lookup_sql
-      'SELECT image FROM items WHERE filename = ?'
-    end
-  end
-
-  def self.redactions(identifier, request_headers, client_ip, cookies)
-    redactions = []
-    if identifier == 'cats'
-      redactions << { 'x' => 0, 'y' => 10, 'width' => 50, 'height' => 70 }
-    end
-    redactions
-  end
-
-  def self.overlay(identifier, operations, resulting_size, output_format,
-      request_uri, request_headers, client_ip, cookies)
-    case identifier
+  def overlay
+    case context['identifier']
       when 'image'
         return {
             'image' => '/dev/cats',
@@ -171,7 +194,18 @@ module Cantaloupe
             'stroke_width' => 3
         }
     end
-    false
+    nil
+  end
+
+  def redactions
+    case context['identifier']
+      when 'bogus'
+        return nil
+      when 'empty'
+        return []
+      else
+        return [ { 'x' => 0, 'y' => 10, 'width' => 50, 'height' => 70 } ]
+    end
   end
 
 end
