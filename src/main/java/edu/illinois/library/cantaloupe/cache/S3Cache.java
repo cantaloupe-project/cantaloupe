@@ -29,6 +29,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 
 /**
  * <p>Cache using an S3 bucket.</p>
@@ -229,6 +230,19 @@ class S3Cache implements DerivativeCache {
                 Instant.EPOCH;
     }
 
+    private static boolean isValid(ObjectMetadata metadata) {
+        return isValid(metadata.getLastModified());
+    }
+
+    private static boolean isValid(S3ObjectSummary summary) {
+        return isValid(summary.getLastModified());
+    }
+
+    private static boolean isValid(Date lastModified) {
+        Instant earliestAllowed = getEarliestValidInstant();
+        return lastModified.toInstant().isAfter(earliestAllowed);
+    }
+
     String getBucketName() {
         return Configuration.getInstance().getString(Key.S3CACHE_BUCKET_NAME);
     }
@@ -263,20 +277,6 @@ class S3Cache implements DerivativeCache {
             }
         }
         return null;
-    }
-
-    private boolean isValid(ObjectMetadata metadata) {
-        Instant earliestAllowed = getEarliestValidInstant();
-        Instant lastModified = metadata.getLastModified().toInstant();
-        // Both of these have second resolution, so add a millisecond.
-        return lastModified.plusMillis(1).isAfter(earliestAllowed);
-    }
-
-    private boolean isValid(S3ObjectSummary summary) {
-        Instant earliestAllowed = getEarliestValidInstant();
-        Instant lastModified = summary.getLastModified().toInstant();
-        // Both of these have second resolution, so add a millisecond.
-        return lastModified.plusMillis(1).isAfter(earliestAllowed);
     }
 
     @Override
