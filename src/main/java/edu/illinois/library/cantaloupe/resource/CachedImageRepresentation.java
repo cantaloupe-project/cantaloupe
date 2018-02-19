@@ -47,8 +47,8 @@ public class CachedImageRepresentation extends OutputRepresentation {
         try {
             final Stopwatch watch = new Stopwatch();
             IOUtils.copy(inputStream, outputStream);
-            LOGGER.debug("Streamed from the cache without resolving in {} msec",
-                    watch.timeElapsed());
+            LOGGER.debug("Streamed from the cache without resolving in {}",
+                    watch);
         } finally {
             inputStream.close();
             // N.B.: Restlet will close the output stream.

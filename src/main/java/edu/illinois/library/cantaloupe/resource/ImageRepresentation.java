@@ -81,10 +81,9 @@ public class ImageRepresentation extends OutputRepresentation {
                         final Stopwatch watch = new Stopwatch();
                         IOUtils.copy(cacheInputStream, responseOutputStream);
 
-                        LOGGER.debug("Streamed from {} in {} msec: {}",
+                        LOGGER.debug("Streamed from {} in {}: {}",
                                 cacheFacade.getDerivativeCache().getClass().getSimpleName(),
-                                watch.timeElapsed(),
-                                opList);
+                                watch, opList);
                     } else {
                         // Create a TeeOutputStream to write to the response
                         // output stream and the cache pseudo-simultaneously.
@@ -157,15 +156,14 @@ public class ImageRepresentation extends OutputRepresentation {
                     IOUtils.copy(inputStream, outputStream);
                 }
             }
-            LOGGER.debug("Streamed with no processing in {} msec: {}",
-                    watch.timeElapsed(), opList);
+            LOGGER.debug("Streamed with no processing in {}: {}",
+                    watch, opList);
         } else {
             try {
                 processor.process(opList, imageInfo, outputStream);
 
-                LOGGER.debug("{} processed in {} msec: {}",
-                        processor.getClass().getSimpleName(),
-                        watch.timeElapsed(), opList);
+                LOGGER.debug("{} processed in {}: {}",
+                        processor.getClass().getSimpleName(), watch, opList);
             } catch (ProcessorException e) {
                 throw new IOException(e.getMessage(), e);
             }

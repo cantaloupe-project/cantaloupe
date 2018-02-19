@@ -5,7 +5,7 @@ package edu.illinois.library.cantaloupe.util;
  *
  * <p>Instances are thread-safe.</p>
  */
-public class Stopwatch {
+public final class Stopwatch {
 
     private final long startTime = System.currentTimeMillis();
 
@@ -14,6 +14,11 @@ public class Stopwatch {
      */
     public long timeElapsed() {
         return System.currentTimeMillis() - startTime;
+    }
+
+    @Override
+    public String toString() {
+        return timeElapsed() + " msec";
     }
 
 }

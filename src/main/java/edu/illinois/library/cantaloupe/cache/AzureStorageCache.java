@@ -157,8 +157,8 @@ class AzureStorageCache implements DerivativeCache {
                 if (isValid(blob)) {
                     try (InputStream is = blob.openInputStream()) {
                         Info info = Info.fromJSON(is);
-                        LOGGER.info("getImageInfo(): read {} from container {} in {} msec",
-                                objectKey, containerName, watch.timeElapsed());
+                        LOGGER.info("getImageInfo(): read {} from container {} in {}",
+                                objectKey, containerName, watch);
                         return info;
                     }
                 } else {

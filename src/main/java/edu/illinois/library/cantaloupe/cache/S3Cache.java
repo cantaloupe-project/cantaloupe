@@ -181,9 +181,9 @@ class S3Cache implements DerivativeCache {
 
             s3.putObject(request);
 
-            UPLOAD_LOGGER.info("Wrote {} bytes to {} in bucket {} in {} msec",
+            UPLOAD_LOGGER.info("Wrote {} bytes to {} in bucket {} in {}",
                     data.length, request.getKey(), request.getBucketName(),
-                    watch.timeElapsed());
+                    watch);
         }
 
     }
@@ -248,8 +248,8 @@ class S3Cache implements DerivativeCache {
                 try (InputStream is =
                              new BufferedInputStream(object.getObjectContent())) {
                     final Info info = Info.fromJSON(is);
-                    LOGGER.info("getImageInfo(): read {} from bucket {} in {} msec",
-                            objectKey, bucketName, watch.timeElapsed());
+                    LOGGER.info("getImageInfo(): read {} from bucket {} in {}",
+                            objectKey, bucketName, watch);
                     return info;
                 }
             } else {

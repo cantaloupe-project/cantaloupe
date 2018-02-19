@@ -79,11 +79,10 @@ public final class InfoService {
                 Stopwatch watch = new Stopwatch();
                 info = derivCache.getImageInfo(identifier);
                 if (info != null) {
-                    LOGGER.debug("getInfo(): retrieved info of {} from " +
-                                    "{} in {} msec",
+                    LOGGER.debug("getInfo(): retrieved info of {} from {} in {}",
                             identifier,
                             derivCache.getClass().getSimpleName(),
-                            watch.timeElapsed());
+                            watch);
 
                     // Add it to the object cache (which it may already exist
                     // in, but it doesn't matter).
@@ -136,11 +135,10 @@ public final class InfoService {
             // derivative and object caches.
             info = readInfo(identifier, proc);
 
-            LOGGER.debug("getOrReadInfo(): read info of {} from {} " +
-                            "in {} msec",
+            LOGGER.debug("getOrReadInfo(): read info of {} from {} in {}",
                     identifier,
                     proc.getClass().getSimpleName(),
-                    watch.timeElapsed());
+                    watch);
 
             // Add it to the derivative and object caches.
             final DerivativeCache derivCache = CacheFactory.getDerivativeCache();
@@ -203,10 +201,10 @@ public final class InfoService {
                           final Processor proc) throws IOException {
         final Stopwatch watch = new Stopwatch();
         final Info info = proc.readImageInfo();
-        LOGGER.debug("readInfo(): read {} from {} in {} msec",
+        LOGGER.debug("readInfo(): read {} from {} in {}",
                 identifier,
                 proc.getClass().getSimpleName(),
-                watch.timeElapsed());
+                watch);
         return info;
     }
 
