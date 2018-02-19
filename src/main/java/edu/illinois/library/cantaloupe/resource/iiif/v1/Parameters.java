@@ -67,10 +67,15 @@ class Parameters implements Comparable<Parameters> {
      * @param rotation From URI
      * @param quality From URI
      * @param format From URI
+     * @throws UnsupportedOutputFormatException if the {@literal format}
+     *         argument is invalid.
      */
-    public Parameters(Identifier identifier, String region, String size,
-                      String rotation, String quality, String format)
-            throws UnsupportedOutputFormatException {
+    public Parameters(Identifier identifier,
+                      String region,
+                      String size,
+                      String rotation,
+                      String quality,
+                      String format) {
         setIdentifier(identifier);
         setRegion(Region.fromUri(region));
         setSize(Size.fromUri(size));

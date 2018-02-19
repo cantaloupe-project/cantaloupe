@@ -77,7 +77,7 @@ class Parameters implements Comparable<Parameters> {
                       String size,
                       String rotation,
                       String quality,
-                      String format) throws UnsupportedOutputFormatException {
+                      String format) {
         setIdentifier(identifier);
         setRegion(Region.fromUri(region));
         setSize(Size.fromUri(size));

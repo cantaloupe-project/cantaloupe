@@ -165,8 +165,7 @@ public class ImageResource extends IIIF1Resource {
                 String.format("<%s>;rel=\"profile\";", complianceLevel.getUri()));
     }
 
-    private OperationList getOperationList(Set<Format> availableOutputFormats)
-            throws UnsupportedOutputFormatException {
+    private OperationList getOperationList(Set<Format> availableOutputFormats) {
         final Map<String,Object> attrs = getRequest().getAttributes();
         final String[] qualityAndFormat = StringUtils.
                 split((String) attrs.get("quality_format"), ".");

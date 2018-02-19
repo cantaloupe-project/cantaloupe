@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
 
-public class UnsupportedOutputFormatException extends ProcessorException {
+public class UnsupportedOutputFormatException extends IllegalArgumentException {
 
     public UnsupportedOutputFormatException() {
         super("Unsupported output format");
