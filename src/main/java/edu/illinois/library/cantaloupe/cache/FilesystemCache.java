@@ -327,7 +327,18 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         public FileVisitResult visitFile(Path path,
                                          BasicFileAttributes attrs) {
             try {
-                if (Files.isRegularFile(path) && isExpired(path)) {
+                final boolean delete =
+                        (Files.isRegularFile(path) && isExpired(path));
+
+                EFV_LOGGER.debug("{}: last accessed: {}; last modified; {}; " +
+                                "effective last accessed: {}; delete? {}",
+                        path,
+                        Files.getAttribute(path, "lastAccessTime"),
+                        Files.getLastModifiedTime(path),
+                        getLastAccessedTime(path),
+                        delete);
+
+                if (delete) {
                     final long size = Files.size(path);
                     Files.deleteIfExists(path);
                     deletedFileCount++;
@@ -411,8 +422,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             // Last-accessed time is not reliable on macOS+APFS as of 10.13.2.
             // TODO: what about HFS+?
             if (SystemUtils.IS_OS_MAC) {
-                LOGGER.debug("macOS detected; using last-modified time " +
-                        "instead of last-accessed time.");
                 return Files.getLastModifiedTime(file);
             }
             return (FileTime) Files.getAttribute(file, "lastAccessTime");
@@ -458,12 +467,16 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      *         returned.
      */
     private static boolean isExpired(Path file) throws IOException {
-        final long ttlMsec = 1000 * Configuration.getInstance().
+        final long ttl = Configuration.getInstance().
                 getLong(Key.CACHE_SERVER_TTL, 0);
+        final long ttlMsec = 1000 * ttl;
         final long age = System.currentTimeMillis()
                 - getLastAccessedTime(file).toMillis();
-        LOGGER.debug("Age of {}: {} msec", file.getFileName(), age);
-        return (ttlMsec > 0 && age > ttlMsec);
+        final boolean expired = (ttlMsec > 0 && age > ttlMsec);
+
+        LOGGER.debug("isExpired(): {}: TTL: {}; last accessed: {}; expired? {}",
+                file, ttl, age, expired);
+        return expired;
     }
 
     /**
@@ -581,6 +594,12 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             lock = infoLocks.get(identifier);
         }
         return lock;
+    }
+
+    @Override
+    public void initialize() {
+        LOGGER.info("macOS detected; will use file last-modified times " +
+                "instead of last-accessed times.");
     }
 
     /**
@@ -797,7 +816,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             visitor.setRootPathToExclude(path);
             visitor.setLogger(LOGGER);
 
-            LOGGER.info("purge(): purging...");
+            LOGGER.info("purge(): starting...");
             Files.walkFileTree(path,
                     EnumSet.of(FileVisitOption.FOLLOW_LINKS),
                     Integer.MAX_VALUE,
@@ -959,7 +978,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
             final ExpiredFileVisitor visitor = new ExpiredFileVisitor();
 
-            LOGGER.info("purgeExpired(): purging...");
+            LOGGER.info("purgeExpired(): starting...");
             Files.walkFileTree(rootPath(),
                     EnumSet.of(FileVisitOption.FOLLOW_LINKS),
                     Integer.MAX_VALUE,
