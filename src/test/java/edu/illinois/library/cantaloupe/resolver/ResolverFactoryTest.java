@@ -27,17 +27,25 @@ public class ResolverFactoryTest extends BaseTest {
     }
 
     @Test
-    public void newResolverWithValidStaticResolver() throws Exception {
+    public void newResolverWithValidStaticResolverSimpleClassName()
+            throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.RESOLVER_STATIC, "FilesystemResolver");
+        config.setProperty(Key.RESOLVER_STATIC,
+                HttpResolver.class.getSimpleName());
 
-        Identifier identifier = new Identifier("jdbc");
-
+        Identifier identifier = new Identifier("cats");
         Resolver resolver = instance.newResolver(identifier, new RequestContext());
-        assertTrue(resolver instanceof FilesystemResolver);
+        assertTrue(resolver instanceof HttpResolver);
+    }
 
-        config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
-        resolver = instance.newResolver(identifier, new RequestContext());
+    @Test
+    public void newResolverWithValidStaticResolverFullClassName()
+            throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.RESOLVER_STATIC, HttpResolver.class.getName());
+
+        Identifier identifier = new Identifier("cats");
+        Resolver resolver = instance.newResolver(identifier, new RequestContext());
         assertTrue(resolver instanceof HttpResolver);
     }
 
@@ -46,7 +54,7 @@ public class ResolverFactoryTest extends BaseTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.RESOLVER_STATIC, "BogusResolver");
 
-        Identifier identifier = new Identifier("jdbc");
+        Identifier identifier = new Identifier("cats");
         instance.newResolver(identifier, new RequestContext());
     }
 
