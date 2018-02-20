@@ -34,7 +34,18 @@ class ExpiredFileVisitor extends SimpleFileVisitor<Path> {
     public FileVisitResult visitFile(Path path,
                                      BasicFileAttributes attrs) {
         try {
-            if (Files.isRegularFile(path) && FilesystemCache.isExpired(path)) {
+            final boolean delete =
+                    (Files.isRegularFile(path) && FilesystemCache.isExpired(path));
+
+            LOGGER.debug("{}: last accessed: {}; last modified; {}; " +
+                            "effective last accessed: {}; delete? {}",
+                    path,
+                    Files.getAttribute(path, "lastAccessTime"),
+                    Files.getLastModifiedTime(path),
+                    FilesystemCache.getLastAccessedTime(path),
+                    delete);
+
+            if (delete) {
                 final long size = Files.size(path);
                 Files.deleteIfExists(path);
                 deletedFileCount++;
