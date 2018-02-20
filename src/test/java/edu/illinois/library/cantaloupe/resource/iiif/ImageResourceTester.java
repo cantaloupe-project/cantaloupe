@@ -1,18 +1,26 @@
 package edu.illinois.library.cantaloupe.resource.iiif;
 
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.InfoService;
+import edu.illinois.library.cantaloupe.cache.SourceCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Client;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.Orientation;
+import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
+import edu.illinois.library.cantaloupe.resolver.StreamResolver;
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 
-import java.awt.Dimension;
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -327,6 +335,67 @@ public class ImageResourceTester extends ImageAPIResourceTester {
             assertEquals(404, e.getStatusCode());
         } finally {
             Files.move(movedFile.toPath(), sourceFile);
+            client.stop();
+        }
+    }
+
+    /**
+     * Used by {@link #testCheckAccessNotCalledWithSourceCacheHit}.
+     */
+    public static class NotCheckingAccessResolver implements StreamResolver {
+
+        @Override
+        public void checkAccess() throws IOException {
+            throw new IOException("checkAccess called!");
+        }
+
+        @Override
+        public Format getSourceFormat() {
+            return Format.JPG;
+        }
+
+        @Override
+        public StreamSource newStreamSource() throws IOException {
+            return new PathStreamSource(TestUtil.getImage("jpg"));
+        }
+
+        @Override
+        public void setIdentifier(Identifier identifier) {}
+
+        @Override
+        public void setContext(RequestContext context) {}
+
+    }
+
+    public void testCheckAccessNotCalledWithSourceCacheHit(Identifier identifier,
+                                                           URI uri) throws Exception {
+        // Set up the environment to use the source cache, not resolve first,
+        // and use a non-FileResolver.
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
+        config.setProperty(Key.RESOLVER_STATIC,
+                NotCheckingAccessResolver.class.getName());
+        config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
+        config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
+        config.setProperty(Key.SOURCE_CACHE_TTL, 10);
+        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
+                Files.createTempDirectory("test").toString());
+        config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
+
+        // Put an image in the source cache.
+        Path image = TestUtil.getImage("jpg");
+        SourceCache sourceCache = CacheFactory.getSourceCache();
+
+        try (OutputStream os = sourceCache.newSourceImageOutputStream(identifier)) {
+            Files.copy(image, os);
+        }
+
+        Client client = newClient(uri);
+        try {
+            client.send();
+            // We are expecting NonCheckingAccessResolver.checkAccess() to not
+            // throw an exception, which would cause a 500 response.
+        } finally {
             client.stop();
         }
     }

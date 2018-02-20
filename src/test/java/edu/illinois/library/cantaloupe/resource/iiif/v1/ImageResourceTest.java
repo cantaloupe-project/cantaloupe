@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.resource.iiif.ImageResourceTester;
@@ -183,6 +184,12 @@ public class ImageResourceTest extends ResourceTest {
     @Test
     public void testGETCacheWithDerivativeCacheDisabledAndInfoCacheDisabledAndResolveFirstDisabled() {
         // noop
+    }
+
+    @Test
+    public void testGETCheckAccessNotCalledWithSourceCacheHit() throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
+        tester.testCheckAccessNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
     }
 
     @Test

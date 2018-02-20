@@ -63,7 +63,7 @@ public class ImageResource extends IIIF1Resource {
         // can pluck an info from it. This will be more efficient than getting
         // it from a resolver.
         Format sourceFormat = Format.UNKNOWN;
-        if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)) {
+        if (!isResolvingFirst()) {
             try {
                 Info info = cacheFacade.getInfo(identifier);
                 if (info != null) {
@@ -81,14 +81,22 @@ public class ImageResource extends IIIF1Resource {
         final Resolver resolver = new ResolverFactory().
                 newResolver(identifier, getRequestContext());
 
-        try {
-            resolver.checkAccess();
-        } catch (NoSuchFileException e) { // this needs to be rethrown!
-            if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
-                // If the image was not found, purge it from the cache.
-                cacheFacade.purgeAsync(identifier);
+        // If we are resolving first, or if there is no source cache available,
+        // or if there is a source cache available but it doesn't contain our
+        // source image, check access to it in preparation for retrieval.
+        if (isResolvingFirst() ||
+                !cacheFacade.isSourceCacheAvailable() ||
+                (cacheFacade.isSourceCacheAvailable() &&
+                        cacheFacade.getSourceCache().getSourceImageFile(identifier) == null)) {
+            try {
+                resolver.checkAccess();
+            } catch (NoSuchFileException e) { // this needs to be rethrown!
+                if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
+                    // If the image was not found, purge it from the cache.
+                    cacheFacade.purgeAsync(identifier);
+                }
+                throw e;
             }
-            throw e;
         }
 
         // If we don't have the format yet, get it from the resolver.
@@ -252,6 +260,11 @@ public class ImageResource extends IIIF1Resource {
             return new MediaType(mediaTypeStr).toFormat();
         }
         return null;
+    }
+
+    private boolean isResolvingFirst() {
+        return Configuration.getInstance().
+                getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true);
     }
 
 }
