@@ -97,22 +97,21 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
     /** Lazy-set by {@link #isQuietModeSupported()} */
     private static boolean isQuietModeSupported = true;
 
-    private static Path stdoutSymlink;
+    private final static Format intermediateFormat = Format.BMP;
+
+    private static Path devStdout;
 
     /**
-     * Creates a unique symlink to /dev/stdout in a temporary directory, and
-     * sets it to delete on exit.
+     * Creates a unique symlink to /dev/stdout in a temporary directory.
      */
-    private static void createStdoutSymlink() throws IOException {
-        Path tempDir = Application.getTempPath();
+    private static Path createStdoutSymlink() throws IOException {
+        final Path link = Application.getTempPath().resolve(String.format("%s-%s-%s.%s",
+                Application.NAME,
+                OpenJpegProcessor.class.getSimpleName(),
+                UUID.randomUUID(),
+                intermediateFormat.getPreferredExtension()));
 
-        final Path link = tempDir.resolve(Application.NAME + "-" +
-                OpenJpegProcessor.class.getSimpleName() + "-" +
-                UUID.randomUUID() + ".bmp");
-        final Path devStdout = Paths.get("/dev/stdout");
-
-        stdoutSymlink = Files.createSymbolicLink(link, devStdout);
-        stdoutSymlink.toFile().deleteOnExit();
+        return Files.createSymbolicLink(link, devStdout);
     }
 
     /**
@@ -140,13 +139,8 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
             // Due to a quirk of opj_decompress, this processor requires access to
             // /dev/stdout.
-            final Path devStdout = Paths.get("/dev/stdout");
-            if (Files.exists(devStdout) && Files.isWritable(devStdout)) {
-                // Due to another quirk of opj_decompress, we need to create a
-                // symlink from {temp path}/stdout.bmp to /dev/stdout, to tell
-                // opj_decompress what format to write.
-                createStdoutSymlink();
-            } else {
+            devStdout = Paths.get("/dev/stdout");
+            if (!Files.isWritable(devStdout)) {
                 LOGGER.error(OpenJpegProcessor.class.getSimpleName() +
                         " won't work on this platform as it requires access " +
                         "to /dev/stdout.");
@@ -263,7 +257,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
      * applied but excluding any scale operations, in order to use
      * opj_decompress' -r (reduce) argument.
      */
-    private Dimension getCroppedSize(OperationList opList, Dimension fullSize) {
+    private static Dimension getCroppedSize(OperationList opList, Dimension fullSize) {
         Dimension tileSize = (Dimension) fullSize.clone();
         for (Operation op : opList) {
             if (op instanceof Crop) {
@@ -318,62 +312,79 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
         // Will receive stderr output from opj_decompress.
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
+
+        Path intermediateOutput = null;
         try {
-            final ReductionFactor reductionFactor = new ReductionFactor();
+            try {
+                intermediateOutput = createStdoutSymlink();
+            } catch (IOException e1) {
+                throw new ProcessorException("Failed to create stdout symlink.", e1);
+            }
 
-            // If we are normalizing, we need to read the entire image region.
-            final boolean normalize = (opList.getFirst(Normalize.class) != null);
+            try {
+                final ReductionFactor reductionFactor = new ReductionFactor();
 
-            final ProcessBuilder pb = getProcessBuilder(
-                    opList, imageInfo.getSize(), reductionFactor, normalize);
-            LOGGER.info("Invoking {}", String.join(" ", pb.command()));
-            final Process process = pb.start();
+                // If we are normalizing, we need to read the entire image region.
+                final boolean normalize = (opList.getFirst(Normalize.class) != null);
 
-            try (final InputStream processInputStream =
-                         new BufferedInputStream(process.getInputStream());
-                 final InputStream processErrorStream = process.getErrorStream()) {
-                ThreadPool.getInstance().submit(
-                        new StreamCopier(processErrorStream, errorBucket));
+                final ProcessBuilder pb = getProcessBuilder(
+                        opList, imageInfo.getSize(), reductionFactor, normalize,
+                        sourceFile, intermediateOutput);
+                LOGGER.info("Invoking {}", String.join(" ", pb.command()));
+                final Process process = pb.start();
 
-                final ImageReader reader = new ImageReader(
-                        processInputStream, Format.BMP);
-                final BufferedImage image = reader.read();
-                try {
-                    Set<ImageReader.Hint> hints =
-                            EnumSet.noneOf(ImageReader.Hint.class);
-                    if (!normalize) {
-                        hints.add(ImageReader.Hint.ALREADY_CROPPED);
-                    }
-                    postProcess(image, hints, opList, imageInfo,
-                            reductionFactor, outputStream);
-                    final int code = process.waitFor();
-                    if (code != 0) {
-                        LOGGER.warn("opj_decompress returned with code {}", code);
-                        String errorStr = toString(errorBucket);
-                        errorStr += "\nPathname: " + getSourceFile();
-                        throw new ProcessorException(errorStr);
+                try (final InputStream processInputStream =
+                             new BufferedInputStream(process.getInputStream());
+                     final InputStream processErrorStream = process.getErrorStream()) {
+                    ThreadPool.getInstance().submit(
+                            new StreamCopier(processErrorStream, errorBucket));
+
+                    final ImageReader reader = new ImageReader(
+                            processInputStream, intermediateFormat);
+                    final BufferedImage image = reader.read();
+                    try {
+                        Set<ImageReader.Hint> hints =
+                                EnumSet.noneOf(ImageReader.Hint.class);
+                        if (!normalize) {
+                            hints.add(ImageReader.Hint.ALREADY_CROPPED);
+                        }
+                        postProcess(image, hints, opList, imageInfo,
+                                reductionFactor, outputStream);
+                        final int code = process.waitFor();
+                        if (code != 0) {
+                            LOGGER.warn("opj_decompress returned with code {}", code);
+                            String errorStr = toString(errorBucket);
+                            errorStr += "\nPathname: " + getSourceFile();
+                            throw new ProcessorException(errorStr);
+                        }
+                    } finally {
+                        reader.dispose();
                     }
                 } finally {
-                    reader.dispose();
+                    process.destroy();
                 }
-            } finally {
-                process.destroy();
+            } catch (EOFException e) {
+                // This is usually caused by the connection closing.
+                String msg = e.getMessage();
+                msg = String.format("process(): %s (%s)",
+                        (msg != null && msg.length() > 0) ? msg : "EOFException",
+                        opList.toString());
+                LOGGER.info(msg, e);
+                throw new ProcessorException(msg, e);
+            } catch (IOException | InterruptedException e) {
+                String msg = e.getMessage();
+                final String errorStr = toString(errorBucket);
+                if (errorStr.length() > 0) {
+                    msg += " (command output: " + errorStr + ")";
+                }
+                throw new ProcessorException(msg, e);
             }
-        } catch (EOFException e) {
-            // This is usually caused by the connection closing.
-            String msg = e.getMessage();
-            msg = String.format("process(): %s (%s)",
-                    (msg != null && msg.length() > 0) ? msg : "EOFException",
-                    opList.toString());
-            LOGGER.info(msg, e);
-            throw new ProcessorException(msg, e);
-        } catch (IOException | InterruptedException e) {
-            String msg = e.getMessage();
-            final String errorStr = toString(errorBucket);
-            if (errorStr.length() > 0) {
-                msg += " (command output: " + errorStr + ")";
+        } finally {
+            try {
+                Files.deleteIfExists(intermediateOutput);
+            } catch (IOException e) {
+                throw new ProcessorException("Failed to delete stdout symlink.", e);
             }
-            throw new ProcessorException(msg, e);
         }
     }
 
@@ -388,11 +399,14 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
      *                   <code>opList</code>.
      * @return opj_decompress command invocation string
      */
-    private ProcessBuilder getProcessBuilder(final OperationList opList,
+    private static ProcessBuilder getProcessBuilder(final OperationList opList,
                                              final Dimension imageSize,
                                              final ReductionFactor reduction,
-                                             final boolean ignoreCrop) {
+                                             final boolean ignoreCrop,
+                                             final Path input,
+                                             final Path output) {
         final List<String> command = new ArrayList<>(30);
+
         command.add(getPath("opj_decompress"));
 
         if (isQuietModeSupported()) {
@@ -400,7 +414,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         }
 
         command.add("-i");
-        command.add(sourceFile.toString());
+        command.add(input.toString());
 
         for (Operation op : opList) {
             if (op instanceof Crop && !ignoreCrop) {
@@ -437,7 +451,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         }
 
         command.add("-o");
-        command.add(stdoutSymlink.toString());
+        command.add(output.toString());
 
         return new ProcessBuilder(command);
     }
