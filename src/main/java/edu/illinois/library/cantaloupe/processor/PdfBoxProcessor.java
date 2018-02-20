@@ -12,9 +12,12 @@ import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.apache.commons.io.IOUtils;
+import org.apache.pdfbox.cos.COSObject;
+import org.apache.pdfbox.pdmodel.DefaultResourceCache;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,6 +86,15 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                 docInputStream = streamSource.newInputStream();
                 doc = PDDocument.load(docInputStream);
             }
+
+            // Disable the document's cache of PDImageXObjects
+            // See: https://pdfbox.apache.org/2.0/faq.html#outofmemoryerror
+            doc.setResourceCache(new DefaultResourceCache() {
+                @Override
+                public void put(COSObject indirect, PDXObject xobject) {
+                    // no-op
+                }
+            });
         }
     }
 
