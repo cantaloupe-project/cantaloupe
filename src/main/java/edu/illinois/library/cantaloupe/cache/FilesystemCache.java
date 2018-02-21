@@ -330,7 +330,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 final boolean delete =
                         (Files.isRegularFile(path) && isExpired(path));
 
-                EFV_LOGGER.debug("{}: last accessed: {}; last modified; {}; " +
+                EFV_LOGGER.trace("{}: last accessed: {}; last modified; {}; " +
                                 "effective last accessed: {}; delete? {}",
                         path,
                         Files.getAttribute(path, "lastAccessTime"),
@@ -474,7 +474,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 - getLastAccessedTime(file).toMillis();
         final boolean expired = (ttlMsec > 0 && age > ttlMsec);
 
-        LOGGER.debug("isExpired(): {}: TTL: {}; last accessed: {}; expired? {}",
+        LOGGER.trace("isExpired(): {}: TTL: {}; last accessed: {}; expired? {}",
                 file, ttl, age, expired);
         return expired;
     }
