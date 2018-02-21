@@ -20,7 +20,7 @@ title: Change Log
       <li>AmazonS3Resolver has been renamed to S3Resolver, and supports non-AWS endpoints.</li>
       <li>S3Resolver supports a configurable path prefix and suffix when using <code>BasicLookupStrategy</code>.</li>
       <li>AzureStorageResolver supports shared access signature (SAS) URIs. (Thanks to @ddisciascio)</li>
-      <li>The resolver access check is skipped when <code>cache.server.resolve_first = false</code> and the source image is present in the source cache.</li>
+      <li>Improved efficiency of source cache content access when <code>cache.server.resolve_first = false</code>.</li>
     </ul>
   </li>
   <li>Processors

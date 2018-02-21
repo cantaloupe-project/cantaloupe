@@ -58,7 +58,7 @@ public class InformationResource extends IIIF1Resource {
      */
     @Get
     public Representation doGet() throws Exception {
-        Configuration config = Configuration.getInstance();
+        final Configuration config = Configuration.getInstance();
         final Identifier identifier = getIdentifier();
         final CacheFacade cacheFacade = new CacheFacade();
 
@@ -69,6 +69,8 @@ public class InformationResource extends IIIF1Resource {
             try {
                 Info info = cacheFacade.getInfo(identifier);
                 if (info != null) {
+                    // The source format will be null or UNKNOWN if the info was
+                    // serialized in version < 3.4.
                     final Format format = info.getSourceFormat();
                     if (format != null && !Format.UNKNOWN.equals(format)) {
                         final Processor processor = new ProcessorFactory().
@@ -106,8 +108,21 @@ public class InformationResource extends IIIF1Resource {
             }
         }
 
-        // Determine the format of the source image.
-        Format format = resolver.getSourceFormat();
+        // Get the format of the source image.
+        // If we are not resolving first, and there is a hit in the source
+        // cache, read the format from the source-cached-file, as we will
+        // expect source cache access to be more efficient.
+        // Otherwise, read it from the resolver.
+        Format format = Format.UNKNOWN;
+        if (!isResolvingFirst() && sourceImage != null) {
+            List<edu.illinois.library.cantaloupe.image.MediaType> mediaTypes =
+                    edu.illinois.library.cantaloupe.image.MediaType.detectMediaTypes(sourceImage);
+            if (!mediaTypes.isEmpty()) {
+                format = mediaTypes.get(0).toFormat();
+            }
+        } else {
+            format = resolver.getSourceFormat();
+        }
 
         // Obtain an instance of the processor assigned to that format.
         final Processor processor = new ProcessorFactory().newProcessor(format);

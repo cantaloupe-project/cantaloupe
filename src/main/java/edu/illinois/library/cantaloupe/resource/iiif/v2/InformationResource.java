@@ -104,8 +104,21 @@ public class InformationResource extends IIIF2Resource {
             }
         }
 
-        // Determine the format of the source image.
-        Format format = resolver.getSourceFormat();
+        // Get the format of the source image.
+        // If we are not resolving first, and there is a hit in the source
+        // cache, read the format from the source-cached-file, as we will
+        // expect source cache access to be more efficient.
+        // Otherwise, read it from the resolver.
+        Format format = Format.UNKNOWN;
+        if (!isResolvingFirst() && sourceImage != null) {
+            List<edu.illinois.library.cantaloupe.image.MediaType> mediaTypes =
+                    edu.illinois.library.cantaloupe.image.MediaType.detectMediaTypes(sourceImage);
+            if (!mediaTypes.isEmpty()) {
+                format = mediaTypes.get(0).toFormat();
+            }
+        } else {
+            format = resolver.getSourceFormat();
+        }
 
         // Obtain an instance of the processor assigned to that format.
         final Processor processor = new ProcessorFactory().newProcessor(format);

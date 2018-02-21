@@ -317,6 +317,66 @@ public class ImageAPIResourceTester {
             client.stop();
         }
     }
+
+    /**
+     * Used by {@link #testResolverGetSourceFormatNotCalledWithSourceCacheHit(Identifier, URI)}.
+     */
+    public static class NotReadingSourceFormatResolver implements StreamResolver {
+
+        @Override
+        public void checkAccess() {}
+
+        @Override
+        public Format getSourceFormat() throws IOException {
+            throw new IOException("getSourceFormat() called!");
+        }
+
+        @Override
+        public StreamSource newStreamSource() throws IOException {
+            return new PathStreamSource(TestUtil.getImage("jpg"));
+        }
+
+        @Override
+        public void setIdentifier(Identifier identifier) {}
+
+        @Override
+        public void setContext(RequestContext context) {}
+
+    }
+
+    public void testResolverGetSourceFormatNotCalledWithSourceCacheHit(Identifier identifier,
+                                                                       URI uri) throws Exception {
+        // Set up the environment to use the source cache, not resolve first,
+        // and use a non-FileResolver.
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
+        config.setProperty(Key.RESOLVER_STATIC,
+                NotReadingSourceFormatResolver.class.getName());
+        config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
+        config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
+        config.setProperty(Key.SOURCE_CACHE_TTL, 10);
+        config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
+                Files.createTempDirectory("test").toString());
+        config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
+
+        // Put an image in the source cache.
+        Path image = TestUtil.getImage("jpg");
+        SourceCache sourceCache = CacheFactory.getSourceCache();
+
+        try (OutputStream os = sourceCache.newSourceImageOutputStream(identifier)) {
+            Files.copy(image, os);
+        }
+
+        Client client = newClient(uri);
+        try {
+            client.send();
+            // We are expecting NotReadingSourceFormatResolver.getSourceFormat()
+            // to not throw an exception, which would cause a 500 response.
+        } finally {
+            client.stop();
+        }
+    }
+
     /**
      * Tests that the server responds with HTTP 500 when a non-
      * {@link edu.illinois.library.cantaloupe.resolver.FileResolver} is

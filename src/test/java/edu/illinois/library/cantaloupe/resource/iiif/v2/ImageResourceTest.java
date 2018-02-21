@@ -186,12 +186,6 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testGETCheckAccessNotCalledWithSourceCacheHit() throws Exception {
-        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
-        tester.testCheckAccessNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
-    }
-
-    @Test
     public void testGETContentDispositionHeaderWithNoHeader() throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
         tester.testContentDispositionHeaderWithNoHeader(uri);
@@ -364,6 +358,20 @@ public class ImageResourceTest extends ResourceTest {
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.png");
         tester.testRecoveryFromDerivativeCacheNewDerivativeImageOutputStreamException(uri);
+    }
+
+    @Test
+    public void testGETResolverCheckAccessNotCalledWithSourceCacheHit()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
+        tester.testResolverCheckAccessNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
+    }
+
+    @Test
+    public void testGETResolverGetSourceFormatNotCalledWithSourceCacheHit()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
+        tester.testResolverGetSourceFormatNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
     }
 
     /**

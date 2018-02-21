@@ -98,9 +98,20 @@ public class ImageResource extends IIIF1Resource {
             }
         }
 
-        // If we don't have the format yet, get it from the resolver.
+        // If we don't know the format yet, get it.
         if (Format.UNKNOWN.equals(sourceFormat)) {
-            sourceFormat = resolver.getSourceFormat();
+            // If we are not resolving first, and there is a hit in the source
+            // cache, read the format from the source-cached-file, as we will
+            // expect source cache access to be more efficient.
+            // Otherwise, read it from the resolver.
+            if (!isResolvingFirst() && sourceImage != null) {
+                List<MediaType> mediaTypes = MediaType.detectMediaTypes(sourceImage);
+                if (!mediaTypes.isEmpty()) {
+                    sourceFormat = mediaTypes.get(0).toFormat();
+                }
+            } else {
+                sourceFormat = resolver.getSourceFormat();
+            }
         }
 
         // Obtain an instance of the processor assigned to that format.
