@@ -37,7 +37,7 @@ class ExpiredFileVisitor extends SimpleFileVisitor<Path> {
             final boolean delete =
                     (Files.isRegularFile(path) && FilesystemCache.isExpired(path));
 
-            LOGGER.debug("{}: last accessed: {}; last modified; {}; " +
+            LOGGER.trace("{}: last accessed: {}; last modified; {}; " +
                             "effective last accessed: {}; delete? {}",
                     path,
                     Files.getAttribute(path, "lastAccessTime"),

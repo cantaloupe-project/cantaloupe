@@ -356,7 +356,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 - getLastAccessedTime(file).toMillis();
         final boolean expired = (ttlMsec > 0 && fileAge > ttlMsec);
 
-        LOGGER.debug("isExpired(): {}: TTL: {}; last accessed: {}; expired? {}",
+        LOGGER.trace("isExpired(): {}: TTL: {}; last accessed: {}; expired? {}",
                 file, ttlSec, fileAge, expired);
         return expired;
     }
