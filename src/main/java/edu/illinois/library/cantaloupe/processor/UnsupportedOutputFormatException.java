@@ -16,4 +16,10 @@ public class UnsupportedOutputFormatException extends IllegalArgumentException {
         super("Unsupported output format: " + format.getName());
     }
 
+    public UnsupportedOutputFormatException(Processor processor, Format format) {
+        super(String.format("%s does not support the \"%s\" output format",
+                processor.getClass().getSimpleName(),
+                format.getName()));
+    }
+
 }

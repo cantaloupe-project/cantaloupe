@@ -194,11 +194,10 @@ public class ImageResource extends IIIF2Resource {
         Set<Format> availableOutputFormats = processor.getAvailableOutputFormats();
         if (!availableOutputFormats.isEmpty()) {
             if (!availableOutputFormats.contains(ops.getOutputFormat())) {
-                String msg = String.format("%s does not support the \"%s\" output format",
-                        processor.getClass().getSimpleName(),
-                        ops.getOutputFormat().getPreferredExtension());
-                getLogger().warning(msg + ": " + getReference());
-                throw new UnsupportedOutputFormatException(msg);
+                Exception e = new UnsupportedOutputFormatException(
+                        processor, ops.getOutputFormat());
+                getLogger().warning(e.getMessage() + ": " + getReference());
+                throw e;
             }
         } else {
             throw new UnsupportedSourceFormatException(sourceFormat);
