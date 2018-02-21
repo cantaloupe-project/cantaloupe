@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.util.List;
 
 import edu.illinois.library.cantaloupe.RestletApplication;
@@ -64,7 +65,7 @@ public class InformationResource extends IIIF1Resource {
         // If we don't need to resolve first, and are using a cache, and the
         // cache contains an info matching the request, skip all the setup and
         // just return the cached info.
-        if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, false)) {
+        if (!isResolvingFirst()) {
             try {
                 Info info = cacheFacade.getInfo(identifier);
                 if (info != null) {
@@ -89,14 +90,20 @@ public class InformationResource extends IIIF1Resource {
         final Resolver resolver = new ResolverFactory().
                 newResolver(identifier, getRequestContext());
 
-        try {
-            resolver.checkAccess();
-        } catch (NoSuchFileException e) { // this needs to be rethrown!
-            if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
-                // If the image was not found, purge it from the cache.
-                new CacheFacade().purgeAsync(identifier);
+        // If we are resolving first, or if the source image is not present in
+        // the source cache (if enabled), check access to it in preparation for
+        // retrieval.
+        final Path sourceImage = cacheFacade.getSourceCacheFile(identifier);
+        if (sourceImage == null || isResolvingFirst()) {
+            try {
+                resolver.checkAccess();
+            } catch (NoSuchFileException e) { // this needs to be rethrown!
+                if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
+                    // If the image was not found, purge it from the cache.
+                    cacheFacade.purgeAsync(identifier);
+                }
+                throw e;
             }
-            throw e;
         }
 
         // Determine the format of the source image.
@@ -145,6 +152,11 @@ public class InformationResource extends IIIF1Resource {
             mediaType = new MediaType("application/json");
         }
         return mediaType;
+    }
+
+    private boolean isResolvingFirst() {
+        return Configuration.getInstance().
+                getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true);
     }
 
     private Representation newRepresentation(ImageInfo imageInfo) {
