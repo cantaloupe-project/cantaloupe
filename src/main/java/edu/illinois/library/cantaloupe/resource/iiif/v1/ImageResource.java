@@ -27,6 +27,7 @@ import org.restlet.resource.Get;
 import java.awt.Dimension;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -81,13 +82,11 @@ public class ImageResource extends IIIF1Resource {
         final Resolver resolver = new ResolverFactory().
                 newResolver(identifier, getRequestContext());
 
-        // If we are resolving first, or if there is no source cache available,
-        // or if there is a source cache available but it doesn't contain our
-        // source image, check access to it in preparation for retrieval.
-        if (isResolvingFirst() ||
-                !cacheFacade.isSourceCacheAvailable() ||
-                (cacheFacade.isSourceCacheAvailable() &&
-                        cacheFacade.getSourceCache().getSourceImageFile(identifier) == null)) {
+        // If we are resolving first, or if the source image is not present in
+        // the source cache (if enabled), check access to it in preparation for
+        // retrieval.
+        final Path sourceImage = cacheFacade.getSourceCacheFile(identifier);
+        if (sourceImage == null || isResolvingFirst()) {
             try {
                 resolver.checkAccess();
             } catch (NoSuchFileException e) { // this needs to be rethrown!

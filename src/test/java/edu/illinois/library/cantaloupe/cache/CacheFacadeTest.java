@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.Assert.*;
 
@@ -35,7 +36,7 @@ public class CacheFacadeTest extends BaseTest {
             config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
             config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
-                    Files.createTempDirectory("teset").toString());
+                    Files.createTempDirectory("test").toString());
         } catch (IOException e) {
             fail(e.getMessage());
         }
@@ -122,6 +123,49 @@ public class CacheFacadeTest extends BaseTest {
     public void testGetSourceCacheWhenDisabled() {
         disableSourceCache();
         assertNull(instance.getSourceCache());
+    }
+
+    /* getSourceCacheFile() */
+
+    @Test
+    public void testGetSourceCacheFileWithSourceCacheEnabledAndHit()
+            throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
+        config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
+
+        SourceCache sourceCache = CacheFactory.getSourceCache();
+        Identifier identifier = new Identifier("cats");
+        Path image = TestUtil.getImage("jpg");
+
+        try (OutputStream os = sourceCache.newSourceImageOutputStream(identifier)) {
+            Files.copy(image, os);
+        }
+
+        assertNotNull(instance.getSourceCacheFile(identifier));
+    }
+
+    @Test
+    public void testGetSourceCacheFileWithSourceCacheEnabledAndMiss()
+            throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
+        config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
+
+        Identifier identifier = new Identifier("cats");
+
+        assertNull(instance.getSourceCacheFile(identifier));
+    }
+
+    @Test
+    public void testGetSourceCacheFileWithSourceCacheDisabled()
+            throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.SOURCE_CACHE_ENABLED, false);
+
+        Identifier identifier = new Identifier("cats");
+
+        assertNull(instance.getSourceCacheFile(identifier));
     }
 
     /* isDerivativeCacheAvailable() */
