@@ -99,6 +99,11 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
 
     private IOException cachedAccessException;
 
+    /**
+     * Cached by {@link #getObjectInfo()}.
+     */
+    private ObjectInfo objectInfo;
+
     private static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
             final Configuration config = Configuration.getInstance();
@@ -178,20 +183,23 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
         }
     }
 
+    /**
+     * @return Info for the current object. The result is cached.
+     */
     ObjectInfo getObjectInfo() throws IOException {
-        ObjectInfo objectInfo;
-
-        switch (LookupStrategy.from(Key.S3RESOLVER_LOOKUP_STRATEGY)) {
-            case DELEGATE_SCRIPT:
-                try {
-                    objectInfo = getObjectInfoUsingDelegateStrategy();
-                } catch (ScriptException | DelegateScriptDisabledException e) {
-                    throw new IOException(e);
-                }
-                break;
-            default:
-                objectInfo = getObjectInfoUsingBasicStrategy();
-                break;
+        if (objectInfo == null) {
+            switch (LookupStrategy.from(Key.S3RESOLVER_LOOKUP_STRATEGY)) {
+                case DELEGATE_SCRIPT:
+                    try {
+                        objectInfo = getObjectInfoUsingDelegateStrategy();
+                    } catch (ScriptException | DelegateScriptDisabledException e) {
+                        throw new IOException(e);
+                    }
+                    break;
+                default:
+                    objectInfo = getObjectInfoUsingBasicStrategy();
+                    break;
+            }
         }
         return objectInfo;
     }
