@@ -298,8 +298,8 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                     format = new MediaType(field.getValue()).toFormat();
 
                     if (Format.UNKNOWN.equals(format)) {
-                        LOGGER.debug("Unrecognized Content-Type header value for GET {}: {}",
-                                info.getURI(), field.getValue().substring(0, 128));
+                        LOGGER.debug("Unrecognized Content-Type header value for GET {}",
+                                info.getURI());
                     }
                 } else {
                     LOGGER.debug("No Content-Type header for GET {}",
