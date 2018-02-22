@@ -18,9 +18,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
- * Encapsulates an IANA media (a.k.a. MIME) type.
+ * IANA media (a.k.a. MIME) type. Instances are immutable.
  */
 @JsonSerialize(using = MediaType.MediaTypeSerializer.class)
 @JsonDeserialize(using = MediaType.MediaTypeDeserializer.class)
@@ -54,13 +55,15 @@ public final class MediaType {
     public static final MediaType TEXT_PLAIN =
             new MediaType("text/plain");
 
-    private String subtype;
-    private String type;
+    private String subtype, type;
 
     /**
+     * Attempts to detect the media type(s) of the given file by reading its
+     * magic bytes. The detection is fast but imperfect.
+     *
      * @param path File to probe.
-     * @return Media types associated with the given file.
-     * @throws IOException
+     * @return     Media types associated with the data in the given file, or
+     *             an empty list if none were detected.
      */
     public static List<MediaType> detectMediaTypes(Path path)
             throws IOException {
@@ -78,7 +81,8 @@ public final class MediaType {
 
     /**
      * @param mediaType
-     * @throws IllegalArgumentException
+     * @throws IllegalArgumentException if the given string is not a media
+     *                                  type.
      */
     public MediaType(String mediaType) {
         String[] parts = StringUtils.split(mediaType, "/");
@@ -92,13 +96,17 @@ public final class MediaType {
 
     /**
      * @param obj Object to compare against.
-     * @return True if the string representation of the given object matches
-     *         that of the instance.
+     * @return    {@literal true} if the given object is the same media type;
+     *            {@literal false} otherwise.
      */
     @Override
     public boolean equals(Object obj) {
-        return (obj != null && obj.toString() != null &&
-                obj.toString().equals(toString()));
+        if (obj == this) {
+            return true;
+        } else if (obj instanceof MediaType) {
+            return Objects.equals(obj.toString(), toString());
+        }
+        return super.equals(obj);
     }
 
     @Override
@@ -122,7 +130,7 @@ public final class MediaType {
 
     @Override
     public String toString() {
-        return String.format("%s/%s", type, subtype);
+        return type + "/" + subtype;
     }
 
 }

@@ -95,8 +95,9 @@ public class MediaTypeTest {
 
     @Test
     public void testEquals() {
-        assertTrue(instance.equals("image/jpeg"));
-        assertFalse(instance.equals("image/gif"));
+        assertTrue(instance.equals(new MediaType("image/jpeg")));
+        assertFalse(instance.equals(new MediaType("image/gif")));
+        assertFalse(instance.equals(null));
     }
 
     /* toFormat() */
