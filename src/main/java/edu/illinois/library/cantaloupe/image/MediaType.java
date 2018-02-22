@@ -15,6 +15,7 @@ import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,6 +69,8 @@ public final class MediaType {
     public static List<MediaType> detectMediaTypes(Path path)
             throws IOException {
         final List<MediaType> types = new ArrayList<>();
+
+        // https://tika.apache.org/1.1/detection.html
         try (TikaInputStream is = TikaInputStream.get(path)) {
             AutoDetectParser parser = new AutoDetectParser();
             Detector detector = parser.getDetector();
@@ -76,6 +79,30 @@ public final class MediaType {
             org.apache.tika.mime.MediaType mediaType = detector.detect(is, md);
             types.add(new MediaType(mediaType.toString()));
         }
+        return types;
+    }
+
+    /**
+     * Attempts to detect the media type(s) of the data read from a stream.
+     * The detection is fast but imperfect.
+     *
+     * @param inputStream Stream to read from. Must {@link
+     *                    InputStream#markSupported() support marking}.
+     * @return            Media types associated with the data in the given
+     *                    stream, or an empty list if none were detected.
+     */
+    public static List<MediaType> detectMediaTypes(InputStream inputStream)
+            throws IOException {
+        final List<MediaType> types = new ArrayList<>();
+
+        // https://tika.apache.org/1.1/detection.html
+        AutoDetectParser parser = new AutoDetectParser();
+        Detector detector = parser.getDetector();
+
+        org.apache.tika.mime.MediaType mediaType = detector.detect(
+                inputStream, new Metadata());
+        types.add(new MediaType(mediaType.toString()));
+
         return types;
     }
 
