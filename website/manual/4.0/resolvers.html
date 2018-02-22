@@ -200,14 +200,14 @@ end
 
 <h4>Format Inference</h4>
 
-<p>Like all resolvers, HttpResolver needs to figure out the format of a source image before it can be served. It uses the following strategy to do this:</p>
+<p>Like all resolvers, HttpResolver needs to be able to figure out the format of a source image before it can be served. It uses the following strategy to do this:</p>
 
 <ol>
   <li>If the source image's identifier has a recognized filename extension, the format will be inferred from that.</li>
   <li>Otherwise, a <code>GET</code> request will be sent with a <code>Range</code> header specifying a small range of data from the beginning of the resource.
     <ol>
-      <li>If a <code>Content-Type</code> header is present in the response, and is specific enough (i.e. not <code>application/octet-stream</code>), a format will be inferred from it.</li>
-      <li>Otherwise, a format will be inferred from the magic bytes in the respone body.</li>
+      <li>If a <code>Content-Type</code> header is present in the response, and is specific enough (i.e. not <code>application/octet-stream</code>), a format will be inferred from that.</li>
+      <li>Otherwise, a format will be inferred from the magic bytes in the response body.</li>
     </ol>
   </li>
   <li>If none of the above are successful, an error response will be returned.</li>
@@ -328,7 +328,7 @@ end
 
 <h3 id="S3Resolver">S3Resolver</h3>
 
-<p>S3Resolver (previously named AmazonS3Resolver) maps a URL identifier to an <a href="https://aws.amazon.com/s3/">Amazon Simple Storage Service (S3)</a> object, for retrieving images from Amazon S3.</p>
+<p>S3Resolver (previously named AmazonS3Resolver) maps a URL identifier to an <a href="https://aws.amazon.com/s3/">Amazon Simple Storage Service (S3)</a> object, for retrieving images from S3. S3Resolver can work with Amazon S3, but is not coupled to it&mdash;it can work with other S3 endpoints as well.</p>
 
 <h4>Configuration</h4>
 
@@ -368,6 +368,22 @@ end
   <dt>Instance Profile</dt>
   <dd>Credentials are loaded from the Amazon EC2 Instance Metadata Service.</dd>
 </dl>
+
+<h4>Format Inference</h4>
+
+<p>Like all resolvers, S3Resolver needs to be able to figure out the format of a source image before it can be served. It uses the following strategy to do this:</p>
+
+<ol>
+  <li>If the object key has a recognized filename extension, the format will be inferred from that.</li>
+  <li>Otherwise, if the source image's URI identifier has a recognized filename extension, the format will be inferred from that.</li>
+  <li>Otherwise, a <code>GET</code> request will be sent with a <code>Range</code> header specifying a small range of data from the beginning of the resource.
+    <ol>
+      <li>If a <code>Content-Type</code> header is present in the response, and is specific enough (i.e. not <code>application/octet-stream</code>), a format will be inferred from that.</li>
+      <li>Otherwise, a format will be inferred from the magic bytes in the response body.</li>
+    </ol>
+  </li>
+  <li>If none of the above are successful, an error response will be returned.</li>
+</ol>
 
 <h4 id="S3ResolverLookupStrategies">Lookup Strategies</h4>
 
