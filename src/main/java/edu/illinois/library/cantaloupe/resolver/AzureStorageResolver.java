@@ -78,6 +78,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
 
     private CloudBlockBlob cachedBlob;
     private IOException cachedBlobException;
+    private String objectKey;
 
     static synchronized CloudStorageAccount getAccount() {
         if (account == null) {
@@ -159,19 +160,22 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     }
 
     private String getObjectKey() throws IOException {
-        final LookupStrategy strategy =
-                LookupStrategy.from(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY);
-        switch (strategy) {
-            case DELEGATE_SCRIPT:
-                try {
-                    return getObjectKeyWithDelegateStrategy();
-                } catch (ScriptException | DelegateScriptDisabledException e) {
-                    LOGGER.error(e.getMessage(), e);
-                    throw new IOException(e);
-                }
-            default:
-                return identifier.toString();
+        if (objectKey == null) {
+            final LookupStrategy strategy =
+                    LookupStrategy.from(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY);
+            switch (strategy) {
+                case DELEGATE_SCRIPT:
+                    try {
+                        objectKey = getObjectKeyWithDelegateStrategy();
+                    } catch (ScriptException | DelegateScriptDisabledException e) {
+                        LOGGER.error(e.getMessage(), e);
+                        throw new IOException(e);
+                    }
+                default:
+                    objectKey = identifier.toString();
+            }
         }
+        return objectKey;
     }
 
     /**
@@ -196,19 +200,21 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     @Override
     public Format getSourceFormat() throws IOException {
         if (sourceFormat == null) {
-            final CloudBlockBlob blob = getObject();
-            final String contentType = blob.getProperties().getContentType();
-            // See if we can determine the format from the Content-Type header.
-            if (contentType != null) {
-                sourceFormat = new MediaType(contentType).toFormat();
-            }
-            if (sourceFormat == null || sourceFormat.equals(Format.UNKNOWN)) {
+            // Try to infer a format based on the objectKey.
+            sourceFormat = Format.inferFormat(getObjectKey());
+
+            if (sourceFormat.equals(Format.UNKNOWN)) {
                 // Try to infer a format based on the identifier.
                 sourceFormat = Format.inferFormat(identifier);
             }
-            if (Format.UNKNOWN.equals(sourceFormat)) {
-                // Try to infer a format based on the objectKey.
-                sourceFormat = Format.inferFormat(getObjectKey());
+
+            if (sourceFormat.equals(Format.UNKNOWN)) {
+                // Try to infer the format from the Content-Type header.
+                final CloudBlockBlob blob = getObject();
+                final String contentType = blob.getProperties().getContentType();
+                if (contentType != null) {
+                    sourceFormat = new MediaType(contentType).toFormat();
+                }
             }
         }
         return sourceFormat;
