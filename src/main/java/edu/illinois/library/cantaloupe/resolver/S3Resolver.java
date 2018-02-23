@@ -326,16 +326,10 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
 
             final ObjectInfo info = getObjectInfo();
 
-            // First, check the object key and then the identifier. If we can't
-            // infer the source format from one of those, we will need to make
-            // an HTTP request.
-
-            if (Format.UNKNOWN.equals(sourceFormat)) {
-                // Try to infer a format from the object key.
-                LOGGER.debug("Inferring format from the object key for {}",
-                        info);
-                sourceFormat = Format.inferFormat(info.getKey());
-            }
+            // Try to infer a format from the object key.
+            LOGGER.debug("Inferring format from the object key for {}",
+                    info);
+            sourceFormat = Format.inferFormat(info.getKey());
 
             if (Format.UNKNOWN.equals(sourceFormat)) {
                 // Try to infer a format from the identifier.
