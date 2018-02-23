@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -47,8 +46,8 @@ import java.util.Set;
 class JaiProcessor extends AbstractImageIOProcessor
         implements FileProcessor, StreamProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(JaiProcessor.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(JaiProcessor.class);
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             Collections.unmodifiableSet(EnumSet.of(
@@ -65,18 +64,34 @@ class JaiProcessor extends AbstractImageIOProcessor
                     ProcessorFeature.SIZE_BY_PERCENT,
                     ProcessorFeature.SIZE_BY_WIDTH,
                     ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
+
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
             SUPPORTED_IIIF_1_1_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
                     edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
                     edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
                     edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
                     edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
+
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
             SUPPORTED_IIIF_2_0_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
                     edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
                     edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
                     edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
                     edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
+
+    /**
+     * Override that disables support for GIF source images.
+     */
+    @Override
+    public Set<Format> getAvailableOutputFormats() {
+        Set<Format> formats;
+        if (Format.GIF.equals(format)) {
+            formats = Collections.emptySet();
+        } else {
+            formats = super.getAvailableOutputFormats();
+        }
+        return formats;
+    }
 
     @Override
     public Set<ProcessorFeature> getSupportedFeatures() {
