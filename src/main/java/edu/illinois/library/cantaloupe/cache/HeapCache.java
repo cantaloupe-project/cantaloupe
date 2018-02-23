@@ -345,7 +345,8 @@ class HeapCache implements DerivativeCache {
      * @return Current size of the contents in bytes.
      */
     long getByteSize() {
-        return cache.values().stream().mapToLong(t -> t.getData().length).sum();
+        return cache.values().parallelStream()
+                .mapToLong(t -> t.getData().length).sum();
     }
 
     @Override
@@ -635,10 +636,10 @@ class HeapCache implements DerivativeCache {
      * @param item Item whose key should be touched.
      */
     private void touch(Item item) {
-        cache.entrySet().stream().
-                filter(entry -> Objects.equals(entry.getValue(), item)).
-                map(Map.Entry::getKey).
-                collect(Collectors.toSet()).forEach(Key::touch);
+        cache.entrySet().parallelStream()
+                .filter(entry -> Objects.equals(entry.getValue(), item))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet()).forEach(Key::touch);
     }
 
 }
