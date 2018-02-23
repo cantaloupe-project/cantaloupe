@@ -113,7 +113,12 @@ public class ImageRepresentation extends OutputRepresentation {
                             // OutOfMemoryError, or when the connection has
                             // been closed prematurely, as in the case of e.g.
                             // the client hitting the stop button.
-                            LOGGER.info("write(): {}", e.getMessage());
+                            if (e.getMessage().contains("heap space")) {
+                                LOGGER.error("write(): out of heap space! " +
+                                        "Consider adjusting your -Xmx JVM argument.");
+                            } else {
+                                LOGGER.debug("write(): {}", e.getMessage());
+                            }
                             cacheFacade.purge(opList);
 
                             doWrite(responseOutputStream);
