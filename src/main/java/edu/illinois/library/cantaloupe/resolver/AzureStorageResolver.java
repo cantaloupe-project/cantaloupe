@@ -182,19 +182,21 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     @Override
     public Format getSourceFormat() throws IOException {
         if (sourceFormat == null) {
-            final CloudBlockBlob blob = getObject();
-            final String contentType = blob.getProperties().getContentType();
-            // See if we can determine the format from the Content-Type header.
-            if (contentType != null) {
-                sourceFormat = new MediaType(contentType).toFormat();
-            }
-            if (sourceFormat == null || sourceFormat.equals(Format.UNKNOWN)) {
+            // Try to infer a format based on the objectKey.
+            sourceFormat = Format.inferFormat(getObjectKey());
+
+            if (sourceFormat.equals(Format.UNKNOWN)) {
                 // Try to infer a format based on the identifier.
                 sourceFormat = Format.inferFormat(identifier);
             }
-            if (Format.UNKNOWN.equals(sourceFormat)) {
-                // Try to infer a format based on the objectKey.
-                sourceFormat = Format.inferFormat(getObjectKey());
+
+            if (sourceFormat.equals(Format.UNKNOWN)) {
+                // Try to infer the format from the Content-Type header.
+                final CloudBlockBlob blob = getObject();
+                final String contentType = blob.getProperties().getContentType();
+                if (contentType != null) {
+                    sourceFormat = new MediaType(contentType).toFormat();
+                }
             }
         }
         return sourceFormat;
