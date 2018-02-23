@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -29,6 +29,19 @@ import java.util.Map;
  * <p>Maps an identifier to an <a href="https://aws.amazon.com/s3/">Amazon
  * Simple Storage Service (S3)</a> object, for retrieving images from Amazon
  * S3.</p>
+ *
+ * <h1>Format Inference</h1>
+ *
+ * <ol>
+ *     <li>If the object key has a recognized filename extension, the format
+ *     will be inferred from that.</li>
+ *     <li>Otherwise, if the source image's URI identifier has a recognized
+ *     filename extension, the format will be inferred from that.</li>
+ *     <li>Otherwise, a {@literal HEAD} request will be sent. If a {@literal
+ *     Content-Type} header is present in the response, and is specific enough
+ *     (i.e. not {@literal application/octet-stream}), a format will be
+ *     inferred from that.</li>
+ * </ol>
  *
  * <h1>Lookup Strategies</h1>
  *
@@ -98,6 +111,8 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
 
     private IOException cachedAccessException;
 
+    private ObjectInfo objectInfo;
+
     private static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
             final Configuration config = Configuration.getInstance();
@@ -119,9 +134,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
         final AmazonS3 s3 = getClientInstance();
         try {
             LOGGER.debug("Requesting {}", info);
-            return s3.getObject(new GetObjectRequest(
-                    info.getBucketName(),
-                    info.getKey()));
+            return s3.getObject(info.getBucketName(), info.getKey());
         } catch (AmazonS3Exception e) {
             if (e.getErrorCode().equals("NoSuchKey")) {
                 throw new NoSuchFileException(e.getMessage());
@@ -168,39 +181,39 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     }
 
     private ObjectInfo getObjectInfo() throws IOException {
-        final Configuration config = Configuration.getInstance();
-        ObjectInfo objectInfo;
-
-        final LookupStrategy strategy =
-                LookupStrategy.from(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY);
-        switch (strategy) {
-            case DELEGATE_SCRIPT:
-                try {
-                    String bucketName, objectKey;
-                    Object object = getObjectInfoWithDelegateStrategy();
-                    if (object instanceof Map) {
-                        Map<?, ?> map = (Map<?, ?>) object;
-                        if (map.containsKey("bucket") && map.containsKey("key")) {
-                            bucketName = map.get("bucket").toString();
-                            objectKey = map.get("key").toString();
+        if (objectInfo == null) {
+            final Configuration config = Configuration.getInstance();
+            final LookupStrategy strategy =
+                    LookupStrategy.from(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY);
+            switch (strategy) {
+                case DELEGATE_SCRIPT:
+                    try {
+                        String bucketName, objectKey;
+                        Object object = getObjectInfoWithDelegateStrategy();
+                        if (object instanceof Map) {
+                            Map<?, ?> map = (Map<?, ?>) object;
+                            if (map.containsKey("bucket") && map.containsKey("key")) {
+                                bucketName = map.get("bucket").toString();
+                                objectKey = map.get("key").toString();
+                            } else {
+                                throw new IllegalArgumentException(
+                                        "Hash does not include bucket and key");
+                            }
                         } else {
-                            throw new IllegalArgumentException(
-                                    "Hash does not include bucket and key");
+                            objectKey = (String) object;
+                            bucketName = config.getString(
+                                    Key.AMAZONS3RESOLVER_BUCKET_NAME);
                         }
-                    } else {
-                        objectKey = (String) object;
-                        bucketName = config.getString(
-                                Key.AMAZONS3RESOLVER_BUCKET_NAME);
+                        objectInfo = new ObjectInfo(objectKey, bucketName);
+                    } catch (ScriptException | DelegateScriptDisabledException e) {
+                        throw new IOException(e);
                     }
-                    objectInfo = new ObjectInfo(objectKey, bucketName);
-                } catch (ScriptException | DelegateScriptDisabledException e) {
-                    throw new IOException(e);
-                }
-                break;
-            default:
-                objectInfo = new ObjectInfo(identifier.toString(),
-                        config.getString(Key.AMAZONS3RESOLVER_BUCKET_NAME));
-                break;
+                    break;
+                default:
+                    objectInfo = new ObjectInfo(identifier.toString(),
+                            config.getString(Key.AMAZONS3RESOLVER_BUCKET_NAME));
+                    break;
+            }
         }
         return objectInfo;
     }
@@ -227,19 +240,25 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
     @Override
     public Format getSourceFormat() throws IOException {
         if (sourceFormat == null) {
-            try (S3Object object = getObject()) {
-                String contentType = object.getObjectMetadata().getContentType();
-                // See if we can determine the format from the Content-Type header.
+            final ObjectInfo info = getObjectInfo();
+
+            // Try to infer a format based on the object key.
+            sourceFormat = Format.inferFormat(info.getKey());
+
+            if (Format.UNKNOWN.equals(sourceFormat)) {
+                // Try to infer a format based on the identifier.
+                sourceFormat = Format.inferFormat(identifier);
+            }
+
+            if (Format.UNKNOWN.equals(sourceFormat)) {
+                // Try to infer the format from the Content-Type header.
+                final AmazonS3 s3 = getClientInstance();
+                final ObjectMetadata metadata = s3.getObjectMetadata(
+                        info.getBucketName(), info.getKey());
+                final String contentType = metadata.getContentType();
+
                 if (contentType != null && !contentType.isEmpty()) {
                     sourceFormat = new MediaType(contentType).toFormat();
-                }
-                if (sourceFormat == null || Format.UNKNOWN.equals(sourceFormat)) {
-                    // Try to infer a format based on the identifier.
-                    sourceFormat = Format.inferFormat(identifier);
-                }
-                if (Format.UNKNOWN.equals(sourceFormat)) {
-                    // Try to infer a format based on the objectKey.
-                    sourceFormat = Format.inferFormat(object.getKey());
                 }
             }
         }
