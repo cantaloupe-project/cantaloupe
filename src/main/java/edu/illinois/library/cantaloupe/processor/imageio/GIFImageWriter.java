@@ -140,6 +140,12 @@ final class GIFImageWriter extends AbstractImageWriter {
     }
 
     @Override
+    String[] preferredIIOImplementations() {
+        // We don't want com.sun.media.imageioimpl.plugins.gif.GIFImageWriter!
+        return new String[] { "com.sun.imageio.plugins.gif.GIFImageWriter" };
+    }
+
+    @Override
     void write(RenderedImage image,
                OutputStream outputStream) throws IOException {
         if (image instanceof PlanarImage) {
