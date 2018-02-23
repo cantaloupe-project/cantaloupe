@@ -21,7 +21,7 @@ title: Change Log
       <li>S3Resolver supports a configurable path prefix and suffix when using <code>BasicLookupStrategy</code>.</li>
       <li>AzureStorageResolver supports shared access signature (SAS) URIs. (Thanks to @ddisciascio)</li>
       <li>Improved efficiency of source cache content access when <code>cache.server.resolve_first = false</code>.</li>
-      <li>HttpResolver and S3Resolver fall back to checking the magic bytes in the response body if it cannot infer a source format from the identifier extension or response <code>Content-Type</code> header.</li>
+      <li>HttpResolver, S3Resolver, and AzureStorageResolver fall back to checking the magic bytes in the response body if they cannot infer a source format from the identifier extension, object key extension, and/or response <code>Content-Type</code> header.</li>
     </ul>
   </li>
   <li>Processors

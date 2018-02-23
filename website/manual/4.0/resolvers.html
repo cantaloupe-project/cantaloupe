@@ -403,6 +403,8 @@ end
 
 <p>AzureStorageResolver maps a URL identifier to a <a href="https://azure.microsoft.com/en-us/services/storage/">Microsoft Azure Storage</a> blob, for retrieving images from Azure Storage. It can be configured with the following options:</p>
 
+<h4>Configuration</h4>
+
 <dl>
   <dt><code>AzureStorageResolver.account_name</code></dt>
   <dd>The name of your Azure account.</dd>
@@ -415,6 +417,18 @@ end
 </dl>
 
 <p>As of version 4.0, this resolver also supports <a href="https://docs.microsoft.com/en-us/azure/storage/common/storage-dotnet-shared-access-signature-part-1#how-a-shared-access-signature-works">shared access signatures</a> as an alternative to hard-coding the account name, account key, and container name.</p>
+
+<h4>Format Inference</h4>
+
+<p>Like all resolvers, AzureStorageResolver needs to be able to figure out the format of a source image before it can be served. It uses the following strategy to do this:</p>
+
+<ol>
+  <li>If the blob key has a recognized filename extension, the format will be inferred from that.</li>
+  <li>Otherwise, if the source image's URI identifier has a recognized filename extension, the format will be inferred from that.</li>
+  <li>Otherwise, a <code>HEAD</code> request will be sent. If a <code>Content-Type</code> header is present in the response, and is specific enough (i.e. not <code>application/octet-stream</code>), a format will be inferred from that.</li>
+  <li>Otherwise, a <code>GET</code> request will be sent with a <code>Range</code> header specifying a small range of data from the beginning of the resource, and a format will be inferred from the magic bytes in the response body.</li>
+  <li>If none of the above are successful, an error response will be returned.</li>
+</ol>
 
 <h4>Lookup Strategies</h4>
 
