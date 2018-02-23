@@ -14,11 +14,8 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.util.thread.ExecutorThreadPool;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
-
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 /**
  * <p>Provides the embedded Servlet container in standalone mode.</p>
@@ -140,10 +137,8 @@ public class ApplicationServer {
             context.setWar("src/main/webapp");
         }
 
-        ExecutorThreadPool pool = new ExecutorThreadPool(
-                getMinThreads(), getMaxThreads(),
-                IDLE_TIMEOUT, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>());
+        QueuedThreadPool pool = new QueuedThreadPool(
+                getMinThreads(), getMaxThreads());
 
         server = new Server(pool);
         context.setServer(server);
