@@ -66,6 +66,11 @@ public class GIFImageWriterTest extends BaseTest {
     }
 
     @Test
+    public void testPreferredIIOImplementations() throws Exception {
+        assertEquals(1, getWriter().preferredIIOImplementations().length);
+    }
+
+    @Test
     public void testWriteWithBufferedImage() throws Exception {
         getWriter().write(bufferedImage, outputStream);
         ImageIO.read(tempFile);
