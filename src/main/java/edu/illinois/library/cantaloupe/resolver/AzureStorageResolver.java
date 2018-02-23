@@ -75,6 +75,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
 
     private CloudBlockBlob cachedBlob;
     private IOException cachedBlobException;
+    private String objectKey;
 
     private static synchronized CloudBlobClient getClientInstance() {
         if (client == null) {
@@ -141,19 +142,22 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     }
 
     private String getObjectKey() throws IOException {
-        final LookupStrategy strategy =
-                LookupStrategy.from(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY);
-        switch (strategy) {
-            case DELEGATE_SCRIPT:
-                try {
-                    return getObjectKeyWithDelegateStrategy();
-                } catch (ScriptException | DelegateScriptDisabledException e) {
-                    LOGGER.error(e.getMessage(), e);
-                    throw new IOException(e);
-                }
-            default:
-                return identifier.toString();
+        if (objectKey == null) {
+            final LookupStrategy strategy =
+                    LookupStrategy.from(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY);
+            switch (strategy) {
+                case DELEGATE_SCRIPT:
+                    try {
+                        objectKey = getObjectKeyWithDelegateStrategy();
+                    } catch (ScriptException | DelegateScriptDisabledException e) {
+                        LOGGER.error(e.getMessage(), e);
+                        throw new IOException(e);
+                    }
+                default:
+                    objectKey = identifier.toString();
+            }
         }
+        return objectKey;
     }
 
     /**
