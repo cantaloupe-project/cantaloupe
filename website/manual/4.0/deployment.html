@@ -15,6 +15,7 @@ title: Deployment
       <li><a href="#HardwareStorage">Storage</a></li>
     </ul>
   </li>
+  <li><a href="#Caching">Caching</a></li>
   <li><a href="#Limiting">Limiting</a></li>
   <li><a href="#Reverse-Proxying">Reverse-Proxying</a>
     <ul>
@@ -32,13 +33,13 @@ title: Deployment
 
 <h2 id="Temporary Directory">Temporary Directory</h2>
 
-<p>When running in standalone mode, the embedded Jetty server, by default, caches class files in the system temp directory, which most operating systems will periodically clean out. If this happens while Cantaloupe is running, it can lead to <code>NoClassDefFoundError</code>s that can only be remedied by restarting the application. Consider either reconfiguring your OS's temp-cleaning strategy to work only at boot or shutdown, or using the <code>temp_pathname</code> configuration key (since version 3.4) to use a different location for temporary data.</p>
+<p>When running in standalone mode, the embedded Jetty server, by default, caches class files in the system temp directory, which most operating systems will periodically clean out. If this happens while the application is running, it can lead to <code>NoClassDefFoundError</code>s that can only be remedied by restarting the application. Consider either reconfiguring your OS's temp-cleaning strategy to work only at boot or shutdown, or using the <code>temp_pathname</code> configuration key to use a different location for temporary data.</p>
 
 <hr>
 
 <h2 id="Images">Images</h2>
 
-<p>Some image formats are inherently more efficient to serve than others. If you have control over your source image formats, please read the <a href="images.html">Images</a> section for recommendations.</p>
+<p>Some image formats are inherently more efficient to serve than others. If you have control over your source image formats, see the <a href="images.html">Images</a> section for recommendations.</p>
 
 <hr>
 
@@ -46,17 +47,43 @@ title: Deployment
 
 <h3 id="HardwareCPU">CPU</h3>
 
-<p>Cantaloupe uses a thread-per-request model, and maintains its own thread pool to carry out certain tasks asynchronously. Also, some processors are able to spread image decoding work across multiple threads. As the operating system will schedule different threads on different CPU cores, response times will benefit from multiple fast cores, especially as load increases.</p>
+<p>Cantaloupe uses a thread-per-request model, and maintains its own thread pool to carry out certain tasks asynchronously and spread work across processors. Response times will benefit from multiple fast cores, especially as traffic increases.</p>
 
-<p>That said, some source formats are more CPU-intensive than others. JPEG2000 via <a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a>, for example, will strain the CPU far more than uncompressed TIFF via <a href="processors.html#Java2dProcessor">Java2dProcessor</a>.</p>
+<p>Some source formats are more processor-intensive than others. JPEG2000 via <a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a>, for example, will demand much more processing power than uncompressed TIFF via <a href="processors.html#Java2dProcessor">Java2dProcessor</a>.</p>
 
 <h3 id="HardwareMemory">Memory</h3>
 
-<p>Memory requirements will vary greatly depending on source format, source image size, request image size, and the number of concurrent requests. Ideally, it's best to serve only source formats that support tiling or that can be selectively decoded (see <a href="images.html#Considerations">Image Considerations</a>).</p>
+<p>Memory requirements will vary greatly depending on the <a href="processors.html">processors</a> used, source format, source image size, request image size, and request frequency. Image formats that don't support tiling or that can't be selectively decoded will require more memory to process (see <a href="#Images">Images</a>). The application will log an <code>ERROR</code>-level message when it runs out of memory.</p>
+
+<p>As a Java application, the application runs "sandboxed" inside a Java Virtual Machine (JVM), and can only use the memory the JVM makes available to it. The main area of memory of concern inside the JVM is called the heap, and its size characteristics must be configured at startup using arguments to the <code>java</code> command. The two most important characteristics are:</p>
+
+<dl>
+  <dt><code>-Xms</code></dt>
+  <dd>Initial heap size. The heap may grow beyond this up to the maximum size, with perhaps a performance penalty during expansions.</dd>
+  <dt><code>-Xmx</code></dt>
+  <dd>Maximum heap size.</dd>
+</dl>
+
+<p>The commands in the <a href="getting-started.html">Getting Started</a> section specify a relatively small maximum heap size, and a production server is likely to need larger.</p>
+
+<p>Operating system utilities like <code>top</code>, Task Manager, Activity Monitor, etc. can show you what a process looks like as the OS sees it, but they don't show what's happening inside a process. In contrast, a tool like <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/management/jconsole.html">JConsole</a>, included in the Java Development Kit (JDK), can show you what memory usage looks like inside a running JVM.</p>
+
+<figure>
+  <img src="images/jconsole.png" class="img img-responsive" alt="JConsole screenshot">
+  <figcaption>Screenshot of JConsole.</figcaption>
+</figure>
+
+<hr>
 
 <h3 id="HardwareStorage">Storage</h3>
 
 <p>Most source formats benefit from fast read performance&mdash;in terms of both latency and throughput&mdash;in the underlying storage system. Throughput is more important for less efficient source formats&mdash;like JPEG, PNG, and mono-resolution TIFF&mdash;especially as source image size increases. <a href="resolvers.html#FilesystemResolver">Local filesystem storage</a> usually performs best.</p>
+
+<hr>
+
+<h2 id="Caching">Caching</h2>
+
+<p>See the <a href="caching.html">Caching</a> section for information about the built-in caching options, which can dramatically improve performance. When using <a href="caching.html#Automatic%20Maintenance">automatic maintenance</a> in a cluster, consider enabling it on only one node.</p>
 
 <hr>
 
@@ -65,7 +92,9 @@ title: Deployment
 <p>A <code>max_pixels</code> configuration option is available to limit the maximum returned size of processed images. This is a "safety net" to prevent clients from bogging down the server. It does not affect requests for full-sized unmodified images, which do not significantly load the server because they are streamed through with no processing.</p>
 
 <p>Note that the <code><a href="access-control.html#Authorization">authorized?</a></code> delegate script method can perform the same function as <code>max_pixels</code>, with more granular control.</p>
-
+<!--
+<p>In standalone mode, <code>http.min_threads</code>, <code>http.max_threads</code>, and <code>http.accept_queue_limit</code> can be used to adjust the characteristics of the built-in web server's request thread pool and queue. When any of the values are exceeded, the application will refuse to fulfill requests by returning <code>HTTP 503 Service Unavailable</code>.</p>
+-->
 <hr>
 
 <h2 id="Reverse-Proxying">Reverse-Proxying</h2>
@@ -118,7 +147,7 @@ title: Deployment
 
 <p>If it is not possible to configure your reverse proxy to send the <code>X-Forwarded-*</code> headers, the <code>base_uri</code> configuration option can be used instead; set it to the URI of the client-facing reverse proxy including any base path.</p>
 
-<p>In a reverse-proxying scenario, you might want to disable the <a href="logging.html#Access%20Log">access log</a>, if it would be redundant.</p>
+<p>In a reverse-proxying scenario, consider disabling the <a href="logging.html#Access%20Log">access log</a>, if it would be redundant.</p>
 
 <h3 id="Reverse-ProxyingApache">Apache</h3>
 
@@ -145,7 +174,7 @@ title: Deployment
 
 <h3 id="Reverse-ProxyingNginx">nginx</h3>
 
-<p>The following example will make a Cantaloupe server running at http://image-server:8182/ available at http://nginx-server/.
+<p>The following example will make a Cantaloupe server running at <span class="filename">http://image-server:8182/</span> available at <span class="filename">http://nginx-server/</span>.
 
 <pre>location / {
     if ($request_uri ~* "/(.*)") {
