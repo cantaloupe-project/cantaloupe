@@ -46,4 +46,10 @@ final class GIFImageReader extends AbstractImageReader {
         return new GIFMetadata(metadata, metadataFormat);
     }
 
+    @Override
+    String[] preferredIIOImplementations() {
+        // We don't want com.sun.media.imageioimpl.plugins.gif.GIFImageReader!
+        return new String[] { "com.sun.imageio.plugins.gif.GIFImageReader" };
+    }
+
 }
