@@ -71,9 +71,15 @@ public class S3ResolverTest extends AbstractResolverTest {
         try {
             s3.deleteBucket(bucketName);
         } catch (AmazonS3Exception e) {
-            // This probably means it already exists. We'll find out shortly.
+            // This probably means it doesn't exist. We'll find out shortly.
         }
-        s3.createBucket(new CreateBucketRequest(bucketName));
+        try {
+            s3.createBucket(new CreateBucketRequest(bucketName));
+        } catch (AmazonS3Exception e) {
+            if (!e.getMessage().contains("you already own it")) {
+                throw e;
+            }
+        }
     }
 
     private static void seedFixtures() throws IOException {
