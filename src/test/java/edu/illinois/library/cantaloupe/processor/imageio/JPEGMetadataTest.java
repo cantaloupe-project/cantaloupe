@@ -25,16 +25,21 @@ public class JPEGMetadataTest extends BaseTest {
     private JPEGMetadata getInstance(String fixtureName)
             throws IOException {
         final Iterator<ImageReader> it = ImageIO.getImageReadersByFormatName("JPEG");
-        final ImageReader reader = it.next();
-        final Path srcFile = TestUtil.getImage(fixtureName);
-        try (ImageInputStream is = ImageIO.createImageInputStream(srcFile.toFile())) {
-            reader.setInput(is);
-            final IIOMetadata metadata = reader.getImageMetadata(0);
-            return new JPEGMetadata(metadata,
-                    metadata.getNativeMetadataFormatName());
-        } finally {
-            reader.dispose();
+        while (it.hasNext()) {
+            final ImageReader reader = it.next();
+            if (reader.getClass().getName().equals(JPEGImageReader.getPreferredIIOImplementations()[0])) {
+                final Path srcFile = TestUtil.getImage(fixtureName);
+                try (ImageInputStream is = ImageIO.createImageInputStream(srcFile.toFile())) {
+                    reader.setInput(is);
+                    final IIOMetadata metadata = reader.getImageMetadata(0);
+                    return new JPEGMetadata(metadata,
+                            metadata.getNativeMetadataFormatName());
+                } finally {
+                    reader.dispose();
+                }
+            }
         }
+        return null;
     }
 
     @Test
@@ -44,7 +49,8 @@ public class JPEGMetadataTest extends BaseTest {
 
     @Test
     public void testGetExifOrientation() throws IOException {
-        assertNull(getInstance("jpg-iptc.jpg").getExifOrientation());
+        assertEquals(Orientation.ROTATE_0,
+                getInstance("jpg-iptc.jpg").getExifOrientation());
         assertEquals(Orientation.ROTATE_90,
                 getInstance("jpg-rotated.jpg").getExifOrientation());
     }

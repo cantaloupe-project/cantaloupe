@@ -55,15 +55,16 @@ abstract class AbstractMetadata {
                 return Orientation.ROTATE_180;
             case 8:
                 return Orientation.ROTATE_270;
+            default:
+                return Orientation.ROTATE_0;
         }
-        return null;
     }
 
     /**
      * Reads the orientation (tiff:Orientation) from EXIF data.
      *
      * @param exif EXIF data.
-     * @return Orientation, or null if unspecified.
+     * @return Orientation, or {@link Orientation#ROTATE_0} if unspecified.
      */
     Orientation readOrientation(byte[] exif) {
         // See https://community.oracle.com/thread/1264022?start=0&tstart=0
@@ -89,7 +90,7 @@ abstract class AbstractMetadata {
                 reader.dispose();
             }
         }
-        return null;
+        return Orientation.ROTATE_0;
     }
 
     /**

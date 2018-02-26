@@ -15,6 +15,10 @@ final class JPEGImageReader extends AbstractImageReader {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(JPEGImageReader.class);
 
+    static String[] getPreferredIIOImplementations() {
+        return new String[] { "com.sun.imageio.plugins.jpeg.JPEGImageReader" };
+    }
+
     /**
      * @param sourceFile Source file to read.
      */
@@ -48,7 +52,7 @@ final class JPEGImageReader extends AbstractImageReader {
 
     @Override
     String[] preferredIIOImplementations() {
-        return new String[] { "com.sun.imageio.plugins.jpeg.JPEGImageReader" };
+        return getPreferredIIOImplementations();
     }
 
 }
