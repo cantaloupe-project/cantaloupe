@@ -60,7 +60,7 @@ public class ImageReader {
             LoggerFactory.getLogger(ImageReader.class);
 
     private static final Set<Format> SUPPORTED_FORMATS =
-            Collections.unmodifiableSet(EnumSet.of(Format.BMP, Format.DCM,
+            Collections.unmodifiableSet(EnumSet.of(Format.BMP,
                     Format.GIF, Format.JPG, Format.PNG, Format.TIF));
 
     private Metadata cachedMetadata;
@@ -131,9 +131,6 @@ public class ImageReader {
             case BMP:
                 reader = new BMPImageReader(sourceFile);
                 break;
-            case DCM:
-                reader = new DICOMImageReader(sourceFile);
-                break;
             case GIF:
                 reader = new GIFImageReader(sourceFile);
                 break;
@@ -182,9 +179,6 @@ public class ImageReader {
             case BMP:
                 reader = new BMPImageReader(inputStream);
                 break;
-            case DCM:
-                reader = new DICOMImageReader(inputStream);
-                break;
             case GIF:
                 reader = new GIFImageReader(inputStream);
                 break;
@@ -217,9 +211,6 @@ public class ImageReader {
         switch (format) {
             case BMP:
                 reader = new BMPImageReader(streamSource);
-                break;
-            case DCM:
-                reader = new DICOMImageReader(streamSource);
                 break;
             case GIF:
                 reader = new GIFImageReader(streamSource);
