@@ -29,7 +29,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -714,6 +716,13 @@ abstract class AbstractProcessorTest extends BaseTest {
                     final String fixtureName = file.getFileName().toString();
 
                     Processor proc = newInstance();
+
+                    // These are used in other tests, but ImageIO doesn't like
+                    // them.
+                    if (new HashSet<>(Arrays.asList(
+                            "jpg-ycck.jpg", "jpg-icc-chunked.jpg")).contains(fixtureName)) {
+                        continue;
+                    }
 
                     // TODO: address these
                     if (proc instanceof Java2dProcessor || proc instanceof JaiProcessor) {

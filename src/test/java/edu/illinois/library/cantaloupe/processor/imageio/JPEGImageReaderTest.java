@@ -80,12 +80,24 @@ public class JPEGImageReaderTest extends BaseTest {
         assertArrayEquals(expected, instance.preferredIIOImplementations());
     }
 
+    /* read() */
+
     @Test
     public void testRead() throws Exception {
         BufferedImage result = instance.read();
         assertEquals(64, result.getWidth());
         assertEquals(56, result.getHeight());
     }
+
+    @Test
+    public void testReadWithYCCKImage() throws Exception {
+        instance = new JPEGImageReader(TestUtil.getImage("jpg-ycck.jpg"));
+        BufferedImage result = instance.read();
+        assertEquals(64, result.getWidth());
+        assertEquals(56, result.getHeight());
+    }
+
+    /* read(blablabla) */
 
     @Test
     public void testReadWithArguments() throws Exception {

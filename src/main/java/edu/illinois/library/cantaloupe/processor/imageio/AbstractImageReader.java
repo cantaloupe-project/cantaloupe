@@ -37,7 +37,7 @@ import java.util.Set;
 abstract class AbstractImageReader {
 
     /**
-     * Source format being read.
+     * Format of the image being read.
      */
     private Format format;
 
@@ -49,12 +49,12 @@ abstract class AbstractImageReader {
     /**
      * Set by {@link #setSource}.
      */
-    private ImageInputStream inputStream;
+    ImageInputStream inputStream;
 
     /**
      * Set by {@link #setSource}. May be {@literal null}.
      */
-    private Object source;
+    Object source;
 
     /**
      * @param inputFile Image file to read.
@@ -193,7 +193,6 @@ abstract class AbstractImageReader {
     }
 
     /**
-     * @param imageIndex
      * @return Pixel dimensions of the image at the given index.
      */
     Dimension getSize(int imageIndex) throws IOException {
@@ -203,7 +202,6 @@ abstract class AbstractImageReader {
     }
 
     /**
-     * @param imageIndex
      * @return Tile size of the image at the given index, or the full image
      *         dimensions if the image is not tiled.
      */
@@ -290,7 +288,7 @@ abstract class AbstractImageReader {
         source = inputFile;
         try {
             if (inputStream != null) {
-                inputStream.close();
+                IOUtils.closeQuietly(inputStream);
             }
         } finally {
             inputStream = ImageIO.createImageInputStream(inputFile.toFile());
@@ -308,7 +306,7 @@ abstract class AbstractImageReader {
         source = streamSource;
         try {
             if (inputStream != null) {
-                inputStream.close();
+                IOUtils.closeQuietly(inputStream);
             }
         } finally {
             inputStream = streamSource.newImageInputStream();
@@ -352,6 +350,7 @@ abstract class AbstractImageReader {
                        final Set<ImageReader.Hint> hints)
             throws IOException, ProcessorException {
         BufferedImage image;
+
         Crop crop = (Crop) ops.getFirst(Crop.class);
         if (crop != null && !hints.contains(ImageReader.Hint.IGNORE_CROP)) {
             final Dimension fullSize = new Dimension(
