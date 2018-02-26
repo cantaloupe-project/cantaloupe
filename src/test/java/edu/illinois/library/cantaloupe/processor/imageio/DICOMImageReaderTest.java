@@ -5,12 +5,14 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.awt.*;
 
 import static org.junit.Assert.*;
 
+@Ignore
 public class DICOMImageReaderTest extends BaseTest {
 
     private DICOMImageReader instance;

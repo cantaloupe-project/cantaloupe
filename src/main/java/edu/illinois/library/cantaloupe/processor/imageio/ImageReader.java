@@ -59,7 +59,7 @@ public class ImageReader {
             getLogger(ImageReader.class);
 
     private static final Set<Format> SUPPORTED_FORMATS =
-            Collections.unmodifiableSet(EnumSet.of(Format.BMP, Format.DCM,
+            Collections.unmodifiableSet(EnumSet.of(Format.BMP,
                     Format.GIF, Format.JPG, Format.PNG, Format.TIF));
 
     private Metadata cachedMetadata;
