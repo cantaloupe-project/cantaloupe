@@ -48,9 +48,13 @@ public class JPEGMetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetExifOrientation() throws IOException {
+    public void testGetExifOrientationWithNoOrientation() throws IOException {
         assertEquals(Orientation.ROTATE_0,
                 getInstance("jpg-iptc.jpg").getExifOrientation());
+    }
+
+    @Test
+    public void testGetExifOrientationWithOrientation() throws IOException {
         assertEquals(Orientation.ROTATE_90,
                 getInstance("jpg-rotated.jpg").getExifOrientation());
     }

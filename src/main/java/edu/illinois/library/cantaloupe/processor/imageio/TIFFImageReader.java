@@ -33,6 +33,23 @@ final class TIFFImageReader extends AbstractImageReader {
         System.setProperty("it.geosolutions.imageio.tiff.lazy", "true");
     }
 
+    static String[] getPreferredIIOImplementations() {
+        // N.B.: The GeoSolutions TIFF reader supports BigTIFF among other
+        // enhancements. The Sun reader will do as a fallback, although there
+        // shouldn't be any need to fall back.
+        String[] impls = new String[2];
+        impls[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.class.getName();
+
+        // In Java 9, the Sun TIFF reader has moved out of the JAI ImageIO
+        // Tools and into the JDK.
+        if (SystemUtils.getJavaMajorVersion() >= 9) {
+            impls[1] = "com.sun.imageio.plugins.tiff.TIFFImageReader";
+        } else {
+            impls[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageReader";
+        }
+        return impls;
+    }
+
     /**
      * @param sourceFile Source file to read.
      */
@@ -98,21 +115,7 @@ final class TIFFImageReader extends AbstractImageReader {
 
     @Override
     String[] preferredIIOImplementations() {
-        // N.B.: The GeoSolutions TIFF reader supports BigTIFF among other
-        // enhancements. The Sun reader will do as a fallback, although there
-        // shouldn't be any need to fall back.
-        String[] impls = new String[2];
-        impls[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.class.getName();
-
-        // In Java 9, the Sun TIFF reader has moved out of the JAI ImageIO
-        // Tools and into the JDK.
-        if (SystemUtils.getJavaMajorVersion() >= 9) {
-            impls[1] = "com.sun.imageio.plugins.tiff.TIFFImageReader";
-        } else {
-            impls[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageReader";
-        }
-
-        return impls;
+        return getPreferredIIOImplementations();
     }
 
     /**
