@@ -148,7 +148,7 @@
       <version>0.2.4</version>
       <scope>test</scope>
     </dependency>
-    <!-- JAI -->
+    <!-- JAI ImageIO -->
     <dependency>
       <groupId>com.github.jai-imageio</groupId>
       <artifactId>jai-imageio-core</artifactId>
