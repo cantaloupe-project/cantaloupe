@@ -29,6 +29,22 @@ final class TIFFImageReader extends AbstractImageReader {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(TIFFImageReader.class);
 
+    static String[] getPreferredIIOImplementations() {
+        // N.B.: The GeoSolutions TIFF reader supports BigTIFF among other
+        // enhancements. The Sun reader will do as a fallback.
+        String[] impls = new String[2];
+        impls[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.class.getName();
+
+        // The Sun TIFF reader has moved in Java 9.
+        if (SystemUtils.getJavaMajorVersion() >= 9) {
+            impls[1] = "com.sun.imageio.plugins.tiff.TIFFImageReader";
+        } else {
+            impls[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageReader";
+        }
+
+        return impls;
+    }
+
     /**
      * @param sourceFile Source file to read.
      */
@@ -87,19 +103,7 @@ final class TIFFImageReader extends AbstractImageReader {
 
     @Override
     String[] preferredIIOImplementations() {
-        // N.B.: The GeoSolutions TIFF reader supports BigTIFF among other
-        // enhancements. The Sun reader will do as a fallback.
-        String[] impls = new String[2];
-        impls[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.class.getName();
-
-        // The Sun TIFF reader has moved in Java 9.
-        if (SystemUtils.getJavaMajorVersion() >= 9) {
-            impls[1] = "com.sun.imageio.plugins.tiff.TIFFImageReader";
-        } else {
-            impls[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageReader";
-        }
-
-        return impls;
+        return getPreferredIIOImplementations();
     }
 
     ////////////////////////////////////////////////////////////////////////

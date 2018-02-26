@@ -72,22 +72,26 @@ abstract class AbstractMetadata {
         if (exif != null) {
             final Iterator<ImageReader> it =
                     ImageIO.getImageReadersByFormatName("TIFF");
-            final ImageReader reader = it.next();
-            try (ImageInputStream wrapper = new MemoryCacheImageInputStream(
-                    new ByteArrayInputStream(exif, 6, exif.length - 6))) {
-                reader.setInput(wrapper, true, false);
+            while (it.hasNext()) {
+                final ImageReader reader = it.next();
+                if (reader.getClass().getName().equals(TIFFImageReader.getPreferredIIOImplementations()[0])) {
+                    try (ImageInputStream wrapper = new MemoryCacheImageInputStream(
+                            new ByteArrayInputStream(exif, 6, exif.length - 6))) {
+                        reader.setInput(wrapper, true, false);
 
-                final IIOMetadata exifMetadata = reader.getImageMetadata(0);
-                final TIFFDirectory exifDir =
-                        TIFFDirectory.createFromMetadata(exifMetadata);
-                final TIFFField orientationField = exifDir.getTIFFField(274);
-                if (orientationField != null) {
-                    return orientationForExifValue(orientationField.getAsInt(0));
+                        final IIOMetadata exifMetadata = reader.getImageMetadata(0);
+                        final TIFFDirectory exifDir =
+                                TIFFDirectory.createFromMetadata(exifMetadata);
+                        final TIFFField orientationField = exifDir.getTIFFField(274);
+                        if (orientationField != null) {
+                            return orientationForExifValue(orientationField.getAsInt(0));
+                        }
+                    } catch (IOException e) {
+                        logger.info(e.getMessage(), e);
+                    } finally {
+                        reader.dispose();
+                    }
                 }
-            } catch (IOException e) {
-                logger.info(e.getMessage(), e);
-            } finally {
-                reader.dispose();
             }
         }
         return Orientation.ROTATE_0;
