@@ -47,7 +47,7 @@ abstract class AbstractMetadata {
         return iioMetadata;
     }
 
-    protected Orientation orientationForExifValue(int value) {
+    Orientation orientationForExifValue(int value) {
         switch (value) {
             case 6:
                 return Orientation.ROTATE_90;
@@ -65,16 +65,15 @@ abstract class AbstractMetadata {
      * @param exif EXIF data.
      * @return Orientation, or null if unspecified.
      */
-    protected Orientation readOrientation(byte[] exif) {
+    Orientation readOrientation(byte[] exif) {
         // See https://community.oracle.com/thread/1264022?start=0&tstart=0
         // for an explanation of the technique used here.
         if (exif != null) {
             final Iterator<ImageReader> it =
                     ImageIO.getImageReadersByFormatName("TIFF");
             final ImageReader reader = it.next();
-            try {
-                final ImageInputStream wrapper = new MemoryCacheImageInputStream(
-                        new ByteArrayInputStream(exif, 6, exif.length - 6));
+            try (ImageInputStream wrapper = new MemoryCacheImageInputStream(
+                    new ByteArrayInputStream(exif, 6, exif.length - 6))) {
                 reader.setInput(wrapper, true, false);
 
                 final IIOMetadata exifMetadata = reader.getImageMetadata(0);
@@ -99,7 +98,7 @@ abstract class AbstractMetadata {
      * @param xmp XMP string.
      * @return Orientation, or null if unspecified.
      */
-    protected Orientation readOrientation(String xmp) {
+    Orientation readOrientation(String xmp) {
         RIOT.init();
 
         try {
