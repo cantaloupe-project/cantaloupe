@@ -7,7 +7,6 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +27,6 @@ import java.awt.image.WritableRaster;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -36,10 +34,6 @@ final class JPEGImageReader extends AbstractImageReader {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(JPEGImageReader.class);
-
-    static String[] getPreferredIIOImplementations() {
-        return new String[] { "com.sun.imageio.plugins.jpeg.JPEGImageReader" };
-    }
 
     /**
      * N.B.: This file must exist in the resource bundle.
@@ -57,30 +51,18 @@ final class JPEGImageReader extends AbstractImageReader {
         }
     }
 
-    /**
-     * @param sourceFile Source file to read.
-     */
-    JPEGImageReader(Path sourceFile) throws IOException {
-        super(sourceFile, Format.JPG);
-    }
-
-    /**
-     * @param inputStream Stream to read.
-     */
-    JPEGImageReader(ImageInputStream inputStream) throws IOException {
-        super(inputStream, Format.JPG);
-    }
-
-    /**
-     * @param streamSource Source of streams to read.
-     */
-    JPEGImageReader(StreamSource streamSource) throws IOException {
-        super(streamSource, Format.JPG);
+    static String[] getPreferredIIOImplementations() {
+        return new String[] { "com.sun.imageio.plugins.jpeg.JPEGImageReader" };
     }
 
     @Override
     Compression getCompression(int imageIndex) {
         return Compression.JPEG;
+    }
+
+    @Override
+    Format getFormat() {
+        return Format.JPG;
     }
 
     @Override

@@ -48,14 +48,22 @@ public class GIFImageWriterTest extends BaseTest {
 
         // Read an image fixture into memory
         final Path fixture = TestUtil.getImage("gif-xmp.gif");
-        metadata = new GIFImageReader(fixture).getMetadata(0);
-        bufferedImage = new GIFImageReader(fixture).read();
-        planarImage =  PlanarImage.wrapRenderedImage(
-                new GIFImageReader(fixture).readRendered());
+
+        GIFImageReader reader = new GIFImageReader();
+        reader.setSource(fixture);
+        metadata = reader.getMetadata(0);
+
+        reader.setSource(fixture);
+        bufferedImage = reader.read();
+
+        reader.setSource(fixture);
+        planarImage =  PlanarImage.wrapRenderedImage(reader.readRendered());
 
         // Create a temp file and output stream to write to
         tempFile = File.createTempFile("test", "tmp");
         outputStream = new FileOutputStream(tempFile);
+
+        reader.dispose();
     }
 
     @After
@@ -66,7 +74,7 @@ public class GIFImageWriterTest extends BaseTest {
     }
 
     @Test
-    public void testPreferredIIOImplementations() throws Exception {
+    public void testPreferredIIOImplementations() {
         assertEquals(1, getWriter().preferredIIOImplementations().length);
     }
 

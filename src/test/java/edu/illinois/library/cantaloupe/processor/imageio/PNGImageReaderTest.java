@@ -29,7 +29,8 @@ public class PNGImageReaderTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new PNGImageReader(TestUtil.getImage("png"));
+        instance = new PNGImageReader();
+        instance.setSource(TestUtil.getImage("png"));
     }
 
     @After
@@ -75,7 +76,7 @@ public class PNGImageReaderTest extends BaseTest {
 
     @Test
     public void testPreferredIIOImplementations() {
-        assertEquals(0, instance.preferredIIOImplementations().length);
+        assertEquals(1, instance.preferredIIOImplementations().length);
     }
 
     @Test

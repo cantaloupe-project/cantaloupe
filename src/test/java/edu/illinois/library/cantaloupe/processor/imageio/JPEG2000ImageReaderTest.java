@@ -15,8 +15,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,7 +27,8 @@ public class JPEG2000ImageReaderTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new JPEG2000ImageReader(TestUtil.getImage("jp2"));
+        instance = new JPEG2000ImageReader();
+        instance.setSource(TestUtil.getImage("jp2"));
     }
 
     @After

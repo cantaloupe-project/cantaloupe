@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +16,8 @@ import org.w3c.dom.NodeList;
 
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
-import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Set;
 
 final class TIFFImageReader extends AbstractImageReader {
@@ -48,27 +45,6 @@ final class TIFFImageReader extends AbstractImageReader {
             impls[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageReader";
         }
         return impls;
-    }
-
-    /**
-     * @param sourceFile Source file to read.
-     */
-    TIFFImageReader(Path sourceFile) throws IOException {
-        super(sourceFile, Format.TIF);
-    }
-
-    /**
-     * @param inputStream Stream to read.
-     */
-    TIFFImageReader(ImageInputStream inputStream) throws IOException {
-        super(inputStream, Format.TIF);
-    }
-
-    /**
-     * @param streamSource Source of streams to read.
-     */
-    TIFFImageReader(StreamSource streamSource) throws IOException {
-        super(streamSource, Format.TIF);
     }
 
     @Override
@@ -99,6 +75,11 @@ final class TIFFImageReader extends AbstractImageReader {
             default:
                 return Compression.UNDEFINED;
         }
+    }
+
+    @Override
+    Format getFormat() {
+        return Format.TIF;
     }
 
     @Override

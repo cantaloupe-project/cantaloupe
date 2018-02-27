@@ -37,11 +37,6 @@ import java.util.Set;
 abstract class AbstractImageReader {
 
     /**
-     * Format of the image being read.
-     */
-    private Format format;
-
-    /**
      * Assigned by {@link #createReader()}.
      */
     javax.imageio.ImageReader iioReader;
@@ -56,45 +51,11 @@ abstract class AbstractImageReader {
      */
     Object source;
 
-    /**
-     * @param inputFile Image file to read.
-     */
-    AbstractImageReader(Path inputFile, Format format) throws IOException {
-        setSource(inputFile);
-        setFormat(format);
-
-        createReader();
-    }
-
-    /**
-     * Creates a non-reusable instance.
-     *
-     * @param inputStream Stream to read.
-     */
-    AbstractImageReader(ImageInputStream inputStream,
-                        Format format) throws IOException {
-        setSource(inputStream);
-        setFormat(format);
-
-        createReader();
-    }
-
-    /**
-     * @param streamSource Source of streams to read.
-     */
-    AbstractImageReader(StreamSource streamSource,
-                        Format format) throws IOException {
-        setSource(streamSource);
-        setFormat(format);
-
-        createReader();
-    }
-
     private List<javax.imageio.ImageReader> availableIIOReaders() {
         final Iterator<javax.imageio.ImageReader> it;
-        if (format != null) {
+        if (getFormat() != null) {
             it = ImageIO.getImageReadersByMIMEType(
-                    format.getPreferredMediaType().toString());
+                    getFormat().getPreferredMediaType().toString());
         } else {
             it = ImageIO.getImageReaders(inputStream);
         }
@@ -163,6 +124,8 @@ abstract class AbstractImageReader {
     }
 
     abstract Compression getCompression(int imageIndex) throws IOException;
+
+    abstract Format getFormat();
 
     javax.imageio.ImageReader getIIOReader() {
         return iioReader;
@@ -276,11 +239,6 @@ abstract class AbstractImageReader {
         } else {
             setSource((StreamSource) source);
         }
-        createReader();
-    }
-
-    void setFormat(Format format) {
-        this.format = format;
     }
 
     void setSource(Path inputFile) throws IOException {
@@ -293,12 +251,14 @@ abstract class AbstractImageReader {
         } finally {
             inputStream = ImageIO.createImageInputStream(inputFile.toFile());
         }
+        createReader();
     }
 
-    void setSource(ImageInputStream inputStream) {
+    void setSource(ImageInputStream inputStream) throws IOException {
         dispose();
         source = null;
         this.inputStream = inputStream;
+        createReader();
     }
 
     void setSource(StreamSource streamSource) throws IOException {
@@ -311,6 +271,7 @@ abstract class AbstractImageReader {
         } finally {
             inputStream = streamSource.newImageInputStream();
         }
+        createReader();
     }
 
     ////////////////////////////////////////////////////////////////////////

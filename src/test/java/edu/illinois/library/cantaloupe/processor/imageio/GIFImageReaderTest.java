@@ -29,7 +29,8 @@ public class GIFImageReaderTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new GIFImageReader(TestUtil.getImage("gif"));
+        instance = new GIFImageReader();
+        instance.setSource(TestUtil.getImage("gif"));
     }
 
     @After
@@ -138,7 +139,8 @@ public class GIFImageReaderTest extends BaseTest {
 
     @Test
     public void testReadSequenceWithAnimatedImage() throws Exception {
-        instance = new GIFImageReader(TestUtil.getImage("gif-animated-looping.gif"));
+        instance = new GIFImageReader();
+        instance.setSource(TestUtil.getImage("gif-animated-looping.gif"));
         BufferedImageSequence seq = instance.readSequence();
         assertEquals(2, seq.length());
     }

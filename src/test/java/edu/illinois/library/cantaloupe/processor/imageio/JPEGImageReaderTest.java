@@ -29,7 +29,8 @@ public class JPEGImageReaderTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new JPEGImageReader(TestUtil.getImage("jpg"));
+        instance = new JPEGImageReader();
+        instance.setSource(TestUtil.getImage("jpg"));
     }
 
     @After
@@ -91,7 +92,9 @@ public class JPEGImageReaderTest extends BaseTest {
 
     @Test
     public void testReadWithYCCKImage() throws Exception {
-        instance = new JPEGImageReader(TestUtil.getImage("jpg-ycck.jpg"));
+        instance = new JPEGImageReader();
+        instance.setSource(TestUtil.getImage("jpg-ycck.jpg"));
+
         BufferedImage result = instance.read();
         assertEquals(64, result.getWidth());
         assertEquals(56, result.getHeight());

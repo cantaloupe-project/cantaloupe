@@ -129,26 +129,27 @@ public class ImageReader {
                        Format format) throws IOException {
         switch (format) {
             case BMP:
-                reader = new BMPImageReader(sourceFile);
+                reader = new BMPImageReader();
                 break;
             case GIF:
-                reader = new GIFImageReader(sourceFile);
+                reader = new GIFImageReader();
                 break;
             case JP2:
-                reader = new JPEG2000ImageReader(sourceFile);
+                reader = new JPEG2000ImageReader();
                 break;
             case JPG:
-                reader = new JPEGImageReader(sourceFile);
+                reader = new JPEGImageReader();
                 break;
             case PNG:
-                reader = new PNGImageReader(sourceFile);
+                reader = new PNGImageReader();
                 break;
             case TIF:
-                reader = new TIFFImageReader(sourceFile);
+                reader = new TIFFImageReader();
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported format: " + format);
         }
+        reader.setSource(sourceFile);
     }
 
     /**
@@ -177,26 +178,27 @@ public class ImageReader {
                        Format format) throws IOException {
         switch (format) {
             case BMP:
-                reader = new BMPImageReader(inputStream);
+                reader = new BMPImageReader();
                 break;
             case GIF:
-                reader = new GIFImageReader(inputStream);
+                reader = new GIFImageReader();
                 break;
             case JP2:
-                reader = new JPEG2000ImageReader(inputStream);
+                reader = new JPEG2000ImageReader();
                 break;
             case JPG:
-                reader = new JPEGImageReader(inputStream);
+                reader = new JPEGImageReader();
                 break;
             case PNG:
-                reader = new PNGImageReader(inputStream);
+                reader = new PNGImageReader();
                 break;
             case TIF:
-                reader = new TIFFImageReader(inputStream);
+                reader = new TIFFImageReader();
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported format: " + format);
         }
+        reader.setSource(inputStream);
     }
 
     /**
@@ -210,26 +212,27 @@ public class ImageReader {
                        Format format) throws IOException {
         switch (format) {
             case BMP:
-                reader = new BMPImageReader(streamSource);
+                reader = new BMPImageReader();
                 break;
             case GIF:
-                reader = new GIFImageReader(streamSource);
+                reader = new GIFImageReader();
                 break;
             case JP2:
-                reader = new JPEG2000ImageReader(streamSource);
+                reader = new JPEG2000ImageReader();
                 break;
             case JPG:
-                reader = new JPEGImageReader(streamSource);
+                reader = new JPEGImageReader();
                 break;
             case PNG:
-                reader = new PNGImageReader(streamSource);
+                reader = new PNGImageReader();
                 break;
             case TIF:
-                reader = new TIFFImageReader(streamSource);
+                reader = new TIFFImageReader();
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported format: " + format);
         }
+        reader.setSource(streamSource);
     }
 
     /**
