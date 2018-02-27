@@ -117,7 +117,6 @@ public class TIFFImageWriterTest extends BaseTest {
             final Metadata metadata = reader.getMetadata(0);
             final PlanarImage image =
                     PlanarImage.wrapRenderedImage(reader.readRendered());
-            reader.dispose();
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             newWriter(metadata).write(image, os);
@@ -138,7 +137,6 @@ public class TIFFImageWriterTest extends BaseTest {
             final Metadata metadata = reader.getMetadata(0);
             final PlanarImage image =
                     PlanarImage.wrapRenderedImage(reader.readRendered());
-            reader.dispose();
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             newWriter(metadata).write(image, os);
