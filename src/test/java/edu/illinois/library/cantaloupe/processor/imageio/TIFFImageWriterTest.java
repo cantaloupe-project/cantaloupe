@@ -92,15 +92,18 @@ public class TIFFImageWriterTest extends BaseTest {
     @Test
     public void testWriteWithPlanarImage() throws Exception {
         final TIFFImageReader reader = new TIFFImageReader();
-        reader.setSource(TestUtil.getImage("tif-xmp.tif"));
-        final Metadata metadata = reader.getMetadata(0);
-        final PlanarImage image =
-                PlanarImage.wrapRenderedImage(reader.readRendered());
-        reader.dispose();
+        try {
+            reader.setSource(TestUtil.getImage("tif-xmp.tif"));
+            final Metadata metadata = reader.getMetadata(0);
+            final PlanarImage image =
+                    PlanarImage.wrapRenderedImage(reader.readRendered());
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        newWriter(metadata).write(image, os);
-        ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            newWriter(metadata).write(image, os);
+            ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
+        } finally {
+            reader.dispose();
+        }
     }
 
     @Test
@@ -109,15 +112,19 @@ public class TIFFImageWriterTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
 
         final TIFFImageReader reader = new TIFFImageReader();
-        reader.setSource(TestUtil.getImage("tif-exif.tif"));
-        final Metadata metadata = reader.getMetadata(0);
-        final PlanarImage image =
-                PlanarImage.wrapRenderedImage(reader.readRendered());
-        reader.dispose();
+        try {
+            reader.setSource(TestUtil.getImage("tif-exif.tif"));
+            final Metadata metadata = reader.getMetadata(0);
+            final PlanarImage image =
+                    PlanarImage.wrapRenderedImage(reader.readRendered());
+            reader.dispose();
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        newWriter(metadata).write(image, os);
-        checkForEXIFMetadata(os.toByteArray());
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            newWriter(metadata).write(image, os);
+            checkForEXIFMetadata(os.toByteArray());
+        } finally {
+            reader.dispose();
+        }
     }
 
     @Test
@@ -126,15 +133,19 @@ public class TIFFImageWriterTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
 
         final TIFFImageReader reader = new TIFFImageReader();
-        reader.setSource(TestUtil.getImage("tif-iptc.tif"));
-        final Metadata metadata = reader.getMetadata(0);
-        final PlanarImage image =
-                PlanarImage.wrapRenderedImage(reader.readRendered());
-        reader.dispose();
+        try {
+            reader.setSource(TestUtil.getImage("tif-iptc.tif"));
+            final Metadata metadata = reader.getMetadata(0);
+            final PlanarImage image =
+                    PlanarImage.wrapRenderedImage(reader.readRendered());
+            reader.dispose();
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        newWriter(metadata).write(image, os);
-        checkForIPTCMetadata(os.toByteArray());
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            newWriter(metadata).write(image, os);
+            checkForIPTCMetadata(os.toByteArray());
+        } finally {
+            reader.dispose();
+        }
     }
 
     @Test
@@ -143,15 +154,18 @@ public class TIFFImageWriterTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
 
         final TIFFImageReader reader = new TIFFImageReader();
-        reader.setSource(TestUtil.getImage("tif-xmp.tif"));
-        final Metadata metadata = reader.getMetadata(0);
-        final PlanarImage image =
-                PlanarImage.wrapRenderedImage(reader.readRendered());
-        reader.dispose();
+        try {
+            reader.setSource(TestUtil.getImage("tif-xmp.tif"));
+            final Metadata metadata = reader.getMetadata(0);
+            final PlanarImage image =
+                    PlanarImage.wrapRenderedImage(reader.readRendered());
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        newWriter(metadata).write(image, os);
-        checkForXMPMetadata(os.toByteArray());
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            newWriter(metadata).write(image, os);
+            checkForXMPMetadata(os.toByteArray());
+        } finally {
+            reader.dispose();
+        }
     }
 
     private void checkForIccProfile(byte[] imageData) throws Exception {
