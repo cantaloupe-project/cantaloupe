@@ -203,7 +203,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     }
 
     private static void initializeForUnix() throws IOException {
-        final Path devStdout = Paths.get("dev", "stdout");
+        final Path devStdout = Paths.get("/dev", "stdout");
         if (Files.exists(devStdout) && Files.isWritable(devStdout)) {
             createStdoutSymlink();
         } else {
