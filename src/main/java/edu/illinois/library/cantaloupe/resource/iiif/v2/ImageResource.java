@@ -28,6 +28,7 @@ import org.restlet.resource.Get;
 import java.awt.Dimension;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.List;
@@ -150,7 +151,8 @@ public class ImageResource extends IIIF2Resource {
                 newProcessor(sourceFormat);
 
         // Connect it to the resolver.
-        new ProcessorConnector().connect(resolver, processor, identifier);
+        tempFileFuture = new ProcessorConnector().connect(
+                resolver, processor, identifier, sourceFormat);
 
         final Info info = getOrReadInfo(ops.getIdentifier(), processor);
         final Dimension fullSize = info.getSize();
@@ -217,7 +219,15 @@ public class ImageResource extends IIIF2Resource {
         addLinkHeader(params);
         commitCustomResponseHeaders();
         return new ImageRepresentation(info, processor, ops, disposition,
-                isBypassingCache());
+                isBypassingCache(), () -> {
+            if (tempFileFuture != null) {
+                Path tempFile = tempFileFuture.get();
+                if (tempFile != null) {
+                    Files.deleteIfExists(tempFile);
+                }
+            }
+            return null;
+        });
     }
 
     private void addLinkHeader(Parameters params) {

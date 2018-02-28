@@ -26,12 +26,14 @@ import org.restlet.resource.Get;
 
 import java.awt.Dimension;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 /**
@@ -119,7 +121,8 @@ public class ImageResource extends IIIF1Resource {
                 newProcessor(sourceFormat);
 
         // Connect it to the resolver.
-        new ProcessorConnector().connect(resolver, processor, identifier);
+        Future<Path> tempFileFuture = new ProcessorConnector().connect(
+                resolver, processor, identifier, sourceFormat);
 
         final Set<Format> availableOutputFormats =
                 processor.getAvailableOutputFormats();
@@ -170,7 +173,15 @@ public class ImageResource extends IIIF1Resource {
 
         commitCustomResponseHeaders();
         return new ImageRepresentation(info, processor, ops, disposition,
-                isBypassingCache());
+                isBypassingCache(), () -> {
+            if (tempFileFuture != null) {
+                Path tempFile = tempFileFuture.get();
+                if (tempFile != null) {
+                    Files.deleteIfExists(tempFile);
+                }
+            }
+            return null;
+        });
     }
 
     private void addLinkHeader(Processor processor) {

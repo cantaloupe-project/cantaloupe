@@ -327,11 +327,21 @@ processor.jpg.quality = 80
 # `LZW`, and `RLE`. Leave blank for no compression.
 processor.tif.compression = LZW
 
-# Available values are `StreamStrategy` and `CacheStrategy`. StreamStrategy
-# will try to stream source images from non-filesystem resolvers, when this
-# is possible; CacheStrategy will first download them into the source cache
-# using FilesystemCache, which must also be configured.
+# Controls how content is fed to processors from stream-based resolvers.
+# * `StreamStrategy` will try to stream a source image from a resolver when
+#   possible, and use `processor.fallback_retrieval_strategy` otherwise.
+# * `DownloadStrategy` will download it to a temporary file, and delete
+#   it after the request is complete.
+# * `CacheStrategy` will download it into the source cache using
+#   FilesystemCache, which must also be configured. (This will perform a
+#   lot better than DownloadStrategy if you can spare the disk space.)
 StreamProcessor.retrieval_strategy = StreamStrategy
+
+# Controls how an incompatible StreamResolver + FileProcessor combination is
+# dealt with.
+# * `DownloadStrategy` and `CacheStrategy` work the same as above.
+# * `AbortStrategy` causes the request to fail.
+processor.fallback_retrieval_strategy = DownloadStrategy
 
 #----------------------------------------
 # FfmpegProcessor

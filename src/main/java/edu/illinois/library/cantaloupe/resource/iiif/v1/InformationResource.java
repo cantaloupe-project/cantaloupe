@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.List;
@@ -128,7 +129,8 @@ public class InformationResource extends IIIF1Resource {
         final Processor processor = new ProcessorFactory().newProcessor(format);
 
         // Connect it to the resolver.
-        new ProcessorConnector().connect(resolver, processor, identifier);
+        tempFileFuture = new ProcessorConnector().connect(
+                resolver, processor, identifier, format);
 
         final Info info = getOrReadInfo(identifier, processor);
         final ImageInfo imageInfo = new ImageInfoFactory().newImageInfo(
@@ -176,7 +178,15 @@ public class InformationResource extends IIIF1Resource {
 
     private Representation newRepresentation(ImageInfo imageInfo) {
         final MediaType mediaType = getNegotiatedMediaType();
-        return new JSONRepresentation(imageInfo, mediaType);
+        return new JSONRepresentation(imageInfo, mediaType, () -> {
+            if (tempFileFuture != null) {
+                Path tempFile = tempFileFuture.get();
+                if (tempFile != null) {
+                    Files.deleteIfExists(tempFile);
+                }
+            }
+            return null;
+        });
     }
 
 }

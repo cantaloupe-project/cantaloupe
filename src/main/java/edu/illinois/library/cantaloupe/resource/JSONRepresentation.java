@@ -5,12 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.restlet.data.CharacterSet;
 import org.restlet.data.MediaType;
-import org.restlet.representation.OutputRepresentation;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.concurrent.Callable;
 
-public class JSONRepresentation extends OutputRepresentation {
+public class JSONRepresentation extends CustomOutputRepresentation {
 
     private Object toWrite;
 
@@ -20,10 +20,13 @@ public class JSONRepresentation extends OutputRepresentation {
         this.toWrite = toWrite;
     }
 
-    public JSONRepresentation(Object toWrite, MediaType mediaType) {
+    public JSONRepresentation(Object toWrite,
+                              MediaType mediaType,
+                              Callable<?> onRelease) {
         super(mediaType);
         setCharacterSet(CharacterSet.UTF_8);
         this.toWrite = toWrite;
+        this.onRelease = onRelease;
     }
 
     @Override

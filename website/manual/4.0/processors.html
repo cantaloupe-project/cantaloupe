@@ -6,8 +6,9 @@ title: Processors
 <h1>Processors</h1>
 
 <ul>
+  <li><a href="#Format%20Support">Format Support</a></li>
   <li><a href="#Operating%20System%20Compatibility">Operating System Compatibility</a></li>
-  <li><a href="#Resolver%20Compatibility">Resolver Compatiblity</a></li>
+  <li><a href="#Retrieval%20Strategies">Retrieval Strategies</a></li>
   <li><a href="#Supported%20Features">Supported Features</a></li>
   <li><a href="#Supported%20Source%20Formats">Supported Source Formats</a></li>
   <li><a href="#Implementations">Implementations</a>
@@ -24,14 +25,15 @@ title: Processors
   </li>
 </ul>
 
-<p>Processors read source images from <a href="resolvers.html">resolvers</a> and transform them according to request parameters. Particular processors can be assigned to handle particular source formats, and a fallback processor can be assigned to all others.</p>
+<p>Processors read source images from <a href="resolvers.html">resolvers</a> and transform them according to request arguments. Particular processors can be assigned to handle particular source formats, and a fallback processor can be assigned to handle all others.</p>
 
-<p>Different processors use different underlying codecs and image processing engines which have different quality, compatibility, dependency, price, and performance characteristics. The ability to choose among different processors is intended to make it easy to add support for new image formats; improve support for existing image formats via the substitution of better codecs; and decouple the image server implementation from any one codec.</p>
+<p>Different processors use different underlying codecs and image processing engines, which may have different quality, compatibility, dependency, performance, and cost characteristics. The ability to choose among different processors is intended to make it easy to add support for new image formats; improve support for existing image formats via the substitution of better codecs; and decouple the image server implementation from any one codec.</p>
 
-<p>In terms of format support, a distinction is made between the concepts of source format and output format. Available output formats may differ on a per-processor basis depending on the source format.</p>
+<hr>
 
-<p>Supported source formats depend on the processor, and possibly installed
-libraries/delegates, etc., as well. Lists of these are displayed in the <a href="remote-management.html#Control%20Panel">Control Panel</a>, as well as in the <a href="#Supported%20Source%20Formats">Supported Source Formats</a> table. A list of output formats supported <em>for a given source format</em> is contained within the response to an information request (such as <span class="filename">/iiif/2/:identifier/info.json</span>).</p>
+<h2>Format Support</h2>
+
+<p>Different processors support different source formats. A table of supported formats is displayed in the <a href="remote-management.html#Control%20Panel">Control Panel</a>, as well as in the <a href="#Supported%20Source%20Formats">Supported Source Formats</a> table below. A list of output formats supported <em>for a given source format</em> is contained within the response to an information request (such as <span class="filename">/iiif/2/:identifier/info.json</span>).</p>
 
 <hr>
 
@@ -98,7 +100,52 @@ libraries/delegates, etc., as well. Lists of these are displayed in the <a href=
 
 <hr>
 
-<h2 id="Resolver Compatibility">Resolver Compatibility</h2>
+<h2 id="Retrieval Strategies">Retrieval Strategies</h2>
+
+<p>Processors ultimately read images from <a href="resolvers.html">resolvers</a>. There are two main types of resolvers: those that can supply files, and those that can supply streams. There are two equivalent types of processors: those that can read from files, and those that can read from streams. These distinctions are important as they influence how source content flows through the processing pipeline, and whether additional storage may be needed.</p>
+
+<table class="table table-bordered">
+  <tr>
+    <td></td>
+    <td>
+      FileProcessor
+      <ul>
+        <li><a href="#FfmpegProcessor">FfmpegProcessor</li>
+        <li><a href="#KakaduProcessor">KakaduProcessor</li>
+        <li><a href="#OpenJpegProcessor">OpenJpegProcessor</li>
+      </ul>
+    </td>
+    <td>
+      StreamProcessor
+      <ul>
+        <li><a href="#GraphicsMagickProcessor">GraphicsMagickProcessor</a></li>
+        <li><a href="#ImageMagickProcessor">ImageMagickProcessor</a></li>
+        <li><a href="#JaiProcessor">JaiProcessor</a></li>
+        <li><a href="#Java2dProcessor">Java2dProcessor</a></li>
+        <li><a href="#PdfBoxProcessor">PdfBoxProcessor</a></li>
+      </ul>
+    </td>
+  <tr>
+    <td>
+      FileResolver
+      <br>
+      (only <a href="resolvers.html#FilesystemResolver">FilesystemResolver</a>)
+    </td>
+    <td class="bg-success">&check;</td>
+    <td class="bg-success">&check;</td>
+  </tr>
+  <tr>
+    <td>
+      StreamResolver
+      <br>
+      (all other resolvers)
+    </td>
+    <td class="bg-warning">See <a href="#Fallback%20Retrieval%20Strategy">Fallback Retrieval Strategy</a></td>
+    <td class="bg-success">See <a href="#Stream%20Retrieval%20Strategy">Stream Retrieval Strategy</a></td>
+  </tr>
+</table>
+
+<p>The table below is another way of expressing the same information:</p>
 
 <table class="table table-bordered">
   <tr>
@@ -175,7 +222,27 @@ libraries/delegates, etc., as well. Lists of these are displayed in the <a href=
   </tr>
 </table>
 
-<p>&check;*: Not natively compatible, but will work if the <a href="caching.html#Source%20Cache">source cache</a> is enabled</p>
+<p>&check;*: Not natively compatible, but can work via an appropriate <a href="#Fallback%20Retrieval%20Strategy">fallback retrieval strategy</a>.</p>
+
+<h3 id="Stream Retrieval Strategy">Stream Retrieval Strategy</h3>
+
+<p>The stream retrieval strategy (<code>StreamProcessor.retrieval_strategy</code>) controls how content is fed to stream-based processors from stream-based resolvers.</p>
+
+<ul>
+  <li><code>StreamStrategy</code> will try to stream a source image from a resolver when possible, and use the <a href="#Fallback%20Retrieval%20Strategy">fallback retrieval strategy</a> otherwise.</li>
+  <li><code>DownloadStrategy</code> will download it to a temporary file, and delete it after the request is complete.</li>
+  <li><code>CacheStrategy</code> will download it into the source cache using <a href="caching.html#FilesystemCache">FilesystemCache</a>, which must also be configured.</li>
+</ul>
+
+<h3 id="Fallback Retrieval Strategy">Fallback Retrieval Strategy</h3>
+
+<p>The fallback retrieval strategy (<code>processor.fallback_retrieval_strategy</code>) controls how an incompatible <code>StreamResolver</code>/<code>FileProcessor</code> combination is dealt with.</p>
+
+<ul>
+  <li><code>DownloadStrategy</code> will download a source image to a temporary file, and delete it after the request is complete.</li>
+  <li><code>CacheStrategy</code> will download it into the source cache using <a href="caching.html#FilesystemCache">FilesystemCache</a>, which must also be configured.</li>
+  <li><code>AbortStrategy</code> will cause the request to fail.</li>
+</ul>
 
 <hr>
 

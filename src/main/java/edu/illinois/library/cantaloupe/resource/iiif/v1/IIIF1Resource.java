@@ -2,11 +2,11 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
+import edu.illinois.library.cantaloupe.resource.PublicResource;
 import org.restlet.resource.ResourceException;
 
-abstract class IIIF1Resource extends AbstractResource {
+abstract class IIIF1Resource extends PublicResource {
 
     @Override
     protected void doInit() throws ResourceException {

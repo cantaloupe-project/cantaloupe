@@ -12,7 +12,6 @@ import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.restlet.data.Disposition;
-import org.restlet.representation.OutputRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,34 +20,36 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.Callable;
 
 /**
  * Restlet representation for images.
  */
-public class ImageRepresentation extends OutputRepresentation {
+public class ImageRepresentation extends CustomOutputRepresentation {
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(ImageRepresentation.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(ImageRepresentation.class);
 
-    private boolean bypassCache = false;
+    private boolean bypassCache;
     private Info imageInfo;
     private OperationList opList;
     private Processor processor;
 
     /**
-     * @param imageInfo
+     * @param imageInfo   Info corresponding to the source image.
      * @param processor   Processor configured for writing the image.
      * @param opList      Will be frozen, if it isn't already.
      * @param disposition
-     * @param bypassCache If true, the cache will not be written to nor read
-     *                    from, regardless of whether caching is enabled in the
-     *                    application configuration.
+     * @param bypassCache If {@literal true}, the cache will not be written to
+     *                    nor read from, regardless of whether caching is
+     *                    enabled in the application configuration.
      */
     public ImageRepresentation(final Info imageInfo,
                                final Processor processor,
                                final OperationList opList,
                                final Disposition disposition,
-                               final boolean bypassCache) {
+                               final boolean bypassCache,
+                               final Callable<?> onRelease) {
         super(new org.restlet.data.MediaType(
                 opList.getOutputFormat().getPreferredMediaType().toString()));
         this.imageInfo = imageInfo;
@@ -56,6 +57,7 @@ public class ImageRepresentation extends OutputRepresentation {
         this.opList = opList;
         this.bypassCache = bypassCache;
         this.setDisposition(disposition);
+        this.onRelease = onRelease;
     }
 
     /**

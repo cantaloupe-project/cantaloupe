@@ -458,6 +458,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         selectNamed(Key.PROCESSOR_TIF_COMPRESSION).selectByVisibleText("LZW");
         selectNamed(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY).
                 selectByValue("StreamStrategy");
+        selectNamed(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY).
+                selectByValue("CacheStrategy");
         // FfmpegProcessor
         css("#cl-processors li > a[href=\"#FfmpegProcessor\"]").click();
         inputNamed(Key.FFMPEGPROCESSOR_PATH_TO_BINARIES).sendKeys("/ffpath");
@@ -502,6 +504,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertEquals("LZW", config.getString(Key.PROCESSOR_TIF_COMPRESSION));
         assertEquals("StreamStrategy",
                 config.getString(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY));
+        assertEquals("CacheStrategy",
+                config.getString(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY));
         // FfmpegProcessor
         assertEquals("/ffpath",
                 config.getString(Key.FFMPEGPROCESSOR_PATH_TO_BINARIES));

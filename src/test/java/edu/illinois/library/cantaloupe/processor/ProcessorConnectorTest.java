@@ -32,30 +32,11 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
+import java.util.concurrent.Future;
 
 import static org.junit.Assert.*;
 
 public class ProcessorConnectorTest extends BaseTest {
-
-    public static class StreamProcessorRetrievalStrategyTest extends BaseTest {
-
-        @Test
-        public void testGetConfigValue() {
-            assertEquals("CacheStrategy",
-                    ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE.getConfigValue());
-            assertEquals("StreamStrategy",
-                    ProcessorConnector.StreamProcessorRetrievalStrategy.STREAM.getConfigValue());
-        }
-
-        @Test
-        public void testToString() {
-            assertEquals("CacheStrategy",
-                    ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE.toString());
-            assertEquals("StreamStrategy",
-                    ProcessorConnector.StreamProcessorRetrievalStrategy.STREAM.toString());
-        }
-
-    }
 
     private static final Identifier IDENTIFIER =
             new Identifier("jpg-rgb-64x56x8-baseline.jpg");
@@ -95,23 +76,56 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
+    public void testGetFallbackRetrievalStrategy() {
+        final Configuration config = Configuration.getInstance();
+        // config set to stream
+        config.setProperty(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY,
+                RetrievalStrategy.STREAM.getConfigValue());
+        assertEquals(RetrievalStrategy.STREAM,
+                ProcessorConnector.getFallbackRetrievalStrategy());
+
+        // config set to download
+        config.setProperty(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY,
+                RetrievalStrategy.DOWNLOAD.getConfigValue());
+        assertEquals(RetrievalStrategy.DOWNLOAD,
+                ProcessorConnector.getFallbackRetrievalStrategy());
+
+        // config set to cache
+        config.setProperty(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY,
+                RetrievalStrategy.CACHE.getConfigValue());
+        assertEquals(RetrievalStrategy.CACHE,
+                ProcessorConnector.getFallbackRetrievalStrategy());
+
+        // config not set
+        config.clearProperty(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY);
+        assertEquals(RetrievalStrategy.DOWNLOAD,
+                ProcessorConnector.getFallbackRetrievalStrategy());
+    }
+
+    @Test
     public void testGetStreamProcessorRetrievalStrategy() {
         final Configuration config = Configuration.getInstance();
         // config set to stream
         config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
-                "StreamStrategy");
-        assertEquals(ProcessorConnector.StreamProcessorRetrievalStrategy.STREAM,
+                RetrievalStrategy.STREAM.getConfigValue());
+        assertEquals(RetrievalStrategy.STREAM,
+                ProcessorConnector.getStreamProcessorRetrievalStrategy());
+
+        // config set to download
+        config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
+                RetrievalStrategy.DOWNLOAD.getConfigValue());
+        assertEquals(RetrievalStrategy.DOWNLOAD,
                 ProcessorConnector.getStreamProcessorRetrievalStrategy());
 
         // config set to cache
         config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
-                ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE.getConfigValue());
-        assertEquals(ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE,
+                RetrievalStrategy.CACHE.getConfigValue());
+        assertEquals(RetrievalStrategy.CACHE,
                 ProcessorConnector.getStreamProcessorRetrievalStrategy());
 
         // config not set
         config.clearProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY);
-        assertEquals(ProcessorConnector.StreamProcessorRetrievalStrategy.STREAM,
+        assertEquals(RetrievalStrategy.STREAM,
                 ProcessorConnector.getStreamProcessorRetrievalStrategy());
     }
 
@@ -121,7 +135,7 @@ public class ProcessorConnectorTest extends BaseTest {
                 new RequestContext());
         final Processor processor = new ProcessorFactory().newProcessor(Format.JPG);
 
-        instance.connect(resolver, processor, IDENTIFIER);
+        assertNull(instance.connect(resolver, processor, IDENTIFIER, Format.JPG));
 
         assertEquals(
                 ((FileResolver) resolver).getPath(),
@@ -138,7 +152,7 @@ public class ProcessorConnectorTest extends BaseTest {
                 new RequestContext());
         final Processor processor = new ProcessorFactory().newProcessor(Format.JPG);
 
-        instance.connect(resolver, processor, IDENTIFIER);
+        assertNull(instance.connect(resolver, processor, IDENTIFIER, Format.JPG));
 
         StreamSource ss1 = ((StreamResolver) resolver).newStreamSource();
         StreamSource ss2 = ((StreamProcessor) processor).getStreamSource();
@@ -146,23 +160,36 @@ public class ProcessorConnectorTest extends BaseTest {
         assertEqualSources(ss1, ss2);
     }
 
-    @Test(expected = IncompatibleResolverException.class)
-    public void testConnectWithStreamResolverAndFileProcessorWithSourceCacheDisabled()
+    @Test
+    public void testConnectWithStreamResolverAndFileProcessorAndDownloadStrategy()
             throws Exception {
-        final Identifier identifier = new Identifier("jp2");
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
-        config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
+        final WebServer server = new WebServer();
+        try {
+            server.start();
 
-        final Resolver resolver = new ResolverFactory().
-                newResolver(identifier, new RequestContext());
-        final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
+            final Identifier identifier = new Identifier("jp2");
+            Configuration config = Configuration.getInstance();
+            config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
+            config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
+                    "BasicLookupStrategy");
+            config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
+                    server.getHTTPURI() + "/");
+            config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
+            config.setProperty(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY,
+                    RetrievalStrategy.DOWNLOAD.getConfigValue());
 
-        instance.connect(resolver, processor, identifier);
+            final Resolver resolver = new ResolverFactory().newResolver(
+                    identifier, new RequestContext());
+            final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
+
+            assertNotNull(instance.connect(resolver, processor, identifier, Format.JPG));
+        } finally {
+            server.stop();
+        }
     }
 
     @Test
-    public void testConnectWithStreamResolverAndFileProcessor()
+    public void testConnectWithStreamResolverAndFileProcessorAndCacheStrategyAndSourceCacheEnabled()
             throws Exception {
         final WebServer server = new WebServer();
         final Path cacheFolder = Files.createTempDirectory("test");
@@ -182,12 +209,14 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                     server.getHTTPURI() + "/");
             config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
+            config.setProperty(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY,
+                    RetrievalStrategy.CACHE.getConfigValue());
 
-            final Resolver resolver = new ResolverFactory().
-                    newResolver(identifier, new RequestContext());
+            final Resolver resolver = new ResolverFactory().newResolver(
+                    identifier, new RequestContext());
             final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
 
-            instance.connect(resolver, processor, identifier);
+            assertNull(instance.connect(resolver, processor, identifier, Format.JPG));
 
             assertEquals(
                     CacheFactory.getSourceCache().getSourceImageFile(identifier),
@@ -195,6 +224,65 @@ public class ProcessorConnectorTest extends BaseTest {
         } finally {
             server.stop();
             recursiveDeleteOnExit(cacheFolder);
+        }
+    }
+
+    @Test(expected = CacheDisabledException.class)
+    public void testConnectWithStreamResolverAndFileProcessorAndCacheStrategyAndSourceCacheDisabled()
+            throws Exception {
+        final Identifier identifier = new Identifier("jp2");
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
+        config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
+        config.setProperty(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY,
+                RetrievalStrategy.CACHE.getConfigValue());
+
+        final Resolver resolver = new ResolverFactory().newResolver(
+                identifier, new RequestContext());
+        final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
+
+        instance.connect(resolver, processor, identifier, Format.JPG);
+    }
+
+    @Test(expected = IncompatibleResolverException.class)
+    public void testConnectWithStreamResolverAndFileProcessorAndAbortStrategy()
+            throws Exception {
+        final Identifier identifier = new Identifier("jp2");
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
+        config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
+        config.setProperty(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY,
+                RetrievalStrategy.ABORT.getConfigValue());
+
+        final Resolver resolver = new ResolverFactory().newResolver(
+                identifier, new RequestContext());
+        final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
+
+        instance.connect(resolver, processor, identifier, Format.JPG);
+    }
+
+    @Test
+    public void testConnectWithStreamResolverAndFileProcessorAndStrategyNotSet()
+            throws Exception {
+        final WebServer server = new WebServer();
+        try {
+            server.start();
+            final Identifier identifier = new Identifier("jp2");
+            Configuration config = Configuration.getInstance();
+            config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
+            config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
+                    "BasicLookupStrategy");
+            config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
+                    server.getHTTPURI() + "/");
+            config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
+
+            final Resolver resolver = new ResolverFactory().newResolver(
+                    identifier, new RequestContext());
+            final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
+
+            assertNotNull(instance.connect(resolver, processor, identifier, Format.JPG));
+        } finally {
+            server.stop();
         }
     }
 
@@ -216,12 +304,43 @@ public class ProcessorConnectorTest extends BaseTest {
                     newResolver(IDENTIFIER, new RequestContext());
             final Processor processor = new MockStreamProcessor();
 
-            instance.connect(resolver, processor, IDENTIFIER);
+            assertNull(instance.connect(resolver, processor, IDENTIFIER, Format.JPG));
 
             StreamSource ss1 = ((StreamResolver) resolver).newStreamSource();
             StreamSource ss2 = ((StreamProcessor) processor).getStreamSource();
 
             assertEqualSources(ss1, ss2);
+        } finally {
+            server.stop();
+        }
+    }
+
+    @Test
+    public void testConnectWithStreamResolverAndStreamProcessorWithDownloadStrategy()
+            throws Exception {
+        final WebServer server = new WebServer();
+        final Path cacheFolder = Files.createTempDirectory("test");
+        try {
+            server.start();
+
+            Configuration config = Configuration.getInstance();
+            config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
+            config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
+                    "BasicLookupStrategy");
+            config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
+                    server.getHTTPURI() + "/");
+            config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
+                    RetrievalStrategy.DOWNLOAD.getConfigValue());
+            config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
+                    cacheFolder.toString());
+
+            final Resolver resolver = new ResolverFactory().
+                    newResolver(IDENTIFIER, new RequestContext());
+            final Processor processor = new MockStreamProcessor();
+
+            Future<Path> tempFile = instance.connect(resolver, processor,
+                    IDENTIFIER, Format.JPG);
+            Files.delete(tempFile.get());
         } finally {
             server.stop();
         }
@@ -244,7 +363,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
             config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
             config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
-                    ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE.getConfigValue());
+                    RetrievalStrategy.CACHE.getConfigValue());
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     cacheFolder.toString());
 
@@ -252,7 +371,7 @@ public class ProcessorConnectorTest extends BaseTest {
                     newResolver(IDENTIFIER, new RequestContext());
             final Processor processor = new MockStreamProcessor();
 
-            instance.connect(resolver, processor, IDENTIFIER);
+            assertNull(instance.connect(resolver, processor, IDENTIFIER, Format.JPG));
 
             assertEqualSources(
                     CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER),
@@ -268,7 +387,7 @@ public class ProcessorConnectorTest extends BaseTest {
      * {@link IOException} thrown by {@link
      * edu.illinois.library.cantaloupe.cache.SourceCache#getSourceImageFile(Identifier)}
      * when using
-     * {@link edu.illinois.library.cantaloupe.processor.ProcessorConnector.StreamProcessorRetrievalStrategy#CACHE}.
+     * {@link RetrievalStrategy#CACHE}.
      */
     @Test(expected = IOException.class)
     public void testConnectWithStreamResolverAndStreamProcessorWithCacheStrategyAndSourceCacheGetSourceImageFileThrowingException()
@@ -287,13 +406,13 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.SOURCE_CACHE,
                     MockBrokenSourceImageFileCache.class.getSimpleName());
             config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
-                    ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE.getConfigValue());
+                    RetrievalStrategy.CACHE.getConfigValue());
 
             final Resolver resolver = new ResolverFactory().
                     newResolver(IDENTIFIER, new RequestContext());
             final Processor processor = new MockStreamProcessor();
 
-            instance.connect(resolver, processor, IDENTIFIER);
+            assertNull(instance.connect(resolver, processor, IDENTIFIER, Format.JPG));
 
             assertEqualSources(
                     CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER),
@@ -308,7 +427,7 @@ public class ProcessorConnectorTest extends BaseTest {
      * {@link IOException} thrown by {@link
      * edu.illinois.library.cantaloupe.cache.SourceCache#newSourceImageOutputStream(Identifier)}
      * when using
-     * {@link edu.illinois.library.cantaloupe.processor.ProcessorConnector.StreamProcessorRetrievalStrategy#CACHE}.
+     * {@link RetrievalStrategy#CACHE}.
      */
     @Test(expected = IOException.class)
     public void testConnectWithStreamResolverAndStreamProcessorWithCacheStrategyAndSourceCacheNewSourceImageOutputStreamThrowingException()
@@ -327,16 +446,16 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.SOURCE_CACHE,
                     MockBrokenSourceInputStreamCache.class.getSimpleName());
             config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
-                    ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE.getConfigValue());
+                    RetrievalStrategy.CACHE.getConfigValue());
 
             final Resolver resolver = new ResolverFactory().
                     newResolver(IDENTIFIER, new RequestContext());
             final Processor processor = new MockStreamProcessor();
 
-            instance.connect(resolver, processor, IDENTIFIER);
+            assertNull(instance.connect(resolver, processor, IDENTIFIER, Format.JPG));
 
-            assertEqualSources(
-                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER),
+            Path cacheFile = CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER);
+            assertEqualSources(cacheFile,
                     ((StreamProcessor) processor).getStreamSource());
         } finally {
             server.stop();
@@ -345,7 +464,7 @@ public class ProcessorConnectorTest extends BaseTest {
 
     /**
      * Tests that {@link ProcessorConnector#connect} recovers when using
-     * {@link edu.illinois.library.cantaloupe.processor.ProcessorConnector.StreamProcessorRetrievalStrategy#CACHE}
+     * {@link RetrievalStrategy#CACHE}
      * and {@link
      * edu.illinois.library.cantaloupe.cache.SourceCache#getSourceImageFile(Identifier)}
      * throws an {@link IOException} only once.
@@ -367,13 +486,13 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.SOURCE_CACHE,
                     MockUnreliableSourceImageFileCache.class.getSimpleName());
             config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
-                    ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE.getConfigValue());
+                    RetrievalStrategy.CACHE.getConfigValue());
 
             final Resolver resolver = new ResolverFactory().
                     newResolver(IDENTIFIER, new RequestContext());
             final Processor processor = new MockStreamProcessor();
 
-            instance.connect(resolver, processor, IDENTIFIER);
+            assertNull(instance.connect(resolver, processor, IDENTIFIER, Format.JPG));
 
             assertEqualSources(
                     CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER),
@@ -385,7 +504,7 @@ public class ProcessorConnectorTest extends BaseTest {
 
     /**
      * Tests that {@link ProcessorConnector#connect} recovers when using
-     * {@link edu.illinois.library.cantaloupe.processor.ProcessorConnector.StreamProcessorRetrievalStrategy#CACHE}
+     * {@link RetrievalStrategy#CACHE}
      * and {@link
      * edu.illinois.library.cantaloupe.cache.SourceCache#newSourceImageOutputStream(Identifier)}
      * throws an {@link IOException} only once.
@@ -407,13 +526,13 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.SOURCE_CACHE,
                     MockUnreliableSourceOutputStreamCache.class.getSimpleName());
             config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
-                    ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE.getConfigValue());
+                    RetrievalStrategy.CACHE.getConfigValue());
 
             final Resolver resolver = new ResolverFactory().
                     newResolver(IDENTIFIER, new RequestContext());
             final Processor processor = new MockStreamProcessor();
 
-            instance.connect(resolver, processor, IDENTIFIER);
+            assertNull(instance.connect(resolver, processor, IDENTIFIER, Format.JPG));
 
             assertEqualSources(
                     CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER),
@@ -438,7 +557,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                     server.getHTTPURI() + "/");
             config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
-                    ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE.getConfigValue());
+                    RetrievalStrategy.CACHE.getConfigValue());
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     cacheFolder.toString());
 
@@ -446,7 +565,7 @@ public class ProcessorConnectorTest extends BaseTest {
                     newResolver(IDENTIFIER, new RequestContext());
             final Processor processor = new MockStreamProcessor();
 
-            instance.connect(resolver, processor, IDENTIFIER);
+            assertNull(instance.connect(resolver, processor, IDENTIFIER, Format.JPG));
         } finally {
             server.stop();
             recursiveDeleteOnExit(cacheFolder);
