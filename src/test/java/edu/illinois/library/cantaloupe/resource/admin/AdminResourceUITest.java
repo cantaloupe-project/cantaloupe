@@ -439,6 +439,10 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         css("#cl-processors li > a[href=\"#cl-image-assignments\"]").click();
         selectNamed("processor.gif").selectByVisibleText("Java2dProcessor");
         selectNamed(Key.PROCESSOR_FALLBACK).selectByVisibleText("JaiProcessor");
+        selectNamed(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY).
+                selectByValue("StreamStrategy");
+        selectNamed(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY).
+                selectByValue("CacheStrategy");
         inputNamed(Key.PROCESSOR_DPI).sendKeys("300");
         inputNamed(Key.PROCESSOR_NORMALIZE).click();
         selectNamed(Key.PROCESSOR_BACKGROUND_COLOR).selectByValue("white");
@@ -452,10 +456,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.PROCESSOR_JPG_PROGRESSIVE).click();
         inputNamed(Key.PROCESSOR_JPG_QUALITY).sendKeys("55");
         selectNamed(Key.PROCESSOR_TIF_COMPRESSION).selectByVisibleText("LZW");
-        selectNamed(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY).
-                selectByValue("StreamStrategy");
-        selectNamed(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY).
-                selectByValue("CacheStrategy");
         // FfmpegProcessor
         css("#cl-processors li > a[href=\"#FfmpegProcessor\"]").click();
         inputNamed(Key.FFMPEGPROCESSOR_PATH_TO_BINARIES).sendKeys("/ffpath");
@@ -485,6 +485,10 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         final Configuration config = Configuration.getInstance();
         assertEquals("Java2dProcessor", config.getString("processor.gif"));
         assertEquals("JaiProcessor", config.getString(Key.PROCESSOR_FALLBACK));
+        assertEquals("StreamStrategy",
+                config.getString(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY));
+        assertEquals("CacheStrategy",
+                config.getString(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY));
         assertEquals(300, config.getInt(Key.PROCESSOR_DPI));
         assertTrue(config.getBoolean(Key.PROCESSOR_NORMALIZE));
         assertEquals("white", config.getString(Key.PROCESSOR_BACKGROUND_COLOR));
@@ -498,10 +502,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertEquals("true", config.getString(Key.PROCESSOR_JPG_PROGRESSIVE));
         assertEquals("55", config.getString(Key.PROCESSOR_JPG_QUALITY));
         assertEquals("LZW", config.getString(Key.PROCESSOR_TIF_COMPRESSION));
-        assertEquals("StreamStrategy",
-                config.getString(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY));
-        assertEquals("CacheStrategy",
-                config.getString(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY));
         // FfmpegProcessor
         assertEquals("/ffpath",
                 config.getString(Key.FFMPEGPROCESSOR_PATH_TO_BINARIES));
