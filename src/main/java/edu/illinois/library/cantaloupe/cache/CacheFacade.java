@@ -97,10 +97,6 @@ public final class CacheFacade {
         return InfoService.getInstance().isObjectCacheEnabled();
     }
 
-    public boolean isSourceCacheAvailable() {
-        return getSourceCache() != null;
-    }
-
     /**
      * @see DerivativeCache#newDerivativeImageInputStream(OperationList)
      */

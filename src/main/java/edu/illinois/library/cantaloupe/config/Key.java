@@ -195,7 +195,6 @@ public enum Key {
     S3RESOLVER_SECRET_KEY("S3Resolver.secret_key"),
     SLASH_SUBSTITUTE("slash_substitute"),
     SOURCE_CACHE("cache.server.source"),
-    SOURCE_CACHE_ENABLED("cache.server.source.enabled"),
     SOURCE_CACHE_TTL("cache.server.source.ttl_seconds"),
     TEMP_PATHNAME("temp_pathname");
 

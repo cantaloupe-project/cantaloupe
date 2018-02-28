@@ -293,7 +293,6 @@ public class ImageAPIResourceTester {
         config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
         config.setProperty(Key.RESOLVER_STATIC,
                 NotCheckingAccessResolver.class.getName());
-        config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
         config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
         config.setProperty(Key.SOURCE_CACHE_TTL, 10);
         config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
@@ -352,7 +351,6 @@ public class ImageAPIResourceTester {
         config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
         config.setProperty(Key.RESOLVER_STATIC,
                 NotReadingSourceFormatResolver.class.getName());
-        config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
         config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
         config.setProperty(Key.SOURCE_CACHE_TTL, 10);
         config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,

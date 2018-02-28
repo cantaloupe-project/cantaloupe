@@ -404,11 +404,6 @@ cache.client.no_transform = true
 # SERVER-SIDE CACHING
 ###########################################################################
 
-# Enables the source cache. Note that source images will only be cached
-# when `processor.stream_retrieval_strategy` and/or
-# `processor.fallback_retrieval_strategy` are set to `CacheStrategy`.
-cache.server.source.enabled = false
-
 # FilesystemCache is the only available source cache.
 cache.server.source = FilesystemCache
 

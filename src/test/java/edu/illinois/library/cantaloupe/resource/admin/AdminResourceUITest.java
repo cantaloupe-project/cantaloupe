@@ -541,7 +541,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.CLIENT_CACHE_PROXY_REVALIDATE).click();
         inputNamed(Key.CLIENT_CACHE_NO_TRANSFORM).click();
         selectNamed(Key.SOURCE_CACHE).selectByVisibleText("FilesystemCache");
-        inputNamed(Key.SOURCE_CACHE_ENABLED).click();
         inputNamed(Key.SOURCE_CACHE_TTL).sendKeys("10");
         selectNamed(Key.DERIVATIVE_CACHE).selectByVisibleText("FilesystemCache");
         inputNamed(Key.DERIVATIVE_CACHE_ENABLED).click();
@@ -609,7 +608,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertTrue(config.getBoolean(Key.CLIENT_CACHE_PROXY_REVALIDATE));
         assertTrue(config.getBoolean(Key.CLIENT_CACHE_NO_TRANSFORM));
         assertEquals("FilesystemCache", config.getString(Key.SOURCE_CACHE));
-        assertTrue(config.getBoolean(Key.SOURCE_CACHE_ENABLED));
         assertEquals(10, config.getInt(Key.SOURCE_CACHE_TTL));
         assertEquals("FilesystemCache", config.getString(Key.DERIVATIVE_CACHE));
         assertTrue(config.getBoolean(Key.DERIVATIVE_CACHE_ENABLED));

@@ -34,7 +34,6 @@ public class CacheWorkerTest extends BaseTest {
         config.setProperty(Key.DERIVATIVE_CACHE,
                 FilesystemCache.class.getSimpleName());
 
-        config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
         config.setProperty(Key.SOURCE_CACHE_TTL, 1);
         config.setProperty(Key.SOURCE_CACHE,
                 FilesystemCache.class.getSimpleName());

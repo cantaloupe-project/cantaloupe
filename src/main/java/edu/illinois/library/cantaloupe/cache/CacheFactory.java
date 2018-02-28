@@ -108,41 +108,40 @@ public final class CacheFactory {
      *
      * <p>This method respects live changes in application configuration.</p>
      *
-     * @return The shared instance, or {@literal null} if a source cache is
-     *         not available.
+     * @return The shared instance, or {@literal null} if the source cache
+     *         implementation specified in the configuration is invalid or not
+     *         specified.
      */
     public static SourceCache getSourceCache() {
         SourceCache cache = null;
 
-        if (isSourceCacheEnabled()) {
-            final Configuration config = Configuration.getInstance();
-            final String unqualifiedName = config.getString(Key.SOURCE_CACHE, "");
+        final Configuration config = Configuration.getInstance();
+        final String unqualifiedName = config.getString(Key.SOURCE_CACHE, "");
 
-            if (!unqualifiedName.isEmpty()) {
-                final String qualifiedName = getQualifiedName(unqualifiedName);
-                cache = sourceCache;
-                if (cache == null ||
-                        !cache.getClass().getName().equals(qualifiedName)) {
-                    synchronized (CacheFactory.class) {
-                        if (cache == null ||
-                                !cache.getClass().getName().equals(qualifiedName)) {
-                            LOGGER.debug("getSourceCache(): implementation " +
-                                    "changed; creating a new instance");
-                            try {
-                                Class<?> implClass = Class.forName(qualifiedName);
-                                cache = (SourceCache)
-                                        implClass.getDeclaredConstructor().newInstance();
-                                setSourceCache(cache);
-                            } catch (ClassNotFoundException e) {
-                                cache = null;
-                                LOGGER.error("Class not found: {}", e.getMessage());
-                            } catch (NoSuchMethodException |
-                                    IllegalAccessException |
-                                    InstantiationException |
-                                    InvocationTargetException e) {
-                                cache = null;
-                                LOGGER.error(e.getMessage());
-                            }
+        if (!unqualifiedName.isEmpty()) {
+            final String qualifiedName = getQualifiedName(unqualifiedName);
+            cache = sourceCache;
+            if (cache == null ||
+                    !cache.getClass().getName().equals(qualifiedName)) {
+                synchronized (CacheFactory.class) {
+                    if (cache == null ||
+                            !cache.getClass().getName().equals(qualifiedName)) {
+                        LOGGER.debug("getSourceCache(): implementation " +
+                                "changed; creating a new instance");
+                        try {
+                            Class<?> implClass = Class.forName(qualifiedName);
+                            cache = (SourceCache)
+                                    implClass.getDeclaredConstructor().newInstance();
+                            setSourceCache(cache);
+                        } catch (ClassNotFoundException e) {
+                            cache = null;
+                            LOGGER.error("Class not found: {}", e.getMessage());
+                        } catch (NoSuchMethodException |
+                                IllegalAccessException |
+                                InstantiationException |
+                                InvocationTargetException e) {
+                            cache = null;
+                            LOGGER.error(e.getMessage());
                         }
                     }
                 }
@@ -161,11 +160,6 @@ public final class CacheFactory {
     private static boolean isDerivativeCacheEnabled() {
         final Configuration config = Configuration.getInstance();
         return config.getBoolean(Key.DERIVATIVE_CACHE_ENABLED, false);
-    }
-
-    private static boolean isSourceCacheEnabled() {
-        final Configuration config = Configuration.getInstance();
-        return config.getBoolean(Key.SOURCE_CACHE_ENABLED, false);
     }
 
     /**

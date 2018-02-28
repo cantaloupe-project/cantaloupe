@@ -28,6 +28,9 @@ public class CacheFacadeTest extends BaseTest {
     @Before
     public void setUp() {
         instance = new CacheFacade();
+
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
     }
 
     private void enableDerivativeCache() {
@@ -55,17 +58,6 @@ public class CacheFacadeTest extends BaseTest {
     private void disableInfoCache() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.INFO_CACHE_ENABLED, false);
-    }
-
-    private void enableSourceCache() {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
-        config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
-    }
-
-    private void disableSourceCache() {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.SOURCE_CACHE_ENABLED, false);
     }
 
     /* getDerivativeCache() */
@@ -114,24 +106,15 @@ public class CacheFacadeTest extends BaseTest {
     /* getSourceCache() */
 
     @Test
-    public void testGetSourceCacheWhenEnabled() {
-        enableSourceCache();
+    public void testGetSourceCache() {
         assertNotNull(instance.getSourceCache());
-    }
-
-    @Test
-    public void testGetSourceCacheWhenDisabled() {
-        disableSourceCache();
-        assertNull(instance.getSourceCache());
     }
 
     /* getSourceCacheFile() */
 
     @Test
-    public void testGetSourceCacheFileWithSourceCacheEnabledAndHit()
-            throws Exception {
+    public void testGetSourceCacheFileWithSourceCacheHit() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
         config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
 
         SourceCache sourceCache = CacheFactory.getSourceCache();
@@ -146,10 +129,8 @@ public class CacheFacadeTest extends BaseTest {
     }
 
     @Test
-    public void testGetSourceCacheFileWithSourceCacheEnabledAndMiss()
-            throws Exception {
+    public void testGetSourceCacheFileWithSourceCacheMiss() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
         config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
 
         Identifier identifier = new Identifier("cats");
@@ -158,14 +139,14 @@ public class CacheFacadeTest extends BaseTest {
     }
 
     @Test
-    public void testGetSourceCacheFileWithSourceCacheDisabled()
+    public void testGetSourceCacheFileWithInvalidSourceCache()
             throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.SOURCE_CACHE_ENABLED, false);
+        config.setProperty(Key.SOURCE_CACHE, "BogusCache");
 
         Identifier identifier = new Identifier("cats");
 
-        assertNull(instance.getSourceCacheFile(identifier));
+        instance.getSourceCacheFile(identifier);
     }
 
     /* isDerivativeCacheAvailable() */
@@ -188,17 +169,6 @@ public class CacheFacadeTest extends BaseTest {
 
         disableInfoCache();
         assertFalse(instance.isInfoCacheAvailable());
-    }
-
-    /* isSourceCacheAvailable() */
-
-    @Test
-    public void testIsSourceCacheAvailable() {
-        enableSourceCache();
-        assertTrue(instance.isSourceCacheAvailable());
-
-        disableSourceCache();
-        assertFalse(instance.isSourceCacheAvailable());
     }
 
     /* newDerivativeImageInputStream() */
@@ -259,7 +229,6 @@ public class CacheFacadeTest extends BaseTest {
     @Test
     public void testPurge() throws Exception {
         enableDerivativeCache();
-        enableSourceCache();
         SourceCache sourceCache = CacheFactory.getSourceCache();
         DerivativeCache derivCache = CacheFactory.getDerivativeCache();
 
@@ -303,7 +272,6 @@ public class CacheFacadeTest extends BaseTest {
     @Test
     public void testPurgeWithIdentifier() throws Exception {
         enableDerivativeCache();
-        enableSourceCache();
         SourceCache sourceCache = CacheFactory.getSourceCache();
         DerivativeCache derivCache = CacheFactory.getDerivativeCache();
 
@@ -346,7 +314,6 @@ public class CacheFacadeTest extends BaseTest {
     @Test
     public void testPurgeAsyncWithIdentifier() throws Exception {
         enableDerivativeCache();
-        enableSourceCache();
         SourceCache sourceCache = CacheFactory.getSourceCache();
         DerivativeCache derivCache = CacheFactory.getDerivativeCache();
 
@@ -418,7 +385,6 @@ public class CacheFacadeTest extends BaseTest {
         config.setProperty(Key.DERIVATIVE_CACHE_TTL, 1);
 
         enableDerivativeCache();
-        enableSourceCache();
         SourceCache sourceCache = CacheFactory.getSourceCache();
         DerivativeCache derivCache = CacheFactory.getDerivativeCache();
 

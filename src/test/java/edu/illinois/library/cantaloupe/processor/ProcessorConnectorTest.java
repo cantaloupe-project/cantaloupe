@@ -189,7 +189,7 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void testConnectWithStreamResolverAndFileProcessorAndCacheStrategyAndSourceCacheEnabled()
+    public void testConnectWithStreamResolverAndFileProcessorAndCacheStrategyAndSourceCacheAvailable()
             throws Exception {
         final WebServer server = new WebServer();
         final Path cacheFolder = Files.createTempDirectory("test");
@@ -199,7 +199,6 @@ public class ProcessorConnectorTest extends BaseTest {
             server.start();
 
             Configuration config = Configuration.getInstance();
-            config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
             config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     cacheFolder.toString());
@@ -347,7 +346,7 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void testConnectWithStreamResolverAndStreamProcessorWithCacheStrategyAndSourceCacheEnabled()
+    public void testConnectWithStreamResolverAndStreamProcessorWithCacheStrategyAndSourceCacheAvailable()
             throws Exception {
         final WebServer server = new WebServer();
         final Path cacheFolder = Files.createTempDirectory("test");
@@ -360,7 +359,6 @@ public class ProcessorConnectorTest extends BaseTest {
                     "BasicLookupStrategy");
             config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                     server.getHTTPURI() + "/");
-            config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
             config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
             config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
                     RetrievalStrategy.CACHE.getConfigValue());
@@ -402,7 +400,6 @@ public class ProcessorConnectorTest extends BaseTest {
                     "BasicLookupStrategy");
             config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                     server.getHTTPURI() + "/");
-            config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
             config.setProperty(Key.SOURCE_CACHE,
                     MockBrokenSourceImageFileCache.class.getSimpleName());
             config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
@@ -442,7 +439,6 @@ public class ProcessorConnectorTest extends BaseTest {
                     "BasicLookupStrategy");
             config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                     server.getHTTPURI() + "/");
-            config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
             config.setProperty(Key.SOURCE_CACHE,
                     MockBrokenSourceInputStreamCache.class.getSimpleName());
             config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
@@ -482,7 +478,6 @@ public class ProcessorConnectorTest extends BaseTest {
                     "BasicLookupStrategy");
             config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                     server.getHTTPURI() + "/");
-            config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
             config.setProperty(Key.SOURCE_CACHE,
                     MockUnreliableSourceImageFileCache.class.getSimpleName());
             config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
@@ -522,7 +517,6 @@ public class ProcessorConnectorTest extends BaseTest {
                     "BasicLookupStrategy");
             config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                     server.getHTTPURI() + "/");
-            config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
             config.setProperty(Key.SOURCE_CACHE,
                     MockUnreliableSourceOutputStreamCache.class.getSimpleName());
             config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
