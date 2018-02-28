@@ -243,8 +243,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.HTTPS_KEY_STORE_PASSWORD).sendKeys("cats");
         inputNamed(Key.HTTPS_HTTP2_ENABLED).click();
         inputNamed(Key.HTTP_ACCEPT_QUEUE_LIMIT).sendKeys("50");
-        inputNamed(Key.HTTP_MIN_THREADS).sendKeys("35");
-        inputNamed(Key.HTTP_MAX_THREADS).sendKeys("38");
         inputNamed(Key.BASE_URI).sendKeys("http://bla/bla/");
         inputNamed(Key.SLASH_SUBSTITUTE).sendKeys("^");
         inputNamed(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES).click();
@@ -268,8 +266,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertEquals("cats", config.getString(Key.HTTPS_KEY_STORE_PASSWORD));
         assertTrue(config.getBoolean(Key.HTTPS_HTTP2_ENABLED));
         assertEquals("50", config.getString(Key.HTTP_ACCEPT_QUEUE_LIMIT));
-        assertEquals("35", config.getString(Key.HTTP_MIN_THREADS));
-        assertEquals("38", config.getString(Key.HTTP_MAX_THREADS));
         assertEquals("http://bla/bla/", config.getString(Key.BASE_URI));
         assertEquals("^", config.getString(Key.SLASH_SUBSTITUTE));
         assertTrue(config.getBoolean(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES));

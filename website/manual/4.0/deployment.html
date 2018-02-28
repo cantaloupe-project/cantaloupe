@@ -92,9 +92,7 @@ title: Deployment
 <p>A <code>max_pixels</code> configuration option is available to limit the maximum returned size of processed images. This is a "safety net" to prevent clients from bogging down the server. It does not affect requests for full-sized unmodified images, which do not significantly load the server because they are streamed through with no processing.</p>
 
 <p>Note that the <code><a href="access-control.html#Authorization">authorized?</a></code> delegate script method can perform the same function as <code>max_pixels</code>, with more granular control.</p>
-<!--
-<p>In standalone mode, <code>http.min_threads</code>, <code>http.max_threads</code>, and <code>http.accept_queue_limit</code> can be used to adjust the characteristics of the built-in web server's request thread pool and queue. When any of the values are exceeded, the application will refuse to fulfill requests by returning <code>HTTP 503 Service Unavailable</code>.</p>
--->
+
 <hr>
 
 <h2 id="Reverse-Proxying">Reverse-Proxying</h2>

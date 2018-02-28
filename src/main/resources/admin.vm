@@ -889,34 +889,6 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>Minimum Thread Pool Size
-                                        <a tabindex="0" class="btn btn-sm cl-help"
-                                           role="button" data-toggle="popover"
-                                           data-trigger="focus"
-                                           data-content="Minimum size of the web server's thread pool.
-                                           Leave blank or set to 0 to use the default.">?</a>
-                                    </td>
-                                    <td>
-                                        <input class="form-control" type="number"
-                                               name="http.min_threads" min="0"
-                                               data-requires-restart="true">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Maximum Thread Pool Size
-                                        <a tabindex="0" class="btn btn-sm cl-help"
-                                           role="button" data-toggle="popover"
-                                           data-trigger="focus"
-                                           data-content="Maximum size of the web server's thread pool.
-                                           Leave blank or set to 0 to use the default.">?</a>
-                                    </td>
-                                    <td>
-                                        <input class="form-control" type="number"
-                                               name="http.max_threads" min="0"
-                                               data-requires-restart="true">
-                                    </td>
-                                </tr>
-                                <tr>
                                     <td>Base URI
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
