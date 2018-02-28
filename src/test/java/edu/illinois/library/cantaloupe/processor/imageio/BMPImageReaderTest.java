@@ -76,7 +76,7 @@ public class BMPImageReaderTest extends BaseTest {
 
     @Test
     public void testPreferredIIOImplementations() {
-        assertEquals(0, instance.preferredIIOImplementations().length);
+        assertEquals(1, instance.preferredIIOImplementations().length);
     }
 
     @Test
