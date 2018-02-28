@@ -29,7 +29,7 @@ title: Change Log
       <li>Added <code>DownloadStrategy</code> as another retrieval strategy for <code>StreamProcessor</code>s, and as an optional fallback strategy. This enables all processors to work with all resolvers with no extra configuration.</li>
       <li>Improved the efficiency of the Java 2D resample filters.</li>
       <li>Java2dProcessor supports animated GIFs.</li>
-      <li>KakaduProcessor works (though less efficiently) in Windows.</li>
+      <li>KakaduProcessor and OpenJpegProcessor work (though less efficiently) in Windows.</li>
       <li>KakaduProcessor and OpenJpegProcessor read image information via ImageIO, which is more efficient than using the respective <code>kdu_jp2info</code> and <code>opj_dump</code> tools.</li>
       <li>Java2dProcessor supports CMYK/YCCK JPEGs.</li>
       <li>Worked around some behavior of the <code>opj_decompress</code> tool that could cause OpenJpegProcessor to break. (Thanks to @adam-vessey)</li>

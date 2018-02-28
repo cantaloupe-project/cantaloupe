@@ -7,7 +7,6 @@ title: Processors
 
 <ul>
   <li><a href="#Format%20Support">Format Support</a></li>
-  <li><a href="#Operating%20System%20Compatibility">Operating System Compatibility</a></li>
   <li><a href="#Retrieval%20Strategies">Retrieval Strategies</a></li>
   <li><a href="#Supported%20Features">Supported Features</a></li>
   <li><a href="#Supported%20Source%20Formats">Supported Source Formats</a></li>
@@ -34,69 +33,6 @@ title: Processors
 <h2>Format Support</h2>
 
 <p>Different processors support different source formats. A table of supported formats is displayed in the <a href="remote-management.html#Control%20Panel">Control Panel</a>, as well as in the <a href="#Supported%20Source%20Formats">Supported Source Formats</a> table below. A list of output formats supported <em>for a given source format</em> is contained within the response to an information request (such as <span class="filename">/iiif/2/:identifier/info.json</span>).</p>
-
-<hr>
-
-<h2 id="Operating System Compatibility">Operating System Compatibility</h2>
-
-<table class="table table-bordered">
-  <tr>
-    <th></th>
-    <th>Linux</th>
-    <th>macOS</th>
-    <th>Windows</th>
-  </tr>
-  <tr>
-    <td><a href="processors.html#FfmpegProcessor">FfmpegProcessor</a></td>
-    <td class="bg-success text-center">&check;</td>
-    <td class="bg-success text-center">&check;</td>
-    <td class="bg-success text-center">&check;</td>
-  </tr>
-  <tr>
-    <td><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a></td>
-    <td class="bg-success text-center">&check;</td>
-    <td class="bg-success text-center">&check;</td>
-    <td class="bg-success text-center">&check;</td>
-  </tr>
-  <tr>
-    <td><a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a></td>
-    <td class="bg-success text-center">&check;</td>
-    <td class="bg-success text-center">&check;</td>
-    <td class="bg-success text-center">&check;</td>
-  </tr>
-  <tr>
-    <td><a href="processors.html#JaiProcessor">JaiProcessor</a></td>
-    <td class="bg-success text-center">&check;</td>
-    <td class="bg-success text-center">&check;</td>
-    <td class="bg-success text-center">&check;</td>
-  </tr>
-  <tr>
-    <td><a href="processors.html#Java2dProcessor">Java2dProcessor</a></td>
-    <td class="bg-success text-center">&check;</td>
-    <td class="bg-success text-center">&check;</td>
-    <td class="bg-success text-center">&check;</td>
-  </tr>
-  <tr>
-    <td><a href="processors.html#KakaduProcessor">KakaduProcessor</a></td>
-    <td class="bg-success text-center">&check;</td>
-    <td class="bg-success text-center">&check;</td>
-    <td class="bg-success text-center">&check;*</td>
-  </tr>
-  <tr>
-    <td><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a></td>
-    <td class="bg-success text-center">&check;</td>
-    <td class="bg-success text-center">&check;</td>
-    <td class="bg-danger text-center">&times;</td>
-  </tr>
-  <tr>
-    <td><a href="processors.html#PdfBoxProcessor">PdfBoxProcessor</a></td>
-    <td class="bg-success text-center">&check;</td>
-    <td class="bg-success text-center">&check;</td>
-    <td class="bg-success text-center">&check;</td>
-  </tr>
-</table>
-
-<p>&check;*: Compatible, but less efficient for technical reasons</p>
 
 <hr>
 
