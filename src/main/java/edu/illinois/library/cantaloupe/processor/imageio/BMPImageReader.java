@@ -35,4 +35,9 @@ final class BMPImageReader extends AbstractImageReader {
         return new NullMetadata(metadata, metadataFormat);
     }
 
+    @Override
+    String[] preferredIIOImplementations() {
+        return new String[] { "com.sun.imageio.plugins.bmp.BMPImageReader" };
+    }
+
 }
