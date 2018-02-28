@@ -2102,7 +2102,7 @@
                                     </td>
                                     <td>
                                         <select class="form-control"
-                                                name="StreamProcessor.retrieval_strategy"
+                                                name="processor.stream_retrieval_strategy"
                                                 data-restart-required="false">
                                             <option value="StreamStrategy">Stream From Resolver (StreamStrategy)</option>
                                             <option value="DownloadStrategy">Download to Temp File (DownloadStrategy)</option>

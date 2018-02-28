@@ -43,7 +43,7 @@ public final class ProcessorConnector {
      */
     static RetrievalStrategy getStreamProcessorRetrievalStrategy() {
         RetrievalStrategy s = RetrievalStrategy.from(
-                Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY);
+                Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY);
         return (s != null) ? s : RetrievalStrategy.STREAM;
     }
 
@@ -66,7 +66,7 @@ public final class ProcessorConnector {
      *     <li>If the resolver is <em>only</em> a {@link StreamResolver} and
      *     the processor is <em>only</em> a {@link StreamProcessor}:
      *         <ul>
-     *             <li>If {@link Key#STREAMPROCESSOR_RETRIEVAL_STRATEGY} is
+     *             <li>If {@link Key#PROCESSOR_STREAM_RETRIEVAL_STRATEGY} is
      *             set to {@link RetrievalStrategy#STREAM}, the processor will
      *             read from the {@link StreamSource} provided by the
      *             resolver.</li>

@@ -456,7 +456,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.PROCESSOR_JPG_PROGRESSIVE).click();
         inputNamed(Key.PROCESSOR_JPG_QUALITY).sendKeys("55");
         selectNamed(Key.PROCESSOR_TIF_COMPRESSION).selectByVisibleText("LZW");
-        selectNamed(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY).
+        selectNamed(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY).
                 selectByValue("StreamStrategy");
         selectNamed(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY).
                 selectByValue("CacheStrategy");
@@ -503,7 +503,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertEquals("55", config.getString(Key.PROCESSOR_JPG_QUALITY));
         assertEquals("LZW", config.getString(Key.PROCESSOR_TIF_COMPRESSION));
         assertEquals("StreamStrategy",
-                config.getString(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY));
+                config.getString(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY));
         assertEquals("CacheStrategy",
                 config.getString(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY));
         // FfmpegProcessor

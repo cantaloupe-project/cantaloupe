@@ -21,7 +21,7 @@ public class IncompatibleResolverExceptionTest {
                         "to %s or %s.",
                 resolver.getClass().getSimpleName(),
                 processor.getClass().getSimpleName(),
-                Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
+                Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
                 RetrievalStrategy.STREAM,
                 RetrievalStrategy.DOWNLOAD,
                 RetrievalStrategy.CACHE);

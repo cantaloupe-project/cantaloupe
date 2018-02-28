@@ -335,7 +335,7 @@ processor.tif.compression = LZW
 # * `CacheStrategy` will download it into the source cache using
 #   FilesystemCache, which must also be configured. (This will perform a
 #   lot better than DownloadStrategy if you can spare the disk space.)
-StreamProcessor.retrieval_strategy = StreamStrategy
+processor.stream_retrieval_strategy = StreamStrategy
 
 # Controls how an incompatible StreamResolver + FileProcessor combination is
 # dealt with.
@@ -405,9 +405,8 @@ cache.client.no_transform = true
 ###########################################################################
 
 # Enables the source cache. Note that source images will only be cached
-# when a FileProcessor is used with a StreamResolver, or when a
-# StreamProcessor is used with `StreamProcessor.retrieval_strategy` set to
-# `CacheStrategy`.
+# when `processor.stream_retrieval_strategy` and/or
+# `processor.fallback_retrieval_strategy` are set to `CacheStrategy`.
 cache.server.source.enabled = false
 
 # FilesystemCache is the only available source cache.

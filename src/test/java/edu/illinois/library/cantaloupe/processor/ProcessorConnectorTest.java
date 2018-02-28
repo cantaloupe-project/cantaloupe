@@ -106,25 +106,25 @@ public class ProcessorConnectorTest extends BaseTest {
     public void testGetStreamProcessorRetrievalStrategy() {
         final Configuration config = Configuration.getInstance();
         // config set to stream
-        config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
+        config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
                 RetrievalStrategy.STREAM.getConfigValue());
         assertEquals(RetrievalStrategy.STREAM,
                 ProcessorConnector.getStreamProcessorRetrievalStrategy());
 
         // config set to download
-        config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
+        config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
                 RetrievalStrategy.DOWNLOAD.getConfigValue());
         assertEquals(RetrievalStrategy.DOWNLOAD,
                 ProcessorConnector.getStreamProcessorRetrievalStrategy());
 
         // config set to cache
-        config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
+        config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
                 RetrievalStrategy.CACHE.getConfigValue());
         assertEquals(RetrievalStrategy.CACHE,
                 ProcessorConnector.getStreamProcessorRetrievalStrategy());
 
         // config not set
-        config.clearProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY);
+        config.clearProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY);
         assertEquals(RetrievalStrategy.STREAM,
                 ProcessorConnector.getStreamProcessorRetrievalStrategy());
     }
@@ -329,7 +329,7 @@ public class ProcessorConnectorTest extends BaseTest {
                     "BasicLookupStrategy");
             config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                     server.getHTTPURI() + "/");
-            config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
+            config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
                     RetrievalStrategy.DOWNLOAD.getConfigValue());
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     cacheFolder.toString());
@@ -362,7 +362,7 @@ public class ProcessorConnectorTest extends BaseTest {
                     server.getHTTPURI() + "/");
             config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
             config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
-            config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
+            config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
                     RetrievalStrategy.CACHE.getConfigValue());
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     cacheFolder.toString());
@@ -405,7 +405,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
             config.setProperty(Key.SOURCE_CACHE,
                     MockBrokenSourceImageFileCache.class.getSimpleName());
-            config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
+            config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
                     RetrievalStrategy.CACHE.getConfigValue());
 
             final Resolver resolver = new ResolverFactory().
@@ -445,7 +445,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
             config.setProperty(Key.SOURCE_CACHE,
                     MockBrokenSourceInputStreamCache.class.getSimpleName());
-            config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
+            config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
                     RetrievalStrategy.CACHE.getConfigValue());
 
             final Resolver resolver = new ResolverFactory().
@@ -485,7 +485,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
             config.setProperty(Key.SOURCE_CACHE,
                     MockUnreliableSourceImageFileCache.class.getSimpleName());
-            config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
+            config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
                     RetrievalStrategy.CACHE.getConfigValue());
 
             final Resolver resolver = new ResolverFactory().
@@ -525,7 +525,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.SOURCE_CACHE_ENABLED, true);
             config.setProperty(Key.SOURCE_CACHE,
                     MockUnreliableSourceOutputStreamCache.class.getSimpleName());
-            config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
+            config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
                     RetrievalStrategy.CACHE.getConfigValue());
 
             final Resolver resolver = new ResolverFactory().
@@ -556,7 +556,7 @@ public class ProcessorConnectorTest extends BaseTest {
                     "BasicLookupStrategy");
             config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                     server.getHTTPURI() + "/");
-            config.setProperty(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
+            config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
                     RetrievalStrategy.CACHE.getConfigValue());
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     cacheFolder.toString());

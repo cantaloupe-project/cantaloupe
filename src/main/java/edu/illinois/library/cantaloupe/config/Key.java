@@ -168,6 +168,7 @@ public enum Key {
     PROCESSOR_PRESERVE_METADATA("processor.metadata.preserve"),
     PROCESSOR_RESPECT_ORIENTATION("processor.metadata.respect_orientation"),
     PROCESSOR_SHARPEN("processor.sharpen"),
+    PROCESSOR_STREAM_RETRIEVAL_STRATEGY("processor.stream_retrieval_strategy"),
     PROCESSOR_TIF_COMPRESSION("processor.tif.compression"),
     PROCESSOR_UPSCALE_FILTER("processor.upscale_filter"),
     REDACTION_ENABLED("redaction.enabled"),
@@ -196,7 +197,6 @@ public enum Key {
     SOURCE_CACHE("cache.server.source"),
     SOURCE_CACHE_ENABLED("cache.server.source.enabled"),
     SOURCE_CACHE_TTL("cache.server.source.ttl_seconds"),
-    STREAMPROCESSOR_RETRIEVAL_STRATEGY("StreamProcessor.retrieval_strategy"),
     TEMP_PATHNAME("temp_pathname");
 
     private String key;
