@@ -78,7 +78,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ImageMagickProcessor.class);
 
-    static final String OVERLAY_TEMP_FILE_PREFIX = Application.NAME + "-" +
+    static final String OVERLAY_TEMP_FILE_PREFIX = Application.getName() + "-" +
             ImageMagickProcessor.class.getSimpleName() + "-overlay";
 
     private static final AtomicBoolean initializationAttempted =

@@ -214,9 +214,9 @@ public class RestletApplication extends Application {
     public static final String TASKS_PATH = "/tasks";
 
     public static final String ADMIN_REALM =
-            edu.illinois.library.cantaloupe.Application.NAME + " Control Panel";
+            edu.illinois.library.cantaloupe.Application.getName() + " Control Panel";
     public static final String API_REALM =
-            edu.illinois.library.cantaloupe.Application.NAME + " API Realm";
+            edu.illinois.library.cantaloupe.Application.getName() + " API Realm";
     public static final String PUBLIC_REALM = "Image Realm";
 
     public RestletApplication() {

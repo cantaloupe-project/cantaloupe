@@ -37,7 +37,7 @@ public class LandingResourceTest extends ResourceTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, true);
         assertStatus(200, getHTTPURI(""));
-        assertRepresentationContains(Application.NAME + " Image", getHTTPURI(""));
+        assertRepresentationContains(Application.getName() + " Image", getHTTPURI(""));
     }
 
     @Test
@@ -79,7 +79,7 @@ public class LandingResourceTest extends ResourceTest {
         assertTrue(parts.contains("Accept-Language"));
         assertTrue(parts.contains("Origin"));
         // X-Powered-By
-        assertEquals(Application.NAME + "/" + Application.getVersion(),
+        assertEquals(Application.getName() + "/" + Application.getVersion(),
                 headers.getFirstValue("X-Powered-By"));
     }
 

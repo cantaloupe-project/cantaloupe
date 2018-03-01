@@ -383,7 +383,7 @@ public class ImageResourceTest extends ResourceTest {
         assertTrue(parts.contains("Accept-Language"));
         assertTrue(parts.contains("Origin"));
         // X-Powered-By
-        assertEquals(Application.NAME + "/" + Application.getVersion(),
+        assertEquals(Application.getName() + "/" + Application.getVersion(),
                 headers.getFirstValue("X-Powered-By"));
     }
 

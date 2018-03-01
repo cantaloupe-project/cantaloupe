@@ -577,7 +577,7 @@ abstract class HttpResolverTest extends AbstractResolverTest {
                 String expected = String.format("%s/%s (%s/%s; java/%s; %s/%s)",
                         HttpResolver.class.getSimpleName(),
                         Application.getVersion(),
-                        Application.NAME,
+                        Application.getName(),
                         Application.getVersion(),
                         System.getProperty("java.version"),
                         System.getProperty("os.name"),
