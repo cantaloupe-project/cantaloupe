@@ -7,8 +7,8 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
+import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.cos.COSObject;
@@ -62,7 +62,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     public Set<Format> getAvailableOutputFormats() {
         final Set<Format> outputFormats;
         if (Format.PDF.equals(format)) {
-            outputFormats = ImageWriter.supportedFormats();
+            outputFormats = ImageWriterFactory.supportedFormats();
         } else {
             outputFormats = Collections.unmodifiableSet(Collections.emptySet());
         }
@@ -105,8 +105,8 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                         OutputStream outputStream) throws ProcessorException {
         super.process(opList, imageInfo, outputStream);
 
-        final Set<ImageReader.Hint> hints =
-                EnumSet.noneOf(ImageReader.Hint.class);
+        final Set<ReaderHint> hints =
+                EnumSet.noneOf(ReaderHint.class);
         Scale scale = (Scale) opList.getFirst(Scale.class);
         if (scale == null) {
             scale = new Scale();
@@ -115,7 +115,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
         // NON_ASPECT_FILL, we can use a scale-appropriate rasterization
         // DPI and omit the scale step.
         if (!Scale.Mode.NON_ASPECT_FILL.equals(scale.getMode())) {
-            hints.add(ImageReader.Hint.IGNORE_SCALE);
+            hints.add(ReaderHint.IGNORE_SCALE);
         }
 
         ReductionFactor reductionFactor = new ReductionFactor();

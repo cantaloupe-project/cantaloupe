@@ -5,8 +5,9 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
-import edu.illinois.library.cantaloupe.processor.imageio.BufferedImageSequence;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.BufferedImageSequence;
+import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -31,14 +32,14 @@ class Java2dProcessor extends AbstractJava2DProcessor
         try {
             reader = getReader();
             final ReductionFactor rf = new ReductionFactor();
-            final Set<ImageReader.Hint> hints =
-                    EnumSet.noneOf(ImageReader.Hint.class);
+            final Set<ReaderHint> hints =
+                    EnumSet.noneOf(ReaderHint.class);
 
             if (ops.getFirst(Normalize.class) != null) {
                 // When normalizing, the reader needs to read the entire image
                 // so that its histogram can be sampled accurately, which will
                 // preserve the luminance across tiles.
-                hints.add(ImageReader.Hint.IGNORE_CROP);
+                hints.add(ReaderHint.IGNORE_CROP);
             }
 
             // If the source and output formats are both GIF, the source may

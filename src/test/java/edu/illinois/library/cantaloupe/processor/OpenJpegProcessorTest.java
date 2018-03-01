@@ -123,7 +123,7 @@ public class OpenJpegProcessorTest extends AbstractProcessorTest {
 
     @Test
     public void testReadImageInfoTileAwareness() throws Exception {
-        Info expectedInfo = new Info(100, 88, 100, 88, Format.JP2);
+        Info expectedInfo = new Info(64, 56, 64, 56, Format.JP2);
 
         instance.setSourceFile(TestUtil.getImage("jp2"));
         assertEquals(expectedInfo, instance.readImageInfo());

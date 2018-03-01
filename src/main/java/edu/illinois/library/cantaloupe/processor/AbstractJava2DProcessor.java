@@ -16,10 +16,11 @@ import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
-import edu.illinois.library.cantaloupe.processor.imageio.BufferedImageSequence;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
-import edu.illinois.library.cantaloupe.processor.imageio.Metadata;
+import edu.illinois.library.cantaloupe.processor.codec.BufferedImageSequence;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
+import edu.illinois.library.cantaloupe.processor.codec.Metadata;
+import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 import java.awt.Dimension;
@@ -113,14 +114,15 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
      * @param outputStream    Output stream to write the resulting image to.
      */
     void postProcess(BufferedImage image,
-                     final Set<ImageReader.Hint> readerHints,
+                     final Set<ReaderHint> readerHints,
                      final OperationList opList,
                      final Info imageInfo,
                      final ReductionFactor reductionFactor,
                      final OutputStream outputStream) throws IOException {
         image = doPostProcess(image, readerHints, opList, imageInfo,
                 reductionFactor);
-        new ImageWriter(opList).write(image, outputStream);
+        new ImageWriterFactory().newImageWriter(opList).
+                write(image, outputStream);
     }
 
     /**
@@ -184,7 +186,8 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
         }
 
         Metadata metadata = getReader().getMetadata(0);
-        new ImageWriter(opList, metadata).write(sequence, outputStream);
+        new ImageWriterFactory().newImageWriter(opList, metadata).
+                write(sequence, outputStream);
     }
 
     private BufferedImage doPostProcess(BufferedImage image,
@@ -194,7 +197,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
     }
 
     private BufferedImage doPostProcess(BufferedImage image,
-                                        Set<ImageReader.Hint> readerHints,
+                                        Set<ReaderHint> readerHints,
                                         final OperationList opList,
                                         final Info imageInfo,
                                         ReductionFactor reductionFactor) throws IOException {
@@ -204,7 +207,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
             reductionFactor = new ReductionFactor();
         }
         if (readerHints == null) {
-            readerHints = EnumSet.noneOf(ImageReader.Hint.class);
+            readerHints = EnumSet.noneOf(ReaderHint.class);
         }
         if (opList.getFirst(Normalize.class) != null) {
             image = Java2DUtil.stretchContrast(image);
@@ -236,7 +239,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
             if (op instanceof Crop) {
                 crop = (Crop) op;
                 if (crop.hasEffect(fullSize, opList) &&
-                        !readerHints.contains(ImageReader.Hint.ALREADY_CROPPED)) {
+                        !readerHints.contains(ReaderHint.ALREADY_CROPPED)) {
                     image = Java2DUtil.crop(image, crop, reductionFactor);
                 }
             }
@@ -258,7 +261,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
         for (Operation op : opList) {
             if (op.hasEffect(fullSize, opList)) {
                 if (op instanceof Scale &&
-                        !readerHints.contains(ImageReader.Hint.IGNORE_SCALE)) {
+                        !readerHints.contains(ReaderHint.IGNORE_SCALE)) {
                     image = Java2DUtil.scale(image, (Scale) op,
                             reductionFactor);
                 } else if (op instanceof Transpose) {

@@ -5,8 +5,10 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Orientation;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
+import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 
 import java.io.IOException;
@@ -39,8 +41,8 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
      */
     private static HashMap<Format, Set<Format>> availableOutputFormats() {
         final HashMap<Format,Set<Format>> map = new HashMap<>();
-        for (Format format : ImageReader.supportedFormats()) {
-            map.put(format, ImageWriter.supportedFormats());
+        for (Format format : ImageReaderFactory.supportedFormats()) {
+            map.put(format, ImageWriterFactory.supportedFormats());
         }
         return map;
     }
@@ -98,10 +100,12 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
      */
     protected ImageReader getReader() throws IOException {
         if (reader == null) {
+            ImageReaderFactory rf = new ImageReaderFactory();
+
             if (streamSource != null) {
-                reader = new ImageReader(streamSource, getSourceFormat());
+                reader = rf.newImageReader(streamSource, getSourceFormat());
             } else {
-                reader = new ImageReader(sourceFile, getSourceFormat());
+                reader = rf.newImageReader(sourceFile, getSourceFormat());
             }
         }
         return reader;

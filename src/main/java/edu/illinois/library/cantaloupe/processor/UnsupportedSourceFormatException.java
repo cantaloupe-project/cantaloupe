@@ -2,7 +2,9 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
 
-public class UnsupportedSourceFormatException extends ProcessorException {
+import java.io.IOException;
+
+public class UnsupportedSourceFormatException extends IOException {
 
     private static String getMessage(Processor proc, Format format) {
         String msg;

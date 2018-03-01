@@ -5,8 +5,8 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Orientation;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
+import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -23,8 +23,8 @@ abstract class ImageIOProcessorTest extends AbstractProcessorTest {
     @Test
     public void testGetAvailableOutputFormats() throws Exception {
         final HashMap<Format,Set<Format>> formats = new HashMap<>();
-        for (Format format : ImageReader.supportedFormats()) {
-            formats.put(format, ImageWriter.supportedFormats());
+        for (Format format : ImageReaderFactory.supportedFormats()) {
+            formats.put(format, ImageWriterFactory.supportedFormats());
         }
 
         Processor proc = newInstance();

@@ -5,7 +5,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.output.NullOutputStream;
@@ -61,7 +61,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
                     getFixture("images/" + format.getPreferredExtension());
             instance.setSourceFile(fixture);
             instance.setSourceFormat(format);
-        } catch (IOException | UnsupportedSourceFormatException e) {
+        } catch (IOException e) {
             fail("Huge bug");
         }
         return instance;
@@ -75,7 +75,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
                 Set<Format> expectedFormats = EnumSet.noneOf(Format.class);
                 if (format.getType() != null &&
                         format.getType().equals(Format.Type.VIDEO)) {
-                    expectedFormats.addAll(ImageWriter.supportedFormats());
+                    expectedFormats.addAll(ImageWriterFactory.supportedFormats());
                 }
                 instance.setSourceFormat(format);
                 assertEquals(expectedFormats, instance.getAvailableOutputFormats());

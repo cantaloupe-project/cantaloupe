@@ -11,7 +11,8 @@ import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
@@ -512,7 +513,8 @@ public class JAIUtilTest extends BaseTest {
                 Format.JPG);
         ImageReader reader = null;
         try {
-            reader = new ImageReader(TestUtil.getImage(name), Format.PNG);
+            reader = new ImageReaderFactory().newImageReader(
+                    TestUtil.getImage(name), Format.PNG);
             RenderedImage image = reader.readRendered(
                     ops, Orientation.ROTATE_0, new ReductionFactor(), null);
             PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);

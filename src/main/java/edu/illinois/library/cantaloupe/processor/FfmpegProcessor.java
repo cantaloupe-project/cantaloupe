@@ -6,8 +6,9 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
+import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,7 +107,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
     public Set<Format> getAvailableOutputFormats() {
         final Set<Format> outputFormats;
         if (format.isVideo()) {
-            outputFormats = ImageWriter.supportedFormats();
+            outputFormats = ImageWriterFactory.supportedFormats();
         } else {
             outputFormats = Collections.unmodifiableSet(Collections.emptySet());
         }
@@ -181,7 +182,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
                 ThreadPool.getInstance().submit(
                         new StreamCopier(processErrorStream, errorBucket));
 
-                final ImageReader reader = new ImageReader(
+                final ImageReader reader = new ImageReaderFactory().newImageReader(
                         processInputStream, Format.BMP);
                 final BufferedImage image = reader.read();
                 try {

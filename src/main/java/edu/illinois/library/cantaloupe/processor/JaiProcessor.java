@@ -16,8 +16,10 @@ import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.image.Compression;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
+import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
+import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,15 +144,15 @@ class JaiProcessor extends AbstractImageIOProcessor
             final Orientation orientation = getEffectiveOrientation();
             final Dimension fullSize = imageInfo.getSize();
             final ReductionFactor rf = new ReductionFactor();
-            final Set<ImageReader.Hint> hints =
-                    EnumSet.noneOf(ImageReader.Hint.class);
+            final Set<ReaderHint> hints =
+                    EnumSet.noneOf(ReaderHint.class);
 
             final boolean normalize = (opList.getFirst(Normalize.class) != null);
             if (normalize) {
                 // When normalizing, the reader needs to read the entire image
                 // so that its histogram can be sampled accurately. This will
                 // preserve the luminance across tiles.
-                hints.add(ImageReader.Hint.IGNORE_CROP);
+                hints.add(ReaderHint.IGNORE_CROP);
             }
 
             final RenderedImage renderedImage = reader.readRendered(opList,
@@ -249,8 +251,8 @@ class JaiProcessor extends AbstractImageIOProcessor
                     image = Java2DUtil.applyOverlay(image, (Overlay) op);
                 }
             }
-            final ImageWriter writer = new ImageWriter(opList,
-                    reader.getMetadata(0));
+            final ImageWriter writer = new ImageWriterFactory().newImageWriter(
+                    opList, reader.getMetadata(0));
 
             if (image != null) {
                 writer.write(image, outputStream);

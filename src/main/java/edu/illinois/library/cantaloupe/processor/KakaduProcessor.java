@@ -12,8 +12,10 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Crop;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
+import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
+import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
@@ -252,7 +254,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     public Set<Format> getAvailableOutputFormats() {
         final Set<Format> outputFormats;
         if (Format.JP2.equals(format)) {
-            outputFormats = ImageWriter.supportedFormats();
+            outputFormats = ImageWriterFactory.supportedFormats();
         } else {
             outputFormats = Collections.unmodifiableSet(Collections.emptySet());
         }
@@ -370,13 +372,14 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
         }
 
         try (InputStream is = Files.newInputStream(intermediateFile)) {
-            final ImageReader reader = new ImageReader(is, Format.TIF);
+            final ImageReader reader =
+                    new ImageReaderFactory().newImageReader(is, Format.TIF);
             try {
                 final BufferedImage image = reader.read();
-                Set<ImageReader.Hint> hints =
-                        EnumSet.noneOf(ImageReader.Hint.class);
+                Set<ReaderHint> hints =
+                        EnumSet.noneOf(ReaderHint.class);
                 if (!normalize) {
-                    hints.add(ImageReader.Hint.ALREADY_CROPPED);
+                    hints.add(ReaderHint.ALREADY_CROPPED);
                 }
                 postProcess(image, hints, opList, imageInfo,
                         reductionFactor, outputStream);
@@ -414,14 +417,14 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
             ThreadPool.getInstance().submit(
                     new StreamCopier(processErrorStream, errorOutput));
 
-            final ImageReader reader = new ImageReader(
+            final ImageReader reader = new ImageReaderFactory().newImageReader(
                     processInputStream, Format.TIF);
             try {
                 final BufferedImage image = reader.read();
-                Set<ImageReader.Hint> hints =
-                        EnumSet.noneOf(ImageReader.Hint.class);
+                Set<ReaderHint> hints =
+                        EnumSet.noneOf(ReaderHint.class);
                 if (!normalize) {
-                    hints.add(ImageReader.Hint.ALREADY_CROPPED);
+                    hints.add(ReaderHint.ALREADY_CROPPED);
                 }
                 postProcess(image, hints, opList, imageInfo,
                         reductionFactor, outputStream);
