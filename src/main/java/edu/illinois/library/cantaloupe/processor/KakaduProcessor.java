@@ -17,6 +17,7 @@ import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -148,12 +149,18 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
                 // kdu_expand what format to write.
                 createStdoutSymlink();
             } else {
-                LOGGER.error(KakaduProcessor.class.getSimpleName() +
-                        " won't work on this platform as it requires access " +
-                        "to /dev/stdout.");
+                logWindowsIncompatibilityError();
             }
         } catch (IOException e) {
             initializationException = new InitializationException(e);
+        }
+    }
+
+    private static void logWindowsIncompatibilityError() {
+        if (SystemUtils.IS_OS_WINDOWS) {
+            LOGGER.error(KakaduProcessor.class.getSimpleName() +
+                    " doesn't currently work in Windows. It will work (with " +
+                    "impaired performance) in version 4.");
         }
     }
 
@@ -230,6 +237,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
      */
     @Override
     public Info readImageInfo() throws IOException {
+        logWindowsIncompatibilityError();
         try {
             if (infoDocument == null) {
                 readImageInfoDocument();
@@ -327,8 +335,8 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     @Override
     public void process(final OperationList opList,
                         final Info imageInfo,
-                        final OutputStream outputStream)
-            throws ProcessorException {
+                        final OutputStream outputStream) throws ProcessorException {
+        logWindowsIncompatibilityError();
         super.process(opList, imageInfo, outputStream);
 
         // Will receive stderr output from kdu_expand.

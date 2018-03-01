@@ -18,6 +18,7 @@ import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.InputStreamStreamSource;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -149,12 +150,18 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                 // opj_decompress what format to write.
                 createStdoutSymlink();
             } else {
-                LOGGER.error(OpenJpegProcessor.class.getSimpleName() +
-                        " won't work on this platform as it requires access " +
-                        "to /dev/stdout.");
+                logWindowsIncompatibilityError();
             }
         } catch (IOException e) {
             initializationException = new InitializationException(e);
+        }
+    }
+
+    private static void logWindowsIncompatibilityError() {
+        if (SystemUtils.IS_OS_WINDOWS) {
+            LOGGER.error(OpenJpegProcessor.class.getSimpleName() +
+                    " doesn't currently work in Windows. It will work (with " +
+                    "impaired performance) in version 4.");
         }
     }
 
@@ -288,6 +295,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
      */
     @Override
     public Info readImageInfo() throws IOException {
+        logWindowsIncompatibilityError();
         if (imageInfo == null) {
             doReadImageInfo();
         }
@@ -378,8 +386,8 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
     @Override
     public void process(final OperationList opList,
                         final Info imageInfo,
-                        final OutputStream outputStream)
-            throws ProcessorException {
+                        final OutputStream outputStream) throws ProcessorException {
+        logWindowsIncompatibilityError();
         super.process(opList, imageInfo, outputStream);
 
         // Will receive stderr output from opj_decompress.
