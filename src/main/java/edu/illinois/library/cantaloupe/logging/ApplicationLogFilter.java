@@ -11,16 +11,10 @@ import ch.qos.logback.core.spi.FilterReply;
 public class ApplicationLogFilter extends Filter<ILoggingEvent> {
 
     public FilterReply decide(ILoggingEvent event) {
-        // Filter out useless Restlet log messages.
-        if (event.getLoggerName().startsWith("org.restlet") &&
-                event.getLevel().equals(Level.INFO) &&
-                event.getMessage().contains("ing the internal HTTP client")) {
-            return FilterReply.DENY;
-        }
         // Filter out debug messages from the embedded Jetty server as they
         // totally overwhelm the debug log.
         if (event.getLoggerName().startsWith("org.eclipse.jetty") &&
-                event.getLevel().equals(Level.DEBUG)) {
+                Level.DEBUG.isGreaterOrEqual(event.getLevel())) {
             return FilterReply.DENY;
         }
         // Reject Jetty access log messages.
@@ -29,13 +23,13 @@ public class ApplicationLogFilter extends Filter<ILoggingEvent> {
         }
         // Reject Velocity debug messages.
         if (event.getLoggerName().startsWith("org.apache.velocity") &&
-                event.getLevel().equals(Level.DEBUG)) {
+                Level.DEBUG.isGreaterOrEqual(event.getLevel())) {
             return FilterReply.DENY;
         }
-        // The Amazon S3 client logs request/response bodies in binary. These
-        // should really be trace-level.
+        // The Amazon S3 client wraps an Apache HTTP client which is extremely
+        // verbose.
         if (event.getLoggerName().equals("org.apache.http.wire") &&
-                event.getLevel().equals(Level.DEBUG)) {
+                Level.DEBUG.isGreaterOrEqual(event.getLevel())) {
             return FilterReply.DENY;
         }
         return FilterReply.NEUTRAL;
