@@ -15,6 +15,10 @@ final class PNGImageReader extends AbstractImageReader {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(PNGImageReader.class);
 
+    static String[] getPreferredIIOImplementations() {
+        return new String[] { "com.sun.imageio.plugins.png.PNGImageReader" };
+    }
+
     /**
      * @param sourceFile Source file to read.
      */
@@ -44,6 +48,11 @@ final class PNGImageReader extends AbstractImageReader {
         final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
         final String metadataFormat = metadata.getNativeMetadataFormatName();
         return new PNGMetadata(metadata, metadataFormat);
+    }
+
+    @Override
+    String[] preferredIIOImplementations() {
+        return getPreferredIIOImplementations();
     }
 
 }
