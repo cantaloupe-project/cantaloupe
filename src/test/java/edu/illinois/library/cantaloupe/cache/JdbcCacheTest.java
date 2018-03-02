@@ -136,9 +136,9 @@ public class JdbcCacheTest extends AbstractCacheTest {
         }
 
         // persist some infos corresponding to the above images
-        instance.put(new Identifier("cats"), new Info(50, 40));
-        instance.put(new Identifier("dogs"), new Info(500, 300));
-        instance.put(new Identifier("bunnies"), new Info(350, 240));
+        instance.put(new Identifier("cats"), new Info());
+        instance.put(new Identifier("dogs"), new Info());
+        instance.put(new Identifier("bunnies"), new Info());
 
         // assert that the data has been seeded
         String sql = String.format("SELECT COUNT(%s) AS count FROM %s;",
@@ -287,7 +287,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
         final Configuration config = Configuration.getInstance();
 
         Identifier identifier = new Identifier("birds");
-        Info info = new Info(52, 52);
+        Info info = new Info();
         instance.put(identifier, info);
 
         try (Connection connection = JdbcCache.getConnection()) {

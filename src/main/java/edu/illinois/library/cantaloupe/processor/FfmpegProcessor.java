@@ -157,8 +157,11 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
                 } catch (NumberFormatException e) {
                     LOGGER.debug("readImageInfo(): {}", e.getMessage());
                 }
-                imageInfo = new Info(width, height, width, height,
-                        getSourceFormat());
+                imageInfo = Info.builder()
+                        .withSize(width, height)
+                        .withTileSize(width, height)
+                        .withFormat(getSourceFormat())
+                        .build();
                 imageInfo.setNumResolutions(1);
             }
         }

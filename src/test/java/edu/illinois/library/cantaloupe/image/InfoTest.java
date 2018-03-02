@@ -26,9 +26,13 @@ public class InfoTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new Info(100, 80, Format.JPG);
-        instance.setNumResolutions(3);
-        instance.getImages().get(0).setOrientation(Orientation.ROTATE_270);
+        instance = Info.builder()
+                .withSize(100, 80)
+                .withTileSize(50, 40)
+                .withFormat(Format.JPG)
+                .withNumResolutions(3)
+                .withOrientation(Orientation.ROTATE_270)
+                .build();
     }
 
     /************************ Info tests ****************************/
@@ -72,128 +76,105 @@ public class InfoTest extends BaseTest {
     @Test
     public void testConstructor() {
         instance = new Info();
-        assertEquals(0, instance.getImages().size());
-    }
-
-    /* Info(Dimension) */
-
-    @Test
-    public void testConstructorWithDimension() {
-        Dimension size = new Dimension(500, 200);
-        instance = new Info(size);
         assertEquals(1, instance.getImages().size());
-        assertEquals(size, instance.getImages().get(0).getSize());
-    }
-
-    /* Info(Dimension, Format) */
-
-    @Test
-    public void testConstructorWithDimensionAndFormat() {
-        Dimension size = new Dimension(500, 200);
-        Format format = Format.JPG;
-        instance = new Info(size, format);
-        assertEquals(1, instance.getImages().size());
-        assertEquals(size, instance.getImages().get(0).getSize());
-        assertEquals(format, instance.getSourceFormat());
-    }
-
-    /* Info(int, int) */
-
-    @Test
-    public void testConstructorWithWidthAndHeight() {
-        int width = 500;
-        int height = 200;
-        instance = new Info(width, height);
-        assertEquals(1, instance.getImages().size());
-        assertEquals(width, instance.getImages().get(0).getSize().width);
-        assertEquals(height, instance.getImages().get(0).getSize().height);
-    }
-
-    /* Info(int, int, Format) */
-
-    @Test
-    public void testConstructorWithWidthAndHeightAndFormat() {
-        int width = 500;
-        int height = 200;
-        Format format = Format.JPG;
-        instance = new Info(width, height, format);
-        assertEquals(1, instance.getImages().size());
-        assertEquals(width, instance.getImages().get(0).getSize().width);
-        assertEquals(height, instance.getImages().get(0).getSize().height);
-        assertEquals(format, instance.getSourceFormat());
-    }
-
-    /* Info(Dimension, Dimension) */
-
-    @Test
-    public void testConstructorWithWidthAndHeightDimensions() {
-        Dimension size = new Dimension(500, 200);
-        Dimension tileSize = new Dimension(300, 100);
-        instance = new Info(size, tileSize);
-        assertEquals(1, instance.getImages().size());
-        assertEquals(size, instance.getImages().get(0).getSize());
-        assertEquals(tileSize, instance.getImages().get(0).getTileSize());
-    }
-
-    /* Info(int, int, int, int) */
-
-    @Test
-    public void testConstructorWithWidthAndHeightAndTileWidthAndTileHeight() {
-        int width = 500;
-        int height = 200;
-        int tileWidth = 200;
-        int tileHeight = 100;
-        instance = new Info(width, height, tileWidth, tileHeight);
-        assertEquals(1, instance.getImages().size());
-        assertEquals(width, instance.getImages().get(0).getSize().width);
-        assertEquals(height, instance.getImages().get(0).getSize().height);
-        assertEquals(tileWidth, instance.getImages().get(0).getTileSize().width);
-        assertEquals(tileHeight, instance.getImages().get(0).getTileSize().height);
-    }
-
-    /* Info(int, int, int, int, Format) */
-
-    @Test
-    public void testConstructorWithWidthAndHeightAndTileWidthAndTileHeightAndFormat() {
-        int width = 500;
-        int height = 200;
-        int tileWidth = 200;
-        int tileHeight = 100;
-        Format format = Format.GIF;
-        instance = new Info(width, height, tileWidth, tileHeight, format);
-        assertEquals(1, instance.getImages().size());
-        assertEquals(width, instance.getImages().get(0).getSize().width);
-        assertEquals(height, instance.getImages().get(0).getSize().height);
-        assertEquals(tileWidth, instance.getImages().get(0).getTileSize().width);
-        assertEquals(tileHeight, instance.getImages().get(0).getTileSize().height);
-        assertEquals(format, instance.getSourceFormat());
     }
 
     /* equals() */
 
     @Test
-    public void testEquals() {
-        // equal
-        Info info1 = new Info(100, 80, 50, 40, Format.JPG);
-        Info info2 = new Info(100, 80, 50, 40, Format.JPG);
-        assertTrue(info1.equals(info2));
-        // not equal
-        info2 = new Info(99, 80, 50, 40, Format.JPG);
-        assertFalse(info1.equals(info2));
-        info2 = new Info(100, 79, 50, 40, Format.JPG);
-        assertFalse(info1.equals(info2));
-        info2 = new Info(100, 80, 49, 40, Format.JPG);
-        assertFalse(info1.equals(info2));
-        info2 = new Info(100, 80, 50, 39, Format.JPG);
-        assertFalse(info1.equals(info2));
-        info2 = new Info(100, 80, 50, 40, Format.TIF);
-        assertFalse(info1.equals(info2));
-        info2 = new Info(100, 80, Format.JPG);
-        assertFalse(info1.equals(info2));
+    public void testEqualsWithEqualInstances() {
+        Info info2 = Info.builder()
+                .withSize(100, 80)
+                .withTileSize(50, 40)
+                .withOrientation(Orientation.ROTATE_270)
+                .withNumResolutions(3)
+                .withFormat(Format.JPG)
+                .build();
+        assertTrue(instance.equals(info2));
+    }
 
-        info2 = new Info(100, 80, 50, 40, Format.JPG);
-        info2.getImages().add(new Info.Image(40, 25));
-        assertFalse(info1.equals(info2));
+    @Test
+    public void testEqualsWithDifferentWidths() {
+        Info info2 = Info.builder()
+                .withSize(99, 80)
+                .withTileSize(50, 40)
+                .withOrientation(Orientation.ROTATE_270)
+                .withNumResolutions(3)
+                .withFormat(Format.JPG)
+                .build();
+        assertFalse(instance.equals(info2));
+    }
+
+    @Test
+    public void testEqualsWithDifferentHeights() {
+        Info info2 = Info.builder()
+                .withSize(100, 79)
+                .withTileSize(50, 40)
+                .withOrientation(Orientation.ROTATE_270)
+                .withNumResolutions(3)
+                .withFormat(Format.JPG)
+                .build();
+        assertFalse(instance.equals(info2));
+    }
+
+    @Test
+    public void testEqualsWithDifferentTileWidths() {
+        Info info2 = Info.builder()
+                .withSize(100, 80)
+                .withTileSize(49, 40)
+                .withOrientation(Orientation.ROTATE_270)
+                .withNumResolutions(3)
+                .withFormat(Format.JPG)
+                .build();
+        assertFalse(instance.equals(info2));
+    }
+
+    @Test
+    public void testEqualsWithDifferentTileHeights() {
+        Info info2 = Info.builder()
+                .withSize(100, 80)
+                .withTileSize(50, 39)
+                .withOrientation(Orientation.ROTATE_270)
+                .withNumResolutions(3)
+                .withFormat(Format.JPG)
+                .build();
+        assertFalse(instance.equals(info2));
+    }
+
+    @Test
+    public void testEqualsWithDifferentOrientations() {
+        Info info2 = Info.builder()
+                .withSize(100, 80)
+                .withTileSize(50, 40)
+                .withOrientation(Orientation.ROTATE_180)
+                .withNumResolutions(3)
+                .withFormat(Format.JPG)
+                .build();
+        assertFalse(instance.equals(info2));
+    }
+
+    @Test
+    public void testEqualsWithDifferentNumResolutions() {
+        Info info2 = Info.builder()
+                .withSize(100, 80)
+                .withTileSize(50, 40)
+                .withOrientation(Orientation.ROTATE_90)
+                .withNumResolutions(2)
+                .withFormat(Format.JPG)
+                .build();
+        assertFalse(instance.equals(info2));
+    }
+
+    @Test
+    public void testEqualsWithDifferentFormats() {
+        Info info2 = Info.builder()
+                .withSize(100, 80)
+                .withTileSize(50, 40)
+                .withOrientation(Orientation.ROTATE_90)
+                .withNumResolutions(3)
+                .withFormat(Format.GIF)
+                .build();
+        assertFalse(instance.equals(info2));
     }
 
     /* getImages() */
@@ -201,7 +182,6 @@ public class InfoTest extends BaseTest {
     @Test
     public void testGetImages() {
         assertEquals(1, instance.getImages().size());
-        assertEquals(0, new Info().getImages().size());
     }
 
     /* getNumResolutions() */
@@ -265,12 +245,15 @@ public class InfoTest extends BaseTest {
 
     @Test
     public void testToJSON() throws Exception {
-        // We are going to trust that Jackson creates correct JSON, but also
-        // test that null values are not serialized.
         String json = instance.toJSON();
         Info info2 = Info.fromJSON(json);
-        info2.setSourceFormat(instance.getSourceFormat());
         assertEquals(instance, info2);
+    }
+
+    @Test
+    public void testToJSONOmitsNullValues() throws Exception {
+        String json = instance.toJSON();
+        assertFalse(json.contains("null"));
     }
 
     /* toString() */
@@ -293,53 +276,11 @@ public class InfoTest extends BaseTest {
     /********************* Info.Image tests *************************/
 
     @Test
-    public void testImageConstructor1() {
+    public void testImageConstructor() {
         Info.Image image = new Info.Image();
         assertEquals(Orientation.ROTATE_0, image.getOrientation());
         assertEquals(new Dimension(0, 0), image.getSize());
         assertEquals(new Dimension(0, 0), image.getTileSize());
-    }
-
-    @Test
-    public void testImageConstructor2() {
-        Dimension size = new Dimension(300, 200);
-        Info.Image image = new Info.Image(size);
-        assertEquals(Orientation.ROTATE_0, image.getOrientation());
-        assertEquals(size, image.getSize());
-        assertEquals(size, image.getTileSize());
-    }
-
-    @Test
-    public void testImageConstructor3() {
-        Dimension size = new Dimension(300, 200);
-        Orientation orientation = Orientation.ROTATE_90;
-        Info.Image image = new Info.Image(size, orientation);
-        assertEquals(orientation, image.getOrientation());
-        assertEquals(size, image.getSize());
-        assertEquals(size, image.getTileSize());
-    }
-
-    @Test
-    public void testImageConstructor4() {
-        int width = 300;
-        int height = 200;
-        Info.Image image = new Info.Image(width, height);
-        assertEquals(Orientation.ROTATE_0, image.getOrientation());
-        assertEquals(width, image.getSize().width);
-        assertEquals(height, image.getSize().height);
-        assertEquals(new Dimension(width, height), image.getTileSize());
-    }
-
-    @Test
-    public void testImageConstructor5() {
-        int width = 300;
-        int height = 200;
-        Orientation orientation = Orientation.ROTATE_90;
-        Info.Image image = new Info.Image(width, height, orientation);
-        assertEquals(orientation, image.getOrientation());
-        assertEquals(width, image.getSize().width);
-        assertEquals(height, image.getSize().height);
-        assertEquals(new Dimension(width, height), image.getTileSize());
     }
 
     @Test
@@ -353,7 +294,7 @@ public class InfoTest extends BaseTest {
     public void testImageGetOrientationTileSize() {
         Info.Image image = instance.getImages().get(0);
         image.setOrientation(Orientation.ROTATE_90);
-        assertEquals(new Dimension(80, 100), image.getOrientationTileSize());
+        assertEquals(new Dimension(40, 50), image.getOrientationTileSize());
     }
 
 }

@@ -746,8 +746,11 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                 final int height = Integer.parseInt(output.get(1));
                 // GM is not tile-aware, so set the tile size to the full
                 // dimensions.
-                final Info info = new Info(width, height, width, height,
-                        getSourceFormat());
+                final Info info = Info.builder()
+                        .withSize(width, height)
+                        .withTileSize(width, height)
+                        .withFormat(getSourceFormat())
+                        .build();
                 // Do we have an EXIF orientation to deal with?
                 if (output.size() > 2) {
                     try {

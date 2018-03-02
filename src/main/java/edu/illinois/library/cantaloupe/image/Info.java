@@ -53,6 +53,53 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class Info {
 
+    public static final class Builder {
+
+        private Info info;
+
+        Builder(Info info) {
+            this.info = info;
+        }
+
+        public Info build() {
+            return info;
+        }
+
+        public Builder withFormat(Format format) {
+            info.setSourceFormat(format);
+            return this;
+        }
+
+        public Builder withNumResolutions(int numResolutions) {
+            info.setNumResolutions(numResolutions);
+            return this;
+        }
+
+        public Builder withOrientation(Orientation orientation) {
+            info.getImages().get(0).setOrientation(orientation);
+            return this;
+        }
+
+        public Builder withSize(Dimension size) {
+            info.getImages().get(0).setSize(size);
+            return this;
+        }
+
+        public Builder withSize(int width, int height) {
+            return withSize(new Dimension(width, height));
+        }
+
+        public Builder withTileSize(Dimension size) {
+            info.getImages().get(0).setTileSize(size);
+            return this;
+        }
+
+        public Builder withTileSize(int width, int height) {
+            return withTileSize(new Dimension(width, height));
+        }
+
+    }
+
     /**
      * Represents an embedded subimage within a container stream. This is a
      * physical image such as an embedded EXIF thumbnail or embedded TIFF page.
@@ -73,24 +120,6 @@ public final class Info {
          */
         public Image() {
             setOrientation(Orientation.ROTATE_0);
-        }
-
-        public Image(Dimension size) {
-            this();
-            this.setSize(size);
-        }
-
-        public Image(Dimension size, Orientation orientation) {
-            this(size);
-            setOrientation(orientation);
-        }
-
-        public Image(int width, int height) {
-            this(new Dimension(width, height));
-        }
-
-        public Image(int width, int height, Orientation orientation) {
-            this(new Dimension(width, height), orientation);
         }
 
         @Override
@@ -118,7 +147,6 @@ public final class Info {
          * @return The instance's orientation, or {@link Orientation#ROTATE_0}
          *         if none.
          */
-        @JsonIgnore
         public Orientation getOrientation() {
             if (orientation != null) {
                 return Orientation.valueOf(orientation);
@@ -217,6 +245,10 @@ public final class Info {
      */
     private int numResolutions = -1;
 
+    public static Builder builder() {
+        return new Builder(new Info());
+    }
+
     public static Info fromJSON(Path jsonFile) throws IOException {
         return new ObjectMapper().readValue(jsonFile.toFile(), Info.class);
     }
@@ -229,80 +261,8 @@ public final class Info {
         return new ObjectMapper().readValue(json, Info.class);
     }
 
-    /**
-     * No-op constructor needed by Jackson.
-     */
-    public Info() {}
-
-    /**
-     * @param size Main image size
-     */
-    public Info(Dimension size) {
-        this();
-        images.add(new Image(size));
-    }
-
-    /**
-     * @param size Main image size
-     * @param sourceFormat
-     */
-    public Info(Dimension size, Format sourceFormat) {
-        this(size);
-        setSourceFormat(sourceFormat);
-    }
-
-    /**
-     * @param width  Main image width
-     * @param height Main image height
-     */
-    public Info(int width, int height) {
-        this(new Dimension(width, height));
-    }
-
-    /**
-     * @param width  Main image width
-     * @param height Main image height
-     * @param sourceFormat
-     */
-    public Info(int width, int height, Format sourceFormat) {
-        this(width, height);
-        setSourceFormat(sourceFormat);
-    }
-
-    /**
-     * @param size     Main image size
-     * @param tileSize Main image tile size
-     */
-    public Info(Dimension size, Dimension tileSize) {
-        this(size);
-        final Image image = getImages().get(0);
-        image.tileWidth = tileSize.width;
-        image.tileHeight = tileSize.height;
-    }
-
-    /**
-     * @param width      Main image width
-     * @param height     Main image height
-     * @param tileWidth  Main image tile width
-     * @param tileHeight Main image tile height
-     */
-    public Info(int width, int height, int tileWidth, int tileHeight) {
-        this(new Dimension(width, height),
-                new Dimension(tileWidth, tileHeight));
-    }
-
-    /**
-     * @param width      Main image width
-     * @param height     Main image height
-     * @param tileWidth  Main image tile width
-     * @param tileHeight Main image tile height
-     * @param sourceFormat
-     */
-    public Info(int width, int height, int tileWidth, int tileHeight,
-                Format sourceFormat) {
-        this(new Dimension(width, height),
-                new Dimension(tileWidth, tileHeight));
-        setSourceFormat(sourceFormat);
+    public Info() {
+        images.add(new Image());
     }
 
     @Override
@@ -312,6 +272,7 @@ public final class Info {
         } else if (obj instanceof Info) {
             Info other = (Info) obj;
             return other.getImages().equals(getImages()) &&
+                    other.getOrientation().equals(getOrientation()) &&
                     other.getSourceFormat().equals(getSourceFormat()) &&
                     other.getNumResolutions() == getNumResolutions();
         }

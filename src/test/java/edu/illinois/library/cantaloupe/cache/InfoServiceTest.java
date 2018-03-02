@@ -69,7 +69,7 @@ public class InfoServiceTest extends BaseTest {
     @Test
     public void testGetInfoWithHitInMemoryCache() throws Exception {
         final Identifier identifier = new Identifier("jpg");
-        final Info info = new Info(500, 300);
+        final Info info = new Info();
         instance.putInObjectCache(identifier, info);
 
         Info actualInfo = instance.getInfo(identifier);
@@ -81,7 +81,7 @@ public class InfoServiceTest extends BaseTest {
         useFilesystemCache();
 
         final Identifier identifier = new Identifier("jpg");
-        final Info info = new Info(500, 300);
+        final Info info = new Info();
 
         DerivativeCache cache = CacheFactory.getDerivativeCache();
         cache.put(identifier, info);
@@ -103,7 +103,7 @@ public class InfoServiceTest extends BaseTest {
     @Test
     public void testGetOrReadInfoWithHitInMemoryCache() throws Exception {
         final Identifier identifier = new Identifier("jpg");
-        final Info info = new Info(500, 300);
+        final Info info = new Info();
         instance.putInObjectCache(identifier, info);
 
         Info actualInfo = instance.getOrReadInfo(identifier, newMockProcessor());
@@ -115,7 +115,7 @@ public class InfoServiceTest extends BaseTest {
         useFilesystemCache();
 
         final Identifier identifier = new Identifier("jpg");
-        final Info info = new Info(500, 300);
+        final Info info = new Info();
 
         DerivativeCache cache = CacheFactory.getDerivativeCache();
         cache.put(identifier, info);
@@ -130,18 +130,6 @@ public class InfoServiceTest extends BaseTest {
 
         Info info = instance.getOrReadInfo(identifier, newFileProcessor());
         assertEquals(64, info.getSize(0).width);
-    }
-
-    /**
-     * This should never happen in normal use because
-     * {@link Processor#readImageInfo()} should never return <code>null</code>.
-     */
-    @Test
-    public void testGetOrReadInfoWithMissEverywhere() throws Exception {
-        final Identifier identifier = new Identifier("jpg");
-
-        Info info = instance.getOrReadInfo(identifier, newMockProcessor());
-        assertTrue(info.getImages().isEmpty());
     }
 
     /* isObjectCacheEnabled() */
@@ -161,7 +149,7 @@ public class InfoServiceTest extends BaseTest {
     @Test
     public void testPurgeObjectCache() {
         final Identifier identifier = new Identifier("cats");
-        final Info info = new Info(500, 300);
+        final Info info = new Info();
         instance.putInObjectCache(identifier, info);
         assertEquals(1, instance.getInfoCache().size());
 
@@ -175,7 +163,7 @@ public class InfoServiceTest extends BaseTest {
     public void testPurgeObjectCacheWithIdentifier() {
         final Identifier id1 = new Identifier("cats");
         final Identifier id2 = new Identifier("dogs");
-        final Info info = new Info(500, 300);
+        final Info info = new Info();
         instance.putInObjectCache(id1, info);
         instance.putInObjectCache(id2, info);
         assertEquals(2, instance.getInfoCache().size());

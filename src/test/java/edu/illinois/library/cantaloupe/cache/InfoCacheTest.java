@@ -24,7 +24,7 @@ public class InfoCacheTest extends BaseTest {
     @Test
     public void testGetWithHit() {
         final Identifier identifier = new Identifier("jpg");
-        final Info info = new Info(500, 300);
+        final Info info = new Info();
 
         instance.put(identifier, info);
 
@@ -52,7 +52,7 @@ public class InfoCacheTest extends BaseTest {
     @Test
     public void testPurge() {
         final Identifier identifier = new Identifier("cats");
-        final Info info = new Info(500, 300);
+        final Info info = new Info();
         instance.put(identifier, info);
         assertEquals(1, instance.size());
 
@@ -66,7 +66,7 @@ public class InfoCacheTest extends BaseTest {
     public void testPurgeWithIdentifier() {
         final Identifier id1 = new Identifier("cats");
         final Identifier id2 = new Identifier("dogs");
-        final Info info = new Info(500, 300);
+        final Info info = new Info();
         instance.put(id1, info);
         instance.put(id2, info);
         assertEquals(2, instance.size());
@@ -82,7 +82,7 @@ public class InfoCacheTest extends BaseTest {
         assertEquals(0, instance.size());
 
         final Identifier identifier = new Identifier("cats");
-        final Info info = new Info(500, 300);
+        final Info info = new Info();
         instance.put(identifier, info);
         assertEquals(1, instance.size());
     }
@@ -94,7 +94,7 @@ public class InfoCacheTest extends BaseTest {
         assertEquals(0, instance.size());
 
         final Identifier identifier = new Identifier("cats");
-        final Info info = new Info(500, 300);
+        final Info info = new Info();
         instance.put(identifier, info);
         assertEquals(1, instance.size());
     }

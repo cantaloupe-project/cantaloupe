@@ -71,7 +71,10 @@ public class Java2dProcessorTest extends ImageIOProcessorTest {
     public void testProcessWithAnimatedGIF() throws Exception {
         Path image = TestUtil.getImage("gif-animated-looping.gif");
         OperationList ops = new OperationList(new Identifier("cats"), Format.GIF);
-        Info info = new Info(136, 200, Format.GIF);
+        Info info = Info.builder()
+                .withSize(136, 200)
+                .withFormat(Format.GIF)
+                .build();
 
         instance.setSourceFile(image);
         instance.setSourceFormat(Format.GIF);

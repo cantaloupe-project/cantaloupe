@@ -102,7 +102,7 @@ abstract class MagickProcessorTest extends AbstractProcessorTest {
         ops.add(rotation);
         ops.add(new Encode(ops.getOutputFormat()));
 
-        Info imageInfo = new Info(64, 58);
+        Info imageInfo = Info.builder().withSize(64, 58).build();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final StreamProcessor instance = (StreamProcessor) newInstance();
         instance.setSourceFormat(Format.JPG);
@@ -150,7 +150,7 @@ abstract class MagickProcessorTest extends AbstractProcessorTest {
         ops.add(rotation);
         ops.add(new Encode(ops.getOutputFormat()));
 
-        Info imageInfo = new Info(64, 58);
+        Info imageInfo = Info.builder().withSize(64, 58).build();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final StreamProcessor instance = (StreamProcessor) newInstance();
         instance.setSourceFormat(Format.JPG);
@@ -177,7 +177,7 @@ abstract class MagickProcessorTest extends AbstractProcessorTest {
         encode.setBackgroundColor(Color.fromString("#0000FF"));
         ops.add(encode);
 
-        Info imageInfo = new Info(64, 58);
+        Info imageInfo = Info.builder().withSize(64, 58).build();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final StreamProcessor instance = (StreamProcessor) newInstance();
         instance.setSourceFormat(Format.JPG);

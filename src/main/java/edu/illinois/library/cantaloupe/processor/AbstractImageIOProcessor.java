@@ -65,6 +65,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
      */
     public Info readImageInfo() throws IOException {
         final Info info = new Info();
+        info.getImages().clear();
         info.setSourceFormat(getSourceFormat());
 
         final ImageReader reader = getReader();

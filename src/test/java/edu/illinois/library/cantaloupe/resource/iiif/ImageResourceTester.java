@@ -444,7 +444,7 @@ public class ImageResourceTester extends ImageAPIResourceTester {
 
         try {
             opList.applyNonEndpointMutations(
-                    new Info(64, 56),
+                    new Info(),
                     "",
                     new URI("http://example.org/"),
                     new HashMap<>(),

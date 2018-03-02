@@ -130,7 +130,7 @@ public class HeapCacheTest extends AbstractCacheTest {
         assertEquals(5439, instance.getByteSize());
 
         // Seed an info
-        Info info = new Info(52, 52);
+        Info info = new Info();
         instance.put(id1, info);
 
         assertEquals(5439 + info.toJSON().length(), instance.getByteSize());

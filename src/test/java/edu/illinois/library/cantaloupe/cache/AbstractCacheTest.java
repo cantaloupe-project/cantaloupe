@@ -61,7 +61,7 @@ abstract class AbstractCacheTest extends BaseTest {
         final DerivativeCache instance = newInstance();
 
         Identifier identifier = new Identifier("cats");
-        Info info = new Info(50, 40);
+        Info info = new Info();
         instance.put(identifier, info);
 
         Info actual = instance.getImageInfo(identifier);
@@ -74,7 +74,7 @@ abstract class AbstractCacheTest extends BaseTest {
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 1);
 
         Identifier identifier = new Identifier("cats");
-        Info info = new Info(50, 40);
+        Info info = new Info();
         instance.put(identifier, info);
 
         Thread.sleep(ASYNC_WAIT);
@@ -224,7 +224,7 @@ abstract class AbstractCacheTest extends BaseTest {
         DerivativeCache instance = newInstance();
         Identifier identifier = new Identifier(IMAGE);
         OperationList opList = new OperationList(identifier, Format.JPG);
-        Info info = new Info(62, 35);
+        Info info = new Info();
 
         // assert that a particular image doesn't exist
         try (InputStream is = instance.newDerivativeImageInputStream(opList)) {
@@ -267,7 +267,7 @@ abstract class AbstractCacheTest extends BaseTest {
         DerivativeCache instance = newInstance();
         Identifier identifier = new Identifier(IMAGE);
         OperationList opList = new OperationList(identifier, Format.JPG);
-        Info info = new Info(62, 35);
+        Info info = new Info();
 
         // add an image
         Path fixture = TestUtil.getImage(identifier.toString());
@@ -280,8 +280,7 @@ abstract class AbstractCacheTest extends BaseTest {
 
         // add another Info
         Identifier otherId = new Identifier("cats");
-        Info otherInfo = new Info(64, 56, Format.GIF);
-        instance.put(otherId, otherInfo);
+        instance.put(otherId, new Info());
 
         assertNotNull(instance.getImageInfo(identifier));
         assertNotNull(instance.getImageInfo(otherId));
@@ -332,7 +331,7 @@ abstract class AbstractCacheTest extends BaseTest {
         DerivativeCache instance = newInstance();
         Identifier id1 = new Identifier(IMAGE);
         OperationList ops1 = new OperationList(id1, Format.JPG);
-        Info info1 = new Info(62, 35);
+        Info info1 = new Info();
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 2);
 
         // add an image
@@ -364,8 +363,7 @@ abstract class AbstractCacheTest extends BaseTest {
 
         // add another info
         Identifier id2 = new Identifier("cats");
-        Info info2 = new Info(64, 56, Format.GIF);
-        instance.put(id2, info2);
+        instance.put(id2, new Info());
 
         // assert that they've been added
         assertNotNull(instance.getImageInfo(id2));
@@ -386,7 +384,7 @@ abstract class AbstractCacheTest extends BaseTest {
     public void testPut() throws Exception {
         final DerivativeCache instance = newInstance();
         final Identifier identifier = new Identifier("cats");
-        final Info info = new Info(52, 42);
+        final Info info = new Info();
 
         instance.put(identifier, info);
 
@@ -403,7 +401,7 @@ abstract class AbstractCacheTest extends BaseTest {
     public void testPutConcurrently() throws Exception {
         final DerivativeCache instance = newInstance();
         final Identifier identifier = new Identifier("monkeys");
-        final Info info = new Info(52, 42);
+        final Info info = new Info();
 
         new ConcurrentReaderWriter(() -> {
             instance.put(identifier, info);
