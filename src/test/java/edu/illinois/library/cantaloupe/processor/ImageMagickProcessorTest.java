@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.overlay.ImageOverlay;
 import edu.illinois.library.cantaloupe.operation.overlay.Position;
 import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -207,6 +208,8 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
                 instance.getIMOverlayGravity(Position.BOTTOM_RIGHT));
     }
 
+    /* getInitializationException() */
+
     @Test
     public void testGetInitializationExceptionWithNoException() {
         assertNull(instance.getInitializationException());
@@ -222,6 +225,8 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
         assertNotNull(instance.getInitializationException());
     }
 
+    /* getOverlayTempFile() */
+
     @Test
     public void testGetOverlayTempFile() throws Exception {
         URI uri = TestUtil.getImage("jpg").toUri();
@@ -232,6 +237,8 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
         assertTrue(overlayFile.getAbsolutePath().contains(ImageMagickProcessor.OVERLAY_TEMP_FILE_PREFIX));
         assertTrue(overlayFile.exists());
     }
+
+    /* getWarnings() */
 
     @Test
     public void testGetWarningsWithNoWarnings() {
@@ -246,6 +253,8 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
                 ImageMagickProcessor.IMVersion.VERSION_PRE_7);
         assertEquals(1, instance.getWarnings().size());
     }
+
+    /* process() */
 
     @Override
     @Test
@@ -303,6 +312,54 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
     public void testProcessWithAllSupportedOutputFormats() {
         // TODO: The parent fails on a lot of fixtures.
     }
+
+    /* readImageInfo() */
+
+    @Test
+    public void testReadImageInfoOnAllFixtures() throws Exception {
+        final Processor proc = newInstance();
+
+        for (Format format : Format.values()) {
+            try {
+                // The processor will throw an exception if it doesn't support
+                // this format, which is fine. No processor supports all
+                // formats.
+                proc.setSourceFormat(format);
+
+                for (Path fixture : TestUtil.getImageFixtures(format)) {
+                    // TODO: address this
+                    if (fixture.getFileName().toString().contains("pdf")) {
+                        continue;
+                    }
+
+                    StreamProcessor sproc = (StreamProcessor) proc;
+                    StreamSource streamSource =
+                            new PathStreamSource(fixture);
+                    sproc.setStreamSource(streamSource);
+
+                    try {
+                        // We don't know the dimensions of the source image and
+                        // we can't get them because that would require using
+                        // the method we are now testing, so the best we can do
+                        // is to assert that they are nonzero.
+                        final Info actualInfo = proc.readImageInfo();
+                        assertEquals(format, actualInfo.getSourceFormat());
+                        assertTrue(actualInfo.getSize().getWidth() > 0);
+                        assertTrue(actualInfo.getSize().getHeight() > 0);
+
+                        assertEquals(-1, actualInfo.getNumResolutions());
+                    } catch (Exception e) {
+                        System.err.println(format + " : " + fixture);
+                        throw e;
+                    }
+                }
+            } catch (UnsupportedSourceFormatException e) {
+                // OK, continue
+            }
+        }
+    }
+
+    /* validate() */
 
     @Test
     public void testValidate() throws Exception {

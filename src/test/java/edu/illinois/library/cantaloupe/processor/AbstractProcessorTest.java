@@ -667,6 +667,22 @@ abstract class AbstractProcessorTest extends BaseTest {
                         assertEquals(format, actualInfo.getSourceFormat());
                         assertTrue(actualInfo.getSize().getWidth() > 0);
                         assertTrue(actualInfo.getSize().getHeight() > 0);
+
+                        // Parse the resolution count from the filename, or
+                        // else assert 1.
+                        int expectedNumResolutions = 1;
+                        if (fixture.getFileName().toString().equals("jp2")) {
+                            expectedNumResolutions = 5;
+                        } else {
+                            Pattern pattern = Pattern.compile("\\dres");
+                            Matcher matcher = pattern.matcher(fixture.getFileName().toString());
+                            if (matcher.find()) {
+                                expectedNumResolutions =
+                                        Integer.parseInt(matcher.group(0).substring(0, 1));
+                            }
+                        }
+                        assertEquals(expectedNumResolutions,
+                                actualInfo.getNumResolutions());
                     } catch (Exception e) {
                         System.err.println(format + " : " + fixture);
                         throw e;

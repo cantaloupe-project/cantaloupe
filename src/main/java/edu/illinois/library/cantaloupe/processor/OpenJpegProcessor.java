@@ -15,7 +15,6 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
-import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import org.apache.commons.io.IOUtils;
@@ -99,14 +98,13 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
             LoggerFactory.getLogger(OpenJpegProcessor.class);
 
     /**
-     * Ideally we would use the DWT level count from the source image, but
-     * currently we lack the tools for obtaining that information, so we will
-     * assume a level count of 5, which is the default used by most JP2
-     * encoders. Setting this to a value higher than that could cause decoding
-     * errors, and setting it to a value lower than that could have a
-     * performance cost.
+     * Number of decomposition levels assumed to be contained in the image when
+     * that information cannot be obtained for some reason. 5 is the default
+     * used by most JP2 encoders. Setting this to a value higher than that could
+     * cause decoding errors, and setting it to lower could have a performance
+     * cost.
      */
-    private static final short MAX_REDUCTION_FACTOR = 5;
+    private static final short FALLBACK_NUM_DWT_LEVELS = 5;
 
     /**
      * Used only in Windows.
@@ -120,6 +118,11 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
     private static boolean checkedForQuietMode = false;
 
     /**
+     * Set by {@link #isQuietModeSupported()}.
+     */
+    private static boolean isQuietModeSupported = true;
+
+    /**
      * Set by {@link #initialize()}.
      */
     private static final AtomicBoolean initializationAttempted =
@@ -129,11 +132,6 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
      * Set by {@link #initialize()}.
      */
     private static InitializationException initializationException;
-
-    /**
-     * Set by {@link #isQuietModeSupported()}.
-     */
-    private static boolean isQuietModeSupported = true;
 
     /**
      * @see <a href="https://github.com/medusa-project/cantaloupe/issues/190">
@@ -355,10 +353,8 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
     }
 
     /**
-     * <p>Reads image information using ImageIO.</p>
-     *
-     * <p>This override disposes the reader since it won't be used for anything
-     * else.</p>
+     * Override that disposes the reader since it won't be needed for anything
+     * else.
      */
     @Override
     public Info readImageInfo() throws IOException {
@@ -415,7 +411,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
     }
 
     private void processInWindows(final OperationList opList,
-                                  final Info imageInfo,
+                                  final Info info,
                                   final ByteArrayOutputStream errorOutput,
                                   final OutputStream outputStream)
             throws IOException, InterruptedException {
@@ -429,8 +425,8 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         final boolean normalize = (opList.getFirst(Normalize.class) != null);
 
         final ProcessBuilder pb = getProcessBuilder(
-                opList, imageInfo.getSize(), reductionFactor, normalize,
-                intermediateFile);
+                opList, info.getSize(), info.getNumResolutions(),
+                reductionFactor, normalize, intermediateFile);
         LOGGER.info("Invoking {}", String.join(" ", pb.command()));
         final Process process = pb.start();
 
@@ -461,7 +457,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                 if (!normalize) {
                     hints.add(ReaderHint.ALREADY_CROPPED);
                 }
-                postProcess(image, hints, opList, imageInfo,
+                postProcess(image, hints, opList, info,
                         reductionFactor, outputStream);
             } finally {
                 reader.dispose();
@@ -476,7 +472,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
     }
 
     private void processInUnix(final OperationList opList,
-                               final Info imageInfo,
+                               final Info info,
                                final ByteArrayOutputStream errorOutput,
                                final OutputStream outputStream)
             throws IOException, InterruptedException {
@@ -487,8 +483,8 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
         final Path stdoutSymlink = createStdoutSymlink();
         final ProcessBuilder pb = getProcessBuilder(
-                opList, imageInfo.getSize(), reductionFactor, normalize,
-                stdoutSymlink);
+                opList, info.getSize(), info.getNumResolutions(),
+                reductionFactor, normalize, stdoutSymlink);
         LOGGER.info("Invoking {}", String.join(" ", pb.command()));
         final Process process = pb.start();
 
@@ -502,12 +498,11 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                     processInputStream, Format.BMP);
             try {
                 final BufferedImage image = reader.read();
-                Set<ReaderHint> hints =
-                        EnumSet.noneOf(ReaderHint.class);
+                final Set<ReaderHint> hints = EnumSet.noneOf(ReaderHint.class);
                 if (!normalize) {
                     hints.add(ReaderHint.ALREADY_CROPPED);
                 }
-                postProcess(image, hints, opList, imageInfo,
+                postProcess(image, hints, opList, info,
                         reductionFactor, outputStream);
 
                 final int code = process.waitFor();
@@ -546,6 +541,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
      */
     private ProcessBuilder getProcessBuilder(final OperationList opList,
                                              final Dimension imageSize,
+                                             final int numResolutions,
                                              final ReductionFactor reduction,
                                              final boolean ignoreCrop,
                                              final Path outputFile) {
@@ -579,8 +575,13 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                 final Scale scale = (Scale) op;
                 final Dimension tileSize = getCroppedSize(opList, imageSize);
                 if (!ignoreCrop) {
+                    int numDWTLevels = numResolutions - 1;
+                    if (numDWTLevels < 0) {
+                        numDWTLevels = FALLBACK_NUM_DWT_LEVELS;
+                    }
                     reduction.factor = scale.getReductionFactor(
-                            tileSize, MAX_REDUCTION_FACTOR).factor;
+                            tileSize, numDWTLevels).factor;
+
                     if (reduction.factor > 0) {
                         command.add("-r");
                         command.add(reduction.factor + "");

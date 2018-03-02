@@ -27,6 +27,7 @@ public class InfoTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
         instance = new Info(100, 80, Format.JPG);
+        instance.setNumResolutions(3);
         instance.getImages().get(0).setOrientation(Orientation.ROTATE_270);
     }
 
@@ -201,6 +202,13 @@ public class InfoTest extends BaseTest {
     public void testGetImages() {
         assertEquals(1, instance.getImages().size());
         assertEquals(0, new Info().getImages().size());
+    }
+
+    /* getNumResolutions() */
+
+    @Test
+    public void testGetNumResolutions() {
+        assertEquals(3, instance.getNumResolutions());
     }
 
     /* getOrientation() */

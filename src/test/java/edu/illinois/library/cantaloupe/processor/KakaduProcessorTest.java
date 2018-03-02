@@ -69,6 +69,7 @@ public class KakaduProcessorTest extends AbstractProcessorTest {
     @Test
     public void testReadImageInfoTileAwareness() throws Exception {
         Info expectedInfo = new Info(64, 56, 64, 56, Format.JP2);
+        expectedInfo.setNumResolutions(5);
 
         instance.setSourceFile(TestUtil.getImage("jp2"));
         assertEquals(expectedInfo, instance.readImageInfo());
@@ -76,6 +77,7 @@ public class KakaduProcessorTest extends AbstractProcessorTest {
         // untiled image
         instance.setSourceFile(TestUtil.getImage("jp2-5res-rgb-64x56x8-monotiled-lossy.jp2"));
         expectedInfo = new Info(64, 56, 64, 56, Format.JP2);
+        expectedInfo.setNumResolutions(5);
         assertEquals(expectedInfo, instance.readImageInfo());
 
         // tiled image
@@ -83,6 +85,7 @@ public class KakaduProcessorTest extends AbstractProcessorTest {
         expectedInfo = new Info(64, 56, Format.JP2);
         expectedInfo.getImages().get(0).tileWidth = 32;
         expectedInfo.getImages().get(0).tileHeight = 28;
+        expectedInfo.setNumResolutions(5);
         assertEquals(expectedInfo, instance.readImageInfo());
     }
 

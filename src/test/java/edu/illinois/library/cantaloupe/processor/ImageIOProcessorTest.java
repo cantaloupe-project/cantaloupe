@@ -38,6 +38,7 @@ abstract class ImageIOProcessorTest extends AbstractProcessorTest {
         Info expectedInfo = new Info(64, 56, Format.TIF);
         expectedInfo.getImages().get(0).tileWidth = 16;
         expectedInfo.getImages().get(0).tileHeight = 16;
+        expectedInfo.setNumResolutions(1);
 
         final Path fixture = TestUtil.
                 getImage("tif-rgb-1res-64x56x8-tiled-uncompressed.tif");

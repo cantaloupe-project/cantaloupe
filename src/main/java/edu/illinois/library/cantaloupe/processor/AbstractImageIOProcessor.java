@@ -7,9 +7,10 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
-import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -19,10 +20,13 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Abstract class that can be extended by processors that rely on the ImageIO
- * framework to read images.
+ * Abstract class that can be extended by processors that read images using
+ * ImageIO.
  */
 abstract class AbstractImageIOProcessor extends AbstractProcessor {
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(AbstractImageIOProcessor.class);
 
     private static final Map<Format,Set<Format>> FORMATS =
             availableOutputFormats();
@@ -36,8 +40,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
     private ImageReader reader;
 
     /**
-     * @return Map of available output formats for all known source formats,
-     * based on information reported by ImageIO.
+     * @return Map of available output formats for all known source formats.
      */
     private static HashMap<Format, Set<Format>> availableOutputFormats() {
         final HashMap<Format,Set<Format>> map = new HashMap<>();
@@ -55,12 +58,19 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
         return formats;
     }
 
+    /**
+     * N.B.: Subclasses will need to override if they expect to {@link
+     * Info#setNumResolutions(int) set the number of resolutions} to a value
+     * other than {@literal 1}.
+     */
     public Info readImageInfo() throws IOException {
         final Info info = new Info();
         info.setSourceFormat(getSourceFormat());
 
         final ImageReader reader = getReader();
         final Orientation orientation = getEffectiveOrientation();
+        info.setNumResolutions(reader.getNumResolutions());
+
         for (int i = 0, numImages = reader.getNumImages(); i < numImages; i++) {
             Info.Image image = new Info.Image();
             image.setOrientation(orientation);
@@ -75,6 +85,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
             }
             info.getImages().add(image);
         }
+        LOGGER.trace("readImageInfo(): {}", info.toJSON());
         return info;
     }
 

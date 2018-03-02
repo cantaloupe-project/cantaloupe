@@ -217,8 +217,10 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
             }
             imageSize = new Dimension(widthPx, heightPx);
         }
-        return new Info(imageSize.width, imageSize.height,
+        Info info = new Info(imageSize.width, imageSize.height,
                 imageSize.width, imageSize.height, getSourceFormat());
+        info.setNumResolutions(1);
+        return info;
     }
 
     @Override

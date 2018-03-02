@@ -91,14 +91,13 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
             LoggerFactory.getLogger(KakaduProcessor.class);
 
     /**
-     * Ideally we would use the DWT level count from the source image, but
-     * currently we lack the tools for obtaining that information, so we will
-     * assume a level count of 5, which is the default used by most JP2
-     * encoders. Setting this to a value higher than that could cause decoding
-     * errors, and setting it to a value lower than that could have
-     * a performance cost.
+     * Number of decomposition levels assumed to be contained in the image when
+     * that information cannot be obtained for some reason. 5 is the default
+     * used by most JP2 encoders. Setting this to a value higher than that could
+     * cause decoding errors, and setting it to lower could have a performance
+     * cost.
      */
-    private static final short MAX_REDUCTION_FACTOR = 5;
+    private static final short FALLBACK_NUM_DWT_LEVELS = 5;
 
     /**
      * Used only in Windows.
@@ -334,7 +333,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     }
 
     private void processInWindows(final OperationList opList,
-                                  final Info imageInfo,
+                                  final Info info,
                                   final ByteArrayOutputStream errorOutput,
                                   final OutputStream outputStream)
             throws IOException, InterruptedException {
@@ -349,8 +348,8 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
         final boolean normalize = (opList.getFirst(Normalize.class) != null);
 
         final ProcessBuilder pb = getProcessBuilder(
-                opList, imageInfo.getSize(), reductionFactor, normalize,
-                intermediateFile);
+                opList, info.getSize(), info.getNumResolutions(),
+                reductionFactor, normalize, intermediateFile);
         LOGGER.info("Invoking {}", String.join(" ", pb.command()));
         final Process process = pb.start();
 
@@ -381,7 +380,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
                 if (!normalize) {
                     hints.add(ReaderHint.ALREADY_CROPPED);
                 }
-                postProcess(image, hints, opList, imageInfo,
+                postProcess(image, hints, opList, info,
                         reductionFactor, outputStream);
             } finally {
                 reader.dispose();
@@ -396,7 +395,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     }
 
     private void processInUnix(final OperationList opList,
-                               final Info imageInfo,
+                               final Info info,
                                final ByteArrayOutputStream errorOutput,
                                final OutputStream outputStream)
             throws IOException, InterruptedException {
@@ -406,8 +405,8 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
         final boolean normalize = (opList.getFirst(Normalize.class) != null);
 
         final ProcessBuilder pb = getProcessBuilder(
-                opList, imageInfo.getSize(), reductionFactor, normalize,
-                stdoutSymlink);
+                opList, info.getSize(), info.getNumResolutions(),
+                reductionFactor, normalize, stdoutSymlink);
         LOGGER.info("Invoking {}", String.join(" ", pb.command()));
         final Process process = pb.start();
 
@@ -426,7 +425,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
                 if (!normalize) {
                     hints.add(ReaderHint.ALREADY_CROPPED);
                 }
-                postProcess(image, hints, opList, imageInfo,
+                postProcess(image, hints, opList, info,
                         reductionFactor, outputStream);
 
                 final int code = process.waitFor();
@@ -458,6 +457,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
      */
     private ProcessBuilder getProcessBuilder(final OperationList opList,
                                              final Dimension imageSize,
+                                             final int numResolutions,
                                              final ReductionFactor reduction,
                                              final boolean ignoreCrop,
                                              final Path outputFile) {
@@ -527,8 +527,13 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
                 final Scale scale = (Scale) op;
                 final Dimension tileSize = getCroppedSize(opList, imageSize);
                 if (!ignoreCrop) {
+                    int numDWTLevels = numResolutions - 1;
+                    if (numDWTLevels < 0) {
+                        numDWTLevels = FALLBACK_NUM_DWT_LEVELS;
+                    }
                     reduction.factor = scale.getReductionFactor(
-                            tileSize, MAX_REDUCTION_FACTOR).factor;
+                            tileSize, numDWTLevels).factor;
+
                     if (reduction.factor > 0) {
                         command.add("-reduce");
                         command.add(reduction.factor + "");
