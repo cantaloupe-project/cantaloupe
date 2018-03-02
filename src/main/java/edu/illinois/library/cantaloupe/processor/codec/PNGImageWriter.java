@@ -91,6 +91,11 @@ final class PNGImageWriter extends AbstractIIOImageWriter
         return LOGGER;
     }
 
+    @Override
+    String[] preferredIIOImplementations() {
+        return new String[] { "com.sun.imageio.plugins.png.PNGImageWriter" };
+    }
+
     /**
      * Writes the given image to the given output stream.
      *

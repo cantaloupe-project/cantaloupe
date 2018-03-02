@@ -127,6 +127,11 @@ final class JPEGImageWriter extends AbstractIIOImageWriter
         return image;
     }
 
+    @Override
+    String[] preferredIIOImplementations() {
+        return new String[] { "com.sun.imageio.plugins.jpeg.JPEGImageWriter" };
+    }
+
     /**
      * Writes the given image to the given output stream.
      *

@@ -133,7 +133,7 @@ final class GIFImageWriter extends AbstractIIOImageWriter
 
     @Override
     String[] preferredIIOImplementations() {
-        return new String[] { "com.sun.codec.plugins.gif.GIFImageWriter" };
+        return new String[] { "com.sun.imageio.plugins.gif.GIFImageWriter" };
     }
 
     @Override

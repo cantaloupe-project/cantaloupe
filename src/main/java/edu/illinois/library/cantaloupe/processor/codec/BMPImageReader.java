@@ -38,7 +38,7 @@ final class BMPImageReader extends AbstractIIOImageReader
 
     @Override
     String[] preferredIIOImplementations() {
-        return new String[] { "com.sun.codec.plugins.bmp.BMPImageReader" };
+        return new String[] { "com.sun.imageio.plugins.bmp.BMPImageReader" };
     }
 
 }

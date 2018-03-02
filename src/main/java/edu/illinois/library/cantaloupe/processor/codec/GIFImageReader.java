@@ -38,7 +38,7 @@ final class GIFImageReader extends AbstractIIOImageReader
 
     @Override
     String[] preferredIIOImplementations() {
-        return new String[] { "com.sun.codec.plugins.gif.GIFImageReader" };
+        return new String[] { "com.sun.imageio.plugins.gif.GIFImageReader" };
     }
 
     @Override

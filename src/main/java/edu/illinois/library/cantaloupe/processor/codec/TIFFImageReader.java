@@ -31,16 +31,18 @@ final class TIFFImageReader extends AbstractIIOImageReader
     }
 
     static String[] getPreferredIIOImplementations() {
-        // N.B.: The GeoSolutions TIFF reader supports BigTIFF among other
+        // N.B. 1: When updating this, update
+        // TIFFImageWriter.preferredIIOImplementations() as well.
+        //
+        // N.B. 2: The GeoSolutions TIFF reader supports BigTIFF among other
         // enhancements. The Sun reader will do as a fallback, although there
         // shouldn't be any need to fall back.
         String[] impls = new String[2];
         impls[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.class.getName();
 
-        // In Java 9, the Sun TIFF reader has moved out of the JAI ImageIO
-        // Tools and into the JDK.
+        // The Sun TIFF reader has moved in Java 9.
         if (SystemUtils.getJavaMajorVersion() >= 9) {
-            impls[1] = "com.sun.codec.plugins.tiff.TIFFImageReader";
+            impls[1] = "com.sun.imageio.plugins.tiff.TIFFImageReader";
         } else {
             impls[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageReader";
         }
