@@ -2,75 +2,21 @@ package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public final class ImageReaderFactory {
-
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(ImageReaderFactory.class);
 
     private static final Set<Format> SUPPORTED_FORMATS =
             Collections.unmodifiableSet(EnumSet.of(Format.BMP,
                     Format.GIF, Format.JPG, Format.PNG, Format.TIF));
-
-    static {
-        try {
-            // The application will handle caching itself, if so configured. The
-            // ImageIO cache would be redundant.
-            ImageIO.setUseCache(false);
-
-            // ImageIO will automatically scan for plugins once, the first time
-            // it's used. If our app is initialized after another ImageIO-using
-            // app in the same JVM, any additional plugins bundled within our
-            // app won't be picked up unless we scan again.
-            LOGGER.info("Scanning for ImageIO plugins...");
-            ImageIO.scanForPlugins();
-        } catch (NumberFormatException e) {
-            // This is an ImageIO bug in JDK 9.
-            if (!e.getMessage().equals("For input string: \"\"")) {
-                throw e;
-            }
-        }
-
-        logImageIOReaders();
-    }
-
-    private static void logImageIOReaders() {
-        final List<Format> imageFormats = Arrays.stream(Format.values()).
-                filter(f -> Format.Type.IMAGE.equals(f.getType())).
-                collect(Collectors.toList());
-
-        for (Format format : imageFormats) {
-            Iterator<javax.imageio.ImageReader> it =
-                    ImageIO.getImageReadersByMIMEType(format.getPreferredMediaType().toString());
-            List<String> readerClasses = new ArrayList<>();
-
-            while (it.hasNext()) {
-                javax.imageio.ImageReader reader = it.next();
-                readerClasses.add(reader.getClass().getName());
-            }
-
-            LOGGER.info("ImageIO readers for {}.{}: {}",
-                    Format.class.getSimpleName(),
-                    format.getName(),
-                    readerClasses.stream().collect(Collectors.joining(", ")));
-        }
-    }
 
     /**
      * @return Map of available output formats for all known source formats,
