@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.Operation;
-import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFField;
@@ -37,15 +36,6 @@ final class TIFFImageWriter extends AbstractIIOImageWriter
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(TIFFImageWriter.class);
-
-    TIFFImageWriter(OperationList opList) {
-        super(opList);
-    }
-
-    TIFFImageWriter(OperationList opList,
-                    Metadata sourceMetadata) {
-        super(opList, sourceMetadata);
-    }
 
     /**
      * No-op.

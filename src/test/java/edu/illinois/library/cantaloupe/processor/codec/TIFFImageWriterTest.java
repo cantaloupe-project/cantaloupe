@@ -235,7 +235,10 @@ public class TIFFImageWriterTest extends BaseTest {
                 getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
             opList.add(new MetadataCopy());
         }
-        return new TIFFImageWriter(opList, metadata);
+        TIFFImageWriter writer = new TIFFImageWriter();
+        writer.setOperationList(opList);
+        writer.setMetadata(metadata);
+        return writer;
     }
 
 }

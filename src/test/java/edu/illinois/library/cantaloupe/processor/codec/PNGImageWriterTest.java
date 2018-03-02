@@ -202,7 +202,10 @@ public class PNGImageWriterTest extends BaseTest {
                 getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
             opList.add(new MetadataCopy());
         }
-        return new PNGImageWriter(opList, metadata);
+        PNGImageWriter writer = new PNGImageWriter();
+        writer.setOperationList(opList);
+        writer.setMetadata(metadata);
+        return writer;
     }
 
 }

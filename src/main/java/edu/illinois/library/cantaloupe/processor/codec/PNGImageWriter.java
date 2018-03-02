@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
-import edu.illinois.library.cantaloupe.operation.OperationList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
@@ -31,15 +30,6 @@ final class PNGImageWriter extends AbstractIIOImageWriter
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(PNGImageWriter.class);
-
-    PNGImageWriter(OperationList opList) {
-        super(opList);
-    }
-
-    PNGImageWriter(OperationList opList,
-                   Metadata sourceMetadata) {
-        super(opList, sourceMetadata);
-    }
 
     /**
      * PNG doesn't (formally) support EXIF or IPTC, though it does support

@@ -24,30 +24,6 @@ abstract class AbstractIIOImageWriter {
     Metadata sourceMetadata;
 
     /**
-     * @param opList Some operations can't be handled by processors and need
-     *               to be handled by a writer instead. Any writer operations
-     *               present in this list will be applied automatically.
-     */
-    AbstractIIOImageWriter(final OperationList opList) {
-        this.opList = opList;
-        createWriter();
-    }
-
-    /**
-     * @param opList         Some operations can't be handled by processors and
-     *                       need to be handled by a writer instead. Any writer
-     *                       operations present in this list will be applied
-     *                       automatically.
-     * @param sourceMetadata Metadata for the image being written as returned
-     *                       from {@link ImageReader}.
-     */
-    AbstractIIOImageWriter(final OperationList opList,
-                           final Metadata sourceMetadata) {
-        this(opList);
-        this.sourceMetadata = sourceMetadata;
-    }
-
-    /**
      * <p>Embeds metadata from {@link #sourceMetadata} into the given tree.</p>
      *
      * <p>Writers for formats that don't support metadata may simply do
@@ -80,9 +56,8 @@ abstract class AbstractIIOImageWriter {
     /**
      * @param writeParam Write parameters on which to base the metadata.
      * @param image      Image to apply the metadata to.
-     * @return Image metadata with added metadata corresponding to any
-     *         writer-specific operations from
-     *         {@link #AbstractIIOImageWriter(OperationList, Metadata)} applied.
+     * @return           Image metadata with added metadata corresponding to
+     *                   any writer-specific operations applied.
      */
     IIOMetadata getMetadata(final ImageWriteParam writeParam,
                             final RenderedImage image) throws IOException {
@@ -147,6 +122,15 @@ abstract class AbstractIIOImageWriter {
      */
     String[] preferredIIOImplementations() {
         return new String[] {};
+    }
+
+    public void setMetadata(Metadata sourceMetadata) {
+        this.sourceMetadata = sourceMetadata;
+    }
+
+    public void setOperationList(OperationList opList) {
+        this.opList = opList;
+        createWriter();
     }
 
     /**

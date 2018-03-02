@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
-import edu.illinois.library.cantaloupe.operation.OperationList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
@@ -31,15 +30,7 @@ final class GIFImageWriter extends AbstractIIOImageWriter
         implements ImageWriter {
 
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(BMPImageReader.class);
-
-    GIFImageWriter(OperationList opList) {
-        super(opList);
-    }
-
-    GIFImageWriter(OperationList opList, Metadata sourceMetadata) {
-        super(opList, sourceMetadata);
-    }
+            LoggerFactory.getLogger(GIFImageWriter.class);
 
     @Override
     protected void addMetadata(final IIOMetadataNode baseTree) {

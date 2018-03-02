@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Encode;
-import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Java2DUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,15 +32,6 @@ final class JPEGImageWriter extends AbstractIIOImageWriter
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(JPEGImageWriter.class);
-
-    JPEGImageWriter(OperationList opList) {
-        super(opList);
-    }
-
-    JPEGImageWriter(OperationList opList,
-                    Metadata sourceMetadata) {
-        super(opList, sourceMetadata);
-    }
 
     /**
      * @param baseTree Tree to embed the metadata into.

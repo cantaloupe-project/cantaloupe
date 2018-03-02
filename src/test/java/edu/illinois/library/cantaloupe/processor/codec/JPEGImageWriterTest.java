@@ -298,7 +298,10 @@ public class JPEGImageWriterTest extends BaseTest {
                 getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
             opList.add(new MetadataCopy());
         }
-        return new JPEGImageWriter(opList, metadata);
+        JPEGImageWriter writer = new JPEGImageWriter();
+        writer.setOperationList(opList);
+        writer.setMetadata(metadata);
+        return writer;
     }
 
 }

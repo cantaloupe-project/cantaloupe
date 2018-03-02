@@ -187,7 +187,10 @@ public class GIFImageWriterTest extends BaseTest {
                 getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
             opList.add(new MetadataCopy());
         }
-        return new GIFImageWriter(opList, metadata);
+        GIFImageWriter writer = new GIFImageWriter();
+        writer.setOperationList(opList);
+        writer.setMetadata(metadata);
+        return writer;
     }
 
 }

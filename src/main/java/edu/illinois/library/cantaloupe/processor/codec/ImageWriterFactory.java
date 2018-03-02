@@ -58,35 +58,32 @@ public final class ImageWriterFactory {
     }
 
     public ImageWriter newImageWriter(OperationList opList) {
-        switch (opList.getOutputFormat()) {
-            case GIF:
-                return new GIFImageWriter(opList);
-            case JPG:
-                return new JPEGImageWriter(opList);
-            case PNG:
-                return new PNGImageWriter(opList);
-            case TIF:
-                return new TIFFImageWriter(opList);
-            default:
-                throw new IllegalArgumentException(
-                        "Unsupported output format: " + opList.getOutputFormat());
-        }
+        ImageWriter writer = newImageWriter(opList.getOutputFormat());
+        writer.setOperationList(opList);
+        return writer;
     }
 
     public ImageWriter newImageWriter(OperationList opList,
                                       Metadata sourceMetadata) {
-        switch (opList.getOutputFormat()) {
+        ImageWriter writer = newImageWriter(opList.getOutputFormat());
+        writer.setOperationList(opList);
+        writer.setMetadata(sourceMetadata);
+        return writer;
+    }
+
+    private ImageWriter newImageWriter(Format format) {
+        switch (format) {
             case GIF:
-                return new GIFImageWriter(opList, sourceMetadata);
+                return new GIFImageWriter();
             case JPG:
-                return new JPEGImageWriter(opList, sourceMetadata);
+                return new JPEGImageWriter();
             case PNG:
-                return new PNGImageWriter(opList, sourceMetadata);
+                return new PNGImageWriter();
             case TIF:
-                return new TIFFImageWriter(opList, sourceMetadata);
+                return new TIFFImageWriter();
             default:
                 throw new IllegalArgumentException(
-                        "Unsupported output format: " + opList.getOutputFormat());
+                        "Unsupported output format: " + format);
         }
     }
 
