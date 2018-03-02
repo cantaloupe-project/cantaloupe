@@ -77,18 +77,17 @@ final class GIFImageWriter extends AbstractImageWriter {
         return LOGGER;
     }
 
+    @Override
+    String[] preferredIIOImplementations() {
+        return new String[] { "com.sun.imageio.plugins.gif.GIFImageWriter" };
+    }
+
     /**
      * Writes the given image to the given output stream.
      *
      * @param image Image to write
      * @param outputStream Stream to write the image to
      */
-    @Override
-    String[] preferredIIOImplementations() {
-        // We don't want com.sun.media.imageioimpl.plugins.gif.GIFImageWriter!
-        return new String[] { "com.sun.imageio.plugins.gif.GIFImageWriter" };
-    }
-
     @Override
     void write(RenderedImage image,
                OutputStream outputStream) throws IOException {

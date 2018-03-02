@@ -30,8 +30,12 @@ final class TIFFImageReader extends AbstractImageReader {
             getLogger(TIFFImageReader.class);
 
     static String[] getPreferredIIOImplementations() {
-        // N.B.: The GeoSolutions TIFF reader supports BigTIFF among other
-        // enhancements. The Sun reader will do as a fallback.
+        // N.B. 1: When updating this, update
+        // TIFFImageWriter.preferredIIOImplementations() as well.
+        //
+        // N.B. 2: The GeoSolutions TIFF reader supports BigTIFF among other
+        // enhancements. The Sun reader will do as a fallback, although there
+        // shouldn't be any need to fall back.
         String[] impls = new String[2];
         impls[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.class.getName();
 

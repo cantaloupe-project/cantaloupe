@@ -162,18 +162,22 @@ final class TIFFImageWriter extends AbstractImageWriter {
 
     @Override
     String[] preferredIIOImplementations() {
-        // TODO: prefer a writer matching the reader
-        String[] impls = new String[2];
-        impls[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageWriter.class.getName();
+        String[] readerImpls = TIFFImageReader.getPreferredIIOImplementations();
+        String[] writerImpls = new String[1];
 
-        // The Sun TIFF writer has moved in Java 9.
-        if (SystemUtils.getJavaMajorVersion() >= 9) {
-            impls[1] = "com.sun.imageio.plugins.tiff.TIFFImageWriter";
-        } else {
-            impls[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageWriter";
+        // Try to return an implementation complementing the reader.
+        switch (readerImpls[0]) {
+            case "com.sun.codec.plugins.tiff.TIFFImageReader":
+                writerImpls[0] = "com.sun.codec.plugins.tiff.TIFFImageWriter";
+                break;
+            case "com.sun.media.imageioimpl.plugins.tiff.TIFFImageReader":
+                writerImpls[0] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageWriter";
+                break;
+            default:
+                writerImpls[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageWriter.class.getName();
+                break;
         }
-
-        return impls;
+        return writerImpls;
     }
 
     /**
