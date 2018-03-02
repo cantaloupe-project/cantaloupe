@@ -74,7 +74,7 @@ public class JPEG2000MetadataReaderTest {
 
     @Test
     public void testGetNumComponentsWithValidImage() throws Exception {
-        Path file = TestUtil.getImage("jp2-rgb-64x56x8-monotiled-lossy.jp2");
+        Path file = TestUtil.getImage("jp2-5res-rgb-64x56x8-monotiled-lossy.jp2");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
             assertEquals(3, instance.getNumComponents());

@@ -15,7 +15,7 @@ public class TIFFImageReaderTest extends AbstractImageReaderTest {
     @Override
     TIFFImageReader newInstance() throws IOException {
         TIFFImageReader reader = new TIFFImageReader();
-        reader.setSource(TestUtil.getImage("tif-rgb-multires-64x56x16-tiled-uncompressed.tif"));
+        reader.setSource(TestUtil.getImage("tif-rgb-3res-64x56x16-tiled-uncompressed.tif"));
         return reader;
     }
 
@@ -29,7 +29,7 @@ public class TIFFImageReaderTest extends AbstractImageReaderTest {
     public void testGetCompressionWithUncompressedImage() throws Exception {
         instance.dispose();
         instance = new TIFFImageReader();
-        instance.setSource(TestUtil.getImage("tif-rgb-monores-64x56x16-striped-uncompressed.tif"));
+        instance.setSource(TestUtil.getImage("tif-rgb-1res-64x56x16-striped-uncompressed.tif"));
         assertEquals(Compression.UNCOMPRESSED, instance.getCompression(0));
     }
 
@@ -37,7 +37,7 @@ public class TIFFImageReaderTest extends AbstractImageReaderTest {
     public void testGetCompressionWithJPEGImage() throws Exception {
         instance.dispose();
         instance = new TIFFImageReader();
-        instance.setSource(TestUtil.getImage("tif-rgb-monores-64x56x8-striped-jpeg.tif"));
+        instance.setSource(TestUtil.getImage("tif-rgb-1res-64x56x8-striped-jpeg.tif"));
         assertEquals(Compression.JPEG, instance.getCompression(0));
     }
 
@@ -45,7 +45,7 @@ public class TIFFImageReaderTest extends AbstractImageReaderTest {
     public void testGetCompressionWithLZWImage() throws Exception {
         instance.dispose();
         instance = new TIFFImageReader();
-        instance.setSource(TestUtil.getImage("tif-rgb-monores-64x56x8-striped-lzw.tif"));
+        instance.setSource(TestUtil.getImage("tif-rgb-1res-64x56x8-striped-lzw.tif"));
         assertEquals(Compression.LZW, instance.getCompression(0));
     }
 
@@ -53,7 +53,7 @@ public class TIFFImageReaderTest extends AbstractImageReaderTest {
     public void testGetCompressionWithPackBitsImage() throws Exception {
         instance.dispose();
         instance = new TIFFImageReader();
-        instance.setSource(TestUtil.getImage("tif-rgb-monores-64x56x8-striped-packbits.tif"));
+        instance.setSource(TestUtil.getImage("tif-rgb-1res-64x56x8-striped-packbits.tif"));
         assertEquals(Compression.RLE, instance.getCompression(0));
     }
 
@@ -61,7 +61,7 @@ public class TIFFImageReaderTest extends AbstractImageReaderTest {
     public void testGetCompressionWithDeflateImage() throws Exception {
         instance.dispose();
         instance = new TIFFImageReader();
-        instance.setSource(TestUtil.getImage("tif-rgb-monores-64x56x8-striped-zip.tif"));
+        instance.setSource(TestUtil.getImage("tif-rgb-1res-64x56x8-striped-zip.tif"));
         assertEquals(Compression.DEFLATE, instance.getCompression(0));
     }
 

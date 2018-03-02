@@ -40,7 +40,7 @@ abstract class ImageIOProcessorTest extends AbstractProcessorTest {
         expectedInfo.getImages().get(0).tileHeight = 16;
 
         final Path fixture = TestUtil.
-                getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif");
+                getImage("tif-rgb-1res-64x56x8-tiled-uncompressed.tif");
 
         // test as a StreamProcessor
         StreamProcessor sproc = (StreamProcessor) newInstance();

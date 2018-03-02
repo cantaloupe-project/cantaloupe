@@ -726,8 +726,8 @@ abstract class AbstractProcessorTest extends BaseTest {
 
                     // TODO: address these
                     if (proc instanceof Java2dProcessor || proc instanceof JaiProcessor) {
-                        if (fixtureName.equals("tif-rgba-monores-64x56x8-tiled-jpeg.tif") ||
-                                fixtureName.equals("tif-rgba-monores-64x56x8-striped-jpeg.tif")) {
+                        if (fixtureName.equals("tif-rgba-1res-64x56x8-tiled-jpeg.tif") ||
+                                fixtureName.equals("tif-rgba-1res-64x56x8-striped-jpeg.tif")) {
                             continue;
                         }
                     } else if (proc instanceof GraphicsMagickProcessor) {

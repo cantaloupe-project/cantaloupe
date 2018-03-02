@@ -245,7 +245,7 @@ public class FilesystemResolverTest extends AbstractResolverTest {
         instance.setIdentifier(new Identifier("gif-rgb-64x56x8.gif"));
         assertEquals(Format.GIF, instance.getSourceFormat());
 
-        instance.setIdentifier(new Identifier("jp2-rgb-64x56x8-monotiled-lossy.jp2"));
+        instance.setIdentifier(new Identifier("jp2-5res-rgb-64x56x8-monotiled-lossy.jp2"));
         assertEquals(Format.JP2, instance.getSourceFormat());
 
         instance.setIdentifier(new Identifier("jpg-rgb-64x56x8-baseline.jpg"));
@@ -257,7 +257,7 @@ public class FilesystemResolverTest extends AbstractResolverTest {
         instance.setIdentifier(new Identifier("png-rgb-64x56x8.png"));
         assertEquals(Format.PNG, instance.getSourceFormat());
 
-        instance.setIdentifier(new Identifier("tif-rgb-monores-64x56x8-striped-jpeg.tif"));
+        instance.setIdentifier(new Identifier("tif-rgb-1res-64x56x8-striped-jpeg.tif"));
         assertEquals(Format.TIF, instance.getSourceFormat());
     }
 
