@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * <p>Contains JSON-serializable information about an image, including its
@@ -128,17 +129,10 @@ public final class Info {
                 return true;
             } else if (obj instanceof Image) {
                 final Image other = (Image) obj;
-                if (other.width == this.width && other.height == this.height) {
-                    if (this.tileWidth != null && other.tileWidth != null &&
-                            this.tileWidth.equals(other.tileWidth) &&
-                            this.tileHeight != null && other.tileHeight != null &&
-                            this.tileHeight.equals(other.tileHeight)) {
-                        return true;
-                    } else if (this.tileWidth == null && other.tileWidth == null &&
-                            this.tileHeight == null && other.tileHeight == null) {
-                        return true;
-                    }
-                }
+                return (width == other.width && height == other.height &&
+                        Objects.equals(tileWidth, other.tileWidth) &&
+                        Objects.equals(tileHeight, other.tileHeight) &&
+                        Objects.equals(orientation, other.orientation));
             }
             return super.equals(obj);
         }
