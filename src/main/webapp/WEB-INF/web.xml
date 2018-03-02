@@ -12,8 +12,12 @@
     </context-param>
 
     <listener>
-        <display-name>ApplicationInitializer</display-name>
+        <display-name>ApplicationListener</display-name>
         <listener-class>edu.illinois.library.cantaloupe.ApplicationContextListener</listener-class>
+    </listener>
+    <listener>
+        <display-name>IIOProviderContextListener</display-name>
+        <listener-class>edu.illinois.library.cantaloupe.processor.imageio.IIOProviderContextListener</listener-class>
     </listener>
 
     <servlet>
