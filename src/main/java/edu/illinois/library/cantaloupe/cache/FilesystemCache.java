@@ -536,7 +536,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             final Path cacheFile = infoFile(identifier);
             if (!isExpired(cacheFile)) {
                 LOGGER.info("getImageInfo(): hit: {}", cacheFile);
-                return Info.fromJSON(cacheFile.toFile());
+                return Info.fromJSON(cacheFile);
             } else {
                 purgeAsync(cacheFile);
             }

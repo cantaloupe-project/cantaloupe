@@ -13,10 +13,10 @@ import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.processor.Processor;
 
 import java.awt.Dimension;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -197,8 +197,8 @@ public final class Info {
     private List<Image> images = new ArrayList<>();
     private MediaType mediaType;
 
-    public static Info fromJSON(File jsonFile) throws IOException {
-        return new ObjectMapper().readValue(jsonFile, Info.class);
+    public static Info fromJSON(Path jsonFile) throws IOException {
+        return new ObjectMapper().readValue(jsonFile.toFile(), Info.class);
     }
 
     public static Info fromJSON(InputStream jsonStream) throws IOException {

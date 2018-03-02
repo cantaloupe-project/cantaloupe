@@ -32,21 +32,18 @@ public class InfoTest extends BaseTest {
 
     /************************ Info tests ****************************/
 
-    /* fromJSON(File) */
+    /* fromJSON(Path) */
 
     @Test
-    public void testFromJSONWithFile() throws Exception {
+    public void testFromJSONWithPath() throws Exception {
         Path tempFile = Files.createTempFile("test", "json");
 
         // Serialize the instance to JSON and write it to a file.
         String json = instance.toJSON();
         Files.write(tempFile, json.getBytes("UTF-8"));
 
-        // Read the file back into a string.
-        byte[] fileBytes = Files.readAllBytes(tempFile);
-        String fileString = new String(fileBytes);
-
-        assertEquals(fileString, json);
+        Info info = Info.fromJSON(tempFile);
+        assertEquals(info.toString(), instance.toString());
     }
 
     /* fromJSON(InputStream) */
