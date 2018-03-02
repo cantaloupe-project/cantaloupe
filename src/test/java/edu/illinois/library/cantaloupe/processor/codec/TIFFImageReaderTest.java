@@ -95,7 +95,7 @@ public class TIFFImageReaderTest extends AbstractImageReaderTest {
         String[] expected = new String[2];
         expected[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.class.getName();
         if (SystemUtils.getJavaMajorVersion() >= 9) {
-            expected[1] = "com.sun.codec.plugins.tiff.TIFFImageReader";
+            expected[1] = "com.sun.imageio.plugins.tiff.TIFFImageReader";
         } else {
             expected[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageReader";
         }

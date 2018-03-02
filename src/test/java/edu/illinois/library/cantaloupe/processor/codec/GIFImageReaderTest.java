@@ -27,7 +27,7 @@ public class GIFImageReaderTest extends AbstractImageReaderTest {
     public void testPreferredIIOImplementations() {
         String[] impls = ((GIFImageReader) instance).preferredIIOImplementations();
         assertEquals(1, impls.length);
-        assertEquals("com.sun.codec.plugins.gif.GIFImageReader", impls[0]);
+        assertEquals("com.sun.imageio.plugins.gif.GIFImageReader", impls[0]);
     }
 
     /* readSequence() */

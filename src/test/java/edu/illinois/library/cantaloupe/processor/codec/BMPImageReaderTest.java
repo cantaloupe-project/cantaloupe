@@ -22,7 +22,7 @@ public class BMPImageReaderTest extends AbstractImageReaderTest {
     public void testPreferredIIOImplementations() {
         String[] impls = ((BMPImageReader) instance).preferredIIOImplementations();
         assertEquals(1, impls.length);
-        assertEquals("com.sun.codec.plugins.bmp.BMPImageReader", impls[0]);
+        assertEquals("com.sun.imageio.plugins.bmp.BMPImageReader", impls[0]);
     }
 
 }
