@@ -73,6 +73,13 @@ public class TIFFImageReaderTest extends AbstractImageReaderTest {
         assertEquals(3, instance.getNumImages());
     }
 
+    /* getNumResolutions() */
+
+    @Override
+    @Test
+    public void testGetNumResolutions() throws Exception {
+        assertEquals(3, instance.getNumResolutions());
+    }
 
     /* getTileSize() */
 

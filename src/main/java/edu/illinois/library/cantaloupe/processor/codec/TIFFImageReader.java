@@ -95,6 +95,11 @@ final class TIFFImageReader extends AbstractIIOImageReader
     }
 
     @Override
+    public int getNumResolutions() throws IOException {
+        return getNumImages();
+    }
+
+    @Override
     String[] preferredIIOImplementations() {
         return getPreferredIIOImplementations();
     }

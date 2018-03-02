@@ -30,6 +30,12 @@ public class JPEG2000ImageReaderTest extends AbstractImageReaderTest {
         assertEquals(Compression.JPEG2000, instance.getCompression(0));
     }
 
+    @Test
+    @Override
+    public void testGetNumResolutions() throws Exception {
+        assertEquals(5, instance.getNumResolutions());
+    }
+
     @Override
     @Test(expected = UnsupportedOperationException.class)
     public void testRead() throws Exception {

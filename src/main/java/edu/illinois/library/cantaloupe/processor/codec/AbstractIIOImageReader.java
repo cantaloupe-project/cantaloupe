@@ -123,10 +123,6 @@ abstract class AbstractIIOImageReader {
 
     abstract Format getFormat();
 
-    public javax.imageio.ImageReader getIIOReader() {
-        return iioReader;
-    }
-
     abstract Logger getLogger();
 
     /**
@@ -140,6 +136,13 @@ abstract class AbstractIIOImageReader {
             numImages = iioReader.getNumImages(true);
         }
         return numImages;
+    }
+
+    /**
+     * @return {@literal 1}.
+     */
+    public int getNumResolutions() throws IOException {
+        return 1;
     }
 
     /**

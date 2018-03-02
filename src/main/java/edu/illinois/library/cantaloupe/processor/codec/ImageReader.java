@@ -27,28 +27,42 @@ public interface ImageReader {
 
     /**
      * @return Type of compression used in the image at the given index.
-     *
      * @throws IOException if there is an error reading the compression.
      */
     Compression getCompression(int imageIndex) throws IOException;
 
     /**
      * @return Metadata for the image at the given index.
-     *
      * @throws IOException if there is an error reading the metadata.
      */
     Metadata getMetadata(int imageIndex) throws IOException;
 
     /**
-     * @return Number of subimages contained in the image.
-     *
+     * @return Number of subimages physically available in the image container.
      * @throws IOException if there is an error reading the number of images.
      */
     int getNumImages() throws IOException;
 
     /**
-     * @return Dimensions of the image at the given index.
+     * <p>Returns the number of resolutions available in the image.</p>
      *
+     * <ul>
+     *     <li>For conventional formats, this will be {@literal 1}.</li>
+     *     <li>For {@link edu.illinois.library.cantaloupe.image.Format#TIF
+     *     pyramidal TIFF}, this will be the number of embedded images, equal
+     *     to {@link #getNumImages()}.</li>
+     *     <li>For {@link edu.illinois.library.cantaloupe.image.Format#JP2}, it
+     *     will be {@literal number of decomposition levels + 1}.</li>
+     * </ul>
+     *
+     * @return Number of resolutions available in the image.
+     * @throws IOException if there is an error reading the number of
+     *         resolutions.
+     */
+    int getNumResolutions() throws IOException;
+
+    /**
+     * @return Dimensions of the image at the given index.
      * @throws IOException if there is an error reading the size.
      */
     Dimension getSize(int imageIndex) throws IOException;
@@ -56,7 +70,6 @@ public interface ImageReader {
     /**
      * @return Size of the tiles in the image at the given index, or the full
      *         image dimensions if the image is not tiled.
-     *
      * @throws IOException if there is an error reading the size.
      */
     Dimension getTileSize(int imageIndex) throws IOException;

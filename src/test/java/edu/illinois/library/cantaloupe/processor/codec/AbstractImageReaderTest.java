@@ -61,6 +61,11 @@ abstract class AbstractImageReaderTest extends BaseTest {
     }
 
     @Test
+    public void testGetNumResolutions() throws Exception {
+        assertEquals(1, instance.getNumResolutions());
+    }
+
+    @Test
     public void testGetSize() throws Exception {
         assertEquals(FIXTURE_SIZE, instance.getSize(0));
     }

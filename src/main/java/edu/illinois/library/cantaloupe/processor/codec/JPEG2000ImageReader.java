@@ -48,6 +48,11 @@ final class JPEG2000ImageReader implements ImageReader {
     }
 
     @Override
+    public int getNumResolutions() throws IOException {
+        return wrappedReader.getNumDecompositionLevels() + 1;
+    }
+
+    @Override
     public Dimension getSize(int imageIndex) throws IOException {
         return new Dimension(wrappedReader.getWidth(),
                 wrappedReader.getHeight());
