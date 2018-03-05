@@ -5,6 +5,7 @@ import java.awt.color.ICC_Profile;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -16,11 +17,48 @@ import java.util.List;
  * <p>This class does not rely on ImageIO and has no relationship to {@link
  * JPEGMetadata}.</p>
  *
+ * @see <a href="http://dev.exiv2.org/projects/exiv2/wiki/The_Metadata_in_JPEG_files">
+ *     The Metadata in JPEG Files</a>
  * @see <a href="http://www.vip.sugovica.hu/Sardi/kepnezo/JPEG%20File%20Layout%20and%20Format.htm">
  *     JPEG File Layout and Format</a>
  * @author Alex Dolski UIUC
  */
 final class JPEGMetadataReader {
+
+    enum Marker {
+
+        /**
+         * Start-of-image, expected to be the very first marker in the stream.
+         */
+        SOI,
+
+        APP2, APP14,
+
+        /**
+         * Define Huffman Table marker; our effective "stop reading" marker.
+         */
+        DHT,
+
+        /**
+         * Marker not recognized by this reader, which may still be perfectly
+         * valid.
+         */
+        UNKNOWN;
+
+        static Marker forBytes(int byte1, int byte2) {
+            if (byte1 == 0xFF && byte2 == 0xD8) {
+                return SOI;
+            } else if (byte1 == 0xFF && byte2 == 0xE2) {
+                return APP2;
+            } else if (byte1 == 0xFF && byte2 == 0xEE) {
+                return APP14;
+            } else if (byte1 == 0xFF && byte2 == 0xC4) {
+                return DHT;
+            }
+            return UNKNOWN;
+        }
+
+    }
 
     /**
      * Represents a color transform in an Adobe APP14 marker segment.
@@ -49,7 +87,7 @@ final class JPEGMetadataReader {
     }
 
     /**
-     * Header immediately following the {@literal APP2} segment marker
+     * Header immediately following an {@literal APP2} segment marker
      * indicating that the segment contains an ICC profile.
      */
     private static final char[] ICC_SEGMENT_HEADER =
@@ -69,40 +107,7 @@ final class JPEGMetadataReader {
 
     private boolean hasAdobeSegment;
 
-    private byte[] iccProfile;
-
-    /**
-     * @return Whether the given two bytes mark the start-of-image (SOI), the
-     *         very first marker in the file.
-     */
-    private static boolean isSOIMarker(int byte1, int byte2) {
-        return (byte1 == 0xFF && byte2 == 0xD8);
-    }
-
-    /**
-     * @return Whether the given two bytes mark an {@literal APP2} segment.
-     */
-    private static boolean isAPP2Marker(int byte1, int byte2) {
-        return (byte1 == 0xFF && byte2 == 0xE2);
-    }
-
-    /**
-     * @return Whether the given two bytes mark an {@literal APP14} segment.
-     */
-    private static boolean isAPP14Marker(int byte1, int byte2) {
-        return (byte1 == 0xFF && byte2 == 0xEE);
-    }
-
-    /**
-     * The Define Quantization Table (DQT) segment is next after the application
-     * segments. Since there is no marker for end-of-segments, and there is no
-     * guarantee of segment order, this is what will be searched for instead.
-     *
-     * @return Whether the given two bytes mark the start of the DQT segment.
-     */
-    private static boolean isDQTMarker(int byte1, int byte2) {
-        return (byte1 == 0xFF && byte2 == 0xDB);
-    }
+    private final List<byte[]> iccProfileChunks = new ArrayList<>();
 
     /**
      * Merges the given list of chunks, or returns the single chunk if the
@@ -144,7 +149,7 @@ final class JPEGMetadataReader {
     }
 
     /**
-     * <p>Reads an embedded ICC profile.</p>
+     * <p>Reads an embedded ICC profile from an {@literal APP2} segment.</p>
      *
      * <p>N.B.: ICC profiles can also be extracted from {@link
      * javax.imageio.metadata.IIOMetadata} objects, but as of JDK 9, the
@@ -158,8 +163,8 @@ final class JPEGMetadataReader {
      */
     ICC_Profile getICCProfile() throws IOException {
         readImage();
-        return (iccProfile != null) ?
-                ICC_Profile.getInstance(iccProfile) : null;
+        byte[] data = mergeICCProfileChunks(iccProfileChunks);
+        return (data != null) ? ICC_Profile.getInstance(data) : null;
     }
 
     boolean hasAdobeSegment() throws IOException {
@@ -175,56 +180,50 @@ final class JPEGMetadataReader {
      * <p>Safe to call multiple times.</p>
      */
     private void readImage() throws IOException {
-        if (!isReadAttempted) {
-            if (inputStream == null) {
-                throw new IllegalStateException("Source not set");
-            } else if (!isSOIMarker(inputStream.read(), inputStream.read())) {
-                throw new IOException("Invalid SOI marker (is this a JPEG?)");
-            }
-
-            isReadAttempted = true;
-
-            final List<byte[]> iccProfileChunks = new ArrayList<>();
-
-            int previousByte = 0, b;
-            while ((b = inputStream.read()) != -1) {
-                if (isAPP2Marker(previousByte, b)) {
-                    byte[] chunkData = readICCSegment();
-                    if (chunkData != null) {
-                        iccProfileChunks.add(chunkData);
-                    }
-                } else if (isAPP14Marker(previousByte, b)) {
-                    readAdobeSegment();
-                } else if (isDQTMarker(previousByte, b)) {
-                    // Done reading.
-                    break;
-                }
-                previousByte = b;
-            }
-
-            iccProfile = mergeICCProfileChunks(iccProfileChunks);
+        if (isReadAttempted) {
+            return;
+        } else if (inputStream == null) {
+            throw new IllegalStateException("Source not set");
+        } else if (!Marker.SOI.equals(
+                Marker.forBytes(inputStream.read(), inputStream.read()))) {
+            throw new IOException("Invalid SOI marker (is this a JPEG?)");
         }
+
+        isReadAttempted = true;
+
+        while (readSegment() != -1) {
+            // keep reading
+        }
+    }
+
+    /**
+     * @return {@literal -1} when there are no more segments to read; some
+     *         other value otherwise.
+     */
+    private int readSegment() throws IOException {
+        switch (Marker.forBytes(inputStream.read(), inputStream.read())) {
+            case APP2:
+                readAPP2Segment();
+                break;
+            case APP14:
+                readAPP14Segment();
+                break;
+            case DHT:
+                return -1;
+            default:
+                skipSegment();
+                break;
+        }
+        return 0;
     }
 
     private int readSegmentLength() throws IOException {
         return 256 * inputStream.read() + inputStream.read() - 2;
     }
 
-    /**
-     * The Adobe segment appears in an {@literal APP14} segment. The segment
-     * marker is immediately followed by the string {@literal Adobe}.
-     */
-    private void readAdobeSegment() throws IOException {
-        final int segmentLength = readSegmentLength();
-        final byte[] data = new byte[segmentLength];
-
-        inputStream.read(data, 0, segmentLength);
-
-        if (data.length >= 12 && data[0] == 'A' && data[1] == 'd' &&
-                data[2] == 'o' && data[3] == 'b' && data[4] == 'e') {
-            hasAdobeSegment = true;
-            colorTransform = AdobeColorTransform.forAPP14Value(data[11] & 0xFF);
-        }
+    private void skipSegment() throws IOException {
+        int segmentLength = readSegmentLength();
+        inputStream.skipBytes(segmentLength);
     }
 
     /**
@@ -239,24 +238,33 @@ final class JPEGMetadataReader {
      *     <li>The total number of chunks (one byte)</li>
      *     <li>Profile data</li>
      * </ol>
-     *
-     * @return Segment data, or {@literal null} if none was found.
      */
-    private byte[] readICCSegment() throws IOException {
-        final int segmentLength = readSegmentLength();
-        final int headerLength = ICC_SEGMENT_HEADER.length + 2; // +2 for chunk sequence and chunk count
-        final int dataLength = segmentLength - headerLength;
+    private void readAPP2Segment() throws IOException {
+        int segmentLength = readSegmentLength();
+        byte[] data = new byte[segmentLength];
+        inputStream.read(data);
 
-        // Read the segment header which we don't care about.
-        for (int i = 0; i < headerLength; i++) {
-            inputStream.read();
+        if (data[0] == 'I' && data[1] == 'C' && data[2] == 'C') {
+            final int headerLength = ICC_SEGMENT_HEADER.length + 2; // +2 for chunk sequence and chunk count
+            data = Arrays.copyOfRange(data, headerLength, segmentLength);
+            iccProfileChunks.add(data);
         }
+    }
 
-        // Read the data.
-        final byte[] buffer = new byte[dataLength];
-        inputStream.read(buffer, 0, dataLength);
+    /**
+     * May contain an Adobe segment, in which case the segment marker is
+     * immediately followed by the string {@literal Adobe}.
+     */
+    private void readAPP14Segment() throws IOException {
+        int segmentLength = readSegmentLength();
+        byte[] data = new byte[segmentLength];
+        inputStream.read(data);
 
-        return buffer;
+        if (data.length >= 12 && data[0] == 'A' && data[1] == 'd' &&
+                data[2] == 'o' && data[3] == 'b' && data[4] == 'e') {
+            hasAdobeSegment = true;
+            colorTransform = AdobeColorTransform.forAPP14Value(data[11] & 0xFF);
+        }
     }
 
 }
