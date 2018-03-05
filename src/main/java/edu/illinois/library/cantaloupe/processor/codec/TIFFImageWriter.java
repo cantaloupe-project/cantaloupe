@@ -66,7 +66,7 @@ final class TIFFImageWriter extends AbstractIIOImageWriter
             }
 
             final TIFFField xmpField =
-                    ((TIFFMetadata) sourceMetadata).getXmpField();
+                    ((TIFFMetadata) sourceMetadata).getXMPField();
             if (xmpField != null) {
                 destDir.addTIFFField(xmpField);
             }

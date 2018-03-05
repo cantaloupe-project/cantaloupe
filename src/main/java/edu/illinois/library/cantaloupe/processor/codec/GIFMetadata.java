@@ -87,6 +87,11 @@ public class GIFMetadata extends AbstractMetadata implements Metadata {
         return null;
     }
 
+    @Override
+    Logger getLogger() {
+        return LOGGER;
+    }
+
     /**
      * Returns the loop count of multi-frame (animated) GIFs.
      *
@@ -186,23 +191,6 @@ public class GIFMetadata extends AbstractMetadata implements Metadata {
             } */
         }
         return xmp;
-    }
-
-    @Override
-    public String getXMPRDF() {
-        final byte[] xmpData = getXMP();
-        if (xmpData != null) {
-            try {
-                final String xmp = new String(xmpData, "UTF-8");
-                // Trim off the junk
-                final int start = xmp.indexOf("<rdf:RDF");
-                final int end = xmp.indexOf("</rdf:RDF");
-                return xmp.substring(start, end + 10);
-            } catch (UnsupportedEncodingException e) {
-                LOGGER.error("getXMPRDF(): {}", e.getMessage());
-            }
-        }
-        return null;
     }
 
 }

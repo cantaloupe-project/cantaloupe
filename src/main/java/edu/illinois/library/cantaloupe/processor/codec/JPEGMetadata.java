@@ -7,7 +7,6 @@ import org.w3c.dom.NodeList;
 
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
-import java.io.UnsupportedEncodingException;
 
 /**
  * @see <a href="http://docs.oracle.com/javase/7/docs/api/javax/imageio/metadata/doc-files/jpeg_metadata.html">
@@ -97,6 +96,11 @@ class JPEGMetadata extends AbstractMetadata implements Metadata {
         return iptc;
     }
 
+    @Override
+    Logger getLogger() {
+        return LOGGER;
+    }
+
     /**
      * @return Orientation from the metadata. EXIF is checked first, then XMP.
      *         If not found, {@link Orientation#ROTATE_0} will be returned.
@@ -153,23 +157,6 @@ class JPEGMetadata extends AbstractMetadata implements Metadata {
             orientation = readOrientation(xmp);
         }
         return orientation;
-    }
-
-    @Override
-    public String getXMPRDF() {
-        final byte[] xmpData = getXMP();
-        if (xmpData != null) {
-            try {
-                final String xmp = new String(xmpData, "UTF-8");
-                // Trim off the junk
-                final int start = xmp.indexOf("<rdf:RDF");
-                final int end = xmp.indexOf("</rdf:RDF");
-                return xmp.substring(start, end + 10);
-            } catch (UnsupportedEncodingException e) {
-                LOGGER.error("getXMPRDF(): {}", e.getMessage());
-            }
-        }
-        return null;
     }
 
 }

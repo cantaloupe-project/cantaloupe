@@ -9,7 +9,6 @@ import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.riot.RIOT;
 import org.apache.jena.riot.RiotException;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -20,12 +19,10 @@ import javax.imageio.stream.MemoryCacheImageInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 
 abstract class AbstractMetadata {
-
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(AbstractMetadata.class);
 
     private String formatName;
     private IIOMetadata iioMetadata;
@@ -45,6 +42,26 @@ abstract class AbstractMetadata {
 
     public IIOMetadata getIIOMetadata() {
         return iioMetadata;
+    }
+
+    abstract Logger getLogger();
+
+    abstract byte[] getXMP();
+
+    public String getXMPRDF() {
+        final byte[] xmpData = getXMP();
+        if (xmpData != null) {
+            try {
+                final String xmp = new String(xmpData, "UTF-8");
+                // Trim off the junk
+                final int start = xmp.indexOf("<rdf:RDF");
+                final int end = xmp.indexOf("</rdf:RDF");
+                return xmp.substring(start, end + 10);
+            } catch (UnsupportedEncodingException e) {
+                getLogger().error("getXMPRDF(): {}", e.getMessage());
+            }
+        }
+        return null;
     }
 
     Orientation orientationForExifValue(int value) {
@@ -87,7 +104,7 @@ abstract class AbstractMetadata {
                             return orientationForExifValue(orientationField.getAsInt(0));
                         }
                     } catch (IOException e) {
-                        LOGGER.info(e.getMessage(), e);
+                        getLogger().info(e.getMessage(), e);
                     } finally {
                         reader.dispose();
                     }
@@ -106,9 +123,10 @@ abstract class AbstractMetadata {
     Orientation readOrientation(String xmp) {
         RIOT.init();
 
-        try {
-            final Model model = ModelFactory.createDefaultModel();
-            model.read(new StringReader(xmp), null, "RDF/XML");
+        final Model model = ModelFactory.createDefaultModel();
+
+        try (StringReader reader = new StringReader(xmp)) {
+            model.read(reader, null, "RDF/XML");
 
             final NodeIterator it = model.listObjectsOfProperty(
                     model.createProperty("http://ns.adobe.com/tiff/1.0/Orientation"));
@@ -119,7 +137,7 @@ abstract class AbstractMetadata {
             }
         } catch (RiotException e) {
             // The XMP string is invalid RDF/XML. Not much we can do.
-            LOGGER.info(e.getMessage());
+            getLogger().info(e.getMessage());
         }
         return null;
     }

@@ -1,10 +1,15 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.operation.Orientation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.metadata.IIOMetadata;
 
 class NullMetadata extends AbstractMetadata implements Metadata {
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(NullMetadata.class);
 
     NullMetadata() {
         super(null, null);
@@ -32,6 +37,11 @@ class NullMetadata extends AbstractMetadata implements Metadata {
     @Override
     public Object getIPTC() {
         return null;
+    }
+
+    @Override
+    Logger getLogger() {
+        return LOGGER;
     }
 
     /**

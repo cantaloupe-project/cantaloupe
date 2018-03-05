@@ -7,7 +7,6 @@ import org.w3c.dom.NodeList;
 
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,7 +21,7 @@ class PNGMetadata extends AbstractMetadata implements Metadata {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(PNGMetadata.class);
 
-    private static final Map<String,String> recognizedTags = new HashMap<>();
+    private static final Map<String,String> RECOGNIZED_TAGS = new HashMap<>();
 
     private boolean checkedForNativeMetadata = false;
     private boolean checkedForXmp = false;
@@ -45,25 +44,25 @@ class PNGMetadata extends AbstractMetadata implements Metadata {
     static {
         // These were generally taken from
         // http://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/PNG.html#TextualData
-        recognizedTags.put("Artist", "Artist");
-        recognizedTags.put("Author", "Author");
-        recognizedTags.put("Comment", "Comment");
-        recognizedTags.put("Copyright", "Copyright");
-        recognizedTags.put("create-date", "CreateDate");
-        recognizedTags.put("Creation Time", "CreationTime");
-        recognizedTags.put("Description", "Description");
-        recognizedTags.put("Disclaimer", "Disclaimer");
-        recognizedTags.put("Document", "Document");
-        recognizedTags.put("Label", "Label");
-        recognizedTags.put("Make", "Make");
-        recognizedTags.put("Model", "Model");
-        recognizedTags.put("modify-date", "ModDate");
-        recognizedTags.put("Software", "Software");
-        recognizedTags.put("Source", "Source");
-        recognizedTags.put("TimeStamp", "TimeStamp");
-        recognizedTags.put("Title", "Title");
-        recognizedTags.put("URL", "URL");
-        recognizedTags.put("Warning", "Warning");
+        RECOGNIZED_TAGS.put("Artist", "Artist");
+        RECOGNIZED_TAGS.put("Author", "Author");
+        RECOGNIZED_TAGS.put("Comment", "Comment");
+        RECOGNIZED_TAGS.put("Copyright", "Copyright");
+        RECOGNIZED_TAGS.put("create-date", "CreateDate");
+        RECOGNIZED_TAGS.put("Creation Time", "CreationTime");
+        RECOGNIZED_TAGS.put("Description", "Description");
+        RECOGNIZED_TAGS.put("Disclaimer", "Disclaimer");
+        RECOGNIZED_TAGS.put("Document", "Document");
+        RECOGNIZED_TAGS.put("Label", "Label");
+        RECOGNIZED_TAGS.put("Make", "Make");
+        RECOGNIZED_TAGS.put("Model", "Model");
+        RECOGNIZED_TAGS.put("modify-date", "ModDate");
+        RECOGNIZED_TAGS.put("Software", "Software");
+        RECOGNIZED_TAGS.put("Source", "Source");
+        RECOGNIZED_TAGS.put("TimeStamp", "TimeStamp");
+        RECOGNIZED_TAGS.put("Title", "Title");
+        RECOGNIZED_TAGS.put("URL", "URL");
+        RECOGNIZED_TAGS.put("Warning", "Warning");
     }
 
     /**
@@ -90,6 +89,11 @@ class PNGMetadata extends AbstractMetadata implements Metadata {
         return null;
     }
 
+    @Override
+    Logger getLogger() {
+        return LOGGER;
+    }
+
     /**
      * @return Native PNG metadata.
      */
@@ -103,7 +107,7 @@ class PNGMetadata extends AbstractMetadata implements Metadata {
                 for (int j = 0; j < entries.getLength(); j++) {
                     final String keyword = ((IIOMetadataNode) entries.item(j)).
                             getAttribute("keyword");
-                    if (recognizedTags.containsKey(keyword)) {
+                    if (RECOGNIZED_TAGS.containsKey(keyword)) {
                         nativeMetadata.add((IIOMetadataNode) entries.item(j));
                     }
                 }
@@ -148,23 +152,6 @@ class PNGMetadata extends AbstractMetadata implements Metadata {
             }
         }
         return xmp;
-    }
-
-    @Override
-    public String getXMPRDF() {
-        final byte[] xmpData = getXMP();
-        if (xmpData != null) {
-            try {
-                final String xmp = new String(xmpData, "UTF-8");
-                // Trim off the junk
-                final int start = xmp.indexOf("<rdf:RDF");
-                final int end = xmp.indexOf("</rdf:RDF");
-                return xmp.substring(start, end + 10);
-            } catch (UnsupportedEncodingException e) {
-                LOGGER.error("getXMPRDF(): {}", e.getMessage());
-            }
-        }
-        return null;
     }
 
 }
