@@ -154,7 +154,7 @@ class HeapCache implements DerivativeCache {
         @Override
         public String toString() {
             return (getOperationList() != null) ?
-                    getOperationList() : getIdentifier();
+                    "op:" + getOperationList() : "id:" + getIdentifier();
         }
 
         /**
