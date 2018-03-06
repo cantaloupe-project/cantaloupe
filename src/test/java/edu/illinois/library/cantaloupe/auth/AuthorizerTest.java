@@ -33,8 +33,8 @@ public class AuthorizerTest extends BaseTest {
     public void testAuthorizeWithDelegateScriptDisabled() throws Exception {
         Configuration.getInstance().setProperty(Key.DELEGATE_SCRIPT_ENABLED, false);
 
-        OperationList opList = TestUtil.newOperationList();
-        AuthInfo info = instance.authorize(opList, new Dimension(500, 500));
+        AuthInfo info = instance.authorize(
+                new OperationList(), new Dimension(500, 500));
 
         assertTrue(info.isAuthorized());
         assertNull(info.getRedirectURI());
@@ -43,8 +43,9 @@ public class AuthorizerTest extends BaseTest {
 
     @Test
     public void testAuthorizeWithTrueReturnValue() throws Exception {
-        OperationList opList = TestUtil.newOperationList();
-        AuthInfo info = instance.authorize(opList, new Dimension(500, 500));
+        AuthInfo info = instance.authorize(
+                new OperationList(new Identifier("cats")),
+                new Dimension(500, 500));
 
         assertTrue(info.isAuthorized());
         assertNull(info.getRedirectURI());
@@ -53,8 +54,7 @@ public class AuthorizerTest extends BaseTest {
 
     @Test
     public void testAuthorizeWithFalseReturnValue() throws Exception {
-        OperationList opList = TestUtil.newOperationList();
-        opList.setIdentifier(new Identifier("forbidden.jpg"));
+        OperationList opList = new OperationList(new Identifier("forbidden.jpg"));
         AuthInfo info = instance.authorize(opList, new Dimension(500, 500));
 
         assertFalse(info.isAuthorized());
@@ -64,8 +64,7 @@ public class AuthorizerTest extends BaseTest {
 
     @Test
     public void testAuthorizeWithHashReturnValue() throws Exception {
-        OperationList opList = TestUtil.newOperationList();
-        opList.setIdentifier(new Identifier("redirect.jpg"));
+        OperationList opList = new OperationList(new Identifier("redirect.jpg"));
         AuthInfo info = instance.authorize(opList, new Dimension(500, 500));
 
         assertFalse(info.isAuthorized());

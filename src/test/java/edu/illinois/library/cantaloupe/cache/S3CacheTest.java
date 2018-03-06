@@ -5,7 +5,6 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.CreateBucketRequest;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
@@ -31,7 +30,7 @@ public class S3CacheTest extends AbstractCacheTest {
     private static int mockS3Port;
 
     private Identifier identifier = new Identifier("jpg-rgb-64x56x8-baseline.jpg");
-    private OperationList opList = new OperationList(identifier, Format.JPG);
+    private OperationList opList = new OperationList();
     private S3Cache instance;
 
     @BeforeClass

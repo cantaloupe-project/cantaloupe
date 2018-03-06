@@ -177,8 +177,7 @@ public class CacheFacadeTest extends BaseTest {
     public void testNewDerivativeImageInputStreamWhenDerivativeCacheIsEnabled()
             throws Exception {
         enableDerivativeCache();
-        OperationList opList = new OperationList(new Identifier("jpg"),
-                Format.JPG);
+        OperationList opList = new OperationList(new Identifier("jpg"));
 
         try (OutputStream os = instance.newDerivativeImageOutputStream(opList)) {
             Files.copy(TestUtil.getImage("jpg"), os);
@@ -193,8 +192,7 @@ public class CacheFacadeTest extends BaseTest {
     public void testNewDerivativeImageInputStreamWhenDerivativeCacheIsDisabled()
             throws Exception {
         disableDerivativeCache();
-        OperationList opList = new OperationList(new Identifier("jpg"),
-                Format.JPG);
+        OperationList opList = new OperationList();
         try (InputStream is = instance.newDerivativeImageInputStream(opList)) {
             assertNull(is);
         }
@@ -206,8 +204,7 @@ public class CacheFacadeTest extends BaseTest {
     public void testNewDerivativeImageOutputStreamWhenDerivativeCacheIsEnabled()
             throws Exception {
         enableDerivativeCache();
-        OperationList opList = new OperationList(new Identifier("jpg"),
-                Format.JPG);
+        OperationList opList = new OperationList(new Identifier("jpg"));
         try (OutputStream os = instance.newDerivativeImageOutputStream(opList)) {
             assertNotNull(os);
         }
@@ -217,8 +214,7 @@ public class CacheFacadeTest extends BaseTest {
     public void testNewDerivativeImageOutputStreamWhenDerivativeCacheIsDisabled()
             throws Exception {
         disableDerivativeCache();
-        OperationList opList = new OperationList(new Identifier("jpg"),
-                Format.JPG);
+        OperationList opList = new OperationList();
         try (OutputStream os = instance.newDerivativeImageOutputStream(opList)) {
             assertNull(os);
         }
@@ -233,7 +229,7 @@ public class CacheFacadeTest extends BaseTest {
         DerivativeCache derivCache = CacheFactory.getDerivativeCache();
 
         Identifier identifier = new Identifier("jpg");
-        OperationList opList = new OperationList(identifier, Format.JPG);
+        OperationList ops = new OperationList(identifier);
         Info info = new Info();
 
         // Add identifier to the source cache.
@@ -242,7 +238,7 @@ public class CacheFacadeTest extends BaseTest {
         }
 
         // Add opList to the derivative cache.
-        try (OutputStream os = instance.newDerivativeImageOutputStream(opList)) {
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage("jpg"), os);
         }
 
@@ -252,7 +248,7 @@ public class CacheFacadeTest extends BaseTest {
         // Assert that everything has been added.
         assertNotNull(sourceCache.getSourceImageFile(identifier));
         assertNotNull(derivCache.getImageInfo(identifier));
-        try (InputStream is = derivCache.newDerivativeImageInputStream(opList)) {
+        try (InputStream is = derivCache.newDerivativeImageInputStream(ops)) {
             assertNotNull(is);
         }
 
@@ -262,7 +258,7 @@ public class CacheFacadeTest extends BaseTest {
         assertEquals(0, InfoService.getInstance().getInfoCache().size());
         assertNull(sourceCache.getSourceImageFile(identifier));
         assertNull(derivCache.getImageInfo(identifier));
-        try (InputStream is = derivCache.newDerivativeImageInputStream(opList)) {
+        try (InputStream is = derivCache.newDerivativeImageInputStream(ops)) {
             assertNull(is);
         }
     }
@@ -276,7 +272,7 @@ public class CacheFacadeTest extends BaseTest {
         DerivativeCache derivCache = CacheFactory.getDerivativeCache();
 
         Identifier identifier = new Identifier("jpg");
-        OperationList opList = new OperationList(identifier, Format.JPG);
+        OperationList ops = new OperationList(identifier);
         Info info = new Info();
 
         // Add identifier to the source cache.
@@ -285,7 +281,7 @@ public class CacheFacadeTest extends BaseTest {
         }
 
         // Add opList to the derivative cache.
-        try (OutputStream os = instance.newDerivativeImageOutputStream(opList)) {
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage("jpg"), os);
         }
 
@@ -295,7 +291,7 @@ public class CacheFacadeTest extends BaseTest {
         // Assert that everything has been added.
         assertNotNull(sourceCache.getSourceImageFile(identifier));
         assertNotNull(derivCache.getImageInfo(identifier));
-        try (InputStream is = derivCache.newDerivativeImageInputStream(opList)) {
+        try (InputStream is = derivCache.newDerivativeImageInputStream(ops)) {
             assertNotNull(is);
         }
 
@@ -304,7 +300,7 @@ public class CacheFacadeTest extends BaseTest {
         // Assert that everything is gone.
         assertNull(sourceCache.getSourceImageFile(identifier));
         assertNull(derivCache.getImageInfo(identifier));
-        try (InputStream is = derivCache.newDerivativeImageInputStream(opList)) {
+        try (InputStream is = derivCache.newDerivativeImageInputStream(ops)) {
             assertNull(is);
         }
     }
@@ -318,7 +314,7 @@ public class CacheFacadeTest extends BaseTest {
         DerivativeCache derivCache = CacheFactory.getDerivativeCache();
 
         Identifier identifier = new Identifier("jpg");
-        OperationList opList = new OperationList(identifier, Format.JPG);
+        OperationList ops = new OperationList(identifier);
         Info info = new Info();
 
         // Add identifier to the source cache.
@@ -327,7 +323,7 @@ public class CacheFacadeTest extends BaseTest {
         }
 
         // Add opList to the derivative cache.
-        try (OutputStream os = instance.newDerivativeImageOutputStream(opList)) {
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage("jpg"), os);
         }
 
@@ -337,7 +333,7 @@ public class CacheFacadeTest extends BaseTest {
         // Assert that everything has been added.
         assertNotNull(sourceCache.getSourceImageFile(identifier));
         assertNotNull(derivCache.getImageInfo(identifier));
-        try (InputStream is = derivCache.newDerivativeImageInputStream(opList)) {
+        try (InputStream is = derivCache.newDerivativeImageInputStream(ops)) {
             assertNotNull(is);
         }
 
@@ -348,7 +344,7 @@ public class CacheFacadeTest extends BaseTest {
         // Assert that everything is gone.
         assertNull(sourceCache.getSourceImageFile(identifier));
         assertNull(derivCache.getImageInfo(identifier));
-        try (InputStream is = derivCache.newDerivativeImageInputStream(opList)) {
+        try (InputStream is = derivCache.newDerivativeImageInputStream(ops)) {
             assertNull(is);
         }
     }
@@ -358,8 +354,7 @@ public class CacheFacadeTest extends BaseTest {
     @Test
     public void testPurgeWithOperationList() throws Exception {
         enableDerivativeCache();
-        OperationList opList = new OperationList(new Identifier("jpg"),
-                Format.JPG);
+        OperationList opList = new OperationList(new Identifier("cats"));
 
         try (OutputStream os = instance.newDerivativeImageOutputStream(opList)) {
             Files.copy(TestUtil.getImage("jpg"), os);
@@ -389,7 +384,7 @@ public class CacheFacadeTest extends BaseTest {
         DerivativeCache derivCache = CacheFactory.getDerivativeCache();
 
         Identifier identifier = new Identifier("jpg");
-        OperationList opList = new OperationList(identifier, Format.JPG);
+        OperationList ops = new OperationList(identifier);
         Info info = new Info();
 
         // Add identifier to the source cache.
@@ -398,7 +393,7 @@ public class CacheFacadeTest extends BaseTest {
         }
 
         // Add opList to the derivative cache.
-        try (OutputStream os = instance.newDerivativeImageOutputStream(opList)) {
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage("jpg"), os);
         }
 
@@ -408,7 +403,7 @@ public class CacheFacadeTest extends BaseTest {
         // Assert that everything has been added.
         assertNotNull(sourceCache.getSourceImageFile(identifier));
         assertNotNull(derivCache.getImageInfo(identifier));
-        try (InputStream is = derivCache.newDerivativeImageInputStream(opList)) {
+        try (InputStream is = derivCache.newDerivativeImageInputStream(ops)) {
             assertNotNull(is);
         }
 
@@ -420,7 +415,7 @@ public class CacheFacadeTest extends BaseTest {
         assertEquals(0, InfoService.getInstance().getInfoCache().size());
         assertNull(sourceCache.getSourceImageFile(identifier));
         assertNull(derivCache.getImageInfo(identifier));
-        try (InputStream is = derivCache.newDerivativeImageInputStream(opList)) {
+        try (InputStream is = derivCache.newDerivativeImageInputStream(ops)) {
             assertNull(is);
         }
     }

@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
@@ -99,9 +100,9 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setPercent(0.905f);
-        Format format = Format.TIF;
 
-        OperationList ops = new OperationList(identifier, format, scale);
+        OperationList ops = new OperationList(
+                identifier, scale, new Encode(Format.TIF));
 
         final Path expected = Paths.get(
                 pathname,
@@ -125,10 +126,10 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         scale.setPercent(0.905f);
         Rotate rotate = new Rotate(10);
         ColorTransform transform = ColorTransform.BITONAL;
-        Format format = Format.TIF;
+        Encode encode = new Encode(Format.TIF);
 
-        OperationList ops = new OperationList(identifier, format,
-                crop, scale, rotate, transform);
+        OperationList ops = new OperationList(
+                identifier, crop, scale, rotate, transform, encode);
 
         final Path expected = Paths.get(
                 pathname,
@@ -202,7 +203,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
 
     @Test
     public void testCleanUpDoesNotDeleteValidFiles() throws Exception {
-        OperationList ops = TestUtil.newOperationList();
+        OperationList ops = new OperationList(new Identifier("cats"));
 
         // create a new source image file
         Path sourceImageFile = sourceImageFile(ops.getIdentifier());
@@ -255,7 +256,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
 
     @Test
     public void testCleanUpDeletesInvalidFiles() throws Exception {
-        OperationList ops = TestUtil.newOperationList();
+        OperationList ops = new OperationList(new Identifier("cats"));
 
         // create a new source image file
         Path sourceImageFile = sourceImageFile(ops.getIdentifier());
@@ -310,8 +311,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     @Test
     public void testGetDerivativeImageFiles() throws Exception {
         Identifier identifier = new Identifier("dogs");
-        OperationList ops = TestUtil.newOperationList();
-        ops.setIdentifier(identifier);
+        OperationList ops = new OperationList(identifier);
 
         Path imageFile = derivativeImageFile(ops);
         createEmptyFile(imageFile);
@@ -408,7 +408,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     @Override
     @Test
     public void testPurge() throws Exception {
-        OperationList ops = TestUtil.newOperationList();
+        OperationList ops = new OperationList(new Identifier("cats"));
 
         // create a new source image file
         Path sourceImageFile = sourceImageFile(ops.getIdentifier());
@@ -441,7 +441,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     @Override
     @Test
     public void testPurgeWithIdentifier() throws Exception {
-        OperationList ops = TestUtil.newOperationList();
+        OperationList ops = new OperationList();
 
         Identifier id1 = new Identifier("dogs");
         ops.setIdentifier(id1);
@@ -498,12 +498,13 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         crop.setFull(true);
 
         // add a source image
-        OperationList ops = TestUtil.newOperationList();
+        Identifier id = new Identifier("cats");
+        OperationList ops = new OperationList(id);
         Path imageFile = sourceImageFile(ops.getIdentifier());
         createEmptyFile(imageFile);
 
         // add a derivative image
-        ops = TestUtil.newOperationList();
+        ops = new OperationList(id);
         imageFile = derivativeImageFile(ops);
         createEmptyFile(imageFile);
 

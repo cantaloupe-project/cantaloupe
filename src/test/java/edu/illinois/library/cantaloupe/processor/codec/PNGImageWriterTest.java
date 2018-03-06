@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -196,8 +197,7 @@ public class PNGImageWriterTest extends BaseTest {
     }
 
     private PNGImageWriter getWriter(Metadata metadata) {
-        OperationList opList = new OperationList(new Identifier("cats"),
-                Format.PNG);
+        OperationList opList = new OperationList(new Encode(Format.PNG));
         if (Configuration.getInstance().
                 getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
             opList.add(new MetadataCopy());

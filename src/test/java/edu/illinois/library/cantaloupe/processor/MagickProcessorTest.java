@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Encode;
@@ -97,10 +96,10 @@ abstract class MagickProcessorTest extends AbstractProcessorTest {
         config.clear();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, yesOrNo);
 
-        OperationList ops = new OperationList(new Identifier("bla"), Format.JPG);
+        OperationList ops = new OperationList();
         Rotate rotation = new Rotate(15);
         ops.add(rotation);
-        ops.add(new Encode(ops.getOutputFormat()));
+        ops.add(new Encode(Format.JPG));
 
         Info imageInfo = Info.builder().withSize(64, 58).build();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -145,10 +144,10 @@ abstract class MagickProcessorTest extends AbstractProcessorTest {
         config.clear();
         config.setProperty(Key.PROCESSOR_BACKGROUND_COLOR, "blue");
 
-        OperationList ops = new OperationList(new Identifier("bla"), Format.PNG);
+        OperationList ops = new OperationList();
         Rotate rotation = new Rotate(15);
         ops.add(rotation);
-        ops.add(new Encode(ops.getOutputFormat()));
+        ops.add(new Encode(Format.PNG));
 
         Info imageInfo = Info.builder().withSize(64, 58).build();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -169,11 +168,11 @@ abstract class MagickProcessorTest extends AbstractProcessorTest {
     @Test
     public void testProcessWithRotationAndCustomBackgroundColorAndNonTransparentOutputFormat()
             throws Exception {
-        OperationList ops = new OperationList(new Identifier("bla"), Format.JPG);
+        OperationList ops = new OperationList();
         Rotate rotation = new Rotate(15);
         ops.add(rotation);
 
-        Encode encode = new Encode(ops.getOutputFormat());
+        Encode encode = new Encode(Format.JPG);
         encode.setBackgroundColor(Color.fromString("#0000FF"));
         ops.add(encode);
 

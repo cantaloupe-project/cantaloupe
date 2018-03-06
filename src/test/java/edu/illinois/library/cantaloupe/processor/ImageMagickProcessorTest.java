@@ -3,7 +3,9 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.overlay.ImageOverlay;
 import edu.illinois.library.cantaloupe.operation.overlay.Position;
@@ -51,7 +53,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
 
     /**
      * @return Map of available output formats for all known source formats,
-     * based on information reported by <code>identify -list format</code>.
+     * based on information reported by {@literal identify -list format}.
      */
     protected HashMap<Format, Set<Format>> getAvailableOutputFormats()
             throws IOException {
@@ -290,14 +292,14 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
         imageInfo = instance.readImageInfo();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        OperationList ops = TestUtil.newOperationList();
+        OperationList ops = new OperationList();
         instance.process(ops, imageInfo, outputStream);
         page1 = outputStream.toByteArray();
 
         // page option present
         instance.setStreamSource(new PathStreamSource(fixture));
 
-        ops = TestUtil.newOperationList();
+        ops = new OperationList();
         ops.getOptions().put("page", "2");
         outputStream = new ByteArrayOutputStream();
         instance.process(ops, imageInfo, outputStream);
@@ -373,7 +375,8 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
         instance.setStreamSource(new PathStreamSource(
                 TestUtil.getImage("pdf.pdf")));
 
-        OperationList ops = TestUtil.newOperationList();
+        OperationList ops = new OperationList(
+                new Identifier("cats"), new Encode(Format.JPG));
         Dimension fullSize = new Dimension(1000, 1000);
         instance.validate(ops, fullSize);
 

@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
@@ -31,25 +31,25 @@ public class ImageWriterFactoryTest extends BaseTest {
 
     @Test
     public void testNewImageWriter1() {
-        OperationList ops = new OperationList(new Identifier("cats"), Format.JPG);
+        OperationList ops = new OperationList(new Encode(Format.JPG));
         assertNotNull(instance.newImageWriter(ops));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testNewImageWriter1WithUnsupportedFormat() {
-        OperationList ops = new OperationList(new Identifier("cats"), Format.UNKNOWN);
+        OperationList ops = new OperationList(new Encode(Format.UNKNOWN));
         instance.newImageWriter(ops);
     }
 
     @Test
     public void testNewImageWriter2() {
-        OperationList ops = new OperationList(new Identifier("cats"), Format.JPG);
+        OperationList ops = new OperationList(new Encode(Format.JPG));
         assertNotNull(instance.newImageWriter(ops, new NullMetadata(null, "")));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testNewImageWriter2WithUnsupportedFormat() {
-        OperationList ops = new OperationList(new Identifier("cats"), Format.UNKNOWN);
+        OperationList ops = new OperationList(new Encode(Format.UNKNOWN));
         instance.newImageWriter(ops, new NullMetadata(null, ""));
     }
 

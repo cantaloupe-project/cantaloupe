@@ -250,7 +250,7 @@ public class CropTest extends BaseTest {
     @Test
     public void hasEffectWithArguments() {
         Dimension fullSize = new Dimension(600, 400);
-        OperationList opList = new OperationList(new Identifier("cats"), Format.JPG);
+        OperationList opList = new OperationList();
 
         instance.setWidth(600);
         instance.setHeight(400);

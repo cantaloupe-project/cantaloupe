@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.operation;
 
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,30 +34,22 @@ public class MetadataCopyTest extends BaseTest {
     @Test
     public void testHasEffectWithArguments() {
         Dimension fullSize = new Dimension(600, 400);
-        OperationList opList = new OperationList(
-                new Identifier("cats"),
-                Format.JPG,
-                new Crop(0, 0, 300, 200));
+        OperationList opList = new OperationList(new Crop(0, 0, 300, 200));
         assertTrue(instance.hasEffect(fullSize, opList));
     }
 
     @Test
-    public void testToMap() throws Exception {
+    public void testToMap() {
         Dimension fullSize = new Dimension(500, 500);
         Map<String,Object> map = instance.toMap(fullSize);
         assertEquals(instance.getClass().getSimpleName(), map.get("class"));
     }
 
-    @Test
+    @Test(expected = UnsupportedOperationException.class)
     public void toMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
         Map<String,Object> map = instance.toMap(fullSize);
-        try {
-            map.put("test", "test");
-            fail("Expected exception");
-        } catch (UnsupportedOperationException e) {
-            // pass
-        }
+        map.put("test", "test");
     }
 
     @Test

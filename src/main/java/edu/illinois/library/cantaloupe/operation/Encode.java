@@ -240,8 +240,9 @@ public class Encode implements Operation {
         if (getBackgroundColor() != null) {
             parts.add(getBackgroundColor().toRGBHex());
         }
-        parts.add(getMaxSampleSize() + "");
-
+        if (getMaxSampleSize() != null) {
+            parts.add(getMaxSampleSize() + "");
+        }
         return String.join("_", parts);
     }
 

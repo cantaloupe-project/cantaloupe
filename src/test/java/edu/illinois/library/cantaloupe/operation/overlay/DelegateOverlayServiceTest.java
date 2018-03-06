@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -37,8 +36,7 @@ public class DelegateOverlayServiceTest extends BaseTest {
 
     @Test
     public void testGetOverlayReturningImageOverlay() throws Exception {
-        final OperationList opList = new OperationList(new Identifier("image"),
-                Format.JPG);
+        final OperationList opList = new OperationList(new Identifier("image"));
         final Dimension fullSize = new Dimension(100, 100);
         final URI requestURI = new URI("http://example.org/");
         final Map<String,String> requestHeaders = new HashMap<>();
@@ -55,8 +53,7 @@ public class DelegateOverlayServiceTest extends BaseTest {
 
     @Test
     public void testGetOverlayReturningStringOverlay() throws Exception {
-        final OperationList opList = new OperationList(
-                new Identifier("string"), Format.JPG);
+        final OperationList opList = new OperationList(new Identifier("string"));
         final Dimension fullSize = new Dimension(100, 100);
         final URI requestURI = new URI("http://example.org/");
         final Map<String,String> requestHeaders = new HashMap<>();
@@ -82,8 +79,7 @@ public class DelegateOverlayServiceTest extends BaseTest {
 
     @Test
     public void testGetOverlayReturningFalse() throws Exception {
-        final OperationList opList = new OperationList(new Identifier("bogus"),
-                Format.JPG);
+        final OperationList opList = new OperationList(new Identifier("bogus"));
         final Dimension fullSize = new Dimension(100, 100);
         final URI requestURI = new URI("http://example.org/");
         final Map<String,String> requestHeaders = new HashMap<>();

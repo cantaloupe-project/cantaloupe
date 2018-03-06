@@ -84,7 +84,7 @@ abstract class AbstractImageReaderTest extends BaseTest {
 
     @Test
     public void testReadWithArguments() throws Exception {
-        OperationList ops = new OperationList(new Identifier("cats"), Format.JPG);
+        OperationList ops = new OperationList();
         Crop crop = new Crop();
         crop.setX(10f);
         crop.setY(10f);

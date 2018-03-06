@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
@@ -70,7 +71,7 @@ public class Java2dProcessorTest extends ImageIOProcessorTest {
     @Test
     public void testProcessWithAnimatedGIF() throws Exception {
         Path image = TestUtil.getImage("gif-animated-looping.gif");
-        OperationList ops = new OperationList(new Identifier("cats"), Format.GIF);
+        OperationList ops = new OperationList(new Encode(Format.GIF));
         Info info = Info.builder()
                 .withSize(136, 200)
                 .withFormat(Format.GIF)

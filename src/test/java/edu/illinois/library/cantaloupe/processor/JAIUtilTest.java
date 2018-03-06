@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -124,8 +123,6 @@ public class JAIUtilTest extends BaseTest {
 
     @Test
     public void getAsRenderedOp() throws Exception {
-        final OperationList ops = new OperationList(new Identifier("cats"),
-                Format.JPG);
         RenderedImage image = readImage(IMAGE);
         PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
         RenderedOp renderedOp = JAIUtil.getAsRenderedOp(planarImage);
@@ -509,8 +506,7 @@ public class JAIUtilTest extends BaseTest {
     }
 
     private RenderedOp readImage(final String name) throws Exception {
-        final OperationList ops = new OperationList(new Identifier("cats"),
-                Format.JPG);
+        final OperationList ops = new OperationList();
         ImageReader reader = null;
         try {
             reader = new ImageReaderFactory().newImageReader(

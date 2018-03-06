@@ -185,14 +185,14 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
         imageInfo = instance.readImageInfo();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        OperationList ops = TestUtil.newOperationList();
+        OperationList ops = new OperationList();
         instance.process(ops, imageInfo, outputStream);
         page1 = outputStream.toByteArray();
 
         // page option present
         instance.setStreamSource(new PathStreamSource(fixture));
 
-        ops = TestUtil.newOperationList();
+        ops = new OperationList();
         ops.getOptions().put("page", "2");
         outputStream = new ByteArrayOutputStream();
         instance.process(ops, imageInfo, outputStream);
@@ -272,7 +272,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
         instance.setStreamSource(new PathStreamSource(
                 TestUtil.getImage("pdf.pdf")));
 
-        OperationList ops = TestUtil.newOperationList();
+        OperationList ops = new OperationList();
         Dimension fullSize = new Dimension(1000, 1000);
         instance.validate(ops, fullSize);
 

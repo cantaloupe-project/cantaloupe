@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
@@ -145,10 +144,7 @@ abstract class AbstractProcessorTest extends BaseTest {
 
     @Test
     public void testProcessWithNoOperations() throws Exception {
-        OperationList ops = new OperationList(
-                new Identifier("cats"),
-                Format.JPG,
-                new Encode(Format.JPG)); // OK, one operation, but it's required
+        OperationList ops = new OperationList(new Encode(Format.JPG)); // OK, one operation, but it's required
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -168,8 +164,6 @@ abstract class AbstractProcessorTest extends BaseTest {
         Scale scale = new Scale();
         Rotate rotate = new Rotate(0);
         OperationList ops = new OperationList(
-                new Identifier("cats"),
-                Format.JPG,
                 crop, scale, rotate, new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
@@ -187,11 +181,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     public void testProcessWithFullCropOperation() throws Exception {
         Crop crop = new Crop();
         crop.setFull(true);
-        OperationList ops = new OperationList(
-                new Identifier("cats"),
-                Format.JPG,
-                crop,
-                new Encode(Format.JPG));
+        OperationList ops = new OperationList(crop, new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -208,11 +198,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     public void testProcessWithSquareCropOperation() throws Exception {
         Crop crop = new Crop();
         crop.setShape(Crop.Shape.SQUARE);
-        OperationList ops = new OperationList(
-                new Identifier("cats"),
-                Format.JPG,
-                crop,
-                new Encode(Format.JPG));
+        OperationList ops = new OperationList(crop, new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -230,8 +216,6 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithCropToPixelsOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Identifier("cats"),
-                Format.JPG,
                 new Crop(10, 10, 35, 30),
                 new Encode(Format.JPG));
 
@@ -250,11 +234,7 @@ abstract class AbstractProcessorTest extends BaseTest {
         final float height = 0.2f;
         Crop crop = new Crop(0.2f, 0.2f, width, height);
         crop.setUnit(Crop.Unit.PERCENT);
-        OperationList ops = new OperationList(
-                new Identifier("cats"),
-                Format.JPG,
-                crop,
-                new Encode(Format.JPG));
+        OperationList ops = new OperationList(crop, new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -278,10 +258,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithNullScaleOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Identifier("cats"),
-                Format.JPG,
-                new Scale(),
-                new Encode(Format.JPG));
+                new Scale(), new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -297,8 +274,6 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithScaleAspectFitWidthOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Identifier("cats"),
-                Format.JPG,
                 new Scale(20, null, Scale.Mode.ASPECT_FIT_WIDTH),
                 new Encode(Format.JPG));
 
@@ -318,8 +293,6 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithScaleAspectFitHeightOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Identifier("cats"),
-                Format.JPG,
                 new Scale(null, 20, Scale.Mode.ASPECT_FIT_HEIGHT),
                 new Encode(Format.JPG));
 
@@ -339,8 +312,6 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithDownscaleByPercentageOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Identifier("cats"),
-                Format.JPG,
                 new Scale(0.5f),
                 new Encode(Format.JPG));
 
@@ -360,8 +331,6 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithUpscaleByPercentageOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Identifier("cats"),
-                Format.JPG,
                 new Scale(1.5f),
                 new Encode(Format.JPG));
 
@@ -381,8 +350,6 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithAspectFitInsideScaleOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Identifier("cats"),
-                Format.JPG,
                 new Scale(20, 20, Scale.Mode.ASPECT_FIT_INSIDE),
                 new Encode(Format.JPG));
 
@@ -406,8 +373,6 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithNonAspectFillScaleOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Identifier("cats"),
-                Format.JPG,
                 new Scale(20, 20, Scale.Mode.NON_ASPECT_FILL),
                 new Encode(Format.JPG));
 
@@ -423,8 +388,6 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithTransposeOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Identifier("cats"),
-                Format.JPG,
                 Transpose.HORIZONTAL,
                 new Encode(Format.JPG));
 
@@ -442,10 +405,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithRotate0DegreesOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Identifier("cats"),
-                Format.JPG,
-                new Rotate(0),
-                new Encode(Format.JPG));
+                new Rotate(0), new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -461,10 +421,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithRotate275DegreesOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Identifier("cats"),
-                Format.JPG,
-                new Rotate(275),
-                new Encode(Format.JPG));
+                new Rotate(275), new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -491,8 +448,6 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithBitonalFilterOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Identifier("cats"),
-                Format.JPG,
                 ColorTransform.BITONAL,
                 new Encode(Format.PNG));
 
@@ -519,8 +474,6 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithGrayscaleFilterOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Identifier("cats"),
-                Format.JPG,
                 ColorTransform.GRAY,
                 new Encode(Format.JPG));
 
@@ -555,11 +508,7 @@ abstract class AbstractProcessorTest extends BaseTest {
         final Encode encode = new Encode(Format.PNG);
         encode.setMaxSampleSize(8);
 
-        OperationList ops = new OperationList(
-                new Identifier("cats"),
-                Format.PNG,
-                encode);
-        ops.add(encode);
+        OperationList ops = new OperationList(encode);
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         doProcessTest(fixture, sourceFormat, ops, os);
@@ -578,10 +527,7 @@ abstract class AbstractProcessorTest extends BaseTest {
         final Encode encode = new Encode(Format.PNG);
         encode.setMaxSampleSize(null);
 
-        OperationList ops = new OperationList(
-                new Identifier("cats"),
-                Format.PNG,
-                encode);
+        OperationList ops = new OperationList(encode);
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         doProcessTest(fixture, sourceFormat, ops, os);
@@ -596,10 +542,7 @@ abstract class AbstractProcessorTest extends BaseTest {
         Set<Format> outputFormats = proc.getAvailableOutputFormats();
 
         for (Format outputFormat : outputFormats) {
-            OperationList ops = new OperationList(
-                    new Identifier("cats"),
-                    outputFormat,
-                    new Encode(outputFormat));
+            OperationList ops = new OperationList(new Encode(outputFormat));
 
             forEachFixture(ops, new ProcessorAssertion() {
                 {

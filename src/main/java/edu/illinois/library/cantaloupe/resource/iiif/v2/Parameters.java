@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
@@ -182,8 +183,8 @@ class Parameters implements Comparable<Parameters> {
      *         overlays, etc.
      */
     OperationList toOperationList() {
-        OperationList ops = new OperationList(getIdentifier(),
-                getOutputFormat());
+        OperationList ops = new OperationList(getIdentifier());
+
         if (!Region.Type.FULL.equals(getRegion().getType())) {
             ops.add(getRegion().toCrop());
         }
@@ -195,6 +196,8 @@ class Parameters implements Comparable<Parameters> {
             ops.add(getRotation().toRotate());
         }
         ops.add(getQuality().toColorTransform());
+        ops.add(new Encode(getOutputFormat()));
+
         return ops;
     }
 
