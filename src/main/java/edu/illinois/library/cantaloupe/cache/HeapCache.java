@@ -13,11 +13,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -154,7 +154,7 @@ class HeapCache implements DerivativeCache {
         @Override
         public String toString() {
             return (getOperationList() != null) ?
-                    getOperationList() : getIdentifier();
+                    "op:" + getOperationList() : "id:" + getIdentifier();
         }
 
         /**
@@ -499,7 +499,7 @@ class HeapCache implements DerivativeCache {
 
                 LOGGER.info("loadFromPersistentStore(): loaded {} items ({} bytes)",
                         size(), getByteSize());
-            } catch (FileNotFoundException e) {
+            } catch (NoSuchFileException e) {
                 LOGGER.error("loadFromPersistentStore(): file not found: {}",
                         e.getMessage());
             } catch (IOException e) {
