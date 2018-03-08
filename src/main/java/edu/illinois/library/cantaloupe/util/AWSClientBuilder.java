@@ -101,6 +101,7 @@ public class AWSClientBuilder {
         clientConfig.setMaxConnections(maxConnections);
         clientConfig.setConnectionTTL(DEFAULT_CONNECTION_TTL_MSEC);
         clientConfig.setClientExecutionTimeout(DEFAULT_CLIENT_EXECUTION_TIMEOUT_SEC);
+        clientConfig.setUseTcpKeepAlive(true);
         
     	List<AWSCredentialsProvider> creds = new ArrayList<>(
     	        Arrays.asList(
