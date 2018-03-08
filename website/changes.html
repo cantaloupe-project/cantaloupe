@@ -58,6 +58,8 @@ title: Change Log
   <li>Fixed a leak when using HttpResolver in a Servlet container that resulted in an inability to shut down properly. (Thanks to @punkfairy)</li>
   <li>Fixed aspect-fit scale-to-height not working properly in ImageMagickProcessor and GraphicsMagickProcessor.</li>
   <li>Efficiency improvements in AmazonS3Resolver and AzureStorageResolver.</li>
+  <li><code>OutOfMemoryError</code>s during image responses are logged at error level rather than info-level.</li>
+  <li>Improved the reliability of ImageIO plugin selection.</li>
 </ul>
 
 <h2>3.4.1</h2>

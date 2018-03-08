@@ -11,6 +11,12 @@ import ch.qos.logback.core.spi.FilterReply;
 public class ApplicationLogFilter extends Filter<ILoggingEvent> {
 
     public FilterReply decide(ILoggingEvent event) {
+        // Filter out useless PDFBox log messages. Would be better to reduce
+        // their level, but we can't here...
+        if (event.getLoggerName().startsWith("org.apache.pdfbox") &&
+                event.getLevel().equals(Level.WARN)) {
+            return FilterReply.DENY;
+        }
         // Filter out debug messages from the embedded Jetty server as they
         // totally overwhelm the debug log.
         if (event.getLoggerName().startsWith("org.eclipse.jetty") &&

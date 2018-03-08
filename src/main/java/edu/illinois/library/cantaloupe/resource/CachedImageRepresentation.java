@@ -37,6 +37,18 @@ public class CachedImageRepresentation extends OutputRepresentation {
         setDisposition(disposition);
     }
 
+    @Override
+    public void release() {
+        super.release();
+        // inputStream is supposed to get closed in a finally block in write(),
+        // so it shouldn't be necessary to do it here. But, theoretically, if
+        // something were to go wrong between the time the constructor and
+        // write() are invoked, it might not get cleaned up. It's never been
+        // verified that this would ever actually happen, but we'll close the
+        // stream here anyway just to be safe.
+        IOUtils.closeQuietly(inputStream);
+    }
+
     /**
      * Writes the cached image to the given output stream.
      *
