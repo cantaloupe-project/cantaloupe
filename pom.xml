@@ -13,6 +13,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <aws-sdk.version>1.11.291</aws-sdk.version>
     <jetty.version>9.4.7.v20170914</jetty.version>
     <restlet.version>2.3.11</restlet.version>
     <surefire.version>2.20.1</surefire.version>
@@ -71,12 +72,12 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-core</artifactId>
-      <version>1.11.220</version>
+      <version>${aws-sdk.version}</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-s3</artifactId>
-      <version>1.11.220</version>
+      <version>${aws-sdk.version}</version>
     </dependency>
     <!-- In-memory object cache: https://github.com/ben-manes/caffeine-->
     <dependency>
