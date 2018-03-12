@@ -1,5 +1,8 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.imageio.stream.ImageInputStream;
 import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
@@ -16,6 +19,100 @@ import java.util.Arrays;
  */
 final class JPEG2000MetadataReader {
 
+    private enum Marker {
+
+        /**
+         * Start of codestream.
+         */
+        SOC(0xFF, 0x4F),
+
+        /**
+         * Image and tile size.
+         */
+        SIZ(0xFF, 0x51),
+
+        /**
+         * Coding style default.
+         */
+        COD(0xFF, 0x52),
+
+        /**
+         * Coding style component.
+         */
+        COC(0xFF, 0x53),
+
+        /**
+         * Region-of-interest.
+         */
+        RGN(0xFF, 0x5E),
+
+        /**
+         * Quantization default.
+         */
+        QCD(0xFF, 0x5C),
+
+        /**
+         * Quantization component.
+         */
+        QCC(0xFF, 0x5D),
+
+        /**
+         * Progression order change.
+         */
+        POC(0xFF, 0x5F),
+
+        /**
+         * Pointer marker segments.
+         */
+        TLM(0xFF, 0x55),
+
+        /**
+         * Tile-part lengths.
+         */
+        PLM(0xFF, 0x57),
+
+        /**
+         * Packet length, tile-part header.
+         */
+        PPM(0xFF, 0x60),
+
+        /**
+         * Component registration.
+         */
+        CRG(0xFF, 0x63),
+
+        /**
+         * Comment.
+         */
+        COM(0xFF, 0x64),
+
+        /**
+         * Some other marker, which may be perfectly legitimate but is not
+         * understood by this reader.
+         */
+        UNKNOWN(0x00, 0x00);
+
+        private static Marker forBytes(int byte1, int byte2) {
+            for (Marker marker : values()) {
+                if (marker.byte1 == byte1 && marker.byte2 == byte2) {
+                    return marker;
+                }
+            }
+            return UNKNOWN;
+        }
+
+        private int byte1, byte2;
+
+        Marker(int byte1, int byte2) {
+            this.byte1 = byte1;
+            this.byte2 = byte2;
+        }
+
+    }
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(JPEG2000MetadataReader.class);
+
     private static final byte[] JP2_SIGNATURE = new byte[] { 0x00, 0x00, 0x00,
             0x0c, 0x6a, 0x50, 0x20, 0x20, 0x0d, 0x0a, (byte) 0x87, 0x0a };
 
@@ -31,14 +128,6 @@ final class JPEG2000MetadataReader {
 
     private int width, height, tileWidth, tileHeight,
             componentSize, numComponents, numDecompositionLevels;
-
-    private static boolean isCODMarker(int byte1, int byte2) {
-        return (byte1 == 0xFF && byte2 == 0x52);
-    }
-
-    private static boolean isSIZMarker(int byte1, int byte2) {
-        return (byte1 == 0xFF && byte2 == 0x51);
-    }
 
     /**
      * @param inputStream Fresh stream from which to read the image.
@@ -72,8 +161,11 @@ final class JPEG2000MetadataReader {
     }
 
     /**
-     * @return Number of decomposition levels, a.k.a. DWT levels. This will be
-     *         one less than the number of available resolutions.
+     * @return Number of available decomposition levels, which will be
+     *         one less than the number of available resolutions. Note that
+     *         contrary to the spec, only the main header {@link Marker#COD}
+     *         and {@link Marker#COC} segments are consulted, and not any tile-
+     *         part segments.
      */
     int getNumDecompositionLevels() throws IOException {
         readImage();
@@ -106,6 +198,14 @@ final class JPEG2000MetadataReader {
         return width;
     }
 
+    @Override
+    public String toString() {
+        return String.format("size: %dx%d; tileSize: %dx%d; %d components; " +
+                        "%d bpc; %d DWT levels",
+                width, height, tileWidth, tileHeight, numComponents,
+                componentSize, numDecompositionLevels);
+    }
+
     /**
      * <p>Main reading method. Reads image info into instance variables. May
      * call other private reading methods that will all expect {@link
@@ -114,30 +214,30 @@ final class JPEG2000MetadataReader {
      * <p>Safe to call multiple times.</p>
      */
     private void readImage() throws IOException {
-        if (!isReadAttempted) {
-            if (inputStream == null) {
-                throw new IllegalStateException("Source not set");
-            }
-
-            checkSignature();
-
-            isReadAttempted = true;
-
-            int previousByte = 0, b;
-            while ((b = inputStream.read()) != -1) {
-                if (isSIZMarker(previousByte, b)) {
-                    break;
-                }
-                previousByte = b;
-            }
-
-            readSIZSegment();
-            if (isCODMarker(inputStream.read(), inputStream.read())) {
-                readCODSegment();
-            } else {
-                throw new IOException("Unable to read COD segment");
-            }
+        if (isReadAttempted) {
+            return;
+        } else if (inputStream == null) {
+            throw new IllegalStateException("Source not set");
         }
+
+        checkSignature();
+
+        isReadAttempted = true;
+
+        // Find the SOC marker and position the stream immediately after it.
+        int b, previousB = 0;
+        while ((b = inputStream.read()) != -1) {
+            if (Marker.SOC.equals(Marker.forBytes(previousB, b))) {
+                break;
+            }
+            previousB = b;
+        }
+
+        while (readSegment() != -1) {
+            // keep reading
+        }
+
+        LOGGER.debug("{}", this);
     }
 
     private void checkSignature() throws IOException {
@@ -151,15 +251,50 @@ final class JPEG2000MetadataReader {
         }
     }
 
-    private void readSIZSegment() throws IOException {
-        byte[] bytes = new byte[2];
+    /**
+     * @return {@literal -1} if there are no more relevant segments to read;
+     *         some other value otherwise.
+     */
+    private int readSegment() throws IOException {
+        // The SIZ segment must come first, but the rest can appear in any
+        // order.
+        int status = 0;
+        switch (Marker.forBytes(inputStream.read(), inputStream.read())) {
+            case SIZ:
+                readSIZSegment();
+                break;
+            case COD:
+                readCODSegment();
+                break;
+            case COC:
+                readCOCSegment();
+                break;
+            case UNKNOWN:
+                status = -1;
+                break;
+            default:
+                skipSegment();
+                break;
+        }
+        return status;
+    }
 
-        // Read the segment length.
+    private int readSegmentLength() throws IOException {
+        byte[] bytes = new byte[2];
         inputStream.read(bytes);
-        final int segmentLength = ((bytes[0] & 0xff) << 8) | (bytes[1] & 0xff) - 2;
+        return ((bytes[0] & 0xff) << 8) | (bytes[1] & 0xff) - 2;
+    }
+
+    private void skipSegment() throws IOException {
+        final int segmentLength = readSegmentLength();
+        inputStream.skipBytes(segmentLength);
+    }
+
+    private void readSIZSegment() throws IOException {
+        final int segmentLength = readSegmentLength();
 
         // Read the segment data.
-        bytes = new byte[segmentLength];
+        byte[] bytes = new byte[segmentLength];
         inputStream.read(bytes);
 
         // Read the width (Xsiz).
@@ -194,18 +329,26 @@ final class JPEG2000MetadataReader {
     }
 
     private void readCODSegment() throws IOException {
-        byte[] bytes = new byte[2];
-
-        // Read the segment length.
-        inputStream.read(bytes);
-        final int segmentLength = ((bytes[0] & 0xff) << 8) | (bytes[1] & 0xff) - 2;
+        final int segmentLength = readSegmentLength();
 
         // Read the segment data.
-        bytes = new byte[segmentLength];
+        byte[] bytes = new byte[segmentLength];
         inputStream.read(bytes);
 
         // Read the number of decomposition levels (SPcod byte 0).
-        numDecompositionLevels = bytes[7] & 0xff;
+        numDecompositionLevels = bytes[5] & 0xff;
+    }
+
+    private void readCOCSegment() throws IOException {
+        final int segmentLength = readSegmentLength();
+
+        // Read the segment data.
+        byte[] bytes = new byte[segmentLength];
+        inputStream.read(bytes);
+
+        // Read the number of decomposition levels (SPcoc byte 0).
+        // This overrides the same value in the COD segment.
+        numDecompositionLevels = bytes[5] & 0xff;
     }
 
 }
