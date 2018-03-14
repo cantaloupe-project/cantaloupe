@@ -5,19 +5,18 @@ import edu.illinois.library.cantaloupe.config.Key;
 
 enum LookupStrategy {
 
-    BASIC, DELEGATE_SCRIPT;
+    BASIC, DELEGATE_SCRIPT, UNDEFINED;
 
     static LookupStrategy from(Key key) {
         final Configuration config = Configuration.getInstance();
 
-        switch (config.getString(key)) {
+        switch (config.getString(key, "")) {
             case "BasicLookupStrategy":
                 return BASIC;
             case "ScriptLookupStrategy":
                 return DELEGATE_SCRIPT;
             default:
-                throw new IllegalArgumentException(
-                        key + " is invalid or not set");
+                return UNDEFINED;
         }
     }
 

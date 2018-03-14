@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.resource.iiif.ImageResourceTester;
@@ -309,6 +310,20 @@ public class ImageResourceTest extends ResourceTest {
         tester.testRecoveryFromDerivativeCacheNewDerivativeImageOutputStreamException(uri);
     }
 
+    @Test
+    public void testGETResolverCheckAccessNotCalledWithSourceCacheHit()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
+        tester.testResolverCheckAccessNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
+    }
+
+    @Test
+    public void testGETResolverGetSourceFormatNotCalledWithSourceCacheHit()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
+        tester.testResolverGetSourceFormatNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
+    }
+
     /**
      * Checks that the server responds with HTTP 500 when a non-FileResolver is
      * used with a non-StreamProcessor.
@@ -368,7 +383,7 @@ public class ImageResourceTest extends ResourceTest {
         assertTrue(parts.contains("Accept-Language"));
         assertTrue(parts.contains("Origin"));
         // X-Powered-By
-        assertEquals(Application.NAME + "/" + Application.getVersion(),
+        assertEquals(Application.getName() + "/" + Application.getVersion(),
                 headers.getFirstValue("X-Powered-By"));
     }
 

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 
 /**
  * Simplified interface to the caching architecture.
@@ -73,16 +74,27 @@ public final class CacheFacade {
         return CacheFactory.getSourceCache();
     }
 
+    /**
+     * @param identifier Image identifier.
+     * @return           Path of a file corresponding to the given identifier
+     *                   in the source cache, or {@literal null} if none
+     *                   exists.
+     * @see SourceCache#getSourceImageFile(Identifier)
+     */
+    public Path getSourceCacheFile(Identifier identifier) throws IOException {
+        SourceCache sourceCache = getSourceCache();
+        if (sourceCache != null) {
+            return sourceCache.getSourceImageFile(identifier);
+        }
+        return null;
+    }
+
     public boolean isDerivativeCacheAvailable() {
         return getDerivativeCache() != null;
     }
 
     public boolean isInfoCacheAvailable() {
         return InfoService.getInstance().isObjectCacheEnabled();
-    }
-
-    public boolean isSourceCacheAvailable() {
-        return getSourceCache() != null;
     }
 
     /**

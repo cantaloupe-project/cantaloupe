@@ -20,16 +20,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermission;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
@@ -159,6 +156,16 @@ abstract class HttpResolverTest extends AbstractResolverTest {
     private void doTestCheckAccessWithPresentUnreadableImage(Identifier identifier)
             throws Exception {
         try {
+            server.setHandler(new DefaultHandler() {
+                @Override
+                public void handle(String target,
+                                   Request baseRequest,
+                                   HttpServletRequest request,
+                                   HttpServletResponse response) {
+                    response.setStatus(403);
+                    baseRequest.setHandled(true);
+                }
+            });
             server.start();
 
             RequestContext context = new RequestContext();
@@ -167,19 +174,9 @@ abstract class HttpResolverTest extends AbstractResolverTest {
             DelegateProxy proxy = service.newDelegateProxy(context);
             instance.setDelegateProxy(proxy);
             instance.setIdentifier(identifier);
-
-            Path image = TestUtil.getImage("gif");
-            Set<PosixFilePermission> permissions =
-                    Files.getPosixFilePermissions(image);
-            try {
-                Files.setPosixFilePermissions(image, Collections.emptySet());
-
-                instance.setIdentifier(identifier);
-                instance.checkAccess();
-                fail("Expected exception");
-            } finally {
-                Files.setPosixFilePermissions(image, permissions);
-            }
+            instance.setIdentifier(identifier);
+            instance.checkAccess();
+            fail("Expected exception");
         } catch (AccessDeniedException e) {
             // pass
         }
@@ -344,7 +341,7 @@ abstract class HttpResolverTest extends AbstractResolverTest {
     }
 
     @Test
-    public void testGetSourceFormatWithNoIdentifierExtensionAndContentTypeHeader()
+    public void testGetSourceFormatWithNoIdentifierExtensionAndContentType()
             throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
@@ -363,30 +360,41 @@ abstract class HttpResolverTest extends AbstractResolverTest {
     }
 
     @Test
-    public void testGetSourceFormatWithNoIdentifierExtensionAndNoContentTypeHeader()
+    public void testGetSourceFormatWithNoIdentifierExtensionAndNoContentType()
             throws Exception {
         server.start();
 
         instance.setIdentifier(new Identifier("jpg"));
-        assertEquals(Format.UNKNOWN, instance.getSourceFormat());
+        assertEquals(Format.JPG, instance.getSourceFormat());
     }
 
     @Test
-    public void testGetSourceFormatWithNoIdentifierExtensionAndUnrecognizedContentTypeHeaderValue()
+    public void testGetSourceFormatWithNoIdentifierExtensionAndUnrecognizedContentType()
             throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
             public void handle(String target,
                                Request baseRequest,
                                HttpServletRequest request,
-                               HttpServletResponse response) {
-                response.setHeader("Content-Type", "image/bogus");
-                baseRequest.setHandled(true);
+                               HttpServletResponse response) throws IOException {
+                response.setHeader("Content-Type", "application/octet-stream");
+                try (OutputStream os = response.getOutputStream()) {
+                    Files.copy(TestUtil.getImage("jpg"), os);
+                }
             }
         });
         server.start();
 
         instance.setIdentifier(new Identifier("jpg"));
+        assertEquals(Format.JPG, instance.getSourceFormat());
+    }
+
+    @Test
+    public void testGetSourceFormatWithNoIdentifierExtensionAndNoContentTypeAndUnrecognizedMagicBytes()
+            throws Exception {
+        server.start();
+
+        instance.setIdentifier(new Identifier("txt"));
         assertEquals(Format.UNKNOWN, instance.getSourceFormat());
     }
 
@@ -598,7 +606,6 @@ abstract class HttpResolverTest extends AbstractResolverTest {
 
     @Test
     public void testNoUnnecessaryRequests() throws Exception {
-        final AtomicInteger numHEADRequests = new AtomicInteger(0);
         final AtomicInteger numGETRequests = new AtomicInteger(0);
 
         server.setHandler(new DefaultHandler() {
@@ -610,9 +617,6 @@ abstract class HttpResolverTest extends AbstractResolverTest {
                 switch (request.getMethod().toUpperCase()) {
                     case "GET":
                         numGETRequests.incrementAndGet();
-                        break;
-                    case "HEAD":
-                        numHEADRequests.incrementAndGet();
                         break;
                     default:
                         throw new IllegalArgumentException("WTF");
@@ -630,8 +634,7 @@ abstract class HttpResolverTest extends AbstractResolverTest {
             is.read();
         }
 
-        assertEquals(1, numHEADRequests.get());
-        assertEquals(1, numGETRequests.get());
+        assertEquals(2, numGETRequests.get());
     }
 
     @Test
@@ -645,7 +648,7 @@ abstract class HttpResolverTest extends AbstractResolverTest {
                 String expected = String.format("%s/%s (%s/%s; java/%s; %s/%s)",
                         HttpResolver.class.getSimpleName(),
                         Application.getVersion(),
-                        Application.NAME,
+                        Application.getName(),
                         Application.getVersion(),
                         System.getProperty("java.version"),
                         System.getProperty("os.name"),

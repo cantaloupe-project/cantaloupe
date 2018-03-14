@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConcurrentReaderWriter;
@@ -61,7 +62,7 @@ abstract class AbstractCacheTest extends BaseTest {
         final DerivativeCache instance = newInstance();
 
         Identifier identifier = new Identifier("cats");
-        Info info = new Info(50, 40);
+        Info info = new Info();
         instance.put(identifier, info);
 
         Info actual = instance.getImageInfo(identifier);
@@ -74,7 +75,7 @@ abstract class AbstractCacheTest extends BaseTest {
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 1);
 
         Identifier identifier = new Identifier("cats");
-        Info info = new Info(50, 40);
+        Info info = new Info();
         instance.put(identifier, info);
 
         Thread.sleep(ASYNC_WAIT);
@@ -101,7 +102,8 @@ abstract class AbstractCacheTest extends BaseTest {
         final DerivativeCache instance = newInstance();
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 0);
 
-        OperationList opList = new OperationList(new Identifier("cats"), Format.JPG);
+        OperationList opList = new OperationList(
+                new Identifier("cats"), new Encode(Format.JPG));
         Path imageFile = TestUtil.getImage(IMAGE);
 
         // Write an image to the cache
@@ -127,7 +129,8 @@ abstract class AbstractCacheTest extends BaseTest {
         final DerivativeCache instance = newInstance();
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 3);
 
-        OperationList ops = new OperationList(new Identifier("cats"), Format.JPG);
+        OperationList ops = new OperationList(
+                new Identifier("cats"), new Encode(Format.JPG));
         Path fixture = TestUtil.getImage(IMAGE);
 
         // Add an image.
@@ -154,7 +157,8 @@ abstract class AbstractCacheTest extends BaseTest {
     public void testNewDerivativeImageInputStreamWithNonexistentImage()
             throws Exception {
         final DerivativeCache instance = newInstance();
-        final OperationList ops = TestUtil.newOperationList();
+        final OperationList ops = new OperationList(new Identifier("cats"));
+
         instance.purge();
         assertNotExists(instance, ops);
     }
@@ -163,7 +167,8 @@ abstract class AbstractCacheTest extends BaseTest {
     public void testNewDerivativeImageInputStreamConcurrently()
             throws Exception {
         final DerivativeCache instance = newInstance();
-        final OperationList ops = TestUtil.newOperationList();
+        final OperationList ops = new OperationList(
+                new Identifier("cats"), new Encode(Format.JPG));
 
         new ConcurrentReaderWriter(() -> {
             try (OutputStream os =
@@ -188,7 +193,8 @@ abstract class AbstractCacheTest extends BaseTest {
     @Test
     public void testNewDerivativeImageOutputStream() throws Exception {
         final DerivativeCache instance = newInstance();
-        final OperationList ops = TestUtil.newOperationList();
+        final OperationList ops = new OperationList(
+                new Identifier("cats"), new Encode(Format.JPG));
         final Path fixture = TestUtil.getImage("jpg");
 
         // Assert that it's not already cached
@@ -223,8 +229,9 @@ abstract class AbstractCacheTest extends BaseTest {
     public void testPurge() throws Exception {
         DerivativeCache instance = newInstance();
         Identifier identifier = new Identifier(IMAGE);
-        OperationList opList = new OperationList(identifier, Format.JPG);
-        Info info = new Info(62, 35);
+        OperationList opList = new OperationList(
+                identifier, new Encode(Format.JPG));
+        Info info = new Info();
 
         // assert that a particular image doesn't exist
         try (InputStream is = instance.newDerivativeImageInputStream(opList)) {
@@ -235,9 +242,9 @@ abstract class AbstractCacheTest extends BaseTest {
         assertNull(instance.getImageInfo(identifier));
 
         // add the image
-        Path fixture = TestUtil.getImage(identifier.toString());
         try (OutputStream outputStream =
                      instance.newDerivativeImageOutputStream(opList)) {
+            Path fixture = TestUtil.getImage(IMAGE);
             Files.copy(fixture, outputStream);
         }
 
@@ -265,32 +272,32 @@ abstract class AbstractCacheTest extends BaseTest {
     @Test
     public void testPurgeWithIdentifier() throws Exception {
         DerivativeCache instance = newInstance();
-        Identifier identifier = new Identifier(IMAGE);
-        OperationList opList = new OperationList(identifier, Format.JPG);
-        Info info = new Info(62, 35);
+        Identifier id1 = new Identifier(IMAGE);
+        OperationList opList = new OperationList(
+                new Identifier("cats"), new Encode(Format.JPG));
+        Info info = new Info();
 
         // add an image
-        Path fixture = TestUtil.getImage(identifier.toString());
+        Path fixture = TestUtil.getImage(id1.toString());
         try (OutputStream os = instance.newDerivativeImageOutputStream(opList)) {
             Files.copy(fixture, os);
         }
 
         // add an Info
-        instance.put(identifier, info);
+        instance.put(id1, info);
 
         // add another Info
-        Identifier otherId = new Identifier("cats");
-        Info otherInfo = new Info(64, 56, Format.GIF);
-        instance.put(otherId, otherInfo);
+        Identifier id2 = new Identifier("dogs");
+        instance.put(id2, new Info());
 
-        assertNotNull(instance.getImageInfo(identifier));
-        assertNotNull(instance.getImageInfo(otherId));
+        assertNotNull(instance.getImageInfo(id1));
+        assertNotNull(instance.getImageInfo(id2));
 
         // purge one of them
-        instance.purge(identifier);
+        instance.purge(id1);
 
-        assertNull(instance.getImageInfo(identifier));
-        assertNotNull(instance.getImageInfo(otherId));
+        assertNull(instance.getImageInfo(id1));
+        assertNotNull(instance.getImageInfo(id2));
     }
 
     /* purge(OperationList) */
@@ -300,15 +307,15 @@ abstract class AbstractCacheTest extends BaseTest {
         final DerivativeCache instance = newInstance();
 
         // Seed a derivative image
-        Identifier id1 = new Identifier("cats");
-        OperationList ops1 = new OperationList(id1, Format.JPG);
+        OperationList ops1 = new OperationList(
+                new Identifier("cats"), new Encode(Format.JPG));
         try (OutputStream os = instance.newDerivativeImageOutputStream(ops1)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
         }
 
         // Seed another derivative image
-        Identifier id2 = new Identifier("dogs");
-        OperationList ops2 = new OperationList(id2, Format.GIF);
+        OperationList ops2 = new OperationList(
+                new Identifier("dogs"), new Encode(Format.JPG));
         try (OutputStream os = instance.newDerivativeImageOutputStream(ops2)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
         }
@@ -331,8 +338,8 @@ abstract class AbstractCacheTest extends BaseTest {
     public void testPurgeInvalid() throws Exception {
         DerivativeCache instance = newInstance();
         Identifier id1 = new Identifier(IMAGE);
-        OperationList ops1 = new OperationList(id1, Format.JPG);
-        Info info1 = new Info(62, 35);
+        OperationList ops1 = new OperationList(id1, new Encode(Format.JPG));
+        Info info1 = new Info();
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 2);
 
         // add an image
@@ -355,7 +362,8 @@ abstract class AbstractCacheTest extends BaseTest {
         // add another image
         Path fixture2 = TestUtil.getImage("gif-rgb-64x56x8.gif");
         OperationList ops2 = new OperationList(
-                new Identifier(fixture2.getFileName().toString()), Format.GIF);
+                new Identifier(fixture2.getFileName().toString()),
+                new Encode(Format.JPG));
 
         try (OutputStream outputStream =
                      instance.newDerivativeImageOutputStream(ops2)) {
@@ -364,8 +372,7 @@ abstract class AbstractCacheTest extends BaseTest {
 
         // add another info
         Identifier id2 = new Identifier("cats");
-        Info info2 = new Info(64, 56, Format.GIF);
-        instance.put(id2, info2);
+        instance.put(id2, new Info());
 
         // assert that they've been added
         assertNotNull(instance.getImageInfo(id2));
@@ -386,7 +393,7 @@ abstract class AbstractCacheTest extends BaseTest {
     public void testPut() throws Exception {
         final DerivativeCache instance = newInstance();
         final Identifier identifier = new Identifier("cats");
-        final Info info = new Info(52, 42);
+        final Info info = new Info();
 
         instance.put(identifier, info);
 
@@ -403,7 +410,7 @@ abstract class AbstractCacheTest extends BaseTest {
     public void testPutConcurrently() throws Exception {
         final DerivativeCache instance = newInstance();
         final Identifier identifier = new Identifier("monkeys");
-        final Info info = new Info(52, 42);
+        final Info info = new Info();
 
         new ConcurrentReaderWriter(() -> {
             instance.put(identifier, info);

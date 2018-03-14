@@ -1,7 +1,9 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.util.List;
 
 import edu.illinois.library.cantaloupe.RestletApplication;
@@ -64,7 +66,7 @@ public class InformationResource extends IIIF2Resource {
         // If we don't need to resolve first, and are using a cache, and the
         // cache contains an info matching the request, skip all the setup and
         // just return the cached info.
-        if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, false)) {
+        if (!isResolvingFirst()) {
             try {
                 Info info = cacheFacade.getInfo(identifier);
                 if (info != null) {
@@ -87,24 +89,44 @@ public class InformationResource extends IIIF2Resource {
         final Resolver resolver = new ResolverFactory().newResolver(
                 identifier, getDelegateProxy());
 
-        try {
-            resolver.checkAccess();
-        } catch (NoSuchFileException e) { // this needs to be rethrown!
-            if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
-                // If the image was not found, purge it from the cache.
-                cacheFacade.purgeAsync(identifier);
+        // If we are resolving first, or if the source image is not present in
+        // the source cache (if enabled), check access to it in preparation for
+        // retrieval.
+        final Path sourceImage = cacheFacade.getSourceCacheFile(identifier);
+        if (sourceImage == null || isResolvingFirst()) {
+            try {
+                resolver.checkAccess();
+            } catch (NoSuchFileException e) { // this needs to be rethrown!
+                if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
+                    // If the image was not found, purge it from the cache.
+                    cacheFacade.purgeAsync(identifier);
+                }
+                throw e;
             }
-            throw e;
         }
 
-        // Determine the format of the source image.
-        Format format = resolver.getSourceFormat();
+        // Get the format of the source image.
+        // If we are not resolving first, and there is a hit in the source
+        // cache, read the format from the source-cached-file, as we will
+        // expect source cache access to be more efficient.
+        // Otherwise, read it from the resolver.
+        Format format = Format.UNKNOWN;
+        if (!isResolvingFirst() && sourceImage != null) {
+            List<edu.illinois.library.cantaloupe.image.MediaType> mediaTypes =
+                    edu.illinois.library.cantaloupe.image.MediaType.detectMediaTypes(sourceImage);
+            if (!mediaTypes.isEmpty()) {
+                format = mediaTypes.get(0).toFormat();
+            }
+        } else {
+            format = resolver.getSourceFormat();
+        }
 
         // Obtain an instance of the processor assigned to that format.
         final Processor processor = new ProcessorFactory().newProcessor(format);
 
         // Connect it to the resolver.
-        new ProcessorConnector().connect(resolver, processor, identifier);
+        tempFileFuture = new ProcessorConnector().connect(
+                resolver, processor, identifier, format);
 
         final Info info = getOrReadInfo(identifier, processor);
 
@@ -144,7 +166,20 @@ public class InformationResource extends IIIF2Resource {
                 new ImageInfoFactory().newImageInfo(
                         getImageURI(), processor, info, getDelegateProxy());
         final MediaType mediaType = getNegotiatedMediaType();
-        return new JSONRepresentation(imageInfo, mediaType);
+        return new JSONRepresentation(imageInfo, mediaType, () -> {
+            if (tempFileFuture != null) {
+                Path tempFile = tempFileFuture.get();
+                if (tempFile != null) {
+                    Files.deleteIfExists(tempFile);
+                }
+            }
+            return null;
+        });
+    }
+
+    private boolean isResolvingFirst() {
+        return Configuration.getInstance().
+                getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true);
     }
 
 }

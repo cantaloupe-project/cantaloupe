@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
+import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -141,10 +142,14 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
         assertNotNull(instance.getInitializationException());
     }
 
+    /* getWarnings() */
+
     @Test
     public void testGetWarnings() {
         assertEquals(0, instance.getWarnings().size());
     }
+
+    /* process() */
 
     @Override
     @Test
@@ -180,14 +185,14 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
         imageInfo = instance.readImageInfo();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        OperationList ops = TestUtil.newOperationList();
+        OperationList ops = new OperationList();
         instance.process(ops, imageInfo, outputStream);
         page1 = outputStream.toByteArray();
 
         // page option present
         instance.setStreamSource(new PathStreamSource(fixture));
 
-        ops = TestUtil.newOperationList();
+        ops = new OperationList();
         ops.getOptions().put("page", "2");
         outputStream = new ByteArrayOutputStream();
         instance.process(ops, imageInfo, outputStream);
@@ -203,6 +208,58 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
         // TODO: The parent fails on a lot of fixtures.
     }
 
+    /* readImageInfo() */
+
+    /**
+     * Override that doesn't check {@link Info#getNumResolutions()}.
+     */
+    @Override
+    @Test
+    public void testReadImageInfoOnAllFixtures() throws Exception {
+        final Processor proc = newInstance();
+
+        for (Format format : Format.values()) {
+            try {
+                // The processor will throw an exception if it doesn't support
+                // this format, which is fine. No processor supports all
+                // formats.
+                proc.setSourceFormat(format);
+
+                for (Path fixture : TestUtil.getImageFixtures(format)) {
+                    // TODO: address this
+                    if (fixture.getFileName().toString().equals("jpg-rgb-594x522x8-baseline.jpg")) {
+                        continue;
+                    }
+
+                    StreamProcessor sproc = (StreamProcessor) proc;
+                    StreamSource streamSource =
+                            new PathStreamSource(fixture);
+                    sproc.setStreamSource(streamSource);
+
+                    try {
+                        // We don't know the dimensions of the source image and
+                        // we can't get them because that would require using
+                        // the method we are now testing, so the best we can do
+                        // is to assert that they are nonzero.
+                        final Info actualInfo = proc.readImageInfo();
+                        assertEquals(format, actualInfo.getSourceFormat());
+                        assertTrue(actualInfo.getSize().getWidth() > 0);
+                        assertTrue(actualInfo.getSize().getHeight() > 0);
+
+                        assertEquals(-1, actualInfo.getNumResolutions());
+                    } catch (Exception e) {
+                        System.err.println(format + " : " + fixture);
+                        throw e;
+                    }
+                }
+            } catch (UnsupportedSourceFormatException e) {
+                // OK, continue
+            }
+        }
+    }
+
+    /* validate() */
+
     @Test
     public void testValidate() throws Exception {
         // Skip if GraphicsMagick does not support PDF.
@@ -215,7 +272,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
         instance.setStreamSource(new PathStreamSource(
                 TestUtil.getImage("pdf.pdf")));
 
-        OperationList ops = TestUtil.newOperationList();
+        OperationList ops = new OperationList();
         Dimension fullSize = new Dimension(1000, 1000);
         instance.validate(ops, fullSize);
 

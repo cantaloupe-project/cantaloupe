@@ -12,9 +12,12 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Crop;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
+import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
+import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,24 +50,36 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * their command-line interface is compatible.</p>
  *
  * <p>{@literal kdu_expand} is used for cropping and an initial scale reduction
- * factor, and Java 2D for all remaining processing steps. {@literal
- * kdu_expand} generates TIFF output which is streamed (with some buffering) to
- * an ImageIO reader. (TIFF is used in order to preserve embedded ICC
- * profiles.)</p>
+ * factor, and Java 2D for all remaining processing steps. It generates TIFF
+ * output which is streamed (with some buffering) to an ImageIO reader. (TIFF
+ * is used in order to preserve embedded ICC profiles.)</p>
  *
- * <p>{@literal kdu_expand} reads and writes the files named in the
- * {@literal -i} and {@literal -o} flags passed to it, respectively. The file
- * in the {@literal -o} flag must have a recognized image extension such as
- * {@literal .bmp}, {@literal .tif}, etc. This means that it's not possible to
- * natively write into an {@link InputStream} from a {@link Process}. Instead,
- * we have to resort to a trick whereby we create a symlink from {@literal
- * /tmp/whatever.tif} to {@literal /dev/stdout} (which only exists on Unix).
- * The temporary symlink is created by {@link #initialize()} and deleted on
- * exit.</p>
+ * <p>{@literal kdu_expand} reads and writes the files named in the {@literal
+ * -i} and {@literal -o} flags passed to it, respectively. The file in the
+ * {@literal -o} flag must have a recognized image extension such as {@literal
+ * .bmp}, {@literal .tif}, etc. This means that it's not possible to natively
+ * write into an {@link InputStream} from a {@link Process}. The way this is
+ * dealt with differs between Windows and Unix:</p>
+ *
+ * <dl>
+ *     <dt>Unix</dt>
+ *     <dd>A symlink is created by {@link #initialize()} from {@literal
+ *     /tmp/whatever.tif} to {@literal /dev/stdout}, and set to delete on exit.
+ *     {@literal kdu_expand} effectively writes to standard output, which can
+ *     be read from a {@link Process#getInputStream() process' input
+ *     stream}.</dd>
+ *     <dt>Windows</dt>
+ *     <dd>Windows doesn't have anything like {@literal /dev/stdout}&mdash;
+ *     actually it has {@literal CON}, but experimentation reveals it won't
+ *     work&mdash;so {@literal kdu_expand} instead writes to a temporary file
+ *     which is deleted after being read. This is slower than the Unix
+ *     technique.</dd>
+ * </dl>
  *
  * <p>Although {@literal kdu_expand} is used for reading images,
  * {@literal kdu_jp2info} is <strong>not</strong> used for reading metadata.
- * ImageIO is used instead, as it is more efficient.</p>
+ * The ImageIO JPEG2000 plugin is used instead, as this doesn't require
+ * invoking another process and is therefore more efficient.</p>
  *
  * @see <a href="http://kakadusoftware.com/wp-content/uploads/2014/06/Usage_Examples-v7_7.txt">
  *     Usage Examples for the Demonstration Applications Supplied with Kakadu
@@ -75,7 +90,20 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(KakaduProcessor.class);
 
-    private static final short MAX_REDUCTION_FACTOR = 5;
+    /**
+     * Number of decomposition levels assumed to be contained in the image when
+     * that information cannot be obtained for some reason. 5 is the default
+     * used by most JP2 encoders. Setting this to a value higher than that could
+     * cause decoding errors, and setting it to lower could have a performance
+     * cost.
+     */
+    private static final short FALLBACK_NUM_DWT_LEVELS = 5;
+
+    /**
+     * Used only in Windows.
+     */
+    private static final String WINDOWS_SCRATCH_DIR_NAME =
+            KakaduProcessor.class.getSimpleName() + "-scratch";
 
     /**
      * Set by {@link #initialize()}.
@@ -87,18 +115,24 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
      * Set by {@link #initialize()}.
      */
     private static InitializationException initializationException;
+
+    /**
+     * Not used in Windows.
+     */
     private static Path stdoutSymlink;
 
     /**
-     * Creates a unique symlink to {@literal /dev/stdout} in a temporary
-     * directory, and sets it to delete on exit.
+     * <p>Creates a symlink to {@literal /dev/stdout} in a temporary directory,
+     * and sets it to delete on exit.</p>
+     *
+     * <p>Not used in Windows.</p>
      */
     private static void createStdoutSymlink() throws IOException {
         Path tempDir = Application.getTempPath();
 
-        final Path link = tempDir.resolve(Application.NAME + "-" +
-                KakaduProcessor.class.getSimpleName() + "-" +
-                UUID.randomUUID() + ".tif");
+        final String name = KakaduProcessor.class.getSimpleName() + "-" +
+                UUID.randomUUID() + ".tif";
+        final Path link = tempDir.resolve(name);
         final Path devStdout = Paths.get("/dev/stdout");
 
         stdoutSymlink = Files.createSymbolicLink(link, devStdout);
@@ -107,18 +141,41 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
     /**
      * @param binaryName Name of one of the Kakadu binaries.
-     * @return Absolute path to the given binary.
+     * @return           Absolute path to the given binary.
      */
     private static String getPath(String binaryName) {
         String path = Configuration.getInstance().
                 getString(Key.KAKADUPROCESSOR_PATH_TO_BINARIES);
-        if (path != null && path.length() > 0) {
+        if (path != null && !path.isEmpty()) {
             path = StringUtils.stripEnd(path, File.separator) +
                     File.separator + binaryName;
         } else {
             path = binaryName;
         }
         return path;
+    }
+
+    /**
+     * Used only in Windows.
+     *
+     * @return Thread-safe path of an intermediate image from {@literal
+     *         kdu_expand} based on the given operation list.
+     */
+    private static Path getIntermediateImageFile(OperationList opList) {
+        final String name = opList.toFilename() + "-" +
+                Thread.currentThread().getName() + ".tif";
+        return getScratchDir().resolve(name);
+    }
+
+    /**
+     * Used only in Windows.
+     *
+     * @return Path to the scratch directory that stores output images from
+     *         {@literal kdu_expand}.
+     */
+    private static Path getScratchDir() {
+        Path tempPath = Application.getTempPath();
+        return tempPath.resolve(WINDOWS_SCRATCH_DIR_NAME);
     }
 
     private static synchronized void initialize() {
@@ -128,21 +185,30 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
             // Check for the presence of kdu_expand.
             invoke("kdu_expand");
 
-            // Due to a quirk of kdu_expand, this processor requires access to
-            // /dev/stdout.
-            final Path devStdout = Paths.get("/dev/stdout");
-            if (Files.exists(devStdout) && Files.isWritable(devStdout)) {
-                // Due to another quirk of kdu_expand, we need to create a
-                // symlink from {temp path}/stdout.tif to /dev/stdout, to tell
-                // kdu_expand what format to write.
-                createStdoutSymlink();
+            if (isWindows()) {
+                initializeForWindows();
             } else {
-                LOGGER.error(KakaduProcessor.class.getSimpleName() +
-                        " won't work on this platform as it requires access " +
-                        "to /dev/stdout.");
+                initializeForUnix();
             }
         } catch (IOException e) {
             initializationException = new InitializationException(e);
+        }
+    }
+
+    private static void initializeForWindows() throws IOException {
+        final Path scratchDir = getScratchDir();
+
+        if (!Files.exists(scratchDir)) {
+            Files.createDirectories(scratchDir);
+        }
+    }
+
+    private static void initializeForUnix() throws IOException {
+        final Path devStdout = Paths.get("/dev", "stdout");
+        if (Files.exists(devStdout) && Files.isWritable(devStdout)) {
+            createStdoutSymlink();
+        } else {
+            LOGGER.error("/dev/stdout does not exist or isn't writable");
         }
     }
 
@@ -154,6 +220,10 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
         String commandString = String.join(" ", pb.command());
         LOGGER.info("invoke(): {}", commandString);
         pb.start();
+    }
+
+    private static boolean isWindows() {
+        return SystemUtils.IS_OS_WINDOWS;
     }
 
     /**
@@ -183,7 +253,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     public Set<Format> getAvailableOutputFormats() {
         final Set<Format> outputFormats;
         if (Format.JP2.equals(format)) {
-            outputFormats = ImageWriter.supportedFormats();
+            outputFormats = ImageWriterFactory.supportedFormats();
         } else {
             outputFormats = Collections.unmodifiableSet(Collections.emptySet());
         }
@@ -233,52 +303,16 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     @Override
     public void process(final OperationList opList,
                         final Info imageInfo,
-                        final OutputStream outputStream)
-            throws ProcessorException {
+                        final OutputStream outputStream) throws ProcessorException {
         super.process(opList, imageInfo, outputStream);
 
-        // Will receive stderr output from kdu_expand.
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
+
         try {
-            final ReductionFactor reductionFactor = new ReductionFactor();
-
-            // If we are normalizing, we need to read the entire image region.
-            final boolean normalize = (opList.getFirst(Normalize.class) != null);
-
-            final ProcessBuilder pb = getProcessBuilder(
-                    opList, imageInfo.getSize(), reductionFactor, normalize);
-            LOGGER.info("Invoking {}", String.join(" ", pb.command()));
-            final Process process = pb.start();
-
-            try (final InputStream processInputStream =
-                         new BufferedInputStream(process.getInputStream());
-                 final InputStream processErrorStream = process.getErrorStream()) {
-                ThreadPool.getInstance().submit(
-                        new StreamCopier(processErrorStream, errorBucket));
-
-                final ImageReader reader = new ImageReader(
-                        processInputStream, Format.TIF);
-                final BufferedImage image = reader.read();
-                try {
-                    Set<ImageReader.Hint> hints =
-                            EnumSet.noneOf(ImageReader.Hint.class);
-                    if (!normalize) {
-                        hints.add(ImageReader.Hint.ALREADY_CROPPED);
-                    }
-                    postProcess(image, hints, opList, imageInfo,
-                            reductionFactor, outputStream);
-                    final int code = process.waitFor();
-                    if (code != 0) {
-                        LOGGER.warn("kdu_expand returned with code {}", code);
-                        String errorStr = toString(errorBucket);
-                        errorStr += "\nPathname: " + getSourceFile();
-                        throw new ProcessorException(errorStr);
-                    }
-                } finally {
-                    reader.dispose();
-                }
-            } finally {
-                process.destroy();
+            if (isWindows()) {
+                processInWindows(opList, imageInfo, errorBucket, outputStream);
+            } else {
+                processInUnix(opList, imageInfo, errorBucket, outputStream);
             }
         } catch (EOFException e) {
             // This is usually caused by the connection closing.
@@ -286,7 +320,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
             msg = String.format("process(): %s (%s)",
                     (msg != null && msg.length() > 0) ? msg : "EOFException",
                     opList.toString());
-            LOGGER.info(msg, e);
+            LOGGER.debug(msg, e);
             throw new ProcessorException(msg, e);
         } catch (IOException | InterruptedException e) {
             String msg = e.getMessage();
@@ -298,6 +332,117 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
         }
     }
 
+    private void processInWindows(final OperationList opList,
+                                  final Info info,
+                                  final ByteArrayOutputStream errorOutput,
+                                  final OutputStream outputStream)
+            throws IOException, InterruptedException {
+        // Will receive stdin output from kdu_expand (but we're not expecting
+        // any).
+        final ByteArrayOutputStream inputBucket = new ByteArrayOutputStream();
+        final Path intermediateFile = getIntermediateImageFile(opList);
+        final ReductionFactor reductionFactor = new ReductionFactor();
+        final ThreadPool pool = ThreadPool.getInstance();
+
+        // If we are normalizing, we need to read the entire image region.
+        final boolean normalize = (opList.getFirst(Normalize.class) != null);
+
+        final ProcessBuilder pb = getProcessBuilder(
+                opList, info.getSize(), info.getNumResolutions(),
+                reductionFactor, normalize, intermediateFile);
+        LOGGER.info("Invoking {}", String.join(" ", pb.command()));
+        final Process process = pb.start();
+
+        try (final InputStream processInputStream =
+                     new BufferedInputStream(process.getInputStream());
+             final InputStream processErrorStream = process.getErrorStream()) {
+            pool.submit(new StreamCopier(processErrorStream, errorOutput));
+            pool.submit(new StreamCopier(processInputStream, inputBucket));
+
+            final int code = process.waitFor();
+            if (code != 0) {
+                LOGGER.warn("kdu_expand returned with code {}", code);
+                String errorStr = toString(errorOutput);
+                errorStr += "\nPathname: " + getSourceFile();
+                throw new IOException(errorStr);
+            }
+        } finally {
+            process.destroy();
+        }
+
+        try (InputStream is = Files.newInputStream(intermediateFile)) {
+            final ImageReader reader =
+                    new ImageReaderFactory().newImageReader(is, Format.TIF);
+            try {
+                final BufferedImage image = reader.read();
+                Set<ReaderHint> hints =
+                        EnumSet.noneOf(ReaderHint.class);
+                if (!normalize) {
+                    hints.add(ReaderHint.ALREADY_CROPPED);
+                }
+                postProcess(image, hints, opList, info,
+                        reductionFactor, outputStream);
+            } finally {
+                reader.dispose();
+            }
+        } finally {
+            pool.submit(() -> {
+                LOGGER.debug("Deleting {}", intermediateFile);
+                Files.delete(intermediateFile);
+                return null;
+            }, ThreadPool.Priority.LOW);
+        }
+    }
+
+    private void processInUnix(final OperationList opList,
+                               final Info info,
+                               final ByteArrayOutputStream errorOutput,
+                               final OutputStream outputStream)
+            throws IOException, InterruptedException {
+        final ReductionFactor reductionFactor = new ReductionFactor();
+
+        // If we are normalizing, we need to read the entire image region.
+        final boolean normalize = (opList.getFirst(Normalize.class) != null);
+
+        final ProcessBuilder pb = getProcessBuilder(
+                opList, info.getSize(), info.getNumResolutions(),
+                reductionFactor, normalize, stdoutSymlink);
+        LOGGER.info("Invoking {}", String.join(" ", pb.command()));
+        final Process process = pb.start();
+
+        try (final InputStream processInputStream =
+                     new BufferedInputStream(process.getInputStream());
+             final InputStream processErrorStream = process.getErrorStream()) {
+            ThreadPool.getInstance().submit(
+                    new StreamCopier(processErrorStream, errorOutput));
+
+            final ImageReader reader = new ImageReaderFactory().newImageReader(
+                    processInputStream, Format.TIF);
+            try {
+                final BufferedImage image = reader.read();
+                Set<ReaderHint> hints =
+                        EnumSet.noneOf(ReaderHint.class);
+                if (!normalize) {
+                    hints.add(ReaderHint.ALREADY_CROPPED);
+                }
+                postProcess(image, hints, opList, info,
+                        reductionFactor, outputStream);
+
+                final int code = process.waitFor();
+                if (code != 0) {
+                    LOGGER.warn("kdu_expand returned with code {}", code);
+                    String errorStr = toString(errorOutput);
+                    errorStr += "\nPathname: " + getSourceFile();
+                    throw new IOException(errorStr);
+                }
+            } finally {
+                reader.dispose();
+            }
+        } finally {
+            process.destroy();
+        }
+    }
+
     /**
      * @param opList
      * @param imageSize  The full size of the source image.
@@ -305,13 +450,17 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
      *                   modified.
      * @param ignoreCrop Ignore any cropping directives provided in
      *                   {@literal opList}.
-     * @return {@link ProcessBuilder} for invoking {@literal kdu_expand} with
-     *         arguments corresponding to the given arguments.
+     * @param outputFile File to write to.
+     * @return           {@link ProcessBuilder} for invoking {@literal
+     *                   kdu_expand} with arguments corresponding to the given
+     *                   arguments.
      */
     private ProcessBuilder getProcessBuilder(final OperationList opList,
                                              final Dimension imageSize,
+                                             final int numResolutions,
                                              final ReductionFactor reduction,
-                                             final boolean ignoreCrop) {
+                                             final boolean ignoreCrop,
+                                             final Path outputFile) {
         final List<String> command = new ArrayList<>(30);
         command.add(getPath("kdu_expand"));
         command.add("-quiet");
@@ -378,8 +527,13 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
                 final Scale scale = (Scale) op;
                 final Dimension tileSize = getCroppedSize(opList, imageSize);
                 if (!ignoreCrop) {
+                    int numDWTLevels = numResolutions - 1;
+                    if (numDWTLevels < 0) {
+                        numDWTLevels = FALLBACK_NUM_DWT_LEVELS;
+                    }
                     reduction.factor = scale.getReductionFactor(
-                            tileSize, MAX_REDUCTION_FACTOR).factor;
+                            tileSize, numDWTLevels).factor;
+
                     if (reduction.factor > 0) {
                         command.add("-reduce");
                         command.add(reduction.factor + "");
@@ -393,7 +547,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
         }
 
         command.add("-o");
-        command.add(stdoutSymlink.toString());
+        command.add(outputFile.toString());
 
         return new ProcessBuilder(command);
     }

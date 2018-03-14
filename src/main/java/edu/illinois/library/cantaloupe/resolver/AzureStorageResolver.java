@@ -17,16 +17,36 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.NoSuchFileException;
 import java.security.InvalidKeyException;
+import java.util.List;
 
 /**
  * <p>Maps an identifier to a
  * <a href="https://azure.microsoft.com/en-us/services/storage/">Microsoft
  * Azure Storage</a> blob, for retrieving images from Azure Storage.</p>
+ *
+ * <h1>Format Inference</h1>
+ *
+ * <ol>
+ *     <li>If the blob key has a recognized filename extension, the format will
+ *     be inferred from that.</li>
+ *     <li>Otherwise, if the source image's URI identifier has a recognized
+ *     filename extension, the format will be inferred from that.</li>
+ *     <li>Otherwise, a {@literal HEAD} request will be sent. If a {@literal
+ *     Content-Type} header is present in the response, and is specific enough
+ *     (i.e. not {@literal application/octet-stream}), a format will be
+ *     inferred from that.</li>
+ *     <li>Otherwise, a {@literal GET} request will be sent with a {@literal
+ *     Range} header specifying a small range of data from the beginning of the
+ *     resource, and a format will be inferred from the magic bytes in the
+ *     response body.</li>
+ * </ol>
  *
  * <h1>Lookup Strategies</h1>
  *
@@ -64,8 +84,13 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
 
     }
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(AzureStorageResolver.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(AzureStorageResolver.class);
+
+    /**
+     * Byte length of the range used to infer the source image format.
+     */
+    private static final int FORMAT_INFERENCE_RANGE_LENGTH = 32;
 
     private static final String GET_KEY_DELEGATE_METHOD =
             "AzureStorageResolver::get_blob_key";
@@ -75,6 +100,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
 
     private CloudBlockBlob cachedBlob;
     private IOException cachedBlobException;
+    private String objectKey;
 
     static synchronized CloudStorageAccount getAccount() {
         if (account == null) {
@@ -156,19 +182,22 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     }
 
     private String getObjectKey() throws IOException {
-        final LookupStrategy strategy =
-                LookupStrategy.from(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY);
-        switch (strategy) {
-            case DELEGATE_SCRIPT:
-                try {
-                    return getObjectKeyWithDelegateStrategy();
-                } catch (ScriptException e) {
-                    LOGGER.error(e.getMessage(), e);
-                    throw new IOException(e);
-                }
-            default:
-                return identifier.toString();
+        if (objectKey == null) {
+            final LookupStrategy strategy =
+                    LookupStrategy.from(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY);
+            switch (strategy) {
+                case DELEGATE_SCRIPT:
+                    try {
+                        return getObjectKeyWithDelegateStrategy();
+                    } catch (ScriptException e) {
+                        LOGGER.error(e.getMessage(), e);
+                        throw new IOException(e);
+                    }
+                default:
+                    return identifier.toString();
+            }
         }
+        return objectKey;
     }
 
     /**
@@ -189,19 +218,47 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     @Override
     public Format getSourceFormat() throws IOException {
         if (sourceFormat == null) {
-            final CloudBlockBlob blob = getObject();
-            final String contentType = blob.getProperties().getContentType();
-            // See if we can determine the format from the Content-Type header.
-            if (contentType != null) {
-                sourceFormat = new MediaType(contentType).toFormat();
-            }
-            if (sourceFormat == null || sourceFormat.equals(Format.UNKNOWN)) {
+            final String key = getObjectKey();
+
+            // Try to infer a format based on the object key.
+            LOGGER.debug("Inferring format from the object key for {}", key);
+            sourceFormat = Format.inferFormat(key);
+
+            if (Format.UNKNOWN.equals(sourceFormat)) {
                 // Try to infer a format based on the identifier.
+                LOGGER.debug("Inferring format from the identifier for {}", key);
                 sourceFormat = Format.inferFormat(identifier);
             }
+
             if (Format.UNKNOWN.equals(sourceFormat)) {
-                // Try to infer a format based on the objectKey.
-                sourceFormat = Format.inferFormat(getObjectKey());
+                // Try to infer the format from the Content-Type header.
+                LOGGER.debug("Inferring format from the Content-Type header for {}",
+                        key);
+                final CloudBlockBlob blob = getObject();
+                final String contentType = blob.getProperties().getContentType();
+                if (contentType != null && !contentType.isEmpty()) {
+                    sourceFormat = new MediaType(contentType).toFormat();
+                }
+
+                if (Format.UNKNOWN.equals(sourceFormat)) {
+                    // Try to infer a format from the object's magic bytes.
+                    LOGGER.debug("Inferring format from magic bytes for {}",
+                            key);
+                    try {
+                        byte[] bytes = new byte[FORMAT_INFERENCE_RANGE_LENGTH];
+                        blob.downloadRangeToByteArray(
+                                0, (long) FORMAT_INFERENCE_RANGE_LENGTH, bytes, 0);
+
+                        try (InputStream is = new ByteArrayInputStream(bytes)) {
+                            List<MediaType> types = MediaType.detectMediaTypes(is);
+                            if (!types.isEmpty()) {
+                                sourceFormat = types.get(0).toFormat();
+                            }
+                        }
+                    } catch (StorageException e) {
+                        throw new IOException(e);
+                    }
+                }
             }
         }
         return sourceFormat;

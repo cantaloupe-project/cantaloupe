@@ -243,8 +243,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.HTTPS_KEY_STORE_PASSWORD).sendKeys("cats");
         inputNamed(Key.HTTPS_HTTP2_ENABLED).click();
         inputNamed(Key.HTTP_ACCEPT_QUEUE_LIMIT).sendKeys("50");
-        inputNamed(Key.HTTP_MIN_THREADS).sendKeys("35");
-        inputNamed(Key.HTTP_MAX_THREADS).sendKeys("38");
         inputNamed(Key.BASE_URI).sendKeys("http://bla/bla/");
         inputNamed(Key.SLASH_SUBSTITUTE).sendKeys("^");
         inputNamed(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES).click();
@@ -268,8 +266,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertEquals("cats", config.getString(Key.HTTPS_KEY_STORE_PASSWORD));
         assertTrue(config.getBoolean(Key.HTTPS_HTTP2_ENABLED));
         assertEquals("50", config.getString(Key.HTTP_ACCEPT_QUEUE_LIMIT));
-        assertEquals("35", config.getString(Key.HTTP_MIN_THREADS));
-        assertEquals("38", config.getString(Key.HTTP_MAX_THREADS));
         assertEquals("http://bla/bla/", config.getString(Key.BASE_URI));
         assertEquals("^", config.getString(Key.SLASH_SUBSTITUTE));
         assertTrue(config.getBoolean(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES));
@@ -443,6 +439,10 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         css("#cl-processors li > a[href=\"#cl-image-assignments\"]").click();
         selectNamed("processor.gif").selectByVisibleText("Java2dProcessor");
         selectNamed(Key.PROCESSOR_FALLBACK).selectByVisibleText("JaiProcessor");
+        selectNamed(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY).
+                selectByValue("StreamStrategy");
+        selectNamed(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY).
+                selectByValue("CacheStrategy");
         inputNamed(Key.PROCESSOR_DPI).sendKeys("300");
         inputNamed(Key.PROCESSOR_NORMALIZE).click();
         selectNamed(Key.PROCESSOR_BACKGROUND_COLOR).selectByValue("white");
@@ -456,8 +456,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.PROCESSOR_JPG_PROGRESSIVE).click();
         inputNamed(Key.PROCESSOR_JPG_QUALITY).sendKeys("55");
         selectNamed(Key.PROCESSOR_TIF_COMPRESSION).selectByVisibleText("LZW");
-        selectNamed(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY).
-                selectByValue("StreamStrategy");
         // FfmpegProcessor
         css("#cl-processors li > a[href=\"#FfmpegProcessor\"]").click();
         inputNamed(Key.FFMPEGPROCESSOR_PATH_TO_BINARIES).sendKeys("/ffpath");
@@ -487,6 +485,10 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         final Configuration config = Configuration.getInstance();
         assertEquals("Java2dProcessor", config.getString("processor.gif"));
         assertEquals("JaiProcessor", config.getString(Key.PROCESSOR_FALLBACK));
+        assertEquals("StreamStrategy",
+                config.getString(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY));
+        assertEquals("CacheStrategy",
+                config.getString(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY));
         assertEquals(300, config.getInt(Key.PROCESSOR_DPI));
         assertTrue(config.getBoolean(Key.PROCESSOR_NORMALIZE));
         assertEquals("white", config.getString(Key.PROCESSOR_BACKGROUND_COLOR));
@@ -500,8 +502,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertEquals("true", config.getString(Key.PROCESSOR_JPG_PROGRESSIVE));
         assertEquals("55", config.getString(Key.PROCESSOR_JPG_QUALITY));
         assertEquals("LZW", config.getString(Key.PROCESSOR_TIF_COMPRESSION));
-        assertEquals("StreamStrategy",
-                config.getString(Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY));
         // FfmpegProcessor
         assertEquals("/ffpath",
                 config.getString(Key.FFMPEGPROCESSOR_PATH_TO_BINARIES));
@@ -537,7 +537,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.CLIENT_CACHE_PROXY_REVALIDATE).click();
         inputNamed(Key.CLIENT_CACHE_NO_TRANSFORM).click();
         selectNamed(Key.SOURCE_CACHE).selectByVisibleText("FilesystemCache");
-        inputNamed(Key.SOURCE_CACHE_ENABLED).click();
         inputNamed(Key.SOURCE_CACHE_TTL).sendKeys("10");
         selectNamed(Key.DERIVATIVE_CACHE).selectByVisibleText("FilesystemCache");
         inputNamed(Key.DERIVATIVE_CACHE_ENABLED).click();
@@ -605,7 +604,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertTrue(config.getBoolean(Key.CLIENT_CACHE_PROXY_REVALIDATE));
         assertTrue(config.getBoolean(Key.CLIENT_CACHE_NO_TRANSFORM));
         assertEquals("FilesystemCache", config.getString(Key.SOURCE_CACHE));
-        assertTrue(config.getBoolean(Key.SOURCE_CACHE_ENABLED));
         assertEquals(10, config.getInt(Key.SOURCE_CACHE_TTL));
         assertEquals("FilesystemCache", config.getString(Key.DERIVATIVE_CACHE));
         assertTrue(config.getBoolean(Key.DERIVATIVE_CACHE_ENABLED));

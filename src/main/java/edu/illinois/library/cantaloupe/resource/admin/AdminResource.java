@@ -213,9 +213,6 @@ public class AdminResource extends AbstractAdminResource {
 
         vars.put("processors", sortedProcessorProxies);
 
-        vars.put("streamProcessorRetrievalStrategy",
-                ProcessorConnector.getStreamProcessorRetrievalStrategy());
-
         // source formats
         vars.put("scaleFilters", Scale.Filter.values());
 

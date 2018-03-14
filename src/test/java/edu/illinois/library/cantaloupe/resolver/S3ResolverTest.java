@@ -35,7 +35,13 @@ import static org.junit.Assert.*;
 
 public class S3ResolverTest extends AbstractResolverTest {
 
-    private static final String OBJECT_KEY = "jpeg.jpg";
+    private static final String OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION = "jpeg.jpg";
+    private static final String OBJECT_KEY_WITH_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION = "jpeg.unknown";
+    private static final String OBJECT_KEY_WITH_CONTENT_TYPE_BUT_NO_EXTENSION = "jpg";
+    private static final String OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION = "jpeg.jpg";
+    private static final String OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION = "jpeg.unknown";
+    private static final String OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION = "jpg";
+    private static final String NON_IMAGE_KEY = "NotAnImage";
 
     private static S3Mock mockS3;
     private static int mockS3Port;
@@ -64,29 +70,66 @@ public class S3ResolverTest extends AbstractResolverTest {
         try {
             s3.deleteBucket(bucketName);
         } catch (AmazonS3Exception e) {
-            // This probably means it already exists. We'll find out shortly.
+            // This probably means it doesn't exist. We'll find out shortly.
         }
-        s3.createBucket(new CreateBucketRequest(bucketName));
+        try {
+            s3.createBucket(new CreateBucketRequest(bucketName));
+        } catch (AmazonS3Exception e) {
+            if (!e.getMessage().contains("you already own it")) {
+                throw e;
+            }
+        }
     }
 
     private static void seedFixtures() throws IOException {
         final AmazonS3 s3 = client();
-        Path fixture = TestUtil.getImage("jpg-rgb-64x56x8-line.jpg");
+        Path fixture = TestUtil.getImage("jpg");
 
+        for (final String key : new String[] {
+                OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION,
+                OBJECT_KEY_WITH_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION,
+                OBJECT_KEY_WITH_CONTENT_TYPE_BUT_NO_EXTENSION,
+                OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION,
+                OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION,
+                OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION}) {
+            try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                Files.copy(fixture, os);
+                os.flush();
+                byte[] imageBytes = os.toByteArray();
+
+                final ObjectMetadata metadata = new ObjectMetadata();
+                if (!OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION.equals(key) &&
+                        !OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION.equals(key) &&
+                        !OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION.equals(key)) {
+                    metadata.setContentType("image/jpeg");
+                }
+                metadata.setContentLength(imageBytes.length);
+
+                try (ByteArrayInputStream s3Stream = new ByteArrayInputStream(imageBytes)) {
+                    final PutObjectRequest request = new PutObjectRequest(
+                            getBucket(), key, s3Stream, metadata);
+                    s3.putObject(request);
+                }
+            }
+        }
+
+        // Add a non-image
+        fixture = TestUtil.getImage("text.txt");
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             Files.copy(fixture, os);
+            os.flush();
             byte[] imageBytes = os.toByteArray();
 
             final ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentType("image/jpeg");
             metadata.setContentLength(imageBytes.length);
 
             try (ByteArrayInputStream s3Stream = new ByteArrayInputStream(imageBytes)) {
                 final PutObjectRequest request = new PutObjectRequest(
-                        getBucket(), OBJECT_KEY, s3Stream, metadata);
+                        getBucket(), NON_IMAGE_KEY, s3Stream, metadata);
                 s3.putObject(request);
             }
         }
+
     }
 
     /**
@@ -114,7 +157,7 @@ public class S3ResolverTest extends AbstractResolverTest {
 
     private static void deleteFixtures() {
         final AmazonS3 s3 = client();
-        s3.deleteObject(getBucket(), OBJECT_KEY);
+        s3.deleteObject(getBucket(), OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION);
     }
 
     private static String getAccessKeyId() {
@@ -168,7 +211,7 @@ public class S3ResolverTest extends AbstractResolverTest {
     @Override
     S3Resolver newInstance() {
         S3Resolver instance = new S3Resolver();
-        instance.setIdentifier(new Identifier(OBJECT_KEY));
+        instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION));
         return instance;
     }
 
@@ -193,7 +236,7 @@ public class S3ResolverTest extends AbstractResolverTest {
             config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                     TestUtil.getFixture("delegates.rb"));
 
-            Identifier identifier = new Identifier(OBJECT_KEY);
+            Identifier identifier = new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION);
             RequestContext context = new RequestContext();
             context.setIdentifier(identifier);
             DelegateProxyService service = DelegateProxyService.getInstance();
@@ -245,7 +288,7 @@ public class S3ResolverTest extends AbstractResolverTest {
         useScriptLookupStrategy();
 
         instance.setIdentifier(new Identifier("bucket:" + getBucket() +
-                ";key:" + OBJECT_KEY));
+                ";key:" + OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION));
         instance.checkAccess();
     }
 
@@ -254,7 +297,7 @@ public class S3ResolverTest extends AbstractResolverTest {
             throws Exception {
         useScriptLookupStrategy();
 
-        Identifier identifier = new Identifier("key:" + OBJECT_KEY);
+        Identifier identifier = new Identifier("key:" + OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION);
         RequestContext context = new RequestContext();
         context.setIdentifier(identifier);
         DelegateProxyService service = DelegateProxyService.getInstance();
@@ -310,19 +353,51 @@ public class S3ResolverTest extends AbstractResolverTest {
     }
 
     @Test
-    public void testGetSourceFormatWithImageWithRecognizedExtension()
+    public void testGetSourceFormatWithContentTypeAndRecognizedExtensionInObjectKey()
             throws IOException {
+        instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION));
         assertEquals(Format.JPG, instance.getSourceFormat());
     }
 
     @Test
-    public void testGetSourceFormatWithImageWithUnrecognizedExtension() {
-        // TODO: write this
+    public void testGetSourceFormatWithContentTypeAndUnrecognizedExtensionInObjectKey()
+            throws IOException {
+        instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION));
+        assertEquals(Format.JPG, instance.getSourceFormat());
     }
 
     @Test
-    public void testGetSourceFormatWithImageWithNoExtension() {
-        // TODO: write this
+    public void testGetSourceFormatWithContentTypeAndNoExtensionInObjectKey()
+            throws IOException {
+        instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_BUT_NO_EXTENSION));
+        assertEquals(Format.JPG, instance.getSourceFormat());
+    }
+
+    @Test
+    public void testGetSourceFormatWithNoContentTypeButRecognizedExtensionInObjectKey()
+            throws IOException {
+        instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION));
+        assertEquals(Format.JPG, instance.getSourceFormat());
+    }
+
+    @Test
+    public void testGetSourceFormatWithNoContentTypeAndUnrecognizedExtensionInObjectKey()
+            throws IOException {
+        instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION));
+        assertEquals(Format.JPG, instance.getSourceFormat());
+    }
+
+    @Test
+    public void testGetSourceFormatWithNoContentTypeOrExtensionInObjectKey()
+            throws IOException {
+        instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION));
+        assertEquals(Format.JPG, instance.getSourceFormat());
+    }
+
+    @Test
+    public void testGetSourceFormatWithNonImage() throws IOException {
+        instance.setIdentifier(new Identifier(NON_IMAGE_KEY));
+        assertEquals(Format.UNKNOWN, instance.getSourceFormat());
     }
 
     /* newStreamSource() */

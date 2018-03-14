@@ -16,8 +16,10 @@ import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.image.Compression;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
+import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
+import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +33,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -47,8 +48,8 @@ import java.util.Set;
 class JaiProcessor extends AbstractImageIOProcessor
         implements FileProcessor, StreamProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(JaiProcessor.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(JaiProcessor.class);
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             Collections.unmodifiableSet(EnumSet.of(
@@ -65,18 +66,34 @@ class JaiProcessor extends AbstractImageIOProcessor
                     ProcessorFeature.SIZE_BY_PERCENT,
                     ProcessorFeature.SIZE_BY_WIDTH,
                     ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
+
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
             SUPPORTED_IIIF_1_1_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
                     edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
                     edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
                     edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
                     edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
+
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
             SUPPORTED_IIIF_2_0_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
                     edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
                     edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
                     edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
                     edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
+
+    /**
+     * Override that disables support for GIF source images.
+     */
+    @Override
+    public Set<Format> getAvailableOutputFormats() {
+        Set<Format> formats;
+        if (Format.GIF.equals(format)) {
+            formats = Collections.emptySet();
+        } else {
+            formats = super.getAvailableOutputFormats();
+        }
+        return formats;
+    }
 
     @Override
     public Set<ProcessorFeature> getSupportedFeatures() {
@@ -127,15 +144,15 @@ class JaiProcessor extends AbstractImageIOProcessor
             final Orientation orientation = getEffectiveOrientation();
             final Dimension fullSize = imageInfo.getSize();
             final ReductionFactor rf = new ReductionFactor();
-            final Set<ImageReader.Hint> hints =
-                    EnumSet.noneOf(ImageReader.Hint.class);
+            final Set<ReaderHint> hints =
+                    EnumSet.noneOf(ReaderHint.class);
 
             final boolean normalize = (opList.getFirst(Normalize.class) != null);
             if (normalize) {
                 // When normalizing, the reader needs to read the entire image
                 // so that its histogram can be sampled accurately. This will
                 // preserve the luminance across tiles.
-                hints.add(ImageReader.Hint.IGNORE_CROP);
+                hints.add(ReaderHint.IGNORE_CROP);
             }
 
             final RenderedImage renderedImage = reader.readRendered(opList,
@@ -234,8 +251,8 @@ class JaiProcessor extends AbstractImageIOProcessor
                     image = Java2DUtil.applyOverlay(image, (Overlay) op);
                 }
             }
-            final ImageWriter writer = new ImageWriter(opList,
-                    reader.getMetadata(0));
+            final ImageWriter writer = new ImageWriterFactory().newImageWriter(
+                    opList, reader.getMetadata(0));
 
             if (image != null) {
                 writer.write(image, outputStream);

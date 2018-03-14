@@ -175,7 +175,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     public void testNewImageInfoTilesWithTiledImage() throws Exception {
         processor.setSourceFormat(Format.TIF);
         ((FileProcessor) processor).setSourceFile(
-                TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"));
+                TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-uncompressed.tif"));
         imageInfo = new ImageInfoFactory().newImageInfo(
                 imageUri, processor, processor.readImageInfo(), null);
 

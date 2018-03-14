@@ -17,17 +17,40 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
+import java.util.List;
 import java.util.Map;
 
 /**
  * <p>Maps an identifier to an <a href="https://aws.amazon.com/s3/">Amazon
  * Simple Storage Service (S3)</a> object, for retrieving images from S3.</p>
+ *
+ * <h1>Format Inference</h1>
+ *
+ * <ol>
+ *     <li>If the object key has a recognized filename extension, the format
+ *     will be inferred from that.</li>
+ *     <li>Otherwise, if the source image's URI identifier has a recognized
+ *     filename extension, the format will be inferred from that.</li>
+ *     <li>Otherwise, a {@literal GET} request will be sent with a {@literal
+ *     Range} header specifying a small range of data from the beginning of the
+ *     resource.
+ *         <ol>
+ *             <li>If a {@literal Content-Type} header is present in the
+ *             response, and is specific enough (i.e. not {@literal
+ *             application/octet-stream}), a format will be inferred from
+ *             that.</li>
+ *             <li>Otherwise, a format will be inferred from the magic bytes in
+ *             the response body.</li>
+ *         </ol>
+ *     </li>
+ * </ol>
  *
  * <h1>Lookup Strategies</h1>
  *
@@ -90,9 +113,19 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(S3Resolver.class);
 
+    /**
+     * Byte length of the range used to infer the source image format.
+     */
+    private static final int FORMAT_INFERENCE_RANGE_LENGTH = 32;
+
     private static AmazonS3 client;
 
     private IOException cachedAccessException;
+
+    /**
+     * Cached by {@link #getObjectInfo()}.
+     */
+    private ObjectInfo objectInfo;
 
     private static synchronized AmazonS3 getClientInstance() {
         if (client == null) {
@@ -121,12 +154,30 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
      * {@link S3Object#getObjectContent()}, must be closed.
      */
     private static S3Object fetchObject(ObjectInfo info) throws IOException {
+        return fetchObject(info, 0);
+    }
+
+    /**
+     * N.B.: Either the returned instance, or the return value of
+     * {@link S3Object#getObjectContent()}, must be closed.
+     *
+     * @param info   Object info.
+     * @param length Number of bytes to fetch.
+     */
+    private static S3Object fetchObject(ObjectInfo info,
+                                        int length) throws IOException {
         final AmazonS3 s3 = getClientInstance();
         try {
-            LOGGER.debug("Requesting {}", info);
-            return s3.getObject(new GetObjectRequest(
+            GetObjectRequest request = new GetObjectRequest(
                     info.getBucketName(),
-                    info.getKey()));
+                    info.getKey());
+            if (length > 0) {
+                request.setRange(0, length);
+                LOGGER.debug("Requesting {} bytes from {}", length, info);
+            } else {
+                LOGGER.debug("Requesting {}", info);
+            }
+            return s3.getObject(request);
         } catch (AmazonS3Exception e) {
             if (e.getErrorCode().equals("NoSuchKey")) {
                 throw new NoSuchFileException(e.getMessage());
@@ -160,12 +211,28 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
      *                               object.
      */
     private S3Object getObject() throws IOException {
+        return getObject(0);
+    }
+
+    /**
+     * N.B.: Either the returned instance, or the return value of
+     * {@link S3Object#getObjectContent()}, must be closed.
+     *
+     * @param length Number of object bytes to return.
+     * @throws NoSuchFileException   if the object corresponding to {@link
+     *                               #identifier} does not exist.
+     * @throws AccessDeniedException if the object corresponding to {@link
+     *                               #identifier} is not readable.
+     * @throws IOException           if there is some other issue accessing the
+     *                               object.
+     */
+    private S3Object getObject(int length) throws IOException {
         if (cachedAccessException != null) {
             throw cachedAccessException;
         } else {
             try {
                 final ObjectInfo info = getObjectInfo();
-                return fetchObject(info);
+                return fetchObject(info, length);
             } catch (IOException e) {
                 cachedAccessException = e;
                 throw e;
@@ -173,20 +240,23 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
         }
     }
 
+    /**
+     * @return Info for the current object. The result is cached.
+     */
     ObjectInfo getObjectInfo() throws IOException {
-        ObjectInfo objectInfo;
-
-        switch (LookupStrategy.from(Key.S3RESOLVER_LOOKUP_STRATEGY)) {
-            case DELEGATE_SCRIPT:
-                try {
-                    objectInfo = getObjectInfoUsingDelegateStrategy();
-                } catch (ScriptException e) {
-                    throw new IOException(e);
-                }
-                break;
-            default:
-                objectInfo = getObjectInfoUsingBasicStrategy();
-                break;
+        if (objectInfo == null) {
+            switch (LookupStrategy.from(Key.S3RESOLVER_LOOKUP_STRATEGY)) {
+                case DELEGATE_SCRIPT:
+                    try {
+                        objectInfo = getObjectInfoUsingDelegateStrategy();
+                    } catch (ScriptException e) {
+                        throw new IOException(e);
+                    }
+                    break;
+                default:
+                    objectInfo = getObjectInfoUsingBasicStrategy();
+                    break;
+            }
         }
         return objectInfo;
     }
@@ -239,19 +309,47 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
     @Override
     public Format getSourceFormat() throws IOException {
         if (sourceFormat == null) {
-            try (S3Object object = getObject()) {
-                String contentType = object.getObjectMetadata().getContentType();
-                // See if we can determine the format from the Content-Type header.
-                if (contentType != null && !contentType.isEmpty()) {
-                    sourceFormat = new MediaType(contentType).toFormat();
-                }
-                if (sourceFormat == null || Format.UNKNOWN.equals(sourceFormat)) {
-                    // Try to infer a format based on the identifier.
-                    sourceFormat = Format.inferFormat(identifier);
-                }
-                if (Format.UNKNOWN.equals(sourceFormat)) {
-                    // Try to infer a format based on the objectKey.
-                    sourceFormat = Format.inferFormat(object.getKey());
+            sourceFormat = Format.UNKNOWN;
+
+            final ObjectInfo info = getObjectInfo();
+
+            // Try to infer a format from the object key.
+            LOGGER.debug("Inferring format from the object key for {}",
+                    info);
+            sourceFormat = Format.inferFormat(info.getKey());
+
+            if (Format.UNKNOWN.equals(sourceFormat)) {
+                // Try to infer a format from the identifier.
+                LOGGER.debug("Inferring format from the identifier for {}",
+                        info);
+                sourceFormat = Format.inferFormat(identifier);
+            }
+
+            if (Format.UNKNOWN.equals(sourceFormat)) {
+                try (S3Object object = getObject(FORMAT_INFERENCE_RANGE_LENGTH)) {
+                    // Try to infer a format from the Content-Type header.
+                    LOGGER.debug("Inferring format from the Content-Type header for {}",
+                            info);
+                    String contentType = object.getObjectMetadata().getContentType();
+                    if (contentType != null && !contentType.isEmpty()) {
+                        sourceFormat = new MediaType(contentType).toFormat();
+                    }
+
+                    if (Format.UNKNOWN.equals(sourceFormat)) {
+                        // Try to infer a format from the object's magic bytes.
+                        LOGGER.debug("Inferring format from magic bytes for {}",
+                                info);
+
+                        try (InputStream contentStream = new BufferedInputStream(
+                                object.getObjectContent(),
+                                FORMAT_INFERENCE_RANGE_LENGTH)) {
+                            List<MediaType> types =
+                                    MediaType.detectMediaTypes(contentStream);
+                            if (!types.isEmpty()) {
+                                sourceFormat = types.get(0).toFormat();
+                            }
+                        }
+                    }
                 }
             }
         }

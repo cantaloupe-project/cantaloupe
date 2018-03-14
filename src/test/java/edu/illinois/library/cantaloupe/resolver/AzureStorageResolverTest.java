@@ -17,7 +17,6 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.DelegateProxyService;
-import edu.illinois.library.cantaloupe.script.DisabledException;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.AfterClass;
@@ -43,7 +42,13 @@ import static org.junit.Assert.*;
  */
 public class AzureStorageResolverTest extends AbstractResolverTest {
 
-    private static final String OBJECT_KEY = "jpeg.jpg";
+    private static final String OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION = "jpeg.jpg";
+    private static final String OBJECT_KEY_WITH_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION = "jpeg.unknown";
+    private static final String OBJECT_KEY_WITH_CONTENT_TYPE_BUT_NO_EXTENSION = "jpg";
+    private static final String OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION = "jpeg.jpg";
+    private static final String OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION = "jpeg.unknown";
+    private static final String OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION = "jpg";
+    private static final String NON_IMAGE_KEY = "NotAnImage";
 
     private AzureStorageResolver instance;
 
@@ -52,10 +57,31 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
         final CloudBlobClient client = client();
         final CloudBlobContainer container =
                 client.getContainerReference(getContainer());
-        final CloudBlockBlob blob = container.getBlockBlobReference(OBJECT_KEY);
-        blob.getProperties().setContentType("image/jpeg");
+        Path fixture = TestUtil.getImage("jpg-rgb-64x56x8-line.jpg");
 
-        final Path fixture = TestUtil.getImage("jpg-rgb-64x56x8-line.jpg");
+        for (final String key : new String[] {
+                OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION,
+                OBJECT_KEY_WITH_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION,
+                OBJECT_KEY_WITH_CONTENT_TYPE_BUT_NO_EXTENSION,
+                OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION,
+                OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION,
+                OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION}) {
+            final CloudBlockBlob blob = container.getBlockBlobReference(key);
+
+            if (!OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION.equals(key) &&
+                    !OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION.equals(key) &&
+                    !OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION.equals(key)) {
+                blob.getProperties().setContentType("image/jpeg");
+            }
+
+            try (OutputStream os = blob.openOutputStream()) {
+                Files.copy(fixture, os);
+            }
+        }
+
+        // Add a non-image
+        fixture = TestUtil.getImage("text.txt");
+        final CloudBlockBlob blob = container.getBlockBlobReference(NON_IMAGE_KEY);
         try (OutputStream os = blob.openOutputStream()) {
             Files.copy(fixture, os);
         }
@@ -66,7 +92,7 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
         final CloudBlobClient client = client();
         final CloudBlobContainer container =
                 client.getContainerReference(getContainer());
-        final CloudBlockBlob blob = container.getBlockBlobReference(OBJECT_KEY);
+        final CloudBlockBlob blob = container.getBlockBlobReference(OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION);
         blob.deleteIfExists();
     }
 
@@ -136,7 +162,7 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
     private static String getSASURI()
             throws StorageException, InvalidKeyException {
         return "https://" + getAccountName() + ".blob.core.windows.net/" +
-                getContainer() + "/" + OBJECT_KEY + "?" + generateSAS();
+                getContainer() + "/" + OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION + "?" + generateSAS();
     }
 
     @Before
@@ -158,7 +184,7 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
     @Override
     AzureStorageResolver newInstance() {
         AzureStorageResolver instance = new AzureStorageResolver();
-        instance.setIdentifier(new Identifier(OBJECT_KEY));
+        instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION));
         return instance;
     }
 
@@ -185,7 +211,7 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
             config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                     TestUtil.getFixture("delegates.rb").toString());
 
-            Identifier identifier = new Identifier(OBJECT_KEY);
+            Identifier identifier = new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION);
             RequestContext context = new RequestContext();
             context.setIdentifier(identifier);
             DelegateProxyService service = DelegateProxyService.getInstance();
@@ -195,6 +221,8 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
             fail();
         }
     }
+
+    /* checkAccess() */
 
     @Test
     public void testCheckAccessUsingBasicLookupStrategyWithPresentUnreadableImage() {
@@ -237,6 +265,8 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
         instance.checkAccess();
     }
 
+    /* getSourceFormat() */
+
     @Test
     public void testGetSourceFormatUsingBasicLookupStrategy()
             throws IOException {
@@ -251,19 +281,51 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
     }
 
     @Test
-    public void testGetSourceFormatWithImageWithRecognizedExtension()
+    public void testGetSourceFormatWithContentTypeAndRecognizedExtensionInObjectKey()
             throws IOException {
+        instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION));
         assertEquals(Format.JPG, instance.getSourceFormat());
     }
 
     @Test
-    public void testGetSourceFormatWithImageWithUnrecognizedExtension() {
-        // TODO: write this
+    public void testGetSourceFormatWithContentTypeAndUnrecognizedExtensionInObjectKey()
+            throws IOException {
+        instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION));
+        assertEquals(Format.JPG, instance.getSourceFormat());
     }
 
     @Test
-    public void testGetSourceFormatWithImageWithNoExtension() {
-        // TODO: write this
+    public void testGetSourceFormatWithContentTypeAndNoExtensionInObjectKey()
+            throws IOException {
+        instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_BUT_NO_EXTENSION));
+        assertEquals(Format.JPG, instance.getSourceFormat());
+    }
+
+    @Test
+    public void testGetSourceFormatWithNoContentTypeButRecognizedExtensionInObjectKey()
+            throws IOException {
+        instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION));
+        assertEquals(Format.JPG, instance.getSourceFormat());
+    }
+
+    @Test
+    public void testGetSourceFormatWithNoContentTypeAndUnrecognizedExtensionInObjectKey()
+            throws IOException {
+        instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION));
+        assertEquals(Format.JPG, instance.getSourceFormat());
+    }
+
+    @Test
+    public void testGetSourceFormatWithNoContentTypeOrExtensionInObjectKey()
+            throws IOException {
+        instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION));
+        assertEquals(Format.JPG, instance.getSourceFormat());
+    }
+
+    @Test
+    public void testGetSourceFormatWithNonImage() throws IOException {
+        instance.setIdentifier(new Identifier(NON_IMAGE_KEY));
+        assertEquals(Format.UNKNOWN, instance.getSourceFormat());
     }
 
     @Test
@@ -272,6 +334,8 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
         clearConfig();
         instance.getSourceFormat();
     }
+
+    /* newStreamSource() */
 
     @Test
     public void testNewStreamSourceUsingBasicLookupStrategy() throws Exception {

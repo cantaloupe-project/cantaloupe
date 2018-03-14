@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -94,9 +93,8 @@ public class HeapCacheTest extends AbstractCacheTest {
             config.setProperty(Key.HEAPCACHE_PATHNAME, cacheFile.toString());
 
             // Seed an image
-            Identifier id1 = new Identifier("cats");
-            OperationList ops1 = new OperationList(id1, Format.JPG);
-            try (OutputStream os = instance.newDerivativeImageOutputStream(ops1)) {
+            OperationList ops = new OperationList(new Identifier("cats"));
+            try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
                 Files.copy(TestUtil.getImage(IMAGE), os);
             }
 
@@ -122,15 +120,15 @@ public class HeapCacheTest extends AbstractCacheTest {
 
         // Seed an image
         Identifier id1 = new Identifier("cats");
-        OperationList ops1 = new OperationList(id1, Format.JPG);
-        try (OutputStream os = instance.newDerivativeImageOutputStream(ops1)) {
+        OperationList ops = new OperationList(id1);
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
         }
 
         assertEquals(5439, instance.getByteSize());
 
         // Seed an info
-        Info info = new Info(52, 52);
+        Info info = new Info();
         instance.put(id1, info);
 
         assertEquals(5439 + info.toJSON().length(), instance.getByteSize());
@@ -224,9 +222,8 @@ public class HeapCacheTest extends AbstractCacheTest {
             config.setProperty(Key.HEAPCACHE_PATHNAME, cacheFile.toString());
 
             // Seed an image
-            Identifier id1 = new Identifier("cats");
-            OperationList ops1 = new OperationList(id1, Format.JPG);
-            try (OutputStream os = instance.newDerivativeImageOutputStream(ops1)) {
+            OperationList ops = new OperationList(new Identifier("cats"));
+            try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
                 Files.copy(TestUtil.getImage(IMAGE), os);
             }
 
@@ -236,7 +233,7 @@ public class HeapCacheTest extends AbstractCacheTest {
             instance.loadFromPersistentStore();
             assertEquals(1, instance.size());
 
-            assertNotNull(instance.newDerivativeImageInputStream(ops1));
+            assertNotNull(instance.newDerivativeImageInputStream(ops));
         } finally {
             Files.deleteIfExists(cacheFile);
         }
@@ -256,8 +253,8 @@ public class HeapCacheTest extends AbstractCacheTest {
 
     @Test
     public void testNewDerivativeImageOutputStreamSetsDirtyFlag() {
-        OperationList ops = TestUtil.newOperationList();
-        ops.setIdentifier(new Identifier("cats"));
+        OperationList ops = new OperationList(new Identifier("cats"));
+
         instance.newDerivativeImageOutputStream(ops);
         assertTrue(instance.isDirty());
     }
@@ -270,9 +267,8 @@ public class HeapCacheTest extends AbstractCacheTest {
         config.setProperty(Key.HEAPCACHE_TARGET_SIZE, 5000);
 
         // Seed an image
-        Identifier id1 = new Identifier("cats");
-        OperationList ops1 = new OperationList(id1, Format.JPG);
-        try (OutputStream os = instance.newDerivativeImageOutputStream(ops1)) {
+        OperationList ops = new OperationList(new Identifier("cats"));
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
         }
 
@@ -290,9 +286,8 @@ public class HeapCacheTest extends AbstractCacheTest {
         config.setProperty(Key.HEAPCACHE_TARGET_SIZE, 10000);
 
         // Seed an image
-        Identifier id1 = new Identifier("cats");
-        OperationList ops1 = new OperationList(id1, Format.JPG);
-        try (OutputStream os = instance.newDerivativeImageOutputStream(ops1)) {
+        OperationList ops = new OperationList(new Identifier("cats"));
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
         }
 

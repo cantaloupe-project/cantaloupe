@@ -13,11 +13,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -154,7 +154,7 @@ class HeapCache implements DerivativeCache {
         @Override
         public String toString() {
             return (getOperationList() != null) ?
-                    getOperationList() : getIdentifier();
+                    "op:" + getOperationList() : "id:" + getIdentifier();
         }
 
         /**
@@ -246,14 +246,14 @@ class HeapCache implements DerivativeCache {
 
     }
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(HeapCache.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(HeapCache.class);
 
     private final ConcurrentMap<Key, Item> cache = new ConcurrentHashMap<>();
-    private final AtomicBoolean isDirty = new AtomicBoolean(false);
+    private final AtomicBoolean isDirty          = new AtomicBoolean(false);
     private final AtomicBoolean workerShouldWork = new AtomicBoolean(true);
 
-    private final Object dumpLock = new Object();
+    private final Object persistenceLock = new Object();
 
     /**
      * <p>Dumps the cache contents to the file specified by
@@ -267,7 +267,7 @@ class HeapCache implements DerivativeCache {
      * <strong>not</strong> respected.</p>
      */
     void dumpToPersistentStore() throws IOException {
-        synchronized (dumpLock) {
+        synchronized (persistenceLock) {
             final Path path = getPath();
             if (path != null) {
                 // Delete any existing file that is in the way.
@@ -275,7 +275,7 @@ class HeapCache implements DerivativeCache {
                 // Create any necessary directories up to the parent.
                 Files.createDirectories(path.getParent());
                 // Write out the contents.
-                LOGGER.info("dumpToPersistentStore(): dumping to {}...", path);
+                LOGGER.info("Dumping to {}...", path);
 
                 final long size = size();
                 final long byteSize = getByteSize();
@@ -315,8 +315,7 @@ class HeapCache implements DerivativeCache {
                     cacheBuilder.build().writeTo(fos);
                 }
 
-                LOGGER.info("dumpToPersistentStore(): dumped {} items ({} bytes)",
-                        size, byteSize);
+                LOGGER.info("Dumped {} items ({} bytes)", size, byteSize);
             } else {
                 throw new IOException("dumpToPersistentStore(): " +
                         HEAPCACHE_PATHNAME + " is not set");
@@ -345,7 +344,8 @@ class HeapCache implements DerivativeCache {
      * @return Current size of the contents in bytes.
      */
     long getByteSize() {
-        return cache.values().stream().mapToLong(t -> t.getData().length).sum();
+        return cache.values().parallelStream()
+                .mapToLong(t -> t.getData().length).sum();
     }
 
     @Override
@@ -469,43 +469,46 @@ class HeapCache implements DerivativeCache {
         return new Key(opList.getIdentifier().toString(), opList.toString());
     }
 
-    synchronized void loadFromPersistentStore() {
-        final Path path = getPath();
+    void loadFromPersistentStore() {
+        synchronized (persistenceLock) {
+            final Path path = getPath();
 
-        if (Files.exists(path)) {
-            LOGGER.info("loadFromPersistentStore(): reading {}...", path);
+            if (path != null && Files.exists(path)) {
+                LOGGER.info("loadFromPersistentStore(): reading {}...", path);
 
-            try (InputStream is = Files.newInputStream(path)) {
-                final HeapCacheProtos.Cache protoCache =
-                        HeapCacheProtos.Cache.parseFrom(is);
+                try (InputStream is = Files.newInputStream(path)) {
+                    final HeapCacheProtos.Cache protoCache =
+                            HeapCacheProtos.Cache.parseFrom(is);
 
-                // Read in the images.
-                for (HeapCacheProtos.Image image : protoCache.getImageList()) {
-                    final Key key = new Key(image.getIdentifier(),
-                            image.getOperationList());
-                    key.setLastAccessedTime(image.getLastAccessed());
-                    final Item item = new Item(image.getData().toByteArray());
-                    cache.put(key, item);
+                    // Read in the images.
+                    for (HeapCacheProtos.Image image : protoCache.getImageList()) {
+                        final Key key = new Key(image.getIdentifier(),
+                                image.getOperationList());
+                        key.setLastAccessedTime(image.getLastAccessed());
+                        final Item item = new Item(image.getData().toByteArray());
+                        cache.put(key, item);
+                    }
+
+                    // Read in the infos.
+                    for (HeapCacheProtos.Info info : protoCache.getInfoList()) {
+                        final Key key = new Key(info.getIdentifier());
+                        key.setLastAccessedTime(info.getLastAccessed());
+                        final Item item = new Item(info.getJsonBytes().toByteArray());
+                        cache.put(key, item);
+                    }
+
+                    LOGGER.info("Loaded {} items ({} bytes)",
+                            size(), getByteSize());
+                } catch (NoSuchFileException e) {
+                    LOGGER.error("loadFromPersistentStore(): file not found: {}",
+                            e.getMessage());
+                } catch (IOException e) {
+                    LOGGER.error("loadFromPersistentStore(): {}",
+                            e.getMessage());
                 }
-
-                // Read in the infos.
-                for (HeapCacheProtos.Info info : protoCache.getInfoList()) {
-                    final Key key = new Key(info.getIdentifier());
-                    key.setLastAccessedTime(info.getLastAccessed());
-                    final Item item = new Item(info.getJsonBytes().toByteArray());
-                    cache.put(key, item);
-                }
-
-                LOGGER.info("loadFromPersistentStore(): loaded {} items ({} bytes)",
-                        size(), getByteSize());
-            } catch (FileNotFoundException e) {
-                LOGGER.error("loadFromPersistentStore(): file not found: {}",
-                        e.getMessage());
-            } catch (IOException e) {
-                LOGGER.error("loadFromPersistentStore(): {}", e.getMessage());
+            } else {
+                LOGGER.info("loadFromPersistentStore(): does not exist: {}", path);
             }
-        } else {
-            LOGGER.info("loadFromPersistentStore(): does not exist: {}", path);
         }
     }
 
@@ -635,10 +638,10 @@ class HeapCache implements DerivativeCache {
      * @param item Item whose key should be touched.
      */
     private void touch(Item item) {
-        cache.entrySet().stream().
-                filter(entry -> Objects.equals(entry.getValue(), item)).
-                map(Map.Entry::getKey).
-                collect(Collectors.toSet()).forEach(Key::touch);
+        cache.entrySet().parallelStream()
+                .filter(entry -> Objects.equals(entry.getValue(), item))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet()).forEach(Key::touch);
     }
 
 }

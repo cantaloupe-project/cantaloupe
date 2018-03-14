@@ -3,7 +3,9 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -82,7 +84,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
 
         // page option missing
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        OperationList ops = TestUtil.newOperationList();
+        OperationList ops = new OperationList(new Encode(Format.JPG));
         instance.process(ops, imageInfo, outputStream);
         final byte[] page1 = outputStream.toByteArray();
 
@@ -95,29 +97,26 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         assertFalse(Arrays.equals(page1, page2));
     }
 
-    @Test
+    @Test(expected = ProcessorException.class)
     public void testProcessWithIllegalPageOptionThrowsException()
             throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
         final Info imageInfo = instance.readImageInfo();
 
         // page "35"
-        OperationList ops = TestUtil.newOperationList();
+        OperationList ops = new OperationList(new Encode(Format.JPG));
         ops.getOptions().put("page", "35");
         OutputStream outputStream = new NullOutputStream();
-        try {
-            instance.process(ops, imageInfo, outputStream);
-            fail("Expected exception");
-        } catch (ProcessorException e) {
-            // pass
-        }
+
+        instance.process(ops, imageInfo, outputStream);
     }
 
     @Test
     public void testValidate() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
-        OperationList ops = TestUtil.newOperationList();
+        OperationList ops = new OperationList(
+                new Identifier("cats"), new Encode(Format.JPG));
         Dimension fullSize = new Dimension(1000, 1000);
         instance.validate(ops, fullSize);
 

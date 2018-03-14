@@ -35,7 +35,7 @@ public class EncodeTest extends BaseTest {
     @Test
     public void hasEffectWithArguments() {
         Dimension size = new Dimension(500, 500);
-        OperationList opList = TestUtil.newOperationList();
+        OperationList opList = new OperationList();
         assertTrue(instance.hasEffect(size, opList));
     }
 

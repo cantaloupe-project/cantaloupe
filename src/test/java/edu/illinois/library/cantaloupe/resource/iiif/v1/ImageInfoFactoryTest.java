@@ -104,7 +104,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     public void newImageInfoTileWidthWithTiledImage() throws Exception {
         processor.setSourceFormat(Format.TIF);
         ((FileProcessor) processor).setSourceFile(
-                TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"));
+                TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-uncompressed.tif"));
         info = new ImageInfoFactory().newImageInfo(imageUri, processor,
                 processor.readImageInfo());
 
@@ -126,7 +126,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     public void newImageInfoTileHeightWithTiledImage() throws Exception {
         processor.setSourceFormat(Format.TIF);
         ((FileProcessor) processor).setSourceFile(
-                TestUtil.getImage("tif-rgb-monores-64x56x8-tiled-uncompressed.tif"));
+                TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-uncompressed.tif"));
         info = new ImageInfoFactory().newImageInfo(imageUri, processor,
                 processor.readImageInfo());
 

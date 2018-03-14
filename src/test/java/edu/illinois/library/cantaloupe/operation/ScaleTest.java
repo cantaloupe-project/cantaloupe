@@ -232,8 +232,7 @@ public class ScaleTest extends BaseTest {
     @Test
     public void hasEffectWithArguments() {
         final Dimension fullSize = new Dimension(600, 400);
-        final OperationList opList = new OperationList(
-                new Identifier("cats"), Format.JPG, new Crop(0, 0, 300, 200));
+        final OperationList opList = new OperationList(new Crop(0, 0, 300, 200));
 
         instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         instance.setPercent(0.5f);

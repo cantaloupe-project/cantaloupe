@@ -42,14 +42,21 @@ public class ProcessorFactory {
         if (processorName == null) {
             processorName = getFallbackProcessorName();
             if (processorName == null) {
-                throw new ClassNotFoundException("A fallback processor is not set.");
+                throw new ClassNotFoundException("A fallback processor (" +
+                        Key.PROCESSOR_FALLBACK + ") is not set.");
             }
         }
-        final String className = ProcessorFactory.class.getPackage().getName() +
-                "." + processorName;
+
+        // If the processor name contains a dot, assume it includes the package
+        // name.
+        final String className = processorName.contains(".") ?
+                processorName :
+                ProcessorFactory.class.getPackage().getName() + "." + processorName;
+
         try {
             final Class<?> class_ = Class.forName(className);
-            final Processor processor = (Processor) class_.newInstance();
+            final Processor processor =
+                    (Processor) class_.getDeclaredConstructor().newInstance();
 
             InitializationException e = processor.getInitializationException();
             if (e != null) {

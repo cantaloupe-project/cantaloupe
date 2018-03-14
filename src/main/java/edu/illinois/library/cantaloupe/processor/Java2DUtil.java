@@ -16,7 +16,8 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.overlay.StringOverlay;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.processor.resample.ResampleFilter;
 import edu.illinois.library.cantaloupe.processor.resample.ResampleOp;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
@@ -248,7 +249,8 @@ public final class Java2DUtil {
             throws IOException {
         ImageReader reader = null;
         try {
-            reader = new ImageReader(overlay.getStreamSource(), Format.PNG);
+            reader = new ImageReaderFactory().newImageReader(
+                    overlay.getStreamSource(), Format.PNG);
             return reader.read();
         } finally {
             if (reader != null) {

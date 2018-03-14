@@ -218,7 +218,7 @@ public abstract class AbstractResource extends ServerResource {
                 org.restlet.data.Dimension.LANGUAGE,
                 org.restlet.data.Dimension.ORIGIN));
         getResponse().getHeaders().add("X-Powered-By",
-                Application.NAME + "/" + Application.getVersion());
+                Application.getName() + "/" + Application.getVersion());
 
         if (DelegateProxyService.isEnabled()) {
             requestContext.setRequestURI(getReference().toUri());

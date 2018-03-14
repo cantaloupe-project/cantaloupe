@@ -15,11 +15,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import static edu.illinois.library.cantaloupe.resolver.ResolverFactory.SelectionStrategy.DELEGATE_SCRIPT;
+
 /**
  * Used to obtain an instance of a {@link Resolver} defined in the
  * configuration, or returned by a delegate method.
  */
-public class ResolverFactory {
+public final class ResolverFactory {
 
     /**
      * How resolvers are chosen by {@link #newResolver}.
@@ -56,10 +58,15 @@ public class ResolverFactory {
     }
 
     /**
-     * If {@link Key#RESOLVER_STATIC} is null or undefined, uses a delegate
-     * script method to return an instance of the appropriate resolver for the
-     * given identifier. Otherwise, returns an instance of the resolver
-     * specified in {@link Key#RESOLVER_STATIC}.
+     * <p>If {@link Key#RESOLVER_STATIC} is not set, uses a delegate method to
+     * return an instance of a resolver for the given identifier. Otherwise,
+     * returns an instance of the resolver specified in {@link
+     * Key#RESOLVER_STATIC}.</p>
+     *
+     * <p>Resolver names, whether acquired from the configuration or from a
+     * delegate method, may be full class names including package name, or
+     * simple class names, in which case they will be assumed to reside in
+     * this package.</p>
      *
      * @param identifier Identifier of the source image.
      * @param proxy      Delegate proxy. May be {@literal null} if
@@ -73,8 +80,6 @@ public class ResolverFactory {
      */
     public Resolver newResolver(Identifier identifier,
                                 DelegateProxy proxy) throws Exception {
-        final Configuration config = Configuration.getInstance();
-
         switch (getSelectionStrategy()) {
             case DELEGATE_SCRIPT:
                 if (proxy == null) {
@@ -90,6 +95,7 @@ public class ResolverFactory {
                         identifier);
                 return resolver;
             default:
+                final Configuration config = Configuration.getInstance();
                 final String resolverName =
                         config.getString(Key.RESOLVER_STATIC);
                 if (resolverName != null) {
@@ -107,14 +113,19 @@ public class ResolverFactory {
     public SelectionStrategy getSelectionStrategy() {
         final Configuration config = Configuration.getInstance();
         return config.getBoolean(Key.RESOLVER_DELEGATE, false) ?
-                SelectionStrategy.DELEGATE_SCRIPT : SelectionStrategy.STATIC;
+                DELEGATE_SCRIPT : SelectionStrategy.STATIC;
     }
 
     private Resolver newResolver(String name,
                                  Identifier identifier,
                                  DelegateProxy proxy) throws Exception {
-        Class<?> class_ = Class.forName(
-                ResolverFactory.class.getPackage().getName() + "." + name);
+        // If the name contains a dot, assume it's a  full class name,
+        // including package. Otherwise, assume it's a simple class name in
+        // this package.
+        String fullName = name.contains(".") ?
+                name : ResolverFactory.class.getPackage().getName() + "." + name;
+        Class<?> class_ = Class.forName(fullName);
+
         Resolver resolver = (Resolver) class_.newInstance();
         resolver.setIdentifier(identifier);
         resolver.setDelegateProxy(proxy);

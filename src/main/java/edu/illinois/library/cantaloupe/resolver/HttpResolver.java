@@ -26,12 +26,14 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -46,32 +48,43 @@ import java.util.concurrent.TimeoutException;
  *
  * <p>HTTP/2 is not supported.</p>
  *
- * <h1>Format Determination</h1>
+ * <h1>Format Inference</h1>
  *
- * <p>For images with recognized name extensions, the format will be inferred
- * by {@link Format#inferFormat(Identifier)}. For images with unrecognized or
- * missing extensions, the <code>Content-Type</code> header will be checked to
- * determine their format, which will incur an extra <code>HEAD</code> request.
- * It is therefore more efficient to serve images with extensions.</p>
+ * <ol>
+ *     <li>If the source image's identifier has a recognized filename
+ *     extension, the format will be inferred from that.</li>
+ *     <li>Otherwise, a {@literal GET} request will be sent with a {@literal
+ *     Range} header specifying a small range of data from the beginning of the
+ *     resource.
+ *         <ol>
+ *             <li>If a {@literal Content-Type} header is present in the
+ *             response, and is specific enough (i.e. not {@literal
+ *             application/octet-stream}), a format will be inferred from
+ *             it.</li>
+ *             <li>Otherwise, a format will be inferred from the magic bytes in
+ *             the respone body.</li>
+ *         </ol>
+ *     </li>
+ * </ol>
  *
  * <h1>Lookup Strategies</h1>
  *
  * <p>Two distinct lookup strategies are supported, defined by
- * {@link Key#HTTPRESOLVER_LOOKUP_STRATEGY}. BasicLookupStrategy locates
- * images by concatenating a pre-defined URL prefix and/or suffix.
- * ScriptLookupStrategy invokes a delegate method to retrieve a URL (and
- * optional auth info) dynamically.</p>
+ * {@link Key#HTTPRESOLVER_LOOKUP_STRATEGY}. {@link LookupStrategy#BASIC}
+ * locates images by concatenating a pre-defined URL prefix and/or suffix.
+ * {@link LookupStrategy#DELEGATE_SCRIPT} invokes a delegate method to
+ * retrieve a URL (and optional auth info) dynamically.</p>
  *
  * <h1>Authentication Support</h1>
  *
  * <p>HTTP Basic authentication is supported.</p>
  *
  * <ul>
- *     <li>When using BasicLookupStrategy, auth info is set globally in the
- *     {@link Key#HTTPRESOLVER_BASIC_AUTH_USERNAME} and
+ *     <li>When using {@link LookupStrategy#BASIC}, auth info is set globally
+ *     in the {@link Key#HTTPRESOLVER_BASIC_AUTH_USERNAME} and
  *     {@link Key#HTTPRESOLVER_BASIC_AUTH_SECRET} configuration keys.</li>
- *     <li>When using ScriptLookupStrategy, auth info can be returned from a
- *     delegate method.</li>
+ *     <li>When using {@link LookupStrategy#DELEGATE_SCRIPT}, auth info can be
+ *     returned from the delegate method.</li>
  * </ul>
  *
  * @see <a href="http://www.eclipse.org/jetty/documentation/current/http-client.html">
@@ -157,12 +170,20 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(HttpResolver.class);
 
+    /**
+     * Byte length of the range used to infer the source image format.
+     */
+    private static final int FORMAT_INFERENCE_RANGE_LENGTH = 32;
+
     private static HttpClient jettyClient;
 
+    private InputStreamResponseListener rangedGETResponseListener;
+
     /**
-     * Cached HTTP HEAD response.
+     * Cached HTTP {@literal GET} response with a maximum body length of {@link
+     * #FORMAT_INFERENCE_RANGE_LENGTH}.
      */
-    private Response headResponse;
+    private Response rangedGETResponse;
 
     /**
      * Lazy-loaded by {@link #getResourceInfo()}.
@@ -213,7 +234,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         return String.format("%s/%s (%s/%s; java/%s; %s/%s)",
                 HttpResolver.class.getSimpleName(),
                 Application.getVersion(),
-                Application.NAME,
+                Application.getName(),
                 Application.getVersion(),
                 System.getProperty("java.version"),
                 System.getProperty("os.name"),
@@ -222,10 +243,11 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
     @Override
     public void checkAccess() throws IOException {
-        Response response = retrieveHEADResponse();
+        Response response = retrieveRangedGETResponse();
+
         if (response.getStatus() >= HttpStatus.BAD_REQUEST_400) {
-            final String statusLine = "HTTP " + headResponse.getStatus() +
-                    ": " + headResponse.getReason();
+            final String statusLine = "HTTP " + rangedGETResponse.getStatus() +
+                    ": " + rangedGETResponse.getReason();
 
             if (response.getStatus() == HttpStatus.NOT_FOUND_404
                     || response.getStatus() == HttpStatus.GONE_410) {
@@ -244,39 +266,62 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         if (sourceFormat == null) {
             sourceFormat = Format.inferFormat(identifier);
             if (Format.UNKNOWN.equals(sourceFormat)) {
-                sourceFormat = inferSourceFormatFromContentTypeHeader();
+                sourceFormat = inferSourceFormatFromResponse();
             }
         }
         return sourceFormat;
     }
 
     /**
-     * Issues an HTTP <code>HEAD</code> request and checks the response
-     * <code>Content-Type</code> header to determine the source format.
+     * Issues an HTTP {@literal GET} request for a small {@literal Range} of
+     * the beginning of the resource and checks for the response {@literal
+     * Content-Type} header. If it is not present or specific enough (i.e.
+     * {@literal application/octet-stream}), the magic bytes in the response
+     * body are checked.
      *
      * @return Inferred source format, or {@link Format#UNKNOWN} if unknown.
      */
-    private Format inferSourceFormatFromContentTypeHeader() {
+    private Format inferSourceFormatFromResponse() {
         Format format = Format.UNKNOWN;
         try {
             final ResourceInfo info = getResourceInfo();
-            final Response response = retrieveHEADResponse();
+            final Response response = retrieveRangedGETResponse();
 
             if (response.getStatus() >= 200 && response.getStatus() < 300) {
                 HttpField field = response.getHeaders().getField("Content-Type");
+
                 if (field != null && field.getValue() != null) {
                     format = new MediaType(field.getValue()).toFormat();
+
                     if (Format.UNKNOWN.equals(format)) {
-                        LOGGER.warn("Unrecognized Content-Type header value for HEAD {}",
+                        LOGGER.debug("Unrecognized Content-Type header value for GET {}",
                                 info.getURI());
                     }
                 } else {
-                    LOGGER.warn("No Content-Type header for HEAD {}",
+                    LOGGER.debug("No Content-Type header for GET {}",
                             info.getURI());
                 }
+
+                if (Format.UNKNOWN.equals(format)) {
+                    LOGGER.debug("Attempting to infer format from magic bytes for {}",
+                            info.getURI());
+                    try (InputStream bodyStream =
+                                 new BufferedInputStream(rangedGETResponseListener.getInputStream())) {
+                        List<MediaType> types =
+                                MediaType.detectMediaTypes(bodyStream);
+                        if (!types.isEmpty()) {
+                            format = types.get(0).toFormat();
+                            LOGGER.debug("Inferred {} format from magic bytes for {}",
+                                    format, info.getURI());
+                        } else {
+                            LOGGER.debug("Unable to infer a format from magic bytes for GET {}",
+                                    info.getURI());
+                        }
+                    }
+                }
             } else {
-                LOGGER.warn("HEAD returned status {} for {}",
-                        response.getStatus(), info.getURI());
+                LOGGER.warn("GET {} returned status {}",
+                        info.getURI(), response.getStatus());
             }
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -304,8 +349,12 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         return null;
     }
 
-    private Response retrieveHEADResponse() throws IOException {
-        if (headResponse == null) {
+    /**
+     * Issues a {@literal GET} request specifying a small range of data and
+     * caches the result in {@link #rangedGETResponse}.
+     */
+    private Response retrieveRangedGETResponse() throws IOException {
+        if (rangedGETResponse == null) {
             ResourceInfo info;
             try {
                 info = getResourceInfo();
@@ -313,29 +362,30 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                 LOGGER.error(e.getMessage(), e);
                 throw new IOException(e.getMessage(), e);
             } catch (Exception e) {
-                LOGGER.error("retrieveHEADResponse(): {}", e.getMessage());
+                LOGGER.error("retrieveRangedGETResponse(): {}", e.getMessage());
                 throw new IOException(e.getMessage(), e);
             }
 
             try {
                 final HttpClient client = getHTTPClient(info);
 
-                InputStreamResponseListener listener =
-                        new InputStreamResponseListener();
-                client.newRequest(info.getURI()).
-                        timeout(getRequestTimeout(), TimeUnit.SECONDS).
-                        method(HttpMethod.HEAD).send(listener);
+                rangedGETResponseListener = new InputStreamResponseListener();
 
-                // Wait for the response headers to arrive.
-                headResponse = listener.get(getRequestTimeout(),
-                        TimeUnit.SECONDS);
+                client.newRequest(info.getURI())
+                        .timeout(getRequestTimeout(), TimeUnit.SECONDS)
+                        .header("Range", "bytes=0-" + (FORMAT_INFERENCE_RANGE_LENGTH - 1))
+                        .method(HttpMethod.GET)
+                        .send(rangedGETResponseListener);
+
+                rangedGETResponse = rangedGETResponseListener.get(
+                        getRequestTimeout(), TimeUnit.SECONDS);
             } catch (ExecutionException e ) {
                 throw new AccessDeniedException(info.getURI().toString());
             } catch (InterruptedException | TimeoutException e) {
                 throw new IOException(e.getMessage(), e);
             }
         }
-        return headResponse;
+        return rangedGETResponse;
     }
 
     /**
@@ -400,7 +450,8 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
     @Override
     public void setIdentifier(Identifier identifier) {
-        headResponse = null;
+        rangedGETResponse = null;
+        rangedGETResponseListener = null;
         resourceInfo = null;
         sourceFormat = null;
         this.identifier = identifier;

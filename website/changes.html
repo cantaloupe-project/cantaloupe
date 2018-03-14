@@ -10,7 +10,6 @@ title: Change Log
 <ul>
   <li>Endpoints
     <ul>
-      <li>The minimum and maximum size of the built-in web server's thread pool is configurable.</li>
       <li>A new <code>X-Forwarded-ID</code> reverse proxy header replaces <code>X-IIIF-ID</code>, which has been deprecated, but is still available.</li>
       <li>Error response representations are in <code>text/plain</code> format in the absence of a client preference.</li>
     </ul>
@@ -20,13 +19,21 @@ title: Change Log
       <li>AmazonS3Resolver has been renamed to S3Resolver, and supports non-AWS endpoints.</li>
       <li>S3Resolver supports a configurable path prefix and suffix when using <code>BasicLookupStrategy</code>.</li>
       <li>AzureStorageResolver supports shared access signature (SAS) URIs. (Thanks to @ddisciascio)</li>
+      <li>Improved efficiency of source cache content access when <code>cache.server.resolve_first = false</code>.</li>
+      <li>HttpResolver, S3Resolver, and AzureStorageResolver fall back to checking the magic bytes in the response body if they cannot infer a source format from the identifier extension, object key extension, and/or response <code>Content-Type</code> header.</li>
     </ul>
   </li>
   <li>Processors
     <ul>
+      <li>Added <code>DownloadStrategy</code> as another optional retrieval strategy for <code>StreamProcessor</code>s, and as an optional fallback strategy. This enables all processors to work with all resolvers with no extra configuration.</li>
+      <li>KakaduProcessor and OpenJpegProcessor work (though less efficiently) in Windows.</li>
+      <li>KakaduProcessor and OpenJpegProcessor read image metadata natively, which is more efficient than using the respective <code>kdu_jp2info</code> and <code>opj_dump</code> tools, and enables them to read the DWT level count, which improves reliability when decoding images with less-common level counts.</li>
       <li>Improved the efficiency of the Java 2D resample filters.</li>
       <li>Java2dProcessor supports animated GIFs.</li>
-      <li>KakaduProcessor and OpenJpegProcessor read image information using JJ2000 via ImageIO, which is more efficient than using the respective <code>kdu_jp2info</code> and <code>opj_dump</code> tools.</li>
+      <li>Java2dProcessor supports CMYK &amp; YCCK JPEGs.</li>
+      <li>Worked around some behavior of the <code>opj_decompress</code> tool that could cause OpenJpegProcessor to break. (Thanks to @adam-vessey)</li>
+      <li>Disabled support for GIF source images in JaiProcessor, as it was buggy and other processors can handle GIF better.</li>
+      <li>Removed support for DICOM from Java2dProcessor and JaiProcessor, for similar reasons as above.</li>
     </ul>
   </li>
   <li>Caching
@@ -55,6 +62,9 @@ title: Change Log
 <ul>
   <li>Fixed a leak when using HttpResolver in a Servlet container that resulted in an inability to shut down properly. (Thanks to @punkfairy)</li>
   <li>Fixed aspect-fit scale-to-height not working properly in ImageMagickProcessor and GraphicsMagickProcessor.</li>
+  <li>Efficiency improvements in AmazonS3Resolver and AzureStorageResolver.</li>
+  <li><code>OutOfMemoryError</code>s during image responses are logged at error level rather than info-level.</li>
+  <li>Improved the reliability of ImageIO plugin selection.</li>
 </ul>
 
 <h2>3.4.1</h2>

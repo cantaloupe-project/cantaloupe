@@ -81,5 +81,8 @@ figcaption {
   font-style: italic;
   text-align: center; }
 
+.bg-success a, .bg-warning a, .bg-danger a {
+  color: white; }
+
 #openseadragon1 {
   background-color: black; }

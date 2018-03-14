@@ -889,34 +889,6 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>Minimum Thread Pool Size
-                                        <a tabindex="0" class="btn btn-sm cl-help"
-                                           role="button" data-toggle="popover"
-                                           data-trigger="focus"
-                                           data-content="Minimum size of the web server's thread pool.
-                                           Leave blank or set to 0 to use the default.">?</a>
-                                    </td>
-                                    <td>
-                                        <input class="form-control" type="number"
-                                               name="http.min_threads" min="0"
-                                               data-requires-restart="true">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Maximum Thread Pool Size
-                                        <a tabindex="0" class="btn btn-sm cl-help"
-                                           role="button" data-toggle="popover"
-                                           data-trigger="focus"
-                                           data-content="Maximum size of the web server's thread pool.
-                                           Leave blank or set to 0 to use the default.">?</a>
-                                    </td>
-                                    <td>
-                                        <input class="form-control" type="number"
-                                               name="http.max_threads" min="0"
-                                               data-requires-restart="true">
-                                    </td>
-                                </tr>
-                                <tr>
                                     <td>Base URI
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
@@ -1878,6 +1850,58 @@
 
                             <table class="table table-striped">
                                 <tr>
+                                    <td>Stream Retrieval Strategy
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Controls how content is fed to processors from stream-based resolvers.
+                                           &lt;ul&gt;
+                                           &lt;li&gt;StreamStrategy will try to stream a source image from a resolver when
+                                           possible, and use the fallback retrieval strategy otherwise.&lt;/li&gt;
+                                           &lt;li&gt;DownloadStrategy will download it to a temporary file, and delete
+                                           it after the request is complete.&lt;/li&gt;
+                                           &lt;li&gt;CacheStrategy will download it into the source cache using
+                                           FilesystemCache, which must also be configured. (This will perform a
+                                           lot better than DownloadStrategy if you can spare the disk space.)&lt;/li&gt;
+                                           &lt;/ul&gt;">?</a>
+                                    </td>
+                                    <td>
+                                        <select class="form-control"
+                                                name="processor.stream_retrieval_strategy"
+                                                data-restart-required="false">
+                                            <option value="StreamStrategy">Stream From Resolver (StreamStrategy)</option>
+                                            <option value="DownloadStrategy">Download to Temp File (DownloadStrategy)</option>
+                                            <option value="CacheStrategy">Cache in Source Cache (CacheStrategy)</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Fallback Retrieval Strategy
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Controls how an incompatible resolver/processor (StreamResolver +
+                                           FileProcessor) situation is dealt with.
+                                           &lt;ul&gt;
+                                           &lt;li&gt;DownloadStrategy will download a source image to a temporary file, and delete
+                                           it after the request is complete.&lt;/li&gt;
+                                           &lt;li&gt;CacheStrategy will download it into the source cache using
+                                           FilesystemCache, which must also be configured. (This will perform a
+                                           lot better than DownloadStrategy if you can spare the disk space.)&lt;/li&gt;
+                                           &lt;li&gt;AbortStrategy will abort the retrieval.&lt;/li&gt;
+                                           &lt;/ul&gt;">?</a>
+                                    </td>
+                                    <td>
+                                        <select class="form-control"
+                                                name="processor.fallback_retrieval_strategy"
+                                                data-restart-required="false">
+                                            <option value="DownloadStrategy">Download to Temp File (DownloadStrategy)</option>
+                                            <option value="CacheStrategy">Cache in Source Cache (CacheStrategy)</option>
+                                            <option value="AbortStrategy">Abort the Retrieval (AbortStrategy)</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td>DPI
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
@@ -2081,31 +2105,6 @@
                                             <option value="JPEG">JPEG</option>
                                             <option value="LZW">LZW</option>
                                             <option value="RLE">RLE</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Retrieval Strategy
-                                        <a tabindex="0" class="btn btn-sm cl-help"
-                                           role="button" data-toggle="popover"
-                                           data-trigger="focus"
-                                           data-content="When a processor is reading
-                                           from streams, rather than the filesystem,
-                                           this option configures how it loads source images.
-                                           With &quot;stream,&quot; it will read them from
-                                           a stream per-request. With &quot;cache,&quot; it
-                                           will read them from a stream, cache
-                                           them in the source cache, and read from that
-                                           thereafter.<br><br>
-                                           With &quot;cache,&quot; FilesystemCache must be
-                                           configured.">?</a>
-                                    </td>
-                                    <td>
-                                        <select class="form-control"
-                                                name="StreamProcessor.retrieval_strategy"
-                                                data-restart-required="false">
-                                            <option value="StreamStrategy">Stream From Resolver (StreamStrategy)</option>
-                                            <option value="CacheStrategy">Cache in Source Cache (CacheStrategy)</option>
                                         </select>
                                     </td>
                                 </tr>
@@ -2383,31 +2382,6 @@
                         <section>
                             <h2>Server-Side Caches</h2>
                             <table class="table table-striped">
-                                <tr>
-                                    <td>Source Cache
-                                        <a tabindex="0" class="btn btn-sm cl-help"
-                                           role="button" data-toggle="popover"
-                                           data-trigger="focus"
-                                           data-content="The source cache caches
-                                           source images before any processing.
-                                           Note that source images will only be
-                                           cached when a FileProcessor is used
-                                           with a StreamResolver, or when a
-                                           StreamProcessor is used with a retrieval
-                                           strategy of &lt;code&gt;CacheStrategy&lt;/code&gt;.">?</a>
-                                    </td>
-                                    <td>
-                                        <div class="checkbox">
-                                            <label>
-                                                <input type="checkbox"
-                                                       name="cache.server.source.enabled"
-                                                       value="true"
-                                                       data-requires-restart="false">
-                                                Enabled
-                                            </label>
-                                        </div>
-                                    </td>
-                                </tr>
                                 <tr>
                                     <td>Source Cache Implementation</td>
                                     <td>

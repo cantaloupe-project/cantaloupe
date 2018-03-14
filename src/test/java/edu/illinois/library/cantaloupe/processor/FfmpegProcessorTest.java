@@ -3,9 +3,11 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.output.NullOutputStream;
@@ -61,7 +63,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
                     getFixture("images/" + format.getPreferredExtension());
             instance.setSourceFile(fixture);
             instance.setSourceFormat(format);
-        } catch (IOException | UnsupportedSourceFormatException e) {
+        } catch (IOException e) {
             fail("Huge bug");
         }
         return instance;
@@ -75,7 +77,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
                 Set<Format> expectedFormats = EnumSet.noneOf(Format.class);
                 if (format.getType() != null &&
                         format.getType().equals(Format.Type.VIDEO)) {
-                    expectedFormats.addAll(ImageWriter.supportedFormats());
+                    expectedFormats.addAll(ImageWriterFactory.supportedFormats());
                 }
                 instance.setSourceFormat(format);
                 assertEquals(expectedFormats, instance.getAvailableOutputFormats());
@@ -151,7 +153,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
 
         // time option missing
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        OperationList ops = TestUtil.newOperationList();
+        OperationList ops = new OperationList(new Encode(Format.JPG));
         instance.process(ops, imageInfo, outputStream);
         final byte[] frame1 = outputStream.toByteArray();
 
@@ -164,49 +166,46 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
         assertFalse(Arrays.equals(frame1, frame2));
     }
 
-    @Test
+    @Test(expected = ProcessorException.class)
     public void testProcessWithInvalidFrameOptionThrowsException()
             throws Exception {
         final Info imageInfo = instance.readImageInfo();
 
-        OperationList ops = TestUtil.newOperationList();
+        OperationList ops = new OperationList(new Encode(Format.JPG));
         ops.getOptions().put("time", "cats");
         OutputStream outputStream = new NullOutputStream();
-        try {
-            instance.process(ops, imageInfo, outputStream);
-            fail("Expected exception");
-        } catch (ProcessorException e) {
-            // pass
-        }
+
+        instance.process(ops, imageInfo, outputStream);
     }
 
     @Test
-    public void testValidate() throws Exception {
-        OperationList ops = TestUtil.newOperationList();
+    public void testValidateWithValidTime() throws Exception {
+        OperationList ops = new OperationList(
+                new Identifier("cats"), new Encode(Format.JPG));
         Dimension fullSize = new Dimension(1000, 1000);
-        instance.validate(ops, fullSize);
-
-        // Valid time format
         ops.getOptions().put("time", "00:00:02");
+
         instance.validate(ops, fullSize);
+    }
 
-        // Invalid time format
+    @Test(expected = IllegalArgumentException.class)
+    public void testValidateWithInvalidTimeFormat() throws Exception {
+        OperationList ops = new OperationList(
+                new Identifier("cats"), new Encode(Format.JPG));
+        Dimension fullSize = new Dimension(1000, 1000);
         ops.getOptions().put("time", "000012");
-        try {
-            instance.validate(ops, fullSize);
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
 
-        // Time beyond the video length
+        instance.validate(ops, fullSize);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testValidateWithOutOfBoundsTime() throws Exception {
+        OperationList ops = new OperationList(
+                new Identifier("cats"), new Encode(Format.JPG));
+        Dimension fullSize = new Dimension(1000, 1000);
         ops.getOptions().put("time", "00:38:06");
-        try {
-            instance.validate(ops, fullSize);
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
+
+        instance.validate(ops, fullSize);
     }
 
 }

@@ -6,8 +6,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -54,10 +57,10 @@ public class MediaTypeTest {
         assertEquals("image/jpeg", type.toString());
     }
 
-    /* detectMediaTypes(File) */
+    /* detectMediaTypes(Path) */
 
     @Test
-    public void testDetectMediaTypes() throws Exception {
+    public void testDetectMediaTypesWithPath() throws Exception {
         for (Format format : files.keySet()) {
             Path file = files.get(format);
             MediaType preferredMediaType = format.getPreferredMediaType();
@@ -70,10 +73,36 @@ public class MediaTypeTest {
                         "\tfile: " + file.getFileName());
             }
 
-            // TODO: detectMediaTypes() doesn't understand these
-            if (!new HashSet<>(Arrays.asList("avi", "bmp", "webm")).
+            // detectMediaTypes() doesn't understand these.
+            if (!new HashSet<>(Arrays.asList("avi", "webm")).
                     contains(file.getFileName().toString())) {
                 assertTrue(result);
+            }
+        }
+    }
+
+    /* detectMediaTypes(InputStream) */
+
+    @Test
+    public void testDetectMediaTypesWithInputStream() throws Exception {
+        for (Format format : files.keySet()) {
+            MediaType preferredMediaType = format.getPreferredMediaType();
+            Path file = files.get(format);
+
+            try (InputStream is = new BufferedInputStream(Files.newInputStream(file))) {
+                boolean result = MediaType.detectMediaTypes(is).
+                        contains(preferredMediaType);
+                if (!result) {
+                    System.err.println("detection failed:" +
+                            "\tformat: " + format +
+                            "\tfile: " + file.getFileName());
+                }
+
+                // detectMediaTypes() doesn't understand these.
+                if (!new HashSet<>(Arrays.asList("avi", "webm")).
+                        contains(file.getFileName().toString())) {
+                    assertTrue(result);
+                }
             }
         }
     }
@@ -95,8 +124,9 @@ public class MediaTypeTest {
 
     @Test
     public void testEquals() {
-        assertTrue(instance.equals("image/jpeg"));
-        assertFalse(instance.equals("image/gif"));
+        assertTrue(instance.equals(new MediaType("image/jpeg")));
+        assertFalse(instance.equals(new MediaType("image/gif")));
+        assertFalse(instance.equals(null));
     }
 
     /* toFormat() */

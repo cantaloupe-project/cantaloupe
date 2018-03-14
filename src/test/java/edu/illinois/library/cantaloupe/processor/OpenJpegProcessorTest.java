@@ -38,7 +38,7 @@ public class OpenJpegProcessorTest extends AbstractProcessorTest {
 
     @Override
     protected Path getSupported16BitImage() throws IOException {
-        return TestUtil.getImage("jp2-rgb-64x56x16-monotiled-lossy.jp2");
+        return TestUtil.getImage("jp2-5res-rgb-64x56x16-monotiled-lossy.jp2");
     }
 
     @Override
@@ -123,21 +123,24 @@ public class OpenJpegProcessorTest extends AbstractProcessorTest {
 
     @Test
     public void testReadImageInfoTileAwareness() throws Exception {
-        Info expectedInfo = new Info(100, 88, 100, 88, Format.JP2);
-
-        instance.setSourceFile(TestUtil.getImage("jp2"));
-        assertEquals(expectedInfo, instance.readImageInfo());
-
         // untiled image
-        instance.setSourceFile(TestUtil.getImage("jp2-rgb-64x56x8-monotiled-lossy.jp2"));
-        expectedInfo = new Info(64, 56, 64, 56, Format.JP2);
+        instance.setSourceFile(TestUtil.getImage("jp2-5res-rgb-64x56x8-monotiled-lossy.jp2"));
+        Info expectedInfo = Info.builder()
+                .withSize(64, 56)
+                .withTileSize(64, 56)
+                .withFormat(Format.JP2)
+                .withNumResolutions(5)
+                .build();
         assertEquals(expectedInfo, instance.readImageInfo());
 
         // tiled image
-        instance.setSourceFile(TestUtil.getImage("jp2-rgb-64x56x8-multitiled-lossy.jp2"));
-        expectedInfo = new Info(64, 56, Format.JP2);
-        expectedInfo.getImages().get(0).tileWidth = 32;
-        expectedInfo.getImages().get(0).tileHeight = 28;
+        instance.setSourceFile(TestUtil.getImage("jp2-6res-rgb-64x56x8-multitiled-lossy.jp2"));
+        expectedInfo = Info.builder()
+                .withSize(64, 56)
+                .withTileSize(32, 28)
+                .withNumResolutions(6)
+                .withFormat(Format.JP2)
+                .build();
         assertEquals(expectedInfo, instance.readImageInfo());
     }
 

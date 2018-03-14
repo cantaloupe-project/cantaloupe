@@ -33,7 +33,7 @@ import java.util.stream.Stream;
  * <p>Normalized list of {@link Operation image transform operations}
  * corresponding to an image identified by its {@link Identifier}.</p>
  *
- * <p>This class has a dual purpose:</p>
+ * <p>This class has dual purposes:</p>
  *
  * <ol>
  *     <li>To assemble and store a list of image transform operations;</li>
@@ -49,46 +49,49 @@ import java.util.stream.Stream;
  * {@link edu.illinois.library.cantaloupe.cache.Cache caches}.</p>
  *
  * <p>Processors should iterate the operations in the list and apply them
- * (generally in order) as best they can. Instances will have an associated
- * {@link #getOutputFormat() output format}, but
- * {@link #applyNonEndpointMutations} will also add a more comprehensive
- * {@link Encode} operation, based on it, to the list, which processors should
- * look at instead.</p>
+ * (generally in order) as best they can.</p>
  */
 public final class OperationList implements Comparable<OperationList>,
         Iterable<Operation> {
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(OperationList.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(OperationList.class);
 
-    private boolean isFrozen = false;
+    private boolean isFrozen;
     private Identifier identifier;
-    private List<Operation> operations = new ArrayList<>();
-    private Map<String,Object> options = new HashMap<>();
-    private Format outputFormat;
+    private final List<Operation> operations = new ArrayList<>();
+    private final Map<String,Object> options = new HashMap<>();
 
     /**
      * Constructs a minimal valid instance.
      */
-    public OperationList(Identifier identifier, Format outputFormat) {
+    public OperationList() {}
+
+    public OperationList(Identifier identifier) {
+        this();
+
         setIdentifier(identifier);
-        setOutputFormat(outputFormat);
     }
 
-    public OperationList(Identifier identifier, Format outputFormat,
-                         Operation... operations) {
-        this(identifier, outputFormat);
+    public OperationList(Operation... operations) {
+        this();
 
         for (Operation op : operations) {
             add(op);
         }
     }
 
+    public OperationList(Identifier identifier, Operation... operations) {
+        this(operations);
+
+        setIdentifier(identifier);
+    }
+
     /**
      * Adds an operation to the end of the list.
      *
      * @param op Operation to add. Null values are silently discarded.
-     * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalStateException if the instance is frozen.
      */
     public void add(Operation op) {
         checkFrozen();
@@ -105,7 +108,7 @@ public final class OperationList implements Comparable<OperationList>,
      * @param op         Operation to add.
      * @param afterClass The operation will be added after the last
      *                   instance of this class in the list.
-     * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalStateException if the instance is frozen.
      */
     public void addAfter(Operation op,
                          Class<? extends Operation> afterClass) {
@@ -126,7 +129,7 @@ public final class OperationList implements Comparable<OperationList>,
      * @param op          Operation to add.
      * @param beforeClass The operation will be added before the first
      *                    instance of this class in the list.
-     * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalStateException if the instance is frozen.
      */
     public void addBefore(Operation op,
                           Class<? extends Operation> beforeClass) {
@@ -150,6 +153,9 @@ public final class OperationList implements Comparable<OperationList>,
      * operations have been added, as it may modify them. It will have the
      * side-effect of {@link #freeze() freezing the instance}.</p>
      *
+     * <p>The instance's identifier must be {@link #setIdentifier(Identifier)
+     * set}.</p>
+     *
      * @param info          Source image info.
      * @param delegateProxy Delegate proxy for the current request.
      * @throws IllegalArgumentException if the instance's output format has not
@@ -159,10 +165,16 @@ public final class OperationList implements Comparable<OperationList>,
                                           final DelegateProxy delegateProxy) {
         checkFrozen();
 
-        if (getOutputFormat() == null
-                || Format.UNKNOWN.equals(getOutputFormat())) {
-            throw new IllegalArgumentException(
-                    "Output format is null or unknown. This is probably a bug.");
+        final Identifier identifier = getIdentifier();
+        if (identifier == null) {
+            throw new IllegalStateException("Identifier not set.");
+        }
+
+        final Encode encode = (Encode) getFirst(Encode.class);
+
+        if (encode == null) {
+            throw new IllegalStateException("No " +
+                    Encode.class.getSimpleName() + " operation present.");
         }
 
         final Configuration config = Configuration.getInstance();
@@ -184,8 +196,7 @@ public final class OperationList implements Comparable<OperationList>,
         }
 
         // Normalization
-        final boolean normalize =
-                config.getBoolean(Key.PROCESSOR_NORMALIZE, false);
+        final boolean normalize = config.getBoolean(Key.PROCESSOR_NORMALIZE, false);
         if (normalize) {
             // 1. If a Crop is present, normalization has to happen before it,
             //    in order to sample the entire image.
@@ -216,7 +227,7 @@ public final class OperationList implements Comparable<OperationList>,
             if (service.isEnabled()) {
                 List<Redaction> redactions = service.redactionsFor(delegateProxy);
                 for (Redaction redaction : redactions) {
-                    add(redaction);
+                    addBefore(redaction, Encode.class);
                 }
             } else {
                 LOGGER.debug("applyNonEndpointMutations(): redactions are " +
@@ -249,7 +260,7 @@ public final class OperationList implements Comparable<OperationList>,
         // Sharpening
         float sharpen = config.getFloat(Key.PROCESSOR_SHARPEN, 0f);
         if (sharpen > 0.001f) {
-            add(new Sharpen(sharpen));
+            addBefore(new Sharpen(sharpen), Encode.class);
         }
 
         // Overlay
@@ -258,7 +269,7 @@ public final class OperationList implements Comparable<OperationList>,
             if (service.isEnabled() &&
                     service.shouldApplyToImage(getResultingSize(sourceImageSize))) {
                 final Overlay overlay = service.newOverlay(delegateProxy);
-                add(overlay);
+                addBefore(overlay, Encode.class);
             } else {
                 LOGGER.debug("applyNonEndpointMutations(): overlays are " +
                         "disabled; skipping.");
@@ -270,14 +281,14 @@ public final class OperationList implements Comparable<OperationList>,
         // Metadata copies
         // TODO: consider making these a property of Encode
         if (config.getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
-            add(new MetadataCopy());
+            addBefore(new MetadataCopy(), Encode.class);
         }
 
-        // Create an Encode operation corresponding to the output format.
-        Encode encode = new Encode(getOutputFormat());
-        add(encode);
+        // Encode customization
         switch (encode.getFormat()) {
             case JPG:
+                // Compression
+                encode.setCompression(Compression.JPEG);
                 // Interlacing
                 final boolean progressive =
                         config.getBoolean(Key.PROCESSOR_JPG_PROGRESSIVE, false);
@@ -299,8 +310,7 @@ public final class OperationList implements Comparable<OperationList>,
 
         // Set the Encode operation's background color.
         if (!encode.getFormat().supportsTransparency()) {
-            final String bgColor =
-                    config.getString(Key.PROCESSOR_BACKGROUND_COLOR);
+            final String bgColor = config.getString(Key.PROCESSOR_BACKGROUND_COLOR);
             if (bgColor != null) {
                 encode.setBackgroundColor(Color.fromString(bgColor));
             }
@@ -347,7 +357,8 @@ public final class OperationList implements Comparable<OperationList>,
     /**
      * @param clazz Operation class.
      * @return Index of the first instance of the given class in the list, or
-     *         -1 if no instance of the given class is present in the list.
+     *         {@literal -1} if no instance of the given class is present in
+     *         the list.
      */
     private int firstIndexOf(Class<? extends Operation> clazz) {
         int index = 0;
@@ -404,16 +415,16 @@ public final class OperationList implements Comparable<OperationList>,
     }
 
     /**
-     * <p>Used for quickly checking the output format.</p>
+     * <p>Used for quickly checking the {@link Encode} operation's format.</p>
      *
-     * <p>N.B. After {@link #applyNonEndpointMutations} has been called, there
-     * is more comprehensive encoding information available by passing an
-     * {@link Encode} class to {@link #getFirst(Class)}.</p>
+     * <p>N.B.: {@link #applyNonEndpointMutations} may mutate the {@link
+     * Encode} operation.</p>
      *
      * @return The output format.
      */
     public Format getOutputFormat() {
-        return outputFormat;
+        Encode encode = (Encode) getFirst(Encode.class);
+        return (encode != null) ? encode.getFormat() : null;
     }
 
     /**
@@ -439,9 +450,6 @@ public final class OperationList implements Comparable<OperationList>,
      *         unmodified source image.
      */
     public boolean hasEffect(Format format) {
-        if (!this.getOutputFormat().equals(format)) {
-            return true;
-        }
         for (Operation op : this) {
             if (op.hasEffect()) {
                 // 1. Ignore MetadataCopies. If the instance would otherwise be
@@ -457,7 +465,7 @@ public final class OperationList implements Comparable<OperationList>,
                         getOutputFormat().equals(Format.PDF)) { // (2)
                     continue;
                 } else if (op instanceof Encode &&
-                        getOutputFormat().equals(format)) { // (3)
+                        format.equals(((Encode) op).getFormat())) { // (3)
                     continue;
                 } else {
                     return true;
@@ -508,20 +516,6 @@ public final class OperationList implements Comparable<OperationList>,
         this.identifier = identifier;
     }
 
-    /**
-     * @param outputFormat Format to set.
-     * @throws IllegalStateException If the instance is frozen.
-     * @throws IllegalArgumentException If the given format is not supported.
-     */
-    public void setOutputFormat(Format outputFormat) {
-        checkFrozen();
-        if (Format.UNKNOWN.equals(outputFormat)) {
-            throw new IllegalArgumentException("Illegal output format: " +
-                    outputFormat);
-        }
-        this.outputFormat = outputFormat;
-    }
-
     public Stream<Operation> stream() {
         return operations.stream();
     }
@@ -556,8 +550,19 @@ public final class OperationList implements Comparable<OperationList>,
             LOGGER.error("toFilename(): {}", e.getMessage());
         }
 
-        return StringUtil.filesystemSafe(getIdentifier().toString()) + "_" +
-                opsString + "." + getOutputFormat().getPreferredExtension();
+        String idStr = "";
+        Identifier identifier = getIdentifier();
+        if (identifier != null) {
+            idStr = identifier.toString();
+        }
+
+        String extension = "";
+        Encode encode = (Encode) getFirst(Encode.class);
+        if (encode != null) {
+            extension = "." + encode.getFormat().getPreferredExtension();
+        }
+
+        return StringUtil.filesystemSafe(idStr) + "_" + opsString + extension;
     }
 
     /**
@@ -581,11 +586,13 @@ public final class OperationList implements Comparable<OperationList>,
      */
     public Map<String,Object> toMap(Dimension fullSize) {
         final Map<String,Object> map = new HashMap<>();
-        map.put("identifier", getIdentifier().toString());
-        map.put("operations", this.stream()
-                .filter(Operation::hasEffect)
-                .map(op -> op.toMap(fullSize))
-                .collect(Collectors.toList()));
+        if (getIdentifier() != null) {
+            map.put("identifier", getIdentifier().toString());
+        }
+        map.put("operations", this.stream().
+                filter(Operation::hasEffect).
+                map(op -> op.toMap(fullSize)).
+                collect(Collectors.toList()));
         map.put("options", getOptions());
         return Collections.unmodifiableMap(map);
     }
@@ -598,7 +605,9 @@ public final class OperationList implements Comparable<OperationList>,
     @Override
     public String toString() {
         final List<String> parts = new ArrayList<>();
-        parts.add(getIdentifier().toString());
+        if (getIdentifier() != null) {
+            parts.add(getIdentifier().toString());
+        }
         for (Operation op : this) {
             if (op.hasEffect()) {
                 final String opName = op.getClass().getSimpleName().toLowerCase();
@@ -608,8 +617,7 @@ public final class OperationList implements Comparable<OperationList>,
         for (String key : getOptions().keySet()) {
             parts.add(key + ":" + getOptions().get(key));
         }
-        return String.join("_", parts) + "." +
-                getOutputFormat().getPreferredExtension();
+        return String.join("_", parts);
     }
 
     /**
@@ -618,6 +626,16 @@ public final class OperationList implements Comparable<OperationList>,
      * @throws IllegalArgumentException if the instance is invalid.
      */
     public void validate(Dimension fullSize) {
+        // Ensure that an identifier is set.
+        if (getIdentifier() == null) {
+            throw new IllegalArgumentException("Identifier not set.");
+        }
+        // Ensure that an Encode operation is present.
+        if (getFirst(Encode.class) == null) {
+            throw new IllegalArgumentException(
+                    "Missing " + Encode.class.getSimpleName() + " operation");
+        }
+        // Validate each operation.
         for (Operation op : this) {
             op.validate(fullSize);
         }

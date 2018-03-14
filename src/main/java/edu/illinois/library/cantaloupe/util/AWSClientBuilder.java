@@ -27,9 +27,14 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
  */
 public final class AWSClientBuilder {
 
+    private static final int DEFAULT_CLIENT_EXECUTION_TIMEOUT_MSEC = 10 * 60 * 1000;
+    private static final long DEFAULT_CONNECTION_TTL_MSEC          = 30 * 60 * 1000;
+    private static final int DEFAULT_MAX_CONNECTIONS               = 200;
+    private static final boolean DEFAULT_USE_TCP_KEEPALIVE         = true;
+
     private String accessKeyID;
     private URI endpointURI;
-    private int maxConnections = 200;
+    private int maxConnections = DEFAULT_MAX_CONNECTIONS;
     private String secretKey;
 
     /**
@@ -83,6 +88,9 @@ public final class AWSClientBuilder {
         final ClientConfiguration clientConfig = new ClientConfiguration();
         // The AWS SDK default is 50.
         clientConfig.setMaxConnections(maxConnections);
+        clientConfig.setConnectionTTL(DEFAULT_CONNECTION_TTL_MSEC);
+        clientConfig.setClientExecutionTimeout(DEFAULT_CLIENT_EXECUTION_TIMEOUT_MSEC);
+        clientConfig.setUseTcpKeepAlive(DEFAULT_USE_TCP_KEEPALIVE);
         return clientConfig;
     }
 

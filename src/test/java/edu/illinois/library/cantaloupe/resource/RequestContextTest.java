@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,8 +43,8 @@ public class RequestContextTest {
         // operation list
         Identifier identifier = new Identifier("cats");
         Dimension fullSize = new Dimension(200, 200);
-        Format outputFormat = Format.GIF;
-        OperationList opList = new OperationList(identifier, outputFormat);
+        OperationList opList = new OperationList(
+                identifier, new Encode(Format.GIF));
         instance.setOperationList(opList, fullSize);
 
         // request headers
@@ -81,8 +82,9 @@ public class RequestContextTest {
 
     @Test
     public void testSetOperationList() {
-        instance.setOperationList(new OperationList(new Identifier("cats"), Format.JPG),
-                new Dimension(5, 5));
+        OperationList opList = new OperationList(
+                new Identifier("cats"), new Encode(Format.JPG));
+        instance.setOperationList(opList, new Dimension(5, 5));
         assertNotNull(instance.toMap().get(FULL_SIZE_KEY));
         assertNotNull(instance.toMap().get(IDENTIFIER_KEY));
         assertNotNull(instance.toMap().get(OPERATIONS_KEY));

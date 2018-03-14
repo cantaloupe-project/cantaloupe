@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -11,7 +10,8 @@ import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
@@ -123,8 +123,6 @@ public class JAIUtilTest extends BaseTest {
 
     @Test
     public void getAsRenderedOp() throws Exception {
-        final OperationList ops = new OperationList(new Identifier("cats"),
-                Format.JPG);
         RenderedImage image = readImage(IMAGE);
         PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
         RenderedOp renderedOp = JAIUtil.getAsRenderedOp(planarImage);
@@ -508,11 +506,11 @@ public class JAIUtilTest extends BaseTest {
     }
 
     private RenderedOp readImage(final String name) throws Exception {
-        final OperationList ops = new OperationList(new Identifier("cats"),
-                Format.JPG);
+        final OperationList ops = new OperationList();
         ImageReader reader = null;
         try {
-            reader = new ImageReader(TestUtil.getImage(name), Format.PNG);
+            reader = new ImageReaderFactory().newImageReader(
+                    TestUtil.getImage(name), Format.PNG);
             RenderedImage image = reader.readRendered(
                     ops, Orientation.ROTATE_0, new ReductionFactor(), null);
             PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);

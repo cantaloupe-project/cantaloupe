@@ -7,13 +7,15 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 class IncompatibleResolverException extends ConfigurationException {
 
     private static String getMessage(Resolver resolver, Processor processor) {
-        return String.format("%s and %s are not compatible. Either use a " +
-                        "different resolver/processor combination, or " +
-                        "enable the source cache and set %s=%s.",
+        return String.format("%s and %s are not compatible using %s = %s. " +
+                        "Either use a different resolver/processor " +
+                        "combination, or switch to %s or %s.",
                 resolver.getClass().getSimpleName(),
                 processor.getClass().getSimpleName(),
-                Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
-                ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE);
+                Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
+                RetrievalStrategy.STREAM,
+                RetrievalStrategy.DOWNLOAD,
+                RetrievalStrategy.CACHE);
     }
 
     IncompatibleResolverException(final Resolver resolver,

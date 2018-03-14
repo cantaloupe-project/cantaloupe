@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.resource.iiif.InformationResourceTester;
@@ -228,14 +229,14 @@ public class InformationResourceTest extends ResourceTest {
     @Test
     public void testGETRecoveryFromDerivativeCacheNewDerivativeImageInputStreamException()
             throws Exception {
-        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
+        URI uri = getHTTPURI("/" + IMAGE + "/info.json");
         tester.testRecoveryFromDerivativeCacheNewDerivativeImageInputStreamException(uri);
     }
 
     @Test
     public void testGETRecoveryFromDerivativeCacheNewDerivativeImageOutputStreamException()
             throws Exception {
-        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.png");
+        URI uri = getHTTPURI("/" + IMAGE + "/info.json");
         tester.testRecoveryFromDerivativeCacheNewDerivativeImageOutputStreamException(uri);
     }
 
@@ -258,6 +259,20 @@ public class InformationResourceTest extends ResourceTest {
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE);
         tester.testRedirectToInfoJSONWithDifferentDeprecatedPublicIdentifier(uri);
+    }
+
+    @Test
+    public void testGETResolverCheckAccessNotCalledWithSourceCacheHit()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/info.json");
+        tester.testResolverCheckAccessNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
+    }
+
+    @Test
+    public void testGETResolverGetSourceFormatNotCalledWithSourceCacheHit()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/info.json");
+        tester.testResolverGetSourceFormatNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
     }
 
     /**
@@ -380,7 +395,7 @@ public class InformationResourceTest extends ResourceTest {
         assertTrue(parts.contains("Accept-Language"));
         assertTrue(parts.contains("Origin"));
         // X-Powered-By
-        assertEquals(Application.NAME + "/" + Application.getVersion(),
+        assertEquals(Application.getName() + "/" + Application.getVersion(),
                 headers.getFirstValue("X-Powered-By"));
     }
 

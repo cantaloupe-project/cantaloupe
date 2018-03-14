@@ -31,8 +31,7 @@ public class OperationListTest extends BaseTest {
     private OperationList instance;
 
     private static OperationList newOperationList() {
-        OperationList ops = new OperationList(
-                new Identifier("identifier.jpg"), Format.JPG);
+        OperationList ops = new OperationList();
 
         Crop crop = new Crop();
         crop.setFull(true);
@@ -60,15 +59,16 @@ public class OperationListTest extends BaseTest {
 
     @Test
     public void add() {
-        instance = new OperationList(new Identifier("cats"), Format.JPG);
+        instance = new OperationList();
         assertFalse(instance.iterator().hasNext());
+
         instance.add(new Rotate());
         assertTrue(instance.iterator().hasNext());
     }
 
     @Test(expected = IllegalStateException.class)
     public void addWhileFrozen() {
-        instance = new OperationList(new Identifier("cats"), Format.JPG);
+        instance = new OperationList();
         instance.freeze();
 
         instance.add(new Rotate());
@@ -76,17 +76,17 @@ public class OperationListTest extends BaseTest {
 
     @Test
     public void addAfterWithExistingClass() {
-        instance = new OperationList(new Identifier("cats"), Format.JPG);
-        instance.add(new Rotate());
+        instance = new OperationList(new Rotate());
         instance.addAfter(new Scale(), Rotate.class);
         Iterator<Operation> it = instance.iterator();
+
         assertTrue(it.next() instanceof Rotate);
         assertTrue(it.next() instanceof Scale);
     }
 
     @Test
     public void addAfterWithExistingSuperclass() {
-        instance = new OperationList(new Identifier("cats"), Format.JPG);
+        instance = new OperationList();
         instance.add(new MockOverlay());
 
         class SubMockOverlay extends MockOverlay {}
@@ -99,7 +99,7 @@ public class OperationListTest extends BaseTest {
 
     @Test
     public void addAfterWithoutExistingClass() {
-        instance = new OperationList(new Identifier("cats"), Format.JPG);
+        instance = new OperationList();
         instance.add(new Rotate());
         instance.addAfter(new Scale(), Crop.class);
         Iterator<Operation> it = instance.iterator();
@@ -109,14 +109,14 @@ public class OperationListTest extends BaseTest {
 
     @Test(expected = IllegalStateException.class)
     public void addAfterWhileFrozen() {
-        instance = new OperationList(new Identifier("cats"), Format.JPG);
+        instance = new OperationList();
         instance.freeze();
         instance.addAfter(new Rotate(), Crop.class);
     }
 
     @Test
     public void addBeforeWithExistingClass() {
-        instance = new OperationList(new Identifier("cats"), Format.JPG);
+        instance = new OperationList();
         instance.add(new Rotate());
         instance.addBefore(new Scale(), Rotate.class);
         assertTrue(instance.iterator().next() instanceof Scale);
@@ -126,7 +126,7 @@ public class OperationListTest extends BaseTest {
     public void addBeforeWithExistingSuperclass() {
         class SubMockOverlay extends MockOverlay {}
 
-        instance = new OperationList(new Identifier("cats"), Format.JPG);
+        instance = new OperationList();
         instance.add(new MockOverlay());
         instance.addBefore(new SubMockOverlay(), MockOverlay.class);
         assertTrue(instance.iterator().next() instanceof SubMockOverlay);
@@ -134,7 +134,7 @@ public class OperationListTest extends BaseTest {
 
     @Test
     public void addBeforeWithoutExistingClass() {
-        instance = new OperationList(new Identifier("cats"), Format.JPG);
+        instance = new OperationList();
         instance.add(new Rotate());
         instance.addBefore(new Scale(), Crop.class);
         Iterator<Operation> it = instance.iterator();
@@ -144,7 +144,7 @@ public class OperationListTest extends BaseTest {
 
     @Test(expected = IllegalStateException.class)
     public void addBeforeWhileFrozen() {
-        instance = new OperationList(new Identifier("cats"), Format.JPG);
+        instance = new OperationList();
         instance.freeze();
         instance.addBefore(new Rotate(), Crop.class);
     }
@@ -153,12 +153,14 @@ public class OperationListTest extends BaseTest {
     public void applyNonEndpointMutationsWithOrientationMutatesCrop()
             throws Exception {
         final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = new Info(fullSize);
-        info.getImages().get(0).setOrientation(Orientation.ROTATE_90);
-
+        final Info info = Info.builder()
+                .withSize(fullSize)
+                .withOrientation(Orientation.ROTATE_90)
+                .build();
         final OperationList opList = new OperationList(
-                new Identifier("cats"), Format.JPG,
-                new Crop(0, 0, 70, 30));
+                new Identifier("cats"),
+                new Crop(0, 0, 70, 30),
+                new Encode(Format.JPG));
 
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
@@ -177,12 +179,15 @@ public class OperationListTest extends BaseTest {
     public void applyNonEndpointMutationsWithOrientationMutatesRotate()
             throws Exception {
         final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = new Info(fullSize);
-        info.getImages().get(0).setOrientation(Orientation.ROTATE_90);
-
+        final Info info = Info.builder()
+                .withSize(fullSize)
+                .withOrientation(Orientation.ROTATE_90)
+                .build();
         final OperationList opList = new OperationList(
-                new Identifier("cats"), Format.JPG,
-                new Crop(0, 0, 70, 30), new Rotate(45));
+                new Identifier("cats"),
+                new Crop(0, 0, 70, 30),
+                new Rotate(45),
+                new Encode(Format.JPG));
 
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
@@ -204,9 +209,12 @@ public class OperationListTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_BACKGROUND_COLOR, "white");
 
         final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = new Info(fullSize);
+        final Info info = Info.builder().withSize(fullSize).build();
         final OperationList opList = new OperationList(
-                new Identifier("cats"), Format.JPG, new Rotate(45));
+                new Identifier("cats"),
+                new Rotate(45),
+                new Encode(Format.JPG));
+
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
         DelegateProxyService service = DelegateProxyService.getInstance();
@@ -226,9 +234,10 @@ public class OperationListTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_JPG_PROGRESSIVE, true);
 
         final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = new Info(fullSize);
+        final Info info = Info.builder().withSize(fullSize).build();
         final OperationList opList = new OperationList(
-                new Identifier("cats"), Format.JPG);
+                new Identifier("cats"), new Encode(Format.JPG));
+
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
         DelegateProxyService service = DelegateProxyService.getInstance();
@@ -251,9 +260,10 @@ public class OperationListTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
 
         final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = new Info(fullSize);
+        final Info info = Info.builder().withSize(fullSize).build();
         final OperationList opList = new OperationList(
-                new Identifier("cats"), Format.JPG);
+                new Identifier("cats"), new Encode(Format.JPG));
+
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
         DelegateProxyService service = DelegateProxyService.getInstance();
@@ -272,10 +282,11 @@ public class OperationListTest extends BaseTest {
 
         // Assert that Normalizations are inserted before Crops.
         final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = new Info(fullSize);
+        final Info info = Info.builder().withSize(fullSize).build();
         OperationList opList = new OperationList(
-                new Identifier("cats"), Format.TIF,
-                new Crop());
+                new Identifier("cats"),
+                new Crop(),
+                new Encode(Format.JPG));
         RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
 
@@ -289,13 +300,17 @@ public class OperationListTest extends BaseTest {
 
         // Assert that Normalizations are inserted before upscales when no
         // Crop is present.
-        opList = new OperationList(new Identifier("cats"), Format.TIF,
-                new Scale(1.5f));
+        opList = new OperationList(
+                new Identifier("cats"),
+                new Scale(1.5f),
+                new Encode(Format.JPG));
         context = new RequestContext();
         context.setOperationList(opList, fullSize);
         proxy = service.newDelegateProxy(context);
 
-        opList.applyNonEndpointMutations(info, proxy);
+        opList.applyNonEndpointMutations(
+                Info.builder().withSize(2000, 1000).build(),
+                proxy);
 
         it = opList.iterator();
         assertTrue(it.next() instanceof Normalize);
@@ -303,7 +318,9 @@ public class OperationListTest extends BaseTest {
         // Assert that Normalizations are inserted after downscales when no
         // Crop is present.
         opList = new OperationList(
-                new Identifier("cats"), Format.TIF, new Scale(0.5f));
+                new Identifier("cats"),
+                new Scale(0.5f),
+                new Encode(Format.JPG));
         context = new RequestContext();
         context.setOperationList(opList, fullSize);
         proxy = service.newDelegateProxy(context);
@@ -320,9 +337,10 @@ public class OperationListTest extends BaseTest {
         BasicStringOverlayServiceTest.setUpConfiguration();
 
         final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = new Info(fullSize);
+        final Info info = Info.builder().withSize(fullSize).build();
         final OperationList opList = new OperationList(
-                new Identifier("cats"), Format.TIF);
+                new Identifier("cats"), new Encode(Format.TIF));
+
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
         DelegateProxyService service = DelegateProxyService.getInstance();
@@ -339,9 +357,10 @@ public class OperationListTest extends BaseTest {
         RedactionServiceTest.setUpConfiguration();
 
         final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = new Info(fullSize);
+        final Info info = Info.builder().withSize(fullSize).build();
         final OperationList opList = new OperationList(
-                new Identifier("cats"), Format.TIF);
+                new Identifier("cats"), new Encode(Format.JPG));
+
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
         DelegateProxyService service = DelegateProxyService.getInstance();
@@ -359,9 +378,10 @@ public class OperationListTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_LIMIT_TO_8_BITS, true);
 
         final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = new Info(fullSize);
+        final Info info = Info.builder().withSize(fullSize).build();
         final OperationList opList = new OperationList(
-                new Identifier("cats"), Format.JPG);
+                new Identifier("cats"), new Encode(Format.JPG));
+
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
         DelegateProxyService service = DelegateProxyService.getInstance();
@@ -380,9 +400,9 @@ public class OperationListTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_LIMIT_TO_8_BITS, false);
 
         final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = new Info(fullSize);
+        final Info info = Info.builder().withSize(fullSize).build();
         final OperationList opList = new OperationList(
-                new Identifier("cats"), Format.JPG);
+                new Identifier("cats"), new Encode(Format.JPG));
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
         DelegateProxyService service = DelegateProxyService.getInstance();
@@ -395,17 +415,17 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void applyNonEndpointMutationsWithScaleFilters() throws Exception {
-        final Configuration config = Configuration.getInstance();
+    public void applyNonEndpointMutationsWithDownscaleFilter() throws Exception {
+        Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_DOWNSCALE_FILTER, "bicubic");
-        config.setProperty(Key.PROCESSOR_UPSCALE_FILTER, "triangle");
 
-        // Downscale
         final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = new Info(fullSize);
-        OperationList opList = new OperationList(
-                new Identifier("cats"), Format.TIF, new Scale(0.5f));
-        RequestContext context = new RequestContext();
+        final Info info = Info.builder().withSize(fullSize).build();
+        final OperationList opList = new OperationList(
+                new Identifier("cats"),
+                new Scale(0.5f),
+                new Encode(Format.JPG));
+        final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
         DelegateProxyService service = DelegateProxyService.getInstance();
         DelegateProxy proxy = service.newDelegateProxy(context);
@@ -414,17 +434,27 @@ public class OperationListTest extends BaseTest {
 
         Iterator<Operation> it = opList.iterator();
         assertEquals(Scale.Filter.BICUBIC, ((Scale) it.next()).getFilter());
+    }
 
-        // Upscale
-        opList = new OperationList(new Identifier("cats"), Format.TIF,
-                new Scale(1.5f));
-        context = new RequestContext();
+    @Test
+    public void applyNonEndpointMutationsWithUpscaleFilter() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.PROCESSOR_UPSCALE_FILTER, "triangle");
+
+        final Dimension fullSize = new Dimension(2000, 1000);
+        final Info info = Info.builder().withSize(fullSize).build();
+        final OperationList opList = new OperationList(
+                new Identifier("cats"),
+                new Scale(1.5f),
+                new Encode(Format.JPG));
+        final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
-        proxy = service.newDelegateProxy(context);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
 
         opList.applyNonEndpointMutations(info, proxy);
 
-        it = opList.iterator();
+        Iterator<Operation> it = opList.iterator();
         assertEquals(Scale.Filter.TRIANGLE, ((Scale) it.next()).getFilter());
     }
 
@@ -434,9 +464,10 @@ public class OperationListTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_SHARPEN, 0.2f);
 
         final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = new Info(fullSize);
+        final Info info = Info.builder().withSize(fullSize).build();
         final OperationList opList = new OperationList(
-                new Identifier("cats"), Format.TIF);
+                new Identifier("cats"),
+                new Encode(Format.TIF));
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
         DelegateProxyService service = DelegateProxyService.getInstance();
@@ -458,9 +489,9 @@ public class OperationListTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_TIF_COMPRESSION, "LZW");
 
         final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = new Info(fullSize);
+        final Info info = Info.builder().withSize(fullSize).build();
         final OperationList opList = new OperationList(
-                new Identifier("cats"), Format.TIF);
+                new Identifier("cats"), new Encode(Format.TIF));
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
         DelegateProxyService service = DelegateProxyService.getInstance();
@@ -478,14 +509,12 @@ public class OperationListTest extends BaseTest {
     @Test(expected = IllegalStateException.class)
     public void applyNonEndpointMutationsWhileFrozen() throws Exception {
         final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = new Info(fullSize);
-        final OperationList opList = new OperationList(
-                new Identifier("cats"), Format.JPG, new Crop(0, 0, 70, 30));
+        final Info info = Info.builder().withSize(fullSize).build();
+        final OperationList opList = new OperationList(new Crop(0, 0, 70, 30));
 
         opList.freeze();
 
         final RequestContext context = new RequestContext();
-        context.setOperationList(opList, fullSize);
         DelegateProxyService service = DelegateProxyService.getInstance();
         DelegateProxy proxy = service.newDelegateProxy(context);
 
@@ -520,8 +549,7 @@ public class OperationListTest extends BaseTest {
 
     @Test
     public void compareTo() {
-        OperationList ops2 = new OperationList(
-                new Identifier("identifier.jpg"), Format.JPG);
+        OperationList ops2 = new OperationList();
 
         Crop crop = new Crop();
         crop.setFull(true);
@@ -536,17 +564,15 @@ public class OperationListTest extends BaseTest {
 
     @Test
     public void equalsWithEqualOperationList() {
-        OperationList ops1 = TestUtil.newOperationList();
-        OperationList ops2 = TestUtil.newOperationList();
-        ops2.add(new Rotate());
+        OperationList ops1 = new OperationList(new Rotate(1));
+        OperationList ops2 = new OperationList(new Rotate(1));
         assertTrue(ops1.equals(ops2));
     }
 
     @Test
     public void equalsWithUnequalOperationList() {
-        OperationList ops1 = TestUtil.newOperationList();
-        OperationList ops2 = TestUtil.newOperationList();
-        ops2.add(new Rotate(1));
+        OperationList ops1 = new OperationList();
+        OperationList ops2 = new OperationList(new Rotate(1));
         assertFalse(ops1.equals(ops2));
     }
 
@@ -585,7 +611,7 @@ public class OperationListTest extends BaseTest {
     @Test
     public void getResultingSize() {
         Dimension fullSize = new Dimension(300, 200);
-        instance = new OperationList(new Identifier("cats"), Format.JPG);
+        instance = new OperationList();
         Crop crop = new Crop();
         crop.setFull(true);
         Scale scale = new Scale();
@@ -595,7 +621,7 @@ public class OperationListTest extends BaseTest {
         instance.add(rotate);
         assertEquals(fullSize, instance.getResultingSize(fullSize));
 
-        instance = new OperationList(new Identifier("cats"), Format.JPG);
+        instance = new OperationList();
         crop = new Crop();
         crop.setUnit(Crop.Unit.PERCENT);
         crop.setWidth(0.5f);
@@ -607,30 +633,26 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void hasEffect() {
-        // same format
-        instance = new OperationList(new Identifier("identifier.gif"),
-                Format.GIF);
+    public void hasEffectWithSameFormat() {
+        instance = new OperationList(new Encode(Format.GIF));
         assertFalse(instance.hasEffect(Format.GIF));
+    }
 
-        // different formats
-        instance = new OperationList(new Identifier("identifier.jpg"),
-                Format.GIF);
+    @Test
+    public void hasEffectWithDifferentFormats() {
+        instance = new OperationList(new Encode(Format.GIF));
         assertTrue(instance.hasEffect(Format.JPG));
     }
 
     @Test
     public void hasEffectWithPdfSourceAndPdfOutputAndOverlay() {
-        instance = new OperationList(new Identifier("identifier.pdf"),
-                Format.PDF);
+        instance = new OperationList(new Encode(Format.PDF));
         assertFalse(instance.hasEffect(Format.PDF));
     }
 
     @Test
     public void hasEffectWithEncodeAndSameOutputFormat() {
-        instance = new OperationList(new Identifier("identifier.jpg"),
-                Format.JPG);
-        instance.add(new Encode(Format.JPG));
+        instance = new OperationList(new Encode(Format.JPG));
         assertFalse(instance.hasEffect(Format.JPG));
     }
 
@@ -659,21 +681,9 @@ public class OperationListTest extends BaseTest {
         instance.setIdentifier(new Identifier("alpaca"));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void setOutputFormatWhileFrozen() {
-        instance.freeze();
-        instance.setOutputFormat(Format.GIF);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void setOutputFormatWithIllegalFormat() {
-        instance.setOutputFormat(Format.UNKNOWN);
-    }
-
     @Test
     public void toFilename() {
-        instance = new OperationList(new Identifier("identifier.jpg"),
-                Format.JPG);
+        instance = new OperationList(new Identifier("identifier.jpg"));
         Crop crop = new Crop();
         crop.setX(5f);
         crop.setY(6f);
@@ -684,9 +694,10 @@ public class OperationListTest extends BaseTest {
         instance.add(scale);
         instance.add(new Rotate(15));
         instance.add(ColorTransform.BITONAL);
+        instance.add(new Encode(Format.JPG));
         instance.getOptions().put("animal", "cat");
 
-        String expected = "50c63748527e634134449ae20b199cc0_1ca68d1b775cb386ddeba799a994b6af.jpg";
+        String expected = "50c63748527e634134449ae20b199cc0_2d047243d6275ffc6ec9f30f4cdd8b5e.jpg";
         assertEquals(expected, instance.toFilename());
 
         // Assert that changing an operation changes the filename
@@ -702,8 +713,7 @@ public class OperationListTest extends BaseTest {
 
     @Test
     public void toMap() {
-        instance = new OperationList(new Identifier("identifier.jpg"),
-                Format.JPG);
+        instance = new OperationList(new Identifier("identifier.jpg"));
         // crop
         Crop crop = new Crop();
         crop.setX(2);
@@ -717,11 +727,13 @@ public class OperationListTest extends BaseTest {
         instance.add(new Rotate(0));
         // transpose
         instance.add(Transpose.HORIZONTAL);
+        // encode
+        instance.add(new Encode(Format.JPG));
 
         final Dimension fullSize = new Dimension(100, 100);
         Map<String,Object> map = instance.toMap(fullSize);
         assertEquals("identifier.jpg", map.get("identifier"));
-        assertEquals(2, ((List<?>) map.get("operations")).size());
+        assertEquals(3, ((List<?>) map.get("operations")).size());
         assertEquals(0, ((Map<?, ?>) map.get("options")).size());
     }
 
@@ -734,8 +746,7 @@ public class OperationListTest extends BaseTest {
 
     @Test
     public void testToString() {
-        instance = new OperationList(new Identifier("identifier.jpg"),
-                Format.JPG);
+        instance = new OperationList(new Identifier("identifier.jpg"));
         Crop crop = new Crop();
         crop.setX(5f);
         crop.setY(6f);
@@ -746,9 +757,10 @@ public class OperationListTest extends BaseTest {
         instance.add(scale);
         instance.add(new Rotate(15));
         instance.add(ColorTransform.BITONAL);
+        instance.add(new Encode(Format.JPG));
         instance.getOptions().put("animal", "cat");
 
-        String expected = "identifier.jpg_crop:5,6,20,22_scale:40%_rotate:15_colortransform:bitonal_animal:cat.jpg";
+        String expected = "identifier.jpg_crop:5,6,20,22_scale:40%_rotate:15_colortransform:bitonal_encode:jpg_UNDEFINED_animal:cat";
         assertEquals(expected, instance.toString());
     }
 
@@ -757,17 +769,31 @@ public class OperationListTest extends BaseTest {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(
                 new Identifier("cats"),
-                Format.JPG,
-                new Crop(0, 0, 100, 100));
+                new Crop(0, 0, 100, 100),
+                new Encode(Format.JPG));
+        ops.validate(fullSize);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void validateWithMissingIdentifier() {
+        Dimension fullSize = new Dimension(1000, 1000);
+        OperationList ops = new OperationList(
+                new Crop(0, 0, 100, 100), new Encode(Format.JPG));
+        ops.validate(fullSize);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void validateWithMissingEncodeOperation() {
+        Dimension fullSize = new Dimension(1000, 1000);
+        OperationList ops = new OperationList(
+                new Identifier("cats"), new Crop(0, 0, 100, 100));
         ops.validate(fullSize);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void validateWithOutOfBoundsCrop() {
         Dimension fullSize = new Dimension(1000, 1000);
-        OperationList ops = new OperationList(new Identifier("cats"),
-                Format.JPG,
-                new Crop(1001, 1001, 100, 100));
+        OperationList ops = new OperationList(new Crop(1001, 1001, 100, 100));
         ops.validate(fullSize);
     }
 

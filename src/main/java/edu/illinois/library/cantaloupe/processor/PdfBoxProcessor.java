@@ -7,13 +7,16 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
-import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
+import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.apache.commons.io.IOUtils;
+import org.apache.pdfbox.cos.COSObject;
+import org.apache.pdfbox.pdmodel.DefaultResourceCache;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +62,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     public Set<Format> getAvailableOutputFormats() {
         final Set<Format> outputFormats;
         if (Format.PDF.equals(format)) {
-            outputFormats = ImageWriter.supportedFormats();
+            outputFormats = ImageWriterFactory.supportedFormats();
         } else {
             outputFormats = Collections.unmodifiableSet(Collections.emptySet());
         }
@@ -84,6 +87,15 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                 docInputStream = streamSource.newInputStream();
                 doc = PDDocument.load(docInputStream);
             }
+
+            // Disable the document's cache of PDImageXObjects
+            // See: https://pdfbox.apache.org/2.0/faq.html#outofmemoryerror
+            doc.setResourceCache(new DefaultResourceCache() {
+                @Override
+                public void put(COSObject indirect, PDXObject xobject) {
+                    // no-op
+                }
+            });
         }
     }
 
@@ -93,8 +105,8 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                         OutputStream outputStream) throws ProcessorException {
         super.process(opList, imageInfo, outputStream);
 
-        final Set<ImageReader.Hint> hints =
-                EnumSet.noneOf(ImageReader.Hint.class);
+        final Set<ReaderHint> hints =
+                EnumSet.noneOf(ReaderHint.class);
         Scale scale = (Scale) opList.getFirst(Scale.class);
         if (scale == null) {
             scale = new Scale();
@@ -103,7 +115,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
         // NON_ASPECT_FILL, we can use a scale-appropriate rasterization
         // DPI and omit the scale step.
         if (!Scale.Mode.NON_ASPECT_FILL.equals(scale.getMode())) {
-            hints.add(ImageReader.Hint.IGNORE_SCALE);
+            hints.add(ReaderHint.IGNORE_SCALE);
         }
 
         ReductionFactor reductionFactor = new ReductionFactor();
@@ -205,8 +217,12 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
             }
             imageSize = new Dimension(widthPx, heightPx);
         }
-        return new Info(imageSize.width, imageSize.height,
-                imageSize.width, imageSize.height, getSourceFormat());
+        return Info.builder()
+                .withSize(imageSize)
+                .withTileSize(imageSize)
+                .withFormat(getSourceFormat())
+                .withNumResolutions(1)
+                .build();
     }
 
     @Override

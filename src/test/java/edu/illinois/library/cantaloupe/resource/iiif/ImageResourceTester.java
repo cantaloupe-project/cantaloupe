@@ -442,7 +442,8 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         Client client = newClient(uri);
 
         try {
-            opList.applyNonEndpointMutations(new Info(64, 56), null);
+            Info info = Info.builder().withSize(64, 56).build();
+            opList.applyNonEndpointMutations(info, null);
 
             assertRecursiveFileCount(cacheDir, 0);
 

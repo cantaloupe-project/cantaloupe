@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Color;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
@@ -40,7 +41,8 @@ public class DelegateOverlayServiceTest extends BaseTest {
     public void testGetOverlayReturningImageOverlay() throws Exception {
         final Identifier identifier = new Identifier("image");
         final Dimension fullSize = new Dimension(500, 500);
-        final OperationList opList = new OperationList(identifier, Format.JPG);
+        final OperationList opList = new OperationList(
+                identifier, new Encode(Format.JPG));
         final RequestContext context = new RequestContext();
         context.setIdentifier(identifier);
         context.setOperationList(opList, fullSize);
@@ -58,7 +60,8 @@ public class DelegateOverlayServiceTest extends BaseTest {
     public void testGetOverlayReturningStringOverlay() throws Exception {
         final Identifier identifier = new Identifier("string");
         final Dimension fullSize = new Dimension(500, 500);
-        final OperationList opList = new OperationList(identifier, Format.JPG);
+        final OperationList opList = new OperationList(
+                identifier, new Encode(Format.JPG));
         final RequestContext context = new RequestContext();
         context.setIdentifier(identifier);
         context.setOperationList(opList, fullSize);

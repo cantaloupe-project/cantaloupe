@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
@@ -18,7 +17,7 @@ public class AzureStorageCacheTest extends AbstractCacheTest {
 
     private Identifier identifier = new Identifier("jpg-rgb-64x56x8-baseline.jpg");
     private AzureStorageCache instance;
-    private OperationList opList = new OperationList(identifier, Format.JPG);
+    private OperationList opList = new OperationList();
 
     private static String getAccountName() {
         org.apache.commons.configuration.Configuration testConfig =

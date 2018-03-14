@@ -26,11 +26,14 @@ import org.restlet.resource.Get;
 
 import java.awt.Dimension;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 /**
@@ -63,7 +66,7 @@ public class ImageResource extends IIIF1Resource {
         // can pluck an info from it. This will be more efficient than getting
         // it from a resolver.
         Format sourceFormat = Format.UNKNOWN;
-        if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)) {
+        if (!isResolvingFirst()) {
             try {
                 Info info = cacheFacade.getInfo(identifier);
                 if (info != null) {
@@ -81,19 +84,36 @@ public class ImageResource extends IIIF1Resource {
         final Resolver resolver = new ResolverFactory().newResolver(
                 identifier, getDelegateProxy());
 
-        try {
-            resolver.checkAccess();
-        } catch (NoSuchFileException e) { // this needs to be rethrown!
-            if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
-                // If the image was not found, purge it from the cache.
-                cacheFacade.purgeAsync(identifier);
+        // If we are resolving first, or if the source image is not present in
+        // the source cache (if enabled), check access to it in preparation for
+        // retrieval.
+        final Path sourceImage = cacheFacade.getSourceCacheFile(identifier);
+        if (sourceImage == null || isResolvingFirst()) {
+            try {
+                resolver.checkAccess();
+            } catch (NoSuchFileException e) { // this needs to be rethrown!
+                if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
+                    // If the image was not found, purge it from the cache.
+                    cacheFacade.purgeAsync(identifier);
+                }
+                throw e;
             }
-            throw e;
         }
 
-        // If we don't have the format yet, get it from the resolver.
+        // If we don't know the format yet, get it.
         if (Format.UNKNOWN.equals(sourceFormat)) {
-            sourceFormat = resolver.getSourceFormat();
+            // If we are not resolving first, and there is a hit in the source
+            // cache, read the format from the source-cached-file, as we will
+            // expect source cache access to be more efficient.
+            // Otherwise, read it from the resolver.
+            if (!isResolvingFirst() && sourceImage != null) {
+                List<MediaType> mediaTypes = MediaType.detectMediaTypes(sourceImage);
+                if (!mediaTypes.isEmpty()) {
+                    sourceFormat = mediaTypes.get(0).toFormat();
+                }
+            } else {
+                sourceFormat = resolver.getSourceFormat();
+            }
         }
 
         // Obtain an instance of the processor assigned to that format.
@@ -101,7 +121,8 @@ public class ImageResource extends IIIF1Resource {
                 newProcessor(sourceFormat);
 
         // Connect it to the resolver.
-        new ProcessorConnector().connect(resolver, processor, identifier);
+        Future<Path> tempFileFuture = new ProcessorConnector().connect(
+                resolver, processor, identifier, sourceFormat);
 
         final Set<Format> availableOutputFormats =
                 processor.getAvailableOutputFormats();
@@ -141,11 +162,10 @@ public class ImageResource extends IIIF1Resource {
         // it whether it offers any output formats for it.
         if (!availableOutputFormats.isEmpty()) {
             if (!availableOutputFormats.contains(ops.getOutputFormat())) {
-                String msg = String.format("%s does not support the \"%s\" output format",
-                        processor.getClass().getSimpleName(),
-                        ops.getOutputFormat().getPreferredExtension());
-                getLogger().warning(msg + ": " + getReference());
-                throw new UnsupportedOutputFormatException(msg);
+                Exception e = new UnsupportedOutputFormatException(
+                        processor, ops.getOutputFormat());
+                getLogger().warning(e.getMessage() + ": " + getReference());
+                throw e;
             }
         } else {
             throw new UnsupportedSourceFormatException(sourceFormat);
@@ -153,7 +173,15 @@ public class ImageResource extends IIIF1Resource {
 
         commitCustomResponseHeaders();
         return new ImageRepresentation(info, processor, ops, disposition,
-                isBypassingCache());
+                isBypassingCache(), () -> {
+            if (tempFileFuture != null) {
+                Path tempFile = tempFileFuture.get();
+                if (tempFile != null) {
+                    Files.deleteIfExists(tempFile);
+                }
+            }
+            return null;
+        });
     }
 
     private void addLinkHeader(Processor processor) {
@@ -252,6 +280,11 @@ public class ImageResource extends IIIF1Resource {
             return new MediaType(mediaTypeStr).toFormat();
         }
         return null;
+    }
+
+    private boolean isResolvingFirst() {
+        return Configuration.getInstance().
+                getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true);
     }
 
 }

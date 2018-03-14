@@ -69,8 +69,7 @@ public class RedactionTest extends BaseTest {
     @Test
     public void isNoOpWithArguments() {
         final Dimension fullSize = new Dimension(600, 400);
-        final OperationList opList = new OperationList(
-                new Identifier("cats"), Format.JPG);
+        final OperationList opList = new OperationList();
         opList.add(new Crop(0, 0, 400, 300));
 
         // in bounds

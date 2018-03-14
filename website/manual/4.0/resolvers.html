@@ -26,7 +26,7 @@ title: Resolvers
 
 <p>Resolvers provide access to source images. A resolver translates an identifier in a request URL to a source image locator, such as a pathname, in the particular type of underlying storage it is written to interface with. It can then check whether the underlying object exists and is accessible, and if so, provide access to it to other image server components. The rest of the image server does not need to know where an image resides, be it on the filesystem, on a remote web server, or wherever&mdash;it can just ask the resolver, whatever it may be, to provide a generic interface from which an image can be read.</p>
 
-<p>The interface in question may be a stream or a file. All resolvers can provide stream access, but only <a href="#FilesystemResolver">FilesystemResolver</a> can provide file access. This distinction is important because <a href="processors.html#Resolver%20Compatibility">not all processors can read from streams</a>. See <a href="images.html#Considerations">Image Considerations</a> for background on why this is an issue.</p>
+<p>The interface in question may be a stream or a file. All resolvers can provide stream access, but only <a href="#FilesystemResolver">FilesystemResolver</a> can provide file access. This distinction is important because <a href="processors.html#Retrieval%20Strategies">not all processors can read from streams</a>. See <a href="images.html#Considerations">Image Considerations</a> for background on why this is an issue.</p>
 
 <h2 id="Selection">Selection</h2>
 
@@ -97,9 +97,11 @@ end
 
 <p>For images with extensions that are missing or unrecognized, this resolver will check the "magic number" to determine type, which will add some overhead. It is therefore slightly more efficient to serve images with extensions.</p>
 
+<h4>Lookup Strategies</h4>
+
 <p>FilesystemResolver supports two distinct lookup strategies, defined by the <code>FilesystemResolver.lookup_strategy</code> configuration option.</p>
 
-<h4 id="FilesystemResolverBasicLookupStrategy">BasicLookupStrategy</h4>
+<h5 id="FilesystemResolverBasicLookupStrategy">BasicLookupStrategy</h5>
 
 <p>BasicLookupStrategy locates images by concatenating a pre-defined path prefix and/or suffix. For example, with the following configuration options set:</p>
 
@@ -120,7 +122,7 @@ FilesystemResolver.BasicLookupStrategy.path_suffix =
 
 <div class="alert alert-warning">It may be dangerous to <strong>not</strong> use <code>path_prefix</code>. The shallower the path, the more of the filesystem that will be exposed.</div>
 
-<h4 id="FilesystemResolverScriptLookupStrategy">ScriptLookupStrategy</h4>
+<h5 id="FilesystemResolverScriptLookupStrategy">ScriptLookupStrategy</h5>
 
 <p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple filesystems, or perhaps your identifiers are opaque and you need to perform a database or web service request to locate the corresponding images. With this lookup strategy, you can tell FilesystemResolver to invoke a method in your <a href="delegate-script.html">delegate script</a> and capture the pathname it returns.</p>
 
@@ -197,15 +199,28 @@ end
 
 <h3 id="HttpResolver">HttpResolver</h3>
 
-<p>HttpResolver maps a URL identifier to an HTTP or HTTPS resource, for retrieving images from a web server.</p>
+<p>HttpResolver maps a URL identifier to an HTTP or HTTPS resource, for retrieving images from a web server. HttpResolver uses a <a href="http://www.eclipse.org/jetty/documentation/current/http-client.html">Jetty HTTP client</a> internally and supports HTTP/1.1 and optional Basic authentication.</p>
 
-<p>Prior to version 3.4, HttpResolver used the HTTP client bundled with <a href="https://restlet.com/open-source/">Restlet Framework</a>. In version 3.4, the implementation changed to use the <a href="http://www.eclipse.org/jetty/documentation/current/http-client.html">Jetty HTTP client</a>, which is more robust.</p>
+<h4>Format Inference</h4>
 
-<p>It is preferable to use this resolver with source images with recognizable file extensions. For images with an extension that is missing or unrecognizable, it will issue an HTTP HEAD request to the server to check the <code>Content-Type</code> header. If the type cannot be inferred from that, an error response will be returned.</p>
+<p>Like all resolvers, HttpResolver needs to be able to figure out the format of a source image before it can be served. It uses the following strategy to do this:</p>
+
+<ol>
+  <li>If the source image's identifier has a recognized filename extension, the format will be inferred from that.</li>
+  <li>Otherwise, a <code>GET</code> request will be sent with a <code>Range</code> header specifying a small range of data from the beginning of the resource.
+    <ol>
+      <li>If a <code>Content-Type</code> header is present in the response, and is specific enough (i.e. not <code>application/octet-stream</code>), a format will be inferred from that.</li>
+      <li>Otherwise, a format will be inferred from the magic bytes in the response body.</li>
+    </ol>
+  </li>
+  <li>If none of the above are successful, an error response will be returned.</li>
+</ol>
+
+<h4>Lookup Strategies</h4>
 
 <p>HttpResolver supports two distinct lookup strategies, defined by the <code>HttpResolver.lookup_strategy</code> configuration option.</p>
 
-<h4 id="HttpResolverBasicLookupStrategy">BasicLookupStrategy</h4>
+<h5 id="HttpResolverBasicLookupStrategy">BasicLookupStrategy</h5>
 
 <p>BasicLookupStrategy locates images by concatenating a pre-defined URL prefix and/or suffix. For example, with the following configuration options set:</p>
 
@@ -222,11 +237,20 @@ HttpResolver.BasicLookupStrategy.url_suffix =
 
 <div class="alert alert-info">If you are operating behind a reverse proxy that is not capable of passing encoded URL characters through without decoding them, see the <code>slash_substitude</code> configuration key.</div>
 
-<h4 id="HttpResolverScriptLookupStrategy">ScriptLookupStrategy</h4>
+<h5 id="HttpResolverScriptLookupStrategy">ScriptLookupStrategy</h5>
 
 <p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple URLs, or perhaps your identifiers are opaque and you need to run a database or web service request to locate them.  With this lookup strategy, you can tell HttpResolver to invoke a method in your <a href="delegate-script.html">delegate script</a> and capture the URL it returns.</p>
 
 <p>The delegate script method, <code>get_url(identifier)</code>, will take in an identifier string and should return a URL, if available, or <code>nil</code>, if not. See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script, and the <a href="#FilesystemResolverScriptLookupStrategy">FilesystemResolver ScriptLookupStrategy</a> section for examples of similar scripts.</p>
+
+<h4>Authentication</h1>
+
+<p>HTTP Basic authentication is supported.</p>
+
+<ul>
+  <li>When using <a href="#HttpResolverBasicLookupStrategy">BasicLookupStrategy</a>, auth info is set globally in the <code>HttpResolver.auth.basic.username</code> and <code>HttpResolver.auth.basic.secret</code> configuration keys.</li>
+  <li>When using <a href="#HttpResolverScriptLookupStrategy">ScriptLookupStrategy</a>, auth info can be returned from the delegate method.</li>
+</ul>
 
 <hr>
 
@@ -301,7 +325,7 @@ end
 
 <h3 id="S3Resolver">S3Resolver</h3>
 
-<p>S3Resolver (previously named AmazonS3Resolver) maps a URL identifier to an <a href="https://aws.amazon.com/s3/">Amazon Simple Storage Service (S3)</a> object, for retrieving images from Amazon S3.</p>
+<p>S3Resolver (previously named AmazonS3Resolver) maps a URL identifier to an <a href="https://aws.amazon.com/s3/">Amazon Simple Storage Service (S3)</a> object, for retrieving images from S3. S3Resolver can work with Amazon S3, but is not coupled to it&mdash;it can work with other S3 endpoints as well.</p>
 
 <h4>Configuration</h4>
 
@@ -341,6 +365,22 @@ end
   <dd>Credentials are loaded from the Amazon EC2 Instance Metadata Service.</dd>
 </dl>
 
+<h4>Format Inference</h4>
+
+<p>Like all resolvers, S3Resolver needs to be able to figure out the format of a source image before it can be served. It uses the following strategy to do this:</p>
+
+<ol>
+  <li>If the object key has a recognized filename extension, the format will be inferred from that.</li>
+  <li>Otherwise, if the source image's URI identifier has a recognized filename extension, the format will be inferred from that.</li>
+  <li>Otherwise, a <code>GET</code> request will be sent with a <code>Range</code> header specifying a small range of data from the beginning of the resource.
+    <ol>
+      <li>If a <code>Content-Type</code> header is present in the response, and is specific enough (i.e. not <code>application/octet-stream</code>), a format will be inferred from that.</li>
+      <li>Otherwise, a format will be inferred from the magic bytes in the response body.</li>
+    </ol>
+  </li>
+  <li>If none of the above are successful, an error response will be returned.</li>
+</ol>
+
 <h4 id="S3ResolverLookupStrategies">Lookup Strategies</h4>
 
 <h5 id="S3ResolverBasicLookupStrategy">BasicLookupStrategy</h5>
@@ -359,6 +399,8 @@ end
 
 <p>AzureStorageResolver maps a URL identifier to a <a href="https://azure.microsoft.com/en-us/services/storage/">Microsoft Azure Storage</a> blob, for retrieving images from Azure Storage. It can be configured with the following options:</p>
 
+<h4>Configuration</h4>
+
 <dl>
   <dt><code>AzureStorageResolver.account_name</code></dt>
   <dd>The name of your Azure account.</dd>
@@ -371,6 +413,18 @@ end
 </dl>
 
 <p>As of version 4.0, this resolver also supports <a href="https://docs.microsoft.com/en-us/azure/storage/common/storage-dotnet-shared-access-signature-part-1#how-a-shared-access-signature-works">shared access signatures</a> as an alternative to hard-coding the account name, account key, and container name.</p>
+
+<h4>Format Inference</h4>
+
+<p>Like all resolvers, AzureStorageResolver needs to be able to figure out the format of a source image before it can be served. It uses the following strategy to do this:</p>
+
+<ol>
+  <li>If the blob key has a recognized filename extension, the format will be inferred from that.</li>
+  <li>Otherwise, if the source image's URI identifier has a recognized filename extension, the format will be inferred from that.</li>
+  <li>Otherwise, a <code>HEAD</code> request will be sent. If a <code>Content-Type</code> header is present in the response, and is specific enough (i.e. not <code>application/octet-stream</code>), a format will be inferred from that.</li>
+  <li>Otherwise, a <code>GET</code> request will be sent with a <code>Range</code> header specifying a small range of data from the beginning of the resource, and a format will be inferred from the magic bytes in the response body.</li>
+  <li>If none of the above are successful, an error response will be returned.</li>
+</ol>
 
 <h4>Lookup Strategies</h4>
 

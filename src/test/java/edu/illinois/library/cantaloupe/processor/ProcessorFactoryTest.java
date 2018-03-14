@@ -99,7 +99,8 @@ public class ProcessorFactoryTest extends BaseTest {
             instance.newProcessor(Format.WEBP);
             fail("Expected exception");
         } catch (ClassNotFoundException e) {
-            assertEquals(e.getMessage(), "A fallback processor is not set.");
+            assertEquals(e.getMessage(), "A fallback processor (" +
+                    Key.PROCESSOR_FALLBACK + ") is not set.");
         }
     }
 
@@ -117,6 +118,13 @@ public class ProcessorFactoryTest extends BaseTest {
         } catch (ClassNotFoundException e) {
             assertEquals("AmazingFakeProcessor does not exist", e.getMessage());
         }
+    }
+
+    @Test
+    public void testNewProcessorWithFullyQualifiedClassName() throws Exception {
+        Configuration.getInstance().setProperty(Key.PROCESSOR_FALLBACK,
+                Java2dProcessor.class.getName());
+        assertTrue(instance.newProcessor(Format.JPG) instanceof Java2dProcessor);
     }
 
     /**

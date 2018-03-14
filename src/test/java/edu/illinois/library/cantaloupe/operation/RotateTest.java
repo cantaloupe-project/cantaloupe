@@ -72,9 +72,9 @@ public class RotateTest extends BaseTest {
     @Test
     public void hasEffectWithArguments() {
         Dimension fullSize = new Dimension(600, 400);
-        OperationList opList = new OperationList(
-                new Identifier("cats"), Format.JPG);
+        OperationList opList = new OperationList();
         opList.add(new Crop(0, 0, 300, 200));
+
         assertFalse(instance.hasEffect(fullSize, opList));
         instance.setDegrees(30);
         assertTrue(instance.hasEffect(fullSize, opList));

@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
@@ -27,7 +28,9 @@ import org.restlet.resource.Get;
 import java.awt.Dimension;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -74,7 +77,7 @@ public class ImageResource extends IIIF2Resource {
         //    setup and just return the cached image.
         // 2. Otherwise, if the cache contains a relevant info, get it to avoid
         //    having to get it from a resolver later.
-        if (!config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)) {
+        if (!isResolvingFirst()) {
             final Info info = cacheFacade.getInfo(identifier);
             if (info != null) {
                 ops.applyNonEndpointMutations(info, getDelegateProxy());
@@ -108,19 +111,36 @@ public class ImageResource extends IIIF2Resource {
         final Resolver resolver = new ResolverFactory().newResolver(
                 identifier, getDelegateProxy());
 
-        try {
-            resolver.checkAccess();
-        } catch (NoSuchFileException e) { // this needs to be rethrown!
-            if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
-                // If the image was not found, purge it from the cache.
-                cacheFacade.purgeAsync(ops.getIdentifier());
+        // If we are resolving first, or if the source image is not present in
+        // the source cache (if enabled), check access to it in preparation for
+        // retrieval.
+        final Path sourceImage = cacheFacade.getSourceCacheFile(identifier);
+        if (sourceImage == null || isResolvingFirst()) {
+            try {
+                resolver.checkAccess();
+            } catch (NoSuchFileException e) { // this needs to be rethrown!
+                if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
+                    // If the image was not found, purge it from the cache.
+                    cacheFacade.purgeAsync(ops.getIdentifier());
+                }
+                throw e;
             }
-            throw e;
         }
 
-        // If we don't have the format yet, get it from the resolver.
+        // If we don't know the format yet, get it.
         if (Format.UNKNOWN.equals(sourceFormat)) {
-            sourceFormat = resolver.getSourceFormat();
+            // If we are not resolving first, and there is a hit in the source
+            // cache, read the format from the source-cached-file, as we will
+            // expect source cache access to be more efficient.
+            // Otherwise, read it from the resolver.
+            if (!isResolvingFirst() && sourceImage != null) {
+                List<MediaType> mediaTypes = MediaType.detectMediaTypes(sourceImage);
+                if (!mediaTypes.isEmpty()) {
+                    sourceFormat = mediaTypes.get(0).toFormat();
+                }
+            } else {
+                sourceFormat = resolver.getSourceFormat();
+            }
         }
 
         // Obtain an instance of the processor assigned to that format.
@@ -128,7 +148,8 @@ public class ImageResource extends IIIF2Resource {
                 newProcessor(sourceFormat);
 
         // Connect it to the resolver.
-        new ProcessorConnector().connect(resolver, processor, identifier);
+        tempFileFuture = new ProcessorConnector().connect(
+                resolver, processor, identifier, sourceFormat);
 
         final Info info = getOrReadInfo(ops.getIdentifier(), processor);
         final Dimension fullSize = info.getSize();
@@ -165,11 +186,10 @@ public class ImageResource extends IIIF2Resource {
         Set<Format> availableOutputFormats = processor.getAvailableOutputFormats();
         if (!availableOutputFormats.isEmpty()) {
             if (!availableOutputFormats.contains(ops.getOutputFormat())) {
-                String msg = String.format("%s does not support the \"%s\" output format",
-                        processor.getClass().getSimpleName(),
-                        ops.getOutputFormat().getPreferredExtension());
-                getLogger().warning(msg + ": " + getReference());
-                throw new UnsupportedOutputFormatException(msg);
+                Exception e = new UnsupportedOutputFormatException(
+                        processor, ops.getOutputFormat());
+                getLogger().warning(e.getMessage() + ": " + getReference());
+                throw e;
             }
         } else {
             throw new UnsupportedSourceFormatException(sourceFormat);
@@ -178,7 +198,15 @@ public class ImageResource extends IIIF2Resource {
         addLinkHeader(params);
         commitCustomResponseHeaders();
         return new ImageRepresentation(info, processor, ops, disposition,
-                isBypassingCache());
+                isBypassingCache(), () -> {
+            if (tempFileFuture != null) {
+                Path tempFile = tempFileFuture.get();
+                if (tempFile != null) {
+                    Files.deleteIfExists(tempFile);
+                }
+            }
+            return null;
+        });
     }
 
     private void addLinkHeader(Parameters params) {
@@ -211,6 +239,11 @@ public class ImageResource extends IIIF2Resource {
                 throw new SizeRestrictedException();
             }
         }
+    }
+
+    private boolean isResolvingFirst() {
+        return Configuration.getInstance().
+                getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true);
     }
 
 }

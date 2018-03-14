@@ -294,12 +294,10 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @throws NoSuchFileException If the given file does not exist.
      * @throws IOException If there is some other error.
      */
-    private static FileTime getLastAccessedTime(Path file) throws IOException {
+    static FileTime getLastAccessedTime(Path file) throws IOException {
         try {
             // Last-accessed time is not reliable on macOS+APFS as of 10.13.2.
             if (SystemUtils.IS_OS_MAC) {
-                LOGGER.debug("macOS detected; using last-modified time " +
-                        "instead of last-accessed time.");
                 return Files.getLastModifiedTime(file);
             }
             return (FileTime) Files.getAttribute(file, "lastAccessTime");
@@ -356,10 +354,11 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         final long ttlMsec = 1000 * ttlSec;
         final long fileAge = System.currentTimeMillis()
                 - getLastAccessedTime(file).toMillis();
+        final boolean expired = (ttlMsec > 0 && fileAge > ttlMsec);
 
-        LOGGER.debug("Age of {}: {} msec", file.getFileName(), fileAge);
-
-        return (ttlMsec > 0 && fileAge > ttlMsec);
+        LOGGER.trace("isExpired(): {}: TTL: {}; last accessed: {}; expired? {}",
+                file, ttlSec, fileAge, expired);
+        return expired;
     }
 
     /**
@@ -479,6 +478,12 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         return lock;
     }
 
+    @Override
+    public void initialize() {
+        LOGGER.info("macOS detected; will use file last-modified times " +
+                "instead of last-accessed times.");
+    }
+
     /**
      * Deletes temporary and zero-byte files.
      *
@@ -531,7 +536,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             final Path cacheFile = infoFile(identifier);
             if (!isExpired(cacheFile)) {
                 LOGGER.info("getImageInfo(): hit: {}", cacheFile);
-                return Info.fromJSON(cacheFile.toFile());
+                return Info.fromJSON(cacheFile);
             } else {
                 purgeAsync(cacheFile);
             }
@@ -701,7 +706,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             visitor.setRootPathToExclude(path);
             visitor.setLogger(LOGGER);
 
-            LOGGER.info("purge(): purging...");
+            LOGGER.info("purge(): starting...");
             Files.walkFileTree(path,
                     EnumSet.of(FileVisitOption.FOLLOW_LINKS),
                     Integer.MAX_VALUE,
@@ -863,7 +868,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
             final ExpiredFileVisitor visitor = new ExpiredFileVisitor();
 
-            LOGGER.info("purgeInvalid(): purging...");
+            LOGGER.info("purgeInvalid(): starting...");
             Files.walkFileTree(rootPath(),
                     EnumSet.of(FileVisitOption.FOLLOW_LINKS),
                     Integer.MAX_VALUE,

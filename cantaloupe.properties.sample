@@ -36,11 +36,6 @@ https.key_password = myPassword
 # default.
 http.accept_queue_limit =
 
-# !! Constrains the size of the web server's thread pool. Leave blank to
-# use the defaults.
-http.min_threads =
-http.max_threads =
-
 # Base URI to use for internal links, such as Link headers and JSON-LD
 # @id values, in a reverse-proxy context. This should only be used when
 # X-Forwarded-* headers cannot be used instead. (See the user manual.)
@@ -263,10 +258,10 @@ AzureStorageResolver.lookup_strategy = BasicLookupStrategy
 # These extension-specific definitions are optional.
 processor.avi = FfmpegProcessor
 processor.bmp =
-processor.dcm =
+processor.dcm = ImageMagickProcessor
 processor.flv = FfmpegProcessor
 processor.gif =
-processor.jp2 = KakaduProcessor
+processor.jp2 = OpenJpegProcessor
 processor.jpg =
 processor.mov = FfmpegProcessor
 processor.mp4 = FfmpegProcessor
@@ -283,6 +278,22 @@ processor.fallback = Java2dProcessor
 #----------------------------------------
 # Global Processor Configuration
 #----------------------------------------
+
+# Controls how content is fed to processors from stream-based resolvers.
+# * `StreamStrategy` will try to stream a source image from a resolver when
+#   possible, and use `processor.fallback_retrieval_strategy` otherwise.
+# * `DownloadStrategy` will download it to a temporary file, and delete
+#   it after the request is complete.
+# * `CacheStrategy` will download it into the source cache using
+#   FilesystemCache, which must also be configured. (This will perform a
+#   lot better than DownloadStrategy if you can spare the disk space.)
+processor.stream_retrieval_strategy = StreamStrategy
+
+# Controls how an incompatible StreamResolver + FileProcessor combination is
+# dealt with.
+# * `DownloadStrategy` and `CacheStrategy` work the same as above.
+# * `AbortStrategy` causes the request to fail.
+processor.fallback_retrieval_strategy = DownloadStrategy
 
 # Resolution of vector rasterization (of e.g. PDFs) at a scale of 1.
 processor.dpi = 150
@@ -326,12 +337,6 @@ processor.jpg.quality = 80
 # TIFF output compression type. Available values are `Deflate`, `JPEG`,
 # `LZW`, and `RLE`. Leave blank for no compression.
 processor.tif.compression = LZW
-
-# Available values are `StreamStrategy` and `CacheStrategy`. StreamStrategy
-# will try to stream source images from non-filesystem resolvers, when this
-# is possible; CacheStrategy will first download them into the source cache
-# using FilesystemCache, which must also be configured.
-StreamProcessor.retrieval_strategy = StreamStrategy
 
 #----------------------------------------
 # FfmpegProcessor
@@ -393,12 +398,6 @@ cache.client.no_transform = true
 ###########################################################################
 # SERVER-SIDE CACHING
 ###########################################################################
-
-# Enables the source cache. Note that source images will only be cached
-# when a FileProcessor is used with a StreamResolver, or when a
-# StreamProcessor is used with `StreamProcessor.retrieval_strategy` set to
-# `CacheStrategy`.
-cache.server.source.enabled = false
 
 # FilesystemCache is the only available source cache.
 cache.server.source = FilesystemCache

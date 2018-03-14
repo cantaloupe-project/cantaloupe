@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.cache;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -220,6 +221,13 @@ class S3Cache implements DerivativeCache {
     }
 
     /**
+     * @return Earliest valid date, with second resolution.
+     */
+    private static Date getEarliestValidDate() {
+        return Date.from(getEarliestValidInstant());
+    }
+
+    /**
      * @return Earliest valid instant, with second resolution.
      */
     private static Instant getEarliestValidInstant() {
@@ -255,10 +263,11 @@ class S3Cache implements DerivativeCache {
 
         final Stopwatch watch = new Stopwatch();
         try {
-            final ObjectMetadata metadata =
-                    s3.getObjectMetadata(bucketName, objectKey);
-            if (isValid(metadata)) {
-                final S3Object object = s3.getObject(bucketName, objectKey);
+            GetObjectRequest request = new GetObjectRequest(bucketName, objectKey);
+            request.setModifiedSinceConstraint(getEarliestValidDate());
+            S3Object object = s3.getObject(request);
+
+            if (object != null) {
                 try (InputStream is =
                              new BufferedInputStream(object.getObjectContent())) {
                     final Info info = Info.fromJSON(is);
@@ -288,10 +297,11 @@ class S3Cache implements DerivativeCache {
         LOGGER.info("newDerivativeImageInputStream(): bucket: {}; key: {}",
                 bucketName, objectKey);
         try {
-            final ObjectMetadata metadata =
-                    s3.getObjectMetadata(bucketName, objectKey);
-            if (isValid(metadata)) {
-                final S3Object object = s3.getObject(bucketName, objectKey);
+            GetObjectRequest request = new GetObjectRequest(bucketName, objectKey);
+            request.setModifiedSinceConstraint(getEarliestValidDate());
+            S3Object object = s3.getObject(request);
+
+            if (object != null) {
                 return object.getObjectContent();
             } else {
                 LOGGER.debug("{} in bucket {} is invalid; purging asynchronously",

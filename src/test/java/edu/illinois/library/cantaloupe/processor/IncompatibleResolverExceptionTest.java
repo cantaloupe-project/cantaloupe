@@ -16,13 +16,15 @@ public class IncompatibleResolverExceptionTest {
         Exception e = new IncompatibleResolverException(resolver, processor);
 
         String expected = String.format(
-                "%s and %s are not compatible. Either use a different " +
-                        "resolver/processor combination, or enable the " +
-                        "source cache and set %s=%s.",
+                "%s and %s are not compatible using %s = %s. Either use a " +
+                        "different resolver/processor combination, or switch " +
+                        "to %s or %s.",
                 resolver.getClass().getSimpleName(),
                 processor.getClass().getSimpleName(),
-                Key.STREAMPROCESSOR_RETRIEVAL_STRATEGY,
-                ProcessorConnector.StreamProcessorRetrievalStrategy.CACHE);
+                Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
+                RetrievalStrategy.STREAM,
+                RetrievalStrategy.DOWNLOAD,
+                RetrievalStrategy.CACHE);
         assertEquals(expected, e.getMessage());
     }
 

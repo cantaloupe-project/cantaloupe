@@ -98,8 +98,6 @@ public enum Key {
     HTTP_ENABLED("http.enabled"),
     HTTP_HTTP2_ENABLED("http.http2.enabled"),
     HTTP_HOST("http.host"),
-    HTTP_MAX_THREADS("http.max_threads"),
-    HTTP_MIN_THREADS("http.min_threads"),
     HTTP_PORT("http.port"),
     HTTPRESOLVER_BASIC_AUTH_SECRET("HttpResolver.auth.basic.secret"),
     HTTPRESOLVER_BASIC_AUTH_USERNAME("HttpResolver.auth.basic.username"),
@@ -160,6 +158,7 @@ public enum Key {
     PROCESSOR_DOWNSCALE_FILTER("processor.downscale_filter"),
     PROCESSOR_DPI("processor.dpi"),
     PROCESSOR_FALLBACK("processor.fallback"),
+    PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY("processor.fallback_retrieval_strategy"),
     PROCESSOR_JPG_PROGRESSIVE("processor.jpg.progressive"),
     PROCESSOR_JPG_QUALITY("processor.jpg.quality"),
     PROCESSOR_LIMIT_TO_8_BITS("processor.limit_to_8_bits"),
@@ -167,6 +166,7 @@ public enum Key {
     PROCESSOR_PRESERVE_METADATA("processor.metadata.preserve"),
     PROCESSOR_RESPECT_ORIENTATION("processor.metadata.respect_orientation"),
     PROCESSOR_SHARPEN("processor.sharpen"),
+    PROCESSOR_STREAM_RETRIEVAL_STRATEGY("processor.stream_retrieval_strategy"),
     PROCESSOR_TIF_COMPRESSION("processor.tif.compression"),
     PROCESSOR_UPSCALE_FILTER("processor.upscale_filter"),
     REDACTION_ENABLED("redaction.enabled"),
@@ -193,9 +193,7 @@ public enum Key {
     S3RESOLVER_SECRET_KEY("S3Resolver.secret_key"),
     SLASH_SUBSTITUTE("slash_substitute"),
     SOURCE_CACHE("cache.server.source"),
-    SOURCE_CACHE_ENABLED("cache.server.source.enabled"),
     SOURCE_CACHE_TTL("cache.server.source.ttl_seconds"),
-    STREAMPROCESSOR_RETRIEVAL_STRATEGY("StreamProcessor.retrieval_strategy"),
     TEMP_PATHNAME("temp_pathname");
 
     private String key;

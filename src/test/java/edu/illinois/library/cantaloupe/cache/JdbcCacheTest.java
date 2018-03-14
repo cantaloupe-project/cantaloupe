@@ -98,14 +98,12 @@ public class JdbcCacheTest extends AbstractCacheTest {
         final Configuration config = Configuration.getInstance();
 
         // persist some derivative images
-        OperationList ops = TestUtil.newOperationList();
-        ops.setIdentifier(new Identifier("cats"));
+        OperationList ops = new OperationList();
 
         try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
         }
 
-        Identifier identifier = new Identifier("dogs");
         Crop crop = new Crop();
         crop.setX(50f);
         crop.setY(50f);
@@ -114,13 +112,12 @@ public class JdbcCacheTest extends AbstractCacheTest {
         Scale scale = new Scale(0.9f);
         Rotate rotate = new Rotate();
         Format format = Format.JPG;
-        ops = new OperationList(identifier, format, crop, scale, rotate);
+        ops = new OperationList(crop, scale, rotate);
 
         try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
         }
 
-        identifier = new Identifier("bunnies");
         crop = new Crop();
         crop.setX(10f);
         crop.setY(20f);
@@ -129,16 +126,16 @@ public class JdbcCacheTest extends AbstractCacheTest {
         scale = new Scale(40, null, Scale.Mode.ASPECT_FIT_WIDTH);
         rotate = new Rotate(15);
         format = Format.PNG;
-        ops = new OperationList(identifier, format, crop, scale, rotate);
+        ops = new OperationList(crop, scale, rotate);
 
         try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
         }
 
         // persist some infos corresponding to the above images
-        instance.put(new Identifier("cats"), new Info(50, 40));
-        instance.put(new Identifier("dogs"), new Info(500, 300));
-        instance.put(new Identifier("bunnies"), new Info(350, 240));
+        instance.put(new Identifier("cats"), new Info());
+        instance.put(new Identifier("dogs"), new Info());
+        instance.put(new Identifier("bunnies"), new Info());
 
         // assert that the data has been seeded
         String sql = String.format("SELECT COUNT(%s) AS count FROM %s;",
@@ -238,8 +235,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
             throws Exception {
         final Configuration config = Configuration.getInstance();
 
-        final OperationList opList = TestUtil.newOperationList();
-        opList.setIdentifier(new Identifier("cats"));
+        final OperationList opList = new OperationList();
 
         try (Connection connection = JdbcCache.getConnection()) {
             // get the initial last-accessed time
@@ -287,7 +283,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
         final Configuration config = Configuration.getInstance();
 
         Identifier identifier = new Identifier("birds");
-        Info info = new Info(52, 52);
+        Info info = new Info();
         instance.put(identifier, info);
 
         try (Connection connection = JdbcCache.getConnection()) {
