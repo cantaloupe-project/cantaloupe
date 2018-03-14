@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
-import edu.illinois.library.cantaloupe.operation.Orientation;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.NamedNodeMap;
@@ -9,7 +9,6 @@ import org.w3c.dom.NodeList;
 
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
-import java.io.UnsupportedEncodingException;
 
 /**
  * @see <a href="https://docs.oracle.com/javase/9/docs/api/javax/imageio/metadata/doc-files/gif_metadata.html">

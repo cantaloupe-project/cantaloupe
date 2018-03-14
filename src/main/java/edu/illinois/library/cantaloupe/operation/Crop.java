@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.util.StringUtil;
 
 import java.awt.Dimension;
@@ -95,7 +96,7 @@ public class Crop implements Operation {
      * @param fullSize    Dimensions of the un-rotated image.
      * @throws IllegalStateException If the instance is frozen.
      */
-    void applyOrientation(Orientation orientation, Dimension fullSize) {
+    public void applyOrientation(Orientation orientation, Dimension fullSize) {
         checkFrozen();
         if (orientation == null) {
             return;

@@ -1,19 +1,28 @@
-package edu.illinois.library.cantaloupe.operation;
+package edu.illinois.library.cantaloupe.image;
 
 import static org.junit.Assert.*;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Compression;
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.Color;
+import edu.illinois.library.cantaloupe.operation.ColorTransform;
+import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.Encode;
+import edu.illinois.library.cantaloupe.operation.MetadataCopy;
+import edu.illinois.library.cantaloupe.operation.Normalize;
+import edu.illinois.library.cantaloupe.operation.Operation;
+import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.Rotate;
+import edu.illinois.library.cantaloupe.operation.Scale;
+import edu.illinois.library.cantaloupe.operation.Sharpen;
+import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.overlay.BasicStringOverlayServiceTest;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.overlay.Position;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.redaction.RedactionServiceTest;
 import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -219,7 +228,7 @@ public class OperationListTest extends BaseTest {
                 new HashMap<>());
 
         Encode encode = (Encode) opList.getFirst(Encode.class);
-        assertEquals(Color.fromString("#FFFFFF"), encode.getBackgroundColor());
+        Assert.assertEquals(Color.fromString("#FFFFFF"), encode.getBackgroundColor());
     }
 
     @Test
