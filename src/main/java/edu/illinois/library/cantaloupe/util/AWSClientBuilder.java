@@ -47,7 +47,7 @@ public class AWSClientBuilder {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(AWSClientBuilder.class);
 
-    private static final int  DEFAULT_CLIENT_EXECUTION_TIMEOUT_SEC = 10 * 60;
+    private static final int DEFAULT_CLIENT_EXECUTION_TIMEOUT_MSEC = 10 * 60 * 1000;
     private static final long DEFAULT_CONNECTION_TTL_MSEC          = 30 * 60 * 1000;
     private static final int  DEFAULT_MAX_CONNECTIONS              = 200;
 
@@ -100,7 +100,7 @@ public class AWSClientBuilder {
         // The AWS SDK default is 50.
         clientConfig.setMaxConnections(maxConnections);
         clientConfig.setConnectionTTL(DEFAULT_CONNECTION_TTL_MSEC);
-        clientConfig.setClientExecutionTimeout(DEFAULT_CLIENT_EXECUTION_TIMEOUT_SEC);
+        clientConfig.setClientExecutionTimeout(DEFAULT_CLIENT_EXECUTION_TIMEOUT_MSEC);
         clientConfig.setUseTcpKeepAlive(true);
         
     	List<AWSCredentialsProvider> creds = new ArrayList<>(
