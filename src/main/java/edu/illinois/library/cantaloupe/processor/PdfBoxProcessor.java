@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageReader;
 import edu.illinois.library.cantaloupe.processor.imageio.ImageWriter;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.pdmodel.DefaultResourceCache;
@@ -80,6 +81,8 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
 
     private void loadDocument() throws IOException {
         if (doc == null) {
+            final Stopwatch watch = new Stopwatch();
+
             if (sourceFile != null) {
                 doc = PDDocument.load(sourceFile.toFile());
             } else {
@@ -95,6 +98,8 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                     // no-op
                 }
             });
+
+            LOGGER.debug("Loaded document in {} msec", watch.timeElapsed());
         }
     }
 
