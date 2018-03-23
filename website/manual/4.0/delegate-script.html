@@ -193,11 +193,11 @@ require 'mygem'
 
 {% highlight ruby %}
 class CustomDelegate
-  def redirect
+  def redirect(options = {})
     # perform the expensive query and return the result
   end
 
-  def authorized?
+  def authorized?(options = {})
     # perform the expensive query and return the result
   end
 end
@@ -207,16 +207,16 @@ end
 
 {% highlight ruby %}
 class CustomDelegate
-  def redirect
+  def redirect(options = {})
     result = perform_expensive_query
   end
 
-  def authorized?
+  def authorized?(options = {})
     result = perform_expensive_query
   end
 
   # Performs an expensive query only once, caching the result.
-  def perform_expensive_query
+  def perform_expensive_query(options = {})
     unless @result
       # perform the query
       @result = ... # save the result in an instance variable

@@ -57,7 +57,7 @@ title: Endpoints
 
 {% highlight ruby %}
 class CustomDelegate
-  def extra_iiif2_information_response_keys
+  def extra_iiif2_information_response_keys(options = {})
     {
         'attribution' =>  'Copyright My Great Organization. All rights '\
                           'reserved.',

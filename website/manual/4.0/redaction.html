@@ -35,7 +35,7 @@ title: Redaction
 
 {% highlight ruby %}
 class CustomDelegate
-  def redactions
+  def redactions(options = {})
     redactions = []
     # Add two redactions to an image with an identifier of "sample" for all
     # clients except localhost.

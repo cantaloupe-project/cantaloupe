@@ -44,7 +44,7 @@ title: Resolvers
 
 {% highlight ruby %}
 class CustomDelegate
-  def resolver
+  def resolver(options = {})
     identifier = context['identifier']
 
     # Here, you would perform some kind of analysis on `identifier`:
@@ -149,7 +149,7 @@ class CustomDelegate
   # get_pathname() is called, which would be slow and expensive.
   @@conn = DriverManager.get_connection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
 
-  def filesystemresolver_pathname
+  def filesystemresolver_pathname(options = {})
     identifier = context['identifier']
     begin
       # Note the use of prepared statements, which are safer than
@@ -180,7 +180,7 @@ require 'net/http'
 require 'cgi'
 
 class CustomDelegate
-  def filesystemresolver_pathname
+  def filesystemresolver_pathname(options = {})
     identifier = context['identifier']
     uri = 'http://example.org/webservice/' + CGI.escape(identifier)
     uri = URI.parse(uri)
@@ -282,7 +282,7 @@ jdbc:microsoft:sqlserver://example.org:1433;DatabaseName=MY_DATABASE</code></pre
 
 {% highlight ruby %}
 class CustomDelegate
-  def jdbcresolver_database_identifier
+  def jdbcresolver_database_identifier(options = {})
     # If URL identifiers map directly to values in the database, simply
     # return the identifier from the request context. Otherwise, you
     # could transform it, perform a service request to look it up, etc.
@@ -297,7 +297,7 @@ end
 
 {% highlight ruby %}
 class CustomDelegate
-  def jdbcresolver_media_type
+  def jdbcresolver_media_type(options = {})
     'SELECT media_type ' +
         'FROM some_table ' +
         'WHERE some_identifier = ?'
@@ -313,7 +313,7 @@ end
 
 {% highlight ruby %}
 class CustomDelegate
-  def jdbcresolver_lookup_sql
+  def jdbcresolver_lookup_sql(options = {})
     'SELECT image_blob_column '
         'FROM some_table '
         'WHERE some_identifier = ?'

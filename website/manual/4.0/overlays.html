@@ -74,7 +74,7 @@ title: Overlays
 
 {% highlight ruby %}
 class CustomDelegate
-  def overlay
+  def overlay(options = {})
     # If the resulting image is less than this many pixels on a side, don't
     # apply an overlay.
     min_size_cutoff = 300

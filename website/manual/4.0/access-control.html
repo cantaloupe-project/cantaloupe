@@ -64,7 +64,7 @@ endpoint.public.auth.basic.secret = mypassword
 
 {% highlight ruby %}
 class CustomDelegate
-  def authorized?
+  def authorized?(options = {})
     scale = operations.select{ |op| op['class'] == 'Scale' }.first
     if scale
       max_scale = 0.5
@@ -80,7 +80,7 @@ end
 
 {% highlight ruby %}
 class CustomDelegate
-  def authorized?
+  def authorized?(options = {})
     identifier = context['identifier']
 
     # Allow only identifiers that don't include "_restricted"
@@ -105,7 +105,7 @@ require 'jdbc/mysql'
 require 'java'
 
 class CustomDelegate
-  def authorized?
+  def authorized?(options = {})
     authorized = false
 
     Java::com.mysql.jdbc.Driver
@@ -137,7 +137,7 @@ end
 
 {% highlight ruby %}
 class CustomDelegate
-  def authorized?
+  def authorized?(options = {})
     output_format['media_type'] == 'image/jpeg'
   end
 end
@@ -149,7 +149,7 @@ end
 
 {% highlight ruby %}
 class CustomDelegate
-  def authorized?
+  def authorized?(options = {})
     headers = context['request_headers']
     agent = headers.select{ |h, v| h.downcase == 'user-agent' }.first
     agent.start_with?('MyAllowedUserAgent/')
@@ -161,7 +161,7 @@ end
 
 {% highlight ruby %}
 class CustomDelegate
-  def authorized?
+  def authorized?(options = {})
     headers['X-MyToken'] == ... # write code to authorize the token
   end
 end
@@ -175,7 +175,7 @@ end
 
 {% highlight ruby %}
 class CustomDelegate
-  def authorized?
+  def authorized?(options = {})
     crop = context['operations'].select{ |op| op['class'] == 'Crop' }.first
     if crop
       max_x = full_size['width'] / 2
@@ -192,7 +192,7 @@ end
 
 {% highlight ruby %}
 class CustomDelegate
-  def redirect
+  def redirect(options = {})
     {
       'location' => 'http://example.org/some-other-url',
       'status_code' => 302
