@@ -392,7 +392,7 @@ public abstract class AbstractResource extends ServerResource {
 
     /**
      * @return Value of the {@link #PUBLIC_IDENTIFIER_HEADER} header, if
-     *         available, or else the <code>identifier</code> URI path
+     *         available, or else the {@literal identifier} URI path
      *         component.
      */
     protected String getPublicIdentifier() {
@@ -409,7 +409,7 @@ public abstract class AbstractResource extends ServerResource {
                 headerID);
 
         return (headerID != null && !headerID.isEmpty()) ?
-                headerID : reSlashedID;
+                headerID : decodedID;
     }
 
     /**
