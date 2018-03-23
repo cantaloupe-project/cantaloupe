@@ -309,7 +309,7 @@ end
 
 <h4 id="JdbcResolverBlobSQLMethod">BLOB Retrieval SQL Method</h4>
 
-<p>The <code>get_lookup_sql</code> method returns an SQL statement that selects the BLOB value corresponding to the value returned by the <code><a href="#JdbcResolverIdentifierMethod">get_database_identifier</a></code> method.</p>
+<p>This method returns an SQL statement that selects the BLOB value corresponding to the value returned by the <code><a href="#JdbcResolverIdentifierMethod">get_database_identifier</a></code> method.</p>
 
 {% highlight ruby %}
 class CustomDelegate
@@ -320,6 +320,16 @@ class CustomDelegate
   end
 end
 {% endhighlight %}
+
+<h4>Format Inference</h4>
+
+<p>Like all resolvers, JdbcResolver needs to be able to figure out the format of a source image before it can be served. It uses the following strategy to do this:</p>
+
+<ol>
+  <li>If the <a href="#JdbcResolverMediaTypeMethod">media type retrieval method</a> returns either a recognized media type, or an SQL query that can be invoked to obtain a recognized media type, the corresponding format will be used.</li>
+  <li>If the source image's URI identifier has a recognized filename extension, the format will be inferred from that.</li>
+  <li>Otherwise, the <a href="#JdbcResolverBlobSQLMethod">blob retrieval SQL</a> will be executed to obtain a small range of data from the beginning of the resource, and an attempt will be made to infer a format from the data's &quot;magic bytes&quot;.</li>
+</ol>
 
 <hr>
 
