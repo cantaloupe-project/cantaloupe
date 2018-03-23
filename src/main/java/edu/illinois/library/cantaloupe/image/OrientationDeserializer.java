@@ -9,10 +9,12 @@ import java.io.IOException;
 /**
  * Deserializes an EXIF orientation integer into a {@link Orientation}.
  */
-public final class OrientationDeserializer extends JsonDeserializer<Orientation> {
+final class OrientationDeserializer extends JsonDeserializer<Orientation> {
+
     @Override
     public Orientation deserialize(JsonParser parser,
                                    DeserializationContext deserializationContext) throws IOException {
         return Orientation.forEXIFOrientation(parser.getValueAsInt());
     }
+
 }
