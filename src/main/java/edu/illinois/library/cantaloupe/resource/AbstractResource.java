@@ -426,7 +426,7 @@ public abstract class AbstractResource extends ServerResource {
                 urlID, decodedID, reSlashedID, header, headerID);
 
         return (headerID != null && !headerID.isEmpty()) ?
-                headerID : reSlashedID;
+                headerID : decodedID;
     }
 
     /**

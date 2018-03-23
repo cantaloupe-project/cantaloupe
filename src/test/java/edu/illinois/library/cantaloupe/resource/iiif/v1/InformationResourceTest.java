@@ -328,6 +328,22 @@ public class InformationResourceTest extends ResourceTest {
     }
 
     @Test
+    public void testGETURIsInJSONWithSlashSubstitution() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.SLASH_SUBSTITUTE, "CATS");
+
+        final String path = "/subfolderCATSjpg";
+        client = newClient(path + "/info.json");
+        Response response = client.send();
+
+        String json = response.getBodyAsString();
+        ObjectMapper mapper = new ObjectMapper();
+        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        assertEquals("http://localhost:" + HTTP_PORT +
+                RestletApplication.IIIF_1_PATH + path, info.id);
+    }
+
+    @Test
     public void testGETURIsInJSONWithProxyHeaders() throws Exception {
         client = newClient("/" + IMAGE + "/info.json");
         client.getHeaders().set("X-Forwarded-Proto", "HTTP");
