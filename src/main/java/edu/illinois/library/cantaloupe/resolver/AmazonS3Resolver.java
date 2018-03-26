@@ -21,7 +21,6 @@ import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
 import java.util.Map;
 
@@ -99,6 +98,24 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
             return object.getObjectContent();
         }
 
+        /**
+         * N.B.: Either the returned instance, or the return value of
+         * {@link S3Object#getObjectContent()}, must be closed.
+         */
+        private S3Object fetchObject(ObjectInfo info) throws IOException {
+            final AmazonS3 s3 = getClientInstance();
+            try {
+                LOGGER.debug("Requesting {}", info);
+                return s3.getObject(info.getBucketName(), info.getKey());
+            } catch (AmazonS3Exception e) {
+                if (e.getErrorCode().equals("NoSuchKey")) {
+                    throw new NoSuchFileException(e.getMessage());
+                } else {
+                    throw new IOException(e);
+                }
+            }
+        }
+
     }
 
     private static final Logger LOGGER = LoggerFactory.
@@ -108,8 +125,6 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
             "AmazonS3Resolver::get_object_key";
 
     private static AmazonS3 client;
-
-    private IOException cachedAccessException;
 
     private ObjectInfo objectInfo;
 
@@ -126,17 +141,14 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
         return client;
     }
 
-    /**
-     * N.B.: Either the returned instance, or the return value of
-     * {@link S3Object#getObjectContent()}, must be closed.
-     */
-    private static S3Object fetchObject(ObjectInfo info) throws IOException {
-        final AmazonS3 s3 = getClientInstance();
+    @Override
+    public void checkAccess() throws IOException {
         try {
-            LOGGER.debug("Requesting {}", info);
-            return s3.getObject(info.getBucketName(), info.getKey());
+            final AmazonS3 s3 = getClientInstance();
+            final ObjectInfo info = getObjectInfo();
+            s3.getObjectMetadata(info.getBucketName(), info.getKey());
         } catch (AmazonS3Exception e) {
-            if (e.getErrorCode().equals("NoSuchKey")) {
+            if (e.getStatusCode() == 404) {
                 throw new NoSuchFileException(e.getMessage());
             } else {
                 throw new IOException(e);
@@ -144,48 +156,11 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
         }
     }
 
-    @Override
-    public void checkAccess() throws IOException {
-        S3Object object = null;
-        try {
-            object = getObject();
-        } finally {
-            if (object != null) {
-                object.close();
-            }
-        }
-    }
-
-    /**
-     * N.B.: Either the returned instance, or the return value of
-     * {@link S3Object#getObjectContent()}, must be closed.
-     *
-     * @throws NoSuchFileException if an object corresponding to the set
-     *         identifier does not exist.
-     * @throws AccessDeniedException if an object corresponding to the set
-     *         identifier is not readable.
-     * @throws IOException if there is some other issue accessing the object.
-     */
-    private S3Object getObject() throws IOException {
-        if (cachedAccessException != null) {
-            throw cachedAccessException;
-        } else {
-            try {
-                final ObjectInfo info = getObjectInfo();
-                return fetchObject(info);
-            } catch (IOException e) {
-                cachedAccessException = e;
-                throw e;
-            }
-        }
-    }
-
     private ObjectInfo getObjectInfo() throws IOException {
         if (objectInfo == null) {
             final Configuration config = Configuration.getInstance();
-            final LookupStrategy strategy =
-                    LookupStrategy.from(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY);
-            switch (strategy) {
+
+            switch (LookupStrategy.from(Key.AMAZONS3RESOLVER_LOOKUP_STRATEGY)) {
                 case DELEGATE_SCRIPT:
                     try {
                         String bucketName, objectKey;
