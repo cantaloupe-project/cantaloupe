@@ -617,10 +617,10 @@ abstract class AbstractProcessorTest extends BaseTest {
                         if (fixture.getFileName().toString().equals("jp2")) {
                             expectedNumResolutions = 5;
                         } else {
-                            Pattern pattern = Pattern.compile("\\dlevel");
+                            Pattern pattern = Pattern.compile("\\dres");
                             Matcher matcher = pattern.matcher(fixture.getFileName().toString());
                             if (matcher.find()) {
-                                expectedNumResolutions = 1 +
+                                expectedNumResolutions =
                                         Integer.parseInt(matcher.group(0).substring(0, 1));
                             }
                         }

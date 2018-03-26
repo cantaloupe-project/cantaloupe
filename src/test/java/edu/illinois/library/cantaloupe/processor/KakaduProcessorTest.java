@@ -38,7 +38,7 @@ public class KakaduProcessorTest extends AbstractProcessorTest {
 
     @Override
     protected Path getSupported16BitImage() throws IOException {
-        return TestUtil.getImage("jp2-5level-rgb-64x56x16-monotiled-lossy.jp2");
+        return TestUtil.getImage("jp2-6res-rgb-64x56x16-monotiled-lossy.jp2");
     }
 
     @Override
@@ -69,7 +69,7 @@ public class KakaduProcessorTest extends AbstractProcessorTest {
     @Test
     public void testReadImageInfoTileAwareness() throws Exception {
         // untiled image
-        instance.setSourceFile(TestUtil.getImage("jp2-4level-rgb-64x56x8-monotiled-lossy.jp2"));
+        instance.setSourceFile(TestUtil.getImage("jp2-5res-rgb-64x56x8-monotiled-lossy.jp2"));
         Info expectedInfo = Info.builder()
                 .withSize(64, 56)
                 .withTileSize(64, 56)
@@ -79,7 +79,7 @@ public class KakaduProcessorTest extends AbstractProcessorTest {
         assertEquals(expectedInfo, instance.readImageInfo());
 
         // tiled image
-        instance.setSourceFile(TestUtil.getImage("jp2-5level-rgb-64x56x8-multitiled-lossy.jp2"));
+        instance.setSourceFile(TestUtil.getImage("jp2-6res-rgb-64x56x8-multitiled-lossy.jp2"));
         expectedInfo = Info.builder()
                 .withSize(64, 56)
                 .withTileSize(32, 28)
