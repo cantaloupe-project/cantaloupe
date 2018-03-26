@@ -61,6 +61,22 @@ ul.toc, ul.toc ul {
   margin-left: 1.5em;
   padding-left: 0em; }
 
+ul.processor-data-flow, ul.processor-data-flow ul {
+  list-style: none;
+  margin-left: 0;
+  padding-left: 0;
+}
+
+ul.processor-data-flow li {
+  padding-left: 1em;
+  text-indent: -1em;
+}
+
+ul.processor-data-flow li:before {
+  content: "\2192";
+  padding-right: 5px;
+}
+
 div.benefits ul {
   margin-left: 1.2em;
   padding-left: 0px;

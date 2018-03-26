@@ -28,7 +28,8 @@ public class JPEGMetadataTest extends BaseTest {
         while (it.hasNext()) {
             final ImageReader reader = it.next();
             String readerName = reader.getClass().getName();
-            String preferredName = JPEGImageReader.getPreferredIIOImplementations()[0];
+            String preferredName = new JPEGImageReader().
+                    getPreferredIIOImplementations()[0];
             if (readerName.equals(preferredName)) {
                 final Path srcFile = TestUtil.getImage(fixtureName);
                 try (ImageInputStream is = ImageIO.createImageInputStream(srcFile.toFile())) {

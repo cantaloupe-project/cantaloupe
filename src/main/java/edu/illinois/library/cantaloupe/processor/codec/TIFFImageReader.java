@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -25,26 +26,28 @@ final class TIFFImageReader extends AbstractIIOImageReader
     private static final Logger LOGGER =
             LoggerFactory.getLogger(TIFFImageReader.class);
 
+    static final String IMAGEIO_PLUGIN_CONFIG_KEY =
+            "processor.imageio.tif.reader";
+
     static {
         // See: https://github.com/geosolutions-it/imageio-ext/wiki/TIFF-plugin
         System.setProperty("it.geosolutions.codec.tiff.lazy", "true");
     }
 
-    static String[] getPreferredIIOImplementations() {
-        // N.B. 1: When updating this, update
-        // TIFFImageWriter.preferredIIOImplementations() as well.
-        //
-        // N.B. 2: The GeoSolutions TIFF reader supports BigTIFF among other
+    @Override
+    String[] getApplicationPreferredIIOImplementations() {
+        // The GeoSolutions TIFF reader supports BigTIFF among other
         // enhancements. The Sun reader will do as a fallback, although there
         // shouldn't be any need to fall back.
         String[] impls = new String[2];
         impls[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.class.getName();
 
-        // The Sun TIFF reader has moved in Java 9.
-        if (SystemUtils.getJavaMajorVersion() >= 9) {
-            impls[1] = "com.sun.imageio.plugins.tiff.TIFFImageReader";
-        } else {
+        // Before Java 9, the Sun TIFF reader was part of the JAI ImageI/O
+        // Tools. Then it was moved into the JDK.
+        if (SystemUtils.getJavaMajorVersion() < 9) {
             impls[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageReader";
+        } else {
+            impls[1] = "com.sun.imageio.plugins.tiff.TIFFImageReader";
         }
         return impls;
     }
@@ -102,8 +105,9 @@ final class TIFFImageReader extends AbstractIIOImageReader
     }
 
     @Override
-    String[] preferredIIOImplementations() {
-        return getPreferredIIOImplementations();
+    String getUserPreferredIIOImplementation() {
+        Configuration config = Configuration.getInstance();
+        return config.getString(IMAGEIO_PLUGIN_CONFIG_KEY);
     }
 
     /**

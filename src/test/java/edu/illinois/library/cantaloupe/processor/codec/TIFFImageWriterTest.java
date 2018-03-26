@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.EXIFParentTIFFTagSet;
@@ -26,7 +25,59 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
-public class TIFFImageWriterTest extends BaseTest {
+public class TIFFImageWriterTest extends AbstractImageWriterTest {
+
+    @Override
+    TIFFImageWriter newInstance() {
+        OperationList opList = new OperationList(new Encode(Format.TIF));
+        if (Configuration.getInstance().
+                getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
+            opList.add(new MetadataCopy());
+        }
+        TIFFImageWriter writer = new TIFFImageWriter();
+        writer.setOperationList(opList);
+        return writer;
+    }
+
+    /* getApplicationPreferredIIOImplementations() */
+
+    @Test
+    public void testGetApplicationPreferredIIOImplementations() {
+        String[] impls = ((TIFFImageWriter) instance).getApplicationPreferredIIOImplementations();
+        assertEquals(2, impls.length);
+        assertEquals("it.geosolutions.imageioimpl.plugins.tiff.TIFFImageWriter",
+                impls[0]);
+    }
+
+    /* getPreferredIIOImplementations() */
+
+    @Test
+    public void testGetPreferredIIOImplementationsWithUserPreference() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(TIFFImageWriter.IMAGEIO_PLUGIN_CONFIG_KEY, "cats");
+
+        String userImpl = ((TIFFImageWriter) instance).getUserPreferredIIOImplementation();
+        String[] appImpls = ((TIFFImageWriter) instance).getApplicationPreferredIIOImplementations();
+
+        String[] expected = new String[appImpls.length + 1];
+        expected[0] = userImpl;
+        System.arraycopy(appImpls, 0, expected, 1, appImpls.length);
+
+        assertArrayEquals(expected,
+                ((TIFFImageWriter) instance).getPreferredIIOImplementations());
+    }
+
+    /* getUserPreferredIIOImplementation() */
+
+    @Test
+    public void testGetUserPreferredIIOImplementation() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(TIFFImageWriter.IMAGEIO_PLUGIN_CONFIG_KEY, "cats");
+        assertEquals("cats",
+                ((TIFFImageWriter) instance).getUserPreferredIIOImplementation());
+    }
+
+    /* write() */
 
     @Test
     public void testWriteWithBufferedImage() throws Exception {
@@ -37,7 +88,8 @@ public class TIFFImageWriterTest extends BaseTest {
         reader.dispose();
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        newWriter(metadata).write(image, os);
+        instance.setMetadata(metadata);
+        instance.write(image, os);
         ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
     }
 
@@ -53,7 +105,8 @@ public class TIFFImageWriterTest extends BaseTest {
         reader.dispose();
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        newWriter(metadata).write(image, os);
+        instance.setMetadata(metadata);
+        instance.write(image, os);
         checkForEXIFMetadata(os.toByteArray());
     }
 
@@ -69,7 +122,10 @@ public class TIFFImageWriterTest extends BaseTest {
         reader.dispose();
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        newWriter(metadata).write(image, os);
+        instance.dispose();
+        instance = newInstance();
+        instance.setMetadata(metadata);
+        instance.write(image, os);
         checkForIPTCMetadata(os.toByteArray());
     }
 
@@ -85,7 +141,10 @@ public class TIFFImageWriterTest extends BaseTest {
         reader.dispose();
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        newWriter(metadata).write(image, os);
+        instance.dispose();
+        instance = newInstance();
+        instance.setMetadata(metadata);
+        instance.write(image, os);
         checkForXMPMetadata(os.toByteArray());
     }
 
@@ -99,7 +158,8 @@ public class TIFFImageWriterTest extends BaseTest {
                     PlanarImage.wrapRenderedImage(reader.readRendered());
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            newWriter(metadata).write(image, os);
+            instance.setMetadata(metadata);
+            instance.write(image, os);
             ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
         } finally {
             reader.dispose();
@@ -119,7 +179,8 @@ public class TIFFImageWriterTest extends BaseTest {
                     PlanarImage.wrapRenderedImage(reader.readRendered());
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            newWriter(metadata).write(image, os);
+            instance.setMetadata(metadata);
+            instance.write(image, os);
             checkForEXIFMetadata(os.toByteArray());
         } finally {
             reader.dispose();
@@ -139,7 +200,10 @@ public class TIFFImageWriterTest extends BaseTest {
                     PlanarImage.wrapRenderedImage(reader.readRendered());
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            newWriter(metadata).write(image, os);
+            instance.dispose();
+            instance = newInstance();
+            instance.setMetadata(metadata);
+            instance.write(image, os);
             checkForIPTCMetadata(os.toByteArray());
         } finally {
             reader.dispose();
@@ -159,14 +223,17 @@ public class TIFFImageWriterTest extends BaseTest {
                     PlanarImage.wrapRenderedImage(reader.readRendered());
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            newWriter(metadata).write(image, os);
+            instance.dispose();
+            instance = newInstance();
+            instance.setMetadata(metadata);
+            instance.write(image, os);
             checkForXMPMetadata(os.toByteArray());
         } finally {
             reader.dispose();
         }
     }
 
-    private void checkForIccProfile(byte[] imageData) throws Exception {
+    private void checkForICCProfile(byte[] imageData) throws Exception {
         final ImageReader reader = getIIOReader();
         try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
             reader.setInput(iis);
@@ -226,18 +293,6 @@ public class TIFFImageWriterTest extends BaseTest {
             }
         }
         return null;
-    }
-
-    private TIFFImageWriter newWriter(Metadata metadata) {
-        OperationList opList = new OperationList(new Encode(Format.TIF));
-        if (Configuration.getInstance().
-                getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
-            opList.add(new MetadataCopy());
-        }
-        TIFFImageWriter writer = new TIFFImageWriter();
-        writer.setOperationList(opList);
-        writer.setMetadata(metadata);
-        return writer;
     }
 
 }

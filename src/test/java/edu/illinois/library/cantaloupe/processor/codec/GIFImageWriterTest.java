@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -30,7 +29,7 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
-public class GIFImageWriterTest extends BaseTest {
+public class GIFImageWriterTest extends AbstractImageWriterTest {
 
     private BufferedImage bufferedImage;
     private Metadata metadata;
@@ -69,18 +68,66 @@ public class GIFImageWriterTest extends BaseTest {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+
         outputStream.close();
         tempFile.delete();
     }
 
-    @Test
-    public void testPreferredIIOImplementations() {
-        assertEquals(1, getWriter().preferredIIOImplementations().length);
+    @Override
+    GIFImageWriter newInstance() {
+        OperationList opList = new OperationList(new Encode(Format.GIF));
+        if (Configuration.getInstance().
+                getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
+            opList.add(new MetadataCopy());
+        }
+        GIFImageWriter writer = new GIFImageWriter();
+        writer.setOperationList(opList);
+        writer.setMetadata(metadata);
+        return writer;
     }
+
+    /* getApplicationPreferredIIOImplementations() */
+
+    @Test
+    public void testGetApplicationPreferredIIOImplementations() {
+        String[] impls = ((GIFImageWriter) instance).getApplicationPreferredIIOImplementations();
+        assertEquals(1, impls.length);
+        assertEquals("com.sun.imageio.plugins.gif.GIFImageWriter", impls[0]);
+    }
+
+    /* getPreferredIIOImplementations() */
+
+    @Test
+    public void testGetPreferredIIOImplementationsWithUserPreference() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(GIFImageWriter.IMAGEIO_PLUGIN_CONFIG_KEY, "cats");
+
+        String userImpl = ((GIFImageWriter) instance).getUserPreferredIIOImplementation();
+        String[] appImpls = ((GIFImageWriter) instance).getApplicationPreferredIIOImplementations();
+
+        String[] expected = new String[appImpls.length + 1];
+        expected[0] = userImpl;
+        System.arraycopy(appImpls, 0, expected, 1, appImpls.length);
+
+        assertArrayEquals(expected,
+                ((GIFImageWriter) instance).getPreferredIIOImplementations());
+    }
+
+    /* getUserPreferredIIOImplementation() */
+
+    @Test
+    public void testGetUserPreferredIIOImplementation() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(GIFImageWriter.IMAGEIO_PLUGIN_CONFIG_KEY, "cats");
+        assertEquals("cats",
+                ((GIFImageWriter) instance).getUserPreferredIIOImplementation());
+    }
+
+    /* write() */
 
     @Test
     public void testWriteWithBufferedImage() throws Exception {
-        getWriter().write(bufferedImage, outputStream);
+        instance.write(bufferedImage, outputStream);
         ImageIO.read(tempFile);
     }
 
@@ -89,13 +136,13 @@ public class GIFImageWriterTest extends BaseTest {
     public void testWriteWithBufferedImageAndMetadata()  throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
-        getWriter().write(bufferedImage, outputStream);
+        instance.write(bufferedImage, outputStream);
         checkForMetadata();
     }
 
     @Test
     public void testWriteWithPlanarImage() throws Exception {
-        getWriter().write(planarImage, outputStream);
+        instance.write(planarImage, outputStream);
         ImageIO.read(tempFile);
     }
 
@@ -104,7 +151,7 @@ public class GIFImageWriterTest extends BaseTest {
     public void testWriteWithPlanarImageAndMetadata() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
-        getWriter().write(planarImage, outputStream);
+        instance.write(planarImage, outputStream);
         checkForMetadata();
     }
 
@@ -117,8 +164,7 @@ public class GIFImageWriterTest extends BaseTest {
             BufferedImageSequence sequence = reader.readSequence();
 
             try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-                GIFImageWriter gifWriter = getWriter();
-                gifWriter.write(sequence, os);
+                instance.write(sequence, os);
 
                 try (ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray())) {
                     reader.dispose();
@@ -140,7 +186,7 @@ public class GIFImageWriterTest extends BaseTest {
         }
     }
 
-    private void checkForIccProfile() throws Exception {
+    private void checkForICCProfile() throws Exception {
         // Read it back in
         final Iterator<javax.imageio.ImageReader> readers =
                 ImageIO.getImageReadersByFormatName("GIF");
@@ -178,18 +224,6 @@ public class GIFImageWriterTest extends BaseTest {
         } finally {
             reader.dispose();
         }
-    }
-
-    private GIFImageWriter getWriter() {
-        OperationList opList = new OperationList(new Encode(Format.GIF));
-        if (Configuration.getInstance().
-                getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
-            opList.add(new MetadataCopy());
-        }
-        GIFImageWriter writer = new GIFImageWriter();
-        writer.setOperationList(opList);
-        writer.setMetadata(metadata);
-        return writer;
     }
 
 }

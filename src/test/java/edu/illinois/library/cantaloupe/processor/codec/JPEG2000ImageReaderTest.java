@@ -34,6 +34,10 @@ public class JPEG2000ImageReaderTest extends AbstractImageReaderTest {
         assertEquals(5, instance.getNumResolutions());
     }
 
+    @Test
+    @Override
+    public void testGetPreferredIIOImplementationsWithNoUserPreference() {}
+
     @Override
     @Test(expected = UnsupportedOperationException.class)
     public void testRead() throws Exception {

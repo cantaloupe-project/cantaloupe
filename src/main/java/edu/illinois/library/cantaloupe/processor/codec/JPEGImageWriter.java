@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.processor.Java2DUtil;
@@ -32,6 +33,9 @@ final class JPEGImageWriter extends AbstractIIOImageWriter
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(JPEGImageWriter.class);
+
+    static final String IMAGEIO_PLUGIN_CONFIG_KEY =
+            "processor.imageio.jpg.writer";
 
     /**
      * @param baseTree Tree to embed the metadata into.
@@ -78,8 +82,19 @@ final class JPEGImageWriter extends AbstractIIOImageWriter
     }
 
     @Override
+    String[] getApplicationPreferredIIOImplementations() {
+        return new String[] { "com.sun.imageio.plugins.jpeg.JPEGImageWriter" };
+    }
+
+    @Override
     Logger getLogger() {
         return LOGGER;
+    }
+
+    @Override
+    String getUserPreferredIIOImplementation() {
+        Configuration config = Configuration.getInstance();
+        return config.getString(IMAGEIO_PLUGIN_CONFIG_KEY);
     }
 
     private ImageWriteParam getWriteParam() {
@@ -125,11 +140,6 @@ final class JPEGImageWriter extends AbstractIIOImageWriter
             image = Java2DUtil.removeAlpha(image);
         }
         return image;
-    }
-
-    @Override
-    String[] preferredIIOImplementations() {
-        return new String[] { "com.sun.imageio.plugins.jpeg.JPEGImageWriter" };
     }
 
     /**

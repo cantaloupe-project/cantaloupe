@@ -339,6 +339,22 @@ processor.jpg.quality = 80
 processor.tif.compression = LZW
 
 #----------------------------------------
+# ImageIO Plugin Preferences
+#----------------------------------------
+
+# These override the default plugins used by the application and should not
+# normally be changed.
+processor.imageio.bmp.reader =
+processor.imageio.gif.reader =
+processor.imageio.gif.writer =
+processor.imageio.jpg.reader =
+processor.imageio.jpg.writer =
+processor.imageio.png.reader =
+processor.imageio.png.writer =
+processor.imageio.tif.reader =
+processor.imageio.tif.writer =
+
+#----------------------------------------
 # FfmpegProcessor
 #----------------------------------------
 

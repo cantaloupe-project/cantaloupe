@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
@@ -31,6 +32,9 @@ final class GIFImageWriter extends AbstractIIOImageWriter
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(GIFImageWriter.class);
+
+    static final String IMAGEIO_PLUGIN_CONFIG_KEY =
+            "processor.imageio.gif.writer";
 
     @Override
     protected void addMetadata(final IIOMetadataNode baseTree) {
@@ -127,13 +131,19 @@ final class GIFImageWriter extends AbstractIIOImageWriter
     }
 
     @Override
+    String[] getApplicationPreferredIIOImplementations() {
+        return new String[] { "com.sun.imageio.plugins.gif.GIFImageWriter" };
+    }
+
+    @Override
     Logger getLogger() {
         return LOGGER;
     }
 
     @Override
-    String[] preferredIIOImplementations() {
-        return new String[] { "com.sun.imageio.plugins.gif.GIFImageWriter" };
+    String getUserPreferredIIOImplementation() {
+        Configuration config = Configuration.getInstance();
+        return config.getString(IMAGEIO_PLUGIN_CONFIG_KEY);
     }
 
     @Override

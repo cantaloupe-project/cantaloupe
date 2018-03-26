@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
 import org.slf4j.Logger;
@@ -8,12 +9,17 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.metadata.IIOMetadata;
 import java.io.IOException;
 
-final class PNGImageReader extends AbstractIIOImageReader implements ImageReader {
+final class PNGImageReader extends AbstractIIOImageReader
+        implements ImageReader {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(PNGImageReader.class);
 
-    static String[] getPreferredIIOImplementations() {
+    static final String IMAGEIO_PLUGIN_CONFIG_KEY =
+            "processor.imageio.png.reader";
+
+    @Override
+    String[] getApplicationPreferredIIOImplementations() {
         return new String[] { "com.sun.imageio.plugins.png.PNGImageReader" };
     }
 
@@ -40,8 +46,9 @@ final class PNGImageReader extends AbstractIIOImageReader implements ImageReader
     }
 
     @Override
-    String[] preferredIIOImplementations() {
-        return getPreferredIIOImplementations();
+    String getUserPreferredIIOImplementation() {
+        Configuration config = Configuration.getInstance();
+        return config.getString(IMAGEIO_PLUGIN_CONFIG_KEY);
     }
 
 }

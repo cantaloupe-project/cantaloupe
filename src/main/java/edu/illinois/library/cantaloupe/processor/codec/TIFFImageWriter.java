@@ -1,9 +1,11 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.Operation;
+import edu.illinois.library.cantaloupe.util.SystemUtils;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFField;
 import org.slf4j.Logger;
@@ -35,6 +37,9 @@ final class TIFFImageWriter extends AbstractIIOImageWriter
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(TIFFImageWriter.class);
+
+    static final String IMAGEIO_PLUGIN_CONFIG_KEY =
+            "processor.imageio.tif.writer";
 
     /**
      * No-op.
@@ -79,6 +84,24 @@ final class TIFFImageWriter extends AbstractIIOImageWriter
             derivativeMetadata = destDir.getAsMetadata();
         }
         return derivativeMetadata;
+    }
+
+    @Override
+    String[] getApplicationPreferredIIOImplementations() {
+        // The GeoSolutions TIFF reader supports BigTIFF among other
+        // enhancements. The Sun reader will do as a fallback, although there
+        // shouldn't be any need to fall back.
+        String[] impls = new String[2];
+        impls[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageWriter.class.getName();
+
+        // Before Java 9, the Sun TIFF reader was part of the JAI ImageI/O
+        // Tools. Then it was moved into the JDK.
+        if (SystemUtils.getJavaMajorVersion() < 9) {
+            impls[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageWriter";
+        } else {
+            impls[1] = "com.sun.imageio.plugins.tiff.TIFFImageWriter";
+        }
+        return impls;
     }
 
     /**
@@ -129,6 +152,12 @@ final class TIFFImageWriter extends AbstractIIOImageWriter
         return derivativeMetadata;
     }
 
+    @Override
+    String getUserPreferredIIOImplementation() {
+        Configuration config = Configuration.getInstance();
+        return config.getString(IMAGEIO_PLUGIN_CONFIG_KEY);
+    }
+
     /**
      * @return Write parameters respecting the operation list.
      */
@@ -148,26 +177,6 @@ final class TIFFImageWriter extends AbstractIIOImageWriter
             }
         }
         return writeParam;
-    }
-
-    @Override
-    String[] preferredIIOImplementations() {
-        String[] readerImpls = TIFFImageReader.getPreferredIIOImplementations();
-        String[] writerImpls = new String[1];
-
-        // Try to return an implementation complementing the reader.
-        switch (readerImpls[0]) {
-            case "com.sun.codec.plugins.tiff.TIFFImageReader":
-                writerImpls[0] = "com.sun.codec.plugins.tiff.TIFFImageWriter";
-                break;
-            case "com.sun.media.imageioimpl.plugins.tiff.TIFFImageReader":
-                writerImpls[0] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageWriter";
-                break;
-            default:
-                writerImpls[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageWriter.class.getName();
-                break;
-        }
-        return writerImpls;
     }
 
     /**

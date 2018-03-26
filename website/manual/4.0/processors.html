@@ -167,7 +167,7 @@ title: Processors
 <ul>
   <li><code>StreamStrategy</code> will try to stream a source image from a resolver when possible, and use the <a href="#Fallback%20Retrieval%20Strategy">fallback retrieval strategy</a> otherwise.</li>
   <li><code>DownloadStrategy</code> will download it to a temporary file, and delete it after the request is complete.</li>
-  <li><code>CacheStrategy</code> will download it into the source cache using <a href="caching.html#FilesystemCache">FilesystemCache</a>, which must also be configured.</li>
+  <li><code>CacheStrategy</code> will download it into the source cache using <a href="caching.html#FilesystemCache">FilesystemCache</a>, which must also be configured. This is significantly more efficient than <code>DownloadStrategy</code> if you can spare the disk space.</li>
 </ul>
 
 <h3 id="Fallback Retrieval Strategy">Fallback Retrieval Strategy</h3>
@@ -175,8 +175,8 @@ title: Processors
 <p>The fallback retrieval strategy (<code>processor.fallback_retrieval_strategy</code>) controls how an incompatible <code>StreamResolver</code>/<code>FileProcessor</code> combination is dealt with.</p>
 
 <ul>
-  <li><code>DownloadStrategy</code> will download a source image to a temporary file, and delete it after the request is complete.</li>
-  <li><code>CacheStrategy</code> will download it into the source cache using <a href="caching.html#FilesystemCache">FilesystemCache</a>, which must also be configured.</li>
+  <li><code>DownloadStrategy</code> will download a source image to a temporary file that the processor can read, and delete it after the request is complete.</li>
+  <li><code>CacheStrategy</code> will download it into the source cache using <a href="caching.html#FilesystemCache">FilesystemCache</a>, which must also be configured. This is significantly more efficient than <code>DownloadStrategy</code> if you can spare the disk space.</li>
   <li><code>AbortStrategy</code> will cause the request to fail.</li>
 </ul>
 
@@ -615,7 +615,29 @@ title: Processors
 
 <p>Java2dProcessor has been written to exploit the ImageIO image readers as efficiently as possible. Special attention has been paid to its handling of tiled images, such as tile-encoded TIFFs, for which it reads only the necessary tiles for a given request. It is also capable of reading the sub-images contained within multi-resolution (pyramidal) TIFF images.</p>
 
-<p>Although this processor tries to be efficient at reading images, it does have to create new derivative images at every processing step (scaling, rotation, etc.), which can cause transient spikes in memory usage. (See the section on <a href="deployment.html#HardwareMemory">memory considerations</a>.)</p>
+<p>Although this processor tries to be efficient at reading images, it does have to create new in-memory derivative images at every processing step (scaling, rotation, etc.), which can cause transient spikes in memory usage. (See the section on <a href="deployment.html#HardwareMemory">memory considerations</a>.)</p>
+
+<h4>Data Flow</h4>
+
+<ul class="processor-data-flow">
+  <li>File or ImageInputStream
+    <ul>
+      <li>ImageIO reader
+        <ul>
+          <li>java.awt.image.BufferedImage (one per operation)
+            <ul>
+              <li>ImageIO writer
+                <ul>
+                  <li>Response OutputStream</li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
 
 <hr>
 
@@ -632,6 +654,28 @@ title: Processors
   <blockquote>Error: Could not find mediaLib accelerator wrapper classes. Continuing in pure Java mode.</blockquote>
   <p>This is caused by the absence of a mediaLib JAR on the classpath, and is harmless and expected. Either add the <code>-Dcom.sun.media.jai.disableMediaLib=true</code> VM option to suppress it, or put a mediaLib JAR on your classpath.</p>
 </div>
+
+<h4>Data Flow</h4>
+
+<ul class="processor-data-flow">
+  <li>File or ImageInputStream
+    <ul>
+      <li>ImageIO reader
+        <ul>
+          <li>JAI
+            <ul>
+              <li>ImageIO writer
+                <ul>
+                  <li>Response OutputStream</li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
 
 <hr>
 
@@ -652,6 +696,24 @@ title: Processors
 
 <p>If the <code>page</code> argument is missing, the first page will be returned.</p>
 
+<h4>Data Flow</h4>
+
+<ul class="processor-data-flow">
+  <li>File or InputStream
+    <ul>
+      <li>gm
+        <ul>
+          <li>java.lang.Process
+            <ul>
+              <li>Response OutputStream</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
 <hr>
 
 <h3 id="ImageMagickProcessor">ImageMagickProcessor</h3>
@@ -670,18 +732,75 @@ title: Processors
 
 <p>If the <code>page</code> argument is missing, the first page will be returned.</p>
 
+<h4>Data Flow</h4>
+
+<p>File &rarr; libmagick &rarr; magick &rarr; java.lang.Process &rarr; response java.io.OutputStream</p>
+
+<h4>Data Flow</h4>
+
+<ul class="processor-data-flow">
+  <li>File or InputStream
+    <ul>
+      <li>magick
+        <ul>
+          <li>java.lang.Process
+            <ul>
+              <li>Response OutputStream</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
 <hr>
 
 <h3 id="KakaduProcessor">KakaduProcessor</h3>
 
-<p>KakaduProcessor uses the <span class="filename">kdu_expand</span> tool from the
-<a href="http://www.kakadusoftware.com">Kakadu</a> SDK to efficiently decode JPEG2000 source images. This processor is capable of performing well even with large JP2s. Kakadu is extensively optimized and will make use of all available CPU cores.</p>
+<p>KakaduProcessor uses the <span class="filename">kdu_expand</span> tool from the commercial <a href="http://www.kakadusoftware.com">Kakadu</a> SDK to decode JPEG2000 source images. This processor is capable of performing well even with large JP2s.</p>
 
-<p><span class="filename">kdu_expand</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. All other operations (differential scaling, rotation, etc.) are performed using Java 2D.</p>
+<p><span class="filename">kdu_expand</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. All other operations (differential scaling, rotation, etc.) are performed using Java 2D, and basic image characteristics (dimensions, DWT level count, etc.) are acquired using custom code.</p>
 
-<p>To use this processor, Kakadu must be installed. (See the note below.) The Kakadu binaries will automatically be detected if they are on the path; otherwise, set the <code>KakaduProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory. The <code>LD_LIBRARY_PATH</code> environment variable will also need to be set to locate the Kakadu shared library.</p>
+<p>Kakadu must be installed in order for this processor to work. The Kakadu binaries will automatically be detected if they are on the path; otherwise, set the <code>KakaduProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory. The <code>LD_LIBRARY_PATH</code> environment variable will also need to be set to locate the Kakadu shared library.</p>
 
-<div class="alert alert-info">Note: Kakadu is not free and the SDK is not included with Cantaloupe. As of this writing, the necessary binaries can be downloaded from the <a href="http://kakadusoftware.com">Kakadu website</a> and used for demonstration purposes.</div>
+<div class="alert alert-info">Kakadu is not free and the SDK is not included with Cantaloupe. As of this writing, the necessary software can be downloaded from the <a href="http://kakadusoftware.com">Kakadu website</a> and used for demonstration purposes.</div>
+
+<h4>Data Flow</h4>
+
+<ul class="processor-data-flow">
+  <li>File
+    <ul>
+      <li>libkdu
+        <ul>
+          <li>kdu_expand
+            <br>
+            <span class="text-warning">Note: in Windows, output must be written to a temporary file rather than streamed into the next step, which is less efficient.</span>
+            <ul>
+              <li>java.lang.Process
+                <ul>
+                  <li>ImageIO TIFF plugin
+                    <ul>
+                      <li>java.awt.image.BufferedImage
+                        <ul>
+                          <li>ImageIO writer
+                            <ul>
+                              <li>Response OutputStream</li>
+                            </ul>
+                          </li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
 
 <hr>
 
@@ -690,9 +809,45 @@ title: Processors
 <p>OpenJpegProcessor uses the <span class="filename">opj_decompress</span> tool from the open-source
 <a href="http://www.openjpeg.org">OpenJPEG</a> project to decode JPEG2000 source images.</p>
 
-<p>Although it does support some other operations, <span class="filename">opj_decompress</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. The rest of the IIIF operations (differential scaling, rotation, etc.) are performed using Java 2D.</p>
+<p>Although it does support some other operations, <span class="filename">opj_decompress</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. All other operations (differential scaling, rotation, etc.) are performed using Java 2D, and basic image characteristics (dimensions, DWT level count, etc.) are acquired using custom code.</p>
 
 <p>To use this processor, OpenJPEG must be installed. The OpenJPEG binaries will automatically be detected if they are on the path; otherwise, set the <code>OpenJpegProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory. The <code>LD_LIBRARY_PATH</code> environment variable will also need to be set to locate the OpenJPEG shared library.</p>
+
+<h4>Data Flow</h4>
+
+<ul class="processor-data-flow">
+  <li>File
+    <ul>
+      <li>libopenjpeg
+        <ul>
+          <li>opj_decompress
+            <br>
+            <span class="text-warning">Note: in Windows, output must be written to a temporary file rather than streamed into the next step, which is less efficient.</span>
+            <ul>
+              <li>java.lang.Process
+                <ul>
+                  <li>ImageIO BMP plugin
+                    <ul>
+                      <li>java.awt.image.BufferedImage
+                        <ul>
+                          <li>ImageIO writer
+                            <ul>
+                              <li>Response OutputStream</li>
+                            </ul>
+                          </li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
 
 <hr>
 
@@ -700,17 +855,51 @@ title: Processors
 
 <p>FfmpegProcessor uses the <a href="http://www.ffmpeg.org">FFmpeg</a> tool to extract still frames from video files. It can be used for thumbnail generation á la YouTube, as well as deep zooming of high-resolution still frames.</p>
 
-<p>FfmpegProcessor has been tested with FFmpeg version 2.8. Other versions may or may not work.</p>
+<p>It has been tested with FFmpeg version 2.8. Other versions may or may not work.</p>
 
-<p>Prior to Cantaloupe 3.3, FFmpeg itself handled all post-processing steps. Now, it is used only to decode still frames, and all subsequent steps are handled by Java 2D.</p>
+<p>FFmpeg is used only to decode still frames. All subsequent steps are handled by Java 2D.</p>
 
 <h4>Optional Arguments</h4>
 
-<p>FFmpegProcessor supports a <code>time</code> URL query argument (which is nonstandard and Cantaloupe-specific) which can be used to return a frame at a particular second in the source video. The value of this parameter should be in <code>hh:mm:ss</code> format, like:</p>
+<p>This processor supports a <code>time</code> URL query argument (which is nonstandard and Cantaloupe-specific) which can be used to return a frame at a particular second in the source video. The value of this parameter should be in <code>HH:MM:SS</code> format, like:</p>
 
 <pre>http://example.org/iiif/2/video.mp4/full/full/0/default.jpg?time=00:02:15</pre>
 
 <p>If the <code>time</code> argument is missing, the first frame will be returned.</p>
+
+<h4>Data Flow</h4>
+
+<ul class="processor-data-flow">
+  <li>File
+    <ul>
+      <li>libffmpeg
+        <ul>
+          <li>ffmpeg
+            <ul>
+              <li>java.lang.Process
+                <ul>
+                  <li>ImageIO BMP plugin
+                    <ul>
+                      <li>java.awt.image.BufferedImage
+                        <ul>
+                          <li>ImageIO writer
+                            <ul>
+                              <li>Response OutputStream</li>
+                            </ul>
+                          </li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
 
 <hr>
 
@@ -718,7 +907,7 @@ title: Processors
 
 <p>PdfBoxProcessor uses the <a href="https://pdfbox.apache.org">Apache PDFBox</a> library to read and rasterize PDF files. This is a pure-Java library that is bundled in and has no dependencies.</p>
 
-<p>As PDF is a vector format, PdfBoxProcessor will convert to a raster (pixel) image and use a Java 2D pipeline to transform it according to the request parameters. The size of the base raster image, corresponding to a scale of one, is configurable with the <code>processor.dpi</code> configuration option. The DPI will then be auto-scaled based on the requested scale.</p>
+<p>As PDF is a vector format, PdfBoxProcessor will convert to a raster (pixel) image and use a Java 2D pipeline to transform it according to the request parameters. The size of the base raster image, corresponding to a scale of 1, is configurable with the <code>processor.dpi</code> configuration option. The DPI will then be auto-scaled based on the requested scale.</p>
 
 <h4>Optional Arguments</h4>
 
@@ -727,3 +916,26 @@ title: Processors
 <pre>http://example.org/iiif/2/document.pdf/full/full/0/default.jpg?page=2</pre>
 
 <p>If the <code>page</code> argument is missing, the first page will be returned.</p>
+
+<h4>Data Flow</h4>
+
+<ul class="processor-data-flow">
+  <li>File or InputStream
+    <ul>
+      <li>PDFBox
+        <ul>
+          <li>java.awt.image.BufferedImage
+            <ul>
+              <li>ImageIO writer
+                <ul>
+                  <li>Response OutputStream
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>

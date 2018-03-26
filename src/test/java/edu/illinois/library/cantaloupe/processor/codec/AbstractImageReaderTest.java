@@ -18,9 +18,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 abstract class AbstractImageReaderTest extends BaseTest {
 
@@ -61,6 +59,14 @@ abstract class AbstractImageReaderTest extends BaseTest {
     @Test
     public void testGetNumResolutions() throws Exception {
         assertEquals(1, instance.getNumResolutions());
+    }
+
+    @Test
+    public void testGetPreferredIIOImplementationsWithNoUserPreference() {
+        String[] impls = ((AbstractIIOImageReader) instance).
+                getPreferredIIOImplementations();
+        assertArrayEquals(((AbstractIIOImageReader) instance).
+                getApplicationPreferredIIOImplementations(), impls);
     }
 
     @Test

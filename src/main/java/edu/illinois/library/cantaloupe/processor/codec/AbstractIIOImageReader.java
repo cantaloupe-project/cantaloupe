@@ -23,6 +23,7 @@ import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -121,6 +122,15 @@ abstract class AbstractIIOImageReader {
         }
     }
 
+    /**
+     * May be overridden by {@link #getUserPreferredIIOImplementation()}.
+     *
+     * @return ImageIO implementations preferred by the application, in order
+     *         of most to least preferred, or an empty array if there is no
+     *         preference.
+     */
+    abstract String[] getApplicationPreferredIIOImplementations();
+
     abstract Format getFormat();
 
     abstract Logger getLogger();
@@ -146,6 +156,29 @@ abstract class AbstractIIOImageReader {
     }
 
     /**
+     * N.B.: This method returns a list of strings rather than {@link Class
+     * classes} because some readers reside under the {@link com.sun} package,
+     * which is encapsulated in Java 9.
+     *
+     * @return Preferred reader implementation classes, in order of highest to
+     *         lowest priority, or an empty array if there is no preference.
+     */
+    String[] getPreferredIIOImplementations() {
+        final List<String> impls = new ArrayList<>();
+
+        // Prefer a user-specified implementation.
+        final String userImpl = getUserPreferredIIOImplementation();
+        if (userImpl != null) {
+            impls.add(userImpl);
+        }
+        // Fall back to an application-preferred implementation.
+        final String[] appImpls = getApplicationPreferredIIOImplementations();
+        impls.addAll(Arrays.asList(appImpls));
+
+        return impls.toArray(new String[] {});
+    }
+
+    /**
      * @return Pixel dimensions of the image at the given index.
      */
     public Dimension getSize(int imageIndex) throws IOException {
@@ -165,33 +198,37 @@ abstract class AbstractIIOImageReader {
     }
 
     /**
+     * If this returns a non-{@literal null} value, it will override {@link
+     * #getApplicationPreferredIIOImplementations()}.
+     *
+     * @return Preferred ImageIO implementation as specified by the user. May
+     *         be {@literal null}.
+     */
+    abstract String getUserPreferredIIOImplementation();
+
+    /**
      * Chooses the most appropriate ImageIO reader to use based on the return
-     * value of {@link #preferredIIOImplementations()}.
+     * value of {@link #getPreferredIIOImplementations()}.
      */
     private javax.imageio.ImageReader negotiateIIOReader() {
         javax.imageio.ImageReader negotiatedReader = null;
 
         final List<javax.imageio.ImageReader> iioReaders =
                 availableIIOReaders();
-        boolean found = false;
 
         if (!iioReaders.isEmpty()) {
-            final String[] preferredImplClasses = preferredIIOImplementations();
+            final String[] preferredImpls = getPreferredIIOImplementations();
 
             getLogger().debug("ImageIO plugin preferences: {}",
-                    (preferredImplClasses.length > 0) ?
-                            String.join(", ", preferredImplClasses) : "none");
+                    (preferredImpls.length > 0) ?
+                            String.join(", ", preferredImpls) : "none");
 
-            if (preferredImplClasses.length > 0) {
-                for (String preferredImplClass : preferredImplClasses) {
-                    if (!found) {
-                        for (javax.imageio.ImageReader candidateReader : iioReaders) {
-                            if (preferredImplClass.equals(candidateReader.getClass().getName())) {
-                                negotiatedReader = candidateReader;
-                                found = true;
-                                break;
-                            }
-                        }
+            Found:
+            for (String implClass : preferredImpls) {
+                for (javax.imageio.ImageReader candidateReader : iioReaders) {
+                    if (implClass.equals(candidateReader.getClass().getName())) {
+                        negotiatedReader = candidateReader;
+                        break Found;
                     }
                 }
             }
@@ -201,18 +238,6 @@ abstract class AbstractIIOImageReader {
             }
         }
         return negotiatedReader;
-    }
-
-    /**
-     * N.B.: This method returns a list of strings rather than {@link Class
-     * classes} because some readers reside under the {@link com.sun} package,
-     * which is encapsulated in Java 9.
-     *
-     * @return Preferred reader implementation classes, in order of highest to
-     *         lowest priority, or an empty array if there is no preference.
-     */
-    String[] preferredIIOImplementations() {
-        return new String[] {};
     }
 
     /**
