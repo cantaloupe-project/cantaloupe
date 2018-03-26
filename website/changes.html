@@ -26,6 +26,7 @@ title: Change Log
   <li>Processors
     <ul>
       <li>Added <code>DownloadStrategy</code> as another optional retrieval strategy for <code>StreamProcessor</code>s, and as an optional fallback strategy. This enables all processors to work with all resolvers with no extra configuration.</li>
+      <li>JaiProcessor has been deprecated. See the user manual for more information.</li>
       <li>KakaduProcessor and OpenJpegProcessor work (though less efficiently) in Windows.</li>
       <li>KakaduProcessor and OpenJpegProcessor read image metadata natively, which is more efficient than using the respective <code>kdu_jp2info</code> and <code>opj_dump</code> tools, and enables them to read the DWT level count, which improves reliability when decoding images with less-common level counts.</li>
       <li>ImageIO plugins can be selected on a per-format basis.</li>
