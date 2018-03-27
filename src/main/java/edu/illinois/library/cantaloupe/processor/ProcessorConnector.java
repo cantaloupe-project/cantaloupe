@@ -15,12 +15,16 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Establishes the best connection between a {@link Resolver} and a
@@ -71,6 +75,12 @@ public final class ProcessorConnector {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ProcessorConnector.class);
+
+    /**
+     * Used to avoid concurrent downloads of the same source image.
+     */
+    private static final Set<Identifier> DOWNLOADING_IMAGES =
+            ConcurrentHashMap.newKeySet();
 
     /**
      * Maximum number of a times a source image download will be attempted.
@@ -257,7 +267,9 @@ public final class ProcessorConnector {
 
     /**
      * Downloads the source image with the given identifier from the given
-     * resolver to the given source cache.
+     * resolver to the given source cache. When this method is invoked
+     * concurrently, only one download will be commenced, and an image will
+     * not be downloaded if it already exists in the source cache.
      *
      * @param resolver     Resolver to read from.
      * @param sourceCache  Source cache to write to.
@@ -267,13 +279,36 @@ public final class ProcessorConnector {
     private void downloadToSourceCache(Resolver resolver,
                                        SourceCache sourceCache,
                                        Identifier identifier) throws IOException {
+        synchronized (DOWNLOADING_IMAGES) {
+            while (DOWNLOADING_IMAGES.contains(identifier)) {
+                try {
+                    LOGGER.debug("getSourceImageFile(): waiting on {}...",
+                            identifier);
+                    DOWNLOADING_IMAGES.wait();
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+
+            if (sourceCache.getSourceImageFile(identifier) != null) {
+                return;
+            }
+
+            DOWNLOADING_IMAGES.add(identifier);
+        }
+
         final StreamSource source = ((StreamResolver) resolver).newStreamSource();
-        try (InputStream is = source.newInputStream();
-             OutputStream os = sourceCache.newSourceImageOutputStream(identifier)) {
+        try (InputStream is = new BufferedInputStream(source.newInputStream());
+             OutputStream os = new BufferedOutputStream(sourceCache.newSourceImageOutputStream(identifier))) {
             LOGGER.info("Downloading {} to {}",
                     identifier,
                     SourceCache.class.getSimpleName());
             IOUtils.copy(is, os);
+        } finally {
+            DOWNLOADING_IMAGES.remove(identifier);
+            synchronized (DOWNLOADING_IMAGES) {
+                DOWNLOADING_IMAGES.notifyAll();
+            }
         }
     }
 
