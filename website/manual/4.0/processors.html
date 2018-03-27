@@ -16,7 +16,7 @@ title: Processors
       <li><a href="#JaiProcessor">JaiProcessor</a></li>
       <li><a href="#GraphicsMagickProcessor">GraphicsMagickProcessor</a></li>
       <li><a href="#ImageMagickProcessor">ImageMagickProcessor</a></li>
-      <li><a href="#KakaduProcessor">KakaduProcessor</a></li>
+      <li><a href="#KakaduDemoProcessor">KakaduDemoProcessor</a></li>
       <li><a href="#OpenJpegProcessor">OpenJpegProcessor</a></li>
       <li><a href="#FfmpegProcessor">FfmpegProcessor</a></li>
       <li><a href="#PdfBoxProcessor">PdfBoxProcessor</a></li>
@@ -47,7 +47,7 @@ title: Processors
       FileProcessor
       <ul>
         <li><a href="#FfmpegProcessor">FfmpegProcessor</li>
-        <li><a href="#KakaduProcessor">KakaduProcessor</li>
+        <li><a href="#KakaduDemoProcessor">KakaduDemoProcessor</li>
         <li><a href="#OpenJpegProcessor">OpenJpegProcessor</li>
       </ul>
     </td>
@@ -133,7 +133,7 @@ title: Processors
     <td class="text-center bg-success">&check;</td>
   </tr>
   <tr>
-    <td><a href="processors.html#KakaduProcessor">KakaduProcessor</a></td>
+    <td><a href="processors.html#KakaduDemoProcessor">KakaduDemoProcessor</a></td>
     <td class="text-center bg-warning">&check;*</td>
     <td class="text-center bg-warning">&check;*</td>
     <td class="text-center bg-success">&check;</td>
@@ -191,7 +191,7 @@ title: Processors
     <th><a href="#ImageMagickProcessor">ImageMagick</a></th>
     <th><a href="#Java2dProcessor">Java 2D</a></th>
     <th><a href="#JaiProcessor">JAI</a></th>
-    <th><a href="#KakaduProcessor">Kakadu</a></th>
+    <th><a href="#KakaduDemoProcessor">Kakadu Demo</a></th>
     <th><a href="#OpenJpegProcessor">OpenJPEG</a></th>
     <th><a href="#FfmpegProcessor">FFmpeg</a></th>
     <th><a href="#PdfBoxProcessor">PDFBox</a></th>
@@ -509,7 +509,7 @@ title: Processors
     <th><a href="#ImageMagickProcessor">ImageMagick</a></th>
     <th><a href="#Java2dProcessor">Java2D</a></th>
     <th><a href="#JaiProcessor">JAI</a></th>
-    <th><a href="#KakaduProcessor">Kakadu</a></th>
+    <th><a href="#KakaduDemoProcessor">Kakadu Demo</a></th>
     <th><a href="#OpenJpegProcessor">OpenJPEG</a></th>
     <th><a href="#PdfBoxProcessor">PDFBox</a></th>
   </tr>
@@ -756,13 +756,13 @@ title: Processors
 
 <hr>
 
-<h3 id="KakaduProcessor">KakaduProcessor</h3>
+<h3 id="KakaduDemoProcessor">KakaduDemoProcessor</h3>
 
-<p>KakaduProcessor uses the <span class="filename">kdu_expand</span> tool from the commercial <a href="http://www.kakadusoftware.com">Kakadu</a> SDK to decode JPEG2000 source images. This processor is capable of performing well even with large JP2s.</p>
+<p>KakaduDemoProcessor uses the <span class="filename">kdu_expand</span> tool from the commercial <a href="http://www.kakadusoftware.com">Kakadu</a> SDK to decode JPEG2000 source images. This processor is capable of performing well even with large JP2s.</p>
 
 <p><span class="filename">kdu_expand</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. All other operations (differential scaling, rotation, etc.) are performed using Java 2D, and basic image characteristics (dimensions, DWT level count, etc.) are acquired using custom code.</p>
 
-<p>Kakadu must be installed in order for this processor to work. The Kakadu binaries will automatically be detected if they are on the path; otherwise, set the <code>KakaduProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory. The <code>LD_LIBRARY_PATH</code> environment variable will also need to be set to locate the Kakadu shared library.</p>
+<p>The Kakadu demo binaries must be installed in order for this processor to work. They will automatically be detected if they are on the path; otherwise, set the <code>KakaduDemoProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory. The <code>LD_LIBRARY_PATH</code> environment variable will also need to be set to locate the Kakadu shared library.</p>
 
 <div class="alert alert-info">Kakadu is not free and the SDK is not included with Cantaloupe. As of this writing, the necessary software can be downloaded from the <a href="http://kakadusoftware.com">Kakadu website</a> and used for demonstration purposes.</div>
 

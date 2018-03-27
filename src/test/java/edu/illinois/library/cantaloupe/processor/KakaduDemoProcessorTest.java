@@ -16,17 +16,17 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-public class KakaduProcessorTest extends AbstractProcessorTest {
+public class KakaduDemoProcessorTest extends AbstractProcessorTest {
 
-    private KakaduProcessor instance;
+    private KakaduDemoProcessor instance;
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
 
         Configuration.getInstance().clearProperty(
-                Key.KAKADUPROCESSOR_PATH_TO_BINARIES);
-        KakaduProcessor.resetInitialization();
+                Key.KAKADUDEMOPROCESSOR_PATH_TO_BINARIES);
+        KakaduDemoProcessor.resetInitialization();
 
         instance = newInstance();
     }
@@ -42,8 +42,8 @@ public class KakaduProcessorTest extends AbstractProcessorTest {
     }
 
     @Override
-    protected KakaduProcessor newInstance() {
-        KakaduProcessor proc = new KakaduProcessor();
+    protected KakaduDemoProcessor newInstance() {
+        KakaduDemoProcessor proc = new KakaduDemoProcessor();
         try {
             proc.setSourceFormat(Format.JP2);
         } catch (UnsupportedSourceFormatException e) {
@@ -60,9 +60,9 @@ public class KakaduProcessorTest extends AbstractProcessorTest {
     @Test
     public void testGetInitializationExceptionWithMissingBinaries() {
         Configuration.getInstance().setProperty(
-                Key.KAKADUPROCESSOR_PATH_TO_BINARIES,
+                Key.KAKADUDEMOPROCESSOR_PATH_TO_BINARIES,
                 "/bogus/bogus/bogus");
-        KakaduProcessor.resetInitialization();
+        KakaduDemoProcessor.resetInitialization();
         assertNotNull(instance.getInitializationException());
     }
 

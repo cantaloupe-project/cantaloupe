@@ -27,7 +27,7 @@ import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.*;
         timeUnit = TimeUnit.SECONDS)
 @State(Scope.Benchmark)
 @Fork(value = 1, jvmArgs = { "-server", "-Xms128M", "-Xmx128M", "-Dcantaloupe.config=memory" })
-public class OpenJpegProcessorPerformance extends KakaduProcessorTest {
+public class OpenJpegProcessorPerformance extends OpenJpegProcessorTest {
 
     @Benchmark
     @Override

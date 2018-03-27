@@ -85,10 +85,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *     Usage Examples for the Demonstration Applications Supplied with Kakadu
  *     V7.7</a>
  */
-class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
+class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(KakaduProcessor.class);
+            LoggerFactory.getLogger(KakaduDemoProcessor.class);
 
     /**
      * Number of decomposition levels assumed to be contained in the image when
@@ -103,7 +103,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
      * Used only in Windows.
      */
     private static final String WINDOWS_SCRATCH_DIR_NAME =
-            KakaduProcessor.class.getSimpleName() + "-scratch";
+            KakaduDemoProcessor.class.getSimpleName() + "-scratch";
 
     /**
      * Set by {@link #initialize()}.
@@ -130,7 +130,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
     private static void createStdoutSymlink() throws IOException {
         Path tempDir = Application.getTempPath();
 
-        final String name = KakaduProcessor.class.getSimpleName() + "-" +
+        final String name = KakaduDemoProcessor.class.getSimpleName() + "-" +
                 UUID.randomUUID() + ".tif";
         final Path link = tempDir.resolve(name);
         final Path devStdout = Paths.get("/dev/stdout");
@@ -145,7 +145,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
      */
     private static String getPath(String binaryName) {
         String path = Configuration.getInstance().
-                getString(Key.KAKADUPROCESSOR_PATH_TO_BINARIES);
+                getString(Key.KAKADUDEMOPROCESSOR_PATH_TO_BINARIES);
         if (path != null && !path.isEmpty()) {
             path = StringUtils.stripEnd(path, File.separator) +
                     File.separator + binaryName;
@@ -243,7 +243,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
         }
     }
 
-    KakaduProcessor() {
+    KakaduDemoProcessor() {
         if (!initializationAttempted.get()) {
             initialize();
         }

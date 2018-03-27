@@ -2202,7 +2202,7 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="KakaduProcessor.path_to_binaries"
+                                                       name="KakaduDemoProcessor.path_to_binaries"
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>
