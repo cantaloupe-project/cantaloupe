@@ -400,7 +400,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
             final ProcessBuilder pb = getProcessBuilder(
                     opList, imageInfo.getSize(), reductionFactor, normalize);
-            LOGGER.info("Invoking {}", String.join(" ", pb.command()));
+            LOGGER.debug("Invoking {}", String.join(" ", pb.command()));
             final Process process = pb.start();
 
             try (final InputStream processInputStream =

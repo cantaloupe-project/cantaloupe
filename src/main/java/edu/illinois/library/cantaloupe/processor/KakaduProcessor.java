@@ -349,7 +349,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
             final ProcessBuilder pb = getProcessBuilder(
                     opList, imageInfo.getSize(), reductionFactor, normalize);
-            LOGGER.info("Invoking {}", String.join(" ", pb.command()));
+            LOGGER.debug("Invoking {}", String.join(" ", pb.command()));
             final Process process = pb.start();
 
             try (final InputStream processInputStream =

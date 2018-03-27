@@ -117,7 +117,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             final String commandString = String.join(" ", pb.command());
 
             try {
-                LOGGER.info("readFormats(): invoking {}", commandString);
+                LOGGER.debug("readFormats(): invoking {}", commandString);
                 final Process process = pb.start();
 
                 final InputStream processInputStream = process.getInputStream();

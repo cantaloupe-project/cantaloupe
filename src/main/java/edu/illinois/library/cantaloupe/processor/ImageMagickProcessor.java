@@ -737,7 +737,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             cmd.setInputProvider(new Pipe(inputStream, null));
             cmd.setOutputConsumer(consumer);
             final String cmdString = String.join(" ", args).replace("\n", ",");
-            LOGGER.info("readImageInfo(): invoking {}", cmdString);
+            LOGGER.debug("readImageInfo(): invoking {}", cmdString);
             cmd.run(args);
 
             final List<String> output = consumer.getOutput();
