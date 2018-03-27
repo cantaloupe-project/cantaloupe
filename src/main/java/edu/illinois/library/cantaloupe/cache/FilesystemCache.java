@@ -191,6 +191,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                                 tempFile);
                         Files.delete(tempFile);
                     }
+                } catch (FileAlreadyExistsException e) {
+                    CFOS_LOGGER.debug("close(): {}", e.getMessage(), e);
                 } catch (IOException e) {
                     CFOS_LOGGER.warn("close(): {}", e.getMessage(), e);
                 } finally {
