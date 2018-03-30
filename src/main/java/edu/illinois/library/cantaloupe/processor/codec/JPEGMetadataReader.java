@@ -241,8 +241,7 @@ final class JPEGMetadataReader {
      */
     private void readAPP2Segment() throws IOException {
         int segmentLength = readSegmentLength();
-        byte[] data = new byte[segmentLength];
-        inputStream.read(data);
+        byte[] data = read(segmentLength);
 
         if (data[0] == 'I' && data[1] == 'C' && data[2] == 'C') {
             final int headerLength = ICC_SEGMENT_HEADER.length + 2; // +2 for chunk sequence and chunk count
@@ -257,14 +256,23 @@ final class JPEGMetadataReader {
      */
     private void readAPP14Segment() throws IOException {
         int segmentLength = readSegmentLength();
-        byte[] data = new byte[segmentLength];
-        inputStream.read(data);
+        byte[] data = read(segmentLength);
 
         if (data.length >= 12 && data[0] == 'A' && data[1] == 'd' &&
                 data[2] == 'o' && data[3] == 'b' && data[4] == 'e') {
             hasAdobeSegment = true;
             colorTransform = AdobeColorTransform.forAPP14Value(data[11] & 0xFF);
         }
+    }
+
+    private byte[] read(int length) throws IOException {
+        byte[] data = new byte[length];
+        int n, offset = 0;
+        while ((n = inputStream.read(
+                data, offset, data.length - offset)) < offset) {
+            offset += n;
+        }
+        return data;
     }
 
 }
