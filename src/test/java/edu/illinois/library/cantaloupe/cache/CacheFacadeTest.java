@@ -101,14 +101,15 @@ public class CacheFacadeTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
 
         final Identifier identifier = new Identifier("jpg");
-        final FileProcessor processor = (FileProcessor) new ProcessorFactory().
-                newProcessor(Format.JPG);
-        processor.setSourceFormat(Format.JPG);
-        processor.setSourceFile(TestUtil.getImage(identifier.toString()));
+        try (FileProcessor processor = (FileProcessor) new ProcessorFactory().
+                newProcessor(Format.JPG)) {
+            processor.setSourceFormat(Format.JPG);
+            processor.setSourceFile(TestUtil.getImage(identifier.toString()));
 
-        Info expected = InfoService.getInstance().getOrReadInfo(identifier, processor);
-        Info actual = instance.getOrReadInfo(identifier, processor);
-        assertEquals(expected, actual);
+            Info expected = InfoService.getInstance().getOrReadInfo(identifier, processor);
+            Info actual = instance.getOrReadInfo(identifier, processor);
+            assertEquals(expected, actual);
+        }
     }
 
     /* getSourceCache() */

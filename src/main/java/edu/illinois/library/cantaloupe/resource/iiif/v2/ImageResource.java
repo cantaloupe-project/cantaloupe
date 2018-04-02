@@ -127,76 +127,82 @@ public class ImageResource extends IIIF2Resource {
         }
 
         // Obtain an instance of the processor assigned to that format.
+        // It must eventually be close()d, but we don't want to close it here
+        // unless there is an error.
         final Processor processor = new ProcessorFactory().
                 newProcessor(sourceFormat);
+        try {
+            // Connect it to the resolver.
+            new ProcessorConnector().connect(resolver, processor, identifier);
 
-        // Connect it to the resolver.
-        new ProcessorConnector().connect(resolver, processor, identifier);
+            final Info info = getOrReadInfo(ops.getIdentifier(), processor);
+            final Dimension fullSize = info.getSize();
 
-        final Info info = getOrReadInfo(ops.getIdentifier(), processor);
-        final Dimension fullSize = info.getSize();
+            StringRepresentation redirectingRep = checkAuthorization(ops, fullSize);
+            if (redirectingRep != null) {
+                return redirectingRep;
+            }
 
-        StringRepresentation redirectingRep = checkAuthorization(ops, fullSize);
-        if (redirectingRep != null) {
-            return redirectingRep;
-        }
+            validateRequestedArea(ops, sourceFormat, info);
 
-        validateRequestedArea(ops, sourceFormat, info);
+            processor.validate(ops, fullSize);
 
-        processor.validate(ops, fullSize);
-
-        if (config.getBoolean(Key.IIIF_2_RESTRICT_TO_SIZES, false)) {
-            final ImageInfo<String, Object> imageInfo =
-                    new ImageInfoFactory().newImageInfo(
-                            identifier, null, processor, info);
-            final Dimension resultingSize = ops.getResultingSize(fullSize);
-            boolean ok = false;
-            @SuppressWarnings("unchecked")
-            List<ImageInfo.Size> sizes =
-                    (List<ImageInfo.Size>) imageInfo.get("sizes");
-            for (ImageInfo.Size size : sizes) {
-                if (size.width == resultingSize.width &&
-                        size.height == resultingSize.height) {
-                    ok = true;
-                    break;
+            if (config.getBoolean(Key.IIIF_2_RESTRICT_TO_SIZES, false)) {
+                final ImageInfo<String, Object> imageInfo =
+                        new ImageInfoFactory().newImageInfo(
+                                identifier, null, processor, info);
+                final Dimension resultingSize = ops.getResultingSize(fullSize);
+                boolean ok = false;
+                @SuppressWarnings("unchecked")
+                List<ImageInfo.Size> sizes =
+                        (List<ImageInfo.Size>) imageInfo.get("sizes");
+                for (ImageInfo.Size size : sizes) {
+                    if (size.width == resultingSize.width &&
+                            size.height == resultingSize.height) {
+                        ok = true;
+                        break;
+                    }
+                }
+                if (!ok) {
+                    throw new SizeRestrictedException();
                 }
             }
-            if (!ok) {
-                throw new SizeRestrictedException();
+
+            try {
+                ops.applyNonEndpointMutations(fullSize,
+                        info.getOrientation(),
+                        getCanonicalClientIPAddress(),
+                        getReference().toUri(),
+                        getRequest().getHeaders().getValuesMap(),
+                        getCookies().getValuesMap());
+            } catch (IllegalStateException e) {
+                // applyNonEndpointMutations() will freeze the instance, and it
+                // may have already been called. That's fine.
             }
-        }
 
-        try {
-            ops.applyNonEndpointMutations(fullSize,
-                    info.getOrientation(),
-                    getCanonicalClientIPAddress(),
-                    getReference().toUri(),
-                    getRequest().getHeaders().getValuesMap(),
-                    getCookies().getValuesMap());
-        } catch (IllegalStateException e) {
-            // applyNonEndpointMutations() will freeze the instance, and it
-            // may have already been called. That's fine.
-        }
-
-        // Find out whether the processor supports the source format by asking
-        // it whether it offers any output formats for it.
-        Set<Format> availableOutputFormats = processor.getAvailableOutputFormats();
-        if (!availableOutputFormats.isEmpty()) {
-            if (!availableOutputFormats.contains(ops.getOutputFormat())) {
-                String msg = String.format("%s does not support the \"%s\" output format",
-                        processor.getClass().getSimpleName(),
-                        ops.getOutputFormat().getPreferredExtension());
-                getLogger().warning(msg + ": " + getReference());
-                throw new UnsupportedOutputFormatException(msg);
+            // Find out whether the processor supports the source format by asking
+            // it whether it offers any output formats for it.
+            Set<Format> availableOutputFormats = processor.getAvailableOutputFormats();
+            if (!availableOutputFormats.isEmpty()) {
+                if (!availableOutputFormats.contains(ops.getOutputFormat())) {
+                    String msg = String.format("%s does not support the \"%s\" output format",
+                            processor.getClass().getSimpleName(),
+                            ops.getOutputFormat().getPreferredExtension());
+                    getLogger().warning(msg + ": " + getReference());
+                    throw new UnsupportedOutputFormatException(msg);
+                }
+            } else {
+                throw new UnsupportedSourceFormatException(sourceFormat);
             }
-        } else {
-            throw new UnsupportedSourceFormatException(sourceFormat);
-        }
 
-        addLinkHeader(params);
-        commitCustomResponseHeaders();
-        return new ImageRepresentation(info, processor, ops, disposition,
-                isBypassingCache());
+            addLinkHeader(params);
+            commitCustomResponseHeaders();
+            return new ImageRepresentation(info, processor, ops, disposition,
+                    isBypassingCache());
+        } catch (Throwable t) {
+            processor.close();
+            throw t;
+        }
     }
 
     private void addLinkHeader(Parameters params) {

@@ -96,60 +96,68 @@ public class ImageResource extends IIIF1Resource {
         }
 
         // Obtain an instance of the processor assigned to that format.
+        // It must eventually be close()d, but we don't want to close it here
+        // unless there is an error.
         final Processor processor = new ProcessorFactory().
                 newProcessor(sourceFormat);
 
-        // Connect it to the resolver.
-        new ProcessorConnector().connect(resolver, processor, identifier);
+        try {
+            // Connect it to the resolver.
+            new ProcessorConnector().connect(resolver, processor, identifier);
 
-        final Set<Format> availableOutputFormats =
-                processor.getAvailableOutputFormats();
+            final Set<Format> availableOutputFormats =
+                    processor.getAvailableOutputFormats();
 
-        final OperationList ops = getOperationList(availableOutputFormats);
+            final OperationList ops = getOperationList(availableOutputFormats);
 
-        final Disposition disposition = getRepresentationDisposition(
-                getReference().getQueryAsForm()
-                        .getFirstValue(RESPONSE_CONTENT_DISPOSITION_QUERY_ARG),
-                ops.getIdentifier(), ops.getOutputFormat());
+            final Disposition disposition = getRepresentationDisposition(
+                    getReference().getQueryAsForm()
+                            .getFirstValue(RESPONSE_CONTENT_DISPOSITION_QUERY_ARG),
+                    ops.getIdentifier(), ops.getOutputFormat());
 
-        final Info info = getOrReadInfo(identifier, processor);
-        final Dimension fullSize = info.getSize();
+            final Info info = getOrReadInfo(identifier, processor);
+            final Dimension fullSize = info.getSize();
 
-        StringRepresentation redirectingRep = checkAuthorization(ops, fullSize);
-        if (redirectingRep != null) {
-            return redirectingRep;
-        }
-
-        validateRequestedArea(ops, sourceFormat, info);
-
-        processor.validate(ops, fullSize);
-
-        addLinkHeader(processor);
-
-        ops.applyNonEndpointMutations(fullSize,
-                info.getOrientation(),
-                getCanonicalClientIPAddress(),
-                getReference().toUri(),
-                getRequest().getHeaders().getValuesMap(),
-                getCookies().getValuesMap());
-
-        // Find out whether the processor supports the source format by asking
-        // it whether it offers any output formats for it.
-        if (!availableOutputFormats.isEmpty()) {
-            if (!availableOutputFormats.contains(ops.getOutputFormat())) {
-                String msg = String.format("%s does not support the \"%s\" output format",
-                        processor.getClass().getSimpleName(),
-                        ops.getOutputFormat().getPreferredExtension());
-                getLogger().warning(msg + ": " + getReference());
-                throw new UnsupportedOutputFormatException(msg);
+            StringRepresentation redirectingRep =
+                    checkAuthorization(ops, fullSize);
+            if (redirectingRep != null) {
+                return redirectingRep;
             }
-        } else {
-            throw new UnsupportedSourceFormatException(sourceFormat);
-        }
 
-        commitCustomResponseHeaders();
-        return new ImageRepresentation(info, processor, ops, disposition,
-                isBypassingCache());
+            validateRequestedArea(ops, sourceFormat, info);
+
+            processor.validate(ops, fullSize);
+
+            addLinkHeader(processor);
+
+            ops.applyNonEndpointMutations(fullSize,
+                    info.getOrientation(),
+                    getCanonicalClientIPAddress(),
+                    getReference().toUri(),
+                    getRequest().getHeaders().getValuesMap(),
+                    getCookies().getValuesMap());
+
+            // Find out whether the processor supports the source format by
+            // asking it whether it offers any output formats for it.
+            if (!availableOutputFormats.isEmpty()) {
+                if (!availableOutputFormats.contains(ops.getOutputFormat())) {
+                    String msg = String.format("%s does not support the \"%s\" output format",
+                            processor.getClass().getSimpleName(),
+                            ops.getOutputFormat().getPreferredExtension());
+                    getLogger().warning(msg + ": " + getReference());
+                    throw new UnsupportedOutputFormatException(msg);
+                }
+            } else {
+                throw new UnsupportedSourceFormatException(sourceFormat);
+            }
+
+            commitCustomResponseHeaders();
+            return new ImageRepresentation(info, processor, ops, disposition,
+                    isBypassingCache());
+        } catch (Throwable t) {
+            processor.close();
+            throw t;
+        }
     }
 
     private void addLinkHeader(Processor processor) {

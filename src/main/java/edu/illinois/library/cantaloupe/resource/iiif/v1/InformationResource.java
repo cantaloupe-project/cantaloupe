@@ -17,7 +17,6 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resource.JSONRepresentation;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
-import edu.illinois.library.cantaloupe.resource.RequestContext;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
@@ -95,7 +94,7 @@ public class InformationResource extends IIIF1Resource {
         } catch (NoSuchFileException e) { // this needs to be rethrown!
             if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                 // If the image was not found, purge it from the cache.
-                new CacheFacade().purgeAsync(identifier);
+                cacheFacade.purgeAsync(identifier);
             }
             throw e;
         }
@@ -104,18 +103,18 @@ public class InformationResource extends IIIF1Resource {
         Format format = resolver.getSourceFormat();
 
         // Obtain an instance of the processor assigned to that format.
-        final Processor processor = new ProcessorFactory().newProcessor(format);
+        try (Processor processor = new ProcessorFactory().newProcessor(format)) {
+            // Connect it to the resolver.
+            new ProcessorConnector().connect(resolver, processor, identifier);
 
-        // Connect it to the resolver.
-        new ProcessorConnector().connect(resolver, processor, identifier);
+            final Info info = getOrReadInfo(identifier, processor);
+            final ImageInfo imageInfo = new ImageInfoFactory().newImageInfo(
+                    getImageURI(), processor, info);
 
-        final Info info = getOrReadInfo(identifier, processor);
-        final ImageInfo imageInfo = new ImageInfoFactory().newImageInfo(
-                getImageURI(), processor, info);
-
-        addLinkHeader(imageInfo);
-        commitCustomResponseHeaders();
-        return newRepresentation(imageInfo);
+            addLinkHeader(imageInfo);
+            commitCustomResponseHeaders();
+            return newRepresentation(imageInfo);
+        }
     }
 
     private void addLinkHeader(ImageInfo info) {
@@ -135,11 +134,10 @@ public class InformationResource extends IIIF1Resource {
 
     private MediaType getNegotiatedMediaType() {
         MediaType mediaType;
-        // If the client has requested JSON-LD, set the content type to
-        // that; otherwise set it to JSON.
+        // If the client has requested JSON-LD, use that; otherwise use JSON.
         List<Preference<MediaType>> preferences = getRequest().getClientInfo().
                 getAcceptedMediaTypes();
-        if (preferences.get(0) != null && preferences.get(0).toString().
+        if (!preferences.isEmpty() && preferences.get(0).toString().
                 startsWith("application/ld+json")) {
             mediaType = new MediaType("application/ld+json");
         } else {

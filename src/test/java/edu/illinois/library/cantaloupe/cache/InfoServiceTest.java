@@ -37,11 +37,12 @@ public class InfoServiceTest extends BaseTest {
     private FileProcessor newFileProcessor() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
-        FileProcessor proc = (FileProcessor) new ProcessorFactory().
-                newProcessor(Format.JPG);
-        proc.setSourceFormat(Format.JPG);
-        proc.setSourceFile(TestUtil.getImage("jpg"));
-        return proc;
+        try (FileProcessor proc = (FileProcessor) new ProcessorFactory().
+                newProcessor(Format.JPG)) {
+            proc.setSourceFormat(Format.JPG);
+            proc.setSourceFile(TestUtil.getImage("jpg"));
+            return proc;
+        }
     }
 
     private FileProcessor newMockProcessor() throws Exception {

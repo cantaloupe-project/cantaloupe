@@ -45,6 +45,13 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
         return map;
     }
 
+    public void close() {
+        if (reader != null) {
+            reader.dispose();
+        }
+        reader = null;
+    }
+
     public Set<Format> getAvailableOutputFormats() {
         Set<Format> formats = FORMATS.get(format);
         if (formats == null) {
@@ -110,22 +117,15 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
     }
 
     public void setSourceFile(Path sourceFile) {
-        disposeReader();
+        close();
         this.streamSource = null;
         this.sourceFile = sourceFile;
     }
 
     public void setStreamSource(StreamSource streamSource) {
-        disposeReader();
+        close();
         this.sourceFile = null;
         this.streamSource = streamSource;
-    }
-
-    private void disposeReader() {
-        if (reader != null) {
-            reader.dispose();
-        }
-        reader = null;
     }
 
 }

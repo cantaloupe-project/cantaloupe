@@ -30,7 +30,7 @@ public class ImageRepresentation extends OutputRepresentation {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(ImageRepresentation.class);
 
-    private boolean bypassCache = false;
+    private boolean bypassCache;
     private Info imageInfo;
     private OperationList opList;
     private Processor processor;
@@ -56,6 +56,12 @@ public class ImageRepresentation extends OutputRepresentation {
         this.opList = opList;
         this.bypassCache = bypassCache;
         this.setDisposition(disposition);
+    }
+
+    @Override
+    public void release() {
+        super.release();
+        processor.close();
     }
 
     /**

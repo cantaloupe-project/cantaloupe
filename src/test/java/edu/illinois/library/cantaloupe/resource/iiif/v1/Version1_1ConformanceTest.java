@@ -427,31 +427,32 @@ public class Version1_1ConformanceTest extends ResourceTest {
                 outputFormat.getPreferredExtension());
 
         final Format sourceFormat = Format.inferFormat(IMAGE);
-        final Processor processor = new ProcessorFactory().newProcessor(sourceFormat);
-        final Set<Format> outputFormats = processor.getAvailableOutputFormats();
+        try (Processor processor = new ProcessorFactory().newProcessor(sourceFormat)) {
+            final Set<Format> outputFormats = processor.getAvailableOutputFormats();
 
-        // If the processor supports this SOURCE format
-        if (!outputFormats.isEmpty()) {
-            // If the processor supports this OUTPUT format
-            if (outputFormats.contains(outputFormat)) {
-                Response response = client.send();
-                assertEquals(200, response.getStatus());
-                assertEquals(outputFormat.getPreferredMediaType().toString(),
-                        response.getHeaders().getFirstValue("Content-Type"));
+            // If the processor supports this SOURCE format
+            if (!outputFormats.isEmpty()) {
+                // If the processor supports this OUTPUT format
+                if (outputFormats.contains(outputFormat)) {
+                    Response response = client.send();
+                    assertEquals(200, response.getStatus());
+                    assertEquals(outputFormat.getPreferredMediaType().toString(),
+                            response.getHeaders().getFirstValue("Content-Type"));
+                } else {
+                    try {
+                        client.send();
+                        fail("Expected exception");
+                    } catch (ResourceException e) {
+                        assertEquals(415, e.getStatusCode());
+                    }
+                }
             } else {
                 try {
                     client.send();
                     fail("Expected exception");
                 } catch (ResourceException e) {
-                    assertEquals(415, e.getStatusCode());
+                    assertEquals(501, e.getStatusCode());
                 }
-            }
-        } else {
-            try {
-                client.send();
-                fail("Expected exception");
-            } catch (ResourceException e) {
-                assertEquals(501, e.getStatusCode());
             }
         }
     }
