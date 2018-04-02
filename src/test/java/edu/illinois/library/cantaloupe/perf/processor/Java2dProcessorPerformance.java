@@ -1,7 +1,8 @@
-package edu.illinois.library.cantaloupe.processor;
+package edu.illinois.library.cantaloupe.perf.processor;
 
 import java.util.concurrent.TimeUnit;
 
+import edu.illinois.library.cantaloupe.processor.Java2dProcessorTest;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;

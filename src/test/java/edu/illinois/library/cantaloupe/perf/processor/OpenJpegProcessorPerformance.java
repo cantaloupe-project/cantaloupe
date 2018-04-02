@@ -1,7 +1,8 @@
-package edu.illinois.library.cantaloupe.processor;
+package edu.illinois.library.cantaloupe.perf.processor;
 
 import java.util.concurrent.TimeUnit;
 
+import edu.illinois.library.cantaloupe.processor.KakaduProcessorTest;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -27,7 +28,7 @@ import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.*;
         timeUnit = TimeUnit.SECONDS)
 @State(Scope.Benchmark)
 @Fork(value = 1, jvmArgs = { "-server", "-Xms128M", "-Xmx128M", "-Dcantaloupe.config=memory" })
-public class KakaduProcessorPerformance extends KakaduProcessorTest {
+public class OpenJpegProcessorPerformance extends KakaduProcessorTest {
 
     @Benchmark
     @Override

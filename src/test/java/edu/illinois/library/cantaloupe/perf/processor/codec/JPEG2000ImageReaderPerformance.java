@@ -1,7 +1,9 @@
-package edu.illinois.library.cantaloupe.processor.codec;
+package edu.illinois.library.cantaloupe.perf.processor.codec;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import edu.illinois.library.cantaloupe.processor.codec.JPEG2000ImageReaderTest;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -22,42 +24,30 @@ import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.*;
         time = MEASUREMENT_TIME)
 @State(Scope.Benchmark)
 @Fork(value = 1, jvmArgs = { "-server", "-Xms128M", "-Xmx128M", "-Dcantaloupe.config=memory" })
-public class PNGImageWriterPerformance extends PNGImageWriterTest {
+public class JPEG2000ImageReaderPerformance extends JPEG2000ImageReaderTest {
 
     @Benchmark
     @Override
-    public void testWriteWithBufferedImage() throws Exception {
-        super.testWriteWithBufferedImage();
+    public void testGetCompression() throws IOException {
+        super.testGetCompression();
     }
 
     @Benchmark
     @Override
-    public void testWriteWithBufferedImageAndNativeMetadata() throws Exception {
-        super.testWriteWithBufferedImageAndNativeMetadata();
+    public void testGetMetadata() throws Exception {
+        super.testGetMetadata();
     }
 
     @Benchmark
     @Override
-    public void testWriteWithBufferedImageAndXMPMetadata() throws Exception {
-        super.testWriteWithBufferedImageAndXMPMetadata();
+    public void testGetNumImages() throws Exception {
+        super.testGetNumImages();
     }
 
     @Benchmark
     @Override
-    public void testWriteWithPlanarImage() throws Exception {
-        super.testWriteWithPlanarImage();
-    }
-
-    @Benchmark
-    @Override
-    public void testWriteWithPlanarImageAndNativeMetadata() throws Exception {
-        super.testWriteWithPlanarImageAndNativeMetadata();
-    }
-
-    @Benchmark
-    @Override
-    public void testWriteWithPlanarImageAndXMPMetadata() throws Exception {
-        super.testWriteWithPlanarImageAndXMPMetadata();
+    public void testGetSize() throws Exception {
+        super.testGetSize();
     }
 
 }

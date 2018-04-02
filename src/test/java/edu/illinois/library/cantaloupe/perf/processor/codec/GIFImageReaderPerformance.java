@@ -1,8 +1,9 @@
-package edu.illinois.library.cantaloupe.processor.codec;
+package edu.illinois.library.cantaloupe.perf.processor.codec;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import edu.illinois.library.cantaloupe.processor.codec.GIFImageReaderTest;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -23,7 +24,7 @@ import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.*;
         time = MEASUREMENT_TIME)
 @State(Scope.Benchmark)
 @Fork(value = 1, jvmArgs = { "-server", "-Xms128M", "-Xmx128M", "-Dcantaloupe.config=memory" })
-public class JPEG2000ImageReaderPerformance extends JPEG2000ImageReaderTest {
+public class GIFImageReaderPerformance extends GIFImageReaderTest {
 
     @Benchmark
     @Override
@@ -47,6 +48,30 @@ public class JPEG2000ImageReaderPerformance extends JPEG2000ImageReaderTest {
     @Override
     public void testGetSize() throws Exception {
         super.testGetSize();
+    }
+
+    @Benchmark
+    @Override
+    public void testRead() throws Exception {
+        super.testRead();
+    }
+
+    @Benchmark
+    @Override
+    public void testReadWithArguments() throws Exception {
+        super.testReadWithArguments();
+    }
+
+    @Benchmark
+    @Override
+    public void testReadRendered() throws Exception {
+        super.testReadRendered();
+    }
+
+    @Benchmark
+    @Override
+    public void testReadRenderedWithArguments() throws Exception {
+        super.testReadRenderedWithArguments();
     }
 
 }

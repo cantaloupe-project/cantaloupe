@@ -1,7 +1,8 @@
-package edu.illinois.library.cantaloupe.processor.codec;
+package edu.illinois.library.cantaloupe.perf.processor.codec;
 
 import java.util.concurrent.TimeUnit;
 
+import edu.illinois.library.cantaloupe.processor.codec.PNGImageWriterTest;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -22,54 +23,42 @@ import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.*;
         time = MEASUREMENT_TIME)
 @State(Scope.Benchmark)
 @Fork(value = 1, jvmArgs = { "-server", "-Xms128M", "-Xmx128M", "-Dcantaloupe.config=memory" })
-public class JPEGImageReaderPerformance extends JPEGImageReaderTest {
+public class PNGImageWriterPerformance extends PNGImageWriterTest {
 
     @Benchmark
     @Override
-    public void testGetCompression() throws Exception {
-        super.testGetCompression();
+    public void testWriteWithBufferedImage() throws Exception {
+        super.testWriteWithBufferedImage();
     }
 
     @Benchmark
     @Override
-    public void testGetMetadata() throws Exception {
-        super.testGetMetadata();
+    public void testWriteWithBufferedImageAndNativeMetadata() throws Exception {
+        super.testWriteWithBufferedImageAndNativeMetadata();
     }
 
     @Benchmark
     @Override
-    public void testGetNumImages() throws Exception {
-        super.testGetNumImages();
+    public void testWriteWithBufferedImageAndXMPMetadata() throws Exception {
+        super.testWriteWithBufferedImageAndXMPMetadata();
     }
 
     @Benchmark
     @Override
-    public void testGetSize() throws Exception {
-        super.testGetSize();
+    public void testWriteWithPlanarImage() throws Exception {
+        super.testWriteWithPlanarImage();
     }
 
     @Benchmark
     @Override
-    public void testRead() throws Exception {
-        super.testRead();
+    public void testWriteWithPlanarImageAndNativeMetadata() throws Exception {
+        super.testWriteWithPlanarImageAndNativeMetadata();
     }
 
     @Benchmark
     @Override
-    public void testReadWithArguments() throws Exception {
-        super.testReadWithArguments();
-    }
-
-    @Benchmark
-    @Override
-    public void testReadRendered() throws Exception {
-        super.testReadRendered();
-    }
-
-    @Benchmark
-    @Override
-    public void testReadRenderedWithArguments() throws Exception {
-        super.testReadRenderedWithArguments();
+    public void testWriteWithPlanarImageAndXMPMetadata() throws Exception {
+        super.testWriteWithPlanarImageAndXMPMetadata();
     }
 
 }

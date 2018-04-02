@@ -1,7 +1,8 @@
-package edu.illinois.library.cantaloupe.processor.codec;
+package edu.illinois.library.cantaloupe.perf.processor.codec;
 
 import java.util.concurrent.TimeUnit;
 
+import edu.illinois.library.cantaloupe.processor.codec.JPEGImageReaderTest;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -22,7 +23,7 @@ import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.*;
         time = MEASUREMENT_TIME)
 @State(Scope.Benchmark)
 @Fork(value = 1, jvmArgs = { "-server", "-Xms128M", "-Xmx128M", "-Dcantaloupe.config=memory" })
-public class PNGImageReaderPerformance extends PNGImageReaderTest {
+public class JPEGImageReaderPerformance extends JPEGImageReaderTest {
 
     @Benchmark
     @Override
