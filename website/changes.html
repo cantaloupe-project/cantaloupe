@@ -10,7 +10,7 @@ title: Change Log
 <ul>
   <li>Fixed a leak when using HttpResolver in a Servlet container that resulted in an inability to shut down properly. (Thanks to @punkfairy)</li>
   <li>Fixed aspect-fit scale-to-height not working properly in ImageMagickProcessor and GraphicsMagickProcessor.</li>
-  <li>Fixed incorrect URIs in information response <code>@id</code> values and image response <code>Link</code> headers when using slash substitution.</li>
+  <li>Fixed incorrect URIs in responses when using slash substitution or URI-encoded identifiers.</li>
   <li>When HttpResolver attempts to load an invalid URI, <code>HTTP 404 Not Found</code> is returned instead of <code>HTTP 500 Internal Server Error</code>.</li>
   <li>Efficiency improvements in AmazonS3Resolver and AzureStorageResolver.</li>
   <li><code>OutOfMemoryError</code>s during image responses are logged at error level rather than info-level.</li>

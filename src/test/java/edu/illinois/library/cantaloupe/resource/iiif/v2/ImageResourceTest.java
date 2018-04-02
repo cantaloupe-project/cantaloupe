@@ -259,6 +259,18 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
+    public void testGETLinkHeaderWithEncodedCharacters() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.SLASH_SUBSTITUTE, ":");
+
+        client = newClient("/subfolder%3Ajpg/full/full/0/color.jpg");
+        Response response = client.send();
+
+        String value = response.getHeaders().getFirstValue("Link");
+        assertTrue(value.contains("subfolder%3Ajpg"));
+    }
+
+    @Test
     public void testGETLinkHeaderWithBaseURIOverride() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.BASE_URI, "http://example.org/");

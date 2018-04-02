@@ -129,7 +129,7 @@ public class InformationResource extends IIIF1Resource {
      */
     private String getImageURI() {
         return getPublicRootReference() + RestletApplication.IIIF_1_PATH + "/" +
-                Reference.encode(getPublicIdentifier());
+                getPublicIdentifier();
     }
 
     private MediaType getNegotiatedMediaType() {

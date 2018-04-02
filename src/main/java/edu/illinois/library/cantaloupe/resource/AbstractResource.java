@@ -393,23 +393,18 @@ public abstract class AbstractResource extends ServerResource {
     /**
      * @return Value of the {@link #PUBLIC_IDENTIFIER_HEADER} header, if
      *         available, or else the {@literal identifier} URI path
-     *         component.
+     *         component, with any escaping preserved.
      */
     protected String getPublicIdentifier() {
         final Map<String,Object> attrs = getRequest().getAttributes();
         final String urlID = (String) attrs.get("identifier");
-        final String decodedID = Reference.decode(urlID);
-        final String reSlashedID = decodeSlashes(decodedID);
         final String headerID = getRequest().getHeaders().
                 getFirstValue(PUBLIC_IDENTIFIER_HEADER, true);
 
-        LOGGER.debug("Public identifier requested: {} -> decoded: {} -> " +
-                        "slashes substituted: {} | {} header: {}",
-                urlID, decodedID, reSlashedID, PUBLIC_IDENTIFIER_HEADER,
-                headerID);
+        LOGGER.debug("Public identifier requested: {} | {} header: {}",
+                urlID, PUBLIC_IDENTIFIER_HEADER, headerID);
 
-        return (headerID != null && !headerID.isEmpty()) ?
-                headerID : decodedID;
+        return (headerID != null && !headerID.isEmpty()) ? headerID : urlID;
     }
 
     /**
