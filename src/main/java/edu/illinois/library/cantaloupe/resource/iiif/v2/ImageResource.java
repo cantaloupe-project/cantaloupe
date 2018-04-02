@@ -146,88 +146,95 @@ public class ImageResource extends IIIF2Resource {
             }
         }
 
-        // Obtain an instance of the processor assigned to that format.
+        // Obtain an instance of the processor assigned to that format. This
+        // must eventually be close()d, but we don't want to close it here
+        // unless there is an error.
         final Processor processor = new ProcessorFactory().
                 newProcessor(sourceFormat);
 
-        // Connect it to the resolver.
-        tempFileFuture = new ProcessorConnector().connect(
-                resolver, processor, identifier, sourceFormat);
-
-        final Info info = getOrReadInfo(ops.getIdentifier(), processor);
-        final Dimension fullSize = info.getSize();
-
-        StringRepresentation redirectingRep = checkAuthorization(ops, fullSize);
-        if (redirectingRep != null) {
-            return redirectingRep;
-        }
-
-        validateRequestedArea(ops, sourceFormat, info);
-
         try {
-            processor.validate(ops, fullSize);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalClientArgumentException(e.getMessage(), e);
-        }
+            // Connect it to the resolver.
+            tempFileFuture = new ProcessorConnector().connect(
+                    resolver, processor, identifier, sourceFormat);
 
-        if (config.getBoolean(Key.IIIF_2_RESTRICT_TO_SIZES, false)) {
-            final ImageInfo<String, Object> imageInfo =
-                    new ImageInfoFactory().newImageInfo(
-                            identifier, null, processor, info);
-            final Dimension resultingSize = ops.getResultingSize(fullSize);
-            boolean ok = false;
-            @SuppressWarnings("unchecked")
-            List<ImageInfo.Size> sizes =
-                    (List<ImageInfo.Size>) imageInfo.get("sizes");
-            for (ImageInfo.Size size : sizes) {
-                if (size.width == resultingSize.width &&
-                        size.height == resultingSize.height) {
-                    ok = true;
-                    break;
+            final Info info = getOrReadInfo(ops.getIdentifier(), processor);
+            final Dimension fullSize = info.getSize();
+
+            StringRepresentation redirectingRep = checkAuthorization(ops, fullSize);
+            if (redirectingRep != null) {
+                return redirectingRep;
+            }
+
+            validateRequestedArea(ops, sourceFormat, info);
+
+            try {
+                processor.validate(ops, fullSize);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalClientArgumentException(e.getMessage(), e);
+            }
+
+            if (config.getBoolean(Key.IIIF_2_RESTRICT_TO_SIZES, false)) {
+                final ImageInfo<String, Object> imageInfo =
+                        new ImageInfoFactory().newImageInfo(
+                                identifier, null, processor, info);
+                final Dimension resultingSize = ops.getResultingSize(fullSize);
+                boolean ok = false;
+                @SuppressWarnings("unchecked")
+                List<ImageInfo.Size> sizes =
+                        (List<ImageInfo.Size>) imageInfo.get("sizes");
+                for (ImageInfo.Size size : sizes) {
+                    if (size.width == resultingSize.width &&
+                            size.height == resultingSize.height) {
+                        ok = true;
+                        break;
+                    }
+                }
+                if (!ok) {
+                    throw new SizeRestrictedException();
                 }
             }
-            if (!ok) {
-                throw new SizeRestrictedException();
+
+            try {
+                ops.applyNonEndpointMutations(info,
+                        getCanonicalClientIPAddress(),
+                        getReference().toUri(),
+                        getRequest().getHeaders().getValuesMap(),
+                        getCookies().getValuesMap());
+            } catch (IllegalStateException e) {
+                // applyNonEndpointMutations() will freeze the instance, and it
+                // may have already been called. That's fine.
             }
-        }
 
-        try {
-            ops.applyNonEndpointMutations(info,
-                    getCanonicalClientIPAddress(),
-                    getReference().toUri(),
-                    getRequest().getHeaders().getValuesMap(),
-                    getCookies().getValuesMap());
-        } catch (IllegalStateException e) {
-            // applyNonEndpointMutations() will freeze the instance, and it
-            // may have already been called. That's fine.
-        }
-
-        // Find out whether the processor supports the source format by asking
-        // it whether it offers any output formats for it.
-        Set<Format> availableOutputFormats = processor.getAvailableOutputFormats();
-        if (!availableOutputFormats.isEmpty()) {
-            if (!availableOutputFormats.contains(ops.getOutputFormat())) {
-                Exception e = new UnsupportedOutputFormatException(
-                        processor, ops.getOutputFormat());
-                getLogger().warning(e.getMessage() + ": " + getReference());
-                throw e;
-            }
-        } else {
-            throw new UnsupportedSourceFormatException(sourceFormat);
-        }
-
-        addLinkHeader(params);
-        commitCustomResponseHeaders();
-        return new ImageRepresentation(info, processor, ops, disposition,
-                isBypassingCache(), () -> {
-            if (tempFileFuture != null) {
-                Path tempFile = tempFileFuture.get();
-                if (tempFile != null) {
-                    Files.deleteIfExists(tempFile);
+            // Find out whether the processor supports the source format by asking
+            // it whether it offers any output formats for it.
+            Set<Format> availableOutputFormats = processor.getAvailableOutputFormats();
+            if (!availableOutputFormats.isEmpty()) {
+                if (!availableOutputFormats.contains(ops.getOutputFormat())) {
+                    Exception e = new UnsupportedOutputFormatException(
+                            processor, ops.getOutputFormat());
+                    getLogger().warning(e.getMessage() + ": " + getReference());
+                    throw e;
                 }
+            } else {
+                throw new UnsupportedSourceFormatException(sourceFormat);
             }
-            return null;
-        });
+
+            addLinkHeader(params);
+            commitCustomResponseHeaders();
+            return new ImageRepresentation(info, processor, ops, disposition,
+                    isBypassingCache(), () -> {
+                if (tempFileFuture != null) {
+                    Path tempFile = tempFileFuture.get();
+                    if (tempFile != null) {
+                        Files.deleteIfExists(tempFile);
+                    }
+                }
+                return null;
+            });
+        } catch (Throwable t) {
+            processor.close();
+            throw t;
+        }
     }
 
     private void addLinkHeader(Parameters params) {

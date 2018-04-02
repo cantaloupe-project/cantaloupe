@@ -122,16 +122,16 @@ public class InformationResource extends IIIF2Resource {
         }
 
         // Obtain an instance of the processor assigned to that format.
-        final Processor processor = new ProcessorFactory().newProcessor(format);
+        try (Processor processor = new ProcessorFactory().newProcessor(format)) {
+            // Connect it to the resolver.
+            tempFileFuture = new ProcessorConnector().connect(
+                    resolver, processor, identifier, format);
 
-        // Connect it to the resolver.
-        tempFileFuture = new ProcessorConnector().connect(
-                resolver, processor, identifier, format);
+            final Info info = getOrReadInfo(identifier, processor);
 
-        final Info info = getOrReadInfo(identifier, processor);
-
-        commitCustomResponseHeaders();
-        return newRepresentation(identifier, info, processor);
+            commitCustomResponseHeaders();
+            return newRepresentation(identifier, info, processor);
+        }
     }
 
     /**

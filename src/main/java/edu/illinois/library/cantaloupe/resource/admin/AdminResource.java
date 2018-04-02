@@ -172,9 +172,8 @@ public class AdminResource extends AbstractAdminResource {
         // source format assignments
         Map<Format,ProcessorProxy> assignments = new TreeMap<>();
         for (Format format : Format.values()) {
-            try {
-                assignments.put(format,
-                        new ProcessorProxy(new ProcessorFactory().newProcessor(format)));
+            try (Processor proc = new ProcessorFactory().newProcessor(format)) {
+                assignments.put(format, new ProcessorProxy(proc));
             } catch (UnsupportedSourceFormatException |
                     InitializationException |
                     ReflectiveOperationException e) {

@@ -60,6 +60,12 @@ public class ImageRepresentation extends CustomOutputRepresentation {
         this.onRelease = onRelease;
     }
 
+    @Override
+    public void release() {
+        super.release();
+        processor.close();
+    }
+
     /**
      * Writes the image requested in the constructor to the given output
      * stream, either retrieving it from the derivative cache, or getting it
