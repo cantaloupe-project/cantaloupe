@@ -383,6 +383,8 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
                 rangedGETResponse = rangedGETResponseListener.get(
                         getRequestTimeout(), TimeUnit.SECONDS);
+            } catch (IllegalArgumentException e) {
+                throw new NoSuchFileException(info.getURI().toString());
             } catch (ExecutionException e ) {
                 throw new AccessDeniedException(info.getURI().toString());
             } catch (InterruptedException | TimeoutException e) {

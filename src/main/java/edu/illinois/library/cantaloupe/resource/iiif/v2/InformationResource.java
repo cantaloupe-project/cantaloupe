@@ -141,7 +141,7 @@ public class InformationResource extends IIIF2Resource {
      */
     private String getImageURI() {
         return getPublicRootReference() + RestletApplication.IIIF_2_PATH + "/" +
-                Reference.encode(getPublicIdentifier());
+                getPublicIdentifier();
     }
 
     private MediaType getNegotiatedMediaType() {

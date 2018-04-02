@@ -385,6 +385,11 @@ public class InformationResourceTester extends ImageAPIResourceTester {
         assertRedirect(fromURI, toURI, 303);
     }
 
+    public void testRedirectToInfoJSONWithEncodedCharacters(URI fromURI,
+                                                            URI toURI) {
+        assertRedirect(fromURI, toURI, 303);
+    }
+
     public void testRedirectToInfoJSONWithDifferentPublicIdentifier(URI uri)
             throws Exception {
         Client client = newClient(uri);
