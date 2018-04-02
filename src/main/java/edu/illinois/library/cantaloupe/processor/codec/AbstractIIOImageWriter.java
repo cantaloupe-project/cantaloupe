@@ -110,14 +110,14 @@ abstract class AbstractIIOImageWriter {
 
         // Prefer a user-specified implementation.
         final String userImpl = getUserPreferredIIOImplementation();
-        if (userImpl != null) {
+        if (userImpl != null && !userImpl.isEmpty()) {
             impls.add(userImpl);
         }
         // Fall back to an application-preferred implementation.
         final String[] appImpls = getApplicationPreferredIIOImplementations();
         impls.addAll(Arrays.asList(appImpls));
 
-        return impls.toArray(new String[] {});
+        return impls.toArray(new String[0]);
     }
 
     /**
