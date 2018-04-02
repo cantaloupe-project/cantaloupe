@@ -252,8 +252,8 @@ AzureStorageResolver.lookup_strategy = BasicLookupStrategy
 
 # Image processors to use for various source formats. Available values are
 # `Java2dProcessor`, `GraphicsMagickProcessor`, `ImageMagickProcessor`,
-# `KakaduDemoProcessor`, `OpenJpegProcessor`, `JaiProcessor`,
-# `PdfBoxProcessor`, and `FfmpegProcessor`.
+# `KakaduDemoProcessor`, `KakaduNativeProcessor`, `OpenJpegProcessor`,
+# `JaiProcessor`, `PdfBoxProcessor`, and `FfmpegProcessor`.
 
 # These extension-specific definitions are optional.
 processor.avi = FfmpegProcessor
