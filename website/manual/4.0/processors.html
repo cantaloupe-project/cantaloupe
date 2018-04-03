@@ -859,11 +859,30 @@ title: Processors
 
 <h4>Configuration</h4>
 
-<p>To get this processor to work, it must be able to locate the Kakadu JNI binding and shared library. When you extracted the release archive, a subdirectory named <span class="filename">libs</span> was created, containing precompiled libraries for 64-bit x86 Linux, macOS, and Windows. From here, you have two options:</p>
+<p>To get this processor to work, it must be able to locate the Kakadu JNI binding and shared library. When you extracted the release archive, a subdirectory named <span class="filename">libs</span> was created, containing precompiled libraries for 64-bit x86 Linux, macOS, and Windows.</p>
+
+<h5>Linux</h5>
+
+<p>Do <strong>one</strong> of the following:</p>
 
 <ol>
-  <li>Copy the files from the folder relevant to your operating system to a location that is on your <code>LD_LIBRARY_PATH</code> (Linux), <code>DYLD_LIBRARY_PATH</code> (macOS), or <code>PATH</code> (Windows).</li>
+  <li>Copy the files from the Linux-specific folder to a location that is on your <code>LD_LIBRARY_PATH</code>.</li>
   <li>Tell the JVM where the libraries are located using a VM argument at launch, like: <code>-Djava.library.path=/path/to/cantaloupe-x.x/libs/Linux-x86-64</code></li>
+  <li>Copy the libraries into one of the locations on the existing <code>java.library.path</code>. (These locations are logged at startup.)</p>
+</ol>
+
+<h5>macOS</h5>
+
+<p>Newer releases of macOS do not support <code>DYLD_LIBRARY_PATH</code>, so you must either provide the <code>-Djava.library.path</code> argument at startup as above, or copy the library files from the macOS-specific folder into one of the locations that is already on your <code>java.library.path</code>. (These locations are logged at startup.)</p>
+
+<h5>Windows</h5>
+
+<p>Do <strong>one</strong> of the following:</p>
+
+<ol>
+  <li>Copy the files from the Windows-specific folder to a location that is on your <code>PATH</code>.</li>
+  <li>Tell the JVM where the libraries are located using a VM argument at launch, like: <code>-Djava.library.path=C:\Users\me\cantaloupe-x.x\libs\Windows</code></li>
+  <li>Copy the libraries into one of the locations on the existing <code>java.library.path</code>. (These locations are logged at startup.)</p>
 </ol>
 
 <div class="alert alert-info">This processor was developed using a Kakadu Public Service License and may not be used commercially. See the <a href="http://kakadusoftware.com/wp-content/uploads/2014/06/Kakadu-Licence-Terms-Feb-2018.pdf">Kakadu Software License Terms and Conditions</a> for detailed terms.</div>
