@@ -1,6 +1,9 @@
 @import url(bootstrap.min.css);
 
-
+div.alert-info a {
+    color: white;
+    text-decoration: underline;
+}
 
 /* error page */
 
