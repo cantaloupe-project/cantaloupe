@@ -21,7 +21,7 @@ public class ProcessorFactoryTest extends BaseTest {
 
     @Test
     public void testGetAllProcessors() {
-        assertEquals(8, ProcessorFactory.getAllProcessors().size());
+        assertEquals(9, ProcessorFactory.getAllProcessors().size());
     }
 
     /**
