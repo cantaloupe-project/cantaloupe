@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import javax.imageio.ImageIO;
+import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +20,7 @@ public class PathStreamSource implements StreamSource {
 
     @Override
     public ImageInputStream newImageInputStream() throws IOException {
-        return ImageIO.createImageInputStream(path.toFile());
+        return new FileImageInputStream(path.toFile());
     }
 
     @Override
