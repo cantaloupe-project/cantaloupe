@@ -250,7 +250,7 @@ public final class Java2DUtil {
         ImageReader reader = null;
         try {
             reader = new ImageReaderFactory().newImageReader(
-                    overlay.getStreamSource(), Format.PNG);
+                    overlay.openStream(), Format.PNG);
             return reader.read();
         } finally {
             if (reader != null) {
