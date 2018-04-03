@@ -261,7 +261,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
 
                 Kdu_global.Kdu_customize_warnings(prettySysout);
                 Kdu_global.Kdu_customize_errors(prettySyserr);
-            } catch (KduException e) {
+            } catch (KduException | UnsatisfiedLinkError e) {
                 initializationException = new InitializationException(e);
             }
         }

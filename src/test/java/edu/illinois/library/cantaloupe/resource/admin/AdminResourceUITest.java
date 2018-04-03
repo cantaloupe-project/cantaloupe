@@ -649,7 +649,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertEquals("5", config.getString(Key.REDISCACHE_DATABASE));
     }
 
-    @Ignore // TODO: this fails in travis
     @Test
     public void testOverlaysSection() throws Exception {
         css("#cl-overlays-button > a").click();

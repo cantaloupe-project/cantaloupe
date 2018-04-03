@@ -89,7 +89,6 @@ public class AdminResourceTest extends AbstractAdminResourceTest {
         }
     }
 
-    @Ignore // TODO: this fails in travis
     @Test
     public void testGETResponseHeaders() throws Exception {
         Response response = client.send();
