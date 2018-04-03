@@ -437,6 +437,9 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
                     // Truncate coordinates to (num digits) + 1 decimal places
                     // to prevent kdu_expand from returning an extra pixel of
                     // width/height.
+                    // N.B.: this broke sometime between KDU v7.6 and v7.10.4,
+                    // and kdu_expand now unpredictably returns an extra pixel.
+                    // Too bad, but Java2DUtil.crop() will take care of it.
                     final int xDecimalPlaces =
                             Integer.toString(imageSize.width).length() + 1;
                     final int yDecimalPlaces =
@@ -450,8 +453,8 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
                     final DecimalFormat yDecFormat = new DecimalFormat(yFormat);
                     yDecFormat.setRoundingMode(RoundingMode.DOWN);
 
-                    double x, y, width, height; // These are all percentages.
-                    if (crop.getShape().equals(Crop.Shape.SQUARE)) {
+                    double x, y, width, height; // 0-1
+                    if (Crop.Shape.SQUARE.equals(crop.getShape())) {
                         final int shortestSide =
                                 Math.min(imageSize.width, imageSize.height);
                         x = (imageSize.width - shortestSide) /
@@ -465,7 +468,7 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
                         y = crop.getY();
                         width = crop.getWidth();
                         height = crop.getHeight();
-                        if (crop.getUnit().equals(Crop.Unit.PIXELS)) {
+                        if (Crop.Unit.PIXELS.equals(crop.getUnit())) {
                             x /= imageSize.width;
                             y /= imageSize.height;
                             width /= imageSize.width;
