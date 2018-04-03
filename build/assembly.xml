@@ -12,6 +12,11 @@ http://maven.apache.org/plugins/maven-assembly-plugin/assembly.html
     </formats>
     <fileSets>
         <fileSet>
+            <directory>dist</directory>
+            <outputDirectory>.</outputDirectory>
+            <lineEnding>crlf</lineEnding>
+        </fileSet>
+        <fileSet>
             <directory>target</directory>
             <includes>
                 <include>cantaloupe-${project.version}.war</include>
@@ -33,10 +38,12 @@ http://maven.apache.org/plugins/maven-assembly-plugin/assembly.html
         <file>
             <source>LICENSE</source>
             <fileMode>0644</fileMode>
+            <lineEnding>crlf</lineEnding>
         </file>
         <file>
             <source>README.md</source>
             <fileMode>0644</fileMode>
+            <lineEnding>crlf</lineEnding>
         </file>
     </files>
 </assembly>
