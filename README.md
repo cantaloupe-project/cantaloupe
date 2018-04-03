@@ -64,7 +64,7 @@ continuous integration. The following dependencies are required:
 `mvn clean test` will run all tests, including the ones above. The following
 dependencies are required in addition to the ones above:
 
-* Kakadu (for KakaduProcessorTest)
+* Kakadu (for KakaduDemoProcessorTest)
 * A Microsoft Azure account
 
 ### 4. Performance tests
