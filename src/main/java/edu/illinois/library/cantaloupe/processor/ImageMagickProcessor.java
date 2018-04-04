@@ -9,11 +9,11 @@ import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
@@ -720,7 +720,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             args.add("-ping");
             args.add("-format");
             // N.B. 1: We need to read this even when not respecting
-            // orientation, because GM's crop operation is orientation-unaware.
+            // orientation, because IM's crop operation is orientation-unaware.
             // N.B. 2: IM (7.0.6-7) seems to have some kind of issue with
             // retrieving EXIF tags by name. The glob works around it. This
             // should be OK, as I don't think there are any other EXIF tags
@@ -737,11 +737,11 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             cmd.setInputProvider(new Pipe(inputStream, null));
             cmd.setOutputConsumer(consumer);
             final String cmdString = String.join(" ", args).replace("\n", ",");
-            LOGGER.info("readImageInfo(): invoking {}", cmdString);
+            LOGGER.debug("readImageInfo(): invoking {}", cmdString);
             cmd.run(args);
 
             final List<String> output = consumer.getOutput();
-            if (output.size() > 0) {
+            if (!output.isEmpty()) {
                 final int width = Integer.parseInt(output.get(0));
                 final int height = Integer.parseInt(output.get(1));
                 // GM is not tile-aware, so set the tile size to the full
@@ -766,12 +766,10 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             }
             throw new IOException("readImageInfo(): nothing received on " +
                     "stdout from command: " + cmdString);
+        } catch (IOException e) {
+            throw e;
         } catch (Exception e) {
-            if (e instanceof IOException) {
-                throw (IOException) e;
-            } else {
-                throw new IOException(e.getMessage(), e);
-            }
+            throw new IOException(e);
         }
     }
 

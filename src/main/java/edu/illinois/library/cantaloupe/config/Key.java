@@ -132,7 +132,7 @@ public enum Key {
     JDBCRESOLVER_JDBC_URL("JdbcResolver.url"),
     JDBCRESOLVER_PASSWORD("JdbcResolver.password"),
     JDBCRESOLVER_USER("JdbcResolver.user"),
-    KAKADUPROCESSOR_PATH_TO_BINARIES("KakaduProcessor.path_to_binaries"),
+    KAKADUDEMOPROCESSOR_PATH_TO_BINARIES("KakaduDemoProcessor.path_to_binaries"),
     MAX_PIXELS("max_pixels"),
     OPENJPEGPROCESSOR_PATH_TO_BINARIES("OpenJpegProcessor.path_to_binaries"),
     OVERLAY_ENABLED("overlays.enabled"),

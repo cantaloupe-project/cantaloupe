@@ -14,6 +14,7 @@ import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -51,6 +52,25 @@ abstract class AbstractIIOImageWriter {
         getLogger().debug("Using {}", iioWriter.getClass().getName());
     }
 
+    /**
+     * Should be called when the instance is no longer needed.
+     */
+    public void dispose() {
+        if (iioWriter != null) {
+            iioWriter.dispose();
+            iioWriter = null;
+        }
+    }
+
+    /**
+     * May be overridden by {@link #getUserPreferredIIOImplementation()}.
+     *
+     * @return ImageIO implementations preferred by the application, in order
+     *         of most to least preferred, or an empty array if there is no
+     *         preference.
+     */
+    abstract String[] getApplicationPreferredIIOImplementations();
+
     abstract Logger getLogger();
 
     /**
@@ -77,30 +97,57 @@ abstract class AbstractIIOImageWriter {
         return derivativeMetadata;
     }
 
+    /**
+     * N.B.: This method returns a list of strings rather than {@link Class
+     * classes} because some readers reside under the {@link com.sun} package,
+     * which is encapsulated in Java 9.
+     *
+     * @return Preferred reader implementation classes, in order of highest to
+     *         lowest priority, or an empty array if there is no preference.
+     */
+    String[] getPreferredIIOImplementations() {
+        final List<String> impls = new ArrayList<>();
+
+        // Prefer a user-specified implementation.
+        final String userImpl = getUserPreferredIIOImplementation();
+        if (userImpl != null && !userImpl.isEmpty()) {
+            impls.add(userImpl);
+        }
+        // Fall back to an application-preferred implementation.
+        final String[] appImpls = getApplicationPreferredIIOImplementations();
+        impls.addAll(Arrays.asList(appImpls));
+
+        return impls.toArray(new String[0]);
+    }
+
+    /**
+     * If this returns a non-{@literal null} value, it will override {@link
+     * #getApplicationPreferredIIOImplementations()}.
+     *
+     * @return Preferred ImageIO implementation as specified by the user. May
+     *         be {@literal null}.
+     */
+    abstract String getUserPreferredIIOImplementation();
+
     private javax.imageio.ImageWriter negotiateImageWriter() {
         javax.imageio.ImageWriter negotiatedWriter = null;
 
         final List<javax.imageio.ImageWriter> iioWriters =
                 availableIIOWriters();
-        boolean found = false;
 
         if (!iioWriters.isEmpty()) {
-            final String[] preferredImplClasses = preferredIIOImplementations();
+            final String[] preferredImplClasses = getPreferredIIOImplementations();
 
             getLogger().debug("ImageIO plugin preferences: {}",
                     (preferredImplClasses.length > 0) ?
                             String.join(", ", preferredImplClasses) : "none");
 
-            if (preferredImplClasses.length > 0) {
-                for (String preferredImplClass : preferredImplClasses) {
-                    if (!found) {
-                        for (javax.imageio.ImageWriter candidateWriter : iioWriters) {
-                            if (preferredImplClass.equals(candidateWriter.getClass().getName())) {
-                                negotiatedWriter = candidateWriter;
-                                found = true;
-                                break;
-                            }
-                        }
+            Found:
+            for (String implClass : preferredImplClasses) {
+                for (javax.imageio.ImageWriter candidateWriter : iioWriters) {
+                    if (implClass.equals(candidateWriter.getClass().getName())) {
+                        negotiatedWriter = candidateWriter;
+                        break Found;
                     }
                 }
             }
@@ -110,18 +157,6 @@ abstract class AbstractIIOImageWriter {
             }
         }
         return negotiatedWriter;
-    }
-
-    /**
-     * N.B.: This method returns a list of strings rather than classes because
-     * some writers reside under the {@link com.sun} package, which is private
-     * in Java 9.
-     *
-     * @return Writer implementation classes in order of preference, or an
-     *         empty array if there is no preference.
-     */
-    String[] preferredIIOImplementations() {
-        return new String[] {};
     }
 
     public void setMetadata(Metadata sourceMetadata) {

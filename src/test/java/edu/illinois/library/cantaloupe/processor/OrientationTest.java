@@ -1,12 +1,32 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.operation.Orientation;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
+
+import java.io.StringWriter;
 
 import static org.junit.Assert.*;
 
 public class OrientationTest extends BaseTest {
+
+    @Test
+    public void testSerialization() throws Exception {
+        Orientation orientation = Orientation.ROTATE_270;
+        try (StringWriter writer = new StringWriter()) {
+            new ObjectMapper().writeValue(writer, orientation);
+            assertEquals(Orientation.ROTATE_270.getEXIFValue(),
+                    Integer.parseInt(writer.toString()));
+        }
+    }
+
+    @Test
+    public void testDeserialization() throws Exception {
+        Orientation orientation = new ObjectMapper().readValue("8",
+                Orientation.class);
+        assertSame(Orientation.ROTATE_270, orientation);
+    }
 
     @Test
     public void testForEXIFOrientation() {

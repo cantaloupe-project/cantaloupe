@@ -31,22 +31,6 @@ public class ImageOverlayTest extends BaseTest {
     }
 
     @Test
-    public void testGetStreamSourceReturnedInstanceIsReusable()
-            throws Exception {
-        StreamSource source = instance.getStreamSource();
-
-        try (InputStream is = source.newInputStream();
-             OutputStream os = new NullOutputStream()) {
-            IOUtils.copy(is, os);
-        }
-
-        try (InputStream is = source.newInputStream();
-             OutputStream os = new NullOutputStream()) {
-            IOUtils.copy(is, os);
-        }
-    }
-
-    @Test
     public void testOpenStream() throws IOException {
         InputStream is = instance.openStream();
         ByteArrayOutputStream os = new ByteArrayOutputStream();

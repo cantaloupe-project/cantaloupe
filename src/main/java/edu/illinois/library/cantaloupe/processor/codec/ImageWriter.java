@@ -9,6 +9,11 @@ import java.io.OutputStream;
 public interface ImageWriter {
 
     /**
+     * Releases all resources.
+     */
+    void dispose();
+
+    /**
      * @param metadata Source metadata.
      */
     void setMetadata(Metadata metadata);

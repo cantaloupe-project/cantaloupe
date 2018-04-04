@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
 import org.slf4j.Logger;
@@ -11,8 +12,16 @@ import java.io.IOException;
 final class BMPImageReader extends AbstractIIOImageReader
         implements ImageReader {
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(BMPImageReader.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(BMPImageReader.class);
+
+    static final String IMAGEIO_PLUGIN_CONFIG_KEY =
+            "processor.imageio.bmp.reader";
+
+    @Override
+    String[] getApplicationPreferredIIOImplementations() {
+        return new String[] { "com.sun.imageio.plugins.bmp.BMPImageReader" };
+    }
 
     @Override
     public Compression getCompression(int imageIndex) {
@@ -37,8 +46,9 @@ final class BMPImageReader extends AbstractIIOImageReader
     }
 
     @Override
-    String[] preferredIIOImplementations() {
-        return new String[] { "com.sun.imageio.plugins.bmp.BMPImageReader" };
+    String getUserPreferredIIOImplementation() {
+        Configuration config = Configuration.getInstance();
+        return config.getString(IMAGEIO_PLUGIN_CONFIG_KEY);
     }
 
 }

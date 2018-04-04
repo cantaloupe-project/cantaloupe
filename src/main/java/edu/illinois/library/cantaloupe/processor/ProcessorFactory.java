@@ -21,7 +21,8 @@ public class ProcessorFactory {
                 new ImageMagickProcessor(),
                 new JaiProcessor(),
                 new Java2dProcessor(),
-                new KakaduProcessor(),
+                new KakaduDemoProcessor(),
+                new KakaduNativeProcessor(),
                 new OpenJpegProcessor(),
                 new PdfBoxProcessor()));
     }

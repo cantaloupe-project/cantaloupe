@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -469,9 +470,9 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         css("#cl-processors li > a[href=\"#JaiProcessor\"]").click();
         // Java2dProcessor
         css("#cl-processors li > a[href=\"#Java2dProcessor\"]").click();
-        // KakaduProcessor
-        css("#cl-processors li > a[href=\"#KakaduProcessor\"]").click();
-        inputNamed(Key.KAKADUPROCESSOR_PATH_TO_BINARIES).sendKeys("/kpath");
+        // KakaduDemoProcessor
+        css("#cl-processors li > a[href=\"#KakaduDemoProcessor\"]").click();
+        inputNamed(Key.KAKADUDEMOPROCESSOR_PATH_TO_BINARIES).sendKeys("/kpath");
         // OpenJpegProcessor
         css("#cl-processors li > a[href=\"#OpenJpegProcessor\"]").click();
         inputNamed(Key.OPENJPEGPROCESSOR_PATH_TO_BINARIES).sendKeys("/ojpath");
@@ -513,9 +514,9 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getString(Key.IMAGEMAGICKPROCESSOR_PATH_TO_BINARIES));
         // JaiProcessor
         // Java2dProcessor
-        // KakaduProcessor
+        // KakaduDemoProcessor
         assertEquals("/kpath",
-                config.getString(Key.KAKADUPROCESSOR_PATH_TO_BINARIES));
+                config.getString(Key.KAKADUDEMOPROCESSOR_PATH_TO_BINARIES));
         // OpenJpegProcessor
         assertEquals("/ojpath",
                 config.getString(Key.OPENJPEGPROCESSOR_PATH_TO_BINARIES));

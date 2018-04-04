@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.processor.codec;
 
 import com.sun.media.imageio.plugins.tiff.TIFFDirectory;
 import com.sun.media.imageio.plugins.tiff.TIFFField;
-import edu.illinois.library.cantaloupe.operation.Orientation;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
@@ -87,11 +87,13 @@ abstract class AbstractMetadata {
         // See https://community.oracle.com/thread/1264022?start=0&tstart=0
         // for an explanation of the technique used here.
         if (exif != null) {
+            final String preferredImpl =
+                    new TIFFImageReader().getPreferredIIOImplementations()[0];
             final Iterator<ImageReader> it =
                     ImageIO.getImageReadersByFormatName("TIFF");
             while (it.hasNext()) {
                 final ImageReader reader = it.next();
-                if (reader.getClass().getName().equals(TIFFImageReader.getPreferredIIOImplementations()[0])) {
+                if (reader.getClass().getName().equals(preferredImpl)) {
                     try (ImageInputStream wrapper = new MemoryCacheImageInputStream(
                             new ByteArrayInputStream(exif, 6, exif.length - 6))) {
                         reader.setInput(wrapper, true, false);

@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 
@@ -16,13 +17,44 @@ public class BMPImageReaderTest extends AbstractImageReaderTest {
         return reader;
     }
 
-    /* preferredIIOImplementations() */
+    /* getApplicationPreferredIIOImplementations() */
 
     @Test
-    public void testPreferredIIOImplementations() {
-        String[] impls = ((BMPImageReader) instance).preferredIIOImplementations();
+    public void testGetApplicationPreferredIIOImplementations() {
+        String[] impls = ((BMPImageReader) instance).
+                getApplicationPreferredIIOImplementations();
         assertEquals(1, impls.length);
         assertEquals("com.sun.imageio.plugins.bmp.BMPImageReader", impls[0]);
+    }
+
+    /* getPreferredIIOImplementations() */
+
+    @Test
+    public void testGetPreferredIIOImplementationsWithUserPreference() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(BMPImageReader.IMAGEIO_PLUGIN_CONFIG_KEY, "cats");
+
+        String userImpl = ((AbstractIIOImageReader) instance).
+                getUserPreferredIIOImplementation();
+        String[] appImpls = ((AbstractIIOImageReader) instance).
+                getApplicationPreferredIIOImplementations();
+
+        String[] expected = new String[appImpls.length + 1];
+        expected[0] = userImpl;
+        System.arraycopy(appImpls, 0, expected, 1, appImpls.length);
+
+        assertArrayEquals(expected,
+                ((AbstractIIOImageReader) instance).getPreferredIIOImplementations());
+    }
+
+    /* getUserPreferredIIOImplementation() */
+
+    @Test
+    public void testGetUserPreferredIIOImplementation() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(BMPImageReader.IMAGEIO_PLUGIN_CONFIG_KEY, "cats");
+        assertEquals("cats",
+                ((BMPImageReader) instance).getUserPreferredIIOImplementation());
     }
 
 }

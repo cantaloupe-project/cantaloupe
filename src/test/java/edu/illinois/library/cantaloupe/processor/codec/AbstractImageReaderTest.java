@@ -1,11 +1,9 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.Compression;
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.Orientation;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -20,9 +18,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 abstract class AbstractImageReaderTest extends BaseTest {
 
@@ -63,6 +59,14 @@ abstract class AbstractImageReaderTest extends BaseTest {
     @Test
     public void testGetNumResolutions() throws Exception {
         assertEquals(1, instance.getNumResolutions());
+    }
+
+    @Test
+    public void testGetPreferredIIOImplementationsWithNoUserPreference() {
+        String[] impls = ((AbstractIIOImageReader) instance).
+                getPreferredIIOImplementations();
+        assertArrayEquals(((AbstractIIOImageReader) instance).
+                getApplicationPreferredIIOImplementations(), impls);
     }
 
     @Test

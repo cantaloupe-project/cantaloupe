@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -34,7 +33,60 @@ import static org.junit.Assert.*;
  * JFIF file with embedded EXIF info, thus all EXIF JPEGs are noncompliant and
  * JPEGImageReader won't read them.
  */
-public class JPEGImageWriterTest extends BaseTest {
+public class JPEGImageWriterTest extends AbstractImageWriterTest {
+
+    @Override
+    JPEGImageWriter newInstance() {
+        OperationList opList = new OperationList();
+        if (Configuration.getInstance().
+                getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
+            opList.add(new MetadataCopy());
+        }
+        opList.add(new Encode(Format.JPG));
+
+        JPEGImageWriter writer = new JPEGImageWriter();
+        writer.setOperationList(opList);
+        return writer;
+    }
+
+    /* getApplicationPreferredIIOImplementations() */
+
+    @Test
+    public void testGetApplicationPreferredIIOImplementations() {
+        String[] impls = ((JPEGImageWriter) instance).getApplicationPreferredIIOImplementations();
+        assertEquals(1, impls.length);
+        assertEquals("com.sun.imageio.plugins.jpeg.JPEGImageWriter", impls[0]);
+    }
+
+    /* getPreferredIIOImplementations() */
+
+    @Test
+    public void testGetPreferredIIOImplementationsWithUserPreference() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(JPEGImageWriter.IMAGEIO_PLUGIN_CONFIG_KEY, "cats");
+
+        String userImpl = ((JPEGImageWriter) instance).getUserPreferredIIOImplementation();
+        String[] appImpls = ((JPEGImageWriter) instance).getApplicationPreferredIIOImplementations();
+
+        String[] expected = new String[appImpls.length + 1];
+        expected[0] = userImpl;
+        System.arraycopy(appImpls, 0, expected, 1, appImpls.length);
+
+        assertArrayEquals(expected,
+                ((JPEGImageWriter) instance).getPreferredIIOImplementations());
+    }
+
+    /* getUserPreferredIIOImplementation() */
+
+    @Test
+    public void testGetUserPreferredIIOImplementation() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(JPEGImageWriter.IMAGEIO_PLUGIN_CONFIG_KEY, "cats");
+        assertEquals("cats",
+                ((JPEGImageWriter) instance).getUserPreferredIIOImplementation());
+    }
+
+    /* write() */
 
     @Test
     public void testWriteWithBufferedImage() throws Exception {
@@ -45,7 +97,8 @@ public class JPEGImageWriterTest extends BaseTest {
             final BufferedImage image = reader.read();
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            getWriter(metadata).write(image, os);
+            instance.setMetadata(metadata);
+            instance.write(image, os);
             os.close();
             ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
         } finally {
@@ -66,7 +119,8 @@ public class JPEGImageWriterTest extends BaseTest {
             final BufferedImage image = reader.read();
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            getWriter(metadata).write(image, os);
+            instance.setMetadata(metadata);
+            instance.write(image, os);
             os.close();
             checkForExifMetadata(os.toByteArray());
         } finally {
@@ -87,7 +141,8 @@ public class JPEGImageWriterTest extends BaseTest {
             final BufferedImage image = reader.read();
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            getWriter(metadata).write(image, os);
+            instance.setMetadata(metadata);
+            instance.write(image, os);
             os.close();
             checkForIptcMetadata(os.toByteArray());
         } finally {
@@ -108,7 +163,8 @@ public class JPEGImageWriterTest extends BaseTest {
             final BufferedImage image = reader.read();
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            getWriter(metadata).write(image, os);
+            instance.setMetadata(metadata);
+            instance.write(image, os);
             os.close();
             checkForXmpMetadata(os.toByteArray());
         } finally {
@@ -126,7 +182,8 @@ public class JPEGImageWriterTest extends BaseTest {
                     reader.readRendered());
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            getWriter(metadata).write(image, os);
+            instance.setMetadata(metadata);
+            instance.write(image, os);
             os.close();
             ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
         } finally {
@@ -148,7 +205,8 @@ public class JPEGImageWriterTest extends BaseTest {
                     reader.readRendered());
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            getWriter(metadata).write(image, os);
+            instance.setMetadata(metadata);
+            instance.write(image, os);
             os.close();
             checkForExifMetadata(os.toByteArray());
         } finally {
@@ -170,7 +228,8 @@ public class JPEGImageWriterTest extends BaseTest {
                     reader.readRendered());
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            getWriter(metadata).write(image, os);
+            instance.setMetadata(metadata);
+            instance.write(image, os);
             os.close();
             checkForIptcMetadata(os.toByteArray());
         } finally {
@@ -192,7 +251,8 @@ public class JPEGImageWriterTest extends BaseTest {
                     reader.readRendered());
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            getWriter(metadata).write(image, os);
+            instance.setMetadata(metadata);
+            instance.write(image, os);
             os.close();
             checkForXmpMetadata(os.toByteArray());
         } finally {
@@ -280,29 +340,17 @@ public class JPEGImageWriterTest extends BaseTest {
     }
 
     private ImageReader getIIOReader() {
+        final String preferredImpl =
+                new JPEGImageReader().getPreferredIIOImplementations()[0];
         final Iterator<ImageReader> readers =
                 ImageIO.getImageReadersByFormatName("JPEG");
         while (readers.hasNext()) {
             ImageReader reader = readers.next();
-            if (reader.getClass().getName().equals(JPEGImageReader.getPreferredIIOImplementations()[0])) {
+            if (reader.getClass().getName().equals(preferredImpl)) {
                 return reader;
             }
         }
         return null;
-    }
-
-    private JPEGImageWriter getWriter(Metadata metadata) {
-        OperationList opList = new OperationList();
-        if (Configuration.getInstance().
-                getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
-            opList.add(new MetadataCopy());
-        }
-        opList.add(new Encode(Format.JPG));
-
-        JPEGImageWriter writer = new JPEGImageWriter();
-        writer.setOperationList(opList);
-        writer.setMetadata(metadata);
-        return writer;
     }
 
 }

@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.pdmodel.DefaultResourceCache;
@@ -51,7 +52,8 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     private Path sourceFile;
     private StreamSource streamSource;
 
-    private void closeResources() {
+    @Override
+    public void close() {
         IOUtils.closeQuietly(docInputStream);
         docInputStream = null;
         IOUtils.closeQuietly(doc);
@@ -81,6 +83,8 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
 
     private void loadDocument() throws IOException {
         if (doc == null) {
+            final Stopwatch watch = new Stopwatch();
+
             if (sourceFile != null) {
                 doc = PDDocument.load(sourceFile.toFile());
             } else {
@@ -96,6 +100,8 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                     // no-op
                 }
             });
+
+            LOGGER.debug("Loaded document in {}", watch);
         }
     }
 
@@ -135,6 +141,8 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                     outputStream);
         } catch (IOException | IndexOutOfBoundsException e) {
             throw new ProcessorException(e.getMessage(), e);
+        } finally {
+            close();
         }
     }
 
@@ -173,15 +181,12 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     private BufferedImage readImage(int pageIndex,
                                     float dpi) throws IOException {
         LOGGER.debug("DPI: {}", dpi);
-        try {
-            loadDocument();
-            // If the given page index is out of bounds, the renderer will
-            // throw an IndexOutOfBoundsException.
-            PDFRenderer renderer = new PDFRenderer(doc);
-            return renderer.renderImageWithDPI(pageIndex, dpi);
-        } finally {
-            closeResources();
-        }
+
+        loadDocument();
+        // If the given page index is out of bounds, the renderer will
+        // throw an IndexOutOfBoundsException.
+        PDFRenderer renderer = new PDFRenderer(doc);
+        return renderer.renderImageWithDPI(pageIndex, dpi);
     }
 
     @Override
@@ -256,7 +261,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                                     "Page number is out-of-bounds.");
                         }
                     } catch (IOException e) {
-                        closeResources();
+                        close();
                         throw new ProcessorException(e.getMessage(), e);
                     }
                 } else {

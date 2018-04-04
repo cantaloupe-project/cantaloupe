@@ -1,10 +1,11 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import org.slf4j.Logger;
@@ -36,6 +37,9 @@ final class JPEGImageReader extends AbstractIIOImageReader
     private static final Logger LOGGER =
             LoggerFactory.getLogger(JPEGImageReader.class);
 
+    static final String IMAGEIO_PLUGIN_CONFIG_KEY =
+            "processor.imageio.jpg.reader";
+
     /**
      * N.B.: This file must exist in the resource bundle.
      */
@@ -52,7 +56,8 @@ final class JPEGImageReader extends AbstractIIOImageReader
         }
     }
 
-    static String[] getPreferredIIOImplementations() {
+    @Override
+    String[] getApplicationPreferredIIOImplementations() {
         return new String[] { "com.sun.imageio.plugins.jpeg.JPEGImageReader" };
     }
 
@@ -79,8 +84,9 @@ final class JPEGImageReader extends AbstractIIOImageReader
     }
 
     @Override
-    String[] preferredIIOImplementations() {
-        return getPreferredIIOImplementations();
+    String getUserPreferredIIOImplementation() {
+        Configuration config = Configuration.getInstance();
+        return config.getString(IMAGEIO_PLUGIN_CONFIG_KEY);
     }
 
     /**

@@ -390,7 +390,7 @@ public class ImageAPIResourceTester {
                 "BasicLookupStrategy");
         config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                 appServerHost + ":" + appServerPort + "/");
-        config.setProperty("processor.jp2", "KakaduProcessor");
+        config.setProperty("processor.jp2", "KakaduDemoProcessor");
         config.setProperty(Key.PROCESSOR_FALLBACK, "KakaduProcessor");
 
         assertStatus(500, uri);

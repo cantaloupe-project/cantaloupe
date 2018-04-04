@@ -42,9 +42,20 @@ public class ImageInfoFactoryTest extends BaseTest {
                 imageUri, processor, processor.readImageInfo(), null);
     }
 
+    @Override
+    public void tearDown() throws Exception {
+        try {
+            super.tearDown();
+        } finally {
+            processor.close();
+        }
+    }
+
     private void setUpForRotatedImage() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_RESPECT_ORIENTATION, true);
+
+        processor.close();
 
         processor = new ProcessorFactory().newProcessor(Format.JPG);
         ((FileProcessor) processor).setSourceFile(

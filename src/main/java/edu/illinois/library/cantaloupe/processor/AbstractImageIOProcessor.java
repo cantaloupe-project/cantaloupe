@@ -4,7 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.Orientation;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
@@ -48,6 +48,13 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
             map.put(format, ImageWriterFactory.supportedFormats());
         }
         return map;
+    }
+
+    public void close() {
+        if (reader != null) {
+            reader.dispose();
+        }
+        reader = null;
     }
 
     public Set<Format> getAvailableOutputFormats() {
@@ -132,22 +139,15 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
     }
 
     public void setSourceFile(Path sourceFile) {
-        disposeReader();
+        close();
         this.streamSource = null;
         this.sourceFile = sourceFile;
     }
 
     public void setStreamSource(StreamSource streamSource) {
-        disposeReader();
+        close();
         this.sourceFile = null;
         this.streamSource = streamSource;
-    }
-
-    private void disposeReader() {
-        if (reader != null) {
-            reader.dispose();
-        }
-        reader = null;
     }
 
 }

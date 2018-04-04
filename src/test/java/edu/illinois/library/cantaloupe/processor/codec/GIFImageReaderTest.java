@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
@@ -18,16 +19,47 @@ public class GIFImageReaderTest extends AbstractImageReaderTest {
     }
 
     @Test
+    public void testGetApplicationPreferredIIOImplementations() {
+        String[] impls = ((GIFImageReader) instance).
+                getApplicationPreferredIIOImplementations();
+        assertEquals(1, impls.length);
+        assertEquals("com.sun.imageio.plugins.gif.GIFImageReader", impls[0]);
+    }
+
+    @Test
     @Override
     public void testGetCompression() throws IOException {
         assertEquals(Compression.LZW, instance.getCompression(0));
     }
 
+    /* getPreferredIIOImplementations() */
+
     @Test
-    public void testPreferredIIOImplementations() {
-        String[] impls = ((GIFImageReader) instance).preferredIIOImplementations();
-        assertEquals(1, impls.length);
-        assertEquals("com.sun.imageio.plugins.gif.GIFImageReader", impls[0]);
+    public void testGetPreferredIIOImplementationsWithUserPreference() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(GIFImageReader.IMAGEIO_PLUGIN_CONFIG_KEY, "cats");
+
+        String userImpl = ((AbstractIIOImageReader) instance).
+                getUserPreferredIIOImplementation();
+        String[] appImpls = ((AbstractIIOImageReader) instance).
+                getApplicationPreferredIIOImplementations();
+
+        String[] expected = new String[appImpls.length + 1];
+        expected[0] = userImpl;
+        System.arraycopy(appImpls, 0, expected, 1, appImpls.length);
+
+        assertArrayEquals(expected,
+                ((AbstractIIOImageReader) instance).getPreferredIIOImplementations());
+    }
+
+    /* getUserPreferredIIOImplementation() */
+
+    @Test
+    public void testGetUserPreferredIIOImplementation() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(GIFImageReader.IMAGEIO_PLUGIN_CONFIG_KEY, "cats");
+        assertEquals("cats",
+                ((GIFImageReader) instance).getUserPreferredIIOImplementation());
     }
 
     /* readSequence() */

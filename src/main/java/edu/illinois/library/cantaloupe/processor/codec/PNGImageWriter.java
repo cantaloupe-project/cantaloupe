@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
@@ -30,6 +31,9 @@ final class PNGImageWriter extends AbstractIIOImageWriter
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(PNGImageWriter.class);
+
+    static final String IMAGEIO_PLUGIN_CONFIG_KEY =
+            "processor.imageio.png.writer";
 
     /**
      * PNG doesn't (formally) support EXIF or IPTC, though it does support
@@ -87,13 +91,19 @@ final class PNGImageWriter extends AbstractIIOImageWriter
     }
 
     @Override
+    String[] getApplicationPreferredIIOImplementations() {
+        return new String[] { "com.sun.imageio.plugins.png.PNGImageWriter" };
+    }
+
+    @Override
     Logger getLogger() {
         return LOGGER;
     }
 
     @Override
-    String[] preferredIIOImplementations() {
-        return new String[] { "com.sun.imageio.plugins.png.PNGImageWriter" };
+    String getUserPreferredIIOImplementation() {
+        Configuration config = Configuration.getInstance();
+        return config.getString(IMAGEIO_PLUGIN_CONFIG_KEY);
     }
 
     /**

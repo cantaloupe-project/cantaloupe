@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
@@ -12,7 +13,6 @@ import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
@@ -41,7 +41,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * <p>Processor using the GraphicsMagick <code>gm</code> command-line tool.
+ * <p>Processor using the GraphicsMagick {@literal gm} command-line tool.
  * Tested with version 1.3.21; other versions may or may not work.</p>
  *
  * <p>Implementation notes:</p>
@@ -116,7 +116,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             final String commandString = String.join(" ", pb.command());
 
             try {
-                LOGGER.info("readFormats(): invoking {}", commandString);
+                LOGGER.debug("readFormats(): invoking {}", commandString);
                 final Process process = pb.start();
 
                 final InputStream processInputStream = process.getInputStream();
@@ -491,38 +491,40 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             final ProcessStarter cmd = new ProcessStarter();
             cmd.setInputProvider(new Pipe(inputStream, null));
             cmd.setOutputConsumer(consumer);
-            LOGGER.info("readImageInfo(): invoking {}",
-                    String.join(" ", args).replace("\n", ""));
+            final String cmdString = String.join(" ", args).replace("\n", "");
+            LOGGER.info("readImageInfo(): invoking {}", cmdString);
             cmd.run(args);
 
             final List<String> output = consumer.getOutput();
-            final int width = Integer.parseInt(output.get(0));
-            final int height = Integer.parseInt(output.get(1));
-            // GM is not tile-aware, so set the tile size to the full
-            // dimensions.
-            final Info info = Info.builder()
-                    .withSize(width, height)
-                    .withTileSize(width, height)
-                    .withFormat(getSourceFormat())
-                    .build();
-            // Do we have an EXIF orientation to deal with?
-            if (output.size() > 2) {
-                try {
-                    final int exifOrientation = Integer.parseInt(output.get(2));
-                    final Orientation orientation =
-                            Orientation.forEXIFOrientation(exifOrientation);
-                    info.getImages().get(0).setOrientation(orientation);
-                } catch (IllegalArgumentException e) {
-                    // whatever
+            if (!output.isEmpty()) {
+                final int width = Integer.parseInt(output.get(0));
+                final int height = Integer.parseInt(output.get(1));
+                // GM is not tile-aware, so set the tile size to the full
+                // dimensions.
+                final Info info = Info.builder()
+                        .withSize(width, height)
+                        .withTileSize(width, height)
+                        .withFormat(getSourceFormat())
+                        .build();
+                // Do we have an EXIF orientation to deal with?
+                if (output.size() > 2) {
+                    try {
+                        final int exifOrientation = Integer.parseInt(output.get(2));
+                        final Orientation orientation =
+                                Orientation.forEXIFOrientation(exifOrientation);
+                        info.getImages().get(0).setOrientation(orientation);
+                    } catch (IllegalArgumentException e) {
+                        // whatever
+                    }
                 }
+                return info;
             }
-            return info;
+            throw new IOException("readImageInfo(): nothing received on " +
+                    "stdout from command: " + cmdString);
+        } catch (IOException e) {
+            throw e;
         } catch (Exception e) {
-            if (e instanceof IOException) {
-                throw (IOException) e;
-            } else {
-                throw new IOException(e.getMessage(), e);
-            }
+            throw new IOException(e);
         }
     }
 

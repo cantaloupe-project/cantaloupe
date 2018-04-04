@@ -143,70 +143,77 @@ public class ImageResource extends IIIF2Resource {
             }
         }
 
-        // Obtain an instance of the processor assigned to that format.
+        // Obtain an instance of the processor assigned to that format. This
+        // must eventually be close()d, but we don't want to close it here
+        // unless there is an error.
         final Processor processor = new ProcessorFactory().
                 newProcessor(sourceFormat);
 
-        // Connect it to the resolver.
-        tempFileFuture = new ProcessorConnector().connect(
-                resolver, processor, identifier, sourceFormat);
-
-        final Info info = getOrReadInfo(ops.getIdentifier(), processor);
-        final Dimension fullSize = info.getSize();
-
-        getRequestContext().setOperationList(ops, fullSize);
-
-        StringRepresentation redirectingRep = checkRedirect();
-        if (redirectingRep != null) {
-            return redirectingRep;
-        }
-
-        checkAuthorization();
-
-        validateRequestedArea(ops, sourceFormat, info);
-
         try {
-            processor.validate(ops, fullSize);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalClientArgumentException(e.getMessage(), e);
-        }
+            // Connect it to the resolver.
+            tempFileFuture = new ProcessorConnector().connect(
+                    resolver, processor, identifier, sourceFormat);
 
-        final Dimension resultingSize = ops.getResultingSize(info.getSize());
-        validateSize(resultingSize, info.getOrientationSize());
+            final Info info = getOrReadInfo(ops.getIdentifier(), processor);
+            final Dimension fullSize = info.getSize();
 
-        try {
-            ops.applyNonEndpointMutations(info, getDelegateProxy());
-        } catch (IllegalStateException e) {
-            // applyNonEndpointMutations() will freeze the instance, and it
-            // may have already been called. That's fine.
-        }
+            getRequestContext().setOperationList(ops, fullSize);
 
-        // Find out whether the processor supports the source format by asking
-        // it whether it offers any output formats for it.
-        Set<Format> availableOutputFormats = processor.getAvailableOutputFormats();
-        if (!availableOutputFormats.isEmpty()) {
-            if (!availableOutputFormats.contains(ops.getOutputFormat())) {
-                Exception e = new UnsupportedOutputFormatException(
-                        processor, ops.getOutputFormat());
-                getLogger().warning(e.getMessage() + ": " + getReference());
-                throw e;
+            StringRepresentation redirectingRep = checkRedirect();
+            if (redirectingRep != null) {
+                return redirectingRep;
             }
-        } else {
-            throw new UnsupportedSourceFormatException(sourceFormat);
-        }
 
-        addLinkHeader(params);
-        commitCustomResponseHeaders();
-        return new ImageRepresentation(info, processor, ops, disposition,
-                isBypassingCache(), () -> {
-            if (tempFileFuture != null) {
-                Path tempFile = tempFileFuture.get();
-                if (tempFile != null) {
-                    Files.deleteIfExists(tempFile);
+            checkAuthorization();
+
+            validateRequestedArea(ops, sourceFormat, info);
+
+            try {
+                processor.validate(ops, fullSize);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalClientArgumentException(e.getMessage(), e);
+            }
+
+            final Dimension resultingSize = ops.getResultingSize(info.getSize());
+            validateSize(resultingSize, info.getOrientationSize());
+
+            try {
+                ops.applyNonEndpointMutations(info, getDelegateProxy());
+            } catch (IllegalStateException e) {
+                // applyNonEndpointMutations() will freeze the instance, and it
+                // may have already been called. That's fine.
+            }
+
+            // Find out whether the processor supports the source format by asking
+            // it whether it offers any output formats for it.
+            Set<Format> availableOutputFormats = processor.getAvailableOutputFormats();
+            if (!availableOutputFormats.isEmpty()) {
+                if (!availableOutputFormats.contains(ops.getOutputFormat())) {
+                    Exception e = new UnsupportedOutputFormatException(
+                            processor, ops.getOutputFormat());
+                    getLogger().warning(e.getMessage() + ": " + getReference());
+                    throw e;
                 }
+            } else {
+                throw new UnsupportedSourceFormatException(sourceFormat);
             }
-            return null;
-        });
+
+            addLinkHeader(params);
+            commitCustomResponseHeaders();
+            return new ImageRepresentation(info, processor, ops, disposition,
+                    isBypassingCache(), () -> {
+                if (tempFileFuture != null) {
+                    Path tempFile = tempFileFuture.get();
+                    if (tempFile != null) {
+                        Files.deleteIfExists(tempFile);
+                    }
+                }
+                return null;
+            });
+        } catch (Throwable t) {
+            processor.close();
+            throw t;
+        }
     }
 
     private void addLinkHeader(Parameters params) {

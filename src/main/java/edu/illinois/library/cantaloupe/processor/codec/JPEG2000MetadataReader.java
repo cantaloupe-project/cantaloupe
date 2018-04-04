@@ -241,8 +241,7 @@ final class JPEG2000MetadataReader {
     }
 
     private void checkSignature() throws IOException {
-        final byte[] bytes = new byte[JP2_SIGNATURE.length];
-        inputStream.read(bytes);
+        byte[] bytes = read(JP2_SIGNATURE.length);
 
         if (!Arrays.equals(JP2_SIGNATURE, bytes)) {
             String hexStr = DatatypeConverter.printHexBinary(bytes);
@@ -280,8 +279,7 @@ final class JPEG2000MetadataReader {
     }
 
     private int readSegmentLength() throws IOException {
-        byte[] bytes = new byte[2];
-        inputStream.read(bytes);
+        byte[] bytes = read(2);
         return ((bytes[0] & 0xff) << 8) | (bytes[1] & 0xff) - 2;
     }
 
@@ -294,8 +292,7 @@ final class JPEG2000MetadataReader {
         final int segmentLength = readSegmentLength();
 
         // Read the segment data.
-        byte[] bytes = new byte[segmentLength];
-        inputStream.read(bytes);
+        byte[] bytes = read(segmentLength);
 
         // Read the width (Xsiz).
         width = ((bytes[2] & 0xff) << 24) |
@@ -330,10 +327,7 @@ final class JPEG2000MetadataReader {
 
     private void readCODSegment() throws IOException {
         final int segmentLength = readSegmentLength();
-
-        // Read the segment data.
-        byte[] bytes = new byte[segmentLength];
-        inputStream.read(bytes);
+        byte[] bytes = read(segmentLength);
 
         // Read the number of decomposition levels (SPcod byte 0).
         numDecompositionLevels = bytes[5] & 0xff;
@@ -341,14 +335,21 @@ final class JPEG2000MetadataReader {
 
     private void readCOCSegment() throws IOException {
         final int segmentLength = readSegmentLength();
-
-        // Read the segment data.
-        byte[] bytes = new byte[segmentLength];
-        inputStream.read(bytes);
+        byte[] bytes = read(segmentLength);
 
         // Read the number of decomposition levels (SPcoc byte 0).
         // This overrides the same value in the COD segment.
         numDecompositionLevels = bytes[5] & 0xff;
+    }
+
+    private byte[] read(int length) throws IOException {
+        byte[] data = new byte[length];
+        int n, offset = 0;
+        while ((n = inputStream.read(
+                data, offset, data.length - offset)) < offset) {
+            offset += n;
+        }
+        return data;
     }
 
 }

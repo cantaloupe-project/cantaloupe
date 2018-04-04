@@ -116,72 +116,79 @@ public class ImageResource extends IIIF1Resource {
             }
         }
 
-        // Obtain an instance of the processor assigned to that format.
+        // Obtain an instance of the processor assigned to that format. This
+        // must eventually be close()d, but we don't want to close it here
+        // unless there is an error.
         final Processor processor = new ProcessorFactory().
                 newProcessor(sourceFormat);
 
-        // Connect it to the resolver.
-        Future<Path> tempFileFuture = new ProcessorConnector().connect(
-                resolver, processor, identifier, sourceFormat);
-
-        final Set<Format> availableOutputFormats =
-                processor.getAvailableOutputFormats();
-
-        final OperationList ops = getOperationList(availableOutputFormats);
-
-        final Disposition disposition = getRepresentationDisposition(
-                getReference().getQueryAsForm()
-                        .getFirstValue(RESPONSE_CONTENT_DISPOSITION_QUERY_ARG),
-                ops.getIdentifier(), ops.getOutputFormat());
-
-        final Info info = getOrReadInfo(identifier, processor);
-        final Dimension fullSize = info.getSize();
-
-        getRequestContext().setOperationList(ops, fullSize);
-
-        StringRepresentation redirectingRep = checkRedirect();
-        if (redirectingRep != null) {
-            return redirectingRep;
-        }
-
-        checkAuthorization();
-
-        validateRequestedArea(ops, sourceFormat, info);
-
         try {
-            processor.validate(ops, fullSize);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalClientArgumentException(e.getMessage(), e);
-        }
+            // Connect it to the resolver.
+            Future<Path> tempFileFuture = new ProcessorConnector().connect(
+                    resolver, processor, identifier, sourceFormat);
 
-        addLinkHeader(processor);
+            final Set<Format> availableOutputFormats =
+                    processor.getAvailableOutputFormats();
 
-        ops.applyNonEndpointMutations(info, getDelegateProxy());
+            final OperationList ops = getOperationList(availableOutputFormats);
 
-        // Find out whether the processor supports the source format by asking
-        // it whether it offers any output formats for it.
-        if (!availableOutputFormats.isEmpty()) {
-            if (!availableOutputFormats.contains(ops.getOutputFormat())) {
-                Exception e = new UnsupportedOutputFormatException(
-                        processor, ops.getOutputFormat());
-                getLogger().warning(e.getMessage() + ": " + getReference());
-                throw e;
+            final Disposition disposition = getRepresentationDisposition(
+                    getReference().getQueryAsForm()
+                            .getFirstValue(RESPONSE_CONTENT_DISPOSITION_QUERY_ARG),
+                    ops.getIdentifier(), ops.getOutputFormat());
+
+            final Info info = getOrReadInfo(identifier, processor);
+            final Dimension fullSize = info.getSize();
+
+            getRequestContext().setOperationList(ops, fullSize);
+
+            StringRepresentation redirectingRep = checkRedirect();
+            if (redirectingRep != null) {
+                return redirectingRep;
             }
-        } else {
-            throw new UnsupportedSourceFormatException(sourceFormat);
-        }
 
-        commitCustomResponseHeaders();
-        return new ImageRepresentation(info, processor, ops, disposition,
-                isBypassingCache(), () -> {
-            if (tempFileFuture != null) {
-                Path tempFile = tempFileFuture.get();
-                if (tempFile != null) {
-                    Files.deleteIfExists(tempFile);
+            checkAuthorization();
+
+            validateRequestedArea(ops, sourceFormat, info);
+
+            try {
+                processor.validate(ops, fullSize);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalClientArgumentException(e.getMessage(), e);
+            }
+
+            addLinkHeader(processor);
+
+            ops.applyNonEndpointMutations(info, getDelegateProxy());
+
+            // Find out whether the processor supports the source format by asking
+            // it whether it offers any output formats for it.
+            if (!availableOutputFormats.isEmpty()) {
+                if (!availableOutputFormats.contains(ops.getOutputFormat())) {
+                    Exception e = new UnsupportedOutputFormatException(
+                            processor, ops.getOutputFormat());
+                    getLogger().warning(e.getMessage() + ": " + getReference());
+                    throw e;
                 }
+            } else {
+                throw new UnsupportedSourceFormatException(sourceFormat);
             }
-            return null;
-        });
+
+            commitCustomResponseHeaders();
+            return new ImageRepresentation(info, processor, ops, disposition,
+                    isBypassingCache(), () -> {
+                if (tempFileFuture != null) {
+                    Path tempFile = tempFileFuture.get();
+                    if (tempFile != null) {
+                        Files.deleteIfExists(tempFile);
+                    }
+                }
+                return null;
+            });
+        } catch (Throwable t) {
+            processor.close();
+            throw t;
+        }
     }
 
     private void addLinkHeader(Processor processor) {

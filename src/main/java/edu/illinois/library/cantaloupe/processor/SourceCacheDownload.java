@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.cache.SourceCache;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,6 +15,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -27,17 +30,24 @@ final class SourceCacheDownload implements Future<Path> {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(SourceCacheDownload.class);
 
-    private static final int STREAM_BUFFER_SIZE = 16384;
+    /**
+     * Set of identifiers of images that are currently being downloaded in any
+     * thread. Used to avoid concurrent downloads.
+     */
+    private static final Set<Identifier> DOWNLOADING_IMAGES =
+            ConcurrentHashMap.newKeySet();
+
+    private static final int STREAM_BUFFER_SIZE = 32768;
 
     /**
      * Maximum number of a times a source image download will be attempted.
      */
     private static final short MAX_NUM_SOURCE_CACHE_RETRIEVAL_ATTEMPTS = 2;
 
-    private final CountDownLatch downloadLatch    = new CountDownLatch(1);
-    private final AtomicBoolean isCancelled       = new AtomicBoolean();
-    private final AtomicBoolean mayInterrupt      = new AtomicBoolean();
-    private final AtomicBoolean downloadAttempted = new AtomicBoolean();
+    private final CountDownLatch downloadLatch      = new CountDownLatch(1);
+    private final AtomicBoolean isCancelled         = new AtomicBoolean();
+    private final AtomicBoolean isDownloadAttempted = new AtomicBoolean();
+    private final AtomicBoolean mayInterrupt        = new AtomicBoolean();
     private StreamSource streamSource;
     private SourceCache sourceCache;
     private Identifier identifier;
@@ -51,7 +61,7 @@ final class SourceCacheDownload implements Future<Path> {
     }
 
     void downloadAsync() {
-        if (downloadAttempted.get()) {
+        if (isDownloadAttempted.get()) {
             return;
         }
         ThreadPool.getInstance().submit(() -> {
@@ -65,10 +75,10 @@ final class SourceCacheDownload implements Future<Path> {
     }
 
     void downloadSync() throws IOException {
-        if (downloadAttempted.get()) {
+        if (isDownloadAttempted.get()) {
             return;
         }
-        downloadAttempted.set(true);
+        isDownloadAttempted.set(true);
 
         boolean succeeded = false;
         short numAttempts = 0;
@@ -114,6 +124,26 @@ final class SourceCacheDownload implements Future<Path> {
     private void downloadToSourceCache(StreamSource streamSource,
                                        SourceCache sourceCache,
                                        Identifier identifier) throws IOException {
+        synchronized (DOWNLOADING_IMAGES) {
+            while (DOWNLOADING_IMAGES.contains(identifier)) {
+                try {
+                    LOGGER.debug("downloadToSourceCache(): waiting on {}...",
+                            identifier);
+                    DOWNLOADING_IMAGES.wait();
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+
+            if (sourceCache.getSourceImageFile(identifier) != null) {
+                return;
+            }
+
+            DOWNLOADING_IMAGES.add(identifier);
+        }
+
+        final Stopwatch watch = new Stopwatch();
+
         try (InputStream is = new BufferedInputStream(
                 streamSource.newInputStream(),
                 STREAM_BUFFER_SIZE);
@@ -135,6 +165,16 @@ final class SourceCacheDownload implements Future<Path> {
                     }
                     break;
                 }
+            }
+
+            LOGGER.debug("Downloaded {} to {} in {}",
+                    identifier,
+                    SourceCache.class.getSimpleName(),
+                    watch);
+        } finally {
+            DOWNLOADING_IMAGES.remove(identifier);
+            synchronized (DOWNLOADING_IMAGES) {
+                DOWNLOADING_IMAGES.notifyAll();
             }
         }
     }

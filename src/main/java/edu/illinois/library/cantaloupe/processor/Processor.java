@@ -23,11 +23,17 @@ import java.util.Set;
  * {@link StreamProcessor#setStreamSource}) before any other methods are
  * called.</p>
  */
-public interface Processor {
+public interface Processor extends AutoCloseable {
 
     /**
-     * @return Output formats available for the set source format, or an
-     *         empty set if none.
+     * Releases all resources used by the instance.
+     */
+    @Override
+    default void close() {}
+
+    /**
+     * @return Output formats available for the {@link #setSourceFormat(Format)
+     * set source format}, or an empty set if none.
      */
     Set<Format> getAvailableOutputFormats();
 

@@ -7,9 +7,9 @@ import java.awt.Dimension;
 import java.util.HashMap;
 import java.util.Map;
 
-class MockOverlay extends Overlay {
+public class MockOverlay extends Overlay {
 
-    MockOverlay() {
+    public MockOverlay() {
         super(Position.TOP_LEFT, 0);
     }
 

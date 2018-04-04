@@ -3,11 +3,11 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.Orientation;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
@@ -42,9 +42,11 @@ import java.util.Set;
  * {@link Java2dProcessor} and so common functionality has been extracted into
  * a base class.</p>
  *
+ * @deprecated Since version 4.0.
  * @see <a href="http://docs.oracle.com/cd/E19957-01/806-5413-10/806-5413-10.pdf">
  *     Programming in Java Advanced Imaging</a>
  */
+@Deprecated
 class JaiProcessor extends AbstractImageIOProcessor
         implements FileProcessor, StreamProcessor {
 

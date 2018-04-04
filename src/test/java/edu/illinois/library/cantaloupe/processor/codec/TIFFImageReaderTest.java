@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
@@ -17,6 +18,21 @@ public class TIFFImageReaderTest extends AbstractImageReaderTest {
         TIFFImageReader reader = new TIFFImageReader();
         reader.setSource(TestUtil.getImage("tif-rgb-3res-64x56x16-tiled-uncompressed.tif"));
         return reader;
+    }
+
+    /* getApplicationPreferredIIOImplementations() */
+
+    @Test
+    public void testGetApplicationPreferredIIOImplementations() {
+        String[] expected = new String[2];
+        expected[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.class.getName();
+        if (SystemUtils.getJavaMajorVersion() < 9) {
+            expected[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageReader";
+        } else {
+            expected[1] = "com.sun.imageio.plugins.tiff.TIFFImageReader";
+        }
+        assertArrayEquals(expected,
+                ((TIFFImageReader) instance).getApplicationPreferredIIOImplementations());
     }
 
     /* getCompression() */
@@ -81,26 +97,41 @@ public class TIFFImageReaderTest extends AbstractImageReaderTest {
         assertEquals(3, instance.getNumResolutions());
     }
 
+    /* getPreferredIIOImplementations() */
+
+    @Test
+    public void testGetPreferredIIOImplementationsWithUserPreference() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(TIFFImageReader.IMAGEIO_PLUGIN_CONFIG_KEY, "cats");
+
+        String userImpl = ((AbstractIIOImageReader) instance).
+                getUserPreferredIIOImplementation();
+        String[] appImpls = ((AbstractIIOImageReader) instance).
+                getApplicationPreferredIIOImplementations();
+
+        String[] expected = new String[appImpls.length + 1];
+        expected[0] = userImpl;
+        System.arraycopy(appImpls, 0, expected, 1, appImpls.length);
+
+        assertArrayEquals(expected,
+                ((AbstractIIOImageReader) instance).getPreferredIIOImplementations());
+    }
+
+    /* getUserPreferredIIOImplementation() */
+
+    @Test
+    public void testGetUserPreferredIIOImplementation() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(TIFFImageReader.IMAGEIO_PLUGIN_CONFIG_KEY, "cats");
+        assertEquals("cats",
+                ((TIFFImageReader) instance).getUserPreferredIIOImplementation());
+    }
+
     /* getTileSize() */
 
     @Test
     public void testGetTileSize() throws Exception {
         assertEquals(new Dimension(16, 16), instance.getTileSize(0));
-    }
-
-    /* preferredIIOImplementations() */
-
-    @Test
-    public void testPreferredIIOImplementations() {
-        String[] expected = new String[2];
-        expected[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.class.getName();
-        if (SystemUtils.getJavaMajorVersion() >= 9) {
-            expected[1] = "com.sun.imageio.plugins.tiff.TIFFImageReader";
-        } else {
-            expected[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageReader";
-        }
-        assertArrayEquals(expected,
-                ((TIFFImageReader) instance).preferredIIOImplementations());
     }
 
     @Test

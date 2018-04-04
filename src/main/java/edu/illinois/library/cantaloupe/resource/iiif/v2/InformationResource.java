@@ -122,17 +122,17 @@ public class InformationResource extends IIIF2Resource {
         }
 
         // Obtain an instance of the processor assigned to that format.
-        final Processor processor = new ProcessorFactory().newProcessor(format);
+        try (Processor processor = new ProcessorFactory().newProcessor(format)) {
+            // Connect it to the resolver.
+            tempFileFuture = new ProcessorConnector().connect(
+                    resolver, processor, identifier, format);
 
-        // Connect it to the resolver.
-        tempFileFuture = new ProcessorConnector().connect(
-                resolver, processor, identifier, format);
+            final Info info = getOrReadInfo(identifier, processor);
 
-        final Info info = getOrReadInfo(identifier, processor);
+            commitCustomResponseHeaders();
 
-        commitCustomResponseHeaders();
-
-        return newRepresentation(info, processor);
+            return newRepresentation(info, processor);
+        }
     }
 
     /**
@@ -142,7 +142,7 @@ public class InformationResource extends IIIF2Resource {
      */
     private String getImageURI() {
         return getPublicRootReference() + RestletApplication.IIIF_2_PATH + "/" +
-                Reference.encode(getPublicIdentifier());
+                getPublicIdentifier();
     }
 
     private MediaType getNegotiatedMediaType() {

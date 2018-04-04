@@ -16,6 +16,7 @@ title: Upgrading
     <ul>
       <li><code>AmazonS3Resolver.*</code> to <code>S3Resolver.*</code></li>
       <li><code>StreamProcessor.retrieval_strategy</code> to <code>processor.stream_retrieval_strategy</code></li>
+      <li><code>KakaduProcessor.path_to_binaries</code> to <code>KakaduDemoProcessor.path_to_binaries</code></li>
       <li><code>AmazonS3Cache.*</code> to <code>S3Cache.*</code></li>
     </ul>
   </li>
@@ -25,6 +26,7 @@ title: Upgrading
       <li><code>S3Resolver.BasicLookupStrategy.path_prefix</code></li>
       <li><code>S3Resolver.BasicLookupStrategy.path_suffix</code></li>
       <li><code>processor.fallback_retrieval_strategy</code></li>
+      <li><code>processor.imageio.*</code></li>
       <li><code>S3Cache.endpoint</code></li>
       <li><code>cache.server.source.ttl_seconds</code></li>
       <li><code>cache.server.derivative.ttl_seconds</code></li>
@@ -40,10 +42,10 @@ title: Upgrading
   </li>
   <li>Change any <code>AmazonS3Resolver</code> configuration values to <code>S3Resolver</code>.</li>
   <li>Change any <code>AmazonS3Cache</code> configuration values to <code>S3Cache</code>.</li>
-  <li>In the delegate script, rename the <code>AmazonS3Resolver</code> module to <code>S3Resolver</code>.</li>
-  <li>The delegate script architecture has changed. See the "Delegate Script" section of the user manual for migration info.</li>
-  <li>The <code>X-IIIF-ID</code> reverse proxy header is deprecated and will be removed in a future version. Use <code>X-Forwarded-ID</code> instead.</li>
+  <li>The delegate script architecture has changed, and the 3.x script is not compatible. See the "Delegate Script" section of the user manual for migration info.</li>
   <li>The deprecated <code>DELETE /cache/:identifier</code> HTTP API method has been removed. See the "Remote Management" section of the user manual for information about its successor.</li>
+  <li>Note that the <code>X-IIIF-ID</code> reverse proxy header is deprecated and will be removed in version 4. Use <code>X-Forwarded-ID</code> instead.</li>
+  <li>If you'd like to use the new KakaduNativeProcessor for non-commercial purposes, see the user manual for background and information on configuring it.</li>
 </ul>
 
 <h2>From 3.4 to 3.4.2</h2>

@@ -107,6 +107,8 @@ public class ApplicationContextListener implements ServletContextListener {
                 System.getProperty("java.vm.info"));
         LOGGER.info("Java home: {}",
                 System.getProperty("java.home"));
+        LOGGER.info("Java library path: {}",
+                System.getProperty("java.library.path"));
         LOGGER.info("{} available processor cores",
                 runtime.availableProcessors());
         LOGGER.info("Heap total: {}MB; max: {}MB",

@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
-import edu.illinois.library.cantaloupe.operation.Orientation;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.EXIFParentTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;

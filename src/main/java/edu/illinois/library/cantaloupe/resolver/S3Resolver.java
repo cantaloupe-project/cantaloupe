@@ -189,29 +189,17 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
 
     @Override
     public void checkAccess() throws IOException {
-        S3Object object = null;
         try {
-            object = getObject();
-        } finally {
-            if (object != null) {
-                object.close();
+            final AmazonS3 s3 = getClientInstance();
+            final ObjectInfo info = getObjectInfo();
+            s3.getObjectMetadata(info.getBucketName(), info.getKey());
+        } catch (AmazonS3Exception e) {
+            if (e.getStatusCode() == 404) {
+                throw new NoSuchFileException(e.getMessage());
+            } else {
+                throw new IOException(e);
             }
         }
-    }
-
-    /**
-     * N.B.: Either the returned instance, or the return value of
-     * {@link S3Object#getObjectContent()}, must be closed.
-     *
-     * @throws NoSuchFileException   if the object corresponding to {@link
-     *                               #identifier} does not exist.
-     * @throws AccessDeniedException if the object corresponding to {@link
-     *                               #identifier} is not readable.
-     * @throws IOException           if there is some other issue accessing the
-     *                               object.
-     */
-    private S3Object getObject() throws IOException {
-        return getObject(0);
     }
 
     /**

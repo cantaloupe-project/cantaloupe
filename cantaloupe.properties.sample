@@ -252,8 +252,8 @@ AzureStorageResolver.lookup_strategy = BasicLookupStrategy
 
 # Image processors to use for various source formats. Available values are
 # `Java2dProcessor`, `GraphicsMagickProcessor`, `ImageMagickProcessor`,
-# `KakaduProcessor`, `OpenJpegProcessor`, `JaiProcessor`, `PdfBoxProcessor`,
-# and `FfmpegProcessor`.
+# `KakaduDemoProcessor`, `KakaduNativeProcessor`, `OpenJpegProcessor`,
+# `JaiProcessor`, `PdfBoxProcessor`, and `FfmpegProcessor`.
 
 # These extension-specific definitions are optional.
 processor.avi = FfmpegProcessor
@@ -261,7 +261,7 @@ processor.bmp =
 processor.dcm = ImageMagickProcessor
 processor.flv = FfmpegProcessor
 processor.gif =
-processor.jp2 = OpenJpegProcessor
+processor.jp2 = KakaduNativeProcessor
 processor.jpg =
 processor.mov = FfmpegProcessor
 processor.mp4 = FfmpegProcessor
@@ -339,6 +339,22 @@ processor.jpg.quality = 80
 processor.tif.compression = LZW
 
 #----------------------------------------
+# ImageIO Plugin Preferences
+#----------------------------------------
+
+# These override the default plugins used by the application and should not
+# normally be changed.
+processor.imageio.bmp.reader =
+processor.imageio.gif.reader =
+processor.imageio.gif.writer =
+processor.imageio.jpg.reader =
+processor.imageio.jpg.writer =
+processor.imageio.png.reader =
+processor.imageio.png.writer =
+processor.imageio.tif.reader =
+processor.imageio.tif.writer =
+
+#----------------------------------------
 # FfmpegProcessor
 #----------------------------------------
 
@@ -363,12 +379,12 @@ GraphicsMagickProcessor.path_to_binaries =
 ImageMagickProcessor.path_to_binaries = /usr/local/bin
 
 #----------------------------------------
-# KakaduProcessor
+# KakaduDemoProcessor
 #----------------------------------------
 
 # Optional absolute path of the directory containing the Kakadu binaries.
 # Overrides the PATH.
-KakaduProcessor.path_to_binaries =
+KakaduDemoProcessor.path_to_binaries =
 
 #----------------------------------------
 # OpenJpegProcessor

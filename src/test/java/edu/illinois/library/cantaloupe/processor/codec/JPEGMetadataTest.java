@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
-import edu.illinois.library.cantaloupe.operation.Orientation;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.jena.rdf.model.Model;
@@ -28,7 +28,8 @@ public class JPEGMetadataTest extends BaseTest {
         while (it.hasNext()) {
             final ImageReader reader = it.next();
             String readerName = reader.getClass().getName();
-            String preferredName = JPEGImageReader.getPreferredIIOImplementations()[0];
+            String preferredName = new JPEGImageReader().
+                    getPreferredIIOImplementations()[0];
             if (readerName.equals(preferredName)) {
                 final Path srcFile = TestUtil.getImage(fixtureName);
                 try (ImageInputStream is = ImageIO.createImageInputStream(srcFile.toFile())) {

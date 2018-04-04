@@ -3,11 +3,9 @@ package edu.illinois.library.cantaloupe.processor.codec;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 import org.w3c.dom.Node;
@@ -26,7 +24,58 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
-public class PNGImageWriterTest extends BaseTest {
+public class PNGImageWriterTest extends AbstractImageWriterTest {
+
+    @Override
+    PNGImageWriter newInstance() {
+        OperationList opList = new OperationList(new Encode(Format.PNG));
+        if (Configuration.getInstance().
+                getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
+            opList.add(new MetadataCopy());
+        }
+        PNGImageWriter writer = new PNGImageWriter();
+        writer.setOperationList(opList);
+        return writer;
+    }
+
+    /* getApplicationPreferredIIOImplementations() */
+
+    @Test
+    public void testGetApplicationPreferredIIOImplementations() {
+        String[] impls = ((PNGImageWriter) instance).getApplicationPreferredIIOImplementations();
+        assertEquals(1, impls.length);
+        assertEquals("com.sun.imageio.plugins.png.PNGImageWriter", impls[0]);
+    }
+
+    /* getPreferredIIOImplementations() */
+
+    @Test
+    public void testGetPreferredIIOImplementationsWithUserPreference() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(PNGImageWriter.IMAGEIO_PLUGIN_CONFIG_KEY, "cats");
+
+        String userImpl = ((PNGImageWriter) instance).getUserPreferredIIOImplementation();
+        String[] appImpls = ((PNGImageWriter) instance).getApplicationPreferredIIOImplementations();
+
+        String[] expected = new String[appImpls.length + 1];
+        expected[0] = userImpl;
+        System.arraycopy(appImpls, 0, expected, 1, appImpls.length);
+
+        assertArrayEquals(expected,
+                ((PNGImageWriter) instance).getPreferredIIOImplementations());
+    }
+
+    /* getUserPreferredIIOImplementation() */
+
+    @Test
+    public void testGetUserPreferredIIOImplementation() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(PNGImageWriter.IMAGEIO_PLUGIN_CONFIG_KEY, "cats");
+        assertEquals("cats",
+                ((PNGImageWriter) instance).getUserPreferredIIOImplementation());
+    }
+
+    /* write() */
 
     @Test
     public void testWriteWithBufferedImage() throws Exception {
@@ -36,7 +85,8 @@ public class PNGImageWriterTest extends BaseTest {
         final BufferedImage image = reader.read();
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter(metadata).write(image, os);
+        instance.setMetadata(metadata);
+        instance.write(image, os);
         ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
     }
 
@@ -51,7 +101,10 @@ public class PNGImageWriterTest extends BaseTest {
         final BufferedImage image = reader.read();
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter(metadata).write(image, os);
+        instance.dispose();
+        instance = newInstance();
+        instance.setMetadata(metadata);
+        instance.write(image, os);
         checkForNativeMetadata(os.toByteArray());
     }
 
@@ -66,7 +119,10 @@ public class PNGImageWriterTest extends BaseTest {
         final BufferedImage image = reader.read();
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter(metadata).write(image, os);
+        instance.dispose();
+        instance = newInstance();
+        instance.setMetadata(metadata);
+        instance.write(image, os);
         checkForXMPMetadata(os.toByteArray());
     }
 
@@ -79,7 +135,8 @@ public class PNGImageWriterTest extends BaseTest {
                 PlanarImage.wrapRenderedImage(reader.readRendered());
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter(metadata).write(image, os);
+        instance.setMetadata(metadata);
+        instance.write(image, os);
         ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
     }
 
@@ -95,7 +152,10 @@ public class PNGImageWriterTest extends BaseTest {
                 PlanarImage.wrapRenderedImage(reader.readRendered());
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter(metadata).write(image, os);
+        instance.dispose();
+        instance = newInstance();
+        instance.setMetadata(metadata);
+        instance.write(image, os);
         checkForNativeMetadata(os.toByteArray());
     }
 
@@ -111,7 +171,10 @@ public class PNGImageWriterTest extends BaseTest {
                 PlanarImage.wrapRenderedImage(reader.readRendered());
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        getWriter(metadata).write(image, os);
+        instance.dispose();
+        instance = newInstance();
+        instance.setMetadata(metadata);
+        instance.write(image, os);
         checkForXMPMetadata(os.toByteArray());
     }
 
@@ -188,24 +251,14 @@ public class PNGImageWriterTest extends BaseTest {
         while (readers.hasNext()) {
             ImageReader reader = readers.next();
             String readerName = reader.getClass().getName();
-            String preferredName = PNGImageReader.getPreferredIIOImplementations()[0];
+            String preferredName = new PNGImageReader().
+                    getPreferredIIOImplementations()[0];
+
             if (readerName.equals(preferredName)) {
                 return reader;
             }
         }
         return null;
-    }
-
-    private PNGImageWriter getWriter(Metadata metadata) {
-        OperationList opList = new OperationList(new Encode(Format.PNG));
-        if (Configuration.getInstance().
-                getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
-            opList.add(new MetadataCopy());
-        }
-        PNGImageWriter writer = new PNGImageWriter();
-        writer.setOperationList(opList);
-        writer.setMetadata(metadata);
-        return writer;
     }
 
 }
