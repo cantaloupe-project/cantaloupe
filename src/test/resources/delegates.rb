@@ -1,3 +1,5 @@
+# This file is used by several different tests.
+
 require 'java'
 require 'uri'
 
@@ -5,7 +7,7 @@ class CustomDelegate
 
   attr_accessor :context
 
-  def redirect
+  def redirect(options = {})
     case context['identifier']
       when 'redirect.jpg'
         return {
@@ -16,7 +18,7 @@ class CustomDelegate
     nil
   end
 
-  def authorized?
+  def authorized?(options = {})
     case context['identifier']
       when 'forbidden.jpg'
         return false
@@ -25,7 +27,7 @@ class CustomDelegate
     end
   end
 
-  def extra_iiif2_information_response_keys
+  def extra_iiif2_information_response_keys(options = {})
     case context['identifier']
       when 'bogus'
         return nil
@@ -45,7 +47,7 @@ class CustomDelegate
     end
   end
 
-  def resolver
+  def resolver(options = {})
     case context['identifier']
       when 'http'
         return 'HttpResolver'
@@ -58,15 +60,15 @@ class CustomDelegate
     end
   end
 
-  def azurestorageresolver_blob_key
+  def azurestorageresolver_blob_key(options = {})
     context['identifier'] != 'missing' ? context['identifier'] : nil
   end
 
-  def filesystemresolver_pathname
+  def filesystemresolver_pathname(options = {})
     context['identifier'] != 'missing' ? context['identifier'] : nil
   end
 
-  def httpresolver_resource_info
+  def httpresolver_resource_info(options = {})
     identifier = context['identifier']
 
     ########################## DelegateProxyTest ############################
@@ -137,19 +139,19 @@ class CustomDelegate
     nil
   end
 
-  def jdbcresolver_database_identifier
+  def jdbcresolver_database_identifier(options = {})
     context['identifier']
   end
 
-  def jdbcresolver_media_type
+  def jdbcresolver_media_type(options = {})
     'SELECT media_type FROM items WHERE filename = ?'
   end
 
-  def jdbcresolver_lookup_sql
+  def jdbcresolver_lookup_sql(options = {})
     'SELECT image FROM items WHERE filename = ?'
   end
 
-  def s3resolver_object_info
+  def s3resolver_object_info(options = {})
     identifier = context['identifier']
 
     if identifier.start_with?('key:')
@@ -170,7 +172,7 @@ class CustomDelegate
     end
   end
 
-  def overlay
+  def overlay(options = {})
     case context['identifier']
       when 'image'
         return {
@@ -197,7 +199,7 @@ class CustomDelegate
     nil
   end
 
-  def redactions
+  def redactions(options = {})
     case context['identifier']
       when 'bogus'
         return nil
