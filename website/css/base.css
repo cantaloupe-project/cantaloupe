@@ -57,6 +57,11 @@ code {
   background-color: #f0f0f0;
   color: #606060; }
 
+.alert a {
+  color: white;
+  text-decoration: underline;
+}
+
 var {
   font-family: Menlo, Monaco, Consolas, monospace;
   font-size: 90% }

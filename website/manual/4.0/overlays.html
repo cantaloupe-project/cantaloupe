@@ -54,7 +54,7 @@ title: Overlays
 
 <p>Line breaks within the string (<code>\n</code>) are respected, enabling multi-line strings. Each line is auto-aligned to the edge of the image according to the <a href="#Positioning">overlay position</a>.</p>
 
-<p>Strings are guaranteed to never overflow outside of the image. When a string doesn't fit entirely inside at its specified font size, the image server will try to use the largest font size that fits, down to the configurable minimum allowed size. If none fit, the string won't be drawn.</p>
+<p>Strings are guaranteed to never overflow outside of the image. When a string doesn't fit entirely inside at its specified font size, the application will try to use the largest font size that fits, down to the configurable minimum allowed size. If none fit, the string won't be drawn.</p>
 
 <hr>
 
@@ -70,17 +70,19 @@ title: Overlays
 
 <p>Perhaps you want to apply an image overlay to some of your images, and to others, you want to apply a string overlay, or no overlay. Perhaps you want to control overlays based on the client's IP address or user agent. Or, perhaps you only want to apply overlays to JPEG output images, and not GIFs. Or, perhaps you don't want to apply an overlay to images that have been rotated. All of this is possible by writing just a few lines of code.</p>
 
-<p>With the <code>overlay()</code> delegate method, you can tell the image server whether to apply an overlay in response to a particular request, and what its properties should be. As an example:</p>
+<p>With the <code>overlay()</code> delegate method, you can tell the application whether to apply an overlay in response to a particular request, and what its properties should be. As an example:</p>
 
 {% highlight ruby %}
 class CustomDelegate
+
+  # If the resulting image is less than this many pixels on a side, don't
+  # apply an overlay.
+  MIN_SIZE_CUTOFF = 300
+
   def overlay(options = {})
-    # If the resulting image is less than this many pixels on a side, don't
-    # apply an overlay.
-    min_size_cutoff = 300
     resulting_size = context['resulting_size']
-    return nil if resulting_size['width'] < min_size_cutoff or
-        resulting_size['height'] < min_size_cutoff
+    return nil if resulting_size['width'] < MIN_SIZE_CUTOFF or
+        resulting_size['height'] < MIN_SIZE_CUTOFF
 
     # Don't render an overlay for clients on localhost.
     return nil if %w(127.0.0.1 ::1/128).include?(context['client_ip'])
@@ -166,7 +168,7 @@ end
 
 <h2 id="Implications for Zooming Viewers">Implications for Zooming Viewers</h2>
 
-<p>Zooming image viewers display a mosaic of cropped image tiles. When overlays are enabled, each tile will have one, which is bound to look strange. A couple of ways to work around this are:</p>
+<p>Zooming image viewers display a mosaic of cropped image tiles. When overlays are enabled, each tile will have an overlay. A couple of ways to work around this are:</p>
 
 <ul>
   <li>Set the <code>overlays.BasicStrategy.output_width_threshold</code> and <code>overlays.BasicStrategy.output_height_threshold</code> configuration options to values that are slightly larger than the tile size used by the image viewer. This will disable overlays for images the size of image viewer tiles, and enable them for anything larger. Bear in mind, though, that the tile size used by the viewer may differ depending on the source image, as the recommended tile sizes in <a href="endpoints.html">information responses</a> will vary on a per-image basis.</li>

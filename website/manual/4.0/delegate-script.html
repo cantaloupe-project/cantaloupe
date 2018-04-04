@@ -23,7 +23,7 @@ title: Delegate Script
 
 <p>The delegate script mechanism enables the use of custom code to customize the image server's behavior. It is designed for ease-of-use, with a simple interface and shallow learning curve. The language in which the code is written&mdash;Ruby&mdash;is easy to learn and work with, and usually, only a small amount of code is needed.</p>
 
-<p>Delegate methods are invoked by a JRuby interpreter bundled into the application. There is no need to install an external Ruby environment and no need to write Java or interact with the application's internal API, which is relatively complicated.</p>
+<p>Delegate methods are invoked by a JRuby interpreter bundled into the application. There is no need to install an external Ruby environment and no need to write Java or interact with the application's internal API.</p>
 
 <p>The JRuby interpreter is compatible with Ruby version 2.3.</p>
 
@@ -43,9 +43,9 @@ title: Delegate Script
 
 <h2 id="How It Works">How It Works</h2>
 
-<p>The delegate script is a file containing a delegate class written in Ruby. The class is instantiated per-request, early in the request cycle, and disposed of at the end of the request cycle. At various points in the request cycle, its methods are called by the application to obtain custom information to service the request.</p>
+<p>The delegate script is a file containing a delegate class written in Ruby. The class is instantiated per-request, early in the request cycle, and disposed of at the end of the request cycle. At various points in the request cycle, its methods are called by the application to obtain custom information needed to service the request.</p>
 
-<p>The methods do not receive any arguments. Instead, before any other methods are called, the image server will set the request context, which is a hash of request properties with perhaps some other helpful information mixed in. See the documentation of the <var>context</var> attribute (<code>attr_accessor :context</code>) in the sample delegate script file for information about the keys that may be present in the context hash.</p>
+<p>Before any other methods are called, the application will set the request context, which is a hash of request properties with perhaps some other helpful information mixed in. See the documentation of the <var>context</var> attribute (<code>attr_accessor :context</code>) in the sample delegate script file for information about the keys that may be present in the context hash.</p>
 
 <p>You can also use code like <code>context.each{ |k,v| puts "#{k}: #{v}" }</code> in any method to print the context to the console.</p>
 
@@ -69,7 +69,7 @@ title: Delegate Script
   <tr>
     <td>Arguments</td>
     <td>Provided to methods; methods can only see their arguments</td>
-    <td>Methods have no arguments and instead can access a request context hash containing a superset of all of the 3.x methods' arguments</td>
+    <td>Methods have no (or few) arguments and instead can access a request context hash containing a superset of all of the 3.x methods' arguments</td>
   </tr>
   <tr>
     <td>State</td>
@@ -96,7 +96,7 @@ title: Delegate Script
   </tr>
   <tr>
     <td rowspan="2"><code>Cantaloupe::authorized?</code></td>
-    <td><code>CustomDelegate.authorized?</code></td>
+    <td><code>CustomDelegate.authorized?()</code></td>
     <td rowspan="2">Method has been split into two.</td>
   </tr>
   <tr>
@@ -185,7 +185,7 @@ require 'mygem'
 
 <h2 id="Improving Efficiency">Improving Efficiency</h2>
 
-<p>Several delegate methods will be called over the course of a single request, so making them as efficient as possible will improve response times. A couple of techniques for improving efficiency are:</p>
+<p>Several delegate methods will be called over the course of a single request, and making them as efficient as possible will improve response times. A couple of techniques for improving efficiency are:</p>
 
 <h3 id="Sharing Information">Sharing Information</h3>
 
@@ -194,11 +194,11 @@ require 'mygem'
 {% highlight ruby %}
 class CustomDelegate
   def redirect(options = {})
-    # perform the expensive query and return the result
+    # perform an expensive query and return the result
   end
 
   def authorized?(options = {})
-    # perform the expensive query and return the result
+    # perform an expensive query and return the result
   end
 end
 {% endhighlight %}
@@ -228,19 +228,19 @@ end
 
 <h3 id="Caching">Caching</h3>
 
-<p>Since version 3.3, the <code>delegate_script.cache.enabled</code> option is available to cache the results of delegate method invocations. The cache is an in-memory least-recently-used (LRU) cache with infinite time-to-live and a maximum size auto-computed based on the maximum JVM heap size. When the limit is approached, the oldest invocations will be purged automatically.</p>
+<p>The <code>delegate_script.cache.enabled</code> option is available to cache the results of delegate method invocations. The cache is an in-memory least-recently-used (LRU) cache with infinite time-to-live and a maximum size auto-computed based on the maximum JVM heap size. When the limit is approached, the oldest invocations will be purged automatically.</p>
 
-<p>Since version 3.4, the invocation cache can also be purged manually using the <a href="remote-management.html#HTTP%20API">HTTP API</a>.</p>
+<p>The invocation cache can also be purged manually using the <a href="remote-management.html#HTTP%20API">HTTP API</a>.</p>
 
 <p>The cache is not persisted. It will be lost when the application is stopped.</p>
 
-<p>Cached invocations are <strong>not</strong> purged when the script file is auto-reloaded, such as in response to a change. If, while the application is running, you modify the script file in a way that would change a return value based on the same request context, you will need to either purge the invocation cache or restart.</p>
+<p>Cached invocations are <strong>not</strong> purged when the script file is auto-reloaded, such as in response to a change. If, while the application is running, you modify the script file in a way that would change a return value based on the same request context, you should either purge the invocation cache or restart.</p>
 
 <hr>
 
 <h2 id="Logging">Logging</h2>
 
-<p>Since version 3.4, delegate methods may access a logger that writes to the application log:</p>
+<p>Delegate methods may access a logger that writes to the application log:</p>
 
 {% highlight ruby %}
 require 'java'

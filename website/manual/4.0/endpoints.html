@@ -31,7 +31,7 @@ title: Endpoints
 
 <dl>
   <dt><code>sizes</code></dt>
-  <dd>An array of width/height pairs according to the formula <i>dimension * 1/2<sup>n</sup> &gt; <code>endpoint.iiif.min_size</code></i>. (It is possible to restrict access to only these sizes using the <code>endpoint.iiif.2.restrict_to_sizes</code> configuration option.)</dd>
+  <dd>An array of width/height pairs according to the formula <i>dimension * 1/2<sup>n</sup> &gt; <code>endpoint.iiif.min_size</code></i>. (To restrict access to only these sizes, use the <code>endpoint.iiif.2.restrict_to_sizes</code> configuration option.)</dd>
   <dt><code>tiles</code></dt>
   <dd>A list of tile sizes that will be relatively efficient to deliver, along with a list of scale factors at which each size is available.
     <ul>
@@ -81,6 +81,8 @@ end
 <hr>
 
 <h2 id="IIIFImageAPI1">IIIF Image API 1.x</h2>
+
+<div class="alert alert-warning">This endpoint is deprecated and will be removed in a future version. Begin migrating now to the <a href="#IIIFImageAPI2">Image API 2.x endpoint</a>.</div>
 
 <h3>Documentation</h3>
 

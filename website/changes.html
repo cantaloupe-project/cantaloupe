@@ -10,40 +10,39 @@ title: Change Log
 <ul>
   <li>Endpoints
     <ul>
-      <li>The IIIF Image API 1.x endpoint has been deprecated.</li>
-      <li>A new <code>X-Forwarded-ID</code> reverse proxy header replaces <code>X-IIIF-ID</code>, which has been deprecated, but is still available.</li>
+      <li>The IIIF Image API 1.x endpoint has been deprecated and will be removed in a future version.</li>
+      <li>A new <code>X-Forwarded-ID</code> reverse proxy header replaces <code>X-IIIF-ID</code>, which has been deprecated, and will be removed in a future version.</li>
       <li>Error response representations are in <code>text/plain</code> format in the absence of a client preference.</li>
     </ul>
   </li>
   <li>Resolvers
     <ul>
-      <li>AmazonS3Resolver has been renamed to S3Resolver, and supports non-AWS endpoints.</li>
+      <li>AmazonS3Resolver has been renamed to S3Resolver, and it now supports non-AWS endpoints.</li>
       <li>S3Resolver supports a configurable path prefix and suffix when using <code>BasicLookupStrategy</code>.</li>
       <li>AzureStorageResolver supports shared access signature (SAS) URIs. (Thanks to @ddisciascio)</li>
-      <li>Improved efficiency of source cache content access when <code>cache.server.resolve_first = false</code>.</li>
+      <li>Improved the efficiency of source cache content access when <code>cache.server.resolve_first = false</code>.</li>
       <li>HttpResolver, S3Resolver, AzureStorageResolver, and JdbcResolver fall back to checking the magic bytes in the source image data if they cannot infer a source format any other way.</li>
     </ul>
   </li>
   <li>Processors
     <ul>
-      <li>Added KakaduNativeProcessor, as well as precompiled Kakadu libraries which are free to use with it for non-commercial purposes.</li>
+      <li>Added KakaduNativeProcessor, as well as precompiled libraries for Linux, macOS, and Windows, which are free to use with it for non-commercial purposes.</li>
       <li>KakaduProcessor has been renamed KakaduDemoProcessor to reflect the fact that it interfaces with the Kakadu demo tool, <span class="filename">kdu_expand</span>, and not the native library.</li>
       <li>Added <code>DownloadStrategy</code> as another optional retrieval strategy for <code>StreamProcessor</code>s, and as an optional fallback strategy. This enables all processors to work with all resolvers with no extra configuration.</li>
       <li>JaiProcessor has been deprecated. See the user manual for more information.</li>
-      <li>KakaduDemoProcessor and OpenJpegProcessor work (though less efficiently) in Windows.</li>
-      <li>KakaduDemoProcessor and OpenJpegProcessor read image metadata natively, which is more efficient than using the respective <code>kdu_jp2info</code> and <code>opj_dump</code> tools, and enables them to read the DWT level count, which improves reliability when decoding images with less-common level counts.</li>
+      <li>KakaduDemoProcessor and OpenJpegProcessor work in Windows, though a little less efficiently than on other operating systems.</li>
+      <li>KakaduDemoProcessor and OpenJpegProcessor read image metadata using custom code, which is more efficient than using the respective <code>kdu_jp2info</code> and <code>opj_dump</code> tools, and enables them to read the number of decomposition levels, which improves reliability when decoding images with less-common level counts.</li>
       <li>ImageIO plugins can be selected on a per-format basis.</li>
       <li>Improved the efficiency of the Java 2D resample filters.</li>
       <li>Java2dProcessor supports animated GIFs.</li>
       <li>Java2dProcessor supports CMYK &amp; YCCK JPEGs.</li>
       <li>Worked around some behavior of the <code>opj_decompress</code> tool that could cause OpenJpegProcessor to break. (Thanks to @adam-vessey)</li>
       <li>Disabled support for GIF source images in JaiProcessor, as it was buggy and other processors can handle GIF better.</li>
-      <li>Removed support for DICOM from Java2dProcessor and JaiProcessor, for similar reasons as above.</li>
     </ul>
   </li>
   <li>Caching
     <ul>
-      <li>AmazonS3Cache has been renamed to S3Cache, and supports non-AWS endpoints.</li>
+      <li>AmazonS3Cache has been renamed to S3Cache, and it now supports non-AWS endpoints.</li>
       <li>The time-to-live of the source and derivative caches is independently configurable.</li>
       <li>The cache worker dumps the contents of HeapCache during its shifts, if both are enabled and if HeapCache persistence is also enabled.</li>
       <li>The cache worker's work interval specifies the amount of time between the end of one shift and the beginning of the next, rather between the start of one shift and the next.</li>
