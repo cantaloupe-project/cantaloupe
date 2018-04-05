@@ -84,7 +84,7 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
 
         @Override
         public String toString() {
-            return "" + getBucketName() + "/" + getKey();
+            return getBucketName() + "/" + getKey();
         }
 
     }
@@ -180,7 +180,7 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
             return s3.getObject(request);
         } catch (AmazonS3Exception e) {
             if (e.getErrorCode().equals("NoSuchKey")) {
-                throw new NoSuchFileException(e.getMessage());
+                throw new NoSuchFileException(info.toString());
             } else {
                 throw new IOException(e);
             }
@@ -189,13 +189,13 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
 
     @Override
     public void checkAccess() throws IOException {
+        final AmazonS3 s3 = getClientInstance();
+        final ObjectInfo info = getObjectInfo();
         try {
-            final AmazonS3 s3 = getClientInstance();
-            final ObjectInfo info = getObjectInfo();
             s3.getObjectMetadata(info.getBucketName(), info.getKey());
         } catch (AmazonS3Exception e) {
             if (e.getStatusCode() == 404) {
-                throw new NoSuchFileException(e.getMessage());
+                throw new NoSuchFileException(info.toString());
             } else {
                 throw new IOException(e);
             }
