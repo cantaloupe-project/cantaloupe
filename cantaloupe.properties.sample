@@ -95,7 +95,7 @@ endpoint.iiif.min_size = 64
 
 # Minimum size that will be used in info.json `tiles` keys. See the user
 # manual to learn how these are calculated.
-endpoint.iiif.min_tile_size = 1024
+endpoint.iiif.min_tile_size = 512
 
 # If true, requests for sizes other than those specified in an info.json
 # response will be denied.
