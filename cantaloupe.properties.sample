@@ -420,7 +420,7 @@ cache.server.source = FilesystemCache
 
 # Amount of time source cache content remains valid. Set to blank or 0
 # for forever.
-cache.server.source.ttl_seconds = 3600
+cache.server.source.ttl_seconds = 2592000
 
 # Enables the derivative (processed image) cache.
 cache.server.derivative.enabled = false
