@@ -102,7 +102,7 @@ public class JPEG2000MetadataReaderTest {
         Path file = TestUtil.getImage("jp2");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertEquals(4, instance.getNumDecompositionLevels());
+            assertEquals(5, instance.getNumDecompositionLevels());
         }
     }
 

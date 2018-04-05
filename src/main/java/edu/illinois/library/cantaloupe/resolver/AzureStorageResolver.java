@@ -10,9 +10,6 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.MediaType;
-import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
-import edu.illinois.library.cantaloupe.script.ScriptEngine;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -191,35 +188,31 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
             switch (strategy) {
                 case DELEGATE_SCRIPT:
                     try {
-                        objectKey = getObjectKeyWithDelegateStrategy();
-                    } catch (ScriptException | DelegateScriptDisabledException e) {
+                        return getObjectKeyWithDelegateStrategy();
+                    } catch (ScriptException e) {
                         LOGGER.error(e.getMessage(), e);
                         throw new IOException(e);
                     }
                 default:
-                    objectKey = identifier.toString();
+                    return identifier.toString();
             }
         }
         return objectKey;
     }
 
     /**
-     * @return
-     * @throws NoSuchFileException If the delegate script does not exist.
-     * @throws IOException
-     * @throws ScriptException If the delegate method throws an exception.
+     * @throws NoSuchFileException if the delegate script does not exist.
+     * @throws ScriptException     if the delegate method throws an exception.
      */
     private String getObjectKeyWithDelegateStrategy()
-            throws IOException, ScriptException,
-            DelegateScriptDisabledException {
-        final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final Object result = engine.invoke(GET_KEY_DELEGATE_METHOD,
-                identifier.toString(), context.asMap());
-        if (result == null) {
+            throws NoSuchFileException, ScriptException {
+        final String key = getDelegateProxy().getAzureStorageResolverBlobKey();
+
+        if (key == null) {
             throw new NoSuchFileException(GET_KEY_DELEGATE_METHOD +
                     " returned nil for " + identifier);
         }
-        return (String) result;
+        return key;
     }
 
     @Override

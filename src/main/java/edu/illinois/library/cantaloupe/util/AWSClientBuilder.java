@@ -29,7 +29,7 @@ public final class AWSClientBuilder {
 
     private static final int DEFAULT_CLIENT_EXECUTION_TIMEOUT_MSEC = 10 * 60 * 1000;
     private static final long DEFAULT_CONNECTION_TTL_MSEC          = 30 * 60 * 1000;
-    private static final int  DEFAULT_MAX_CONNECTIONS              = 200;
+    private static final int DEFAULT_MAX_CONNECTIONS               = 200;
     private static final boolean DEFAULT_USE_TCP_KEEPALIVE         = true;
 
     private String accessKeyID;

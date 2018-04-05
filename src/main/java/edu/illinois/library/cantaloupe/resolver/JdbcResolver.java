@@ -5,15 +5,15 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.MediaType;
-import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
-import edu.illinois.library.cantaloupe.script.ScriptEngine;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.script.DelegateMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.NoSuchFileException;
@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * <p>Maps an identifier to a binary/BLOB field in a relational database.</p>
@@ -29,8 +30,23 @@ import java.sql.SQLException;
  * delegate methods must be implemented in order to obtain the information
  * needed to run the SQL queries.</p>
  *
- * <p>JDBC drivers are the client's responsibility. A JDBC driver is required
+ * <h1>JDBC Drivers</h1>
+ *
+ * <p>JDBC drivers are the user's responsibility. A JDBC driver is required
  * and not included.</p>
+ *
+ * <h1>Format Inference</h1>
+ *
+ * <ol>
+ *     <li>If the {@link DelegateMethod#JDBCRESOLVER_MEDIA_TYPE} method returns
+ *     either a media type, or a query that can be invoked to obtain a media
+ *     type, and that is successful, that format will be used.</li>
+ *     <li>If the source image's identifier has a recognized filename
+ *     extension, the format will be inferred from that.</li>
+ *     <li>Otherwise, a small range of data will be read from the beginning of
+ *     the resource, and an attempt will be made to infer a format from any
+ *     "magic bytes" it may contain.</li>
+ * </ol>
  */
 class JdbcResolver extends AbstractResolver implements StreamResolver {
 
@@ -63,30 +79,31 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
                     if (result.next()) {
                         return result.getBinaryStream(1);
                     } else {
-                        throw new IOException("Resource not found");
+                        throw new NoSuchFileException("Resource not found");
                     }
                 }
             } catch (SQLException e) {
-                throw new IOException(e.getMessage(), e);
+                throw new IOException(e);
             }
         }
 
     }
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(JdbcResolver.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(JdbcResolver.class);
 
-    private static final String GET_DATABASE_IDENTIFIER_DELEGATE_METHOD =
-            "JdbcResolver::get_database_identifier";
-    private static final String GET_LOOKUP_SQL_DELEGATE_METHOD =
-            "JdbcResolver::get_lookup_sql";
-    private static final String GET_MEDIA_TYPE_DELEGATE_METHOD =
-            "JdbcResolver::get_media_type";
+    /**
+     * Byte length of the range used to detect the source image format.
+     */
+    private static final int FORMAT_DETECTION_RANGE_LENGTH = 32;
 
+    /**
+     * Abstraction of a connection pool.
+     */
     private static HikariDataSource dataSource;
 
     /**
-     * @return Connection from the connection pool. Clients must close it.
+     * @return Connection from the pool. Clients must close it!
      */
     public static synchronized Connection getConnection() throws SQLException {
         if (dataSource == null) {
@@ -123,10 +140,6 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     public void checkAccess() throws IOException {
         try (Connection connection = getConnection()) {
             final String sql = getLookupSQL();
-            if (!sql.contains("?")) {
-                throw new IOException(GET_LOOKUP_SQL_DELEGATE_METHOD +
-                        " implementation does not support prepared statements");
-            }
 
             // Check that the image exists.
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -138,9 +151,8 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
                     }
                 }
             }
-        } catch (ScriptException | SQLException |
-                DelegateScriptDisabledException e) {
-            throw new IOException(e.getMessage(), e);
+        } catch (ScriptException | SQLException e) {
+            throw new IOException(e);
         }
     }
 
@@ -148,13 +160,10 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     public Format getSourceFormat() throws IOException {
         if (sourceFormat == null) {
             try {
-                // The JdbcResolver::get_media_type() delegate method may
-                // return a media type, or nil.
                 String methodResult = getMediaType();
-                MediaType mediaType = null;
                 if (methodResult != null) {
-                    // the function result may be a media type, or an SQL
-                    // statement to look it up.
+                    // the delegate method result may be a media type, or an
+                    // SQL statement to look it up.
                     if (methodResult.toUpperCase().startsWith("SELECT")) {
                         LOGGER.debug(methodResult);
                         try (Connection connection = getConnection();
@@ -163,74 +172,109 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
                             statement.setString(1, getDatabaseIdentifier());
                             try (ResultSet resultSet = statement.executeQuery()) {
                                 if (resultSet.next()) {
-                                    mediaType = new MediaType(resultSet.getString(1));
+                                    String value = resultSet.getString(1);
+                                    if (value != null) {
+                                        sourceFormat =
+                                                new MediaType(value).toFormat();
+                                    }
                                 }
                             }
                         }
                     } else {
-                        mediaType = new MediaType(methodResult);
+                        sourceFormat = new MediaType(methodResult).toFormat();
                     }
-                } else {
-                    mediaType = Format.inferFormat(identifier).
-                            getPreferredMediaType();
                 }
-                if (mediaType != null) {
-                    sourceFormat = mediaType.toFormat();
-                } else {
-                    sourceFormat = Format.UNKNOWN;
+                // If we don't have a media type yet, attempt to infer one
+                // from the identifier.
+                if (sourceFormat == null || Format.UNKNOWN.equals(sourceFormat)) {
+                    sourceFormat = Format.inferFormat(identifier);
                 }
-            } catch (ScriptException | SQLException |
-                    DelegateScriptDisabledException e) {
-                throw new IOException(e.getMessage(), e);
+                // If we still don't have a media type, attempt to detect it
+                // from the blob contents.
+                if (sourceFormat == null || Format.UNKNOWN.equals(sourceFormat)) {
+                    detectFormat();
+                }
+            } catch (ScriptException | SQLException e) {
+                throw new IOException(e);
             }
         }
         return sourceFormat;
     }
 
     /**
-     * @return Result of the {@link #GET_DATABASE_IDENTIFIER_DELEGATE_METHOD}
+     * Reads the first few bytes of a blob and attempts to detect its type,
+     * saving the result in {@link #sourceFormat}. If unsuccessful, {@link
+     * Format#UNKNOWN} will be set.
+     */
+    private void detectFormat() throws IOException {
+        try (Connection connection = getConnection()) {
+            final String sql = getLookupSQL();
+
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, getDatabaseIdentifier());
+                LOGGER.debug(sql);
+                try (ResultSet result = statement.executeQuery()) {
+                    if (result.next()) {
+                        try (InputStream blobStream =
+                                     new BufferedInputStream(result.getBinaryStream(1),
+                                             FORMAT_DETECTION_RANGE_LENGTH)) {
+                            byte[] headerBytes =
+                                    new byte[FORMAT_DETECTION_RANGE_LENGTH];
+                            blobStream.read(headerBytes);
+
+                            InputStream headerBytesStream =
+                                    new ByteArrayInputStream(headerBytes);
+                            List<MediaType> types =
+                                    MediaType.detectMediaTypes(headerBytesStream);
+                            sourceFormat = types.isEmpty() ?
+                                    Format.UNKNOWN : types.get(0).toFormat();
+                        }
+                    } else {
+                        sourceFormat = Format.UNKNOWN;
+                    }
+                }
+            }
+        } catch (ScriptException | SQLException e) {
+            throw new IOException(e);
+        }
+    }
+
+    /**
+     * @return Result of the {@link
+     *         DelegateMethod#JDBCRESOLVER_DATABASE_IDENTIFIER} method.
+     */
+    String getDatabaseIdentifier() throws ScriptException {
+        return getDelegateProxy().getJdbcResolverDatabaseIdentifier();
+    }
+
+    /**
+     * @return Result of the {@link DelegateMethod#JDBCRESOLVER_LOOKUP_SQL}
      *         method.
      */
-    String getDatabaseIdentifier() throws IOException,
-            ScriptException, DelegateScriptDisabledException {
-        final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final Object result = engine.invoke(
-                GET_DATABASE_IDENTIFIER_DELEGATE_METHOD,
-                identifier.toString(), context.asMap());
-        return (String) result;
-    }
+    String getLookupSQL() throws IOException, ScriptException {
+        final String sql = getDelegateProxy().getJdbcResolverLookupSQL();
 
-    /**
-     * @return Result of the {@link #GET_LOOKUP_SQL_DELEGATE_METHOD} method.
-     */
-    String getLookupSQL() throws IOException, ScriptException,
-            DelegateScriptDisabledException {
-        final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final Object result = engine.invoke(GET_LOOKUP_SQL_DELEGATE_METHOD);
-        final String resultStr = (String) result;
-        if (!resultStr.contains("?")) {
-            throw new IOException(GET_LOOKUP_SQL_DELEGATE_METHOD +
+        if (!sql.contains("?")) {
+            throw new IOException(DelegateMethod.JDBCRESOLVER_LOOKUP_SQL +
                     " implementation does not support prepared statements");
         }
-        return resultStr;
+        return sql;
     }
 
     /**
-     * @return Result of the {@link #GET_MEDIA_TYPE_DELEGATE_METHOD} method.
+     * @return Result of the {@link DelegateMethod#JDBCRESOLVER_MEDIA_TYPE}
+     *         method.
      */
-    String getMediaType() throws IOException, ScriptException,
-            DelegateScriptDisabledException {
-        final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final Object result = engine.invoke(GET_MEDIA_TYPE_DELEGATE_METHOD);
-        return (String) result;
+    String getMediaType() throws ScriptException {
+        return getDelegateProxy().getJdbcResolverMediaType();
     }
 
     @Override
     public StreamSource newStreamSource() throws IOException {
         try {
             return new JdbcStreamSource(getLookupSQL(), getDatabaseIdentifier());
-        } catch (ScriptException | DelegateScriptDisabledException e) {
-            throw new IOException(e.getMessage(), e);
+        } catch (ScriptException e) {
+            throw new IOException(e);
         }
     }
 

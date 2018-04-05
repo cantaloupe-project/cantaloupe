@@ -8,15 +8,13 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.logging.LoggerUtil;
 import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
-import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import java.awt.GraphicsEnvironment;
-import java.io.FileNotFoundException;
 
 import static edu.illinois.library.cantaloupe.StandaloneEntry.LIST_FONTS_VM_ARGUMENT;
 import static edu.illinois.library.cantaloupe.StandaloneEntry.exitUnlessTesting;
@@ -67,17 +65,8 @@ public class ApplicationContextListener implements ServletContextListener {
         // Start the configuration file watcher.
         config.startWatching();
 
-        // Start the delegate script file watcher.
-        try {
-            ScriptEngineFactory.getScriptEngine().startWatching();
-        } catch (DelegateScriptDisabledException e) {
-            LOGGER.debug(e.getMessage());
-        } catch (FileNotFoundException e) {
-            LOGGER.error("contextInitialized(): file not found: {}",
-                    e.getMessage());
-        } catch (Exception e) {
-            LOGGER.error("contextInitialized(): {}", e.getMessage());
-        }
+        // Start the delegate script file watcher, if necessary.
+        DelegateProxyService.getInstance().startWatching();
 
         // Start the cache worker, if necessary.
         if (config.getBoolean(Key.CACHE_WORKER_ENABLED, false)) {
@@ -96,15 +85,7 @@ public class ApplicationContextListener implements ServletContextListener {
         Configuration.getInstance().stopWatching();
 
         // Stop the delegate script file watcher.
-        try {
-            ScriptEngineFactory.getScriptEngine().stopWatching();
-        } catch (DelegateScriptDisabledException e) {
-            LOGGER.debug("contextDestroyed(): {}", e.getMessage());
-        } catch (FileNotFoundException e) {
-            LOGGER.error("contextDestroyed(): file not found: {}", e.getMessage());
-        } catch (Exception e) {
-            LOGGER.error("contextDestroyed(): {}", e.getMessage());
-        }
+        DelegateProxyService.getInstance().stopWatching();
 
         // Shut down all caches.
         CacheFactory.shutdownCaches();

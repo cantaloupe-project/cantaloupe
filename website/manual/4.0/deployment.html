@@ -47,26 +47,26 @@ title: Deployment
 
 <h3 id="HardwareCPU">CPU</h3>
 
-<p>Cantaloupe uses a thread-per-request model, and maintains its own thread pool to carry out certain tasks asynchronously and spread work across processors. Response times will benefit from multiple fast cores, especially as traffic increases.</p>
+<p>Cantaloupe uses a thread-per-request model, and maintains its own thread pool to carry out certain tasks asynchronously and spread work across processors. Response times will benefit from multiple fast cores.</p>
 
-<p>Some source formats are more processor-intensive than others. JPEG2000 via <a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a>, for example, will demand much more processing power than uncompressed TIFF via <a href="processors.html#Java2dProcessor">Java2dProcessor</a>.</p>
+<p>Some source formats are more processor-intensive than others. JPEG2000 via <a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a>, for example, will demand much more from a CPU than uncompressed TIFF via <a href="processors.html#Java2dProcessor">Java2dProcessor</a>.</p>
 
 <h3 id="HardwareMemory">Memory</h3>
 
-<p>Memory requirements will vary greatly depending on the <a href="processors.html">processors</a> used, source format, source image size, request image size, and request frequency. Image formats that don't support tiling or that can't be selectively decoded will require more memory to process (see <a href="#Images">Images</a>). The application will log an <code>ERROR</code>-level message when it runs out of memory.</p>
+<p>Memory requirements will vary greatly depending on the <a href="processors.html">processors</a> used, source format, source image size, request image size, and request frequency. Image formats that don't support tiling or that can't be selectively decoded will require more memory to process (see <a href="#Images">Images</a>). The application will log an <code>ERROR</code>-level message if it runs out of memory.</p>
 
-<p>As a Java application, the application runs "sandboxed" inside a Java Virtual Machine (JVM), and can only use the memory the JVM makes available to it. The main area of memory of concern inside the JVM is called the heap, and its size characteristics must be configured at startup using arguments to the <code>java</code> command. The two most important characteristics are:</p>
+<p>As a Java application, the application runs "sandboxed" inside a Java Virtual Machine (JVM), and can only use the memory the JVM makes available to it. The main area of memory of concern inside the JVM is called the heap, and its size characteristics must be configured at startup using arguments to the <code>java</code> command. The two most important are:</p>
 
 <dl>
   <dt><code>-Xms</code></dt>
-  <dd>Initial heap size. The heap may grow beyond this up to the maximum size, with perhaps a performance penalty during expansions.</dd>
+  <dd>Initial heap size. The heap may grow beyond this up to the maximum size, with perhaps a performance penalty during "growth spurts."</dd>
   <dt><code>-Xmx</code></dt>
   <dd>Maximum heap size.</dd>
 </dl>
 
-<p>The commands in the <a href="getting-started.html">Getting Started</a> section specify a relatively small maximum heap size, and a production server is likely to need larger.</p>
+<p>The commands in the <a href="getting-started.html">Getting Started</a> section specify a relatively small maximum heap size, and a production server may need larger.</p>
 
-<p>Operating system utilities like <code>top</code>, Task Manager, Activity Monitor, etc. can show you what a process looks like as the OS sees it, but they don't show what's happening inside a process. In contrast, a tool like <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/management/jconsole.html">JConsole</a>, included in the Java Development Kit (JDK), can show you what memory usage looks like inside a running JVM.</p>
+<p>Operating system utilities like <code>top</code>, Task Manager, Activity Monitor, etc. can show you what a process looks like as the OS sees it, but they don't show what's happening inside a process. A tool like <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/management/jconsole.html">JConsole</a>, included in the Java Development Kit (JDK), can show you what memory usage looks like inside a running JVM.</p>
 
 <figure>
   <img src="images/jconsole.png" class="img img-responsive" alt="JConsole screenshot">
@@ -83,7 +83,7 @@ title: Deployment
 
 <h2 id="Caching">Caching</h2>
 
-<p>See the <a href="caching.html">Caching</a> section for information about the built-in caching options, which can dramatically improve performance. When using <a href="caching.html#Automatic%20Maintenance">automatic maintenance</a> in a cluster, consider enabling it on only one node.</p>
+<p>See the <a href="caching.html">Caching</a> section for information about the built-in caching options, which can dramatically improve performance. When using <a href="caching.html#Maintenance">automatic maintenance</a> in a cluster, consider enabling it on only one node.</p>
 
 <hr>
 
@@ -91,7 +91,7 @@ title: Deployment
 
 <p>A <code>max_pixels</code> configuration option is available to limit the maximum returned size of processed images. This is a "safety net" to prevent clients from bogging down the server. It does not affect requests for full-sized unmodified images, which do not significantly load the server because they are streamed through with no processing.</p>
 
-<p>Note that the <code><a href="access-control.html#Authorization">authorized?</a></code> delegate script method can perform the same function as <code>max_pixels</code>, with more granular control.</p>
+<p>Note that the <code><a href="access-control.html#Authorization">authorized?</a></code> delegate method can perform the same function as <code>max_pixels</code>, with more granular control.</p>
 
 <hr>
 

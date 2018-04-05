@@ -238,6 +238,10 @@ class S3Cache implements DerivativeCache {
                 Instant.EPOCH;
     }
 
+    private static boolean isValid(ObjectMetadata metadata) {
+        return isValid(metadata.getLastModified());
+    }
+
     private static boolean isValid(S3ObjectSummary summary) {
         return isValid(summary.getLastModified());
     }
@@ -292,7 +296,6 @@ class S3Cache implements DerivativeCache {
         final String objectKey = getObjectKey(opList);
         LOGGER.info("newDerivativeImageInputStream(): bucket: {}; key: {}",
                 bucketName, objectKey);
-
         try {
             GetObjectRequest request = new GetObjectRequest(bucketName, objectKey);
             request.setModifiedSinceConstraint(getEarliestValidDate());

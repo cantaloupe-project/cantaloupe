@@ -31,7 +31,7 @@ public class JPEG2000ImageReaderTest extends AbstractImageReaderTest {
     @Test
     @Override
     public void testGetNumResolutions() throws Exception {
-        assertEquals(5, instance.getNumResolutions());
+        assertEquals(6, instance.getNumResolutions());
     }
 
     @Test

@@ -77,7 +77,7 @@ public class InformationResource extends IIIF2Resource {
                         final Processor processor = new ProcessorFactory().
                                 newProcessor(format);
                         commitCustomResponseHeaders();
-                        return newRepresentation(identifier, info, processor);
+                        return newRepresentation(info, processor);
                     }
                 }
             } catch (IOException e) {
@@ -86,8 +86,8 @@ public class InformationResource extends IIIF2Resource {
             }
         }
 
-        final Resolver resolver = new ResolverFactory().
-                newResolver(identifier, getRequestContext());
+        final Resolver resolver = new ResolverFactory().newResolver(
+                identifier, getDelegateProxy());
 
         // If we are resolving first, or if the source image is not present in
         // the source cache (if enabled), check access to it in preparation for
@@ -130,7 +130,8 @@ public class InformationResource extends IIIF2Resource {
             final Info info = getOrReadInfo(identifier, processor);
 
             commitCustomResponseHeaders();
-            return newRepresentation(identifier, info, processor);
+
+            return newRepresentation(info, processor);
         }
     }
 
@@ -159,17 +160,11 @@ public class InformationResource extends IIIF2Resource {
         return mediaType;
     }
 
-    private boolean isResolvingFirst() {
-        return Configuration.getInstance().
-                getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true);
-    }
-
-    private Representation newRepresentation(Identifier identifier,
-                                             Info info,
+    private Representation newRepresentation(Info info,
                                              Processor processor) {
         final ImageInfo<String, Object> imageInfo =
                 new ImageInfoFactory().newImageInfo(
-                        identifier, getImageURI(), processor, info);
+                        getImageURI(), processor, info, getDelegateProxy());
         final MediaType mediaType = getNegotiatedMediaType();
         return new JSONRepresentation(imageInfo, mediaType, () -> {
             if (tempFileFuture != null) {
@@ -180,6 +175,11 @@ public class InformationResource extends IIIF2Resource {
             }
             return null;
         });
+    }
+
+    private boolean isResolvingFirst() {
+        return Configuration.getInstance().
+                getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true);
     }
 
 }

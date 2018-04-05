@@ -151,7 +151,8 @@ public class AdminResource extends AbstractAdminResource {
         if (selectionStrategy.equals(ResolverFactory.SelectionStrategy.STATIC)) {
             try {
                 Resolver resolver = new ResolverFactory().newResolver(
-                        new Identifier("irrelevant"), getRequestContext());
+                        new Identifier("irrelevant"),
+                        getDelegateProxy());
                 vars.put("currentResolver", new ObjectProxy(resolver));
             } catch (Exception e) {
                 // nothing we can do

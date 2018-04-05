@@ -615,7 +615,7 @@ abstract class AbstractProcessorTest extends BaseTest {
                         // else assert 1.
                         int expectedNumResolutions = 1;
                         if (fixture.getFileName().toString().equals("jp2")) {
-                            expectedNumResolutions = 5;
+                            expectedNumResolutions = 6;
                         } else {
                             Pattern pattern = Pattern.compile("\\dres");
                             Matcher matcher = pattern.matcher(fixture.getFileName().toString());

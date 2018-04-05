@@ -5,9 +5,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MediaType;
-import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
-import edu.illinois.library.cantaloupe.script.ScriptEngine;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.script.DelegateMethod;
 import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,9 +68,6 @@ class FilesystemResolver extends AbstractResolver
     private static final Logger LOGGER = LoggerFactory.
             getLogger(FilesystemResolver.class);
 
-    private static final String GET_PATHNAME_DELEGATE_METHOD =
-            "FilesystemResolver::get_pathname";
-
     private static final String UNIX_PATH_SEPARATOR = "/";
     private static final String WINDOWS_PATH_SEPARATOR = "\\";
 
@@ -107,9 +102,6 @@ class FilesystemResolver extends AbstractResolver
                 case DELEGATE_SCRIPT:
                     try {
                         path = getPathWithScriptStrategy();
-                    } catch (DelegateScriptDisabledException e) {
-                        LOGGER.error(e.getMessage());
-                        throw new IOException(e);
                     } catch (ScriptException e) {
                         LOGGER.error(e.getMessage(), e);
                         throw new IOException(e);
@@ -137,24 +129,21 @@ class FilesystemResolver extends AbstractResolver
     /**
      * @return Pathname of the file corresponding to the identifier passed to
      *         {@link #setIdentifier(Identifier)}.
-     * @throws NoSuchFileException If the delegate method indicated that there
-     *                               is no file corresponding to the given
-     *                               identifier.
-     * @throws IOException
-     * @throws ScriptException If the method invocation failed.
-     * @throws DelegateScriptDisabledException If the delegate script is
-     *                                         disabled.
+     * @throws NoSuchFileException if the delegate method indicated that there
+     *                             is no file corresponding to the given
+     *                             identifier.
+     * @throws ScriptException     if the method invocation failed.
      */
-    private Path getPathWithScriptStrategy() throws IOException,
-            ScriptException, DelegateScriptDisabledException {
-        final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final Object result = engine.invoke(GET_PATHNAME_DELEGATE_METHOD,
-                identifier.toString(), context.asMap());
-        if (result == null) {
-            throw new NoSuchFileException(GET_PATHNAME_DELEGATE_METHOD +
+    private Path getPathWithScriptStrategy() throws NoSuchFileException,
+            ScriptException {
+        String pathname = getDelegateProxy().getFilesystemResolverPathname();
+
+        if (pathname == null) {
+            throw new NoSuchFileException(
+                    DelegateMethod.FILESYSTEMRESOLVER_PATHMAME +
                     " returned nil for " + identifier);
         }
-        return Paths.get((String) result);
+        return Paths.get(pathname);
     }
 
     @Override

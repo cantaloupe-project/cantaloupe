@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.resolver;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.resource.RequestContext;
+import edu.illinois.library.cantaloupe.script.DelegateProxy;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
@@ -16,7 +16,7 @@ import java.nio.file.NoSuchFileException;
  *
  * <ol>
  *     <li>{@link #setIdentifier(Identifier)} and
- *     {@link #setContext(RequestContext)} (in either order)</li>
+ *     {@link #setDelegateProxy(DelegateProxy)} (in either order)</li>
  *     <li>{@link #checkAccess()}</li>
  *     <li>Any other methods</li>
  *     <li>{@link #shutdown()}</li>
@@ -51,9 +51,9 @@ public interface Resolver {
     void setIdentifier(Identifier identifier);
 
     /**
-     * @param context The context for the resolver. Passed to delegate method.
+     * @param proxy Delegate proxy for the current request.
      */
-    void setContext(RequestContext context);
+    void setDelegateProxy(DelegateProxy proxy);
 
     /**
      * <p>Shuts down the instance and any of its shared resource handles,

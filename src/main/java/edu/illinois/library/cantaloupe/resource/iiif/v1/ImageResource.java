@@ -81,8 +81,8 @@ public class ImageResource extends IIIF1Resource {
             }
         }
 
-        final Resolver resolver = new ResolverFactory().
-                newResolver(identifier, getRequestContext());
+        final Resolver resolver = new ResolverFactory().newResolver(
+                identifier, getDelegateProxy());
 
         // If we are resolving first, or if the source image is not present in
         // the source cache (if enabled), check access to it in preparation for
@@ -140,10 +140,14 @@ public class ImageResource extends IIIF1Resource {
             final Info info = getOrReadInfo(identifier, processor);
             final Dimension fullSize = info.getSize();
 
-            StringRepresentation redirectingRep = checkAuthorization(ops, fullSize);
+            getRequestContext().setOperationList(ops, fullSize);
+
+            StringRepresentation redirectingRep = checkRedirect();
             if (redirectingRep != null) {
                 return redirectingRep;
             }
+
+            checkAuthorization();
 
             validateRequestedArea(ops, sourceFormat, info);
 
@@ -155,11 +159,7 @@ public class ImageResource extends IIIF1Resource {
 
             addLinkHeader(processor);
 
-            ops.applyNonEndpointMutations(info,
-                    getCanonicalClientIPAddress(),
-                    getReference().toUri(),
-                    getRequest().getHeaders().getValuesMap(),
-                    getCookies().getValuesMap());
+            ops.applyNonEndpointMutations(info, getDelegateProxy());
 
             // Find out whether the processor supports the source format by asking
             // it whether it offers any output formats for it.

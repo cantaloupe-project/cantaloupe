@@ -7,9 +7,8 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MediaType;
-import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
-import edu.illinois.library.cantaloupe.script.ScriptEngine;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.script.DelegateMethod;
+import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpClientTransport;
 import org.eclipse.jetty.client.api.AuthenticationStore;
@@ -175,9 +174,6 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
      * Byte length of the range used to infer the source image format.
      */
     private static final int FORMAT_INFERENCE_RANGE_LENGTH = 32;
-
-    private static final String GET_URL_DELEGATE_METHOD =
-            "HttpResolver::get_url";
 
     private static HttpClient jettyClient;
 
@@ -429,35 +425,29 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     }
 
     /**
-     * @throws NoSuchFileException  If the remote resource was not found.
-     * @throws URISyntaxException   If {@link #GET_URL_DELEGATE_METHOD}
-     *                              returns an invalid URI.
-     * @throws IOException
-     * @throws ScriptException      If the delegate method throws an exception.
-     * @throws DelegateScriptDisabledException
+     * @throws NoSuchFileException if the remote resource was not found.
+     * @throws URISyntaxException  if {@link
+     *                             DelegateMethod#HTTPRESOLVER_RESOURCE_INFO}
+     *                             returns an invalid URI.
+     * @throws ScriptException     if the delegate method throws an exception.
      */
     private ResourceInfo getResourceInfoUsingScriptStrategy()
-            throws URISyntaxException, IOException, ScriptException,
-            DelegateScriptDisabledException {
-        final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final Object result = engine.invoke(GET_URL_DELEGATE_METHOD,
-                identifier.toString(), context.asMap());
-        if (result == null) {
-            throw new NoSuchFileException(GET_URL_DELEGATE_METHOD +
+            throws URISyntaxException, NoSuchFileException, ScriptException {
+        final DelegateProxy proxy = getDelegateProxy();
+
+        final Map<String, String> infoProps =
+                proxy.getHttpResolverResourceInfo();
+
+        if (infoProps.isEmpty()) {
+            throw new NoSuchFileException(
+                    DelegateMethod.HTTPRESOLVER_RESOURCE_INFO +
                     " returned nil for " + identifier);
         }
-        // The return value may be a string URI, or a hash with "uri",
-        // "username", and "secret" keys.
-        if (result instanceof String) {
-            return new ResourceInfo(new URI((String) result));
-        } else {
-            @SuppressWarnings("unchecked")
-            final Map<String,String> info = (Map<String,String>) result;
-            final String uri = info.get("uri");
-            final String username = info.get("username");
-            final String secret = info.get("secret");
-            return new ResourceInfo(new URI(uri), username, secret);
-        }
+
+        final String uri = infoProps.get("uri");
+        final String username = infoProps.get("username");
+        final String secret = infoProps.get("secret");
+        return new ResourceInfo(new URI(uri), username, secret);
     }
 
     @Override

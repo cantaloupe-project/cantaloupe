@@ -112,6 +112,9 @@ public final class MediaType {
      *                                  type.
      */
     public MediaType(String mediaType) {
+        if (mediaType == null || mediaType.isEmpty()) {
+            throw new IllegalArgumentException("Null or empty argument");
+        }
         String[] parts = StringUtils.split(mediaType, "/");
         if (parts.length == 2) {
             type = parts[0];

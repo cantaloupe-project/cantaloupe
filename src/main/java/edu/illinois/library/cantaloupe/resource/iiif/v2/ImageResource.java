@@ -80,11 +80,7 @@ public class ImageResource extends IIIF2Resource {
         if (!isResolvingFirst()) {
             final Info info = cacheFacade.getInfo(identifier);
             if (info != null) {
-                ops.applyNonEndpointMutations(info,
-                        getCanonicalClientIPAddress(),
-                        getReference().toUri(),
-                        getRequest().getHeaders().getValuesMap(),
-                        getCookies().getValuesMap());
+                ops.applyNonEndpointMutations(info, getDelegateProxy());
 
                 InputStream cacheStream = null;
                 try {
@@ -98,6 +94,7 @@ public class ImageResource extends IIIF2Resource {
                 if (cacheStream != null) {
                     addLinkHeader(params);
                     commitCustomResponseHeaders();
+
                     return new CachedImageRepresentation(
                             cacheStream,
                             params.getOutputFormat().getPreferredMediaType(),
@@ -111,8 +108,8 @@ public class ImageResource extends IIIF2Resource {
             }
         }
 
-        final Resolver resolver = new ResolverFactory().
-                newResolver(identifier, getRequestContext());
+        final Resolver resolver = new ResolverFactory().newResolver(
+                identifier, getDelegateProxy());
 
         // If we are resolving first, or if the source image is not present in
         // the source cache (if enabled), check access to it in preparation for
@@ -160,10 +157,14 @@ public class ImageResource extends IIIF2Resource {
             final Info info = getOrReadInfo(ops.getIdentifier(), processor);
             final Dimension fullSize = info.getSize();
 
-            StringRepresentation redirectingRep = checkAuthorization(ops, fullSize);
+            getRequestContext().setOperationList(ops, fullSize);
+
+            StringRepresentation redirectingRep = checkRedirect();
             if (redirectingRep != null) {
                 return redirectingRep;
             }
+
+            checkAuthorization();
 
             validateRequestedArea(ops, sourceFormat, info);
 
@@ -173,33 +174,11 @@ public class ImageResource extends IIIF2Resource {
                 throw new IllegalClientArgumentException(e.getMessage(), e);
             }
 
-            if (config.getBoolean(Key.IIIF_2_RESTRICT_TO_SIZES, false)) {
-                final ImageInfo<String, Object> imageInfo =
-                        new ImageInfoFactory().newImageInfo(
-                                identifier, null, processor, info);
-                final Dimension resultingSize = ops.getResultingSize(fullSize);
-                boolean ok = false;
-                @SuppressWarnings("unchecked")
-                List<ImageInfo.Size> sizes =
-                        (List<ImageInfo.Size>) imageInfo.get("sizes");
-                for (ImageInfo.Size size : sizes) {
-                    if (size.width == resultingSize.width &&
-                            size.height == resultingSize.height) {
-                        ok = true;
-                        break;
-                    }
-                }
-                if (!ok) {
-                    throw new SizeRestrictedException();
-                }
-            }
+            final Dimension resultingSize = ops.getResultingSize(info.getSize());
+            validateSize(resultingSize, info.getOrientationSize());
 
             try {
-                ops.applyNonEndpointMutations(info,
-                        getCanonicalClientIPAddress(),
-                        getReference().toUri(),
-                        getRequest().getHeaders().getValuesMap(),
-                        getCookies().getValuesMap());
+                ops.applyNonEndpointMutations(info, getDelegateProxy());
             } catch (IllegalStateException e) {
                 // applyNonEndpointMutations() will freeze the instance, and it
                 // may have already been called. That's fine.
@@ -246,6 +225,27 @@ public class ImageResource extends IIIF2Resource {
                 String.format("<%s%s/%s>;rel=\"canonical\"",
                 getPublicRootReference(),
                 RestletApplication.IIIF_2_PATH, paramsStr));
+    }
+
+    private void validateSize(Dimension resultingSize, Dimension virtualSize) {
+        final Configuration config = Configuration.getInstance();
+
+        if (config.getBoolean(Key.IIIF_2_RESTRICT_TO_SIZES, false)) {
+            final List<ImageInfo.Size> sizes =
+                    new ImageInfoFactory().getSizes(virtualSize);
+
+            boolean ok = false;
+            for (ImageInfo.Size size : sizes) {
+                if (size.width == resultingSize.width &&
+                        size.height == resultingSize.height) {
+                    ok = true;
+                    break;
+                }
+            }
+            if (!ok) {
+                throw new SizeRestrictedException();
+            }
+        }
     }
 
     private boolean isResolvingFirst() {

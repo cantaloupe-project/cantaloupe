@@ -18,7 +18,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
-import edu.illinois.library.cantaloupe.resource.RequestContext;
+import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
 
@@ -281,7 +281,7 @@ public class ImageAPIResourceTester {
         public void setIdentifier(Identifier identifier) {}
 
         @Override
-        public void setContext(RequestContext context) {}
+        public void setDelegateProxy(DelegateProxy proxy) {}
 
     }
 
@@ -339,7 +339,7 @@ public class ImageAPIResourceTester {
         public void setIdentifier(Identifier identifier) {}
 
         @Override
-        public void setContext(RequestContext context) {}
+        public void setDelegateProxy(DelegateProxy proxy) {}
 
     }
 

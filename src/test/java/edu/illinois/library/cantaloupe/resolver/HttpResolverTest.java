@@ -6,6 +6,8 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
+import edu.illinois.library.cantaloupe.script.DelegateProxy;
+import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import org.eclipse.jetty.server.Request;
@@ -46,6 +48,12 @@ abstract class HttpResolverTest extends AbstractResolverTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
+
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
+                TestUtil.getFixture("delegates.rb"));
+
         instance = newInstance();
     }
 
@@ -72,10 +80,8 @@ abstract class HttpResolverTest extends AbstractResolverTest {
 
     @Override
     HttpResolver newInstance() {
-        RequestContext context = new RequestContext();
         HttpResolver instance = new HttpResolver();
         instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
-        instance.setContext(context);
         return instance;
     }
 
@@ -137,7 +143,13 @@ abstract class HttpResolverTest extends AbstractResolverTest {
             throws Exception {
         server.start();
 
+        RequestContext context = new RequestContext();
+        context.setIdentifier(identifier);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
+
         instance.checkAccess();
     }
 
@@ -156,6 +168,12 @@ abstract class HttpResolverTest extends AbstractResolverTest {
             });
             server.start();
 
+            RequestContext context = new RequestContext();
+            context.setIdentifier(identifier);
+            DelegateProxyService service = DelegateProxyService.getInstance();
+            DelegateProxy proxy = service.newDelegateProxy(context);
+            instance.setDelegateProxy(proxy);
+            instance.setIdentifier(identifier);
             instance.setIdentifier(identifier);
             instance.checkAccess();
             fail("Expected exception");
@@ -169,7 +187,13 @@ abstract class HttpResolverTest extends AbstractResolverTest {
         try {
             server.start();
 
+            RequestContext context = new RequestContext();
+            context.setIdentifier(identifier);
+            DelegateProxyService service = DelegateProxyService.getInstance();
+            DelegateProxy proxy = service.newDelegateProxy(context);
+            instance.setDelegateProxy(proxy);
             instance.setIdentifier(identifier);
+
             instance.checkAccess();
             fail("Expected exception");
         } catch (NoSuchFileException e) {
@@ -182,13 +206,18 @@ abstract class HttpResolverTest extends AbstractResolverTest {
             throws Exception {
         useScriptLookupStrategy();
 
-        Identifier identifier = new Identifier("valid-auth-" +
-                getServerURI() + "/" + PRESENT_READABLE_IDENTIFIER);
-
         server.setBasicAuthEnabled(true);
         server.start();
 
+        Identifier identifier = new Identifier("valid-auth-" +
+                getServerURI() + "/" + PRESENT_READABLE_IDENTIFIER);
+        RequestContext context = new RequestContext();
+        context.setIdentifier(identifier);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
+
         instance.checkAccess();
     }
 
@@ -197,13 +226,18 @@ abstract class HttpResolverTest extends AbstractResolverTest {
             throws Exception {
         useScriptLookupStrategy();
 
-        Identifier identifier = new Identifier("invalid-auth-" +
-                getServerURI() + "/" + PRESENT_READABLE_IDENTIFIER);
-
         server.setBasicAuthEnabled(true);
         server.start();
 
+        Identifier identifier = new Identifier("invalid-auth-" +
+                getServerURI() + "/" + PRESENT_READABLE_IDENTIFIER);
+        RequestContext context = new RequestContext();
+        context.setIdentifier(identifier);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
+
         instance.checkAccess();
     }
 
@@ -426,10 +460,18 @@ abstract class HttpResolverTest extends AbstractResolverTest {
             throws Exception {
         useScriptLookupStrategy();
 
+        Identifier identifier = new Identifier(getScheme() + "-" +
+                PRESENT_READABLE_IDENTIFIER);
+        RequestContext context = new RequestContext();
+        context.setIdentifier(identifier);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
+
         server.start();
 
-        instance.setIdentifier(new Identifier(getScheme() + "-" + PRESENT_READABLE_IDENTIFIER));
-        assertEquals(new URI(getScheme() + "://example.org/bla/" + getScheme() + "-" + PRESENT_READABLE_IDENTIFIER),
+        instance.setIdentifier(identifier);
+        assertEquals(new URI(getScheme() + "://example.org/bla/" + identifier),
                 instance.getResourceInfo().getURI());
     }
 
@@ -440,8 +482,15 @@ abstract class HttpResolverTest extends AbstractResolverTest {
 
         final Map<String, String> headers = new HashMap<>();
         headers.put("X-Forwarded-Proto", getScheme());
-        instance.getContext().setClientIP("1.2.3.4");
-        instance.getContext().setRequestHeaders(headers);
+
+        RequestContext context = new RequestContext();
+        context.setClientIP("1.2.3.4");
+        context.setRequestHeaders(headers);
+        context.setIdentifier(PRESENT_READABLE_IDENTIFIER);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
+        instance.setDelegateProxy(proxy);
 
         server.start();
 
@@ -455,6 +504,11 @@ abstract class HttpResolverTest extends AbstractResolverTest {
         useScriptLookupStrategy();
 
         Identifier identifier = new Identifier(getScheme() + "-jpg-rgb-64x56x8-plane.jpg");
+        RequestContext context = new RequestContext();
+        context.setIdentifier(identifier);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
         server.start();
@@ -473,7 +527,13 @@ abstract class HttpResolverTest extends AbstractResolverTest {
         server.start();
 
         Identifier identifier = new Identifier("bogus");
+        RequestContext context = new RequestContext();
+        context.setIdentifier(identifier);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
+
         instance.getResourceInfo();
     }
 
@@ -506,13 +566,18 @@ abstract class HttpResolverTest extends AbstractResolverTest {
             throws Exception {
         useScriptLookupStrategy();
 
-        Identifier identifier = new Identifier("valid-auth-" +
-                getServerURI() + "/" + PRESENT_READABLE_IDENTIFIER);
-
         server.setBasicAuthEnabled(true);
         server.start();
 
+        Identifier identifier = new Identifier("valid-auth-" +
+                getServerURI() + "/" + PRESENT_READABLE_IDENTIFIER);
+        RequestContext context = new RequestContext();
+        context.setIdentifier(identifier);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
+
         assertNotNull(instance.newStreamSource());
     }
 
@@ -525,11 +590,17 @@ abstract class HttpResolverTest extends AbstractResolverTest {
         doTestNewStreamSourceWithPresentReadableImage(identifier);
     }
 
-    private void doTestNewStreamSourceWithPresentReadableImage(
-            Identifier identifier) throws Exception {
+    private void doTestNewStreamSourceWithPresentReadableImage(Identifier identifier)
+            throws Exception {
         server.start();
 
+        RequestContext context = new RequestContext();
+        context.setIdentifier(identifier);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
+
         assertNotNull(instance.newStreamSource());
     }
 

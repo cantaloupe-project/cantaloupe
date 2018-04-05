@@ -15,7 +15,6 @@ import edu.illinois.library.cantaloupe.resolver.Resolver;
 import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
 import edu.illinois.library.cantaloupe.resolver.StreamResolver;
 import edu.illinois.library.cantaloupe.resolver.StreamSource;
-import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
@@ -131,8 +130,7 @@ public class ProcessorConnectorTest extends BaseTest {
 
     @Test
     public void testConnectWithFileResolverAndFileProcessor() throws Exception {
-        final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER,
-                new RequestContext());
+        final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER, null);
         final Processor processor = new ProcessorFactory().newProcessor(Format.JPG);
 
         assertNull(instance.connect(resolver, processor, IDENTIFIER, Format.JPG));
@@ -148,8 +146,7 @@ public class ProcessorConnectorTest extends BaseTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_FALLBACK, "ImageMagickProcessor");
 
-        final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER,
-                new RequestContext());
+        final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER, null);
         final Processor processor = new ProcessorFactory().newProcessor(Format.JPG);
 
         assertNull(instance.connect(resolver, processor, IDENTIFIER, Format.JPG));
@@ -179,7 +176,7 @@ public class ProcessorConnectorTest extends BaseTest {
                     RetrievalStrategy.DOWNLOAD.getConfigValue());
 
             final Resolver resolver = new ResolverFactory().newResolver(
-                    identifier, new RequestContext());
+                    identifier, null);
             final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
 
             assertNotNull(instance.connect(resolver, processor, identifier, Format.JPG));
@@ -211,8 +208,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY,
                     RetrievalStrategy.CACHE.getConfigValue());
 
-            final Resolver resolver = new ResolverFactory().newResolver(
-                    identifier, new RequestContext());
+            final Resolver resolver = new ResolverFactory().newResolver(identifier, null);
             final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
 
             assertNull(instance.connect(resolver, processor, identifier, Format.JPG));
@@ -236,8 +232,7 @@ public class ProcessorConnectorTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY,
                 RetrievalStrategy.CACHE.getConfigValue());
 
-        final Resolver resolver = new ResolverFactory().newResolver(
-                identifier, new RequestContext());
+        final Resolver resolver = new ResolverFactory().newResolver(identifier, null);
         final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
 
         instance.connect(resolver, processor, identifier, Format.JPG);
@@ -253,8 +248,7 @@ public class ProcessorConnectorTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY,
                 RetrievalStrategy.ABORT.getConfigValue());
 
-        final Resolver resolver = new ResolverFactory().newResolver(
-                identifier, new RequestContext());
+        final Resolver resolver = new ResolverFactory().newResolver(identifier, null);
         final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
 
         instance.connect(resolver, processor, identifier, Format.JPG);
@@ -275,8 +269,7 @@ public class ProcessorConnectorTest extends BaseTest {
                     server.getHTTPURI() + "/");
             config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
 
-            final Resolver resolver = new ResolverFactory().newResolver(
-                    identifier, new RequestContext());
+            final Resolver resolver = new ResolverFactory().newResolver(identifier, null);
             final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
 
             assertNotNull(instance.connect(resolver, processor, identifier, Format.JPG));
@@ -299,8 +292,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
                     server.getHTTPURI() + "/");
 
-            final Resolver resolver = new ResolverFactory().
-                    newResolver(IDENTIFIER, new RequestContext());
+            final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER, null);
             final Processor processor = new MockStreamProcessor();
 
             assertNull(instance.connect(resolver, processor, IDENTIFIER, Format.JPG));
@@ -334,7 +326,7 @@ public class ProcessorConnectorTest extends BaseTest {
                     cacheFolder.toString());
 
             final Resolver resolver = new ResolverFactory().
-                    newResolver(IDENTIFIER, new RequestContext());
+                    newResolver(IDENTIFIER, null);
             final Processor processor = new MockStreamProcessor();
 
             Future<Path> tempFile = instance.connect(resolver, processor,
@@ -365,8 +357,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     cacheFolder.toString());
 
-            final Resolver resolver = new ResolverFactory().
-                    newResolver(IDENTIFIER, new RequestContext());
+            final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER, null);
             final Processor processor = new MockStreamProcessor();
 
             assertNull(instance.connect(resolver, processor, IDENTIFIER, Format.JPG));
@@ -405,8 +396,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
                     RetrievalStrategy.CACHE.getConfigValue());
 
-            final Resolver resolver = new ResolverFactory().
-                    newResolver(IDENTIFIER, new RequestContext());
+            final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER, null);
             final Processor processor = new MockStreamProcessor();
 
             assertNull(instance.connect(resolver, processor, IDENTIFIER, Format.JPG));
@@ -444,8 +434,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
                     RetrievalStrategy.CACHE.getConfigValue());
 
-            final Resolver resolver = new ResolverFactory().
-                    newResolver(IDENTIFIER, new RequestContext());
+            final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER, null);
             final Processor processor = new MockStreamProcessor();
 
             assertNull(instance.connect(resolver, processor, IDENTIFIER, Format.JPG));
@@ -483,8 +472,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
                     RetrievalStrategy.CACHE.getConfigValue());
 
-            final Resolver resolver = new ResolverFactory().
-                    newResolver(IDENTIFIER, new RequestContext());
+            final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER, null);
             final Processor processor = new MockStreamProcessor();
 
             assertNull(instance.connect(resolver, processor, IDENTIFIER, Format.JPG));
@@ -522,8 +510,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
                     RetrievalStrategy.CACHE.getConfigValue());
 
-            final Resolver resolver = new ResolverFactory().
-                    newResolver(IDENTIFIER, new RequestContext());
+            final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER, null);
             final Processor processor = new MockStreamProcessor();
 
             assertNull(instance.connect(resolver, processor, IDENTIFIER, Format.JPG));
@@ -555,8 +542,7 @@ public class ProcessorConnectorTest extends BaseTest {
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     cacheFolder.toString());
 
-            final Resolver resolver = new ResolverFactory().
-                    newResolver(IDENTIFIER, new RequestContext());
+            final Resolver resolver = new ResolverFactory().newResolver(IDENTIFIER, null);
             final Processor processor = new MockStreamProcessor();
 
             assertNull(instance.connect(resolver, processor, IDENTIFIER, Format.JPG));

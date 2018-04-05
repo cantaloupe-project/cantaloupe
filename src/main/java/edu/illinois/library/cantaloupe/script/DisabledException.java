@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.script;
 
 import edu.illinois.library.cantaloupe.config.Key;
 
-public class DelegateScriptDisabledException extends Exception {
+public class DisabledException extends Exception {
 
     @Override
     public String getMessage() {

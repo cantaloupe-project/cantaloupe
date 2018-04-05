@@ -11,14 +11,13 @@ import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.overlay.OverlayService;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.redaction.RedactionService;
-import edu.illinois.library.cantaloupe.script.DelegateScriptDisabledException;
+import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -155,22 +154,16 @@ public final class OperationList implements Comparable<OperationList>,
      * operations have been added, as it may modify them. It will have the
      * side-effect of {@link #freeze() freezing the instance}.</p>
      *
-     * <p>The instance's identifier must be {@link
-     * #setIdentifier(Identifier) set}.</p>
+     * <p>The instance's identifier must be {@link #setIdentifier(Identifier)
+     * set}.</p>
      *
-     * @param info           Source image info.
-     * @param clientIp       Client IP address.
-     * @param requestURI     Request URL.
-     * @param requestHeaders Request headers.
-     * @param cookies        Client cookies.
-     * @throws IllegalStateException if the instance's identifier is not set or
-     *         it has no {@link Encode} operation.
+     * @param info          Source image info.
+     * @param delegateProxy Delegate proxy for the current request.
+     * @throws IllegalArgumentException if the instance's output format has not
+     *                                  been set.
      */
     public void applyNonEndpointMutations(final Info info,
-                                          final String clientIp,
-                                          final URI requestURI,
-                                          final Map<String,String> requestHeaders,
-                                          final Map<String,String> cookies) {
+                                          final DelegateProxy delegateProxy) {
         checkFrozen();
 
         final Identifier identifier = getIdentifier();
@@ -233,8 +226,7 @@ public final class OperationList implements Comparable<OperationList>,
         try {
             final RedactionService service = new RedactionService();
             if (service.isEnabled()) {
-                List<Redaction> redactions = service.redactionsFor(
-                        identifier, requestHeaders, clientIp, cookies);
+                List<Redaction> redactions = service.redactionsFor(delegateProxy);
                 for (Redaction redaction : redactions) {
                     addBefore(redaction, Encode.class);
                 }
@@ -242,9 +234,6 @@ public final class OperationList implements Comparable<OperationList>,
                 LOGGER.debug("applyNonEndpointMutations(): redactions are " +
                         "disabled; skipping.");
             }
-        } catch (DelegateScriptDisabledException e) {
-            LOGGER.debug("applyNonEndpointMutations(): delegate script is " +
-                    "disabled; skipping redactions.");
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
@@ -278,18 +267,14 @@ public final class OperationList implements Comparable<OperationList>,
         // Overlay
         try {
             final OverlayService service = new OverlayService();
-            if (service.isEnabled() && service.shouldApplyToImage(getResultingSize(sourceImageSize))) {
-                final Overlay overlay = service.newOverlay(
-                        this, sourceImageSize, requestURI, requestHeaders,
-                        clientIp, cookies);
+            if (service.isEnabled() &&
+                    service.shouldApplyToImage(getResultingSize(sourceImageSize))) {
+                final Overlay overlay = service.newOverlay(delegateProxy);
                 addBefore(overlay, Encode.class);
             } else {
                 LOGGER.debug("applyNonEndpointMutations(): overlays are " +
                         "disabled; skipping.");
             }
-        } catch (DelegateScriptDisabledException e) {
-            LOGGER.debug("applyNonEndpointMutations(): delegate script is " +
-                    "disabled; skipping overlay.");
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }

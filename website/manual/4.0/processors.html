@@ -25,7 +25,7 @@ title: Processors
   </li>
 </ul>
 
-<p>Processors read source images from <a href="resolvers.html">resolvers</a>, decode them, transform them according to request arguments, and encode a derivative image. Particular processors can be assigned to handle particular source formats, and a fallback processor can be assigned to handle all others.</p>
+<p>A processor reads a source image from a <a href="resolvers.html">resolver</a>, decodes it, transforms it according to request arguments, and encodes a derivative image to return to the client. Particular processors can be assigned to handle particular source formats, and a fallback processor can be assigned to handle all others.</p>
 
 <p>Different processors use different underlying codecs and image processing engines, which may have different quality, compatibility, dependency, performance, and cost characteristics. The ability to choose among different processors is intended to make it straightforward to add support for new image formats; improve support for existing image formats via the substitution of better codecs; and decouple the image server implementation from any one codec.</p>
 
@@ -564,17 +564,6 @@ title: Processors
     <td class="text-center bg-danger">&times;</td>
   </tr>
   <tr>
-    <td>DICOM</td>
-    <td class="text-center bg-success">&check;</td>
-    <td class="text-center bg-success">&check;</td>
-    <td class="text-center bg-danger">&times;</td>
-    <td class="text-center bg-danger">&times;</td>
-    <td class="text-center bg-danger">&times;</td>
-    <td class="text-center bg-danger">&times;</td>
-    <td class="text-center bg-danger">&times;</td>
-    <td class="text-center bg-danger">&times;</td>
-  </tr>
-  <tr>
     <td>GIF</td>
     <td class="text-center bg-warning">&check;<br>Animation not supported</td>
     <td class="text-center bg-warning">&check;<br>Animation not supported</td>
@@ -661,7 +650,7 @@ title: Processors
 
 <p>Java2dProcessor uses the Java Image I/O and Java 2D libraries to read and process images in a native-Java way. It is a good all-around processor with no external dependencies.</p>
 
-<p>Java2dProcessor has been written to exploit the Image I/O image readers as efficiently as possible. Special attention has been paid to its handling of tiled images, such as tile-encoded TIFFs, for which it reads only the necessary tiles for a given request. It is also capable of reading the sub-images contained within multi-resolution (pyramidal) TIFF images.</p>
+<p>This processor has been written to exploit the Image I/O image readers as efficiently as possible. Special attention has been paid to its handling of tiled images, such as tile-encoded TIFFs, for which it reads only the necessary tiles for a given request. It is also capable of reading the sub-images contained within multi-resolution (pyramidal) TIFF images.</p>
 
 <h4>Data Flow</h4>
 
@@ -802,7 +791,7 @@ title: Processors
 
 <p><a href="http://www.kakadusoftware.com">Kakadu</a> is widely considered the fastest available general-purpose JPEG2000 codec. This processor uses Kakadu's <span class="filename">kdu_expand</span> demo application to decode JPEG2000 source images.</p>
 
-<p><span class="filename">kdu_expand</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. All other operations (differential scaling, rotation, etc.) are performed using Java 2D, and basic image characteristics (dimensions, DWT level count, etc.) are acquired using custom code.</p>
+<p><span class="filename">kdu_expand</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. All other operations (differential scaling, rotation, etc.) are performed using Java 2D, and basic image characteristics are read using custom code.</p>
 
 <p>The Kakadu demo binaries must be installed in order for this processor to work. They will automatically be detected if they are on the path; otherwise, set the <code>KakaduDemoProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory. The <code>LD_LIBRARY_PATH</code> environment variable (or your operating system's equivalent) will also need to be set to locate the Kakadu shared library.</p>
 
@@ -850,30 +839,31 @@ title: Processors
 
 <p>Compared to <a href="#KakaduDemoProcessor">KakaduDemoProcessor</a>, this one is more efficient in that it doesn't need to invoke a process, and doesn't have to do internal intermediary format conversions. It also offers benefits not related to performance:</p>
 
-<ol>
+<ul>
   <li>It can read from both FileResolvers and StreamResolvers.</li>
   <li>It works equally efficiently in Windows.</li>
-</ol>
+</ul>
 
 <p>The Kakadu library is used only for region decompression. All other operations (differential scaling, rotation, etc.) are performed using Java 2D.</p>
 
 <h4>Configuration</h4>
 
-<p>To get this processor to work, it must be able to locate the Kakadu JNI binding and shared library. When you extracted the release archive, a subdirectory named <span class="filename">libs</span> was created, containing precompiled libraries for 64-bit x86 Linux, macOS, and Windows.</p>
+<p>To get this processor to work, it must be able to locate the Kakadu JNI binding and shared library. When the release archive is extracted, a subdirectory named <span class="filename">libs</span> is created, containing precompiled libraries for several platforms.</p>
 
 <h5>Linux</h5>
 
 <p>Do <strong>one</strong> of the following:</p>
 
 <ol>
-  <li>Copy the files from the Linux-specific folder to a location that is on your <code>LD_LIBRARY_PATH</code>.</li>
+  <li>Copy the files from the Linux-specific <span class="filename">libs</span> folder to a location that is on your <code>LD_LIBRARY_PATH</code>.</li>
+  <li>Adjust your <code>LD_LIBRARY_PATH</code> to include the pathname of the directory containing the binaries.</li>
   <li>Tell the JVM where the libraries are located using a VM argument at launch, like: <code>-Djava.library.path=/path/to/cantaloupe-x.x/libs/Linux-x86-64</code></li>
-  <li>Copy the libraries into one of the locations on the existing <code>java.library.path</code>. (These locations are logged at startup.)</p>
+  <li>Copy the libraries into one of the locations on the existing <code>java.library.path</code>. (These locations are logged at application startup.)</p>
 </ol>
 
 <h5>macOS</h5>
 
-<p>Newer releases of macOS do not support <code>DYLD_LIBRARY_PATH</code>, so you must either provide the <code>-Djava.library.path</code> argument at startup as above, or copy the library files from the macOS-specific folder into one of the locations that is already on your <code>java.library.path</code>. (These locations are logged at startup.)</p>
+<p>Newer releases of macOS do not support <code>DYLD_LIBRARY_PATH</code>, so you must either provide the <code>-Djava.library.path</code> argument at startup as above, or copy the library files from the macOS-specific <span class="filename">libs</span> folder into one of the locations that is already on your <code>java.library.path</code>. (These locations are logged at application startup.)</p>
 
 <h5>Windows</h5>
 
@@ -882,7 +872,7 @@ title: Processors
 <ol>
   <li>Copy the files from the Windows-specific folder to a location that is on your <code>PATH</code>.</li>
   <li>Tell the JVM where the libraries are located using a VM argument at launch, like: <code>-Djava.library.path=C:\Users\me\cantaloupe-x.x\libs\Windows</code></li>
-  <li>Copy the libraries into one of the locations on the existing <code>java.library.path</code>. (These locations are logged at startup.)</p>
+  <li>Copy the libraries into one of the locations on the existing <code>java.library.path</code>. (These locations are logged at application startup.)</p>
 </ol>
 
 <div class="alert alert-info">This processor was developed using a Kakadu Public Service License and may not be used commercially. See the <a href="http://kakadusoftware.com/wp-content/uploads/2014/06/Kakadu-Licence-Terms-Feb-2018.pdf">Kakadu Software License Terms and Conditions</a> for detailed terms.</div>
@@ -916,7 +906,7 @@ title: Processors
 <p>OpenJpegProcessor uses the <span class="filename">opj_decompress</span> tool from the open-source
 <a href="http://www.openjpeg.org">OpenJPEG</a> project to decode JPEG2000 source images.</p>
 
-<p>Although it does support some other operations, <span class="filename">opj_decompress</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. All other operations (differential scaling, rotation, etc.) are performed using Java 2D, and basic image characteristics (dimensions, DWT level count, etc.) are acquired using custom code.</p>
+<p>Although it does support some other operations, <span class="filename">opj_decompress</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. All other operations (differential scaling, rotation, etc.) are performed using Java 2D, and basic image characteristics are acquired using custom code.</p>
 
 <p>To use this processor, OpenJPEG must be installed. The OpenJPEG binaries will automatically be detected if they are on the path; otherwise, set the <code>OpenJpegProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory. The <code>LD_LIBRARY_PATH</code> environment variable will also need to be set to locate the OpenJPEG shared library.</p>
 
@@ -961,7 +951,7 @@ title: Processors
 
 <p>It has been tested with FFmpeg version 2.8. Other versions may or may not work.</p>
 
-<p>FFmpeg is used only to decode still frames. All subsequent steps are handled by Java 2D.</p>
+<p>FFmpeg is used only for frame extraction. All subsequent steps are handled by Java 2D.</p>
 
 <h4>Optional Arguments</h4>
 
@@ -969,7 +959,7 @@ title: Processors
 
 <pre>http://example.org/iiif/2/video.mp4/full/full/0/default.jpg?time=00:02:15</pre>
 
-<p>If the <code>time</code> argument is missing, the first frame will be returned.</p>
+<p>If it's missing, the first frame will be returned.</p>
 
 <h4>Data Flow</h4>
 

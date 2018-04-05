@@ -7,7 +7,7 @@ title: Upgrading
 
 <p>If you are skipping versions, work through this page backwards from your current version.</p>
 
-<p>Note that it's a good idea to use different configuration files for different versions.</p>
+<p>It's recommended to use a dedicated configuration file for each version.</p>
 
 <h2>From 3.4 to 4.0</h2>
 
@@ -42,11 +42,11 @@ title: Upgrading
   </li>
   <li>Change any <code>AmazonS3Resolver</code> configuration values to <code>S3Resolver</code>.</li>
   <li>Change any <code>AmazonS3Cache</code> configuration values to <code>S3Cache</code>.</li>
-  <li>In the delegate script, rename the <code>AmazonS3Resolver</code> module to <code>S3Resolver</code>
-  <li>Note that the <code>X-IIIF-ID</code> reverse proxy header is deprecated and will be removed in version 4. Use <code>X-Forwarded-ID</code> instead.</li>
-  <li>The deprecated <code>DELETE /cache/:identifier</code> HTTP API method has been removed. Use the newer equivalent.</li>
-  <li>If you'd like to use the new KakaduNativeProcessor for non-commercial purposes, see the user manual for background and information on configuring it.</li>
-</ul>
+  <li>The delegate script architecture has changed, and the 3.x script is not compatible. See the "Delegate Script" section of the user manual for migration info.</li>
+  <li>The deprecated <code>DELETE /cache/:identifier</code> HTTP API method has been removed. See the "Remote Management" section of the user manual for information about its successor.</li>
+  <li>Note that the <code>X-IIIF-ID</code> reverse proxy header is deprecated and will be removed in a future version. Use <code>X-Forwarded-ID</code> instead.</li>
+  <li>If you'd like to use the new KakaduNativeProcessor non-commercially for decoding JPEG2000 images, see the "Processors" section of the user manual for information on configuring it.</li>
+</ol>
 
 <h2>From 3.4 to 3.4.2</h2>
 

@@ -2,9 +2,8 @@ package edu.illinois.library.cantaloupe.resource.admin;
 
 import edu.illinois.library.cantaloupe.cache.InfoService;
 import edu.illinois.library.cantaloupe.resource.JSONRepresentation;
+import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.InvocationCache;
-import edu.illinois.library.cantaloupe.script.ScriptEngine;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import edu.illinois.library.cantaloupe.util.TimeUtils;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
@@ -29,8 +28,7 @@ public class StatusResource extends AbstractAdminResource {
 
         public Status() {
             try {
-                InvocationCache cache =
-                        ScriptEngineFactory.getScriptEngine().getInvocationCache();
+                InvocationCache cache = DelegateProxy.getInvocationCache();
                 delegateMethodInvocationCache.put("size", cache.size());
                 delegateMethodInvocationCache.put("maxSize", cache.maxSize());
             } catch (Exception e) {

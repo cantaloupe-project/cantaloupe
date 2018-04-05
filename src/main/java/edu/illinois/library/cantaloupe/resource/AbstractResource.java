@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.auth.AuthInfo;
 import edu.illinois.library.cantaloupe.auth.Authorizer;
+import edu.illinois.library.cantaloupe.auth.RedirectInfo;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -11,11 +12,13 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
+import edu.illinois.library.cantaloupe.script.DelegateProxy;
+import edu.illinois.library.cantaloupe.script.DelegateProxyService;
+import edu.illinois.library.cantaloupe.script.DisabledException;
 import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.restlet.Request;
 import org.restlet.data.CacheDirective;
-import org.restlet.data.Dimension;
 import org.restlet.data.Disposition;
 import org.restlet.data.Header;
 import org.restlet.data.Parameter;
@@ -34,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,13 +48,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * N.B. If subclasses need to send custom response headers, they should add
+ * N.B.: If subclasses need to send custom response headers, they should add
  * them to the {@link Series} returned by {@link #getBufferedResponseHeaders}.
  */
 public abstract class AbstractResource extends ServerResource {
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(AbstractResource.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(AbstractResource.class);
 
     /**
      * Replaces {@link #PUBLIC_IDENTIFIER_HEADER_DEPRECATED}.
@@ -68,7 +71,15 @@ public abstract class AbstractResource extends ServerResource {
     protected static final String RESPONSE_CONTENT_DISPOSITION_QUERY_ARG =
             "response-content-disposition";
 
-    private Series<Header> bufferedResponseHeaders = new Series<>(Header.class);
+    private final Series<Header> bufferedResponseHeaders =
+            new Series<>(Header.class);
+
+    /**
+     * Set by {@link #getDelegateProxy()}.
+     */
+    private DelegateProxy delegateProxy;
+
+    private final RequestContext requestContext = new RequestContext();
 
     /**
      * @return Map of template variables common to most or all views, such as
@@ -91,9 +102,9 @@ public abstract class AbstractResource extends ServerResource {
      * <p>Returns a root reference (URI) that can be used in public for display
      * or internal linking.</p>
      *
-     * <p>The URI respects {@link Key#BASE_URI}, if set. Otherwise, it
-     * respects the <code>X-Forwarded-*</code> request headers, if available.
-     * Finally, the server hostname etc. otherwise.</p>
+     * <p>The URI respects {@link Key#BASE_URI}, if set. Otherwise, it respects
+     * the {@literal X-Forwarded-*} request headers, if available. Finally, the
+     * server hostname etc. otherwise.</p>
      *
      * @param requestRootRef Application root URI.
      * @param requestRef     Request URI.
@@ -202,19 +213,29 @@ public abstract class AbstractResource extends ServerResource {
         // Origin by default, but it's needed.
         // See: https://github.com/medusa-project/cantaloupe/issues/107
         getResponse().getDimensions().addAll(Arrays.asList(
-                Dimension.CHARACTER_SET,
-                Dimension.ENCODING,
-                Dimension.LANGUAGE,
-                Dimension.ORIGIN));
+                org.restlet.data.Dimension.CHARACTER_SET,
+                org.restlet.data.Dimension.ENCODING,
+                org.restlet.data.Dimension.LANGUAGE,
+                org.restlet.data.Dimension.ORIGIN));
         getResponse().getHeaders().add("X-Powered-By",
                 Application.getName() + "/" + Application.getVersion());
+
+        if (DelegateProxyService.isEnabled()) {
+            requestContext.setRequestURI(getReference().toUri());
+            requestContext.setRequestHeaders(getRequest().getHeaders().getValuesMap());
+            requestContext.setClientIP(getCanonicalClientIPAddress());
+            requestContext.setCookies(getRequest().getCookies().getValuesMap());
+            requestContext.setIdentifier(getIdentifier());
+        }
+
         LOGGER.info("doInit(): handling {} {}", getMethod(), getReference());
     }
 
     /**
-     * Enables HTTP OPTIONS requests. Restlet will set the <code>Allow</code>
+     * Enables HTTP OPTIONS requests. Restlet will set the {@literal Allow}
      * header automatically.
      */
+    @SuppressWarnings("unused")
     @Options
     public Representation doOptions() {
         return new EmptyRepresentation();
@@ -223,28 +244,31 @@ public abstract class AbstractResource extends ServerResource {
     /**
      * Uses an {@link Authorizer} to determine whether the request is
      * authorized.
-     *
-     * @param opList Operations requested on the image.
-     * @param fullSize Full size of the requested image.
-     * @return <code>null</code> if the request is authorized. Otherwise, a
-     *         redirecting representation.
-     * @throws IOException
-     * @throws ScriptException
-     * @throws AccessDeniedException If the delegate method returns
-     *                               <code>false</code>.
      */
-    protected final StringRepresentation checkAuthorization(
-            final OperationList opList,
-            final java.awt.Dimension fullSize)
-            throws IOException, ScriptException, AccessDeniedException {
-        final Authorizer authorizer = new Authorizer(getReference().toString(),
-                getCanonicalClientIPAddress(),
-                getRequest().getHeaders().getValuesMap(),
-                getRequest().getCookies().getValuesMap());
-        final AuthInfo info = authorizer.authorize(opList, fullSize);
+    protected final void checkAuthorization()
+            throws ScriptException, AccessDeniedException {
+        final Authorizer authorizer = new Authorizer(getDelegateProxy());
+        final AuthInfo info = authorizer.authorize();
 
-        if (info.getRedirectURI() != null) {
-            final URL location = info.getRedirectURI();
+        if (!info.isAuthorized()) {
+            throw new AccessDeniedException();
+        }
+    }
+
+    /**
+     * Uses an {@link Authorizer} to determine whether the request needs to be
+     * redirected.
+     *
+     * @return {@literal null} if the request does not need to be redirected.
+     *         Otherwise, a redirecting representation.
+     */
+    protected final StringRepresentation checkRedirect()
+            throws ScriptException {
+        final Authorizer authorizer = new Authorizer(getDelegateProxy());
+        final RedirectInfo info = authorizer.redirect();
+
+        if (info != null) {
+            final URI location = info.getRedirectURI();
             final int code = info.getRedirectStatus();
             LOGGER.info("checkAuthorization(): redirecting to {} via HTTP {}",
                     location, code);
@@ -254,8 +278,6 @@ public abstract class AbstractResource extends ServerResource {
             getResponse().setLocationRef(location.toString());
             getResponse().setStatus(status);
             return rep;
-        } else if (!info.isAuthorized()) {
-            throw new AccessDeniedException();
         }
         return null;
     }
@@ -266,9 +288,9 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * Some web servers have issues dealing with encoded slashes (%2F) in URIs.
-     * This method enables the use of an alternate string to represent a slash
-     * via {@link Key#SLASH_SUBSTITUTE}.
+     * Some web servers have issues dealing with encoded slashes ({@literal
+     * %2F}) in URIs. This method enables the use of an alternate string to
+     * represent a slash via {@link Key#SLASH_SUBSTITUTE}.
      *
      * @param uriPathComponent Path component (a part of the path before,
      *                         after, or between slashes)
@@ -289,8 +311,8 @@ public abstract class AbstractResource extends ServerResource {
 
     /**
      * @return List of cache directives according to the configuration, or an
-     *         empty list if {@link #isBypassingCache()} returns
-     *         <code>false</code>.
+     *         empty list if {@link #isBypassingCache()} returns {@literal
+     *         false}.
      */
     private List<CacheDirective> getCacheDirectives() {
         final List<CacheDirective> directives = new ArrayList<>();
@@ -341,9 +363,9 @@ public abstract class AbstractResource extends ServerResource {
 
     /**
      * @return Best guess at the user agent's IP address, respecting the
-     *         <code>X-Forwarded-For</code> request header, if present.
+     *         {@literal X-Forwarded-For} request header, if present.
      */
-    protected String getCanonicalClientIPAddress() {
+    private String getCanonicalClientIPAddress() {
         String addr;
         // The value is supposed to be in the format: "client, proxy1, proxy2"
         final String forwardedFor =
@@ -358,25 +380,49 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
+     * N.B.: This method should not be called with different arguments during
+     * the same request cycle.
+     *
+     * @return Delegate proxy for the current request. The result is cached.
+     *         May be {@literal null}.
+     */
+    protected DelegateProxy getDelegateProxy() {
+        if (delegateProxy == null && DelegateProxyService.isEnabled()) {
+            DelegateProxyService service = DelegateProxyService.getInstance();
+            try {
+                delegateProxy = service.newDelegateProxy(getRequestContext());
+            } catch (DisabledException e) {
+                LOGGER.debug("newDelegateProxy(): {}", e.getMessage());
+            }
+        }
+        return delegateProxy;
+    }
+
+    /**
      * @return Decoded identifier component of the URI. N.B.: This may not be
-     *         the identifier the user supplies or sees; for that, use
-     *         {@link #getPublicIdentifier()}.
+     *         the identifier that the client supplies or sees; for that, use
+     *         {@link #getPublicIdentifier()}. Also may return {@literal null}.
      * @see #getPublicIdentifier()
      */
     protected Identifier getIdentifier() {
         final Map<String,Object> attrs = getRequest().getAttributes();
         // Get the raw identifier from the URI.
         final String urlIdentifier = (String) attrs.get("identifier");
-        // Decode entities.
-        final String decodedIdentifier = Reference.decode(urlIdentifier);
-        // Decode slash substitutes.
-        final String identifier = decodeSlashes(decodedIdentifier);
+        // It will be null if the current route does not have an identifier
+        // path component.
+        if (urlIdentifier != null) {
+            // Decode entities.
+            final String decodedIdentifier = Reference.decode(urlIdentifier);
+            // Decode slash substitutes.
+            final String identifier = decodeSlashes(decodedIdentifier);
 
-        LOGGER.debug("Identifier requested: {} -> decoded: {} -> " +
-                        "slashes substituted: {}",
-                urlIdentifier, decodedIdentifier, identifier);
+            LOGGER.debug("Identifier requested: {} -> decoded: {} -> " +
+                            "slashes substituted: {}",
+                    urlIdentifier, decodedIdentifier, identifier);
 
-        return new Identifier(identifier);
+            return new Identifier(identifier);
+        }
+        return null;
     }
 
     /**
@@ -456,13 +502,12 @@ public abstract class AbstractResource extends ServerResource {
      *
      * <p>Falls back to an empty disposition.</p>
      *
-     * <p>If the disposition is <code>attachment</code> and the filename is
-     * not set, it will be set to a reasonable value based on the given
-     * identifier and output format.</p>
+     * <p>If the disposition is {@literal attachment} and the filename is not
+     * set, it will be set to a reasonable value based on the given identifier
+     * and output format.</p>
      *
-     * @param queryArg Value of the
-     *                 {@link #RESPONSE_CONTENT_DISPOSITION_QUERY_ARG} query
-     *                 argument.
+     * @param queryArg Value of the {@link
+     *                 #RESPONSE_CONTENT_DISPOSITION_QUERY_ARG} query argument.
      * @param identifier
      * @param outputFormat
      */
@@ -507,15 +552,6 @@ public abstract class AbstractResource extends ServerResource {
         return disposition;
     }
 
-    protected RequestContext getRequestContext() {
-        final RequestContext context = new RequestContext();
-        context.setRequestURI(getReference().toString());
-        context.setRequestHeaders(getRequest().getHeaders().getValuesMap());
-        context.setClientIP(getCanonicalClientIPAddress());
-        context.setCookies(getRequest().getCookies().getValuesMap());
-        return context;
-    }
-
     private String getContentDispositionFilename(Identifier identifier,
                                                  Format outputFormat) {
         return identifier.toString().replaceAll(StringUtil.FILENAME_REGEX, "_") +
@@ -523,8 +559,15 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * @return Whether there is a <var>cache</var> query parameter set to
-     *         <code>false</code> in the URI.
+     * @return Instance with basic info already set.
+     */
+    protected RequestContext getRequestContext() {
+        return requestContext;
+    }
+
+    /**
+     * @return Whether there is a <var>cache</var> query argument set to
+     *         {@literal false} in the URI.
      */
     protected boolean isBypassingCache() {
         boolean bypassingCache = false;

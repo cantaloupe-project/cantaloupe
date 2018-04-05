@@ -16,15 +16,17 @@ title: Configuration
 
 <p>Cantaloupe obtains its configuration from a <a href="https://en.wikipedia.org/wiki/.properties">.properties file</a>. A sample configuration file, called <span class="filename">cantaloupe.properties.sample</span>, is included in the distribution archive. It is recommended to make a copy of this file and use the copy as your primary configuration file.</p>
 
-<p>To tell the image server where the file is located, supply the <code>-Dcantaloupe.config</code> VM option, pointing to an absolute or relative path to the file. The file can be located anywhere, and named anything. (See <a href="getting-started.html#Running">Getting Started</a> for examples.)</p>
+<p>To tell the application where the file is located, supply the <code>-Dcantaloupe.config</code> VM option, pointing to an absolute or relative path to the file. The file can be located anywhere, and named anything. (See <a href="getting-started.html#Running">Getting Started</a> for examples.)</p>
 
 <hr>
 
 <h2 id="Inheritance">Inheritance</h2>
 
-<p>Since version 3.4, configuration files may contain an <code>extends</code> key pointing to the pathname or same-directory filename of another configuration file. This enables multiple instances to share common configuration keys.</p>
+<p>Configuration files may contain an <code>extends</code> key pointing to the pathname or same-directory filename of another configuration file. This enables multiple instances to share common configuration keys.</p>
 
 <p>Child files override parent files. When the same key is defined in multiple files, instances will use the most specific one.</p>
+
+<p>Multiple extends keys in the same file are not supported. If they are present, the last one will be used.</p>
 
 <hr>
 

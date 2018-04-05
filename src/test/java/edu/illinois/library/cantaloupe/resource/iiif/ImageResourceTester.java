@@ -14,7 +14,6 @@ import java.io.File;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
 import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.*;
@@ -443,12 +442,8 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         Client client = newClient(uri);
 
         try {
-            opList.applyNonEndpointMutations(
-                    new Info(),
-                    "",
-                    new URI("http://example.org/"),
-                    new HashMap<>(),
-                    new HashMap<>());
+            Info info = Info.builder().withSize(64, 56).build();
+            opList.applyNonEndpointMutations(info, null);
 
             assertRecursiveFileCount(cacheDir, 0);
 

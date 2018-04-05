@@ -4,9 +4,8 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.resource.RequestContext;
-import edu.illinois.library.cantaloupe.script.ScriptEngine;
-import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
+import edu.illinois.library.cantaloupe.script.DelegateMethod;
+import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +14,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import static edu.illinois.library.cantaloupe.resolver.ResolverFactory.SelectionStrategy.DELEGATE_SCRIPT;
 
 /**
  * Used to obtain an instance of a {@link Resolver} defined in the
@@ -26,14 +27,23 @@ public final class ResolverFactory {
      * How resolvers are chosen by {@link #newResolver}.
      */
     public enum SelectionStrategy {
-        STATIC, DELEGATE_SCRIPT
+
+        /**
+         * A global resolver is specified using the {@link Key#RESOLVER_STATIC}
+         * configuration key.
+         */
+        STATIC,
+
+        /**
+         * A resolver specific to the request is acquired from the {@link
+         * DelegateMethod#RESOLVER} delegate method.
+         */
+        DELEGATE_SCRIPT
+
     }
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ResolverFactory.class);
-
-    private static final String RESOLVER_CHOOSER_DELEGATE_METHOD =
-            "get_resolver";
 
     /**
      * @return Set of instances of each unique resolver.
@@ -58,23 +68,38 @@ public final class ResolverFactory {
      * simple class names, in which case they will be assumed to reside in
      * this package.</p>
      *
+     * @param identifier Identifier of the source image.
+     * @param proxy      Delegate proxy. May be {@literal null} if
+     *                   {@link #getSelectionStrategy()} returns {@link
+     *                   SelectionStrategy#STATIC}.
      * @return Instance of the appropriate resolver for the given identifier,
      *         with identifier already set.
+     * @throws IllegalArgumentException if the {@literal proxy} argument is
+     *                                  {@literal null} while using {@link
+     *                                  SelectionStrategy#DELEGATE_SCRIPT}.
      */
     public Resolver newResolver(Identifier identifier,
-                                RequestContext context) throws Exception {
+                                DelegateProxy proxy) throws Exception {
         switch (getSelectionStrategy()) {
             case DELEGATE_SCRIPT:
-                Resolver resolver = newDynamicResolver(identifier, context);
+                if (proxy == null) {
+                    throw new IllegalArgumentException("The " +
+                            DelegateProxy.class.getSimpleName() +
+                            " argument must be non-null when using " +
+                            getSelectionStrategy() + ".");
+                }
+                Resolver resolver = newDynamicResolver(identifier, proxy);
                 LOGGER.info("{}() returned a {} for {}",
-                        RESOLVER_CHOOSER_DELEGATE_METHOD,
-                        resolver.getClass().getSimpleName(), identifier);
+                        DelegateMethod.RESOLVER,
+                        resolver.getClass().getSimpleName(),
+                        identifier);
                 return resolver;
             default:
                 final Configuration config = Configuration.getInstance();
-                final String resolverName = config.getString(Key.RESOLVER_STATIC);
+                final String resolverName =
+                        config.getString(Key.RESOLVER_STATIC);
                 if (resolverName != null) {
-                    return newResolver(resolverName, identifier, context);
+                    return newResolver(resolverName, identifier, proxy);
                 } else {
                     throw new ConfigurationException(Key.RESOLVER_STATIC +
                             " is not set to a valid resolver.");
@@ -88,41 +113,37 @@ public final class ResolverFactory {
     public SelectionStrategy getSelectionStrategy() {
         final Configuration config = Configuration.getInstance();
         return config.getBoolean(Key.RESOLVER_DELEGATE, false) ?
-                SelectionStrategy.DELEGATE_SCRIPT : SelectionStrategy.STATIC;
+                DELEGATE_SCRIPT : SelectionStrategy.STATIC;
     }
 
     private Resolver newResolver(String name,
                                  Identifier identifier,
-                                 RequestContext context) throws Exception {
+                                 DelegateProxy proxy) throws Exception {
         // If the name contains a dot, assume it's a  full class name,
         // including package. Otherwise, assume it's a simple class name in
         // this package.
         String fullName = name.contains(".") ?
                 name : ResolverFactory.class.getPackage().getName() + "." + name;
         Class<?> class_ = Class.forName(fullName);
+
         Resolver resolver = (Resolver) class_.newInstance();
         resolver.setIdentifier(identifier);
-        resolver.setContext(context);
+        resolver.setDelegateProxy(proxy);
         return resolver;
     }
 
     /**
-     * Passes the given identifier to the resolver chooser delegate method.
-     *
      * @param identifier Identifier to return a resolver for.
-     * @param context    Request context.
-     * @return Resolver for the given identifier as returned from a delegate
-     *         method.
-     * @throws IOException If the lookup script configuration key is undefined
-     * @throws ScriptException If the script failed to execute.
+     * @param proxy      Delegate proxy from which to acquire the resolver
+     *                   name.
+     * @return           Resolver as returned from the given delegate proxy.
+     * @throws IOException     if the lookup script configuration key is
+     *                         undefined.
+     * @throws ScriptException if the delegate method failed to execute.
      */
     private Resolver newDynamicResolver(Identifier identifier,
-                                        RequestContext context)
-            throws Exception {
-        final ScriptEngine engine = ScriptEngineFactory.getScriptEngine();
-        final Object result = engine.invoke(RESOLVER_CHOOSER_DELEGATE_METHOD,
-                identifier.toString());
-        return newResolver((String) result, identifier, context);
+                                        DelegateProxy proxy) throws Exception {
+        return newResolver(proxy.getResolver(), identifier, proxy);
     }
 
 }
