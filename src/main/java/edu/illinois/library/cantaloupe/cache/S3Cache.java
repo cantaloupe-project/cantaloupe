@@ -105,13 +105,15 @@ class S3Cache implements DerivativeCache {
             try {
                 bufferStream.close();
 
-                // At this point, the client has received all image data, but
-                // its progress indicator is still spinning while it waits for
-                // the connection to close. Uploading in a separate thread will
-                // enable this to happen immediately.
-                ThreadPool.getInstance().submit(new S3Upload(
-                        s3, bufferStream.toByteArray(), bucketName, objectKey,
-                        metadata));
+                byte[] data = bufferStream.toByteArray();
+                if (data.length > 0) {
+                    // At this point, the client has received all image data,
+                    // but it is still waiting for the connection to close.
+                    // Uploading in a separate thread will allow this to happen
+                    // immediately.
+                    ThreadPool.getInstance().submit(new S3Upload(
+                            s3, data, bucketName, objectKey, metadata));
+                }
             } finally {
                 super.close();
             }
@@ -171,21 +173,25 @@ class S3Cache implements DerivativeCache {
 
         @Override
         public void run() {
-            metadata.setContentLength(data.length);
+            if (data.length > 0) {
+                metadata.setContentLength(data.length);
 
-            ByteArrayInputStream is = new ByteArrayInputStream(data);
-            PutObjectRequest request = new PutObjectRequest(
-                    bucketName, objectKey, is, metadata);
-            final Stopwatch watch = new Stopwatch();
+                ByteArrayInputStream is = new ByteArrayInputStream(data);
+                PutObjectRequest request = new PutObjectRequest(
+                        bucketName, objectKey, is, metadata);
+                final Stopwatch watch = new Stopwatch();
 
-            UPLOAD_LOGGER.info("Uploading {} bytes to {} in bucket {}",
-                    data.length, request.getKey(), request.getBucketName());
+                UPLOAD_LOGGER.info("Uploading {} bytes to {} in bucket {}",
+                        data.length, request.getKey(), request.getBucketName());
 
-            s3.putObject(request);
+                s3.putObject(request);
 
-            UPLOAD_LOGGER.info("Wrote {} bytes to {} in bucket {} in {}",
-                    data.length, request.getKey(), request.getBucketName(),
-                    watch);
+                UPLOAD_LOGGER.info("Wrote {} bytes to {} in bucket {} in {} msec",
+                        data.length, request.getKey(), request.getBucketName(),
+                        watch.timeElapsed());
+            } else {
+                UPLOAD_LOGGER.debug("No data to upload; returning");
+            }
         }
 
     }
@@ -214,7 +220,7 @@ class S3Cache implements DerivativeCache {
                     .endpointURI(endpointURI)
                     .accessKeyID(config.getString(Key.S3CACHE_ACCESS_KEY_ID))
                     .secretKey(config.getString(Key.S3CACHE_SECRET_KEY))
-                    .maxConnections(config.getInt(Key.S3CACHE_MAX_CONNECTIONS, 100))
+                    .maxConnections(config.getInt(Key.S3CACHE_MAX_CONNECTIONS))
                     .build();
         }
         return client;

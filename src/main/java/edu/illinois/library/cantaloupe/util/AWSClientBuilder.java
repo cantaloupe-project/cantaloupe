@@ -57,11 +57,13 @@ public final class AWSClientBuilder {
     }
 
     /**
-     * @param maxConnections Maximum concurrent connections to AWS.
+     * @param maxConnections Maximum concurrent connections to AWS. Supply
+     *                       {@literal 0} to use the default.
      * @return The instance.
      */
     public AWSClientBuilder maxConnections(int maxConnections) {
-        this.maxConnections = maxConnections;
+        this.maxConnections = (maxConnections > 0) ?
+                maxConnections : DEFAULT_MAX_CONNECTIONS;
         return this;
     }
 
