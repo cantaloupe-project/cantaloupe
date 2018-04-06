@@ -863,7 +863,7 @@ title: Processors
 
 <h5>macOS</h5>
 
-<p>Newer releases of macOS do not support <code>DYLD_LIBRARY_PATH</code>, so you must either provide the <code>-Djava.library.path</code> argument at startup as above, or copy the library files from the macOS-specific <span class="filename">libs</span> folder into one of the locations that is already on your <code>java.library.path</code>. (These locations are logged at application startup.)</p>
+<p>Copy the library files from the macOS-specific <span class="filename">libs</span> folder into <code>/usr/local/lib</code>.</p>
 
 <h5>Windows</h5>
 
