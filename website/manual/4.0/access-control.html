@@ -5,7 +5,7 @@ title: Access Control
 
 <h1>Access Control</h1>
 
-<ul>
+<ul class="toc">
   <li><a href="#Authentication">Authentication</a></li>
   <li><a href="#Authorization">Authorization</a>
     <ul>
@@ -97,7 +97,9 @@ end
 
 <p>(The <a href="https://dev.mysql.com/downloads/connector/j/">MySQL JDBC driver</a> will need to be installed first.)</p>
 
-<div class="alert alert-danger">Note: The arguments in the context hash are not sanitized. <code>context['identifier']</code>, for example, will be exactly as the application receives it. Prefer prepared statements over string concatenation in order to reduce vulnerability to injection attacks.</div>
+<div class="alert alert-danger">
+  <i class="fa fa-warning"></i> The arguments in the context hash are not sanitized. <code>context['identifier']</code>, for example, will be exactly as the application receives it. Prefer prepared statements over string concatenation in order to reduce vulnerability to injection attacks.
+</div>
 
 {% highlight ruby %}
 require 'rubygems'
@@ -145,7 +147,9 @@ end
 
 <h4 id="example-6">Allow only certain user agents</h4>
 
-<div class="alert alert-warning">This is not foolproof&mdash;if a client knows what <var>User-Agent</var> you are checking for, they can spoof it.</div>
+<p class="text-warning">
+  <i class="fa fa-info-circle"></i> This is not foolproof&mdash;if a client knows what <var>User-Agent</var> you are checking for, they can spoof it.
+</p>
 
 {% highlight ruby %}
 class CustomDelegate

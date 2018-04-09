@@ -5,7 +5,7 @@ title: Resolvers
 
 <h1>Resolvers</h1>
 
-<ul>
+<ul class="toc">
   <li><a href="#Selection">Selection</a>
     <ul>
       <li><a href="#Static%20Resolver">Static</a></li>
@@ -40,7 +40,7 @@ title: Resolvers
 
 <p>When a static resolver is not flexible enough, it is also possible to serve images from different sources simultaneously. For example, you may have some images stored on a filesystem, and others stored on Amazon S3. <em>If you can differentiate their sources based on their identifier in code</em>&mdash;either by analyzing the identifier string, or performing some kind of service request&mdash;you can use the <a href="delegate-script.html">delegate script</a> mechanism to write a simple Ruby method to tell the image server which resolver to use for a given request.</p>
 
-<p>To enable dynamic resolver selection, set the <code>resolver.delegate</code> configuration key to <code>true</code>. Then, implement the <code>get_resolver()</code> method in the delegate script. For example:</p>
+<p>To enable dynamic resolver selection, set the <code>resolver.delegate</code> configuration key to <code>true</code>, and implement the <code>resolver()</code> delegate method. For example:</p>
 
 {% highlight ruby %}
 class CustomDelegate
@@ -59,8 +59,9 @@ end
 
 <h3 id="Which Resolver Should I Use">Which Resolver Should I Use?</h3>
 
+<p>I want to serve images located&hellip;</p>
+
 <table class="table table-bordered">
-  <caption>I want to serve images located&hellip;</caption>
   <tr>
     <td rowspan="2">On a filesystem&hellip;</td>
     <td>&hellip;and the identifiers I use in URLs will correspond predictably to filesystem paths</td>
@@ -116,11 +117,15 @@ FilesystemResolver.BasicLookupStrategy.path_suffix =
 
 <p>It's also possible to include a partial path in the identifier using URL-encoded slashes (<code>%2F</code>) as path separators. <code>subdirectory%2Fimage.jpg</code> in the URL would then resolve to <span class="filename">/usr/local/images/subdirectory/image.jpg</span>.</p>
 
-<div class="alert alert-info">If you are operating behind a reverse proxy that is not capable of passing encoded URL characters through without decoding them, see the <code>slash_substitute</code> configuration key.</div>
+<p class="text-info">
+  <i class="fa fa-info-circle"></i> If you are operating behind a reverse proxy that is not capable of passing encoded URL characters through without decoding them, see the <code>slash_substitute</code> configuration key.
+</p>
 
 <p>To prevent arbitrary directory traversal, BasicLookupStrategy will recursively strip out <code>../</code>, <code>/..</code>, <code>..\</code>, and <code>\..</code> from identifiers before resolving the path.</p>
 
-<div class="alert alert-warning">It may be dangerous to <strong>not</strong> use <code>path_prefix</code>. The shallower the path, the more of the filesystem that will be exposed.</div>
+<div class="alert alert-danger">
+  <i class="fa fa-warning"></i> It may be dangerous to <strong>not</strong> use <code>path_prefix</code>. The shallower the path, the more of the filesystem that will be exposed.
+</div>
 
 <h5 id="FilesystemResolverScriptLookupStrategy">ScriptLookupStrategy</h5>
 
@@ -245,7 +250,9 @@ HttpResolver.BasicLookupStrategy.url_suffix =
 <p>Now, an identifier of <code>http%3A%2F%2Fexample.org%2Fimages%2Fimage.jpg</code> in the URL will resolve to
 <span class="filename">http://example.org/images/image.jpg</span>.</p>
 
-<div class="alert alert-info">If you are operating behind a reverse proxy that is not capable of passing encoded URL characters through without decoding them, see the <code>slash_substitute</code> configuration key.</div>
+<p class="text-info">
+  <i class="fa fa-info-circle"></i> If you are operating behind a reverse proxy that is not capable of passing encoded URL characters through without decoding them, see the <code>slash_substitute</code> configuration key.
+</p>
 
 <h5 id="HttpResolverScriptLookupStrategy">ScriptLookupStrategy</h5>
 
@@ -303,7 +310,7 @@ end
 
 <h4 id="JdbcResolverMediaTypeMethod">Media Type Retrieval Method</h4>
 
-<p>This method returns a media (MIME) type corresponding to the value returned by the <code><a href="#JdbcResolverIdentifierMethod">get_database_identifier</a></code> method. If the media type is stored in the database, this example will return an SQL statement to retrieve it.</p>
+<p>This method returns a media (MIME) type corresponding to the value returned by the <code><a href="#JdbcResolverIdentifierMethod">get_database_identifier()</a></code> method. If the media type is stored in the database, this example will return an SQL statement to retrieve it.</p>
 
 {% highlight ruby %}
 class CustomDelegate
@@ -319,7 +326,7 @@ end
 
 <h4 id="JdbcResolverBlobSQLMethod">BLOB Retrieval SQL Method</h4>
 
-<p>This method returns an SQL statement that selects the BLOB value corresponding to the value returned by the <code><a href="#JdbcResolverIdentifierMethod">get_database_identifier</a></code> method.</p>
+<p>This method returns an SQL statement that selects the BLOB value corresponding to the value returned by the <code><a href="#JdbcResolverIdentifierMethod">get_database_identifier()</a></code> method.</p>
 
 {% highlight ruby %}
 class CustomDelegate

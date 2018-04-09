@@ -5,13 +5,12 @@ title: Images
 
 <h1>Images</h1>
 
-<ul>
+<ul class="toc">
   <li><a href="#Considerations">Considerations</a></li>
   <li><a href="#Sample%20Sizes">Sample Sizes</a></li>
   <li><a href="#Normalization">Normalization</a></li>
   <li><a href="#Source%20Formats">Source Formats</a>
     <ul>
-      <li><a href="#DICOM">DICOM</a></li>
       <li><a href="#JPEG">JPEG</a></li>
       <li><a href="#JPEG2000">JPEG2000</a></li>
       <li><a href="#PNG">PNG</a></li>
@@ -67,9 +66,9 @@ title: Images
 
 <p><a href="processors.html#KakaduDemoProcessor">KakaduDemoProcessor</a> and <a href="processors.html#KakaduNativeProcessor">KakaduNativeProcessor</a> are the most efficient processors for this format, and they perform well even with very large images.</p>
 
-<p><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> uses the <a href="http://www.openjpeg.org">OpenJPEG</a> decoder, which is one of the fastest open-source JPEG2000 decoders. Another option to look at is <a href="https://github.com/GrokImageCompression/grok">Grok</a>, which might work with this processor, but has not been tested.</p>
+<p><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> uses the <a href="http://www.openjpeg.org">OpenJPEG</a> decoder, which is one of the fastest open-source JPEG2000 decoders.</p>
 
-<p><a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a>'s JPEG2000 delegate, if installed, will also use the OpenJPEG library, but less efficiently as it won't use its region-extraction or level-reduction features. (This is not recommended.)</p>
+<p><a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a>'s JPEG2000 delegate, if installed, will also use the OpenJPEG library, but less efficiently as it will decompress the whole image, not just the region of interest, and won't be able to discard decomposition levels. (This is not recommended.)</p>
 
 <p><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> can read and write JPEG2000 using JasPer, if the necessary plugin is installed. This will probably be too slow to be usable for most purposes.</p>
 

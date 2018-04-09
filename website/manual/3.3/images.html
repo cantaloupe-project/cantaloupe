@@ -10,7 +10,6 @@ title: Images
   <li><a href="#Bit%20Depth%20Considerations">Bit Depth Considerations</a></li>
   <li><a href="#Source%20Formats">Source Formats</a>
     <ul>
-      <li><a href="#DICOM">DICOM</a></li>
       <li><a href="#JPEG">JPEG</a></li>
       <li><a href="#JPEG2000">JPEG2000</a></li>
       <li><a href="#PNG">PNG</a></li>
@@ -46,12 +45,6 @@ title: Images
 
 <h2 id="Source Formats">Source Formats</h2>
 
-<h3 id="DICOM">DICOM</h3>
-
-<p><a href="http://dicom.nema.org/standard.html">DICOM</a> defines a group of medical imaging standards. Support for the DICOM file format debuted in version 3.3.</p>
-
-<p>This format has a lot of variations in terms of its internal data structures and compression. <a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a> and <a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> are likely to offer the best support for the widest range of images. <a href="processors.html#Java2dProcessor">Java2dProcessor</a> and <a href="processors.html#JaiProcessor">JaiProcessor</a> also support some, but not all, variations, using the <a href="http://www.dcm4che.org">dcm4che</a> ImageIO plugin.</p>
-
 <h3 id="JPEG">JPEG</h3>
 
 <p>Most processors that support image sources support this format, some perhaps more efficiently than others, though this is untested.</p>
@@ -64,7 +57,7 @@ title: Images
 
 <p><a href="processors.html#KakaduProcessor">KakaduProcessor</a> is the most efficient processor for this format, and it performs very well, even with huge images. Unfortunately, Kakadu is not free.</p>
 
-<p><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> uses the <a href="http://www.openjpeg.org">OpenJPEG</a> decoder, which is one of the faster open-source JPEG2000 decoders. Another option to look at would be <a href="https://github.com/GrokImageCompression/grok">Grok</a>, which might work with this processor, but is untested.</p>
+<p><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> uses the <a href="http://www.openjpeg.org">OpenJPEG</a> decoder, which is one of the faster open-source JPEG2000 decoders.</p>
 
 <p><a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a>'s JPEG2000 delegate, if installed, will also use the OpenJPEG library, but less efficiently as it won't use its region-extraction or level-reduction features.</p>
 

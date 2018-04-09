@@ -5,7 +5,7 @@ title: Delegate Script
 
 <h1>Delegate Script</h1>
 
-<ul>
+<ul class="toc">
   <li><a href="#Enabling">Enabling</a></li>
   <li><a href="#How%20It%20Works">How It Works</a></li>
   <li><a href="#Migrating">Migrating From the 3.x Script to the 4.x Script</a></li>
@@ -167,7 +167,10 @@ title: Delegate Script
 
 <p>The delegate script is reloaded whenever the script file changes. Be aware, though, that code that has already been loaded into the JRuby runtime cannot be unloaded. For example, when a class is changed, the new version will replace the old version; but constants within the class cannot be redefined.</p>
 
-<div class="alert alert-danger">Note: generally, neither method arguments nor return values are sanitized or validated. <strong>Be very careful to write defensive, injection-safe code.</strong></div>
+<div class="alert alert-danger">
+  <i class="fa fa-warning"></i>
+  Generally, neither method arguments nor return values are sanitized or validated. <strong>Be careful to write defensive, injection-safe code.</strong>
+</div>
 
 <hr>
 

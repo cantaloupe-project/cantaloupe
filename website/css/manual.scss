@@ -1,0 +1,36 @@
+---
+---
+
+@import "common";
+
+table .bg-success, table .bg-warning, table .bg-danger {
+  color: #2e3238;
+}
+
+ul.toc, ul.toc ul {
+  margin-left: 1.5em;
+  padding-left: 0em; }
+
+ul.processor-data-flow, ul.processor-data-flow ul {
+  list-style: none;
+  margin-left: 0;
+  padding-left: 0;
+}
+
+ul.processor-data-flow li {
+  padding-left: 1em;
+  text-indent: -1em;
+}
+
+ul.processor-data-flow li:before {
+  content: "\2192";
+  padding-right: 5px;
+}
+
+figure {
+  margin: 1em auto; }
+
+figcaption {
+  font-size: 0.9em;
+  font-style: italic;
+  text-align: center; }

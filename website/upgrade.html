@@ -3,13 +3,9 @@ layout: default
 title: Upgrading
 ---
 
-<h1>Upgrading</h1>
+<div class="alert alert-primary"><i class="fa fa-info-circle"></i> If you are skipping versions, work through this page backwards from your current version.</div>
 
-<p>If you are skipping versions, work through this page backwards from your current version.</p>
-
-<p>It's recommended to use a dedicated configuration file for each version.</p>
-
-<h2>From 3.4 to 4.0</h2>
+<h1>3.4 &rarr; 4.0</h1>
 
 <ol>
   <li>Rename the following configuration keys:
@@ -48,11 +44,11 @@ title: Upgrading
   <li>If you'd like to use the new KakaduNativeProcessor non-commercially for decoding JPEG2000 images, see the "Processors" section of the user manual for information on configuring it.</li>
 </ol>
 
-<h2>From 3.4 to 3.4.2</h2>
+<h1>3.4 &rarr; 3.4.2</h1>
 
 <p>Nothing to do.</p>
 
-<h2>From 3.3.x to 3.4</h2>
+<h1>3.3.x &rarr; 3.4</h1>
 
 <ol>
   <li>Add the following keys from the sample configuration:
@@ -93,11 +89,11 @@ title: Upgrading
   <li>Managing the cache on the command line with VM arguments is deprecated and will be removed in version 4. Begin migrating now to the cache management methods in the HTTP API.</li>
 </ol>
 
-<h2>From 3.3 to 3.3.5</h2>
+<h1>3.3 &rarr; 3.3.5</h1>
 
 <p>Nothing to do.</p>
 
-<h2>From 3.2.x to 3.3</h2>
+<h1>3.2.x &rarr; to 3.3</h1>
 
 <ul>
   <li>Add the following keys from the sample configuration:
@@ -162,11 +158,11 @@ title: Upgrading
   <li>Rename the <code>watermark()</code> delegate method to <code>overlay()</code>.</li>
 </ul>
 
-<h2>From 3.2 to 3.2.4</h2>
+<h1>3.2 &rarr; 3.2.4</h1>
 
 <p>Nothing to do.</p>
 
-<h2>From 3.1.2 to 3.2</h2>
+<h1>3.1.2 &rarr; 3.2</h1>
 
 <ul>
   <li>Add the following keys from the sample configuration:
@@ -200,27 +196,27 @@ title: Upgrading
   </li>
 </ul>
 
-<h2>From 3.1.1 to 3.1.2</h2>
+<h1>3.1.1 &rarr; 3.1.2</h1>
 
 <p>Nothing to do.</p>
 
-<h2>From 3.1 to 3.1.1</h2>
+<h1>3.1 &rarr; 3.1.1</h1>
 
 <ul>
   <li>Add the <code>http.host</code> and <code>https.host</code> keys from the sample configuration.</li>
 </ul>
 
-<h2>From 3.0.1 to 3.1</h2>
+<h1>3.0.1 &rarr; 3.1</h1>
 
 <ul>
   <li>Replace the <code>get_iiif2_service</code> delegate script method with <code>extra_iiif2_information_response_keys</code>.</li>
 </ul>
 
-<h2>From 3.0 to 3.0.1</h2>
+<h1>3.0 &rarr; 3.0.1</h1>
 
 <p>Nothing to do.</p>
 
-<h2>From 2.2 to 3.0</h2>
+<h1>2.2 &rarr; 3.0</h1>
 
 <ul>
   <li>Add the following keys from the sample configuration:
@@ -270,7 +266,7 @@ ALTER TABLE {JdbcCache.derivative_image_table} CHANGE COLUMN last_modified last_
   <li>Note that the information that used to be available on the landing page (<span class="filename">/</span>) has moved to the Control Panel (<span class="filename">/admin</span>). Log in with a username of "admin" and the password defined in the <code>admin.password</code> configuration option.</li>
 </ul>
 
-<h2>From 2.1.1 to 2.2</h2>
+<h1>2.1.1 &rarr; 2.2</h1>
 
 <ul>
   <li>Add the following keys from the sample configuration:
@@ -294,11 +290,11 @@ DELETE FROM {JdbcCache.info_table};</pre>
   </li>
 </ul>
 
-<h2>From 2.1 to 2.1.1</h2>
+<h1>2.1 &rarr; 2.1.1</h1>
 
 <p>Nothing to do.</p>
 
-<h2>From 2.0 to 2.1</h2>
+<h1>2.0 &rarr; 2.1</h1>
 
 <ul>
   <li>Add the following keys from the sample configuration:
@@ -313,7 +309,7 @@ DELETE FROM {JdbcCache.info_table};</pre>
   <li>Purge your cache.</li>
 </ul>
 
-<h2>From 1.x to 2.0</h2>
+<h1>1.x &rarr; 2.0</h1>
 
 <ul>
   <li>There are so many new and renamed configuration keys in this version that it's recommended to start over with a new configuration file. The inline comments, which serve as the primary source of configuration documentation, have also been updated.</li>

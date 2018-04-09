@@ -1,0 +1,27 @@
+---
+---
+
+@import "common";
+
+#openseadragon1 {
+  background-color: black; }
+
+figcaption {
+  margin-bottom: 2em; }
+
+section#features {
+  ul {
+    margin-left: 1.2em;
+    padding-left: 0px;
+  }
+}
+
+section#get-started {
+  ul, ol {
+    margin-left: 1em;
+    padding-left:0px;
+  }
+  .download-button {
+    margin-bottom: 1em;
+  }
+}

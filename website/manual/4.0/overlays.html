@@ -5,7 +5,7 @@ title: Overlays
 
 <h1>Overlays</h1>
 
-<ul>
+<ul class="toc">
   <li><a href="#Image%20Overlays">Image Overlays</a></li>
   <li><a href="#String%20Overlays">String Overlays</a></li>
   <li><a href="#Modes%20of%20Operation">Modes of Operation</a>
@@ -21,12 +21,12 @@ title: Overlays
 <p>The overlay feature overlays an image or text string on top of a derivative (output) image. This can be useful for description, branding, attribution, copyright notices, and so on.</p>
 
 <figure>
-  <img src="images/image-overlay-1600.jpg" class="img img-responsive" alt="Image with image overlay applied.">
+  <img src="images/image-overlay-1600.jpg" class="img img-fluid" alt="Image with image overlay applied.">
   <figcaption>Image overlay.</figcaption>
 </figure>
 
 <figure>
-  <img src="images/string-overlay-1600.jpg" class="img img-responsive" alt="Image with string overlay applied.">
+  <img src="images/string-overlay-1600.jpg" class="img img-fluid" alt="Image with string overlay applied.">
   <figcaption>String overlay.</figcaption>
 </figure>
 
@@ -42,9 +42,16 @@ title: Overlays
 
 <p>Overlay images can be located on the filesystem, and also, since version 3.3, on a web server. Regardless, they are cached in memory after being loaded the first time, so there is no performance penalty for using web-hosted overlay images.</p>
 
-<div class="alert alert-info">Note: when using multiple image overlays, their filenames must all be different, regardless of where they reside.</div>
+<p class="text-info">
+  <i class="fa fa-info-circle"></i> When using multiple image overlays, their filenames must all be different, regardless of where they reside.
+</p>
 
-<p><a href="images/overlay-sample.png">Sample overlay image (PNG)</a></p>
+<p class="text-center">
+  <a class="btn btn-primary" href="images/overlay-sample.png">
+    <i class="fa fa-download"></i>
+    Sample overlay image (PNG)
+  </a>
+</p>
 
 <hr>
 

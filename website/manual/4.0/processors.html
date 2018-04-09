@@ -5,7 +5,7 @@ title: Processors
 
 <h1>Processors</h1>
 
-<ul>
+<ul class="toc">
   <li><a href="#Format%20Support">Format Support</a></li>
   <li><a href="#Retrieval%20Strategies">Retrieval Strategies</a></li>
   <li><a href="#Supported%20Features">Supported Features</a></li>
@@ -680,12 +680,12 @@ title: Processors
 
 <p>Java Advanced Imaging (JAI) is a sophisticated image processing library developed by Sun Microsystems until the mid-2000s. It offers several advantages over Java 2D that make it ideal for an image server: a pull-based rendering pipeline that can reduce memory usage, and efficient region-of-interest decoding with some formats.</p>
 
-<div class="alert alert-warning">
-  Development on JAI ended a long time ago, and a <a href="https://github.com/medusa-project/cantaloupe/issues/176">minor incompatibility</a> has cropped up in Java 9. Given that supporting JAI is likely to become more problematic as time goes on, this processor should be considered deprecated, and it may be removed in a future release.</li>
-</div>
+<p class="text-warning">
+  <i class="fa fa-info-circle"></i> Development on JAI ended a long time ago, and a <a href="https://github.com/medusa-project/cantaloupe/issues/176">minor incompatibility</a> has cropped up in Java 9. Given that supporting JAI is likely to become more problematic as time goes on, this processor should be considered deprecated, and it may be removed in a future release.</li>
+</p>
 
-<div class="alert alert-info">
-  <p>Note: When using this processor, it is normal to see the following log message:</p>
+<div class="alert alert-primary">
+  <p><i class="fa fa-info-circle"></i> When using this processor, it is normal to see the following log message:</p>
   <blockquote>Error: Could not find mediaLib accelerator wrapper classes. Continuing in pure Java mode.</blockquote>
   <p>This is caused by the absence of a mediaLib JAR on the classpath, and is harmless and expected. Either add the <code>-Dcom.sun.media.jai.disableMediaLib=true</code> VM option to suppress it, or put a mediaLib JAR on your classpath.</p>
 </div>
@@ -791,13 +791,17 @@ title: Processors
 
 <p><a href="http://www.kakadusoftware.com">Kakadu</a> is widely considered the fastest available general-purpose JPEG2000 codec. This processor uses Kakadu's <span class="filename">kdu_expand</span> demo application to decode JPEG2000 source images.</p>
 
-<p><span class="filename">kdu_expand</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. All other operations (differential scaling, rotation, etc.) are performed using Java 2D, and basic image characteristics are read using custom code.</p>
+<p><span class="filename">kdu_expand</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. All other operations are performed using Java 2D, and basic image characteristics are read using custom code.</p>
 
 <p>The Kakadu demo binaries must be installed in order for this processor to work. They will automatically be detected if they are on the path; otherwise, set the <code>KakaduDemoProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory. The <code>LD_LIBRARY_PATH</code> environment variable (or your operating system's equivalent) will also need to be set to locate the Kakadu shared library.</p>
 
-<div class="alert alert-info">This processor was called KakaduProcessor in versions prior to 4.0. It was renamed in order to distinguish it from <a href="#KakaduNativeProcessor">KakaduNativeProcessor</a>, which is new in 4.0.</div>
+<p class="text-info">
+  <i class="fa fa-info-circle"></i> This processor was named KakaduProcessor in versions prior to 4.0. It was renamed in order to distinguish it from <a href="#KakaduNativeProcessor">KakaduNativeProcessor</a>, which is new in 4.0.
+</p>
 
-<div class="alert alert-info">Kakadu is not free and the demo tools are not included with Cantaloupe. As of this writing, they can be downloaded from the <a href="http://kakadusoftware.com">Kakadu website</a> and used for demonstration purposes.</div>
+<p class="text-warning">
+  <i class="fa fa-info-circle"></i> Kakadu is not free and the demo tools are not included with Cantaloupe. As of this writing, they can be downloaded from the <a href="http://kakadusoftware.com">Kakadu website</a> and used for demonstration purposes.
+</p>
 
 <h4>Data Flow</h4>
 
@@ -806,7 +810,8 @@ title: Processors
     <ul>
       <li>kdu_expand
         <br>
-        <span class="text-warning">Note: in Windows, output from this step is written to a temporary file rather than streamed into the next step, which is less efficient.</span>
+        <span class="text-warning">
+          <i class="fa fa-info-circle"></i> In Windows, output from this step is written to a temporary file rather than streamed into the next step, which is less efficient.</span>
         <ul>
           <li>java.lang.Process
             <ul>
@@ -844,38 +849,51 @@ title: Processors
   <li>It works equally efficiently in Windows.</li>
 </ul>
 
-<p>The Kakadu library is used only for region decompression. All other operations (differential scaling, rotation, etc.) are performed using Java 2D.</p>
+<p>The Kakadu library is used only for region decompression. All other operations are performed using Java 2D.</p>
 
 <h4>Configuration</h4>
 
 <p>To get this processor to work, it must be able to locate the Kakadu JNI binding and shared library. When the release archive is extracted, a subdirectory named <span class="filename">libs</span> is created, containing precompiled libraries for several platforms.</p>
 
-<h5>Linux</h5>
+<ul class="nav nav-pills" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="KakaduNativeProcessor-macOS-tab" data-toggle="tab" href="#KakaduNativeProcessor-macOS" role="tab" aria-controls="home" aria-selected="true">macOS</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="KakaduNativeProcessor-Linux-tab" data-toggle="tab" href="#KakaduNativeProcessor-Linux" role="tab" aria-controls="home" aria-selected="true">Linux</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="KakaduNativeProcessor-Windows-tab" data-toggle="tab" href="#KakaduNativeProcessor-Windows" role="tab" aria-controls="home" aria-selected="true">Windows</a>
+  </li>
+</ul>
+<div class="tab-content">
+  <div class="tab-pane fade show active" id="KakaduNativeProcessor-macOS" role="tabpanel" aria-labelledby="KakaduNativeProcessor-macOS-tab">
+    <p>Copy the library files from the macOS-specific <span class="filename">libs</span> folder into <code>/usr/local/lib</code>.</p>
+  </div>
+  <div class="tab-pane fade" id="KakaduNativeProcessor-Linux" role="tabpanel" aria-labelledby="KakaduNativeProcessor-Linux-tab">
+    <p>Do <strong>one</strong> of the following:</p>
 
-<p>Do <strong>one</strong> of the following:</p>
+    <ol>
+      <li>Copy the files from the Linux-specific <span class="filename">libs</span> folder to a location that is on your <code>LD_LIBRARY_PATH</code>.</li>
+      <li>Adjust your <code>LD_LIBRARY_PATH</code> to include the pathname of the directory containing the binaries.</li>
+      <li>Tell the JVM where the libraries are located using a VM argument at launch, like: <code>-Djava.library.path=/path/to/cantaloupe-x.x/libs/Linux-x86-64</code></li>
+      <li>Copy the libraries into one of the locations on the <code>java.library.path</code>. (These are logged at application startup.)</p>
+    </ol>
+  </div>
+  <div class="tab-pane fade" id="KakaduNativeProcessor-Windows" role="tabpanel" aria-labelledby="KakaduNativeProcessor-Windows-tab">
+    <p>Do <strong>one</strong> of the following:</p>
 
-<ol>
-  <li>Copy the files from the Linux-specific <span class="filename">libs</span> folder to a location that is on your <code>LD_LIBRARY_PATH</code>.</li>
-  <li>Adjust your <code>LD_LIBRARY_PATH</code> to include the pathname of the directory containing the binaries.</li>
-  <li>Tell the JVM where the libraries are located using a VM argument at launch, like: <code>-Djava.library.path=/path/to/cantaloupe-x.x/libs/Linux-x86-64</code></li>
-  <li>Copy the libraries into one of the locations on the existing <code>java.library.path</code>. (These locations are logged at application startup.)</p>
-</ol>
+    <ol>
+      <li>Copy the files from the Windows-specific folder to a location that is on your <code>PATH</code>.</li>
+      <li>Tell the JVM where the libraries are located using a VM argument at launch, like: <code>-Djava.library.path=C:\Users\me\cantaloupe-x.x\libs\Windows</code></li>
+      <li>Copy the libraries into one of the locations on the <code>java.library.path</code>. (These are logged at application startup.)</p>
+    </ol>
+  </div>
+</div>
 
-<h5>macOS</h5>
-
-<p>Copy the library files from the macOS-specific <span class="filename">libs</span> folder into <code>/usr/local/lib</code>.</p>
-
-<h5>Windows</h5>
-
-<p>Do <strong>one</strong> of the following:</p>
-
-<ol>
-  <li>Copy the files from the Windows-specific folder to a location that is on your <code>PATH</code>.</li>
-  <li>Tell the JVM where the libraries are located using a VM argument at launch, like: <code>-Djava.library.path=C:\Users\me\cantaloupe-x.x\libs\Windows</code></li>
-  <li>Copy the libraries into one of the locations on the existing <code>java.library.path</code>. (These locations are logged at application startup.)</p>
-</ol>
-
-<div class="alert alert-info">This processor was developed using a Kakadu Public Service License and may not be used commercially. See the <a href="http://kakadusoftware.com/wp-content/uploads/2014/06/Kakadu-Licence-Terms-Feb-2018.pdf">Kakadu Software License Terms and Conditions</a> for detailed terms.</div>
+<p class="text-info">
+  <i class="fa fa-info-circle"></i> This processor was developed using a Kakadu Public Service License and may not be used commercially. See the <a href="http://kakadusoftware.com/wp-content/uploads/2014/06/Kakadu-Licence-Terms-Feb-2018.pdf">Kakadu Software License Terms and Conditions</a> for detailed terms.
+</p>
 
 <h4>Data Flow</h4>
 
@@ -906,7 +924,7 @@ title: Processors
 <p>OpenJpegProcessor uses the <span class="filename">opj_decompress</span> tool from the open-source
 <a href="http://www.openjpeg.org">OpenJPEG</a> project to decode JPEG2000 source images.</p>
 
-<p>Although it does support some other operations, <span class="filename">opj_decompress</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. All other operations (differential scaling, rotation, etc.) are performed using Java 2D, and basic image characteristics are acquired using custom code.</p>
+<p>Although it does support some other operations, <span class="filename">opj_decompress</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. All other operations are performed using Java 2D, and basic image characteristics are acquired using custom code.</p>
 
 <p>To use this processor, OpenJPEG must be installed. The OpenJPEG binaries will automatically be detected if they are on the path; otherwise, set the <code>OpenJpegProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory. The <code>LD_LIBRARY_PATH</code> environment variable will also need to be set to locate the OpenJPEG shared library.</p>
 
@@ -918,7 +936,7 @@ title: Processors
 
       <li>opj_decompress
         <br>
-        <span class="text-warning">Note: in Windows, output must be written to a temporary file rather than streamed into the next step, which is less efficient.</span>
+        <span class="text-warning"><i class="fa fa-info-circle"></i> In Windows, output must be written to a temporary file rather than streamed into the next step, which is less efficient.</span>
         <ul>
           <li>java.lang.Process
             <ul>

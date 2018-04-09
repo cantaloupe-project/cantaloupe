@@ -5,7 +5,7 @@ title: Getting Started
 
 <h1>Getting Started</h1>
 
-<ul>
+<ul class="toc">
   <li><a href="#Requirements">Requirements</a></li>
   <li><a href="#Configuration">Configuration</a></li>
   <li><a href="#Running">Running</a>
@@ -36,17 +36,30 @@ title: Getting Started
 
 <p>Cantaloupe is distributed as a custom <span class="filename">.war</span> file that can be run standalone (using a built-in web server) or deployed to a Servlet container like Tomcat. If you have a choice, standalone mode is generally recommended, as it's less prone to conflicts with other applications.</p>
 
-<div class="alert alert-warning">Multiple web applications running in a container share the same Java Virtual Machine (JVM) and can conflict with each other. The Image I/O library, for example, is configured globally, and Cantaloupe makes some runtime adjustments to it that other applications may not expect, and vice versa. If you choose to run other applications in the same container, be aware of this and test them all to ensure they are working correctly.</div>
+<p class="text-warning">
+  <i class="fa fa-info-circle"></i> Multiple web applications running in a container share the same Java Virtual Machine (JVM) and can conflict with each other. The Image I/O library, for example, is configured globally, and Cantaloupe makes some runtime adjustments to it that other applications may not expect, and vice versa. If you choose to run other applications in the same container, be aware of this and test them all to ensure they are working correctly.
+</p>
 
 <h3 id="Standalone">Standalone</h3>
 
-<p>From the command prompt (macOS/Linux):</p>
+<p>From the command prompt:</p>
 
-<pre>java -Dcantaloupe.config=/path/to/cantaloupe.properties -Xmx2g -jar Cantaloupe-<span class="version">4.0</span>.x.war</pre>
-
-<p>From the command prompt (Windows):</p>
-
-<pre>java -Dcantaloupe.config=C:\path\to\cantaloupe.properties -Xmx2g -jar Cantaloupe-<span class="version">4.0</span>.x.war</pre>
+<ul class="nav nav-pills" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="run-linux-tab1" data-toggle="tab" href="#run-linux1" role="tab" aria-controls="home" aria-selected="true">macOS/Linux</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="run-windows-tab1" data-toggle="tab" href="#run-windows1" role="tab" aria-controls="profile" aria-selected="false">Windows</a>
+  </li>
+</ul>
+<div class="tab-content">
+  <div class="tab-pane fade show active" id="run-linux1" role="tabpanel" aria-labelledby="run-linux-tab1">
+    <pre>java -Dcantaloupe.config=/path/to/cantaloupe.properties -Xmx2g -jar cantaloupe-<span class="version">4.0</span>.x.war</pre>
+  </div>
+  <div class="tab-pane fade" id="run-windows1" role="tabpanel" aria-labelledby="run-windows-tab1">
+    <pre>java -Dcantaloupe.config=C:\path\to\cantaloupe.properties -Xmx2g -jar cantaloupe-<span class="version">4.0</span>.x.war</pre>
+  </div>
+</div>
 
 <p>Assuming you have an image named <span class="filename">image.tif</span>, try accessing:</p>
 
@@ -59,25 +72,36 @@ title: Getting Started
 
 <h3 id="Servlet Container">Servlet Container</h3>
 
-<p>Copy the <span class="filename">Cantaloupe-<span class="version">4.0</span>.x.war</span> file to your container's web application folder. (In Tomcat, this is <span class="filename">/webapps</span> inside the main Tomcat folder.)</p>
+<p>Copy the <span class="filename">cantaloupe-<span class="version">4.0</span>.x.war</span> file to your container's web application folder. (In Tomcat, this is <span class="filename">/webapps</span> inside the main Tomcat folder.)</p>
 
-<p>Add the <code>-Dcantaloupe.config</code> VM argument to your container, in the same format as in the <a href="#Standalone">standalone</a> section. In Tomcat 8, this can be done by setting <code>CATALINA_OPTS</code>, located in <span class="filename">bin/setenv.sh</span> (Unix) or <span class="filename">bin/setenv.bat</span> (Windows) inside the main Tomcat folder:</p>
+<ul class="nav nav-pills" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="run-linux-tab2" data-toggle="tab" href="#run-linux2" role="tab" aria-controls="home" aria-selected="true">macOS/Linux</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="run-windows-tab2" data-toggle="tab" href="#run-windows2" role="tab" aria-controls="profile" aria-selected="false">Windows</a>
+  </li>
+</ul>
+<div class="tab-content">
+  <div class="tab-pane fade show active" id="run-linux2" role="tabpanel" aria-labelledby="run-linux-tab2">
+    <p>Add the <code>-Dcantaloupe.config</code> VM argument to your container, in the same format as in the <a href="#Standalone">standalone</a> section. In Tomcat 8, this can be done by setting <code>CATALINA_OPTS</code>, located in <span class="filename">bin/setenv.sh</span> inside the main Tomcat folder:</p>
 
-<h4>Unix</h4>
+    <pre>export CATALINA_OPTS="$CATALINA_OPTS -Dcantaloupe.config=/path/to/cantaloupe.properties"</pre>
+  </div>
+  <div class="tab-pane fade" id="run-windows2" role="tabpanel" aria-labelledby="run-windows-tab2">
+    <p>Add the <code>-Dcantaloupe.config</code> VM argument to your container, in the same format as in the <a href="#Standalone">standalone</a> section. In Tomcat 8, this can be done by setting <code>CATALINA_OPTS</code>, located in <span class="filename">bin/setenv.bat</span> inside the main Tomcat folder:</p>
 
-<pre>export CATALINA_OPTS="$CATALINA_OPTS -Dcantaloupe.config=/path/to/cantaloupe.properties"</pre>
-
-<h4>Windows</h4>
-
-<pre>set JAVA_OPTS=%JAVA_OPTS% -Dcantaloupe.config="C:\path\to\cantaloupe.properties"</pre>
+    <pre>set JAVA_OPTS=%JAVA_OPTS% -Dcantaloupe.config="C:\path\to\cantaloupe.properties"</pre>
+  </div>
+</div>
 
 <p>Then, restart your container.</p>
 
 <p>Assuming you have an image named <span class="filename">image.tif</span>, and a container listening on port 8080, try accessing:</p>
 
 <ul>
-  <li>http://localhost:8080/Cantaloupe-<span class="version">4.0</span>.x/iiif/2/image.tif/info.json</li>
-  <li>http://localhost:8080/Cantaloupe-<span class="version">4.0</span>.x/iiif/2/image.tif/0,0,200,200/full/0/default.jpg</li>
+  <li>http://localhost:8080/cantaloupe-<span class="version">4.0</span>.x/iiif/2/image.tif/info.json</li>
+  <li>http://localhost:8080/cantaloupe-<span class="version">4.0</span>.x/iiif/2/image.tif/0,0,200,200/full/0/default.jpg</li>
 </ul>
 
 <h3 id="Docker">Docker</h3>

@@ -3,15 +3,12 @@ layout: default
 manual_version: 3.0
 ---
 
-{% include _manual/_versions.html %}
-
-<h1>User Manual <small class="version">3.0</small></h1>
-
 <div class="row">
-  <div class="col-sm-3">
+  <div class="col-sm-4 col-md-3 col-lg-2 d-print-none">
     {% include _manual/_3.0/toc.html %}
   </div>
-  <div class="col-sm-9">
+  <div class="col-sm-8 col-md-9 col-lg-10">
+    {% include outdated-manual-warning.html %}
     {{ content }}
   </div>
 </div>

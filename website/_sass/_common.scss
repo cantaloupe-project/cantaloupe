@@ -1,0 +1,78 @@
+@import "bootstrap.min.css";
+
+@media screen and (max-width: 480px) {
+  header img {
+    width: 80px;
+    height: 42px;
+  }
+}
+
+body {
+  background-color: #2e3238; }
+
+header {
+  padding-top: 0.8em;
+  padding-bottom: 1.2em;
+  img {
+    float: left;
+    margin: 0em 1.2em 0em 0;
+  }
+  h1 {
+    font-size: 2.34375rem;
+    font-weight: 500;
+    margin: 0;
+    padding: 0;
+  }
+  h1 > small {
+    font-size: 0.5em;
+  }
+}
+
+.container, .container-fluid {
+  padding-top: 1em; }
+
+.tab-content {
+  padding-top: 1em;
+}
+
+h1 {
+  font-size: 3.5rem;
+  font-weight: 300;
+  line-height: 1.2; }
+
+h2 {
+  font-size: 2.5rem;
+  font-weight: 300;
+  line-height: 1.2; }
+
+dd {
+  margin-left: 1.2em;
+  margin-bottom: 0.5em; }
+
+table th {
+  text-align: center; }
+
+footer {
+  height: 2em; }
+
+code, span.filename, var, pre {
+  background-color: #404046;
+  color: #e0e0e0;
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+  font-size: 0.95em;
+  padding: 0.25em; }
+
+pre {
+  padding: 0.5em;
+}
+
+figure {
+  margin: 1em auto; }
+
+figcaption {
+  font-size: 0.9em;
+  font-style: italic;
+  text-align: center; }
+
+.bg-success a, .bg-warning a, .bg-danger a {
+  color: white; }

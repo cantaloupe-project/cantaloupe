@@ -5,7 +5,7 @@ title: Logging
 
 <h1>Logging</h1>
 
-<ul>
+<ul class="toc">
   <li><a href="#Application%20Log">Application Log</a></li>
   <li><a href="#Error%20Log">Error Log</a></li>
   <li><a href="#Access%20Log">Access Log</a></li>
@@ -39,7 +39,9 @@ title: Logging
 
 <p>Currently, the only available rolling policy (<code>log.application.RollingFileAppender.policy</code>) is <code>TimeBasedRollingPolicy</code>, which rolls over the log file based on the value of <code>log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern</code>. <code>log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history</code> defines how many rolled-over log files will be kept.</p>
 
-<div class="alert alert-info">FileAppender and RollingFileAppender should not be enabled simultaneously, or if they are, they should not log to the same file.</div>
+<div class="alert alert-info">
+  <i class="fa fa-info-circle"></i> FileAppender and RollingFileAppender should not be enabled simultaneously, or if they are, they should not log to the same file.
+</div>
 
 <h4>SyslogAppender</h4>
 

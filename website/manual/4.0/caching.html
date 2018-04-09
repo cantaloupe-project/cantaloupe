@@ -5,7 +5,7 @@ title: Caching
 
 <h1>Caching</h1>
 
-<ul>
+<ul class="toc">
   <li><a href="#Client-Side Caching">Client-Side Caching</li>
   <li><a href="#Server-Side Caching">Server-Side Caching</li>
     <ul>
@@ -215,7 +215,9 @@ cache.client.no_transform = true
 
 <p>This cache is process-safe: it is safe to point multiple server instances at the same cache directory.</p>
 
-<div class="alert alert-info">On macOS, files' last-modified time is used instead of their last-accessed time, as the latter is not reliable.</div>
+<p class="text-info">
+  <i class="fa fa-info-circle"></i> On macOS, files' last-modified time is used instead of their last-accessed time, as the latter is not reliable.
+</p>
 
 <hr>
 
@@ -309,9 +311,9 @@ CREATE INDEX identifier_idx ON {JdbcCache.info_table} (identifier);
   <dd>A secret key associated with your AWS account. (See <a href="http://aws.amazon.com/security-credentials">AWS Security Credentials</a>.)</dd>
 </dl>
 
-<div class="alert alert-info">
-  Note: S3 does not provide a last-accessed time in object metadata, so the time-to-live is on the basis of last-modified time instead.
-</div>
+<p class="text-info">
+  <i class="fa fa-info-circle"></i> S3 does not provide a last-accessed time in object metadata, so the time-to-live is on the basis of last-modified time instead.
+</p>
 
 <hr>
 
@@ -330,9 +332,9 @@ CREATE INDEX identifier_idx ON {JdbcCache.info_table} (identifier);
   <dd>String to prepend to object keys&mdash;for example, to achieve a virtual folder hierarchy.</dd>
 </dl>
 
-<div class="alert alert-info">
-  Note: Azure Storage does not provide a last-accessed time in object metadata, so the time-to-live is on the basis of last-modified time instead.
-</div>
+<p class="text-info">
+  <i class="fa fa-info-circle"></i> Azure Storage does not provide a last-accessed time in object metadata, so the time-to-live is on the basis of last-modified time instead.
+</p>
 
 <hr>
 
