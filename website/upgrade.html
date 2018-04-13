@@ -38,6 +38,7 @@ title: Upgrading
   </li>
   <li>Change any <code>AmazonS3Resolver</code> configuration values to <code>S3Resolver</code>.</li>
   <li>Change any <code>AmazonS3Cache</code> configuration values to <code>S3Cache</code>.</li>
+  <li>Cache keys have changed, and purging your cache is recommended, but not required.</li>
   <li>The delegate script architecture has changed, and the 3.x script is not compatible. See the "Delegate Script" section of the user manual for migration info.</li>
   <li>The deprecated <code>DELETE /cache/:identifier</code> HTTP API method has been removed. See the "Remote Management" section of the user manual for information about its successor.</li>
   <li>Note that the <code>X-IIIF-ID</code> reverse proxy header is deprecated and will be removed in a future version. Use <code>X-Forwarded-ID</code> instead.</li>

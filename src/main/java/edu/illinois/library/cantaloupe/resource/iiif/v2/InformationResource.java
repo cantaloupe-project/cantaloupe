@@ -164,8 +164,10 @@ public class InformationResource extends IIIF2Resource {
                                              Processor processor) {
         final ImageInfo<String, Object> imageInfo =
                 new ImageInfoFactory().newImageInfo(
-                        getImageURI(), processor, info, getDelegateProxy());
+                        getImageURI(), processor, info, getPageIndex(),
+                        getDelegateProxy());
         final MediaType mediaType = getNegotiatedMediaType();
+
         return new JSONRepresentation(imageInfo, mediaType, () -> {
             if (tempFileFuture != null) {
                 Path tempFile = tempFileFuture.get();

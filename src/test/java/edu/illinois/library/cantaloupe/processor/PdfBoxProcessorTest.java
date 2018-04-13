@@ -112,40 +112,71 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testValidate() throws Exception {
+    public void testReadImageInfoWithMultiPagePDF() throws Exception {
+        instance.close();
+        instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
+        final Info info = instance.readImageInfo();
+        assertEquals(2, info.getImages().size());
+        assertEquals(new Dimension(100, 88), info.getImages().get(0).getSize());
+        assertEquals(new Dimension(88, 100), info.getImages().get(1).getSize());
+    }
+
+    @Test
+    public void testValidateWithNoPageArgument() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
         OperationList ops = new OperationList(
                 new Identifier("cats"), new Encode(Format.JPG));
-        Dimension fullSize = new Dimension(1000, 1000);
+        Dimension fullSize = new Dimension(100, 88);
         instance.validate(ops, fullSize);
+    }
 
+    @Test
+    public void testValidateWithValidPageArgument() throws Exception {
+        instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
+
+        OperationList ops = new OperationList(
+                new Identifier("cats"), new Encode(Format.JPG));
         ops.getOptions().put("page", "1");
+        Dimension fullSize = new Dimension(100, 88);
+
         instance.validate(ops, fullSize);
+    }
 
-        ops.getOptions().put("page", "3");
-        try {
-            instance.validate(ops, fullSize);
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void testValidateWithZeroPageArgument() throws Exception {
+        instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
+        OperationList ops = new OperationList(
+                new Identifier("cats"), new Encode(Format.JPG));
         ops.getOptions().put("page", "0");
-        try {
-            instance.validate(ops, fullSize);
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
+        Dimension fullSize = new Dimension(100, 88);
 
+        instance.validate(ops, fullSize);
+    }
+
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void testValidateWithNegativePageArgument() throws Exception {
+        instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
+
+        OperationList ops = new OperationList(
+                new Identifier("cats"), new Encode(Format.JPG));
         ops.getOptions().put("page", "-1");
-        try {
-            instance.validate(ops, fullSize);
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
+        Dimension fullSize = new Dimension(100, 88);
+
+        instance.validate(ops, fullSize);
+    }
+
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void testValidateWithExcessivePageArgument() throws Exception {
+        instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
+
+        OperationList ops = new OperationList(
+                new Identifier("cats"), new Encode(Format.JPG));
+        ops.getOptions().put("page", "3");
+        Dimension fullSize = new Dimension(100, 88);
+
+        instance.validate(ops, fullSize);
     }
 
 }

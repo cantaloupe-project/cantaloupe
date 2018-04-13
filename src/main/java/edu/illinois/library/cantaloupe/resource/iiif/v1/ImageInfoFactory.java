@@ -5,23 +5,18 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.resource.iiif.ImageInfoUtil;
 
 import java.awt.Dimension;
 
-class ImageInfoFactory {
+final class ImageInfoFactory {
 
-    /** Will be used to calculate a maximum scale factor. */
     private static final int MIN_SIZE = 64;
 
     ImageInfo newImageInfo(final String imageUri,
                            final Processor processor,
-                           final Info cacheInfo) throws ProcessorException {
-        // We want to use the orientation-aware full size, which takes the
-        // embedded orientation into account.
-        final Dimension virtualSize = cacheInfo.getOrientationSize();
-
+                           final Info.Image infoImage,
+                           final int numResolutions) {
         final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
                 processor.getSupportedFeatures(),
                 processor.getSupportedIIIF1Qualities(),
@@ -34,15 +29,13 @@ class ImageInfoFactory {
         // calculate a tile size close to MIN_TILE_SIZE_CONFIG_KEY pixels.
         // Otherwise, use the smallest multiple of the tile size above
         // MIN_TILE_SIZE_CONFIG_KEY of image resolution 0.
-        final Info.Image firstImage =
-                cacheInfo.getImages().get(0);
-        Dimension virtualTileSize = firstImage.getOrientationTileSize();
+        final Dimension virtualSize = infoImage.getOrientationSize();
+        Dimension virtualTileSize = infoImage.getOrientationTileSize();
 
-        if (cacheInfo.getImages().size() > 0) {
+        if (numResolutions > 0) {
             if (!virtualTileSize.equals(virtualSize)) {
-                virtualTileSize = ImageInfoUtil.smallestTileSize(virtualSize,
-                        firstImage.getOrientationTileSize(),
-                        minTileSize);
+                virtualTileSize = ImageInfoUtil.smallestTileSize(
+                        virtualSize, virtualTileSize, minTileSize);
             }
         }
 

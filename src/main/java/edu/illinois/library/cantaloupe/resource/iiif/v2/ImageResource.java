@@ -155,7 +155,7 @@ public class ImageResource extends IIIF2Resource {
                     resolver, processor, identifier, sourceFormat);
 
             final Info info = getOrReadInfo(ops.getIdentifier(), processor);
-            final Dimension fullSize = info.getSize();
+            final Dimension fullSize = info.getSize(getPageIndex());
 
             getRequestContext().setOperationList(ops, fullSize);
 

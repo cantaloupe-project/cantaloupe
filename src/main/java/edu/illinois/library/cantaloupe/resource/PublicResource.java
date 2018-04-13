@@ -28,6 +28,21 @@ public abstract class PublicResource extends AbstractResource {
     }
 
     /**
+     * @return Page index (a.k.a. page number - 1) from the {@literal page}
+     *         query argument, or {@literal 0} if not supplied.
+     */
+    protected int getPageIndex() {
+        String arg = getReference().getQueryAsForm().getFirstValue("page", "1");
+        try {
+            int index = Integer.parseInt(arg) - 1;
+            if (index >= 0) {
+                return index;
+            }
+        } catch (NumberFormatException ignore) {}
+        return 0;
+    }
+
+    /**
      * <p>Checks that the requested area is greater than zero and less than or
      * equal to {@link Key#MAX_PIXELS}.</p>
      *

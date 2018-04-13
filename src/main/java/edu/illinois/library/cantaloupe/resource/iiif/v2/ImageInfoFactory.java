@@ -38,20 +38,23 @@ final class ImageInfoFactory {
                             ServiceFeature.PROFILE_LINK_HEADER));
 
     /**
-     * @param imageURI  May be {@literal null}.
+     * @param imageURI       May be {@literal null}.
      * @param processor
      * @param info
-     * @param proxy     May be {@literal null}.
+     * @param infoImageIndex Index of the image in the {@link Info} argument's
+     *                       {@link Info#getImages()} list.
+     * @param proxy          May be {@literal null}.
      */
     ImageInfo<String,Object> newImageInfo(final String imageURI,
                                           final Processor processor,
                                           final Info info,
+                                          final int infoImageIndex,
                                           final DelegateProxy proxy) {
         final Configuration config = Configuration.getInstance();
 
         // We want to use the orientation-aware full size, which takes the
         // embedded orientation into account.
-        final Dimension virtualSize = info.getOrientationSize();
+        final Dimension virtualSize = info.getOrientationSize(infoImageIndex);
 
         // Create a Map instance, which will eventually be serialized to JSON
         // and returned in the response body.
@@ -89,13 +92,12 @@ final class ImageInfoFactory {
         final List<ImageInfo.Tile> tiles = new ArrayList<>();
         responseInfo.put("tiles", tiles);
 
-        final Info.Image firstImage =
-                info.getImages().get(0);
+        final Info.Image firstImage = info.getImages().get(0);
 
         // Find the virtual tile size based on the virtual full image size.
         final Dimension virtualTileSize = firstImage.getOrientationTileSize();
 
-        if (info.getImages().size() == 1 &&
+        if (info.getNumResolutions() == 1 &&
                 virtualTileSize.equals(virtualSize)) {
             uniqueTileSizes.add(
                     ImageInfoUtil.smallestTileSize(virtualSize, minTileSize));

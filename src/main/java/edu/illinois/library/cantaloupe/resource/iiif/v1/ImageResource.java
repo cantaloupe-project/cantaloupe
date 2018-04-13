@@ -138,7 +138,7 @@ public class ImageResource extends IIIF1Resource {
                     ops.getIdentifier(), ops.getOutputFormat());
 
             final Info info = getOrReadInfo(identifier, processor);
-            final Dimension fullSize = info.getSize();
+            final Dimension fullSize = info.getSize(getPageIndex());
 
             getRequestContext().setOperationList(ops, fullSize);
 

@@ -41,14 +41,13 @@ import java.util.Set;
 class PdfBoxProcessor extends AbstractJava2DProcessor
         implements FileProcessor, StreamProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(PdfBoxProcessor.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(PdfBoxProcessor.class);
 
     private static final int FALLBACK_DPI = 150;
 
     private PDDocument doc;
     private InputStream docInputStream;
-    private Dimension imageSize;
     private Path sourceFile;
     private StreamSource streamSource;
 
@@ -62,13 +61,9 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
 
     @Override
     public Set<Format> getAvailableOutputFormats() {
-        final Set<Format> outputFormats;
-        if (Format.PDF.equals(format)) {
-            outputFormats = ImageWriterFactory.supportedFormats();
-        } else {
-            outputFormats = Collections.unmodifiableSet(Collections.emptySet());
-        }
-        return outputFormats;
+        return (Format.PDF.equals(format)) ?
+                ImageWriterFactory.supportedFormats() :
+                Collections.unmodifiableSet(Collections.emptySet());
     }
 
     @Override
@@ -79,30 +74,6 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     @Override
     public StreamSource getStreamSource() {
         return streamSource;
-    }
-
-    private void loadDocument() throws IOException {
-        if (doc == null) {
-            final Stopwatch watch = new Stopwatch();
-
-            if (sourceFile != null) {
-                doc = PDDocument.load(sourceFile.toFile());
-            } else {
-                docInputStream = streamSource.newInputStream();
-                doc = PDDocument.load(docInputStream);
-            }
-
-            // Disable the document's cache of PDImageXObjects
-            // See: https://pdfbox.apache.org/2.0/faq.html#outofmemoryerror
-            doc.setResourceCache(new DefaultResourceCache() {
-                @Override
-                public void put(COSObject indirect, PDXObject xobject) {
-                    // no-op
-                }
-            });
-
-            LOGGER.debug("Loaded document in {}", watch);
-        }
     }
 
     @Override
@@ -118,8 +89,8 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
             scale = new Scale();
         }
         // If the op list contains a scale operation that is not
-        // NON_ASPECT_FILL, we can use a scale-appropriate rasterization
-        // DPI and omit the scale step.
+        // NON_ASPECT_FILL, we can use a scale-appropriate rasterization DPI
+        // and omit the scale step.
         if (!Scale.Mode.NON_ASPECT_FILL.equals(scale.getMode())) {
             hints.add(ReaderHint.IGNORE_SCALE);
         }
@@ -165,6 +136,31 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
         return Math.max(page, 1);
     }
 
+    private void readDocument() throws IOException {
+        if (doc == null) {
+            final Stopwatch watch = new Stopwatch();
+
+            if (sourceFile != null) {
+                doc = PDDocument.load(sourceFile.toFile());
+            } else {
+                docInputStream = streamSource.newInputStream();
+                doc = PDDocument.load(docInputStream);
+            }
+
+            // Disable the document's cache of PDImageXObjects
+            // See: https://pdfbox.apache.org/2.0/faq.html#outofmemoryerror
+            // This cache has never proven to be a problem, but it's not needed.
+            doc.setResourceCache(new DefaultResourceCache() {
+                @Override
+                public void put(COSObject indirect, PDXObject xobject) {
+                    // no-op
+                }
+            });
+
+            LOGGER.debug("Loaded document in {}", watch);
+        }
+    }
+
     /**
      * @return Rasterized page of the PDF.
      */
@@ -177,37 +173,35 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
 
     /**
      * @return Rasterized page of the PDF.
+     * @throws IndexOutOfBoundsException if the given page index is out of
+     *                                   bounds.
      */
     private BufferedImage readImage(int pageIndex,
                                     float dpi) throws IOException {
         LOGGER.debug("DPI: {}", dpi);
 
-        loadDocument();
-        // If the given page index is out of bounds, the renderer will
-        // throw an IndexOutOfBoundsException.
+        readDocument();
         PDFRenderer renderer = new PDFRenderer(doc);
         return renderer.renderImageWithDPI(pageIndex, dpi);
     }
 
     @Override
     public Info readImageInfo() throws IOException {
-        if (imageSize == null) {
-            loadDocument();
+        readDocument();
 
+        final Configuration config = Configuration.getInstance();
+        final int dpi = config.getInt(Key.PROCESSOR_DPI, FALLBACK_DPI);
+        final float scale = dpi / 72f;
+        final Info info = Info.builder()
+                .withFormat(getSourceFormat())
+                .withNumResolutions(1)
+                .build();
+        info.getImages().clear();
+
+        for (int i = 0; i < doc.getNumberOfPages(); i++) {
             // PDF doesn't have native dimensions, so figure out the dimensions
             // at the current DPI setting.
-            //
-            // Changing this setting will affect the returned info, which
-            // could have implications for info caching. Also, we hope that
-            // every page will have the same dimensions...
-            //
-            // N.B.: Accessing the application configuration from a processor
-            // is VERY BAD PRACTICE but we have to in this case.
-            final Configuration config = Configuration.getInstance();
-            final int dpi = config.getInt(Key.PROCESSOR_DPI, FALLBACK_DPI);
-            final float scale = dpi / 72f;
-
-            final PDPage page = doc.getPage(0);
+            final PDPage page = doc.getPage(i);
             final PDRectangle cropBox = page.getCropBox();
             final float widthPt = cropBox.getWidth();
             final float heightPt = cropBox.getHeight();
@@ -220,14 +214,14 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                 widthPx = heightPx;
                 heightPx = tmp;
             }
-            imageSize = new Dimension(widthPx, heightPx);
+
+            Dimension size = new Dimension(widthPx, heightPx);
+            Info.Image image = new Info.Image();
+            image.setSize(size);
+            image.setTileSize(size);
+            info.getImages().add(image);
         }
-        return Info.builder()
-                .withSize(imageSize)
-                .withTileSize(imageSize)
-                .withFormat(getSourceFormat())
-                .withNumResolutions(1)
-                .build();
+        return info;
     }
 
     @Override
@@ -247,7 +241,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                          Dimension fullSize) throws ProcessorException {
         StreamProcessor.super.validate(opList, fullSize);
 
-        // Check the format of the "page" option, if present.
+        // Check the format of the "page" argument, if present.
         final String pageStr = (String) opList.getOptions().get("page");
         if (pageStr != null) {
             try {
@@ -255,9 +249,10 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                 if (page > 0) {
                     // Check that the page is actually contained in the PDF.
                     try {
-                        loadDocument();
+                        readDocument();
                         if (page > doc.getNumberOfPages()) {
-                            throw new IllegalArgumentException(
+                            close();
+                            throw new IndexOutOfBoundsException(
                                     "Page number is out-of-bounds.");
                         }
                     } catch (IOException e) {
@@ -265,7 +260,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                         throw new ProcessorException(e.getMessage(), e);
                     }
                 } else {
-                    throw new IllegalArgumentException(
+                    throw new IndexOutOfBoundsException(
                             "Page number is out-of-bounds.");
                 }
             } catch (NumberFormatException e) {

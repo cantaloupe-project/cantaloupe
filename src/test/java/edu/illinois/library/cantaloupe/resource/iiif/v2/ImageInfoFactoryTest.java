@@ -39,7 +39,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
         imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, processor.readImageInfo(), null);
+                imageUri, processor, processor.readImageInfo(), 0, null);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class ImageInfoFactoryTest extends BaseTest {
                 TestUtil.getImage("jpg-rotated.jpg"));
 
         imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, processor.readImageInfo(), null);
+                imageUri, processor, processor.readImageInfo(), 0, null);
     }
 
     @Test
@@ -125,7 +125,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         config.setProperty(Key.IIIF_MIN_SIZE, 200);
 
         imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, processor.readImageInfo(), null);
+                imageUri, processor, processor.readImageInfo(), 0, null);
         @SuppressWarnings("unchecked")
         List<ImageInfo.Size> sizes =
                 (List<ImageInfo.Size>) imageInfo.get("sizes");
@@ -142,7 +142,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         config.setProperty(Key.MAX_PIXELS, 10000);
 
         imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, processor.readImageInfo(), null);
+                imageUri, processor, processor.readImageInfo(), 0, null);
         @SuppressWarnings("unchecked")
         List<ImageInfo.Size> sizes =
                 (List<ImageInfo.Size>) imageInfo.get("sizes");
@@ -188,7 +188,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-uncompressed.tif"));
         imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, processor.readImageInfo(), null);
+                imageUri, processor, processor.readImageInfo(), 0, null);
 
         @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =
@@ -231,7 +231,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         config.setProperty(Key.MAX_PIXELS, 100);
 
         imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, processor.readImageInfo(), null);
+                imageUri, processor, processor.readImageInfo(), 0, null);
         List<?> profile = (List<?>) imageInfo.get("profile");
         assertTrue(((Map<?, ?>) profile.get(1)).get("maxArea").
                 equals(config.getInt(Key.MAX_PIXELS)));
@@ -243,7 +243,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         config.setProperty(Key.MAX_PIXELS, 0);
 
         imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, processor.readImageInfo(), null);
+                imageUri, processor, processor.readImageInfo(), 0, null);
         List<?> profile = (List<?>) imageInfo.get("profile");
         assertFalse(((Map<?, ?>) profile.get(1)).containsKey("maxArea"));
     }
@@ -274,7 +274,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         DelegateProxy proxy = service.newDelegateProxy(context);
 
         imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, processor.readImageInfo(), proxy);
+                imageUri, processor, processor.readImageInfo(), 0, proxy);
 
         assertEquals("Copyright My Great Organization. All rights reserved.",
                 imageInfo.get("attribution"));

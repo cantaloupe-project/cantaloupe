@@ -76,9 +76,12 @@ public class InformationResource extends IIIF1Resource {
                     if (format != null && !Format.UNKNOWN.equals(format)) {
                         final Processor processor = new ProcessorFactory().
                                 newProcessor(format);
+                        final Info.Image infoImage =
+                                info.getImages().get(getPageIndex());
                         final ImageInfo imageInfo =
                                 new ImageInfoFactory().newImageInfo(
-                                        getImageURI(), processor, info);
+                                        getImageURI(), processor, infoImage,
+                                        info.getNumResolutions());
                         addLinkHeader(imageInfo);
                         commitCustomResponseHeaders();
                         return newRepresentation(imageInfo);
@@ -132,8 +135,10 @@ public class InformationResource extends IIIF1Resource {
                     resolver, processor, identifier, format);
 
             final Info info = getOrReadInfo(identifier, processor);
+            final Info.Image infoImage = info.getImages().get(getPageIndex());
             final ImageInfo imageInfo = new ImageInfoFactory().newImageInfo(
-                    getImageURI(), processor, info);
+                    getImageURI(), processor, infoImage,
+                    info.getNumResolutions());
 
             addLinkHeader(imageInfo);
             commitCustomResponseHeaders();
