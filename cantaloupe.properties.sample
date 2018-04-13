@@ -202,9 +202,6 @@ S3Resolver.endpoint =
 S3Resolver.access_key_id =
 S3Resolver.secret_key =
 
-# !! Name of the bucket containing images to be served.
-S3Resolver.bucket.name =
-
 # !! Maximum number of concurrent HTTP connections to AWS. Leave blank to
 # use the default.
 S3Resolver.max_connections =
@@ -213,6 +210,9 @@ S3Resolver.max_connections =
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
 # uses the delegate script for dynamic lookups; see the user manual.
 S3Resolver.lookup_strategy = BasicLookupStrategy
+
+# !! Name of the bucket containing images to be served.
+S3Resolver.BasicLookupStrategy.bucket.name =
 
 # Path within the bucket that will be prefixed to the identifier in the URL.
 # Trailing slash is important!

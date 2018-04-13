@@ -1278,7 +1278,7 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="S3Resolver.bucket.name"
+                                                       name="S3Resolver.BasicLookupStrategy.bucket.name"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>

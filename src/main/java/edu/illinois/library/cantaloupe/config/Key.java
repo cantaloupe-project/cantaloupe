@@ -184,7 +184,7 @@ public enum Key {
     S3CACHE_OBJECT_KEY_PREFIX("S3Cache.object_key_prefix"),
     S3CACHE_SECRET_KEY("S3Cache.secret_key"),
     S3RESOLVER_ACCESS_KEY_ID("S3Resolver.access_key_id"),
-    S3RESOLVER_BUCKET_NAME("S3Resolver.bucket.name"),
+    S3RESOLVER_BUCKET_NAME("S3Resolver.BasicLookupStrategy.bucket.name"),
     S3RESOLVER_ENDPOINT("S3Resolver.endpoint"),
     S3RESOLVER_LOOKUP_STRATEGY("S3Resolver.lookup_strategy"),
     S3RESOLVER_MAX_CONNECTIONS("S3Resolver.max_connections"),
