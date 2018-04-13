@@ -166,7 +166,7 @@ public class ImageResource extends IIIF2Resource {
 
             checkAuthorization();
 
-            validateRequestedArea(ops, sourceFormat, info);
+            validateRequestedArea(ops, sourceFormat, fullSize);
 
             try {
                 processor.validate(ops, fullSize);

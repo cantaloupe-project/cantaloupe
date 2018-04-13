@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
+import java.awt.Dimension;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -607,10 +608,10 @@ public abstract class AbstractResource extends ServerResource {
      */
     protected final void validateRequestedArea(final OperationList opList,
                                                final Format sourceFormat,
-                                               final Info info)
+                                               final Dimension fullSize)
             throws EmptyPayloadException, PayloadTooLargeException {
         final java.awt.Dimension resultingSize =
-                opList.getResultingSize(info.getSize());
+                opList.getResultingSize(fullSize);
 
         if (resultingSize.width < 1 || resultingSize.height < 1) {
             throw new EmptyPayloadException();
