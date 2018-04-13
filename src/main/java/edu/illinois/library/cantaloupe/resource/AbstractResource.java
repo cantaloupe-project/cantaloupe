@@ -10,7 +10,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.DelegateProxyService;
@@ -36,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
-import java.awt.Dimension;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -597,35 +595,6 @@ public abstract class AbstractResource extends ServerResource {
     public Representation template(String name, Map<String,Object> vars) {
         vars.putAll(getCommonTemplateVars(getRequest()));
         return new VelocityRepresentation(name, vars);
-    }
-
-    /**
-     * <p>Checks that the requested area is greater than zero and less than or
-     * equal to {@link Key#MAX_PIXELS}.</p>
-     *
-     * <p>This does not check that any requested crop lies entirely within the
-     * bounds of the source image.</p>
-     */
-    protected final void validateRequestedArea(final OperationList opList,
-                                               final Format sourceFormat,
-                                               final Dimension fullSize)
-            throws EmptyPayloadException, PayloadTooLargeException {
-        final java.awt.Dimension resultingSize =
-                opList.getResultingSize(fullSize);
-
-        if (resultingSize.width < 1 || resultingSize.height < 1) {
-            throw new EmptyPayloadException();
-        }
-
-        // Max allowed size is ignored when the processing is a no-op.
-        if (opList.hasEffect(sourceFormat)) {
-            final long maxAllowedSize =
-                    Configuration.getInstance().getLong(Key.MAX_PIXELS, 0);
-            if (maxAllowedSize > 0 &&
-                    resultingSize.width * resultingSize.height > maxAllowedSize) {
-                throw new PayloadTooLargeException();
-            }
-        }
     }
 
 }
