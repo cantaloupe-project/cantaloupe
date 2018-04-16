@@ -143,7 +143,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         instance.validate(ops, fullSize);
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testValidateWithZeroPageArgument() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
@@ -155,7 +155,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         instance.validate(ops, fullSize);
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testValidateWithNegativePageArgument() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
@@ -167,7 +167,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         instance.validate(ops, fullSize);
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testValidateWithExcessivePageArgument() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
