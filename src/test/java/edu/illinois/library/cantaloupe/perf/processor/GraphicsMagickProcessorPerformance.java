@@ -8,8 +8,9 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.processor.StreamProcessor;
+import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.output.NullOutputStream;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -34,17 +35,17 @@ import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.*;
         time = MEASUREMENT_TIME)
 @State(Scope.Benchmark)
 @Fork(value = 1, jvmArgs = { "-server", "-Xms128M", "-Xmx128M", "-Dcantaloupe.config=memory" })
-public class Java2dProcessorPerformance {
+public class GraphicsMagickProcessorPerformance {
 
     private static final Format OUTPUT_FORMAT = Format.PNG;
 
-    private FileProcessor processor;
+    private StreamProcessor processor;
 
     @Setup
     public void setUp() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
-        processor = (FileProcessor) new ProcessorFactory().newProcessor(Format.BMP);
+        config.setProperty(Key.PROCESSOR_FALLBACK, "GraphicsMagickProcessor");
+        processor = (StreamProcessor) new ProcessorFactory().newProcessor(Format.BMP);
     }
 
     @TearDown
@@ -55,7 +56,7 @@ public class Java2dProcessorPerformance {
     @Benchmark
     public void processWithBMP() throws Exception {
         processor.setSourceFormat(Format.BMP);
-        processor.setSourceFile(TestUtil.getImage("bmp-rgb-64x56x8.bmp"));
+        processor.setStreamSource(new PathStreamSource(TestUtil.getImage("bmp-rgb-64x56x8.bmp")));
         processor.process(
                 new OperationList(new Encode(OUTPUT_FORMAT)),
                 Info.builder().withSize(64, 56).build(),
@@ -65,7 +66,7 @@ public class Java2dProcessorPerformance {
     @Benchmark
     public void processWithGIF() throws Exception {
         processor.setSourceFormat(Format.GIF);
-        processor.setSourceFile(TestUtil.getImage("gif-rgb-64x56x8.gif"));
+        processor.setStreamSource(new PathStreamSource(TestUtil.getImage("gif-rgb-64x56x8.gif")));
         processor.process(
                 new OperationList(new Encode(OUTPUT_FORMAT)),
                 Info.builder().withSize(64, 56).build(),
@@ -75,7 +76,7 @@ public class Java2dProcessorPerformance {
     @Benchmark
     public void processWithJPG() throws Exception {
         processor.setSourceFormat(Format.JPG);
-        processor.setSourceFile(TestUtil.getImage("jpg-rgb-64x56x8-line.jpg"));
+        processor.setStreamSource(new PathStreamSource(TestUtil.getImage("jpg-rgb-64x56x8-line.jpg")));
         processor.process(
                 new OperationList(new Encode(OUTPUT_FORMAT)),
                 Info.builder().withSize(64, 56).build(),
@@ -85,7 +86,7 @@ public class Java2dProcessorPerformance {
     @Benchmark
     public void processWithPNG() throws Exception {
         processor.setSourceFormat(Format.PNG);
-        processor.setSourceFile(TestUtil.getImage("png-rgb-64x56x8.png"));
+        processor.setStreamSource(new PathStreamSource(TestUtil.getImage("png-rgb-64x56x8.png")));
         processor.process(
                 new OperationList(new Encode(OUTPUT_FORMAT)),
                 Info.builder().withSize(64, 56).build(),
@@ -95,7 +96,7 @@ public class Java2dProcessorPerformance {
     @Benchmark
     public void processWithTIF() throws Exception {
         processor.setSourceFormat(Format.TIF);
-        processor.setSourceFile(TestUtil.getImage("tif-rgb-1res-64x56x8-striped-lzw.tif"));
+        processor.setStreamSource(new PathStreamSource(TestUtil.getImage("tif-rgb-1res-64x56x8-striped-lzw.tif")));
         processor.process(
                 new OperationList(new Encode(OUTPUT_FORMAT)),
                 Info.builder().withSize(64, 56).build(),
@@ -105,35 +106,35 @@ public class Java2dProcessorPerformance {
     @Benchmark
     public void readImageInfoWithBMP() throws Exception {
         processor.setSourceFormat(Format.BMP);
-        processor.setSourceFile(TestUtil.getImage("bmp-rgb-64x56x8.bmp"));
+        processor.setStreamSource(new PathStreamSource(TestUtil.getImage("bmp-rgb-64x56x8.bmp")));
         processor.readImageInfo();
     }
 
     @Benchmark
     public void readImageInfoWithGIF() throws Exception {
         processor.setSourceFormat(Format.GIF);
-        processor.setSourceFile(TestUtil.getImage("gif-rgb-64x56x8.gif"));
+        processor.setStreamSource(new PathStreamSource(TestUtil.getImage("gif-rgb-64x56x8.gif")));
         processor.readImageInfo();
     }
 
     @Benchmark
     public void readImageInfoWithJPG() throws Exception {
         processor.setSourceFormat(Format.JPG);
-        processor.setSourceFile(TestUtil.getImage("jpg-rgb-64x56x8-line.jpg"));
+        processor.setStreamSource(new PathStreamSource(TestUtil.getImage("jpg-rgb-64x56x8-line.jpg")));
         processor.readImageInfo();
     }
 
     @Benchmark
     public void readImageInfoWithPNG() throws Exception {
         processor.setSourceFormat(Format.PNG);
-        processor.setSourceFile(TestUtil.getImage("png-rgb-64x56x8.png"));
+        processor.setStreamSource(new PathStreamSource(TestUtil.getImage("png-rgb-64x56x8.png")));
         processor.readImageInfo();
     }
 
     @Benchmark
     public void readImageInfoWithTIF() throws Exception {
         processor.setSourceFormat(Format.TIF);
-        processor.setSourceFile(TestUtil.getImage("tif-rgb-1res-64x56x8-striped-lzw.tif"));
+        processor.setStreamSource(new PathStreamSource(TestUtil.getImage("tif-rgb-1res-64x56x8-striped-lzw.tif")));
         processor.readImageInfo();
     }
 

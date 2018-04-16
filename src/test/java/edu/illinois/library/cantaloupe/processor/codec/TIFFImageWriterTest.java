@@ -122,10 +122,12 @@ public class TIFFImageWriterTest extends AbstractImageWriterTest {
         reader.dispose();
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        instance.dispose();
-        instance = newInstance();
-        instance.setMetadata(metadata);
-        instance.write(image, os);
+        if (instance != null) {
+            instance.dispose();
+            instance = newInstance();
+            instance.setMetadata(metadata);
+            instance.write(image, os);
+        }
         checkForIPTCMetadata(os.toByteArray());
     }
 
@@ -141,10 +143,12 @@ public class TIFFImageWriterTest extends AbstractImageWriterTest {
         reader.dispose();
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        instance.dispose();
-        instance = newInstance();
-        instance.setMetadata(metadata);
-        instance.write(image, os);
+        if (instance != null) {
+            instance.dispose();
+            instance = newInstance();
+            instance.setMetadata(metadata);
+            instance.write(image, os);
+        }
         checkForXMPMetadata(os.toByteArray());
     }
 
@@ -200,10 +204,12 @@ public class TIFFImageWriterTest extends AbstractImageWriterTest {
                     PlanarImage.wrapRenderedImage(reader.readRendered());
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            instance.dispose();
-            instance = newInstance();
-            instance.setMetadata(metadata);
-            instance.write(image, os);
+            if (instance != null) {
+                instance.dispose();
+                instance = newInstance();
+                instance.setMetadata(metadata);
+                instance.write(image, os);
+            }
             checkForIPTCMetadata(os.toByteArray());
         } finally {
             reader.dispose();
@@ -223,10 +229,12 @@ public class TIFFImageWriterTest extends AbstractImageWriterTest {
                     PlanarImage.wrapRenderedImage(reader.readRendered());
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            instance.dispose();
-            instance = newInstance();
-            instance.setMetadata(metadata);
-            instance.write(image, os);
+            if (instance != null) {
+                instance.dispose();
+                instance = newInstance();
+                instance.setMetadata(metadata);
+                instance.write(image, os);
+            }
             checkForXMPMetadata(os.toByteArray());
         } finally {
             reader.dispose();

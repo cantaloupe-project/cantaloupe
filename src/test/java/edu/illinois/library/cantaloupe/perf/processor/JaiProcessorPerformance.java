@@ -34,7 +34,7 @@ import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.*;
         time = MEASUREMENT_TIME)
 @State(Scope.Benchmark)
 @Fork(value = 1, jvmArgs = { "-server", "-Xms128M", "-Xmx128M", "-Dcantaloupe.config=memory" })
-public class Java2dProcessorPerformance {
+public class JaiProcessorPerformance {
 
     private static final Format OUTPUT_FORMAT = Format.PNG;
 
@@ -43,7 +43,7 @@ public class Java2dProcessorPerformance {
     @Setup
     public void setUp() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
+        config.setProperty(Key.PROCESSOR_FALLBACK, "JaiProcessor");
         processor = (FileProcessor) new ProcessorFactory().newProcessor(Format.BMP);
     }
 
@@ -56,16 +56,6 @@ public class Java2dProcessorPerformance {
     public void processWithBMP() throws Exception {
         processor.setSourceFormat(Format.BMP);
         processor.setSourceFile(TestUtil.getImage("bmp-rgb-64x56x8.bmp"));
-        processor.process(
-                new OperationList(new Encode(OUTPUT_FORMAT)),
-                Info.builder().withSize(64, 56).build(),
-                new NullOutputStream());
-    }
-
-    @Benchmark
-    public void processWithGIF() throws Exception {
-        processor.setSourceFormat(Format.GIF);
-        processor.setSourceFile(TestUtil.getImage("gif-rgb-64x56x8.gif"));
         processor.process(
                 new OperationList(new Encode(OUTPUT_FORMAT)),
                 Info.builder().withSize(64, 56).build(),
@@ -106,13 +96,6 @@ public class Java2dProcessorPerformance {
     public void readImageInfoWithBMP() throws Exception {
         processor.setSourceFormat(Format.BMP);
         processor.setSourceFile(TestUtil.getImage("bmp-rgb-64x56x8.bmp"));
-        processor.readImageInfo();
-    }
-
-    @Benchmark
-    public void readImageInfoWithGIF() throws Exception {
-        processor.setSourceFormat(Format.GIF);
-        processor.setSourceFile(TestUtil.getImage("gif-rgb-64x56x8.gif"));
         processor.readImageInfo();
     }
 

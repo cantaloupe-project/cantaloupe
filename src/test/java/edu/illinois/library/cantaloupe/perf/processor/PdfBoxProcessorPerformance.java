@@ -34,7 +34,7 @@ import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.*;
         time = MEASUREMENT_TIME)
 @State(Scope.Benchmark)
 @Fork(value = 1, jvmArgs = { "-server", "-Xms128M", "-Xmx128M", "-Dcantaloupe.config=memory" })
-public class OpenJpegProcessorPerformance {
+public class PdfBoxProcessorPerformance {
 
     private static final Format OUTPUT_FORMAT = Format.PNG;
 
@@ -43,8 +43,8 @@ public class OpenJpegProcessorPerformance {
     @Setup
     public void setUp() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
-        processor = (FileProcessor) new ProcessorFactory().newProcessor(Format.JP2);
+        config.setProperty(Key.PROCESSOR_FALLBACK, "PdfBoxProcessor");
+        processor = (FileProcessor) new ProcessorFactory().newProcessor(Format.PDF);
     }
 
     @TearDown
@@ -54,8 +54,8 @@ public class OpenJpegProcessorPerformance {
 
     @Benchmark
     public void process() throws Exception {
-        processor.setSourceFormat(Format.JP2);
-        processor.setSourceFile(TestUtil.getImage("jp2-5res-rgb-64x56x8-monotiled-lossy.jp2"));
+        processor.setSourceFormat(Format.PDF);
+        processor.setSourceFile(TestUtil.getImage("pdf"));
         processor.process(
                 new OperationList(new Encode(OUTPUT_FORMAT)),
                 Info.builder().withSize(64, 56).build(),
@@ -64,8 +64,8 @@ public class OpenJpegProcessorPerformance {
 
     @Benchmark
     public void readImageInfo() throws Exception {
-        processor.setSourceFormat(Format.JP2);
-        processor.setSourceFile(TestUtil.getImage("jp2-5res-rgb-64x56x8-monotiled-lossy.jp2"));
+        processor.setSourceFormat(Format.PDF);
+        processor.setSourceFile(TestUtil.getImage("pdf"));
         processor.readImageInfo();
     }
 

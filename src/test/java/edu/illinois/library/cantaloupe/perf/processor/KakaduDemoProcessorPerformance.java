@@ -34,7 +34,7 @@ import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.*;
         time = MEASUREMENT_TIME)
 @State(Scope.Benchmark)
 @Fork(value = 1, jvmArgs = { "-server", "-Xms128M", "-Xmx128M", "-Dcantaloupe.config=memory" })
-public class OpenJpegProcessorPerformance {
+public class KakaduDemoProcessorPerformance {
 
     private static final Format OUTPUT_FORMAT = Format.PNG;
 
@@ -43,7 +43,7 @@ public class OpenJpegProcessorPerformance {
     @Setup
     public void setUp() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
+        config.setProperty(Key.PROCESSOR_FALLBACK, "KakaduDemoProcessor");
         processor = (FileProcessor) new ProcessorFactory().newProcessor(Format.JP2);
     }
 
