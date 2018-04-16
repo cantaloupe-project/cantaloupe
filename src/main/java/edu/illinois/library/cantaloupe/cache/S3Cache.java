@@ -220,7 +220,7 @@ class S3Cache implements DerivativeCache {
                     .endpointURI(endpointURI)
                     .accessKeyID(config.getString(Key.S3CACHE_ACCESS_KEY_ID))
                     .secretKey(config.getString(Key.S3CACHE_SECRET_KEY))
-                    .maxConnections(config.getInt(Key.S3CACHE_MAX_CONNECTIONS))
+                    .maxConnections(config.getInt(Key.S3CACHE_MAX_CONNECTIONS, 0))
                     .build();
         }
         return client;

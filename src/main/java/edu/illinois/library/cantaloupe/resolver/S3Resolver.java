@@ -143,7 +143,7 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
                     .endpointURI(endpointURI)
                     .accessKeyID(config.getString(Key.S3RESOLVER_ACCESS_KEY_ID))
                     .secretKey(config.getString(Key.S3RESOLVER_SECRET_KEY))
-                    .maxConnections(config.getInt(Key.S3RESOLVER_MAX_CONNECTIONS))
+                    .maxConnections(config.getInt(Key.S3RESOLVER_MAX_CONNECTIONS, 0))
                     .build();
         }
         return client;
