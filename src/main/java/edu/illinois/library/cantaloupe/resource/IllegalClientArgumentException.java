@@ -10,6 +10,10 @@ public class IllegalClientArgumentException extends IllegalArgumentException {
         super(message);
     }
 
+    public IllegalClientArgumentException(Throwable t) {
+        super(t);
+    }
+
     public IllegalClientArgumentException(String message, Throwable t) {
         super(message, t);
     }

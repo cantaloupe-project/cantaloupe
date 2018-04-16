@@ -173,7 +173,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
 
     /**
      * @return Rasterized page of the PDF.
-     * @throws IndexOutOfBoundsException if the given page index is out of
+     * @throws IllegalArgumentException if the given page index is out of
      *                                   bounds.
      */
     private BufferedImage readImage(int pageIndex,
@@ -252,7 +252,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                         readDocument();
                         if (page > doc.getNumberOfPages()) {
                             close();
-                            throw new IndexOutOfBoundsException(
+                            throw new IllegalArgumentException(
                                     "Page number is out-of-bounds.");
                         }
                     } catch (IOException e) {
@@ -260,7 +260,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                         throw new ProcessorException(e.getMessage(), e);
                     }
                 } else {
-                    throw new IndexOutOfBoundsException(
+                    throw new IllegalArgumentException(
                             "Page number is out-of-bounds.");
                 }
             } catch (NumberFormatException e) {
