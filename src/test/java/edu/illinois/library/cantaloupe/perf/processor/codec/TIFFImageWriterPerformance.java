@@ -10,25 +10,34 @@ import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
 import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.*;
 
-/**
- * Executes benchmark to compare the speed of writing TIFF files.
- */
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Warmup(iterations = WARMUP_ITERATIONS,
-        time = WARMUP_TIME,
-        timeUnit = TimeUnit.SECONDS)
+        time = WARMUP_TIME)
 @Measurement(iterations = MEASUREMENT_ITERATIONS,
-        time = MEASUREMENT_TIME,
-        timeUnit = TimeUnit.SECONDS)
+        time = MEASUREMENT_TIME)
 @State(Scope.Benchmark)
 @Fork(value = 1, jvmArgs = { "-server", "-Xms128M", "-Xmx128M", "-Dcantaloupe.config=memory" })
 public class TIFFImageWriterPerformance extends TIFFImageWriterTest {
+
+    @Setup
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @TearDown
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+    }
 
     @Benchmark
     @Override

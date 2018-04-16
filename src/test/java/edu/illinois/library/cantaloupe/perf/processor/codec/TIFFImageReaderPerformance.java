@@ -23,21 +23,21 @@ import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.*;
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Warmup(iterations = WARMUP_ITERATIONS,
-        time = WARMUP_TIME,
-        timeUnit = TimeUnit.SECONDS)
+        time = WARMUP_TIME)
 @Measurement(iterations = MEASUREMENT_ITERATIONS,
-        time = MEASUREMENT_TIME,
-        timeUnit = TimeUnit.SECONDS)
+        time = MEASUREMENT_TIME)
 @State(Scope.Benchmark)
 @Fork(value = 1, jvmArgs = { "-server", "-Xms128M", "-Xmx128M", "-Dcantaloupe.config=memory" })
 public class TIFFImageReaderPerformance extends TIFFImageReaderTest {
 
     @Setup
+    @Override
     public void setUp() throws Exception {
         super.setUp();
     }
 
     @TearDown
+    @Override
     public void tearDown() {
         super.tearDown();
     }
