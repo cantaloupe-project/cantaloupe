@@ -16,7 +16,7 @@
     <aws-sdk.version>1.11.291</aws-sdk.version>
     <jetty.version>9.4.7.v20170914</jetty.version>
     <restlet.version>2.3.11</restlet.version>
-    <surefire.version>2.20.1</surefire.version>
+    <surefire.version>2.21.0</surefire.version>
   </properties>
 
   <developers>
