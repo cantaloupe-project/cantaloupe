@@ -4,8 +4,11 @@ sudo: required
 dist: trusty
 
 jdk:
+  # JDK 9 is not included due to an incompatibility with JAI Image I/O which
+  # causes the log to exceed 4MB and Travis to kill the process; see
+  # https://github.com/medusa-project/cantaloupe/issues/176
   - oraclejdk8
-  - oraclejdk9
+  #- openjdk10
 
 before_install:
   # copy properties file

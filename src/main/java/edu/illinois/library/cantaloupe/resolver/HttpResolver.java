@@ -291,7 +291,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                 HttpField field = response.getHeaders().getField("Content-Type");
 
                 if (field != null && field.getValue() != null) {
-                    format = new MediaType(field.getValue()).toFormat();
+                    format = mediaTypeFromContentType(field.getValue()).toFormat();
 
                     if (Format.UNKNOWN.equals(format)) {
                         LOGGER.debug("Unrecognized Content-Type header value for GET {}",
@@ -329,6 +329,18 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         return format;
     }
 
+    /**
+     * @param contentType {@literal Content-Type} header value.
+     * @return Media type corresponding to the given header value.
+     * @see <a href="https://tools.ietf.org/html/rfc7231#section-3.1.1.5">RFC 7231</a>
+     */
+    static MediaType mediaTypeFromContentType(String contentType) {
+        String[] parts = contentType.split(";");
+        if (parts.length > 0) {
+            return new MediaType(parts[0].trim());
+        }
+        throw new IllegalArgumentException("Unrecognized Content-Type");
+    }
 
     @Override
     public StreamSource newStreamSource() throws IOException {
