@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
@@ -100,6 +101,20 @@ abstract class HttpResolverTest extends AbstractResolverTest {
         } catch (IOException e) {
             fail(e.getMessage());
         }
+    }
+
+    /* mediaTypeFromContentType() */
+
+    @Test
+    public void testMediaTypeFromContentTypeWithoutSemicolon() {
+        assertEquals(MediaType.APPLICATION_JSON,
+                HttpResolver.mediaTypeFromContentType("application/json"));
+    }
+
+    @Test
+    public void testMediaTypeFromContentTypeWithSemicolon() {
+        assertEquals(MediaType.APPLICATION_JSON,
+                HttpResolver.mediaTypeFromContentType("application/json; charset=utf-8"));
     }
 
     /* checkAccess() */
@@ -316,7 +331,7 @@ abstract class HttpResolverTest extends AbstractResolverTest {
                                Request baseRequest,
                                HttpServletRequest request,
                                HttpServletResponse response) {
-                response.setHeader("Content-Type", "image/jpeg");
+                response.setHeader("Content-Type", "image/jpeg; charset=UTF-8");
                 baseRequest.setHandled(true);
             }
         });
