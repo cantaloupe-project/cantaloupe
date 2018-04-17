@@ -8,7 +8,7 @@ jdk:
   # causes the log to exceed 4MB and Travis to kill the process; see
   # https://github.com/medusa-project/cantaloupe/issues/176
   - oraclejdk8
-  - openjdk10
+  #- openjdk10
 
 before_install:
   # copy properties file
