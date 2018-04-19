@@ -128,7 +128,7 @@ class AmazonS3Resolver extends AbstractResolver implements StreamResolver {
                     .accessKeyID(config.getString(Key.AMAZONS3RESOLVER_ACCESS_KEY_ID))
                     .secretKey(config.getString(Key.AMAZONS3RESOLVER_SECRET_KEY))
                     .region(config.getString(Key.AMAZONS3RESOLVER_BUCKET_REGION))
-                    .maxConnections(config.getInt(Key.AMAZONS3RESOLVER_MAX_CONNECTIONS))
+                    .maxConnections(config.getInt(Key.AMAZONS3RESOLVER_MAX_CONNECTIONS, 0))
                     .build();
         }
         return client;
