@@ -10,10 +10,8 @@ import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.stream.FileImageInputStream;
 import javax.script.ScriptException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -45,28 +43,8 @@ import java.util.List;
 class FilesystemResolver extends AbstractResolver
         implements StreamResolver, FileResolver {
 
-    private static class FileStreamSource implements StreamSource {
-
-        private final Path file;
-
-        FileStreamSource(Path file) {
-            this.file = file;
-        }
-
-        @Override
-        public FileImageInputStream newImageInputStream() throws IOException {
-            return new FileImageInputStream(file.toFile());
-        }
-
-        @Override
-        public InputStream newInputStream() throws IOException {
-            return Files.newInputStream(file);
-        }
-
-    }
-
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(FilesystemResolver.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(FilesystemResolver.class);
 
     private static final String UNIX_PATH_SEPARATOR = "/";
     private static final String WINDOWS_PATH_SEPARATOR = "\\";
@@ -175,7 +153,7 @@ class FilesystemResolver extends AbstractResolver
 
     @Override
     public StreamSource newStreamSource() throws IOException {
-        return new FileStreamSource(getPath());
+        return new PathStreamSource(getPath());
     }
 
     /**
