@@ -89,7 +89,7 @@ class JaiProcessor extends AbstractImageIOProcessor
     @Override
     public Set<Format> getAvailableOutputFormats() {
         Set<Format> formats;
-        if (Format.GIF.equals(format)) {
+        if (Format.GIF.equals(sourceFormat)) {
             formats = Collections.emptySet();
         } else {
             formats = super.getAvailableOutputFormats();
@@ -203,7 +203,7 @@ class JaiProcessor extends AbstractImageIOProcessor
                            better than nothing.
                         2) otherwise, use the SubsampleAverage operation.
                         */
-                        if (getSourceFormat().equals(Format.TIF) &&
+                        if (sourceFormat.equals(Format.TIF) &&
                                 (!reader.getCompression(0).equals(Compression.UNCOMPRESSED) &&
                                         !reader.getCompression(0).equals(Compression.UNDEFINED))) {
                             LOGGER.debug("process(): detected compressed TIFF; " +

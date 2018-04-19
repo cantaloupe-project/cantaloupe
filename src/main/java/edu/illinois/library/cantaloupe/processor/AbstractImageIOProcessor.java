@@ -58,7 +58,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
     }
 
     public Set<Format> getAvailableOutputFormats() {
-        Set<Format> formats = FORMATS.get(format);
+        Set<Format> formats = FORMATS.get(sourceFormat);
         if (formats == null) {
             formats = Collections.unmodifiableSet(Collections.emptySet());
         }
@@ -73,7 +73,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
     public Info readImageInfo() throws IOException {
         final Info info = new Info();
         info.getImages().clear();
-        info.setSourceFormat(getSourceFormat());
+        info.setSourceFormat(sourceFormat);
 
         final ImageReader reader = getReader();
         final Orientation orientation = getEffectiveOrientation();
@@ -122,9 +122,9 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
             ImageReaderFactory rf = new ImageReaderFactory();
 
             if (streamSource != null) {
-                reader = rf.newImageReader(streamSource, getSourceFormat());
+                reader = rf.newImageReader(streamSource, sourceFormat);
             } else {
-                reader = rf.newImageReader(sourceFile, getSourceFormat());
+                reader = rf.newImageReader(sourceFile, sourceFormat);
             }
         }
         return reader;

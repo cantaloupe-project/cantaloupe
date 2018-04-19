@@ -26,11 +26,6 @@ class MockStreamProcessor implements StreamProcessor {
     }
 
     @Override
-    public Format getSourceFormat() {
-        return sourceFormat;
-    }
-
-    @Override
     public StreamSource getStreamSource() {
         return streamSource;
     }

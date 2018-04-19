@@ -61,7 +61,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
 
     @Override
     public Set<Format> getAvailableOutputFormats() {
-        return (Format.PDF.equals(format)) ?
+        return (Format.PDF.equals(sourceFormat)) ?
                 ImageWriterFactory.supportedFormats() :
                 Collections.unmodifiableSet(Collections.emptySet());
     }
@@ -193,7 +193,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
         final int dpi = config.getInt(Key.PROCESSOR_DPI, FALLBACK_DPI);
         final float scale = dpi / 72f;
         final Info info = Info.builder()
-                .withFormat(getSourceFormat())
+                .withFormat(sourceFormat)
                 .withNumResolutions(1)
                 .build();
         info.getImages().clear();

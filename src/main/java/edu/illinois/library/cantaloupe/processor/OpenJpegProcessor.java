@@ -320,7 +320,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
     @Override
     public Set<Format> getAvailableOutputFormats() {
         final Set<Format> outputFormats;
-        if (Format.JP2.equals(format)) {
+        if (Format.JP2.equals(sourceFormat)) {
             outputFormats = ImageWriterFactory.supportedFormats();
         } else {
             outputFormats = Collections.unmodifiableSet(Collections.emptySet());

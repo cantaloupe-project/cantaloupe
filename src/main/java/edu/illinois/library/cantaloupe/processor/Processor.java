@@ -54,11 +54,6 @@ public interface Processor extends AutoCloseable {
     }
 
     /**
-     * @return The source format of the image to be processed.
-     */
-    Format getSourceFormat();
-
-    /**
      * @return All features supported by the processor for the set source
      *         format.
      */

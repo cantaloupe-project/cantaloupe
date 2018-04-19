@@ -22,11 +22,6 @@ public class MockFileProcessor implements FileProcessor {
     }
 
     @Override
-    public Format getSourceFormat() {
-        return sourceFormat;
-    }
-
-    @Override
     public Path getSourceFile() {
         return file;
     }

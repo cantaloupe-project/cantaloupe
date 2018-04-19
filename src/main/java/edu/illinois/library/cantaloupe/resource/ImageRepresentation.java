@@ -152,12 +152,11 @@ public class ImageRepresentation extends CustomOutputRepresentation {
      *                     for writing to the response and the cache
      *                     pseudo-simultaneously. Will not be closed.
      */
-    private void doWrite(OutputStream outputStream)
-            throws IOException {
+    private void doWrite(OutputStream outputStream) throws IOException {
         final Stopwatch watch = new Stopwatch();
         // If the operations are effectively a no-op, the source image can be
         // streamed through with no processing.
-        if (!opList.hasEffect(processor.getSourceFormat())) {
+        if (!opList.hasEffect(imageInfo.getSourceFormat())) {
             if (processor instanceof FileProcessor &&
                     ((FileProcessor) processor).getSourceFile() != null) {
                 Path sourceFile = ((FileProcessor) processor).getSourceFile();
