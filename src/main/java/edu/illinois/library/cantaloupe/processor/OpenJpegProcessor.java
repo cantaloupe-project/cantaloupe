@@ -409,16 +409,17 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                 ThreadPool.getInstance().submit(
                         new StreamCopier(processErrorStream, errorBucket));
 
+                Set<ImageReader.Hint> hints =
+                        EnumSet.noneOf(ImageReader.Hint.class);
+                if (!normalize) {
+                    hints.add(ImageReader.Hint.ALREADY_CROPPED);
+                }
+
                 final ImageReader reader = new ImageReader(
                         new InputStreamStreamSource(processInputStream),
                         Format.BMP);
-                final BufferedImage image = reader.read();
                 try {
-                    Set<ImageReader.Hint> hints =
-                            EnumSet.noneOf(ImageReader.Hint.class);
-                    if (!normalize) {
-                        hints.add(ImageReader.Hint.ALREADY_CROPPED);
-                    }
+                    final BufferedImage image = reader.read();
                     postProcess(image, hints, opList, imageInfo,
                             reductionFactor, outputStream);
                     final int code = process.waitFor();

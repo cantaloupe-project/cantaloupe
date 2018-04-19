@@ -358,16 +358,17 @@ class KakaduProcessor extends AbstractJava2DProcessor implements FileProcessor {
                 ThreadPool.getInstance().submit(
                         new StreamCopier(processErrorStream, errorBucket));
 
+                Set<ImageReader.Hint> hints =
+                        EnumSet.noneOf(ImageReader.Hint.class);
+                if (!normalize) {
+                    hints.add(ImageReader.Hint.ALREADY_CROPPED);
+                }
+
                 final ImageReader reader = new ImageReader(
                         new InputStreamStreamSource(processInputStream),
                         Format.TIF);
-                final BufferedImage image = reader.read();
                 try {
-                    Set<ImageReader.Hint> hints =
-                            EnumSet.noneOf(ImageReader.Hint.class);
-                    if (!normalize) {
-                        hints.add(ImageReader.Hint.ALREADY_CROPPED);
-                    }
+                    BufferedImage image = reader.read();
                     postProcess(image, hints, opList, imageInfo,
                             reductionFactor, outputStream);
                     final int code = process.waitFor();
