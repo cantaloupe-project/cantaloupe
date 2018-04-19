@@ -46,15 +46,12 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
             getLogger(PdfBoxProcessor.class);
 
     private PDDocument doc;
-    private InputStream docInputStream;
     private Dimension imageSize;
     private Path sourceFile;
     private StreamSource streamSource;
 
     @Override
     public void close() {
-        IOUtils.closeQuietly(docInputStream);
-        docInputStream = null;
         IOUtils.closeQuietly(doc);
         doc = null;
     }
@@ -87,8 +84,9 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
             if (sourceFile != null) {
                 doc = PDDocument.load(sourceFile.toFile());
             } else {
-                docInputStream = streamSource.newInputStream();
-                doc = PDDocument.load(docInputStream);
+                try (InputStream is = streamSource.newInputStream()) {
+                    doc = PDDocument.load(is);
+                }
             }
 
             // Disable the document's cache of PDImageXObjects
