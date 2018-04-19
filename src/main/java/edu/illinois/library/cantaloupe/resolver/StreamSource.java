@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import javax.imageio.ImageIO;
+import edu.illinois.library.cantaloupe.processor.imageio.ClosingMemoryCacheImageInputStream;
+
 import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,19 +12,25 @@ import java.io.InputStream;
 public interface StreamSource {
 
     /**
-     * <p>Provides a new {@link ImageInputStream} to read from. May be called
-     * multiple times.</p>
+     * <p>Provides a new {@link ImageInputStream} to read from.</p>
+     *
+     * <p>This method may be called multiple times.</p>
      *
      * <p>N.B.: {@link ImageInputStream} is an ImageIO class that supports
      * seeking, among other benefits, making it potentially much more efficient
      * than an {@link InputStream}. If a first-class implementation can't be
-     * returned, then {@link ImageIO#createImageInputStream} can be used to
-     * return a wrapped {@link InputStream}.</p>
+     * returned, then a {@link ClosingMemoryCacheImageInputStream} (or
+     * something similar whose {@link ImageInputStream#close} method actually
+     * closes the wrapped stream) that wraps the result of {@link
+     * #newInputStream()} can be returned instead. (That is what this default
+     * implementation does.)</p>
      *
-     * @return New input stream to read from.
-     * @throws IOException If there is any issue creating the stream.
+     * @return New stream to read from.
+     * @throws IOException if there is any issue creating the stream.
      */
-    ImageInputStream newImageInputStream() throws IOException;
+    default ImageInputStream newImageInputStream() throws IOException {
+        return new ClosingMemoryCacheImageInputStream(newInputStream());
+    }
 
     /**
      * Provides a new input stream to read from. May be called multiple times.

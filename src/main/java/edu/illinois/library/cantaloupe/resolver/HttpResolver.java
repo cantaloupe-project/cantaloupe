@@ -23,8 +23,6 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -87,11 +85,6 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         HTTPStreamSource(HttpClient client, URI uri) {
             this.client = client;
             this.uri = uri;
-        }
-
-        @Override
-        public ImageInputStream newImageInputStream() throws IOException {
-            return ImageIO.createImageInputStream(newInputStream());
         }
 
         @Override

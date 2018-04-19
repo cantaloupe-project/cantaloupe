@@ -1,8 +1,5 @@
 package edu.illinois.library.cantaloupe.resolver;
 
-import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -18,12 +15,7 @@ public class InputStreamStreamSource implements StreamSource {
     }
 
     @Override
-    public ImageInputStream newImageInputStream() throws IOException {
-        return ImageIO.createImageInputStream(inputStream);
-    }
-
-    @Override
-    public InputStream newInputStream() throws IOException {
+    public InputStream newInputStream() {
         return inputStream;
     }
 

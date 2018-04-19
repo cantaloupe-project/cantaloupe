@@ -11,8 +11,6 @@ import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,11 +43,6 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
         JdbcStreamSource(String sql, String databaseIdentifier) {
             this.sql = sql;
             this.databaseIdentifier = databaseIdentifier;
-        }
-
-        @Override
-        public ImageInputStream newImageInputStream() throws IOException {
-            return ImageIO.createImageInputStream(newInputStream());
         }
 
         @Override

@@ -16,8 +16,6 @@ import edu.illinois.library.cantaloupe.script.ScriptEngineFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -47,11 +45,6 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
 
         AzureStorageStreamSource(CloudBlockBlob blob) {
             this.blob = blob;
-        }
-
-        @Override
-        public ImageInputStream newImageInputStream() throws IOException {
-            return ImageIO.createImageInputStream(newInputStream());
         }
 
         @Override
