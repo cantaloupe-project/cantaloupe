@@ -54,7 +54,6 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
     /**
      * @param binaryName Name of one of the ffmpeg binaries
-     * @return
      */
     private static String getPath(String binaryName) {
         String path = Configuration.getInstance().
@@ -188,8 +187,8 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
                 final ImageReader reader = new ImageReaderFactory().newImageReader(
                         processInputStream, Format.BMP);
-                final BufferedImage image = reader.read();
                 try {
+                    BufferedImage image = reader.read();
                     postProcess(image, null, opList, imageInfo, null,
                             outputStream);
                     final int code = process.waitFor();

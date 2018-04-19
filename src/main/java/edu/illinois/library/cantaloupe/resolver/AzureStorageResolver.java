@@ -14,8 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -66,11 +64,6 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
 
         AzureStorageStreamSource(CloudBlockBlob blob) {
             this.blob = blob;
-        }
-
-        @Override
-        public ImageInputStream newImageInputStream() throws IOException {
-            return ImageIO.createImageInputStream(newInputStream());
         }
 
         @Override

@@ -14,8 +14,6 @@ import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
 import javax.script.ScriptException;
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -95,11 +93,6 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
 
         S3ObjectStreamSource(ObjectInfo objectInfo) {
             this.objectInfo = objectInfo;
-        }
-
-        @Override
-        public ImageInputStream newImageInputStream() throws IOException {
-            return ImageIO.createImageInputStream(newInputStream());
         }
 
         @Override
