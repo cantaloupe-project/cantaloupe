@@ -208,7 +208,7 @@ class AmazonS3Cache implements DerivativeCache {
                     .accessKeyID(config.getString(Key.AMAZONS3CACHE_ACCESS_KEY_ID))
                     .secretKey(config.getString(Key.AMAZONS3CACHE_SECRET_KEY))
                     .region(config.getString(Key.AMAZONS3CACHE_BUCKET_REGION))
-                    .maxConnections(config.getInt(Key.AMAZONS3CACHE_MAX_CONNECTIONS))
+                    .maxConnections(config.getInt(Key.AMAZONS3CACHE_MAX_CONNECTIONS, 0))
                     .build();
         }
         return client;
