@@ -150,6 +150,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(HttpResolver.class);
 
+    private static final int DEFAULT_REQUEST_TIMEOUT = 30;
     private static final String GET_URL_DELEGATE_METHOD =
             "HttpResolver::get_url";
 
@@ -200,8 +201,9 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
      *         reasonable default if not set.
      */
     private static int getRequestTimeout() {
-        return Configuration.getInstance().
-                getInt(Key.HTTPRESOLVER_REQUEST_TIMEOUT, 10);
+        return Configuration.getInstance().getInt(
+                Key.HTTPRESOLVER_REQUEST_TIMEOUT,
+                DEFAULT_REQUEST_TIMEOUT);
     }
 
     @Override
@@ -290,7 +292,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
             throw e;
         } catch (Exception e) {
             LOGGER.error("newStreamSource(): {}", e.getMessage());
-            throw new IOException(e.getMessage(), e);
+            throw new IOException(e);
         }
 
         if (info != null) {
@@ -307,10 +309,10 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
                 info = getResourceInfo();
             } catch (InterruptedException | TimeoutException e) {
                 LOGGER.error(e.getMessage(), e);
-                throw new IOException(e.getMessage(), e);
+                throw new IOException(e);
             } catch (Exception e) {
                 LOGGER.error("retrieveHEADResponse(): {}", e.getMessage());
-                throw new IOException(e.getMessage(), e);
+                throw new IOException(e);
             }
 
             try {
@@ -330,7 +332,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
             } catch (ExecutionException e ) {
                 throw new AccessDeniedException(info.getURI().toString());
             } catch (InterruptedException | TimeoutException e) {
-                throw new IOException(e.getMessage(), e);
+                throw new IOException(e);
             }
         }
         return headResponse;

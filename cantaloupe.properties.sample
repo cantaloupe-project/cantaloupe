@@ -149,7 +149,7 @@ FilesystemResolver.BasicLookupStrategy.path_suffix =
 #----------------------------------------
 
 HttpResolver.trust_all_certs = false
-HttpResolver.request_timeout = 10
+HttpResolver.request_timeout =
 
 # Tells HttpResolver how to look up resources. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
