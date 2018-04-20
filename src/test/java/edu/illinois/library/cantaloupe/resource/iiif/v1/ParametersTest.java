@@ -65,11 +65,6 @@ public class ParametersTest extends BaseTest {
     }
 
     @Test
-    public void testCompareTo() {
-        // TODO: write this
-    }
-
-    @Test
     public void testToOperationList() {
         final OperationList opList = instance.toOperationList();
         Iterator<Operation> it = opList.iterator();

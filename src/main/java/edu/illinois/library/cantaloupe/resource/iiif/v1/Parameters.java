@@ -15,7 +15,7 @@ import org.restlet.data.Reference;
  * @see <a href="http://iiif.io/api/image/1.1/#parameters">IIIF Image API
  * 1.1</a>
  */
-class Parameters implements Comparable<Parameters> {
+class Parameters {
 
     private Format outputFormat;
     private Identifier identifier;
@@ -91,12 +91,6 @@ class Parameters implements Comparable<Parameters> {
         } catch (IllegalArgumentException e) {
             throw new UnsupportedOutputFormatException(format);
         }
-    }
-
-    @Override
-    public int compareTo(Parameters params) {
-        int last = toString().compareTo(params.toString());
-        return (last == 0) ? toString().compareTo(params.toString()) : last;
     }
 
     @Override

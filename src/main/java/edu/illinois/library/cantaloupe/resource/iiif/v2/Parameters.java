@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -20,7 +19,7 @@ import java.io.IOException;
  * @see <a href="http://iiif.io/api/request/2.1/#request-request-parameters">IIIF
  *      Image API 2.1</a>
  */
-class Parameters implements Comparable<Parameters> {
+class Parameters {
 
     private Identifier identifier;
     private Region region;
@@ -93,12 +92,6 @@ class Parameters implements Comparable<Parameters> {
         } catch (IllegalArgumentException e) {
             throw new UnsupportedOutputFormatException(format);
         }
-    }
-
-    @Override
-    public int compareTo(Parameters params) {
-        int last = this.toString().compareTo(params.toString());
-        return (last == 0) ? this.toString().compareTo(params.toString()) : last;
     }
 
     @Override
