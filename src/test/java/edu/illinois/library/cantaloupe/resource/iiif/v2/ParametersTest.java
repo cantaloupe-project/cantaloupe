@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Operation;
@@ -43,7 +42,7 @@ public class ParametersTest extends BaseTest {
         assertEquals(90f, instance.getSize().getPercent(), DELTA);
         assertEquals(15f, instance.getRotation().getDegrees(), DELTA);
         assertEquals(Quality.BITONAL, instance.getQuality());
-        assertEquals(Format.JPG, instance.getOutputFormat());
+        assertEquals(OutputFormat.JPG, instance.getOutputFormat());
     }
 
     @Test(expected = IllegalClientArgumentException.class)
@@ -57,8 +56,7 @@ public class ParametersTest extends BaseTest {
     }
 
     @Test(expected = UnsupportedOutputFormatException.class)
-    public void testConstructorThrowsUnsupportedOutputFormatException()
-            throws Exception {
+    public void testConstructorThrowsUnsupportedOutputFormatException() {
         new Parameters(new Identifier("identifier"), "0,0,200,200", "pct:50",
                 "5", "default", "bogus");
     }

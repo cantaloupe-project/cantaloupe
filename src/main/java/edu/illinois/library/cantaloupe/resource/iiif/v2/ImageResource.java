@@ -97,7 +97,7 @@ public class ImageResource extends IIIF2Resource {
 
                     return new CachedImageRepresentation(
                             cacheStream,
-                            params.getOutputFormat().getPreferredMediaType(),
+                            params.getOutputFormat().toFormat().getPreferredMediaType(),
                             disposition);
                 } else {
                     Format infoFormat = info.getSourceFormat();

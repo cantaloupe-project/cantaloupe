@@ -2,11 +2,13 @@ package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.resource.iiif.v2.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -28,10 +30,10 @@ public final class ImageWriterFactory {
     }
 
     private static void logImageIOWriters() {
-        // TODO: get this info from somewhere else
-        final Format[] iiifOutputFormats = new Format[] {
-                Format.JPG, Format.PNG, Format.TIF, Format.GIF, Format.PDF,
-                Format.JP2, Format.WEBP };
+        final List<Format> iiifOutputFormats = Arrays
+                .stream(OutputFormat.values())
+                .map(OutputFormat::toFormat)
+                .collect(Collectors.toList());
 
         for (Format format : iiifOutputFormats) {
             Iterator<javax.imageio.ImageWriter> it =

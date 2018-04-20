@@ -17,18 +17,18 @@ import java.io.IOException;
  *
  * @see <a href="http://iiif.io/api/request/2.0/#request-request-parameters">IIIF
  *      Image API 2.0</a>
- * @see <a href="http://iiif.io/api/request/2.0/#request-request-parameters">IIIF
+ * @see <a href="http://iiif.io/api/request/2.1/#request-request-parameters">IIIF
  *      Image API 2.1</a>
  */
 class Parameters implements Comparable<Parameters> {
 
-    private Format outputFormat;
     private Identifier identifier;
-    private Quality quality;
-    private Form query = new Form();
     private Region region;
-    private Rotation rotation;
     private Size size;
+    private Rotation rotation;
+    private Quality quality;
+    private OutputFormat outputFormat;
+    private Form query = new Form();
 
     /**
      * @param paramsStr URI path fragment beginning from the identifier onward.
@@ -46,7 +46,7 @@ class Parameters implements Comparable<Parameters> {
             String[] subparts = StringUtils.split(parts[4], ".");
             if (subparts.length == 2) {
                 params.setQuality(Quality.valueOf(subparts[0].toUpperCase()));
-                params.setOutputFormat(Format.valueOf(subparts[1].toUpperCase()));
+                params.setOutputFormat(OutputFormat.valueOf(subparts[1].toUpperCase()));
             } else {
                 throw new IllegalClientArgumentException("Invalid parameters format");
             }
@@ -89,7 +89,7 @@ class Parameters implements Comparable<Parameters> {
             throw new IllegalClientArgumentException(e.getMessage(), e);
         }
         try {
-            setOutputFormat(Format.valueOf(format.toUpperCase()));
+            setOutputFormat(OutputFormat.valueOf(format.toUpperCase()));
         } catch (IllegalArgumentException e) {
             throw new UnsupportedOutputFormatException(format);
         }
@@ -115,7 +115,7 @@ class Parameters implements Comparable<Parameters> {
         return identifier;
     }
 
-    public Format getOutputFormat() {
+    public OutputFormat getOutputFormat() {
         return outputFormat;
     }
 
@@ -153,7 +153,7 @@ class Parameters implements Comparable<Parameters> {
         this.identifier = identifier;
     }
 
-    public void setOutputFormat(Format outputFormat) {
+    public void setOutputFormat(OutputFormat outputFormat) {
         this.outputFormat = outputFormat;
     }
 
@@ -196,7 +196,7 @@ class Parameters implements Comparable<Parameters> {
             ops.add(getRotation().toRotate());
         }
         ops.add(getQuality().toColorTransform());
-        ops.add(new Encode(getOutputFormat()));
+        ops.add(new Encode(getOutputFormat().toFormat()));
 
         return ops;
     }
