@@ -528,25 +528,4 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
         }
     }
 
-    @Override
-    public void validate(OperationList opList,
-                         Dimension fullSize) throws ProcessorException {
-        StreamProcessor.super.validate(opList, fullSize);
-
-        // Check the format of the "page" option, if present.
-        // TODO: move this to OperationList.validate()
-        final String pageStr = (String) opList.getOptions().get("page");
-        if (pageStr != null) {
-            try {
-                final int page = Integer.parseInt(pageStr);
-                if (page < 1) {
-                    throw new IllegalArgumentException(
-                            "Page number is out-of-bounds.");
-                }
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Invalid page number.");
-            }
-        }
-    }
-
 }

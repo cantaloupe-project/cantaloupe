@@ -1,22 +1,12 @@
-package edu.illinois.library.cantaloupe.image;
-
-import static org.junit.Assert.*;
+package edu.illinois.library.cantaloupe.operation;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.operation.Color;
-import edu.illinois.library.cantaloupe.operation.ColorTransform;
-import edu.illinois.library.cantaloupe.operation.Crop;
-import edu.illinois.library.cantaloupe.operation.Encode;
-import edu.illinois.library.cantaloupe.operation.MetadataCopy;
-import edu.illinois.library.cantaloupe.operation.MockOverlay;
-import edu.illinois.library.cantaloupe.operation.Normalize;
-import edu.illinois.library.cantaloupe.operation.Operation;
-import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.Rotate;
-import edu.illinois.library.cantaloupe.operation.Scale;
-import edu.illinois.library.cantaloupe.operation.Sharpen;
-import edu.illinois.library.cantaloupe.operation.Transpose;
+import edu.illinois.library.cantaloupe.image.Compression;
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.overlay.BasicStringOverlayServiceTest;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
@@ -26,8 +16,6 @@ import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,6 +24,8 @@ import java.awt.Rectangle;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import static org.junit.Assert.*;
 
 public class OperationListTest extends BaseTest {
 
@@ -234,7 +224,7 @@ public class OperationListTest extends BaseTest {
         opList.applyNonEndpointMutations(info, proxy);
 
         Encode encode = (Encode) opList.getFirst(Encode.class);
-        Assert.assertEquals(Color.fromString("#FFFFFF"), encode.getBackgroundColor());
+        assertEquals(Color.fromString("#FFFFFF"), encode.getBackgroundColor());
     }
 
     @Test
@@ -804,8 +794,33 @@ public class OperationListTest extends BaseTest {
     @Test(expected = IllegalArgumentException.class)
     public void validateWithOutOfBoundsCrop() {
         Dimension fullSize = new Dimension(1000, 1000);
-        OperationList ops = new OperationList(new Crop(1001, 1001, 100, 100));
+        OperationList ops = new OperationList(new Crop(1001, 1001, 100, 100),
+                new Encode(Format.JPG));
         ops.validate(fullSize);
+    }
+
+    @Test
+    public void validateWithValidPageArgument() {
+        OperationList ops = new OperationList(
+                new Identifier("cats"), new Encode(Format.JPG));
+        ops.getOptions().put("page", "2");
+        ops.validate(new Dimension(100, 88));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void validateWithZeroPageArgument() {
+        OperationList ops = new OperationList(
+                new Identifier("cats"), new Encode(Format.JPG));
+        ops.getOptions().put("page", "0");
+        ops.validate(new Dimension(100, 88));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void validateWithNegativePageArgument() {
+        OperationList ops = new OperationList(
+                new Identifier("cats"), new Encode(Format.JPG));
+        ops.getOptions().put("page", "-1");
+        ops.validate(new Dimension(100, 88));
     }
 
 }

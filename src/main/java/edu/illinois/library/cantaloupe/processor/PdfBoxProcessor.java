@@ -239,30 +239,22 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                          Dimension fullSize) throws ProcessorException {
         StreamProcessor.super.validate(opList, fullSize);
 
-        // Check the format of the "page" argument, if present.
+        // The "page" argument, if present, was validated in the overridden
+        // method, but we also want to make sure the page is actually contained
+        // in the PDF.
         final String pageStr = (String) opList.getOptions().get("page");
         if (pageStr != null) {
+            final int page = Integer.parseInt(pageStr);
             try {
-                final int page = Integer.parseInt(pageStr);
-                if (page > 0) {
-                    // Check that the page is actually contained in the PDF.
-                    try {
-                        readDocument();
-                        if (page > doc.getNumberOfPages()) {
-                            close();
-                            throw new IllegalArgumentException(
-                                    "Page number is out-of-bounds.");
-                        }
-                    } catch (IOException e) {
-                        close();
-                        throw new ProcessorException(e.getMessage(), e);
-                    }
-                } else {
+                readDocument();
+                if (page > doc.getNumberOfPages()) {
+                    close();
                     throw new IllegalArgumentException(
                             "Page number is out-of-bounds.");
                 }
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Invalid page number.");
+            } catch (IOException e) {
+                close();
+                throw new ProcessorException(e.getMessage(), e);
             }
         }
     }

@@ -167,16 +167,14 @@ public interface Processor extends AutoCloseable {
      * <p>Validates the given operation list, throwing an exception if
      * invalid.</p>
      *
-     * <p>This default implementation simply validates the given operation
-     * list.</p>
+     * <p>This default implementation simply calls {@link
+     * OperationList#validate(Dimension)}. Implementations should read the
+     * documentation of that method to decide whether they need to perform
+     * any additional validation, and only override this method if so.</p>
      *
      * <p>Notes:</p>
      *
      * <ul>
-     *     <li>This method is only for validating processor-specific options
-     *     in the list's {@link OperationList#getOptions() options map}.
-     *     Implementations that don't use these will not need to override
-     *     this.</li>
      *     <li>Implementations should call {@literal super}.</li>
      *     <li>It is guaranteed that this method, if called, will always be
      *     called before {@link #process}.</li>

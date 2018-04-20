@@ -622,6 +622,16 @@ public final class OperationList implements Comparable<OperationList>,
     }
 
     /**
+     * <ol>
+     *     <li>Checks that an {@link #setIdentifier(Identifier) identifier is
+     *     set};</li>
+     *     <li>Checks that an {@link Encode} is present;</li>
+     *     <li>Calls {@link Operation#validate(Dimension)} on each {@link
+     *     Operation};</li>
+     *     <li>Validates the {@literal page} {@link #getOptions() option}, if
+     *     present.</li>
+     * </ol>
+     *
      * @param fullSize Full size of the source image on which the instance is
      *                 being applied.
      * @throws IllegalArgumentException if the instance is invalid.
@@ -639,6 +649,22 @@ public final class OperationList implements Comparable<OperationList>,
         // Validate each operation.
         for (Operation op : this) {
             op.validate(fullSize);
+        }
+
+        // "page" is a special query argument used by some processors, namely
+        // ones that read PDFs, that tells them what page to read. We might
+        // as well validate it here to save them the trouble.
+        final String pageStr = (String) getOptions().get("page");
+        if (pageStr != null) {
+            try {
+                final int page = Integer.parseInt(pageStr);
+                if (page < 1) {
+                    throw new IllegalArgumentException(
+                            "Page number is out-of-bounds.");
+                }
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid page number.");
+            }
         }
     }
 
