@@ -567,7 +567,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.2.0</version>
         <executions>
           <execution>
             <id>create-war</id>
@@ -586,16 +586,6 @@
             </configuration>
           </execution>
         </executions>
-        <!-- This plugin depends on a version of plexus-archiver that
-        doesn't work with JDK 9. So, use a version that does.
-        TODO: revisit this -->
-        <dependencies>
-          <dependency>
-             <groupId>org.codehaus.plexus</groupId>
-             <artifactId>plexus-archiver</artifactId>
-             <version>3.5</version>
-          </dependency>
-        </dependencies>
       </plugin>
 
       <!-- Assemble the created war into a release package. -->
