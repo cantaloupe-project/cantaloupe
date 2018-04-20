@@ -165,8 +165,8 @@ HttpResolver.BasicLookupStrategy.url_prefix = http://localhost/images/
 HttpResolver.BasicLookupStrategy.url_suffix =
 
 # Enables access to resources that require HTTP Basic authentication.
-HttpResolver.auth.basic.username =
-HttpResolver.auth.basic.secret =
+HttpResolver.BasicLookupStrategy.auth.basic.username =
+HttpResolver.BasicLookupStrategy.auth.basic.secret =
 
 #----------------------------------------
 # JdbcResolver

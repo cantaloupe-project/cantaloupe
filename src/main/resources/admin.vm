@@ -1572,7 +1572,7 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="HttpResolver.auth.basic.username"
+                                                       name="HttpResolver.BasicLookupStrategy.auth.basic.username"
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>
@@ -1586,7 +1586,7 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="HttpResolver.auth.basic.secret"
+                                                       name="HttpResolver.BasicLookupStrategy.auth.basic.secret"
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>
