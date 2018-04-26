@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.util;
 
-import org.eclipse.jetty.server.NegotiatingServerConnectionFactory;
-
 import java.util.regex.Pattern;
 
 public final class SystemUtils {
@@ -34,21 +32,10 @@ public final class SystemUtils {
     }
 
     /**
-     * ALPN is built into Java 9. In earlier versions, it has to be provided by
-     * a JAR on the boot classpath:
-     *
-     * <code>-Xbootclasspath/p:/path/to/alpn-boot-8.1.5.v20150921.jar</code>
+     * ALPN is built into Java 9 and later.
      */
     public static boolean isALPNAvailable() {
-        if (getJavaMajorVersion() < 9) {
-            try {
-                NegotiatingServerConnectionFactory.
-                        checkProtocolNegotiationAvailable();
-            } catch (IllegalStateException e) {
-                return false;
-            }
-        }
-        return true;
+        return getJavaMajorVersion() >= 9;
     }
 
     private SystemUtils() {}
