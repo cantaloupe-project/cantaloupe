@@ -28,11 +28,13 @@ http://maven.apache.org/plugins/maven-assembly-plugin/assembly.html
             <source>cantaloupe.properties.sample</source>
             <destName>cantaloupe.properties.sample</destName>
             <fileMode>0644</fileMode>
+            <lineEnding>crlf</lineEnding>
         </file>
         <file>
             <source>delegates.rb.sample</source>
             <destName>delegates.rb.sample</destName>
             <fileMode>0644</fileMode>
+            <lineEnding>crlf</lineEnding>
         </file>
         <file>
             <source>LICENSE.txt</source>
