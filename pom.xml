@@ -143,12 +143,6 @@
       <version>0.2.4</version>
       <scope>test</scope>
     </dependency>
-    <!-- JAI ImageIO -->
-    <dependency>
-      <groupId>com.github.jai-imageio</groupId>
-      <artifactId>jai-imageio-core</artifactId>
-      <version>1.4.0</version>
-    </dependency>
     <!-- Dependency on part of Java EE that's available by default in Java 8
     but not 9 -->
     <dependency>
