@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * N.B.: If subclasses need to send custom response headers, they should add
@@ -227,7 +228,12 @@ public abstract class AbstractResource extends ServerResource {
             requestContext.setIdentifier(getIdentifier());
         }
 
-        LOGGER.info("doInit(): handling {} {}", getMethod(), getReference());
+        String headersStr = getRequest().getHeaders()
+                .stream()
+                .map(h -> h.getName() + ": " + h.getValue())
+                .collect(Collectors.joining("; "));
+        LOGGER.info("doInit(): handling {} {} [{}]",
+                getMethod(), getReference(), headersStr);
     }
 
     /**
@@ -463,10 +469,6 @@ public abstract class AbstractResource extends ServerResource {
             header = PUBLIC_IDENTIFIER_HEADER_DEPRECATED;
             headerID = getRequest().getHeaders().getFirstValue(header, true);
         }
-
-        LOGGER.debug("Public identifier requested: {} | {} header: {}",
-                urlID, header, headerID);
-
         return (headerID != null && !headerID.isEmpty()) ? headerID : urlID;
     }
 
