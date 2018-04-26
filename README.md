@@ -163,4 +163,4 @@ release branch for that release, and merged back into `develop`.
 ## License
 
 Cantaloupe is open-source software distributed under the University of
-Illinois/NCSA Open Source License; see the file LICENSE for terms.
+Illinois/NCSA Open Source License; see the file LICENSE.txt for terms.

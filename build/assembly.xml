@@ -35,7 +35,7 @@ http://maven.apache.org/plugins/maven-assembly-plugin/assembly.html
             <fileMode>0644</fileMode>
         </file>
         <file>
-            <source>LICENSE</source>
+            <source>LICENSE.txt</source>
             <fileMode>0644</fileMode>
             <lineEnding>crlf</lineEnding>
         </file>
