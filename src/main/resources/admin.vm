@@ -2209,6 +2209,10 @@
                                     </table>
                                 </div>
 
+                                <div role="tabpanel" class="tab-pane" id="KakaduNativeProcessor">
+                                    <p>This processor is not configurable.</p>
+                                </div>
+
                                 <div role="tabpanel" class="tab-pane" id="OpenJpegProcessor">
                                     <table class="table table-striped">
                                         <tr>
