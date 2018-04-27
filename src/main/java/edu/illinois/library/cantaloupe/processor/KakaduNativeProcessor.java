@@ -17,7 +17,7 @@ import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import kdu_jni.Jp2_family_src;
 import kdu_jni.Jp2_locator;
@@ -237,14 +237,14 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
     private static InitializationException initializationException;
 
     /**
-     * Will be {@literal null} if {@link #streamSource} isn't.
+     * Will be {@literal null} if {@link #streamFactory} isn't.
      */
     private Path sourceFile;
 
     /**
      * Will be {@literal null} if {@link #sourceFile} isn't.
      */
-    private StreamSource streamSource;
+    private StreamFactory streamFactory;
 
     private Format sourceFormat;
 
@@ -288,8 +288,8 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
     }
 
     @Override
-    public StreamSource getStreamSource() {
-        return streamSource;
+    public StreamFactory getStreamFactory() {
+        return streamFactory;
     }
 
     @Override
@@ -344,8 +344,8 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
     }
 
     @Override
-    public void setStreamSource(StreamSource streamSource) {
-        this.streamSource = streamSource;
+    public void setStreamFactory(StreamFactory streamFactory) {
+        this.streamFactory = streamFactory;
     }
 
     /**
@@ -419,7 +419,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             if (sourceFile != null) {
                 familySrc.Open(sourceFile.toString(), true);
             } else {
-                inputStream = streamSource.newImageInputStream();
+                inputStream = streamFactory.newImageInputStream();
                 compSrc = new KduImageInputStreamSource(inputStream);
                 familySrc.Open(compSrc);
             }
@@ -680,7 +680,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             if (sourceFile != null) {
                 familySrc.Open(sourceFile.toString(), true);
             } else {
-                inputStream = streamSource.newImageInputStream();
+                inputStream = streamFactory.newImageInputStream();
                 familySrc.Open(new KduImageInputStreamSource(inputStream));
             }
             jp2Src.Open(familySrc, loc);

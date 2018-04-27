@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.source.StreamFactory;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
@@ -72,14 +72,14 @@ public final class ImageReaderFactory {
     /**
      * Creates a reusable instance for reading from streams.
      *
-     * @param streamSource Source of stream to read from.
+     * @param streamFactory Source of stream to read from.
      * @param format       Format of the source image.
      * @throws IllegalArgumentException if the format is unsupported.
      */
-    public ImageReader newImageReader(StreamSource streamSource,
+    public ImageReader newImageReader(StreamFactory streamFactory,
                                       Format format) throws IOException {
         ImageReader reader = newImageReader(format);
-        reader.setSource(streamSource);
+        reader.setSource(streamFactory);
         return reader;
     }
 

@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.resource.iiif.v1.Quality;
 
@@ -18,7 +18,7 @@ import java.util.Set;
 class MockStreamProcessor implements StreamProcessor {
 
     private Format sourceFormat;
-    private StreamSource streamSource;
+    private StreamFactory streamFactory;
 
     @Override
     public Set<Format> getAvailableOutputFormats() {
@@ -26,8 +26,8 @@ class MockStreamProcessor implements StreamProcessor {
     }
 
     @Override
-    public StreamSource getStreamSource() {
-        return streamSource;
+    public StreamFactory getStreamFactory() {
+        return streamFactory;
     }
 
     @Override
@@ -63,8 +63,8 @@ class MockStreamProcessor implements StreamProcessor {
     }
 
     @Override
-    public void setStreamSource(StreamSource source) {
-        this.streamSource = source;
+    public void setStreamFactory(StreamFactory source) {
+        this.streamFactory = source;
     }
 
 }

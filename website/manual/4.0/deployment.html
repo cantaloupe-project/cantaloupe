@@ -77,7 +77,7 @@ title: Deployment
 
 <h3 id="HardwareStorage">Storage</h3>
 
-<p>Most source formats benefit from fast read performance&mdash;in terms of both latency and throughput&mdash;in the underlying storage system. Throughput is more important for less efficient source formats&mdash;like JPEG, PNG, and mono-resolution TIFF&mdash;especially as source image size increases. <a href="resolvers.html#FilesystemResolver">Local filesystem storage</a> usually performs best.</p>
+<p>Most source formats benefit from fast read performance&mdash;in terms of both latency and throughput&mdash;in the underlying storage system. Throughput is more important for less efficient source formats&mdash;like JPEG, PNG, and mono-resolution TIFF&mdash;especially as source image size increases. <a href="sources.html#FilesystemSource">Local filesystem storage</a> usually performs best.</p>
 
 <p>As derivative images tend to be small, storage performance is less important for derivative caches.</p>
 
@@ -101,7 +101,7 @@ title: Deployment
 
 <p>Cantaloupe can run behind a reverse-proxy web server like Apache or nginx. The proxy should be set up to pass-through encoded URI characters without decoding them. It should also be configured to send the following headers:</p>
 
-<table class="table table-striped">
+<table class="table table-bordered">
   <tr>
     <th>Header</th>
     <th>Description</th>
@@ -133,7 +133,7 @@ title: Deployment
     <td>No</td>
   </tr>
   <tr>
-    <td class="text-warning"><code>X-IIIF-ID</code>
+    <td class="text-danger"><code>X-IIIF-ID</code>
     <strong>Deprecated</strong> in version 4.0. Use <code>X-Forwarded-ID</code> instead.</td>
     <td>Originally-requested image identifier. Should be set only when the proxy server will change the value of the identifier in the forwarded request; i.e. when the client is asking for a different identifier than the image server ends up seeing.</td>
     <td>No</td>

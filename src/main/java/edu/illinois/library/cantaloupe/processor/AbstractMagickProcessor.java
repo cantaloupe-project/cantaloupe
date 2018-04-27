@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 import java.util.Collections;
@@ -41,10 +41,10 @@ abstract class AbstractMagickProcessor extends AbstractProcessor {
                     edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
                     edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
 
-    protected StreamSource streamSource;
+    protected StreamFactory streamFactory;
 
-    public StreamSource getStreamSource() {
-        return streamSource;
+    public StreamFactory getStreamFactory() {
+        return streamFactory;
     }
 
     public Set<ProcessorFeature> getSupportedFeatures() {
@@ -81,8 +81,8 @@ abstract class AbstractMagickProcessor extends AbstractProcessor {
         return qualities;
     }
 
-    public void setStreamSource(StreamSource streamSource) {
-        this.streamSource = streamSource;
+    public void setStreamFactory(StreamFactory streamFactory) {
+        this.streamFactory = streamFactory;
     }
 
 }

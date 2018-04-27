@@ -47,28 +47,28 @@ class CustomDelegate
     end
   end
 
-  def resolver(options = {})
+  def source(options = {})
     case context['identifier']
       when 'http'
-        return 'HttpResolver'
+        return 'HttpSource'
       when 'jdbc'
-        return 'JdbcResolver'
+        return 'JdbcSource'
       when 'bogus'
         return nil
       else
-        return 'FilesystemResolver'
+        return 'FilesystemSource'
     end
   end
 
-  def azurestorageresolver_blob_key(options = {})
+  def azurestoragesource_blob_key(options = {})
     context['identifier'] != 'missing' ? context['identifier'] : nil
   end
 
-  def filesystemresolver_pathname(options = {})
+  def filesystemsource_pathname(options = {})
     context['identifier'] != 'missing' ? context['identifier'] : nil
   end
 
-  def httpresolver_resource_info(options = {})
+  def httpsource_resource_info(options = {})
     identifier = context['identifier']
 
     ########################## DelegateProxyTest ############################
@@ -80,7 +80,7 @@ class CustomDelegate
         return { 'uri' => 'http://example.org/birds' }
     end
 
-    ########################### HttpResolverTest #############################
+    ############################ HttpSourceTest #############################
 
     # Supply a localhost URL to return the same URL.
     if identifier.start_with?('http://localhost') or
@@ -139,19 +139,19 @@ class CustomDelegate
     nil
   end
 
-  def jdbcresolver_database_identifier(options = {})
+  def jdbcsource_database_identifier(options = {})
     context['identifier']
   end
 
-  def jdbcresolver_media_type(options = {})
+  def jdbcsource_media_type(options = {})
     'SELECT media_type FROM items WHERE filename = ?'
   end
 
-  def jdbcresolver_lookup_sql(options = {})
+  def jdbcsource_lookup_sql(options = {})
     'SELECT image FROM items WHERE filename = ?'
   end
 
-  def s3resolver_object_info(options = {})
+  def s3source_object_info(options = {})
     identifier = context['identifier']
 
     if identifier.start_with?('key:')

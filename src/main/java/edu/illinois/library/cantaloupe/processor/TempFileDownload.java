@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.async.ThreadPool;
-import edu.illinois.library.cantaloupe.resolver.StreamResolver;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.source.StreamFactory;
+import edu.illinois.library.cantaloupe.source.StreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Asynchronously downloads content from a {@link StreamResolver} to a
+ * Asynchronously downloads content from a {@link StreamSource} to a
  * temporary file.
  */
 final class TempFileDownload implements Future<Path> {
@@ -33,11 +33,11 @@ final class TempFileDownload implements Future<Path> {
     private final AtomicBoolean isCancelled       = new AtomicBoolean();
     private final AtomicBoolean mayInterrupt      = new AtomicBoolean();
     private final AtomicBoolean downloadAttempted = new AtomicBoolean();
-    private StreamSource streamSource;
+    private StreamFactory streamFactory;
     private Path tempFile;
 
-    TempFileDownload(StreamSource streamSource, Path tempFile) {
-        this.streamSource = streamSource;
+    TempFileDownload(StreamFactory streamFactory, Path tempFile) {
+        this.streamFactory = streamFactory;
         this.tempFile = tempFile;
     }
 
@@ -63,7 +63,7 @@ final class TempFileDownload implements Future<Path> {
 
         try {
             try (InputStream is = new BufferedInputStream(
-                    streamSource.newInputStream(),
+                    streamFactory.newInputStream(),
                     STREAM_BUFFER_SIZE);
                  OutputStream os = new BufferedOutputStream(
                          Files.newOutputStream(tempFile),

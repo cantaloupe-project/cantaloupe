@@ -19,7 +19,6 @@ title: Images
         <ul>
           <li><a href="#Strip-Based%20vs.%20Tile-Based">Strip-Based vs. Tile-Based</a></li>
           <li><a href="#Multi-Resolution">Multi-Resolution (Pyramidal) TIFF</a></li>
-          <li><a href="#BigTIFF">BigTIFF</a></li>
           <li><a href="#Processor%20Considerations">Processor Considerations</a></li>
         </ul>
       </li>
@@ -49,11 +48,11 @@ title: Images
 
 <p>Every source image served by the application is considered to have a unique identifier, which is used throughout the application to refer to the image, and appears in <a href="endpoints.html">endpoint</a> URIs.</p>
 
-<p>An identifier maps to a filename, pathname, object key, or some other identifier string in the underlying storage. The <a href="getting-started.html">Getting Started</a> section describes a simple setup in which URI identifiers map to pathname fragments on a filesystem, but this can make for identifiers that are ugly, unstable, and/or insecure. See <a href="resolvers.html">Resolvers</a> for information on your resolver of choice and setting it up to meet a particular use case.</p>
+<p>An identifier maps to a filename, pathname, object key, or some other identifier string in the underlying storage. The <a href="getting-started.html">Getting Started</a> section describes a simple setup in which URI identifiers map to pathname fragments on a filesystem, but this can make for identifiers that are ugly, unstable, and/or insecure. See <a href="sources.html">Sources</a> for information on your source of choice and setting it up to meet a particular use case.</p>
 
 <h3>URI Considerations</h3>
 
-Identifiers in URIs must be URI-escaped&mdash;its URI-illegal characters must be encoded. For example, an image with an identifier of <span class="filename">a6/b3/c4.jp2</span> would need to appear in a URI as <span class="filename">a6%2Fb3%2Fc4.jp2</span>. If you are behind a reverse proxy that cannot pass through encoded slashes (<span class="filename">%2F</span>) without decoding them, the <code>slash_substitute</code> configuration key can be used to specify a different character or character sequence to treat as a slash.</p>
+<p>URI-illegal characters in identifiers must be encoded. For example, an image with an identifier of <span class="filename">a6/b3/c4.jp2</span> would need to appear in a URI as <span class="filename">a6%2Fb3%2Fc4.jp2</span>. If you are behind a reverse proxy that cannot pass through encoded slashes (<span class="filename">%2F</span>) without decoding them, the <code>slash_substitute</code> configuration key can be used to specify a different character or character sequence to treat as a slash.</p>
 
 <hr>
 
@@ -109,10 +108,6 @@ Identifiers in URIs must be URI-escaped&mdash;its URI-illegal characters must be
 
 <p>Each of the levels in a multi-resolution TIFF file can be striped or tiled, just as in a mono-resolution file. (They can even be encoded in other, non-TIFF formats.) Tiled and pyramidal encodings are complementary: the former improves efficiency with reduced regions at large scales, and the latter improves efficiency at reduced scales. For efficient deep zooming, TIFF images need to be pyramidal, and each level of the pyramid should be tiled.</p>
 
-<h4 id="BigTIFF">BigTIFF</h4>
-
-<p>Ordinary TIFF files are limited to 4 GB in size. BigTIFF uses a different data layout that enables them to scale far beyond this. All processors that understand TIFF also understand BigTIFF.</p>
-
 <h4 id="Processor Considerations">Processor Considerations</h4>
 
 <p>Most processors can "read the TIFF format," but not all can read it efficiently. Currently, <a href="processors.html#Java2dProcessor">Java2dProcessor</a> and <a href="processors.html#JaiProcessor">JaiProcessor</a> both support multi-resolution TIFF, which is to say that they read the embedded sub-images and choose the smallest one that can fulfill the request. Additionally, both exploit tiled sub-images. JaiProcessor, however, is able to use the JAI processing pipeline to do this more efficiently, so it is currently the best-performing processor for suitably-encoded high-resolution TIFF images.</p>
@@ -135,6 +130,4 @@ Identifiers in URIs must be URI-escaped&mdash;its URI-illegal characters must be
 
 <p>When an image request is received&mdash;unless it calls for the full-sized unmodified source image&mdash;the image server will have to dynamically create and return a derivative image. As this is a whole new image, distinct from the source image, populating it with metadata would require an additional step.</p>
 
-<p>When <code>processor.metadata.preserve</code> is set to <code>true</code> in the configuration file, an effort will be made to copy metadata from source images into derivative images.</p>
-
-<p>This currently does not work in all processors; see the <a href="processors.html#Supported%20Features">Supported Features</a> table for a breakdown. It also does not generally work across formats.</p>
+<p>When <code>processor.metadata.preserve</code> is set to <code>true</code> in the configuration file, an effort will be made to copy metadata from source images into derivative images. This doesn't work with all processors; see the <a href="processors.html#Supported%20Features">Supported Features</a> table for a breakdown. It also does not generally work across formats.</p>

@@ -9,8 +9,8 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Transpose;
-import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.source.PathStreamFactory;
+import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Ignore;
@@ -76,8 +76,8 @@ abstract class AbstractProcessorTest extends BaseTest {
         if (proc instanceof FileProcessor) {
             ((FileProcessor) proc).setSourceFile(fixture);
         } else if (proc instanceof StreamProcessor) {
-            StreamSource source = new PathStreamSource(fixture);
-            ((StreamProcessor) proc).setStreamSource(source);
+            StreamFactory source = new PathStreamFactory(fixture);
+            ((StreamProcessor) proc).setStreamFactory(source);
         }
         return proc;
     }
@@ -593,9 +593,9 @@ abstract class AbstractProcessorTest extends BaseTest {
 
                     if (proc instanceof StreamProcessor) {
                         StreamProcessor sproc = (StreamProcessor) proc;
-                        StreamSource streamSource =
-                                new PathStreamSource(fixture);
-                        sproc.setStreamSource(streamSource);
+                        StreamFactory streamFactory =
+                                new PathStreamFactory(fixture);
+                        sproc.setStreamFactory(streamFactory);
                     } else if (proc instanceof FileProcessor) {
                         FileProcessor fproc = (FileProcessor) proc;
                         fproc.setSourceFile(fixture);

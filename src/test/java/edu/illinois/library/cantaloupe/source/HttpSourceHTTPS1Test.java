@@ -1,9 +1,9 @@
-package edu.illinois.library.cantaloupe.resolver;
+package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.test.WebServer;
 import org.junit.Before;
 
-public class HttpResolverHTTPS1Test extends HttpResolverHTTPSTest {
+public class HttpSourceHTTPS1Test extends HttpSourceHTTPSTest {
 
     @Before
     @Override

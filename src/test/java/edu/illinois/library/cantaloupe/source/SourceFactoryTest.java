@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resolver;
+package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -13,61 +13,61 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class ResolverFactoryTest extends BaseTest {
+public class SourceFactoryTest extends BaseTest {
 
-    private ResolverFactory instance;
+    private SourceFactory instance;
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new ResolverFactory();
+        instance = new SourceFactory();
     }
 
     @Test
-    public void getAllResolvers() {
-        assertEquals(5, ResolverFactory.getAllResolvers().size());
+    public void getAllSources() {
+        assertEquals(5, SourceFactory.getAllSources().size());
     }
 
     @Test
-    public void newResolverWithValidStaticResolverSimpleClassName()
+    public void newSourceWithValidStaticResolverSimpleClassName()
             throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.RESOLVER_STATIC,
-                HttpResolver.class.getSimpleName());
+        config.setProperty(Key.SOURCE_STATIC,
+                HttpSource.class.getSimpleName());
 
         Identifier identifier = new Identifier("cats");
-        Resolver resolver = instance.newResolver(identifier, null);
-        assertTrue(resolver instanceof HttpResolver);
+        Source source = instance.newSource(identifier, null);
+        assertTrue(source instanceof HttpSource);
     }
 
     @Test
-    public void newResolverWithValidStaticResolverFullClassName()
+    public void newSourceWithValidStaticResolverFullClassName()
             throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.RESOLVER_STATIC, HttpResolver.class.getName());
+        config.setProperty(Key.SOURCE_STATIC, HttpSource.class.getName());
 
         Identifier identifier = new Identifier("cats");
-        Resolver resolver = instance.newResolver(identifier, null);
+        Source source = instance.newSource(identifier, null);
 
-        assertTrue(resolver instanceof HttpResolver);
+        assertTrue(source instanceof HttpSource);
     }
 
     @Test(expected = ClassNotFoundException.class)
-    public void newResolverWithInvalidStaticResolver() throws Exception {
+    public void newSourceWithInvalidStaticResolver() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.RESOLVER_STATIC, "BogusResolver");
+        config.setProperty(Key.SOURCE_STATIC, "BogusSource");
 
         Identifier identifier = new Identifier("cats");
-        instance.newResolver(identifier, null);
+        instance.newSource(identifier, null);
     }
 
     @Test
-    public void newResolverUsingDelegateScript() throws Exception {
+    public void newSourceUsingDelegateScript() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").toString());
-        config.setProperty(Key.RESOLVER_DELEGATE, true);
+        config.setProperty(Key.SOURCE_DELEGATE, true);
 
         Identifier identifier = new Identifier("http");
         RequestContext context = new RequestContext();
@@ -75,8 +75,8 @@ public class ResolverFactoryTest extends BaseTest {
         DelegateProxyService service = DelegateProxyService.getInstance();
         DelegateProxy proxy = service.newDelegateProxy(context);
 
-        Resolver resolver = instance.newResolver(identifier, proxy);
-        assertTrue(resolver instanceof HttpResolver);
+        Source source = instance.newSource(identifier, proxy);
+        assertTrue(source instanceof HttpSource);
 
         identifier = new Identifier("anythingelse");
         context = new RequestContext();
@@ -84,20 +84,20 @@ public class ResolverFactoryTest extends BaseTest {
         service = DelegateProxyService.getInstance();
         proxy = service.newDelegateProxy(context);
 
-        resolver = instance.newResolver(identifier, proxy);
-        assertTrue(resolver instanceof FilesystemResolver);
+        source = instance.newSource(identifier, proxy);
+        assertTrue(source instanceof FilesystemSource);
     }
 
     @Test
     public void getSelectionStrategy() {
         Configuration config = Configuration.getInstance();
 
-        config.setProperty(Key.RESOLVER_DELEGATE, "false");
-        assertEquals(ResolverFactory.SelectionStrategy.STATIC,
+        config.setProperty(Key.SOURCE_DELEGATE, "false");
+        assertEquals(SourceFactory.SelectionStrategy.STATIC,
                 instance.getSelectionStrategy());
 
-        config.setProperty(Key.RESOLVER_DELEGATE, "true");
-        assertEquals(ResolverFactory.SelectionStrategy.DELEGATE_SCRIPT,
+        config.setProperty(Key.SOURCE_DELEGATE, "true");
+        assertEquals(SourceFactory.SelectionStrategy.DELEGATE_SCRIPT,
                 instance.getSelectionStrategy());
     }
 

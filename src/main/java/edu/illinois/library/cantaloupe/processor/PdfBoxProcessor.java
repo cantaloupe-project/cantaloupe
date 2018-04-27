@@ -9,7 +9,7 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.cos.COSObject;
@@ -48,7 +48,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
 
     private PDDocument doc;
     private Path sourceFile;
-    private StreamSource streamSource;
+    private StreamFactory streamFactory;
 
     @Override
     public void close() {
@@ -69,8 +69,8 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     }
 
     @Override
-    public StreamSource getStreamSource() {
-        return streamSource;
+    public StreamFactory getStreamFactory() {
+        return streamFactory;
     }
 
     @Override
@@ -140,7 +140,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
             if (sourceFile != null) {
                 doc = PDDocument.load(sourceFile.toFile());
             } else {
-                try (InputStream is = streamSource.newInputStream()) {
+                try (InputStream is = streamFactory.newInputStream()) {
                     doc = PDDocument.load(is);
                 }
             }
@@ -224,14 +224,14 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
 
     @Override
     public void setSourceFile(Path sourceFile) {
-        this.streamSource = null;
+        this.streamFactory = null;
         this.sourceFile = sourceFile;
     }
 
     @Override
-    public void setStreamSource(StreamSource streamSource) {
+    public void setStreamFactory(StreamFactory streamFactory) {
         this.sourceFile = null;
-        this.streamSource = streamSource;
+        this.streamFactory = streamFactory;
     }
 
     @Override

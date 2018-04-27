@@ -1,9 +1,9 @@
-package edu.illinois.library.cantaloupe.resolver;
+package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.image.Format;
 
-public class MockStreamResolver extends AbstractResolver
-        implements StreamResolver {
+public class MockStreamSource extends AbstractSource
+        implements StreamSource {
 
     @Override
     public void checkAccess() {
@@ -15,7 +15,7 @@ public class MockStreamResolver extends AbstractResolver
     }
 
     @Override
-    public StreamSource newStreamSource() {
+    public StreamFactory newStreamFactory() {
         return null;
     }
 

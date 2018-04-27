@@ -102,10 +102,10 @@ var Form = function(config) {
         // Endpoints
         showOrHideAllOtherTableRows(
             '[name="endpoint.public.auth.basic.enabled"], [name="endpoint.iiif.1.enabled"], [name="endpoint.iiif.2.enabled"]');
-        // Resolver
-        $('[name="resolver.delegate"]').on('change', function() {
+        // Source
+        $('[name="source.delegate"]').on('change', function() {
             var other_rows = $(this).parents('tr').nextAll('tr');
-            if ($(this).val() == 'false') {
+            if ($(this).val() === 'false') {
                 other_rows.show();
             } else {
                 other_rows.hide();

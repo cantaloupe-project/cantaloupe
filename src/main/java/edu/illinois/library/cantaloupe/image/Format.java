@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.image;
 
-import edu.illinois.library.cantaloupe.resolver.Resolver;
+import edu.illinois.library.cantaloupe.source.Source;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -214,7 +214,7 @@ public enum Format {
      * <p>Attempts to infer a format from the given identifier.</p>
      *
      * <p>It is usually more reliable (but also maybe more expensive) to get
-     * this information from {@link Resolver#getSourceFormat()}.</p>
+     * this information from {@link Source#getSourceFormat()}.</p>
      *
      * @param identifier
      * @return The source format corresponding to the given identifier,
@@ -229,7 +229,7 @@ public enum Format {
      * <p>Attempts to infer a format from the given pathname.</p>
      *
      * <p>It is usually more reliable (but also maybe more expensive) to get
-     * this information from {@link Resolver#getSourceFormat()}.</p>
+     * this information from {@link Source#getSourceFormat()}.</p>
      *
      * @param pathname
      * @return The source format corresponding to the given identifier,

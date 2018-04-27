@@ -1,11 +1,11 @@
-package edu.illinois.library.cantaloupe.resolver;
+package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
 
-abstract class AbstractResolver {
+abstract class AbstractSource {
 
     protected Identifier identifier;
     protected Format sourceFormat;

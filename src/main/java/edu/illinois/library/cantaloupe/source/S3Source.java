@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resolver;
+package edu.illinois.library.cantaloupe.source;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
@@ -53,14 +53,14 @@ import java.util.Map;
  * <h1>Lookup Strategies</h1>
  *
  * <p>Two distinct lookup strategies are supported, defined by
- * {@link Key#S3RESOLVER_LOOKUP_STRATEGY}. BasicLookupStrategy maps
+ * {@link Key#S3SOURCE_LOOKUP_STRATEGY}. BasicLookupStrategy maps
  * identifiers directly to S3 object keys. ScriptLookupStrategy invokes a
  * delegate method to retrieve object keys dynamically.</p>
  *
  * @see <a href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/welcome.html">
  *     AWS SDK for Java</a>
  */
-class S3Resolver extends AbstractResolver implements StreamResolver {
+class S3Source extends AbstractSource implements StreamSource {
 
     static class ObjectInfo {
 
@@ -87,11 +87,11 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
 
     }
 
-    private static class S3ObjectStreamSource implements StreamSource {
+    private static class S3ObjectStreamFactory implements StreamFactory {
 
         private ObjectInfo objectInfo;
 
-        S3ObjectStreamSource(ObjectInfo objectInfo) {
+        S3ObjectStreamFactory(ObjectInfo objectInfo) {
             this.objectInfo = objectInfo;
         }
 
@@ -104,7 +104,7 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
     }
 
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(S3Resolver.class);
+            LoggerFactory.getLogger(S3Source.class);
 
     /**
      * Byte length of the range used to infer the source image format.
@@ -126,17 +126,17 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
 
             URI endpointURI = null;
             try {
-                endpointURI = new URI(config.getString(Key.S3RESOLVER_ENDPOINT));
+                endpointURI = new URI(config.getString(Key.S3SOURCE_ENDPOINT));
             } catch (URISyntaxException e) {
                 LOGGER.error("Invalid URI for {}: {}",
-                        Key.S3RESOLVER_ENDPOINT, e.getMessage());
+                        Key.S3SOURCE_ENDPOINT, e.getMessage());
             }
 
             client = new AWSClientBuilder()
                     .endpointURI(endpointURI)
-                    .accessKeyID(config.getString(Key.S3RESOLVER_ACCESS_KEY_ID))
-                    .secretKey(config.getString(Key.S3RESOLVER_SECRET_KEY))
-                    .maxConnections(config.getInt(Key.S3RESOLVER_MAX_CONNECTIONS, 0))
+                    .accessKeyID(config.getString(Key.S3SOURCE_ACCESS_KEY_ID))
+                    .secretKey(config.getString(Key.S3SOURCE_SECRET_KEY))
+                    .maxConnections(config.getInt(Key.S3SOURCE_MAX_CONNECTIONS, 0))
                     .build();
         }
         return client;
@@ -226,7 +226,7 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
      */
     ObjectInfo getObjectInfo() throws IOException {
         if (objectInfo == null) {
-            switch (LookupStrategy.from(Key.S3RESOLVER_LOOKUP_STRATEGY)) {
+            switch (LookupStrategy.from(Key.S3SOURCE_LOOKUP_STRATEGY)) {
                 case DELEGATE_SCRIPT:
                     try {
                         objectInfo = getObjectInfoUsingDelegateStrategy();
@@ -248,16 +248,16 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
      */
     private ObjectInfo getObjectInfoUsingBasicStrategy() {
         final Configuration config = Configuration.getInstance();
-        final String bucketName = config.getString(Key.S3RESOLVER_BUCKET_NAME);
-        final String keyPrefix = config.getString(Key.S3RESOLVER_PATH_PREFIX, "");
-        final String keySuffix = config.getString(Key.S3RESOLVER_PATH_SUFFIX, "");
+        final String bucketName = config.getString(Key.S3SOURCE_BUCKET_NAME);
+        final String keyPrefix = config.getString(Key.S3SOURCE_PATH_PREFIX, "");
+        final String keySuffix = config.getString(Key.S3SOURCE_PATH_SUFFIX, "");
         final String key = keyPrefix + identifier.toString() + keySuffix;
         return new ObjectInfo(key, bucketName);
     }
 
     /**
      * @return Object info drawn from the {@link
-     *         DelegateMethod#S3RESOLVER_OBJECT_INFO} delegate method.
+     *         DelegateMethod#S3SOURCE_OBJECT_INFO} delegate method.
      * @throws IllegalArgumentException if the return value of the delegate
      *                                  method is invalid.
      * @throws NoSuchFileException      if the delegate script does not exist.
@@ -266,11 +266,11 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
      */
     private ObjectInfo getObjectInfoUsingDelegateStrategy()
             throws ScriptException, NoSuchFileException {
-        Map<String,String> result = getDelegateProxy().getS3ResolverObjectInfo();
+        Map<String,String> result = getDelegateProxy().getS3SourceObjectInfo();
 
         if (result.isEmpty()) {
             throw new NoSuchFileException(
-                    DelegateMethod.S3RESOLVER_OBJECT_INFO +
+                    DelegateMethod.S3SOURCE_OBJECT_INFO +
                     " returned nil for " + identifier);
         }
 
@@ -338,8 +338,8 @@ class S3Resolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public StreamSource newStreamSource() throws IOException {
-        return new S3ObjectStreamSource(getObjectInfo());
+    public StreamFactory newStreamFactory() throws IOException {
+        return new S3ObjectStreamFactory(getObjectInfo());
     }
 
     @Override

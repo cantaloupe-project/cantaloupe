@@ -16,9 +16,9 @@
  * {@link edu.illinois.library.cantaloupe.processor.StreamProcessor} interfaces,
  * which enable them to read from {@link java.io.File files} and/or
  * streams obtained from a
- * {@link edu.illinois.library.cantaloupe.resolver.StreamSource}. A
+ * {@link edu.illinois.library.cantaloupe.source.StreamFactory}. A
  * {@link edu.illinois.library.cantaloupe.processor.StreamProcessor} will work
- * with any resolver, and if it can use streams as efficiently as direct file
+ * with any source, and if it can use streams as efficiently as direct file
  * access, then there is no need to implement
  * {@link edu.illinois.library.cantaloupe.processor.FileProcessor}.
  * {@link edu.illinois.library.cantaloupe.processor.FileProcessor} should be

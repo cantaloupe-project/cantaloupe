@@ -10,8 +10,9 @@ title: Upgrading
 <ol>
   <li>Rename the following configuration keys:
     <ul>
-      <li><code>HttpResolver.auth.*</code> to <code>HttpResolver.BasicLookupStrategy.auth.*</code></li>
-      <li><code>AmazonS3Resolver.*</code> to <code>S3Resolver.*</code></li>
+      <li>Any key containing the string <code>Resolver</code> to contain <code>Source</code></li>
+      <li><code>HttpSource.auth.*</code> to <code>HttpSource.BasicLookupStrategy.auth.*</code></li>
+      <li><code>AmazonS3Source.*</code> to <code>S3Source.*</code></li>
       <li><code>StreamProcessor.retrieval_strategy</code> to <code>processor.stream_retrieval_strategy</code></li>
       <li><code>KakaduProcessor.path_to_binaries</code> to <code>KakaduDemoProcessor.path_to_binaries</code></li>
       <li><code>AmazonS3Cache.*</code> to <code>S3Cache.*</code></li>
@@ -19,9 +20,9 @@ title: Upgrading
   </li>
   <li>Add the following keys from the sample configuration:
     <ul>
-      <li><code>S3Resolver.endpoint</code></li>
-      <li><code>S3Resolver.BasicLookupStrategy.path_prefix</code></li>
-      <li><code>S3Resolver.BasicLookupStrategy.path_suffix</code></li>
+      <li><code>S3Source.endpoint</code></li>
+      <li><code>S3Source.BasicLookupStrategy.path_prefix</code></li>
+      <li><code>S3Source.BasicLookupStrategy.path_suffix</code></li>
       <li><code>processor.fallback_retrieval_strategy</code></li>
       <li><code>processor.imageio.*</code></li>
       <li><code>S3Cache.endpoint</code></li>
@@ -31,15 +32,15 @@ title: Upgrading
   </li>
   <li>Remove the following keys from the configuration:
     <ul>
-      <li><code>S3Resolver.bucket.region</code></li>
+      <li><code>S3Source.bucket.region</code></li>
       <li><code>S3Cache.bucket.region</code></li>
       <li><code>cache.server.source.enabled</code></li>
       <li><code>cache.server.ttl_seconds</code></li>
     </ul>
   </li>
-  <li>Change any <code>AmazonS3Resolver</code> configuration values to <code>S3Resolver</code>.</li>
+  <li>Change any <code>AmazonS3Source</code> configuration values to <code>S3Source</code>.</li>
+  <li>Change any configuration values containing <code>Resolver</code> to contain <code>Source</code>.</li>
   <li>Change any <code>AmazonS3Cache</code> configuration values to <code>S3Cache</code>.</li>
-  <li>Cache keys have changed, and purging your cache is recommended, but not required.</li>
   <li>The delegate script architecture has changed, and the 3.x script is not compatible. See the "Delegate Script" section of the user manual for migration info.</li>
   <li>The deprecated <code>DELETE /cache/:identifier</code> HTTP API method has been removed. See the "Remote Management" section of the user manual for information about its successor.</li>
   <li>The <code>X-IIIF-ID</code> reverse proxy header is deprecated and will be removed in a future version. Start using <code>X-Forwarded-ID</code> instead.</li>
@@ -86,7 +87,7 @@ title: Upgrading
       <li><code>metadata.*</code> to <code>processor.metadata.*</code></li>
     </ul>
   </li>
-  <li>If you are using the delegate script, add a <code>context</code> argument to the method signature of any existing resolver delegates. See <span class="filename">delegates.rb.sample</span> for examples.</li>
+  <li>If you are using the delegate script, add a <code>context</code> argument to the method signature of any existing source delegates. See <span class="filename">delegates.rb.sample</span> for examples.</li>
   <li>The <code>DELETE /cache/:identifier</code> HTTP API method is deprecated and will be removed in version 4. Begin migrating now to the updated equivalent.</li>
   <li>Managing the cache on the command line with VM arguments is deprecated and will be removed in version 4. Begin migrating now to the cache management methods in the HTTP API.</li>
 </ol>

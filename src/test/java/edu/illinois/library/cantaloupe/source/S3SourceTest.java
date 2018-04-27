@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resolver;
+package edu.illinois.library.cantaloupe.source;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
@@ -33,7 +33,7 @@ import java.nio.file.Path;
 
 import static org.junit.Assert.*;
 
-public class S3ResolverTest extends AbstractResolverTest {
+public class S3SourceTest extends AbstractSourceTest {
 
     private static final String OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION = "jpeg.jpg";
     private static final String OBJECT_KEY_WITH_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION = "jpeg.unknown";
@@ -46,7 +46,7 @@ public class S3ResolverTest extends AbstractResolverTest {
     private static S3Mock mockS3;
     private static int mockS3Port;
 
-    private S3Resolver instance;
+    private S3Source instance;
 
     @BeforeClass
     public static void beforeClass() throws IOException {
@@ -209,8 +209,8 @@ public class S3ResolverTest extends AbstractResolverTest {
     }
 
     @Override
-    S3Resolver newInstance() {
-        S3Resolver instance = new S3Resolver();
+    S3Source newInstance() {
+        S3Source instance = new S3Source();
         instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION));
         return instance;
     }
@@ -218,11 +218,11 @@ public class S3ResolverTest extends AbstractResolverTest {
     @Override
     void useBasicLookupStrategy() {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.S3RESOLVER_BUCKET_NAME, getBucket());
-        config.setProperty(Key.S3RESOLVER_ENDPOINT, getEndpoint());
-        config.setProperty(Key.S3RESOLVER_ACCESS_KEY_ID, getAccessKeyId());
-        config.setProperty(Key.S3RESOLVER_SECRET_KEY, getSecretKey());
-        config.setProperty(Key.S3RESOLVER_LOOKUP_STRATEGY,
+        config.setProperty(Key.S3SOURCE_BUCKET_NAME, getBucket());
+        config.setProperty(Key.S3SOURCE_ENDPOINT, getEndpoint());
+        config.setProperty(Key.S3SOURCE_ACCESS_KEY_ID, getAccessKeyId());
+        config.setProperty(Key.S3SOURCE_SECRET_KEY, getSecretKey());
+        config.setProperty(Key.S3SOURCE_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
     }
 
@@ -230,7 +230,7 @@ public class S3ResolverTest extends AbstractResolverTest {
     void useScriptLookupStrategy() {
         try {
             Configuration config = Configuration.getInstance();
-            config.setProperty(Key.S3RESOLVER_LOOKUP_STRATEGY,
+            config.setProperty(Key.S3SOURCE_LOOKUP_STRATEGY,
                     "ScriptLookupStrategy");
             config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
             config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
@@ -319,8 +319,8 @@ public class S3ResolverTest extends AbstractResolverTest {
     public void testGetObjectInfoUsingBasicLookupStrategyWithPrefixAndSuffix()
             throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.S3RESOLVER_PATH_PREFIX, "/prefix/");
-        config.setProperty(Key.S3RESOLVER_PATH_SUFFIX, "/suffix");
+        config.setProperty(Key.S3SOURCE_PATH_PREFIX, "/prefix/");
+        config.setProperty(Key.S3SOURCE_PATH_SUFFIX, "/suffix");
 
         instance.setIdentifier(new Identifier("id"));
         assertEquals("/prefix/id/suffix", instance.getObjectInfo().getKey());
@@ -330,8 +330,8 @@ public class S3ResolverTest extends AbstractResolverTest {
     public void testGetObjectInfoUsingBasicLookupStrategyWithoutPrefixOrSuffix()
             throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.S3RESOLVER_PATH_PREFIX, "");
-        config.setProperty(Key.S3RESOLVER_PATH_SUFFIX, "");
+        config.setProperty(Key.S3SOURCE_PATH_PREFIX, "");
+        config.setProperty(Key.S3SOURCE_PATH_SUFFIX, "");
 
         instance.setIdentifier(new Identifier("id"));
         assertEquals("id", instance.getObjectInfo().getKey());
@@ -400,18 +400,18 @@ public class S3ResolverTest extends AbstractResolverTest {
         assertEquals(Format.UNKNOWN, instance.getSourceFormat());
     }
 
-    /* newStreamSource() */
+    /* newStreamFactory() */
 
     @Test
     public void testNewStreamSourceUsingBasicLookupStrategy() throws Exception {
-        assertNotNull(instance.newStreamSource());
+        assertNotNull(instance.newStreamFactory());
     }
 
     @Test
     public void testNewStreamSourceUsingScriptLookupStrategy()
             throws Exception {
         useScriptLookupStrategy();
-        assertNotNull(instance.newStreamSource());
+        assertNotNull(instance.newStreamFactory());
     }
 
 }

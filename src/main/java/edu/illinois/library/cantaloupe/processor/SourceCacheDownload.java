@@ -3,8 +3,8 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.cache.SourceCache;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.resolver.StreamResolver;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.source.StreamFactory;
+import edu.illinois.library.cantaloupe.source.StreamSource;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Downloads content from a {@link StreamResolver} to a source cache.
+ * Downloads content from a {@link StreamSource} to a source cache.
  */
 final class SourceCacheDownload implements Future<Path> {
 
@@ -48,14 +48,14 @@ final class SourceCacheDownload implements Future<Path> {
     private final AtomicBoolean isCancelled         = new AtomicBoolean();
     private final AtomicBoolean isDownloadAttempted = new AtomicBoolean();
     private final AtomicBoolean mayInterrupt        = new AtomicBoolean();
-    private StreamSource streamSource;
+    private StreamFactory streamFactory;
     private SourceCache sourceCache;
     private Identifier identifier;
 
-    SourceCacheDownload(StreamSource streamSource,
+    SourceCacheDownload(StreamFactory streamFactory,
                         SourceCache sourceCache,
                         Identifier identifier) {
-        this.streamSource = streamSource;
+        this.streamFactory = streamFactory;
         this.sourceCache = sourceCache;
         this.identifier = identifier;
     }
@@ -94,7 +94,7 @@ final class SourceCacheDownload implements Future<Path> {
                     // few times, and only rethrow it on the last try.
                     Path sourceFile = sourceCache.getSourceImageFile(identifier);
                     if (sourceFile == null) {
-                        downloadToSourceCache(streamSource, sourceCache, identifier);
+                        downloadToSourceCache(streamFactory, sourceCache, identifier);
                     }
                     succeeded = true;
                 } catch (IOException e) {
@@ -114,14 +114,14 @@ final class SourceCacheDownload implements Future<Path> {
 
     /**
      * Downloads the source image with the given identifier from the given
-     * resolver to the given source cache.
+     * source to the given source cache.
      *
-     * @param streamSource Source of streams to read from.
+     * @param streamFactory Source of streams to read from.
      * @param sourceCache  Source cache to write to.
      * @param identifier   Identifier of the source image.
      * @throws IOException if anything goes wrong.
      */
-    private void downloadToSourceCache(StreamSource streamSource,
+    private void downloadToSourceCache(StreamFactory streamFactory,
                                        SourceCache sourceCache,
                                        Identifier identifier) throws IOException {
         synchronized (DOWNLOADING_IMAGES) {
@@ -145,7 +145,7 @@ final class SourceCacheDownload implements Future<Path> {
         final Stopwatch watch = new Stopwatch();
 
         try (InputStream is = new BufferedInputStream(
-                streamSource.newInputStream(),
+                streamFactory.newInputStream(),
                 STREAM_BUFFER_SIZE);
              OutputStream os = new BufferedOutputStream(
                      sourceCache.newSourceImageOutputStream(identifier),

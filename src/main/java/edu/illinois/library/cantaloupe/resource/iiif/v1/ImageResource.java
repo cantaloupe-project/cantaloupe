@@ -12,8 +12,8 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
-import edu.illinois.library.cantaloupe.resolver.Resolver;
-import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import edu.illinois.library.cantaloupe.source.Source;
+import edu.illinois.library.cantaloupe.source.SourceFactory;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
@@ -64,7 +64,7 @@ public class ImageResource extends IIIF1Resource {
 
         // If we don't need to resolve first, and are using a cache, see if we
         // can pluck an info from it. This will be more efficient than getting
-        // it from a resolver.
+        // it from a source.
         Format sourceFormat = Format.UNKNOWN;
         if (!isResolvingFirst()) {
             try {
@@ -81,7 +81,7 @@ public class ImageResource extends IIIF1Resource {
             }
         }
 
-        final Resolver resolver = new ResolverFactory().newResolver(
+        final Source source = new SourceFactory().newSource(
                 identifier, getDelegateProxy());
 
         // If we are resolving first, or if the source image is not present in
@@ -90,7 +90,7 @@ public class ImageResource extends IIIF1Resource {
         final Path sourceImage = cacheFacade.getSourceCacheFile(identifier);
         if (sourceImage == null || isResolvingFirst()) {
             try {
-                resolver.checkAccess();
+                source.checkAccess();
             } catch (NoSuchFileException e) { // this needs to be rethrown!
                 if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                     // If the image was not found, purge it from the cache.
@@ -105,14 +105,14 @@ public class ImageResource extends IIIF1Resource {
             // If we are not resolving first, and there is a hit in the source
             // cache, read the format from the source-cached-file, as we will
             // expect source cache access to be more efficient.
-            // Otherwise, read it from the resolver.
+            // Otherwise, read it from the source.
             if (!isResolvingFirst() && sourceImage != null) {
                 List<MediaType> mediaTypes = MediaType.detectMediaTypes(sourceImage);
                 if (!mediaTypes.isEmpty()) {
                     sourceFormat = mediaTypes.get(0).toFormat();
                 }
             } else {
-                sourceFormat = resolver.getSourceFormat();
+                sourceFormat = source.getSourceFormat();
             }
         }
 
@@ -123,9 +123,9 @@ public class ImageResource extends IIIF1Resource {
                 newProcessor(sourceFormat);
 
         try {
-            // Connect it to the resolver.
+            // Connect it to the source.
             Future<Path> tempFileFuture = new ProcessorConnector().connect(
-                    resolver, processor, identifier, sourceFormat);
+                    source, processor, identifier, sourceFormat);
 
             final Set<Format> availableOutputFormats =
                     processor.getAvailableOutputFormats();

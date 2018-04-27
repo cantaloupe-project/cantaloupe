@@ -32,23 +32,23 @@ public class DelegateProxyTest extends BaseTest {
         instance = new DelegateProxy(context);
     }
 
-    /* getAzureStorageResolverBlobKey() */
+    /* getAzureStorageSourceBlobKey() */
 
     @Test
-    public void testGetAzureStorageResolverBlobKeyReturningString()
+    public void testGetAzureStorageSourceBlobKeyReturningString()
             throws Exception {
-        String result = instance.getAzureStorageResolverBlobKey();
+        String result = instance.getAzureStorageSourceBlobKey();
         assertEquals("cats", result);
     }
 
     @Test
-    public void testGetAzureStorageResolverBlobKeyReturningNil()
+    public void testGetAzureStorageSourceBlobKeyReturningNil()
             throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("missing"));
         instance.setRequestContext(context);
 
-        assertNull(instance.getAzureStorageResolverBlobKey());
+        assertNull(instance.getAzureStorageSourceBlobKey());
     }
 
     /* getExtraIIIFInformationResponseKeys() */
@@ -84,78 +84,78 @@ public class DelegateProxyTest extends BaseTest {
         assertTrue(result.isEmpty());
     }
 
-    /* getFilesystemResolverPathname() */
+    /* getFilesystemSourcePathname() */
 
     @Test
-    public void testGetFilesystemResolverPathnameReturningString()
+    public void testGetFilesystemSourcePathnameReturningString()
             throws Exception {
-        String result = instance.getFilesystemResolverPathname();
+        String result = instance.getFilesystemSourcePathname();
         assertEquals("cats", result);
     }
 
     @Test
-    public void testGetFilesystemResolverPathnameReturningNil()
+    public void testGetFilesystemSourcePathnameReturningNil()
             throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("missing"));
         instance.setRequestContext(context);
 
-        assertNull(instance.getFilesystemResolverPathname());
+        assertNull(instance.getFilesystemSourcePathname());
     }
 
-    /* getHttpResolverResourceInfo() */
+    /* getHttpSourceResourceInfo() */
 
     @Test
-    public void testGetHttpResolverResourceInfoReturningString()
+    public void testGetHttpSourceResourceInfoReturningString()
             throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("DelegateProxyTest-String"));
         instance.setRequestContext(context);
 
-        Map<String,String> result = instance.getHttpResolverResourceInfo();
+        Map<String,String> result = instance.getHttpSourceResourceInfo();
         assertEquals(1, result.size());
         assertEquals("http://example.org/foxes", result.get("uri"));
     }
 
     @Test
-    public void testGetHttpResolverResourceInfoReturningHash()
+    public void testGetHttpSourceResourceInfoReturningHash()
             throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("DelegateProxyTest-Hash"));
         instance.setRequestContext(context);
 
-        Map<String,String> result = instance.getHttpResolverResourceInfo();
+        Map<String,String> result = instance.getHttpSourceResourceInfo();
         assertEquals(1, result.size());
         assertEquals("http://example.org/birds", result.get("uri"));
     }
 
     @Test
-    public void testGetHttpResolverResourceInfoReturningNil() throws Exception {
-        Map<String,String> result = instance.getHttpResolverResourceInfo();
+    public void testGetHttpSourceResourceInfoReturningNil() throws Exception {
+        Map<String,String> result = instance.getHttpSourceResourceInfo();
         assertTrue(result.isEmpty());
     }
 
-    /* getJdbcResolverDatabaseIdentifier() */
+    /* getJdbcSourceDatabaseIdentifier() */
 
     @Test
-    public void testGetJdbcResolverDatabaseIdentifier() throws Exception {
-        String result = instance.getJdbcResolverDatabaseIdentifier();
+    public void testGetJdbcSourceDatabaseIdentifier() throws Exception {
+        String result = instance.getJdbcSourceDatabaseIdentifier();
         assertEquals("cats", result);
     }
 
-    /* getJdbcResolverMediaType() */
+    /* getJdbcSourceMediaType() */
 
     @Test
-    public void testGetJdbcResolverMediaType() throws Exception {
-        String result = instance.getJdbcResolverMediaType();
+    public void testGetJdbcSourceMediaType() throws Exception {
+        String result = instance.getJdbcSourceMediaType();
         assertEquals("SELECT media_type FROM items WHERE filename = ?", result);
     }
 
-    /* getJdbcResolverLookupSQL() */
+    /* getJdbcSourceLookupSQL() */
 
     @Test
-    public void testGetJdbcResolverLookupSQL() throws Exception {
-        String result = instance.getJdbcResolverLookupSQL();
+    public void testGetJdbcSourceLookupSQL() throws Exception {
+        String result = instance.getJdbcSourceLookupSQL();
         assertEquals("SELECT image FROM items WHERE filename = ?", result);
     }
 
@@ -223,39 +223,39 @@ public class DelegateProxyTest extends BaseTest {
         assertTrue(result.isEmpty());
     }
 
-    /* getResolver() */
+    /* getSource() */
 
     @Test
-    public void testGetResolver() throws Exception {
-        assertEquals("FilesystemResolver", instance.getResolver());
+    public void testGetSource() throws Exception {
+        assertEquals("FilesystemSource", instance.getSource());
     }
 
     @Test
-    public void testGetResolverReturningNil() throws Exception {
+    public void testGetSourceReturningNil() throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("bogus"));
         instance.setRequestContext(context);
 
-        assertNull(instance.getResolver());
+        assertNull(instance.getSource());
     }
 
-    /* getS3ResolverObjectInfo() */
+    /* getS3SourceObjectInfo() */
 
     @Test
-    public void testGetS3ResolverObjectInfo() throws Exception {
-        Map<String,String> result = instance.getS3ResolverObjectInfo();
+    public void testGetS3SourceObjectInfo() throws Exception {
+        Map<String,String> result = instance.getS3SourceObjectInfo();
         assertEquals("cats", result.get("key"));
         assertEquals("test.cantaloupe.library.illinois.edu",
                 result.get("bucket"));
     }
 
     @Test
-    public void testGetS3ResolverObjectInfoReturningNil() throws Exception {
+    public void testGetS3SourceObjectInfoReturningNil() throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("bogus"));
         instance.setRequestContext(context);
 
-        Map<String,String> result = instance.getS3ResolverObjectInfo();
+        Map<String,String> result = instance.getS3SourceObjectInfo();
         assertTrue(result.isEmpty());
     }
 

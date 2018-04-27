@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resolver;
+package edu.illinois.library.cantaloupe.source;
 
 import com.zaxxer.hikari.HikariDataSource;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -36,7 +36,7 @@ import java.util.List;
  * <h1>Format Inference</h1>
  *
  * <ol>
- *     <li>If the {@link DelegateMethod#JDBCRESOLVER_MEDIA_TYPE} method returns
+ *     <li>If the {@link DelegateMethod#JDBCSOURCE_MEDIA_TYPE} method returns
  *     either a media type, or a query that can be invoked to obtain a media
  *     type, and that is successful, that format will be used.</li>
  *     <li>If the source image's identifier has a recognized filename
@@ -46,17 +46,17 @@ import java.util.List;
  *     "magic bytes" it may contain.</li>
  * </ol>
  */
-class JdbcResolver extends AbstractResolver implements StreamResolver {
+class JdbcSource extends AbstractSource implements StreamSource {
 
     /**
-     * StreamSource for binary a.k.a. BLOB column values.
+     * StreamFactory for binary a.k.a. BLOB column values.
      */
-    private static class JdbcStreamSource implements StreamSource {
+    private static class JdbcStreamFactory implements StreamFactory {
 
         private String sql;
         private String databaseIdentifier;
 
-        JdbcStreamSource(String sql, String databaseIdentifier) {
+        JdbcStreamFactory(String sql, String databaseIdentifier) {
             this.sql = sql;
             this.databaseIdentifier = databaseIdentifier;
         }
@@ -83,7 +83,7 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
     }
 
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(JdbcResolver.class);
+            LoggerFactory.getLogger(JdbcSource.class);
 
     /**
      * Byte length of the range used to detect the source image format.
@@ -103,19 +103,19 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
             final Configuration config = Configuration.getInstance();
 
             final String connectionString =
-                    config.getString(Key.JDBCRESOLVER_JDBC_URL, "");
+                    config.getString(Key.JDBCSOURCE_JDBC_URL, "");
             final int connectionTimeout =
                     1000 * config.getInt(Key.JDBCCACHE_CONNECTION_TIMEOUT, 10);
             final int maxPoolSize =
                     Runtime.getRuntime().availableProcessors() * 2 + 1;
-            final String user = config.getString(Key.JDBCRESOLVER_USER, "");
-            final String password = config.getString(Key.JDBCRESOLVER_PASSWORD, "");
+            final String user = config.getString(Key.JDBCSOURCE_USER, "");
+            final String password = config.getString(Key.JDBCSOURCE_PASSWORD, "");
 
             dataSource = new HikariDataSource();
             dataSource.setJdbcUrl(connectionString);
             dataSource.setUsername(user);
             dataSource.setPassword(password);
-            dataSource.setPoolName("JdbcResolverPool");
+            dataSource.setPoolName(JdbcSource.class.getSimpleName() + "Pool");
             dataSource.setMaximumPoolSize(maxPoolSize);
             dataSource.setConnectionTimeout(connectionTimeout);
 
@@ -123,7 +123,7 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
                 LOGGER.info("Using {} {}", connection.getMetaData().getDriverName(),
                         connection.getMetaData().getDriverVersion());
                 LOGGER.info("Connection string: {}",
-                        config.getString(Key.JDBCRESOLVER_JDBC_URL));
+                        config.getString(Key.JDBCSOURCE_JDBC_URL));
             }
         }
         return dataSource.getConnection();
@@ -234,38 +234,38 @@ class JdbcResolver extends AbstractResolver implements StreamResolver {
 
     /**
      * @return Result of the {@link
-     *         DelegateMethod#JDBCRESOLVER_DATABASE_IDENTIFIER} method.
+     *         DelegateMethod#JDBCSOURCE_DATABASE_IDENTIFIER} method.
      */
     String getDatabaseIdentifier() throws ScriptException {
-        return getDelegateProxy().getJdbcResolverDatabaseIdentifier();
+        return getDelegateProxy().getJdbcSourceDatabaseIdentifier();
     }
 
     /**
-     * @return Result of the {@link DelegateMethod#JDBCRESOLVER_LOOKUP_SQL}
+     * @return Result of the {@link DelegateMethod#JDBCSOURCE_LOOKUP_SQL}
      *         method.
      */
     String getLookupSQL() throws IOException, ScriptException {
-        final String sql = getDelegateProxy().getJdbcResolverLookupSQL();
+        final String sql = getDelegateProxy().getJdbcSourceLookupSQL();
 
         if (!sql.contains("?")) {
-            throw new IOException(DelegateMethod.JDBCRESOLVER_LOOKUP_SQL +
+            throw new IOException(DelegateMethod.JDBCSOURCE_LOOKUP_SQL +
                     " implementation does not support prepared statements");
         }
         return sql;
     }
 
     /**
-     * @return Result of the {@link DelegateMethod#JDBCRESOLVER_MEDIA_TYPE}
+     * @return Result of the {@link DelegateMethod#JDBCSOURCE_MEDIA_TYPE}
      *         method.
      */
     String getMediaType() throws ScriptException {
-        return getDelegateProxy().getJdbcResolverMediaType();
+        return getDelegateProxy().getJdbcSourceMediaType();
     }
 
     @Override
-    public StreamSource newStreamSource() throws IOException {
+    public StreamFactory newStreamFactory() throws IOException {
         try {
-            return new JdbcStreamSource(getLookupSQL(), getDatabaseIdentifier());
+            return new JdbcStreamFactory(getLookupSQL(), getDatabaseIdentifier());
         } catch (ScriptException e) {
             throw new IOException(e);
         }

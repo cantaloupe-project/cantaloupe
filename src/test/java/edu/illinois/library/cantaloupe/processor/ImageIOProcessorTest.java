@@ -7,8 +7,8 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
-import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.source.PathStreamFactory;
+import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 
@@ -46,8 +46,8 @@ abstract class ImageIOProcessorTest extends AbstractProcessorTest {
 
         // test as a StreamProcessor
         StreamProcessor sproc = (StreamProcessor) newInstance();
-        StreamSource streamSource = new PathStreamSource(fixture);
-        sproc.setStreamSource(streamSource);
+        StreamFactory streamFactory = new PathStreamFactory(fixture);
+        sproc.setStreamFactory(streamFactory);
         sproc.setSourceFormat(Format.TIF);
         assertEquals(expectedInfo, sproc.readImageInfo());
 

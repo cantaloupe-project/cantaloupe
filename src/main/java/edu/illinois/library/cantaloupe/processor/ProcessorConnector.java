@@ -7,11 +7,11 @@ import edu.illinois.library.cantaloupe.cache.CacheDisabledException;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.resolver.FileResolver;
-import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
-import edu.illinois.library.cantaloupe.resolver.Resolver;
-import edu.illinois.library.cantaloupe.resolver.StreamResolver;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.source.FileSource;
+import edu.illinois.library.cantaloupe.source.PathStreamFactory;
+import edu.illinois.library.cantaloupe.source.Source;
+import edu.illinois.library.cantaloupe.source.StreamFactory;
+import edu.illinois.library.cantaloupe.source.StreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +21,7 @@ import java.util.UUID;
 import java.util.concurrent.Future;
 
 /**
- * Establishes the best connection between a {@link Resolver} and a
+ * Establishes the best connection between a {@link Source} and a
  * {@link Processor}.
  */
 public final class ProcessorConnector {
@@ -57,19 +57,19 @@ public final class ProcessorConnector {
 
     /**
      * <p>Establishes the best (most efficient &amp; compatible) connection
-     * between a resolver and a processor according to the application
+     * between a source and a processor according to the application
      * configuration.</p>
      *
      * <ul>
-     *     <li>If the resolver is a {@link FileResolver}, the processor will
-     *     read from either a {@link Path} or a {@link StreamSource}.</li>
-     *     <li>If the resolver is <em>only</em> a {@link StreamResolver} and
+     *     <li>If the source is a {@link FileSource}, the processor will
+     *     read from either a {@link Path} or a {@link StreamFactory}.</li>
+     *     <li>If the source is <em>only</em> a {@link StreamSource} and
      *     the processor is <em>only</em> a {@link StreamProcessor}:
      *         <ul>
      *             <li>If {@link Key#PROCESSOR_STREAM_RETRIEVAL_STRATEGY} is
      *             set to {@link RetrievalStrategy#STREAM}, the processor will
-     *             read from the {@link StreamSource} provided by the
-     *             resolver.</li>
+     *             read from the {@link StreamFactory} provided by the
+     *             source.</li>
      *             <li>If it is set to {@link RetrievalStrategy#DOWNLOAD}, the
      *             source image will be downloaded to a temp file, and the
      *             processor will read that.</li>
@@ -81,7 +81,7 @@ public final class ProcessorConnector {
      *             forcing them to wait for it to download.</li>
      *         </ul>
      *     </li>
-     *     <li>If the resolver is <em>only</em> a {@link StreamResolver} and
+     *     <li>If the source is <em>only</em> a {@link StreamSource} and
      *     the processor is <em>only</em> a {@link FileProcessor}:
      *         <ul>
      *             <li>If {@link Key#PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY} is
@@ -101,7 +101,7 @@ public final class ProcessorConnector {
      *             <li>If it is set to {@link RetrievalStrategy#DOWNLOAD}, the
      *             source image will be downloaded to a temp file, and the
      *             processor will read that.</li>
-     *             <li>Otherwise, an {@link IncompatibleResolverException}
+     *             <li>Otherwise, an {@link IncompatibleSourceException}
      *             will be thrown.</li>
      *         </ul>
      *     </li>
@@ -109,8 +109,8 @@ public final class ProcessorConnector {
      *
      * <p>The processor is guaranteed to have its source set.</p>
      *
-     * @param resolver   Resolver to connect.
-     * @param processor  Processor to connect.
+     * @param source     Source to connect to the processor.
+     * @param processor  Processor to connect to the source.
      * @param identifier Identifier of the source image.
      * @return           Instance representing a download in progress. The
      *                   client should delete the corresponding file when it is
@@ -118,40 +118,40 @@ public final class ProcessorConnector {
      *                   the current retrieval strategy is {@link
      *                   RetrievalStrategy#DOWNLOAD}.
      */
-    public Future<Path> connect(Resolver resolver,
+    public Future<Path> connect(Source source,
                                 Processor processor,
                                 Identifier identifier,
                                 Format sourceFormat) throws IOException,
-            CacheDisabledException, IncompatibleResolverException,
+            CacheDisabledException, IncompatibleSourceException,
             InterruptedException {
-        final String resolverName = resolver.getClass().getSimpleName();
+        final String sourceName = source.getClass().getSimpleName();
         final String processorName = processor.getClass().getSimpleName();
 
-        if (resolver instanceof FileResolver) {
+        if (source instanceof FileSource) {
             if (processor instanceof FileProcessor) {
                 LOGGER.info("{} -> {} connection between {} and {}",
-                        FileResolver.class.getSimpleName(),
+                        FileSource.class.getSimpleName(),
                         FileProcessor.class.getSimpleName(),
-                        resolverName,
+                        sourceName,
                         processorName);
                 ((FileProcessor) processor).setSourceFile(
-                        ((FileResolver) resolver).getPath());
+                        ((FileSource) source).getPath());
             } else {
-                // All FileResolvers are also StreamResolvers.
+                // All FileSources are also StreamSources.
                 LOGGER.info("{} -> {} connection between {} and {}",
-                        FileResolver.class.getSimpleName(),
+                        FileSource.class.getSimpleName(),
                         StreamProcessor.class.getSimpleName(),
-                        resolverName,
+                        sourceName,
                         processorName);
-                ((StreamProcessor) processor).setStreamSource(
-                        ((StreamResolver) resolver).newStreamSource());
+                ((StreamProcessor) processor).setStreamFactory(
+                        ((StreamSource) source).newStreamFactory());
             }
         } else {
-            // The resolver is a StreamResolver.
-            StreamSource streamSource =
-                    ((StreamResolver) resolver).newStreamSource();
+            // The source is a StreamSource.
+            StreamFactory streamFactory =
+                    ((StreamSource) source).newStreamFactory();
 
-            // StreamResolvers and FileProcessors can't work together using
+            // StreamSources and FileProcessors can't work together using
             // StreamStrategy, but they can using one of the other strategies.
             if (!(processor instanceof StreamProcessor)) {
                 switch (getFallbackRetrievalStrategy()) {
@@ -159,13 +159,13 @@ public final class ProcessorConnector {
                         LOGGER.info("Using {} to work around the " +
                                         "incompatibility of {} (a {}) and {} (a {})",
                                 RetrievalStrategy.DOWNLOAD,
-                                resolver.getClass().getSimpleName(),
-                                StreamResolver.class.getSimpleName(),
+                                source.getClass().getSimpleName(),
+                                StreamSource.class.getSimpleName(),
                                 processor.getClass().getSimpleName(),
                                 FileProcessor.class.getSimpleName());
 
                         TempFileDownload dl = new TempFileDownload(
-                                streamSource, getTempFile(sourceFormat));
+                                streamFactory, getTempFile(sourceFormat));
                         dl.downloadSync();
                         try {
                             ((FileProcessor) processor).setSourceFile(dl.get());
@@ -179,13 +179,13 @@ public final class ProcessorConnector {
                             LOGGER.info("Using {} to work around the " +
                                             "incompatibility of {} (a {}) and {} (a {})",
                                     RetrievalStrategy.CACHE,
-                                    resolver.getClass().getSimpleName(),
-                                    StreamResolver.class.getSimpleName(),
+                                    source.getClass().getSimpleName(),
+                                    StreamSource.class.getSimpleName(),
                                     processor.getClass().getSimpleName(),
                                     FileProcessor.class.getSimpleName());
 
                             Path file = downloadToSourceCache(
-                                    streamSource, sourceCache, identifier);
+                                    streamFactory, sourceCache, identifier);
                             connect(sourceCache, file, processor);
                         } else {
                             throw new CacheDisabledException(
@@ -193,7 +193,7 @@ public final class ProcessorConnector {
                         }
                         break;
                     default:
-                        throw new IncompatibleResolverException(resolver, processor);
+                        throw new IncompatibleSourceException(source, processor);
                 }
             } else {
                 switch (getStreamProcessorRetrievalStrategy()) {
@@ -204,12 +204,12 @@ public final class ProcessorConnector {
                                 StreamProcessor.class.getSimpleName());
 
                         TempFileDownload dl = new TempFileDownload(
-                                streamSource,
+                                streamFactory,
                                 getTempFile(sourceFormat));
                         dl.downloadSync();
-                        StreamSource tempStreamSource =
-                                new PathStreamSource(dl.get());
-                        ((StreamProcessor) processor).setStreamSource(tempStreamSource);
+                        StreamFactory tempStreamFactory =
+                                new PathStreamFactory(dl.get());
+                        ((StreamProcessor) processor).setStreamFactory(tempStreamFactory);
                         return dl;
                     case CACHE:
                         LOGGER.info("Using {} with {} as a {}",
@@ -220,20 +220,20 @@ public final class ProcessorConnector {
                         SourceCache sourceCache = CacheFactory.getSourceCache();
                         if (sourceCache != null) {
                             Path file = downloadToSourceCache(
-                                    streamSource, sourceCache, identifier);
+                                    streamFactory, sourceCache, identifier);
                             connect(sourceCache, file, processor);
                         } else {
                             throw new CacheDisabledException("Source cache is disabled.");
                         }
                         break;
                     default: // stream
-                        // All FileResolvers are also StreamResolvers.
+                        // All FileSources are also StreamSources.
                         LOGGER.info("{} -> {} connection between {} and {}",
-                                StreamResolver.class.getSimpleName(),
+                                StreamSource.class.getSimpleName(),
                                 StreamProcessor.class.getSimpleName(),
-                                resolverName,
+                                sourceName,
                                 processorName);
-                        ((StreamProcessor) processor).setStreamSource(streamSource);
+                        ((StreamProcessor) processor).setStreamFactory(streamFactory);
                         break;
                 }
             }
@@ -246,7 +246,7 @@ public final class ProcessorConnector {
      * source cache, downloading it if necessary, and configures the given
      * processor to read it.
      *
-     * @param streamSource Source of streams from which to read the source
+     * @param streamFactory Source of streams from which to read the source
      *                     image,, if necessary.
      * @param sourceCache  Source cache from which to read the source image,
      *                     and to which to download it, if necessary.
@@ -254,11 +254,11 @@ public final class ProcessorConnector {
      * @return             Path of the downloaded image within the source
      *                     cache.
      */
-    private Path downloadToSourceCache(StreamSource streamSource,
+    private Path downloadToSourceCache(StreamFactory streamFactory,
                                        SourceCache sourceCache,
                                        Identifier identifier) throws IOException {
         SourceCacheDownload dl = new SourceCacheDownload(
-                streamSource, sourceCache, identifier);
+                streamFactory, sourceCache, identifier);
         dl.downloadSync();
         try {
             return dl.get();
@@ -288,8 +288,8 @@ public final class ProcessorConnector {
         if (processor instanceof FileProcessor) {
             ((FileProcessor) processor).setSourceFile(sourceCacheFile);
         } else {
-            StreamSource streamSource = new PathStreamSource(sourceCacheFile);
-            ((StreamProcessor) processor).setStreamSource(streamSource);
+            StreamFactory streamFactory = new PathStreamFactory(sourceCacheFile);
+            ((StreamProcessor) processor).setStreamFactory(streamFactory);
         }
     }
 

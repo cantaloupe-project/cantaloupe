@@ -9,8 +9,8 @@ import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.overlay.ImageOverlay;
 import edu.illinois.library.cantaloupe.operation.overlay.Position;
-import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.source.PathStreamFactory;
+import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -289,7 +289,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
         Info imageInfo;
 
         // page option missing
-        instance.setStreamSource(new PathStreamSource(fixture));
+        instance.setStreamFactory(new PathStreamFactory(fixture));
         imageInfo = instance.readImageInfo();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -298,7 +298,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
         page1 = outputStream.toByteArray();
 
         // page option present
-        instance.setStreamSource(new PathStreamSource(fixture));
+        instance.setStreamFactory(new PathStreamFactory(fixture));
 
         ops = new OperationList();
         ops.getOptions().put("page", "2");
@@ -336,9 +336,9 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
                     }
 
                     StreamProcessor sproc = (StreamProcessor) proc;
-                    StreamSource streamSource =
-                            new PathStreamSource(fixture);
-                    sproc.setStreamSource(streamSource);
+                    StreamFactory streamFactory =
+                            new PathStreamFactory(fixture);
+                    sproc.setStreamFactory(streamFactory);
 
                     try {
                         // We don't know the dimensions of the source image and
@@ -373,7 +373,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
             return;
         }
 
-        instance.setStreamSource(new PathStreamSource(
+        instance.setStreamFactory(new PathStreamFactory(
                 TestUtil.getImage("pdf.pdf")));
 
         OperationList ops = new OperationList(

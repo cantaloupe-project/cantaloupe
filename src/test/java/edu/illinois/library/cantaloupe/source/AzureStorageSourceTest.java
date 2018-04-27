@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resolver;
+package edu.illinois.library.cantaloupe.source;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.SharedAccessAccountPermissions;
@@ -37,10 +37,10 @@ import java.util.EnumSet;
 import static org.junit.Assert.*;
 
 /**
- * Tests AzureStorageResolver against Azure Storage. (Requires an Azure
+ * Tests AzureStorageSource against Azure Storage. (Requires an Azure
  * account.)
  */
-public class AzureStorageResolverTest extends AbstractResolverTest {
+public class AzureStorageSourceTest extends AbstractSourceTest {
 
     private static final String OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION = "jpeg.jpg";
     private static final String OBJECT_KEY_WITH_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION = "jpeg.unknown";
@@ -50,7 +50,7 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
     private static final String OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION = "jpg";
     private static final String NON_IMAGE_KEY = "NotAnImage";
 
-    private AzureStorageResolver instance;
+    private AzureStorageSource instance;
 
     @BeforeClass
     public static void uploadFixtures() throws Exception {
@@ -98,9 +98,9 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
 
     private static void clearConfig() {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.AZURESTORAGERESOLVER_CONTAINER_NAME, "");
-        config.setProperty(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME, "");
-        config.setProperty(Key.AZURESTORAGERESOLVER_ACCOUNT_KEY, "");
+        config.setProperty(Key.AZURESTORAGESOURCE_CONTAINER_NAME, "");
+        config.setProperty(Key.AZURESTORAGESOURCE_ACCOUNT_NAME, "");
+        config.setProperty(Key.AZURESTORAGESOURCE_ACCOUNT_KEY, "");
     }
 
     private static CloudBlobClient client() throws Exception {
@@ -137,7 +137,7 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
         policy.setSharedAccessExpiryTime(c.getTime());
         policy.setProtocols(SharedAccessProtocols.HTTPS_ONLY);
 
-        return AzureStorageResolver.getAccount()
+        return AzureStorageSource.getAccount()
                 .generateSharedAccessSignature(policy);
     }
 
@@ -182,8 +182,8 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
     }
 
     @Override
-    AzureStorageResolver newInstance() {
-        AzureStorageResolver instance = new AzureStorageResolver();
+    AzureStorageSource newInstance() {
+        AzureStorageSource instance = new AzureStorageSource();
         instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION));
         return instance;
     }
@@ -191,13 +191,13 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
     @Override
     void useBasicLookupStrategy() {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.AZURESTORAGERESOLVER_CONTAINER_NAME,
+        config.setProperty(Key.AZURESTORAGESOURCE_CONTAINER_NAME,
                 getContainer());
-        config.setProperty(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME,
+        config.setProperty(Key.AZURESTORAGESOURCE_ACCOUNT_NAME,
                 getAccountName());
-        config.setProperty(Key.AZURESTORAGERESOLVER_ACCOUNT_KEY,
+        config.setProperty(Key.AZURESTORAGESOURCE_ACCOUNT_KEY,
                 getAccountKey());
-        config.setProperty(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY,
+        config.setProperty(Key.AZURESTORAGESOURCE_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
     }
 
@@ -205,7 +205,7 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
     void useScriptLookupStrategy() {
         try {
             Configuration config = Configuration.getInstance();
-            config.setProperty(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY,
+            config.setProperty(Key.AZURESTORAGESOURCE_LOOKUP_STRATEGY,
                     "ScriptLookupStrategy");
             config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
             config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
@@ -335,25 +335,25 @@ public class AzureStorageResolverTest extends AbstractResolverTest {
         instance.getSourceFormat();
     }
 
-    /* newStreamSource() */
+    /* newStreamFactory() */
 
     @Test
     public void testNewStreamSourceUsingBasicLookupStrategy() throws Exception {
-        instance.newStreamSource();
+        instance.newStreamFactory();
     }
 
     @Test
     public void testNewStreamSourceUsingScriptLookupStrategy()
             throws Exception {
         useScriptLookupStrategy();
-        assertNotNull(instance.newStreamSource());
+        assertNotNull(instance.newStreamFactory());
     }
 
     @Test
     public void testNewStreamSourceWithSAS() throws Exception {
         instance.setIdentifier(new Identifier(getSASURI()));
         clearConfig();
-        instance.newStreamSource();
+        instance.newStreamFactory();
     }
 
 }

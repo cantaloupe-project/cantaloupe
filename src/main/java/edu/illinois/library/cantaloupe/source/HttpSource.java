@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resolver;
+package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -68,7 +68,7 @@ import java.util.concurrent.TimeoutException;
  * <h1>Lookup Strategies</h1>
  *
  * <p>Two distinct lookup strategies are supported, defined by
- * {@link Key#HTTPRESOLVER_LOOKUP_STRATEGY}. {@link LookupStrategy#BASIC}
+ * {@link Key#HTTPSOURCE_LOOKUP_STRATEGY}. {@link LookupStrategy#BASIC}
  * locates images by concatenating a pre-defined URL prefix and/or suffix.
  * {@link LookupStrategy#DELEGATE_SCRIPT} invokes a delegate method to
  * retrieve a URL (and optional auth info) dynamically.</p>
@@ -79,8 +79,8 @@ import java.util.concurrent.TimeoutException;
  *
  * <ul>
  *     <li>When using {@link LookupStrategy#BASIC}, auth info is set globally
- *     in the {@link Key#HTTPRESOLVER_BASIC_AUTH_USERNAME} and
- *     {@link Key#HTTPRESOLVER_BASIC_AUTH_SECRET} configuration keys.</li>
+ *     in the {@link Key#HTTPSOURCE_BASIC_AUTH_USERNAME} and
+ *     {@link Key#HTTPSOURCE_BASIC_AUTH_SECRET} configuration keys.</li>
  *     <li>When using {@link LookupStrategy#DELEGATE_SCRIPT}, auth info can be
  *     returned from the delegate method.</li>
  * </ul>
@@ -88,14 +88,14 @@ import java.util.concurrent.TimeoutException;
  * @see <a href="http://www.eclipse.org/jetty/documentation/current/http-client.html">
  *     Jetty HTTP Client</a>
  */
-class HttpResolver extends AbstractResolver implements StreamResolver {
+class HttpSource extends AbstractSource implements StreamSource {
 
-    private static class HTTPStreamSource implements StreamSource {
+    private static class HTTPStreamFactory implements StreamFactory {
 
         private final HttpClient client;
         private final URI uri;
 
-        HTTPStreamSource(HttpClient client, URI uri) {
+        HTTPStreamFactory(HttpClient client, URI uri) {
             this.client = client;
             this.uri = uri;
         }
@@ -161,7 +161,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     }
 
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(HttpResolver.class);
+            LoggerFactory.getLogger(HttpSource.class);
 
     /**
      * Byte length of the range used to infer the source image format.
@@ -189,7 +189,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
 
             Configuration config = Configuration.getInstance();
             final boolean trustInvalidCerts = config.getBoolean(
-                    Key.HTTPRESOLVER_TRUST_ALL_CERTS, false);
+                    Key.HTTPSOURCE_TRUST_ALL_CERTS, false);
             SslContextFactory sslContextFactory =
                     new SslContextFactory(trustInvalidCerts);
 
@@ -220,12 +220,12 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
      */
     private static int getRequestTimeout() {
         return Configuration.getInstance().
-                getInt(Key.HTTPRESOLVER_REQUEST_TIMEOUT, 10);
+                getInt(Key.HTTPSOURCE_REQUEST_TIMEOUT, 10);
     }
 
     private static String getUserAgent() {
         return String.format("%s/%s (%s/%s; java/%s; %s/%s)",
-                HttpResolver.class.getSimpleName(),
+                HttpSource.class.getSimpleName(),
                 Application.getVersion(),
                 Application.getName(),
                 Application.getVersion(),
@@ -336,20 +336,20 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public StreamSource newStreamSource() throws IOException {
+    public StreamFactory newStreamFactory() throws IOException {
         ResourceInfo info;
         try {
             info = getResourceInfo();
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {
-            LOGGER.error("newStreamSource(): {}", e.getMessage());
+            LOGGER.error("newStreamFactory(): {}", e.getMessage());
             throw new IOException(e.getMessage(), e);
         }
 
         if (info != null) {
             LOGGER.info("Resolved {} to {}", identifier, info.getURI());
-            return new HTTPStreamSource(getHTTPClient(info), info.getURI());
+            return new HTTPStreamFactory(getHTTPClient(info), info.getURI());
         }
         return null;
     }
@@ -401,7 +401,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     ResourceInfo getResourceInfo() throws Exception {
         if (resourceInfo == null) {
             final LookupStrategy strategy =
-                    LookupStrategy.from(Key.HTTPRESOLVER_LOOKUP_STRATEGY);
+                    LookupStrategy.from(Key.HTTPSOURCE_LOOKUP_STRATEGY);
             switch (strategy) {
                 case DELEGATE_SCRIPT:
                     resourceInfo = getResourceInfoUsingScriptStrategy();
@@ -417,13 +417,13 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     private ResourceInfo getResourceInfoUsingBasicStrategy()
             throws ConfigurationException {
         final Configuration config = Configuration.getInstance();
-        final String prefix = config.getString(Key.HTTPRESOLVER_URL_PREFIX, "");
-        final String suffix = config.getString(Key.HTTPRESOLVER_URL_SUFFIX, "");
+        final String prefix = config.getString(Key.HTTPSOURCE_URL_PREFIX, "");
+        final String suffix = config.getString(Key.HTTPSOURCE_URL_SUFFIX, "");
         try {
             return new ResourceInfo(
                     new URI(prefix + identifier.toString() + suffix),
-                    config.getString(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME),
-                    config.getString(Key.HTTPRESOLVER_BASIC_AUTH_SECRET));
+                    config.getString(Key.HTTPSOURCE_BASIC_AUTH_USERNAME),
+                    config.getString(Key.HTTPSOURCE_BASIC_AUTH_SECRET));
         } catch (URISyntaxException e) {
             throw new ConfigurationException(e.getMessage());
         }
@@ -432,7 +432,7 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
     /**
      * @throws NoSuchFileException if the remote resource was not found.
      * @throws URISyntaxException  if {@link
-     *                             DelegateMethod#HTTPRESOLVER_RESOURCE_INFO}
+     *                             DelegateMethod#HTTPSOURCE_RESOURCE_INFO}
      *                             returns an invalid URI.
      * @throws ScriptException     if the delegate method throws an exception.
      */
@@ -441,11 +441,11 @@ class HttpResolver extends AbstractResolver implements StreamResolver {
         final DelegateProxy proxy = getDelegateProxy();
 
         final Map<String, String> infoProps =
-                proxy.getHttpResolverResourceInfo();
+                proxy.getHttpSourceResourceInfo();
 
         if (infoProps.isEmpty()) {
             throw new NoSuchFileException(
-                    DelegateMethod.HTTPRESOLVER_RESOURCE_INFO +
+                    DelegateMethod.HTTPSOURCE_RESOURCE_INFO +
                     " returned nil for " + identifier);
         }
 

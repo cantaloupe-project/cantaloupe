@@ -15,9 +15,10 @@ import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.http.Transport;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
-import edu.illinois.library.cantaloupe.resolver.StreamResolver;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.source.FileSource;
+import edu.illinois.library.cantaloupe.source.PathStreamFactory;
+import edu.illinois.library.cantaloupe.source.StreamFactory;
+import edu.illinois.library.cantaloupe.source.StreamSource;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
@@ -258,9 +259,9 @@ public class ImageAPIResourceTester {
     }
 
     /**
-     * Used by {@link #testResolverCheckAccessNotCalledWithSourceCacheHit}.
+     * Used by {@link #testSourceCheckAccessNotCalledWithSourceCacheHit}.
      */
-    public static class NotCheckingAccessResolver implements StreamResolver {
+    public static class NotCheckingAccessSource implements StreamSource {
 
         @Override
         public void checkAccess() throws IOException {
@@ -273,8 +274,8 @@ public class ImageAPIResourceTester {
         }
 
         @Override
-        public StreamSource newStreamSource() throws IOException {
-            return new PathStreamSource(TestUtil.getImage("jpg"));
+        public StreamFactory newStreamFactory() throws IOException {
+            return new PathStreamFactory(TestUtil.getImage("jpg"));
         }
 
         @Override
@@ -285,14 +286,14 @@ public class ImageAPIResourceTester {
 
     }
 
-    public void testResolverCheckAccessNotCalledWithSourceCacheHit(Identifier identifier,
-                                                                   URI uri) throws Exception {
+    public void testSourceCheckAccessNotCalledWithSourceCacheHit(Identifier identifier,
+                                                                 URI uri) throws Exception {
         // Set up the environment to use the source cache, not resolve first,
-        // and use a non-FileResolver.
+        // and use a non-FileSource.
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
-        config.setProperty(Key.RESOLVER_STATIC,
-                NotCheckingAccessResolver.class.getName());
+        config.setProperty(Key.SOURCE_STATIC,
+                NotCheckingAccessSource.class.getName());
         config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
         config.setProperty(Key.SOURCE_CACHE_TTL, 10);
         config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
@@ -310,7 +311,7 @@ public class ImageAPIResourceTester {
         Client client = newClient(uri);
         try {
             client.send();
-            // We are expecting NonCheckingAccessResolver.checkAccess() to not
+            // We are expecting NonCheckingAccessSource.checkAccess() to not
             // throw an exception, which would cause a 500 response.
         } finally {
             client.stop();
@@ -318,9 +319,9 @@ public class ImageAPIResourceTester {
     }
 
     /**
-     * Used by {@link #testResolverGetSourceFormatNotCalledWithSourceCacheHit(Identifier, URI)}.
+     * Used by {@link #testSourceGetSourceFormatNotCalledWithSourceCacheHit(Identifier, URI)}.
      */
-    public static class NotReadingSourceFormatResolver implements StreamResolver {
+    public static class NotReadingSourceFormatSource implements StreamSource {
 
         @Override
         public void checkAccess() {}
@@ -331,8 +332,8 @@ public class ImageAPIResourceTester {
         }
 
         @Override
-        public StreamSource newStreamSource() throws IOException {
-            return new PathStreamSource(TestUtil.getImage("jpg"));
+        public StreamFactory newStreamFactory() throws IOException {
+            return new PathStreamFactory(TestUtil.getImage("jpg"));
         }
 
         @Override
@@ -343,14 +344,14 @@ public class ImageAPIResourceTester {
 
     }
 
-    public void testResolverGetSourceFormatNotCalledWithSourceCacheHit(Identifier identifier,
-                                                                       URI uri) throws Exception {
+    public void testSourceGetSourceFormatNotCalledWithSourceCacheHit(Identifier identifier,
+                                                                     URI uri) throws Exception {
         // Set up the environment to use the source cache, not resolve first,
-        // and use a non-FileResolver.
+        // and use a non-FileSource.
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
-        config.setProperty(Key.RESOLVER_STATIC,
-                NotReadingSourceFormatResolver.class.getName());
+        config.setProperty(Key.SOURCE_STATIC,
+                NotReadingSourceFormatSource.class.getName());
         config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
         config.setProperty(Key.SOURCE_CACHE_TTL, 10);
         config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
@@ -368,7 +369,7 @@ public class ImageAPIResourceTester {
         Client client = newClient(uri);
         try {
             client.send();
-            // We are expecting NotReadingSourceFormatResolver.getSourceFormat()
+            // We are expecting NotReadingSourceFormatSource.getSourceFormat()
             // to not throw an exception, which would cause a 500 response.
         } finally {
             client.stop();
@@ -377,18 +378,18 @@ public class ImageAPIResourceTester {
 
     /**
      * Tests that the server responds with HTTP 500 when a non-
-     * {@link edu.illinois.library.cantaloupe.resolver.FileResolver} is
+     * {@link FileSource} is
      * used with a non-
      * {@link edu.illinois.library.cantaloupe.processor.StreamProcessor}.
      */
-    public void testResolverProcessorCompatibility(URI uri,
-                                                   String appServerHost,
-                                                   int appServerPort) {
+    public void testSourceProcessorCompatibility(URI uri,
+                                                 String appServerHost,
+                                                 int appServerPort) {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.RESOLVER_STATIC, "HttpResolver");
-        config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
+        config.setProperty(Key.SOURCE_STATIC, "HttpSource");
+        config.setProperty(Key.HTTPSOURCE_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
-        config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
+        config.setProperty(Key.HTTPSOURCE_URL_PREFIX,
                 appServerHost + ":" + appServerPort + "/");
         config.setProperty("processor.jp2", "KakaduDemoProcessor");
         config.setProperty(Key.PROCESSOR_FALLBACK, "KakaduProcessor");

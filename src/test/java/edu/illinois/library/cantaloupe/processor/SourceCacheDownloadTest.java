@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.cache.SourceCache;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
+import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
@@ -62,7 +62,7 @@ public class SourceCacheDownloadTest extends BaseTest {
         };
 
         instance = new SourceCacheDownload(
-                new PathStreamSource(TestUtil.getImage(IMAGE)),
+                new PathStreamFactory(TestUtil.getImage(IMAGE)),
                 sourceCache,
                 new Identifier("cats"));
     }

@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resolver;
+package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -35,16 +35,16 @@ import java.util.List;
  * <h1>Lookup Strategies</h1>
  *
  * <p>Two distinct lookup strategies are supported, defined by
- * {@link Key#FILESYSTEMRESOLVER_LOOKUP_STRATEGY}. BasicLookupStrategy locates
+ * {@link Key#FILESYSTEMSOURCE_LOOKUP_STRATEGY}. BasicLookupStrategy locates
  * images by concatenating a pre-defined path prefix and/or suffix.
  * ScriptLookupStrategy invokes a delegate method to retrieve a pathname
  * dynamically.</p>
  */
-class FilesystemResolver extends AbstractResolver
-        implements StreamResolver, FileResolver {
+class FilesystemSource extends AbstractSource
+        implements StreamSource, FileSource {
 
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(FilesystemResolver.class);
+            LoggerFactory.getLogger(FilesystemSource.class);
 
     private static final String UNIX_PATH_SEPARATOR = "/";
     private static final String WINDOWS_PATH_SEPARATOR = "\\";
@@ -68,14 +68,14 @@ class FilesystemResolver extends AbstractResolver
     /**
      * @return Path corresponding to the given identifier according to the
      *         current lookup strategy
-     *         ({@link Key#FILESYSTEMRESOLVER_LOOKUP_STRATEGY}). The result is
+     *         ({@link Key#FILESYSTEMSOURCE_LOOKUP_STRATEGY}). The result is
      *         cached.
      */
     @Override
     public Path getPath() throws IOException {
         if (path == null) {
             final LookupStrategy strategy =
-                    LookupStrategy.from(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY);
+                    LookupStrategy.from(Key.FILESYSTEMSOURCE_LOOKUP_STRATEGY);
             switch (strategy) {
                 case DELEGATE_SCRIPT:
                     try {
@@ -97,9 +97,9 @@ class FilesystemResolver extends AbstractResolver
     private Path getPathWithBasicStrategy() {
         final Configuration config = Configuration.getInstance();
         final String prefix =
-                config.getString(Key.FILESYSTEMRESOLVER_PATH_PREFIX, "");
+                config.getString(Key.FILESYSTEMSOURCE_PATH_PREFIX, "");
         final String suffix =
-                config.getString(Key.FILESYSTEMRESOLVER_PATH_SUFFIX, "");
+                config.getString(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "");
         final Identifier sanitizedId = sanitizedIdentifier();
         return Paths.get(prefix + sanitizedId.toString() + suffix);
     }
@@ -114,11 +114,11 @@ class FilesystemResolver extends AbstractResolver
      */
     private Path getPathWithScriptStrategy() throws NoSuchFileException,
             ScriptException {
-        String pathname = getDelegateProxy().getFilesystemResolverPathname();
+        String pathname = getDelegateProxy().getFilesystemSourcePathname();
 
         if (pathname == null) {
             throw new NoSuchFileException(
-                    DelegateMethod.FILESYSTEMRESOLVER_PATHMAME +
+                    DelegateMethod.FILESYSTEMSOURCE_PATHMAME +
                     " returned nil for " + identifier);
         }
         return Paths.get(pathname);
@@ -152,8 +152,8 @@ class FilesystemResolver extends AbstractResolver
     }
 
     @Override
-    public StreamSource newStreamSource() throws IOException {
-        return new PathStreamSource(getPath());
+    public StreamFactory newStreamFactory() throws IOException {
+        return new PathStreamFactory(getPath());
     }
 
     /**

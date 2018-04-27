@@ -47,10 +47,10 @@ public abstract class ResourceTest extends BaseTest {
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").toString());
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
-        config.setProperty(Key.RESOLVER_STATIC, "FilesystemResolver");
-        config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
+        config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+        config.setProperty(Key.FILESYSTEMSOURCE_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
-        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX,
+        config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
                 TestUtil.getFixturePath() + "/images/");
 
         new CacheFacade().purge();

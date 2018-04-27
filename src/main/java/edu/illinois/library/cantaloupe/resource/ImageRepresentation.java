@@ -7,7 +7,7 @@ import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.processor.StreamProcessor;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
@@ -162,9 +162,9 @@ public class ImageRepresentation extends CustomOutputRepresentation {
                 Path sourceFile = ((FileProcessor) processor).getSourceFile();
                 Files.copy(sourceFile, outputStream);
             } else {
-                StreamSource streamSource =
-                        ((StreamProcessor) processor).getStreamSource();
-                try (InputStream inputStream = streamSource.newInputStream()) {
+                StreamFactory streamFactory =
+                        ((StreamProcessor) processor).getStreamFactory();
+                try (InputStream inputStream = streamFactory.newInputStream()) {
                     IOUtils.copy(inputStream, outputStream);
                 }
             }

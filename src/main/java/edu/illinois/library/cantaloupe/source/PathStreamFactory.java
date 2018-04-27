@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resolver;
+package edu.illinois.library.cantaloupe.source;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
@@ -8,13 +8,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Convenience class that provides a {@link StreamSource} for a {@link Path}.
+ * Convenience class that provides a {@link StreamFactory} for a {@link Path}.
  */
-public class PathStreamSource implements StreamSource {
+public class PathStreamFactory implements StreamFactory {
 
     private final Path path;
 
-    public PathStreamSource(Path path) {
+    public PathStreamFactory(Path path) {
         this.path = path;
     }
 

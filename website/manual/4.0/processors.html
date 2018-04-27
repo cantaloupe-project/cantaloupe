@@ -25,7 +25,7 @@ title: Processors
   </li>
 </ul>
 
-<p>A processor reads a source image from a <a href="resolvers.html">resolver</a>, decodes it, transforms it according to request arguments, and encodes a derivative image to return to the client. Particular processors can be assigned to handle particular source formats, and a fallback processor can be assigned to handle all others.</p>
+<p>A processor reads a source image from a <a href="sources.html">source</a>, decodes it, transforms it according to request arguments, and encodes a derivative image to return to the client. Particular processors can be assigned to handle particular source formats, and a fallback processor can be assigned to handle all others.</p>
 
 <p>Different processors use different underlying codecs and image processing engines, which may have different quality, compatibility, dependency, performance, and cost characteristics. The ability to choose among different processors is intended to make it straightforward to add support for new image formats; improve support for existing image formats via the substitution of better codecs; and decouple the image server implementation from any one codec.</p>
 
@@ -39,7 +39,7 @@ title: Processors
 
 <h2 id="Retrieval Strategies">Retrieval Strategies</h2>
 
-<p>Processors ultimately read images from <a href="resolvers.html">resolvers</a>, of which there are two main types: those that can supply files (FileResolvers), and those that can supply streams (StreamResolvers). Correspondingly, there are two types of processors: those that can read from files (FileProcessors), and those that can read from streams (StreamProcessors). These distinctions are important, as they influence how data flows through the processing pipeline. Generally files are preferable to streams for efficiency's sake.</p>
+<p>Processors ultimately read images from <a href="sources.html">sources</a>, of which there are two main types: those that can supply files (FileSources), and those that can supply streams (StreamSources). Correspondingly, there are two types of processors: those that can read from files (FileProcessors), and those that can read from streams (StreamProcessors). These distinctions are important because they influence how data flows through the processing pipeline. Generally files are preferable to streams for efficiency's sake.</p>
 
 <table class="table table-bordered">
   <tr>
@@ -65,18 +65,18 @@ title: Processors
     </td>
   <tr>
     <td>
-      FileResolver
+      FileSource
       <br>
-      (only <a href="resolvers.html#FilesystemResolver">FilesystemResolver</a>)
+      (only <a href="sources.html#FilesystemSource">FilesystemSource</a>)
     </td>
     <td class="bg-success">&check;</td>
     <td class="bg-success">&check;</td>
   </tr>
   <tr>
     <td>
-      StreamResolver
+      StreamSource
       <br>
-      (all other resolvers)
+      (all other sources)
     </td>
     <td class="bg-warning">See <a href="#Fallback%20Retrieval%20Strategy">Fallback Retrieval Strategy</a></td>
     <td class="bg-success">See <a href="#Stream%20Retrieval%20Strategy">Stream Retrieval Strategy</a></td>
@@ -88,11 +88,11 @@ title: Processors
 <table class="table table-bordered">
   <tr>
     <th></th>
-    <th><a href="resolvers.html#S3Resolver">S3</a></th>
-    <th><a href="resolvers.html#AzureStorageResolver">Azure Storage</a></th>
-    <th><a href="resolvers.html#FilesystemResolver">Filesystem</a></th>
-    <th><a href="resolvers.html#HttpResolver">HTTP</a></th>
-    <th><a href="resolvers.html#JdbcResolver">JDBC</a></th>
+    <th><a href="sources.html#S3Source">S3</a></th>
+    <th><a href="sources.html#AzureStorageSource">Azure Storage</a></th>
+    <th><a href="sources.html#FilesystemSource">Filesystem</a></th>
+    <th><a href="sources.html#HttpSource">HTTP</a></th>
+    <th><a href="sources.html#JdbcSource">JDBC</a></th>
   </tr>
   <tr>
     <td><a href="processors.html#FfmpegProcessor">FfmpegProcessor</a></td>
@@ -172,17 +172,17 @@ title: Processors
 
 <h3 id="Stream Retrieval Strategy">Stream Retrieval Strategy</h3>
 
-<p>The stream retrieval strategy (<code>processor.stream_retrieval_strategy</code>) controls how content is fed to stream-based processors from stream-based resolvers.</p>
+<p>The stream retrieval strategy (<code>processor.stream_retrieval_strategy</code>) controls how content is fed to stream-based processors from stream-based sources.</p>
 
 <ul>
-  <li><code>StreamStrategy</code> will try to stream a source image from a resolver when possible, and use the <a href="#Fallback%20Retrieval%20Strategy">fallback retrieval strategy</a> otherwise.</li>
+  <li><code>StreamStrategy</code> will try to stream a source image from a source when possible, and use the <a href="#Fallback%20Retrieval%20Strategy">fallback retrieval strategy</a> otherwise.</li>
   <li><code>DownloadStrategy</code> will download it to a temporary file, and delete it after the request is complete.</li>
   <li><code>CacheStrategy</code> will download it into the source cache using <a href="caching.html#FilesystemCache">FilesystemCache</a>, which must also be configured. This is significantly more efficient than <code>DownloadStrategy</code> if you can spare the disk space.</li>
 </ul>
 
 <h3 id="Fallback Retrieval Strategy">Fallback Retrieval Strategy</h3>
 
-<p>The fallback retrieval strategy (<code>processor.fallback_retrieval_strategy</code>) controls how an incompatible <code>StreamResolver</code>/<code>FileProcessor</code> combination is dealt with.</p>
+<p>The fallback retrieval strategy (<code>processor.fallback_retrieval_strategy</code>) controls how an incompatible <code>StreamSource</code>/<code>FileProcessor</code> combination is dealt with.</p>
 
 <ul>
   <li><code>DownloadStrategy</code> will download a source image to a temporary file that the processor can read, and delete it after the request is complete.</li>
@@ -655,7 +655,7 @@ title: Processors
 <h4>Data Flow</h4>
 
 <ul class="processor-data-flow">
-  <li>FileResolver or StreamResolver
+  <li>FileSource or StreamSource
     <ul>
       <li>Image I/O reader
         <ul>
@@ -693,7 +693,7 @@ title: Processors
 <h4>Data Flow</h4>
 
 <ul class="processor-data-flow">
-  <li>FileResolver or StreamResolver
+  <li>FileSource or StreamSource
     <ul>
       <li>Image I/O reader
         <ul>
@@ -734,7 +734,7 @@ title: Processors
 <h4>Data Flow</h4>
 
 <ul class="processor-data-flow">
-  <li>FileResolver or StreamResolver
+  <li>FileSource or StreamSource
     <ul>
       <li><span class="filename">gm</span>
         <ul>
@@ -770,7 +770,7 @@ title: Processors
 <h4>Data Flow</h4>
 
 <ul class="processor-data-flow">
-  <li>FileResolver or StreamResolver
+  <li>FileSource or StreamSource
     <ul>
       <li><span class="filename">magick</span>
         <ul>
@@ -806,7 +806,7 @@ title: Processors
 <h4>Data Flow</h4>
 
 <ul class="processor-data-flow">
-  <li>FileResolver or StreamResolver
+  <li>FileSource or StreamSource
     <ul>
       <li>kdu_expand
         <br>
@@ -845,7 +845,7 @@ title: Processors
 <p>Compared to <a href="#KakaduDemoProcessor">KakaduDemoProcessor</a>, this one is more efficient in that it doesn't need to invoke a process, and doesn't have to do internal intermediary format conversions. It also offers benefits not related to performance:</p>
 
 <ul>
-  <li>It can read from both FileResolvers and StreamResolvers.</li>
+  <li>It can read from both FileSources and StreamSources.</li>
   <li>It works equally efficiently in Windows.</li>
 </ul>
 
@@ -898,7 +898,7 @@ title: Processors
 <h4>Data Flow</h4>
 
 <ul class="processor-data-flow">
-  <li>FileResolver or StreamResolver
+  <li>FileSource or StreamSource
     <ul>
       <li>libkdu
         <ul>
@@ -931,7 +931,7 @@ title: Processors
 <h4>Data Flow</h4>
 
 <ul class="processor-data-flow">
-  <li>FileResolver
+  <li>FileSource
     <ul>
 
       <li>opj_decompress
@@ -982,7 +982,7 @@ title: Processors
 <h4>Data Flow</h4>
 
 <ul class="processor-data-flow">
-  <li>FileResolver
+  <li>FileSource
     <ul>
       <li>ffmpeg
         <ul>
@@ -1028,7 +1028,7 @@ title: Processors
 <h4>Data Flow</h4>
 
 <ul class="processor-data-flow">
-  <li>FileResolver or StreamResolver
+  <li>FileSource or StreamSource
     <ul>
       <li>PDFBox
         <ul>

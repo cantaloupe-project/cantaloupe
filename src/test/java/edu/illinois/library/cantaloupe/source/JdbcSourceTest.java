@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resolver;
+package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -23,14 +23,14 @@ import java.sql.Types;
 
 import static org.junit.Assert.*;
 
-public class JdbcResolverTest extends AbstractResolverTest {
+public class JdbcSourceTest extends AbstractSourceTest {
 
     private static final String IMAGE_WITH_EXTENSION_WITH_MEDIA_TYPE = "jpg-1.jpg";
     private static final String IMAGE_WITHOUT_EXTENSION_WITH_MEDIA_TYPE = "jpg-2";
     private static final String IMAGE_WITH_EXTENSION_WITHOUT_MEDIA_TYPE = "jpg-3.jpg";
     private static final String IMAGE_WITHOUT_EXTENSION_OR_MEDIA_TYPE = "jpg-4";
 
-    private JdbcResolver instance;
+    private JdbcSource instance;
 
     @Before
     public void setUp() throws Exception {
@@ -38,9 +38,9 @@ public class JdbcResolverTest extends AbstractResolverTest {
 
         Configuration config = Configuration.getInstance();
         // Use an in-memory H2 database.
-        config.setProperty(Key.JDBCRESOLVER_JDBC_URL, "jdbc:h2:mem:test");
-        config.setProperty(Key.JDBCRESOLVER_USER, "sa");
-        config.setProperty(Key.JDBCRESOLVER_PASSWORD, "");
+        config.setProperty(Key.JDBCSOURCE_JDBC_URL, "jdbc:h2:mem:test");
+        config.setProperty(Key.JDBCSOURCE_USER, "sa");
+        config.setProperty(Key.JDBCSOURCE_PASSWORD, "");
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").toString());
@@ -58,7 +58,7 @@ public class JdbcResolverTest extends AbstractResolverTest {
 
     @Override
     void destroyEndpoint() throws Exception {
-        try (Connection conn = JdbcResolver.getConnection()) {
+        try (Connection conn = JdbcSource.getConnection()) {
             String sql = "DROP TABLE items;";
             try (PreparedStatement statement = conn.prepareStatement(sql)) {
                 statement.execute();
@@ -72,7 +72,7 @@ public class JdbcResolverTest extends AbstractResolverTest {
 
     @Override
     void initializeEndpoint() throws Exception {
-        try (Connection conn = JdbcResolver.getConnection()) {
+        try (Connection conn = JdbcSource.getConnection()) {
             // create the table
             String sql = "CREATE TABLE IF NOT EXISTS items (" +
                     "filename VARCHAR(255)," +
@@ -108,8 +108,8 @@ public class JdbcResolverTest extends AbstractResolverTest {
     }
 
     @Override
-    JdbcResolver newInstance() {
-        JdbcResolver instance = new JdbcResolver();
+    JdbcSource newInstance() {
+        JdbcSource instance = new JdbcSource();
 
         try {
             Identifier identifier = new Identifier(IMAGE_WITH_EXTENSION_WITH_MEDIA_TYPE);
@@ -131,7 +131,7 @@ public class JdbcResolverTest extends AbstractResolverTest {
 
     @Override
     void useScriptLookupStrategy() {
-        // This resolver is always using ScriptLookupStrategy.
+        // This source is always using ScriptLookupStrategy.
     }
 
     /* checkAccess() */
@@ -255,11 +255,11 @@ public class JdbcResolverTest extends AbstractResolverTest {
         assertEquals("SELECT media_type FROM items WHERE filename = ?", result);
     }
 
-    /* newStreamSource() */
+    /* newStreamFactory() */
 
     @Test
     public void testNewStreamSourceWithPresentImage() throws Exception {
-        assertNotNull(instance.newStreamSource());
+        assertNotNull(instance.newStreamFactory());
     }
 
 }

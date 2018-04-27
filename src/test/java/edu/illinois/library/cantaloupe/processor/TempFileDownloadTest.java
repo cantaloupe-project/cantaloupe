@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
+import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
@@ -22,7 +22,7 @@ public class TempFileDownloadTest extends BaseTest {
         Files.delete(tempFile);
 
         instance = new TempFileDownload(
-                new PathStreamSource(TestUtil.getImage("jpg")),
+                new PathStreamFactory(TestUtil.getImage("jpg")),
                 tempFile);
     }
 

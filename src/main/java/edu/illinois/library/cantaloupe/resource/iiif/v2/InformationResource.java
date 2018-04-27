@@ -15,8 +15,8 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.resolver.Resolver;
-import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import edu.illinois.library.cantaloupe.source.Source;
+import edu.illinois.library.cantaloupe.source.SourceFactory;
 import edu.illinois.library.cantaloupe.resource.JSONRepresentation;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import org.restlet.data.MediaType;
@@ -86,7 +86,7 @@ public class InformationResource extends IIIF2Resource {
             }
         }
 
-        final Resolver resolver = new ResolverFactory().newResolver(
+        final Source source = new SourceFactory().newSource(
                 identifier, getDelegateProxy());
 
         // If we are resolving first, or if the source image is not present in
@@ -95,7 +95,7 @@ public class InformationResource extends IIIF2Resource {
         final Path sourceImage = cacheFacade.getSourceCacheFile(identifier);
         if (sourceImage == null || isResolvingFirst()) {
             try {
-                resolver.checkAccess();
+                source.checkAccess();
             } catch (NoSuchFileException e) { // this needs to be rethrown!
                 if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                     // If the image was not found, purge it from the cache.
@@ -109,7 +109,7 @@ public class InformationResource extends IIIF2Resource {
         // If we are not resolving first, and there is a hit in the source
         // cache, read the format from the source-cached-file, as we will
         // expect source cache access to be more efficient.
-        // Otherwise, read it from the resolver.
+        // Otherwise, read it from the source.
         Format format = Format.UNKNOWN;
         if (!isResolvingFirst() && sourceImage != null) {
             List<edu.illinois.library.cantaloupe.image.MediaType> mediaTypes =
@@ -118,14 +118,14 @@ public class InformationResource extends IIIF2Resource {
                 format = mediaTypes.get(0).toFormat();
             }
         } else {
-            format = resolver.getSourceFormat();
+            format = source.getSourceFormat();
         }
 
         // Obtain an instance of the processor assigned to that format.
         try (Processor processor = new ProcessorFactory().newProcessor(format)) {
-            // Connect it to the resolver.
+            // Connect it to the source.
             tempFileFuture = new ProcessorConnector().connect(
-                    resolver, processor, identifier, format);
+                    source, processor, identifier, format);
 
             final Info info = getOrReadInfo(identifier, processor);
 

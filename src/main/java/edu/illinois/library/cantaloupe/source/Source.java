@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resolver;
+package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -22,7 +22,7 @@ import java.nio.file.NoSuchFileException;
  *     <li>{@link #shutdown()}</li>
  * </ol>
  */
-public interface Resolver {
+public interface Source {
 
     /**
      * <p>Checks the accessibility of the source image.</p>
@@ -46,7 +46,7 @@ public interface Resolver {
     Format getSourceFormat() throws IOException;
 
     /**
-     * @param identifier Identifier of a source image to resolve.
+     * @param identifier Identifier of a source image.
      */
     void setIdentifier(Identifier identifier);
 

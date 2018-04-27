@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resolver;
+package edu.illinois.library.cantaloupe.source;
 
 import static org.junit.Assert.*;
 
@@ -23,12 +23,12 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.util.Collections;
 import java.util.Set;
 
-public class FilesystemResolverTest extends AbstractResolverTest {
+public class FilesystemSourceTest extends AbstractSourceTest {
 
     private static final Identifier IDENTIFIER =
             new Identifier("jpg-rgb-64x56x8-baseline.jpg");
 
-    private FilesystemResolver instance;
+    private FilesystemSource instance;
 
     @Before
     public void setUp() throws Exception {
@@ -47,8 +47,8 @@ public class FilesystemResolverTest extends AbstractResolverTest {
     }
 
     @Override
-    FilesystemResolver newInstance() {
-        FilesystemResolver instance = new FilesystemResolver();
+    FilesystemSource newInstance() {
+        FilesystemSource instance = new FilesystemSource();
         instance.setIdentifier(IDENTIFIER);
         return instance;
     }
@@ -60,9 +60,9 @@ public class FilesystemResolverTest extends AbstractResolverTest {
             config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
             config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                     TestUtil.getFixture("delegates.rb").toString());
-            config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
+            config.setProperty(Key.FILESYSTEMSOURCE_LOOKUP_STRATEGY,
                     "BasicLookupStrategy");
-            config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX,
+            config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
                     TestUtil.getFixturePath() + "/images" + File.separator);
         } catch (IOException e) {
             fail();
@@ -73,7 +73,7 @@ public class FilesystemResolverTest extends AbstractResolverTest {
     void useScriptLookupStrategy() {
         try {
             Configuration config = Configuration.getInstance();
-            config.setProperty(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY,
+            config.setProperty(Key.FILESYSTEMSOURCE_LOOKUP_STRATEGY,
                     "ScriptLookupStrategy");
             config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
             config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
@@ -168,8 +168,8 @@ public class FilesystemResolverTest extends AbstractResolverTest {
     public void testGetPathUsingBasicLookupStrategyWithPrefix()
             throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX, "/prefix/");
-        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_SUFFIX, "");
+        config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX, "/prefix/");
+        config.setProperty(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "");
 
         instance.setIdentifier(new Identifier("id"));
         assertEquals("/prefix/id", instance.getPath().toString());
@@ -179,8 +179,8 @@ public class FilesystemResolverTest extends AbstractResolverTest {
     public void testGetPathUsingBasicLookupStrategyWithSuffix()
             throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX, "/prefix/");
-        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_SUFFIX, "/suffix");
+        config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX, "/prefix/");
+        config.setProperty(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "/suffix");
 
         instance.setIdentifier(new Identifier("id"));
         assertEquals("/prefix/id/suffix", instance.getPath().toString());
@@ -190,8 +190,8 @@ public class FilesystemResolverTest extends AbstractResolverTest {
     public void testGetPathUsingBasicLookupStrategyWithoutPrefixOrSuffix()
             throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX, "");
-        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_SUFFIX, "");
+        config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX, "");
+        config.setProperty(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "");
 
         instance.setIdentifier(new Identifier("id"));
         assertEquals("id", instance.getPath().toString());
@@ -204,8 +204,8 @@ public class FilesystemResolverTest extends AbstractResolverTest {
     @Test
     public void testGetPathSanitization() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX, "/prefix/");
-        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_SUFFIX, "/suffix");
+        config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX, "/prefix/");
+        config.setProperty(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "/suffix");
 
         instance.setIdentifier(new Identifier("id/../"));
         assertEquals("/prefix/id/suffix", instance.getPath().toString());
@@ -292,11 +292,11 @@ public class FilesystemResolverTest extends AbstractResolverTest {
         assertEquals(Format.TIF, instance.getSourceFormat());
     }
 
-    /* newStreamSource() */
+    /* newStreamFactory() */
 
     @Test
     public void testNewStreamSourceWithPresentReadableFile() throws Exception {
-        assertNotNull(instance.newStreamSource());
+        assertNotNull(instance.newStreamFactory());
     }
 
 }

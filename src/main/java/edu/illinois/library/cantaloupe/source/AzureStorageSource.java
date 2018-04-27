@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resolver;
+package edu.illinois.library.cantaloupe.source;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
@@ -49,20 +49,20 @@ import java.util.List;
  * <h1>Lookup Strategies</h1>
  *
  * <p>Two distinct lookup strategies are supported, defined by
- * {@link Key#AZURESTORAGERESOLVER_LOOKUP_STRATEGY}. BasicLookupStrategy maps
+ * {@link Key#AZURESTORAGESOURCE_LOOKUP_STRATEGY}. BasicLookupStrategy maps
  * identifiers directly to blob keys. ScriptLookupStrategy invokes a delegate
  * method to retrieve blob keys dynamically.</p>
  *
  * @see <a href="https://github.com/azure/azure-storage-java">
  *     Microsoft Azure Storage DSK for Java</a>
  */
-class AzureStorageResolver extends AbstractResolver implements StreamResolver {
+class AzureStorageSource extends AbstractSource implements StreamSource {
 
-    private static class AzureStorageStreamSource implements StreamSource {
+    private static class AzureStorageStreamFactory implements StreamFactory {
 
         private final CloudBlockBlob blob;
 
-        AzureStorageStreamSource(CloudBlockBlob blob) {
+        AzureStorageStreamFactory(CloudBlockBlob blob) {
             this.blob = blob;
         }
 
@@ -78,7 +78,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     }
 
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(AzureStorageResolver.class);
+            LoggerFactory.getLogger(AzureStorageSource.class);
 
     /**
      * Byte length of the range used to infer the source image format.
@@ -86,7 +86,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     private static final int FORMAT_INFERENCE_RANGE_LENGTH = 32;
 
     private static final String GET_KEY_DELEGATE_METHOD =
-            "AzureStorageResolver::get_blob_key";
+            "AzureStorageSource::get_blob_key";
 
     private static CloudStorageAccount account;
     private static CloudBlobClient client;
@@ -100,9 +100,9 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
             try {
                 final Configuration config = Configuration.getInstance();
                 final String accountName =
-                        config.getString(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME);
+                        config.getString(Key.AZURESTORAGESOURCE_ACCOUNT_NAME);
                 final String accountKey =
-                        config.getString(Key.AZURESTORAGERESOLVER_ACCOUNT_KEY);
+                        config.getString(Key.AZURESTORAGESOURCE_ACCOUNT_KEY);
 
                 final String connectionString = String.format(
                         "DefaultEndpointsProtocol=https;" +
@@ -137,7 +137,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
             try {
                 final Configuration config = Configuration.getInstance();
                 final String containerName =
-                        config.getString(Key.AZURESTORAGERESOLVER_CONTAINER_NAME);
+                        config.getString(Key.AZURESTORAGESOURCE_CONTAINER_NAME);
                 LOGGER.info("Using container: {}", containerName);
 
                 try {
@@ -177,17 +177,17 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     private String getObjectKey() throws IOException {
         if (objectKey == null) {
             final LookupStrategy strategy =
-                    LookupStrategy.from(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY);
+                    LookupStrategy.from(Key.AZURESTORAGESOURCE_LOOKUP_STRATEGY);
             switch (strategy) {
                 case DELEGATE_SCRIPT:
                     try {
-                        return getObjectKeyWithDelegateStrategy();
+                        objectKey = getObjectKeyWithDelegateStrategy();
                     } catch (ScriptException e) {
                         LOGGER.error(e.getMessage(), e);
                         throw new IOException(e);
                     }
                 default:
-                    return identifier.toString();
+                    objectKey = identifier.toString();
             }
         }
         return objectKey;
@@ -199,7 +199,7 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
      */
     private String getObjectKeyWithDelegateStrategy()
             throws NoSuchFileException, ScriptException {
-        final String key = getDelegateProxy().getAzureStorageResolverBlobKey();
+        final String key = getDelegateProxy().getAzureStorageSourceBlobKey();
 
         if (key == null) {
             throw new NoSuchFileException(GET_KEY_DELEGATE_METHOD +
@@ -258,8 +258,8 @@ class AzureStorageResolver extends AbstractResolver implements StreamResolver {
     }
 
     @Override
-    public StreamSource newStreamSource() throws IOException {
-        return new AzureStorageStreamSource(getObject());
+    public StreamFactory newStreamFactory() throws IOException {
+        return new AzureStorageStreamFactory(getObject());
     }
 
 }

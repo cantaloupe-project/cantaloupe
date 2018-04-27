@@ -4,7 +4,7 @@ import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.source.StreamFactory;
 import org.apache.commons.io.IOUtils;
 
 import javax.imageio.ImageIO;
@@ -114,8 +114,8 @@ final class JPEG2000ImageReader implements ImageReader {
     }
 
     @Override
-    public void setSource(StreamSource streamSource) throws IOException {
-        setSource(streamSource.newImageInputStream());
+    public void setSource(StreamFactory streamFactory) throws IOException {
+        setSource(streamFactory.newImageInputStream());
     }
 
 }

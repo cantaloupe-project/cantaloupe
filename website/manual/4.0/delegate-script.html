@@ -109,42 +109,42 @@ title: Delegate Script
   </tr>
   <tr>
     <td><code>Cantaloupe::get_resolver()</code></td>
-    <td><code>CustomDelegate.resolver()</code></td>
+    <td><code>CustomDelegate.source()</code></td>
     <td></td>
   </tr>
   <tr>
     <td><code>Cantaloupe::AmazonS3Resolver::get_object_key()</code></td>
-    <td><code>CustomDelegate.s3resolver_object_info()</code></td>
+    <td><code>CustomDelegate.s3source_object_info()</code></td>
     <td>The old version can return either a string object key, or a hash containing <var>bucket</var> and <var>key</var> keys; the new version must return the latter.</td>
   </tr>
   <tr>
     <td><code>Cantaloupe::AzureStorageResolver::get_blob_key()</code></td>
-    <td><code>CustomDelegate.azurestorageresolver_blob_key()</code></td>
+    <td><code>CustomDelegate.azurestoragesource_blob_key()</code></td>
     <td></td>
   </tr>
   <tr>
     <td><code>Cantaloupe::FilesystemResolver::get_pathname()</code></td>
-    <td><code>CustomDelegate.filesystemresolver_pathname()</code></td>
+    <td><code>CustomDelegate.filesystemsource_pathname()</code></td>
     <td></td>
   </tr>
   <tr>
     <td><code>Cantaloupe::HttpResolver::get_url()</code></td>
-    <td><code>CustomDelegate.httpresolver_resource_info()</code></td>
+    <td><code>CustomDelegate.httpsource_resource_info()</code></td>
     <td></td>
   </tr>
   <tr>
     <td><code>Cantaloupe::JdbcResolver::get_database_identifier()</code></td>
-    <td><code>CustomDelegate.jdbcresolver_database_identifier()</code></td>
+    <td><code>CustomDelegate.jdbcsource_database_identifier()</code></td>
     <td></td>
   </tr>
   <tr>
     <td><code>Cantaloupe::JdbcResolver::get_media_type()</code></td>
-    <td><code>CustomDelegate.jdbcresolver_media_type()</code></td>
+    <td><code>CustomDelegate.jdbcsource_media_type()</code></td>
     <td></td>
   </tr>
   <tr>
     <td><code>Cantaloupe::JdbcResolver::get_lookup_sql()</code></td>
-    <td><code>CustomDelegate.jdbcresolver_lookup_sql()</code></td>
+    <td><code>CustomDelegate.jdbcsource_lookup_sql()</code></td>
     <td></td>
   </tr>
   <tr>
@@ -273,7 +273,7 @@ obj.context = {
   'request_headers' => ...
 }
 
-puts obj.filesystemresolver_pathname
+puts obj.filesystemsource_pathname
 {% endhighlight %}
 
 <p>This script can then be run on the command line with a command like: <code>ruby test.rb</code>.</p>

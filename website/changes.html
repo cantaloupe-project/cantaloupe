@@ -12,20 +12,21 @@ title: Change Log
   <li>Error response representations are in <code>text/plain</code> format in the absence of a client preference.</li>
 </ul>
 
-<h2>Resolvers</h2>
+<h2>Sources</h2>
 <ul>
-  <li>AmazonS3Resolver has been renamed S3Resolver, and it now supports non-AWS endpoints.</li>
-  <li>S3Resolver supports a configurable path prefix and suffix when using <code>BasicLookupStrategy</code>.</li>
-  <li>AzureStorageResolver supports shared access signature (SAS) URIs. (Thanks to @ddisciascio)</li>
+  <li>Resolvers have been renamed sources to better reflect their core function.</li>
+  <li>AmazonS3Resolver has been renamed S3Source, and it now supports non-AWS endpoints.</li>
+  <li>S3Source supports a configurable path prefix and suffix when using <code>BasicLookupStrategy</code>.</li>
+  <li>AzureStorageSource supports shared access signature (SAS) URIs. (Thanks to @ddisciascio)</li>
   <li>Improved the efficiency of source cache content access when <code>cache.server.resolve_first = false</code>.</li>
-  <li>HttpResolver, S3Resolver, AzureStorageResolver, and JdbcResolver fall back to checking the magic bytes in the source image data if they cannot infer a source format any other way.</li>
+  <li>HttpSource, S3Source, AzureStorageSource, and JdbcSource fall back to checking the magic bytes in the source image data if they cannot infer a source format any other way.</li>
 </ul>
 
 <h2>Processors</h2>
 <ul>
   <li>Added KakaduNativeProcessor, as well as precompiled libraries for Linux, macOS, and Windows, which are free to use with it for non-commercial purposes.</li>
   <li>KakaduProcessor has been renamed KakaduDemoProcessor to reflect the fact that it interfaces with the Kakadu demo tool, <span class="filename">kdu_expand</span>, and not the native library.</li>
-  <li>Added <code>DownloadStrategy</code> as another optional retrieval strategy for <code>StreamProcessor</code>s, and as an optional fallback strategy. This enables all processors to work with all resolvers with no extra configuration.</li>
+  <li>Added <code>DownloadStrategy</code> as another optional retrieval strategy for <code>StreamProcessor</code>s, and as an optional fallback strategy. This enables all processors to work with all sources with no extra configuration.</li>
   <li>JaiProcessor has been deprecated. See the user manual for more information.</li>
   <li>KakaduDemoProcessor and OpenJpegProcessor work in Windows.</li>
   <li>KakaduDemoProcessor and OpenJpegProcessor read image metadata using custom code, which is more efficient than using the respective <code>kdu_jp2info</code> and <code>opj_dump</code> tools, and enables them to read the number of decomposition levels, which improves reliability when decoding images with less-common level counts.</li>

@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -37,10 +36,10 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.ADMIN_USERNAME, USERNAME);
         config.setProperty(Key.ADMIN_SECRET, SECRET);
-        config.setProperty(Key.RESOLVER_STATIC, "FilesystemResolver");
+        config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
 
-        config.clearProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX);
+        config.clearProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX);
         config.clearProperty(Key.DELEGATE_SCRIPT_PATHNAME);
 
         DesiredCapabilities capabilities = DesiredCapabilities.htmlUnitWithJs();
@@ -315,121 +314,121 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     }
 
     @Test
-    public void testResolverSection() throws Exception {
-        css("#cl-resolver-button > a").click();
+    public void testSourceSection() throws Exception {
+        css("#cl-source-button > a").click();
 
         // Fill in the form
-        selectNamed(Key.RESOLVER_DELEGATE).selectByValue("false");
-        selectNamed(Key.RESOLVER_STATIC).
-                selectByVisibleText("FilesystemResolver");
-        // S3Resolver section
-        css("#cl-resolver li > a[href=\"#S3Resolver\"]").click();
-        inputNamed(Key.S3RESOLVER_ACCESS_KEY_ID).sendKeys("123");
-        inputNamed(Key.S3RESOLVER_SECRET_KEY).sendKeys("456");
-        inputNamed(Key.S3RESOLVER_BUCKET_NAME).sendKeys("cats");
-        inputNamed(Key.S3RESOLVER_ENDPOINT).sendKeys("http://localhost:1234");
-        inputNamed(Key.S3RESOLVER_MAX_CONNECTIONS).sendKeys("45");
-        selectNamed(Key.S3RESOLVER_LOOKUP_STRATEGY).
+        selectNamed(Key.SOURCE_DELEGATE).selectByValue("false");
+        selectNamed(Key.SOURCE_STATIC).
+                selectByVisibleText("FilesystemSource");
+        // S3Source section
+        css("#cl-source li > a[href=\"#S3Source\"]").click();
+        inputNamed(Key.S3SOURCE_ACCESS_KEY_ID).sendKeys("123");
+        inputNamed(Key.S3SOURCE_SECRET_KEY).sendKeys("456");
+        inputNamed(Key.S3SOURCE_BUCKET_NAME).sendKeys("cats");
+        inputNamed(Key.S3SOURCE_ENDPOINT).sendKeys("http://localhost:1234");
+        inputNamed(Key.S3SOURCE_MAX_CONNECTIONS).sendKeys("45");
+        selectNamed(Key.S3SOURCE_LOOKUP_STRATEGY).
                 selectByValue("BasicLookupStrategy");
-        inputNamed(Key.S3RESOLVER_PATH_PREFIX).sendKeys("/s3prefix");
-        inputNamed(Key.S3RESOLVER_PATH_SUFFIX).sendKeys("/s3suffix");
-        // AzureStorageResolver
-        css("#cl-resolver li > a[href=\"#AzureStorageResolver\"]").click();
-        inputNamed(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME).sendKeys("bla");
-        inputNamed(Key.AZURESTORAGERESOLVER_ACCOUNT_KEY).sendKeys("cats");
-        inputNamed(Key.AZURESTORAGERESOLVER_CONTAINER_NAME).sendKeys("bucket");
-        selectNamed(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY).
+        inputNamed(Key.S3SOURCE_PATH_PREFIX).sendKeys("/s3prefix");
+        inputNamed(Key.S3SOURCE_PATH_SUFFIX).sendKeys("/s3suffix");
+        // AzureStorageSource
+        css("#cl-source li > a[href=\"#AzureStorageSource\"]").click();
+        inputNamed(Key.AZURESTORAGESOURCE_ACCOUNT_NAME).sendKeys("bla");
+        inputNamed(Key.AZURESTORAGESOURCE_ACCOUNT_KEY).sendKeys("cats");
+        inputNamed(Key.AZURESTORAGESOURCE_CONTAINER_NAME).sendKeys("bucket");
+        selectNamed(Key.AZURESTORAGESOURCE_LOOKUP_STRATEGY).
                 selectByValue("BasicLookupStrategy");
-        // FilesystemResolver
-        css("#cl-resolver li > a[href=\"#FilesystemResolver\"]").click();
-        selectNamed(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY).
+        // FilesystemSource
+        css("#cl-source li > a[href=\"#FilesystemSource\"]").click();
+        selectNamed(Key.FILESYSTEMSOURCE_LOOKUP_STRATEGY).
                 selectByValue("BasicLookupStrategy");
-        inputNamed(Key.FILESYSTEMRESOLVER_PATH_PREFIX).sendKeys("/prefix");
-        inputNamed(Key.FILESYSTEMRESOLVER_PATH_SUFFIX).sendKeys("/suffix");
-        // HttpResolver
-        css("#cl-resolver li > a[href=\"#HttpResolver\"]").click();
-        selectNamed(Key.HTTPRESOLVER_LOOKUP_STRATEGY).
+        inputNamed(Key.FILESYSTEMSOURCE_PATH_PREFIX).sendKeys("/prefix");
+        inputNamed(Key.FILESYSTEMSOURCE_PATH_SUFFIX).sendKeys("/suffix");
+        // HttpSource
+        css("#cl-source li > a[href=\"#HttpSource\"]").click();
+        selectNamed(Key.HTTPSOURCE_LOOKUP_STRATEGY).
                 selectByValue("BasicLookupStrategy");
-        inputNamed(Key.HTTPRESOLVER_TRUST_ALL_CERTS).click();
-        inputNamed(Key.HTTPRESOLVER_REQUEST_TIMEOUT).sendKeys("13");
-        inputNamed(Key.HTTPRESOLVER_URL_PREFIX).sendKeys("http://prefix/");
-        inputNamed(Key.HTTPRESOLVER_URL_SUFFIX).sendKeys("/suffix");
-        inputNamed(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME).sendKeys("username");
-        inputNamed(Key.HTTPRESOLVER_BASIC_AUTH_SECRET).sendKeys("password");
-        // JdbcResolver
-        css("#cl-resolver li > a[href=\"#JdbcResolver\"]").click();
-        inputNamed(Key.JDBCRESOLVER_JDBC_URL).sendKeys("cats://dogs");
-        inputNamed(Key.JDBCRESOLVER_USER).sendKeys("user");
-        inputNamed(Key.JDBCRESOLVER_PASSWORD).sendKeys("password");
-        inputNamed(Key.JDBCRESOLVER_CONNECTION_TIMEOUT).sendKeys("5");
+        inputNamed(Key.HTTPSOURCE_TRUST_ALL_CERTS).click();
+        inputNamed(Key.HTTPSOURCE_REQUEST_TIMEOUT).sendKeys("13");
+        inputNamed(Key.HTTPSOURCE_URL_PREFIX).sendKeys("http://prefix/");
+        inputNamed(Key.HTTPSOURCE_URL_SUFFIX).sendKeys("/suffix");
+        inputNamed(Key.HTTPSOURCE_BASIC_AUTH_USERNAME).sendKeys("username");
+        inputNamed(Key.HTTPSOURCE_BASIC_AUTH_SECRET).sendKeys("password");
+        // JdbcSource
+        css("#cl-source li > a[href=\"#JdbcSource\"]").click();
+        inputNamed(Key.JDBCSOURCE_JDBC_URL).sendKeys("cats://dogs");
+        inputNamed(Key.JDBCSOURCE_USER).sendKeys("user");
+        inputNamed(Key.JDBCSOURCE_PASSWORD).sendKeys("password");
+        inputNamed(Key.JDBCSOURCE_CONNECTION_TIMEOUT).sendKeys("5");
 
         // Submit the form
-        css("#cl-resolver input[type=\"submit\"]").click();
+        css("#cl-source input[type=\"submit\"]").click();
 
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
         final Configuration config = Configuration.getInstance();
-        assertFalse(config.getBoolean(Key.RESOLVER_DELEGATE));
-        assertEquals("FilesystemResolver",
-                config.getString(Key.RESOLVER_STATIC));
-        // S3Resolver
+        assertFalse(config.getBoolean(Key.SOURCE_DELEGATE));
+        assertEquals("FilesystemSource",
+                config.getString(Key.SOURCE_STATIC));
+        // S3Source
         assertEquals("123",
-                config.getString(Key.S3RESOLVER_ACCESS_KEY_ID));
+                config.getString(Key.S3SOURCE_ACCESS_KEY_ID));
         assertEquals("456",
-                config.getString(Key.S3RESOLVER_SECRET_KEY));
+                config.getString(Key.S3SOURCE_SECRET_KEY));
         assertEquals("cats",
-                config.getString(Key.S3RESOLVER_BUCKET_NAME));
+                config.getString(Key.S3SOURCE_BUCKET_NAME));
         assertEquals("http://localhost:1234",
-                config.getString(Key.S3RESOLVER_ENDPOINT));
+                config.getString(Key.S3SOURCE_ENDPOINT));
         assertEquals("45",
-                config.getString(Key.S3RESOLVER_MAX_CONNECTIONS));
+                config.getString(Key.S3SOURCE_MAX_CONNECTIONS));
         assertEquals("BasicLookupStrategy",
-                config.getString(Key.S3RESOLVER_LOOKUP_STRATEGY));
+                config.getString(Key.S3SOURCE_LOOKUP_STRATEGY));
         assertEquals("/s3prefix",
-                config.getString(Key.S3RESOLVER_PATH_PREFIX));
+                config.getString(Key.S3SOURCE_PATH_PREFIX));
         assertEquals("/s3suffix",
-                config.getString(Key.S3RESOLVER_PATH_SUFFIX));
-        // AzureStorageResolver
+                config.getString(Key.S3SOURCE_PATH_SUFFIX));
+        // AzureStorageSource
         assertEquals("bla",
-                config.getString(Key.AZURESTORAGERESOLVER_ACCOUNT_NAME));
+                config.getString(Key.AZURESTORAGESOURCE_ACCOUNT_NAME));
         assertEquals("cats",
-                config.getString(Key.AZURESTORAGERESOLVER_ACCOUNT_KEY));
+                config.getString(Key.AZURESTORAGESOURCE_ACCOUNT_KEY));
         assertEquals("bucket",
-                config.getString(Key.AZURESTORAGERESOLVER_CONTAINER_NAME));
+                config.getString(Key.AZURESTORAGESOURCE_CONTAINER_NAME));
         assertEquals("BasicLookupStrategy",
-                config.getString(Key.AZURESTORAGERESOLVER_LOOKUP_STRATEGY));
-        // FilesystemResolver
+                config.getString(Key.AZURESTORAGESOURCE_LOOKUP_STRATEGY));
+        // FilesystemSource
         assertEquals("BasicLookupStrategy",
-                config.getString(Key.FILESYSTEMRESOLVER_LOOKUP_STRATEGY));
+                config.getString(Key.FILESYSTEMSOURCE_LOOKUP_STRATEGY));
         assertEquals("/prefix",
-                config.getString(Key.FILESYSTEMRESOLVER_PATH_PREFIX));
+                config.getString(Key.FILESYSTEMSOURCE_PATH_PREFIX));
         assertEquals("/suffix",
-                config.getString(Key.FILESYSTEMRESOLVER_PATH_SUFFIX));
-        // HttpResolver
+                config.getString(Key.FILESYSTEMSOURCE_PATH_SUFFIX));
+        // HttpSource
         assertTrue(
-                config.getBoolean(Key.HTTPRESOLVER_TRUST_ALL_CERTS));
+                config.getBoolean(Key.HTTPSOURCE_TRUST_ALL_CERTS));
         assertEquals("BasicLookupStrategy",
-                config.getString(Key.HTTPRESOLVER_LOOKUP_STRATEGY));
+                config.getString(Key.HTTPSOURCE_LOOKUP_STRATEGY));
         assertEquals("13",
-                config.getString(Key.HTTPRESOLVER_REQUEST_TIMEOUT));
+                config.getString(Key.HTTPSOURCE_REQUEST_TIMEOUT));
         assertEquals("http://prefix/",
-                config.getString(Key.HTTPRESOLVER_URL_PREFIX));
+                config.getString(Key.HTTPSOURCE_URL_PREFIX));
         assertEquals("/suffix",
-                config.getString(Key.HTTPRESOLVER_URL_SUFFIX));
+                config.getString(Key.HTTPSOURCE_URL_SUFFIX));
         assertEquals("username",
-                config.getString(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME));
+                config.getString(Key.HTTPSOURCE_BASIC_AUTH_USERNAME));
         assertEquals("password",
-                config.getString(Key.HTTPRESOLVER_BASIC_AUTH_SECRET));
-        // JdbcResolver
+                config.getString(Key.HTTPSOURCE_BASIC_AUTH_SECRET));
+        // JdbcSource
         assertEquals("cats://dogs",
-                config.getString(Key.JDBCRESOLVER_JDBC_URL));
+                config.getString(Key.JDBCSOURCE_JDBC_URL));
         assertEquals("user",
-                config.getString(Key.JDBCRESOLVER_USER));
+                config.getString(Key.JDBCSOURCE_USER));
         assertEquals("password",
-                config.getString(Key.JDBCRESOLVER_PASSWORD));
+                config.getString(Key.JDBCSOURCE_PASSWORD));
         assertEquals("5",
-                config.getString(Key.JDBCRESOLVER_CONNECTION_TIMEOUT));
+                config.getString(Key.JDBCSOURCE_CONNECTION_TIMEOUT));
     }
 
     @Test

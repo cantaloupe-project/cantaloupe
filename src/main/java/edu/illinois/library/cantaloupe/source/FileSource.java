@@ -1,13 +1,12 @@
-package edu.illinois.library.cantaloupe.resolver;
+package edu.illinois.library.cantaloupe.source;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
 /**
- * Interface to be implemented by all resolvers that support access to source
- * images via File objects.
+ * Source that supports access to source images via {@link Path}s.
  */
-public interface FileResolver extends Resolver {
+public interface FileSource extends Source {
 
     /**
      * @return File referencing the source image corresponding to the

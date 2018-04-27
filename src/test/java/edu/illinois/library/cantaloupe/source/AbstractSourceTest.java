@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resolver;
+package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -11,11 +11,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.NoSuchFileException;
 
-abstract class AbstractResolverTest extends BaseTest {
+abstract class AbstractSourceTest extends BaseTest {
 
     abstract void destroyEndpoint() throws Exception;
     abstract void initializeEndpoint() throws Exception;
-    abstract Resolver newInstance();
+    abstract Source newInstance();
     abstract void useBasicLookupStrategy();
     abstract void useScriptLookupStrategy();
 
@@ -45,7 +45,7 @@ abstract class AbstractResolverTest extends BaseTest {
         try {
             initializeEndpoint();
 
-            Resolver instance = newInstance();
+            Source instance = newInstance();
             instance.setIdentifier(new Identifier("bogus"));
             instance.checkAccess();
         } finally {
@@ -58,7 +58,7 @@ abstract class AbstractResolverTest extends BaseTest {
         try {
             initializeEndpoint();
 
-            Resolver instance = newInstance();
+            Source instance = newInstance();
             instance.checkAccess();
             instance.checkAccess();
             instance.checkAccess();
@@ -74,7 +74,7 @@ abstract class AbstractResolverTest extends BaseTest {
         try {
             initializeEndpoint();
 
-            Resolver instance = newInstance();
+            Source instance = newInstance();
             instance.getSourceFormat();
             instance.getSourceFormat();
             instance.getSourceFormat();
@@ -83,19 +83,19 @@ abstract class AbstractResolverTest extends BaseTest {
         }
     }
 
-    /* newStreamSource() */
+    /* newStreamFactory() */
 
     @Test
     public void testNewStreamSourceInvokedMultipleTimes() throws Exception {
-        Resolver instance = newInstance();
-        if (instance instanceof StreamResolver) {
+        Source instance = newInstance();
+        if (instance instanceof StreamSource) {
             try {
                 initializeEndpoint();
 
-                StreamResolver sres = (StreamResolver) instance;
-                sres.newStreamSource();
-                sres.newStreamSource();
-                sres.newStreamSource();
+                StreamSource sres = (StreamSource) instance;
+                sres.newStreamFactory();
+                sres.newStreamFactory();
+                sres.newStreamFactory();
             } finally {
                 destroyEndpoint();
             }
@@ -105,13 +105,13 @@ abstract class AbstractResolverTest extends BaseTest {
     @Test
     public void testNewStreamSourceReturnedInstanceIsReusable()
             throws Exception {
-        Resolver instance = newInstance();
-        if (instance instanceof StreamResolver) {
+        Source instance = newInstance();
+        if (instance instanceof StreamSource) {
             try {
                 initializeEndpoint();
 
-                StreamResolver sres = (StreamResolver) instance;
-                StreamSource source = sres.newStreamSource();
+                StreamSource sres = (StreamSource) instance;
+                StreamFactory source = sres.newStreamFactory();
 
                 try (InputStream is = source.newInputStream();
                      OutputStream os = new NullOutputStream()) {

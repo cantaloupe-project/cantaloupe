@@ -6,8 +6,8 @@ import edu.illinois.library.cantaloupe.cache.CacheWorkerRunner;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.logging.LoggerUtil;
-import edu.illinois.library.cantaloupe.resolver.Resolver;
-import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import edu.illinois.library.cantaloupe.source.Source;
+import edu.illinois.library.cantaloupe.source.SourceFactory;
 import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,8 +90,8 @@ public class ApplicationContextListener implements ServletContextListener {
         // Shut down all caches.
         CacheFactory.shutdownCaches();
 
-        // Shut down all resolvers.
-        ResolverFactory.getAllResolvers().forEach(Resolver::shutdown);
+        // Shut down all sources.
+        SourceFactory.getAllSources().forEach(Source::shutdown);
 
         // Shut down the application thread pool.
         ThreadPool.getInstance().shutdown();

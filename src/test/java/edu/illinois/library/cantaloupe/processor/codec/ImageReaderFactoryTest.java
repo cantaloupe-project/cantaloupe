@@ -2,8 +2,8 @@ package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.source.PathStreamFactory;
+import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
@@ -69,7 +69,7 @@ public class ImageReaderFactoryTest extends BaseTest {
 
     @Test
     public void testNewImageReaderWithStreamSource() throws Exception {
-        StreamSource source = new PathStreamSource(Paths.get("/dev/null"));
+        StreamFactory source = new PathStreamFactory(Paths.get("/dev/null"));
         instance.newImageReader(source, Format.JPG);
     }
 

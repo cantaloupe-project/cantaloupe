@@ -4,7 +4,7 @@ import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.source.StreamFactory;
 
 import javax.imageio.stream.ImageInputStream;
 import java.awt.Dimension;
@@ -116,6 +116,6 @@ public interface ImageReader {
 
     void setSource(ImageInputStream inputStream) throws IOException;
 
-    void setSource(StreamSource streamSource) throws IOException ;
+    void setSource(StreamFactory streamFactory) throws IOException ;
 
 }

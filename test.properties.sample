@@ -1,14 +1,14 @@
 # Cantaloupe unit test configuration file. DO NOT EDIT; copy to test.properties
 # and edit that.
 
-# Used by S3ResolverTest and S3CacheTest.
+# Used by S3SourceTest and S3CacheTest.
 # Leave blank to use a built-in mock S3 endpoint.
 s3.endpoint =
 s3.access_key_id =
 s3.secret_key =
 s3.bucket = test.cantaloupe.library.illinois.edu
 
-# Used by AzureStorageResolverTest and AzureStorageCacheTest.
+# Used by AzureStorageSourceTest and AzureStorageCacheTest.
 # Note: leave blank to test sas and container specified in a URL to the object key.
 azurestorage.account_name =
 azurestorage.account_key =

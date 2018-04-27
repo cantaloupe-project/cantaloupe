@@ -46,9 +46,9 @@
                     <a href="#cl-endpoints" aria-controls="cl-endpoints"
                        role="tab" data-toggle="tab">Endpoints</a>
                 </li>
-                <li role="presentation" class="list-group-item" id="cl-resolver-button">
-                    <a href="#cl-resolver" aria-controls="cl-resolver"
-                       role="tab" data-toggle="tab">Resolvers</a>
+                <li role="presentation" class="list-group-item" id="cl-source-button">
+                    <a href="#cl-source" aria-controls="cl-source"
+                       role="tab" data-toggle="tab">Source</a>
                 </li>
                 <li role="presentation" class="list-group-item" id="cl-processors-button">
                     <a href="#cl-processors" aria-controls="cl-processors"
@@ -1163,10 +1163,10 @@
                     </form>
                 </div>
 
-                <div role="tabpanel" class="tab-pane" id="cl-resolver">
+                <div role="tabpanel" class="tab-pane" id="cl-source">
                     <form method="post">
                         <section>
-                            <h2>Resolver</h2>
+                            <h2>Source</h2>
                             <table class="table table-striped">
                                 <tr>
                                     <td>Strategy
@@ -1174,15 +1174,15 @@
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
                                            data-content="When set to &quot;Static,&quot; the
-                                           static resolver (below) will be used. When set to
-                                           &quot;Delegate Script,&quot; a delegate script
-                                           method will be used to select a resolver per-request;
+                                           static source (below) will be used. When set to
+                                           &quot;Delegate Script,&quot; a delegate method
+                                           will be used to select a source per-request;
                                            see the User Manual for more information.">?</a>
                                     </td>
                                     <td>
                                         <select class="form-control"
-                                                name="resolver.delegate">
-                                            #if ($resolverSelectionStrategy.toString().equals("STATIC"))
+                                                name="source.delegate">
+                                            #if ($sourceSelectionStrategy.toString().equals("STATIC"))
                                                 <option value="false" selected>Static</option>
                                                 <option value="true">Delegate Script</option>
                                             #else
@@ -1193,23 +1193,22 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>Static Resolver
+                                    <td>Static Source
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="The resolver to use to
+                                           data-content="The source to use to
                                            translate the identifier in the URL to an image
                                            source for all requests, when the strategy is
                                            &quot;Static.&quot;">?</a>
                                     </td>
                                     <td>
-                                        <select class="form-control"
-                                                name="resolver.static">
-                                            #foreach ($resolver in $resolvers)
-                                                #if ($resolver.equals($currentResolver))
-                                                    <option selected>$resolver.getName()</option>
+                                        <select class="form-control" name="source.static">
+                                            #foreach ($source in $sources)
+                                                #if ($source.equals($currentSource))
+                                                    <option selected>$source.getName()</option>
                                                 #else
-                                                    <option>$resolver.getName()</option>
+                                                    <option>$source.getName()</option>
                                                 #end
                                             #end
                                         </select>
@@ -1220,17 +1219,17 @@
 
                         <section>
                             <ul class="nav nav-pills" role="tablist">
-                                #foreach ($resolver in $resolvers)
+                                #foreach ($source in $sources)
                                     <li role="presentation">
-                                        <a href="#$resolver.getName()"
-                                           aria-controls="$resolver.getName()" role="tab"
-                                           data-toggle="tab">$resolver.getName()</a>
+                                        <a href="#$source.getName()"
+                                           aria-controls="$source.getName()" role="tab"
+                                           data-toggle="tab">$source.getName()</a>
                                     </li>
                                 #end
                             </ul>
 
                             <div class="tab-content">
-                                <div role="tabpanel" class="tab-pane" id="S3Resolver">
+                                <div role="tabpanel" class="tab-pane" id="S3Source">
                                     <table class="table table-striped">
                                         <tr>
                                             <td>Access Key ID
@@ -1246,7 +1245,7 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="S3Resolver.access_key_id"
+                                                       name="S3Source.access_key_id"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -1264,7 +1263,7 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="S3Resolver.secret_key"
+                                                       name="S3Source.secret_key"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -1278,7 +1277,7 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="S3Resolver.BasicLookupStrategy.bucket.name"
+                                                       name="S3Source.BasicLookupStrategy.bucket.name"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -1293,7 +1292,7 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="S3Resolver.endpoint"
+                                                       name="S3Source.endpoint"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -1302,13 +1301,13 @@
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Tells the resolver how to look up images.
+                                                   data-content="Tells the source how to look up images.
                                                    The delegate script enables dynamic lookups&mdash;see
                                                    the user manual for details.">?</a>
                                             </td>
                                             <td>
                                                 <select class="form-control"
-                                                        name="S3Resolver.lookup_strategy"
+                                                        name="S3Source.lookup_strategy"
                                                         data-requires-restart="false">
                                                     <option value="BasicLookupStrategy">Basic</option>
                                                     <option value="ScriptLookupStrategy">Delegate Script</option>
@@ -1325,7 +1324,7 @@
                                             <td>
                                                 <input class="form-control" type="number"
                                                        min="1"
-                                                       name="S3Resolver.max_connections"
+                                                       name="S3Source.max_connections"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -1340,7 +1339,7 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="S3Resolver.BasicLookupStrategy.path_prefix"
+                                                       name="S3Source.BasicLookupStrategy.path_prefix"
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>
@@ -1354,14 +1353,14 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="S3Resolver.BasicLookupStrategy.path_suffix"
+                                                       name="S3Source.BasicLookupStrategy.path_suffix"
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>
                                     </table>
                                 </div>
 
-                                <div role="tabpanel" class="tab-pane" id="AzureStorageResolver">
+                                <div role="tabpanel" class="tab-pane" id="AzureStorageSource">
                                     <table class="table table-striped">
                                         <tr>
                                             <td>Account Name
@@ -1373,7 +1372,7 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="AzureStorageResolver.account_name"
+                                                       name="AzureStorageSource.account_name"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -1387,7 +1386,7 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="AzureStorageResolver.account_key"
+                                                       name="AzureStorageSource.account_key"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -1402,7 +1401,7 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="AzureStorageResolver.container_name"
+                                                       name="AzureStorageSource.container_name"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -1411,13 +1410,13 @@
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Tells the resolver how to look up images.
+                                                   data-content="Tells the source how to look up images.
                                                    The delegate script enables dynamic lookups&mdash;see
                                                    the user manual for details.">?</a>
                                             </td>
                                             <td>
                                                 <select class="form-control"
-                                                        name="AzureStorageResolver.lookup_strategy"
+                                                        name="AzureStorageSource.lookup_strategy"
                                                         data-requires-restart="false">
                                                     <option value="BasicLookupStrategy">Basic</option>
                                                     <option value="ScriptLookupStrategy">Delegate Script</option>
@@ -1427,20 +1426,20 @@
                                     </table>
                                 </div>
 
-                                <div role="tabpanel" class="tab-pane" id="FilesystemResolver">
+                                <div role="tabpanel" class="tab-pane" id="FilesystemSource">
                                     <table class="table table-striped">
                                         <tr>
                                             <td>Lookup Strategy
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Tells the resolver how to look up images.
+                                                   data-content="Tells the source how to look up images.
                                                    The delegate script enables dynamic lookups&mdash;see
                                                    the user manual for details.">?</a>
                                             </td>
                                             <td>
                                                 <select class="form-control"
-                                                        name="FilesystemResolver.lookup_strategy"
+                                                        name="FilesystemSource.lookup_strategy"
                                                         data-requires-restart="false">
                                                     <option value="BasicLookupStrategy">Basic</option>
                                                     <option value="ScriptLookupStrategy">Delegate Script</option>
@@ -1458,7 +1457,7 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="FilesystemResolver.BasicLookupStrategy.path_prefix"
+                                                       name="FilesystemSource.BasicLookupStrategy.path_prefix"
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>
@@ -1472,14 +1471,14 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="FilesystemResolver.BasicLookupStrategy.path_suffix"
+                                                       name="FilesystemSource.BasicLookupStrategy.path_suffix"
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>
                                     </table>
                                 </div>
 
-                                <div role="tabpanel" class="tab-pane" id="HttpResolver">
+                                <div role="tabpanel" class="tab-pane" id="HttpSource">
                                     <table class="table table-striped">
                                         <tr>
                                             <td>
@@ -1493,7 +1492,7 @@
                                                 <div class="checkbox">
                                                     <label>
                                                         <input type="checkbox"
-                                                               name="HttpResolver.trust_all_certs"
+                                                               name="HttpSource.trust_all_certs"
                                                                value="true"
                                                                data-requires-restart="false">
                                                         Trust Invalid Certificates
@@ -1511,7 +1510,7 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="number" min="1"
-                                                       name="HttpResolver.request_timeout"
+                                                       name="HttpSource.request_timeout"
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>
@@ -1520,13 +1519,13 @@
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Tells the resolver how to look up images.
+                                                   data-content="Tells the source how to look up images.
                                                    The delegate script enables dynamic lookups&mdash;see
                                                    the user manual for details.">?</a>
                                             </td>
                                             <td>
                                                 <select class="form-control"
-                                                        name="HttpResolver.lookup_strategy"
+                                                        name="HttpSource.lookup_strategy"
                                                         data-requires-restart="false">
                                                     <option value="BasicLookupStrategy">Basic</option>
                                                     <option value="ScriptLookupStrategy">Delegate Script</option>
@@ -1544,7 +1543,7 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="HttpResolver.BasicLookupStrategy.url_prefix"
+                                                       name="HttpSource.BasicLookupStrategy.url_prefix"
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>
@@ -1558,7 +1557,7 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="HttpResolver.BasicLookupStrategy.url_suffix"
+                                                       name="HttpSource.BasicLookupStrategy.url_suffix"
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>
@@ -1572,7 +1571,7 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="HttpResolver.BasicLookupStrategy.auth.basic.username"
+                                                       name="HttpSource.BasicLookupStrategy.auth.basic.username"
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>
@@ -1586,20 +1585,20 @@
                                             </td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="HttpResolver.BasicLookupStrategy.auth.basic.secret"
+                                                       name="HttpSource.BasicLookupStrategy.auth.basic.secret"
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>
                                     </table>
                                 </div>
 
-                                <div role="tabpanel" class="tab-pane" id="JdbcResolver">
+                                <div role="tabpanel" class="tab-pane" id="JdbcSource">
                                     <table class="table table-striped">
                                         <tr>
                                             <td>JDBC URL</td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="JdbcResolver.url"
+                                                       name="JdbcSource.url"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -1607,7 +1606,7 @@
                                             <td>User</td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="JdbcResolver.user"
+                                                       name="JdbcSource.user"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -1615,7 +1614,7 @@
                                             <td>Password</td>
                                             <td>
                                                 <input class="form-control" type="text"
-                                                       name="JdbcResolver.password"
+                                                       name="JdbcSource.password"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -1623,7 +1622,7 @@
                                             <td>Connection Timeout (seconds)</td>
                                             <td>
                                                 <input class="form-control" type="number"
-                                                       name="JdbcResolver.connection_timeout" min="0"
+                                                       name="JdbcSource.connection_timeout" min="0"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -1854,9 +1853,9 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="Controls how content is fed to processors from stream-based resolvers.
+                                           data-content="Controls how content is fed to processors from stream-based sources.
                                            &lt;ul&gt;
-                                           &lt;li&gt;StreamStrategy will try to stream a source image from a resolver when
+                                           &lt;li&gt;StreamStrategy will try to stream a source image from a source when
                                            possible, and use the fallback retrieval strategy otherwise.&lt;/li&gt;
                                            &lt;li&gt;DownloadStrategy will download it to a temporary file, and delete
                                            it after the request is complete.&lt;/li&gt;
@@ -1869,7 +1868,7 @@
                                         <select class="form-control"
                                                 name="processor.stream_retrieval_strategy"
                                                 data-restart-required="false">
-                                            <option value="StreamStrategy">Stream From Resolver (StreamStrategy)</option>
+                                            <option value="StreamStrategy">Stream From Source (StreamStrategy)</option>
                                             <option value="DownloadStrategy">Download to Temp File (DownloadStrategy)</option>
                                             <option value="CacheStrategy">Cache in Source Cache (CacheStrategy)</option>
                                         </select>
@@ -1880,7 +1879,7 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="Controls how an incompatible resolver/processor (StreamResolver +
+                                           data-content="Controls how an incompatible source/processor (StreamSource +
                                            FileProcessor) situation is dealt with.
                                            &lt;ul&gt;
                                            &lt;li&gt;DownloadStrategy will download a source image to a temporary file, and delete
@@ -2491,7 +2490,7 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="If enabled, when a resolver reports that the
+                                           data-content="If enabled, when a source reports that the
                                            requested source image has gone missing, all cached
                                            information relating to it (if any) will be deleted. (This
                                            is effectively always enabled when &quot;Resolve First&quot;

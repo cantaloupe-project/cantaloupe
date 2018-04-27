@@ -73,7 +73,7 @@ public class Version2_0ConformanceTest extends ResourceTest {
         String cwd = directory.getCanonicalPath();
         Path path = Paths.get(cwd, "src", "test", "resources");
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX,
+        config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
                 path + File.separator);
 
         final String identifier = "images%2F" + IMAGE;

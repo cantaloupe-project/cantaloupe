@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resolver;
+package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -7,7 +7,7 @@ import org.junit.Before;
 
 import java.net.URI;
 
-public class HttpResolverHTTPTest extends HttpResolverTest {
+public class HttpSourceHTTPTest extends HttpSourceTest {
 
     @Before
     @Override
@@ -21,7 +21,7 @@ public class HttpResolverHTTPTest extends HttpResolverTest {
         server.setHTTPS2Enabled(false);
 
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.HTTPRESOLVER_URL_PREFIX, server.getHTTPURI() + "/");
+        config.setProperty(Key.HTTPSOURCE_URL_PREFIX, server.getHTTPURI() + "/");
     }
 
     @Override

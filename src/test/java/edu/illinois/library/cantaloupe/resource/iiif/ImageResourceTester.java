@@ -430,7 +430,7 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         Path cacheDir = Files.createTempDirectory("cache");
 
         final Configuration config = Configuration.getInstance();
-        config.setProperty(Key.FILESYSTEMRESOLVER_PATH_PREFIX,
+        config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
                 sourceDir.toString() + "/");
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
         config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");

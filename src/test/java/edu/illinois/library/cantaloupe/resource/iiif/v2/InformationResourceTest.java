@@ -275,24 +275,24 @@ public class InformationResourceTest extends ResourceTest {
     public void testGETResolverCheckAccessNotCalledWithSourceCacheHit()
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/info.json");
-        tester.testResolverCheckAccessNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
+        tester.testSourceCheckAccessNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
     }
 
     @Test
     public void testGETResolverGetSourceFormatNotCalledWithSourceCacheHit()
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/info.json");
-        tester.testResolverGetSourceFormatNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
+        tester.testSourceGetSourceFormatNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
     }
 
     /**
-     * Checks that the server responds with HTTP 500 when a non-FileResolver is
+     * Checks that the server responds with HTTP 500 when a non-FileSource is
      * used with a non-StreamProcessor.
      */
     @Test
     public void testGETResolverProcessorCompatibility() {
         URI uri = getHTTPURI("/jp2/info.json");
-        tester.testResolverProcessorCompatibility(
+        tester.testSourceProcessorCompatibility(
                 uri,
                 appServer.getHTTPHost(),
                 appServer.getHTTPPort());

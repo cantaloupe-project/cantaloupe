@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resolver;
+package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -32,18 +32,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 
-abstract class HttpResolverTest extends AbstractResolverTest {
+abstract class HttpSourceTest extends AbstractSourceTest {
 
     private static final Identifier PRESENT_READABLE_IDENTIFIER =
             new Identifier("jpg-rgb-64x56x8-baseline.jpg");
 
     WebServer server;
 
-    private HttpResolver instance;
+    private HttpSource instance;
 
     /**
      * Subclasses need to override, call super, and set
-     * {@link Key#HTTPRESOLVER_URL_PREFIX} to the web server URI using the
+     * {@link Key#HTTPSOURCE_URL_PREFIX} to the web server URI using the
      * appropriate scheme.
      */
     @Before
@@ -80,8 +80,8 @@ abstract class HttpResolverTest extends AbstractResolverTest {
     }
 
     @Override
-    HttpResolver newInstance() {
-        HttpResolver instance = new HttpResolver();
+    HttpSource newInstance() {
+        HttpSource instance = new HttpSource();
         instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
         return instance;
     }
@@ -89,7 +89,7 @@ abstract class HttpResolverTest extends AbstractResolverTest {
     @Override
     void useBasicLookupStrategy() {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
+        config.setProperty(Key.HTTPSOURCE_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
     }
 
@@ -97,7 +97,7 @@ abstract class HttpResolverTest extends AbstractResolverTest {
     void useScriptLookupStrategy() {
         try {
             Configuration config = Configuration.getInstance();
-            config.setProperty(Key.HTTPRESOLVER_LOOKUP_STRATEGY,
+            config.setProperty(Key.HTTPSOURCE_LOOKUP_STRATEGY,
                     "ScriptLookupStrategy");
             config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
             config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
@@ -112,13 +112,13 @@ abstract class HttpResolverTest extends AbstractResolverTest {
     @Test
     public void testMediaTypeFromContentTypeWithoutSemicolon() {
         assertEquals(MediaType.APPLICATION_JSON,
-                HttpResolver.mediaTypeFromContentType("application/json"));
+                HttpSource.mediaTypeFromContentType("application/json"));
     }
 
     @Test
     public void testMediaTypeFromContentTypeWithSemicolon() {
         assertEquals(MediaType.APPLICATION_JSON,
-                HttpResolver.mediaTypeFromContentType("application/json; charset=utf-8"));
+                HttpSource.mediaTypeFromContentType("application/json; charset=utf-8"));
     }
 
     /* checkAccess() */
@@ -308,9 +308,9 @@ abstract class HttpResolverTest extends AbstractResolverTest {
     public void testGetSourceFormatUsingBasicLookupStrategyWithValidAuthentication()
             throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME,
+        config.setProperty(Key.HTTPSOURCE_BASIC_AUTH_USERNAME,
                 WebServer.BASIC_USER);
-        config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_SECRET,
+        config.setProperty(Key.HTTPSOURCE_BASIC_AUTH_SECRET,
                 WebServer.BASIC_SECRET);
 
         server.setBasicAuthEnabled(true);
@@ -431,7 +431,7 @@ abstract class HttpResolverTest extends AbstractResolverTest {
     public void testGetResourceInfoUsingBasicLookupStrategyWithPrefix()
             throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
+        config.setProperty(Key.HTTPSOURCE_URL_PREFIX,
                 getScheme() + "://example.org/prefix/");
 
         server.start();
@@ -445,9 +445,9 @@ abstract class HttpResolverTest extends AbstractResolverTest {
     public void testGetResourceInfoUsingBasicLookupStrategyWithPrefixAndSuffix()
             throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.HTTPRESOLVER_URL_PREFIX,
+        config.setProperty(Key.HTTPSOURCE_URL_PREFIX,
                 getScheme() + "://example.org/prefix/");
-        config.setProperty(Key.HTTPRESOLVER_URL_SUFFIX, "/suffix");
+        config.setProperty(Key.HTTPSOURCE_URL_SUFFIX, "/suffix");
 
         server.start();
 
@@ -460,8 +460,8 @@ abstract class HttpResolverTest extends AbstractResolverTest {
     public void testGetResourceInfoUsingBasicLookupStrategyWithoutPrefixOrSuffix()
             throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.HTTPRESOLVER_URL_PREFIX, "");
-        config.setProperty(Key.HTTPRESOLVER_URL_SUFFIX, "");
+        config.setProperty(Key.HTTPSOURCE_URL_PREFIX, "");
+        config.setProperty(Key.HTTPSOURCE_URL_SUFFIX, "");
 
         server.start();
 
@@ -528,7 +528,7 @@ abstract class HttpResolverTest extends AbstractResolverTest {
 
         server.start();
 
-        HttpResolver.ResourceInfo actual = instance.getResourceInfo();
+        HttpSource.ResourceInfo actual = instance.getResourceInfo();
         assertEquals(new URI(getScheme() + "://example.org/bla/" + identifier),
                 actual.getURI());
         assertEquals("username", actual.getUsername());
@@ -552,22 +552,22 @@ abstract class HttpResolverTest extends AbstractResolverTest {
         instance.getResourceInfo();
     }
 
-    /* newStreamSource() */
+    /* newStreamFactory() */
 
     @Test
     public void testNewStreamSourceUsingBasicLookupStrategyWithValidAuthentication()
             throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_USERNAME,
+        config.setProperty(Key.HTTPSOURCE_BASIC_AUTH_USERNAME,
                 WebServer.BASIC_USER);
-        config.setProperty(Key.HTTPRESOLVER_BASIC_AUTH_SECRET,
+        config.setProperty(Key.HTTPSOURCE_BASIC_AUTH_SECRET,
                 WebServer.BASIC_SECRET);
 
         server.setBasicAuthEnabled(true);
         server.start();
 
         instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
-        assertNotNull(instance.newStreamSource());
+        assertNotNull(instance.newStreamFactory());
     }
 
     @Test
@@ -593,7 +593,7 @@ abstract class HttpResolverTest extends AbstractResolverTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
-        assertNotNull(instance.newStreamSource());
+        assertNotNull(instance.newStreamFactory());
     }
 
     @Test
@@ -616,7 +616,7 @@ abstract class HttpResolverTest extends AbstractResolverTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
-        assertNotNull(instance.newStreamSource());
+        assertNotNull(instance.newStreamFactory());
     }
 
     @Test
@@ -644,7 +644,7 @@ abstract class HttpResolverTest extends AbstractResolverTest {
         instance.checkAccess();
         instance.getSourceFormat();
 
-        StreamSource source = instance.newStreamSource();
+        StreamFactory source = instance.newStreamFactory();
         try (InputStream is = source.newInputStream()) {
             is.read();
         }
@@ -661,7 +661,7 @@ abstract class HttpResolverTest extends AbstractResolverTest {
                                HttpServletRequest request,
                                HttpServletResponse response) {
                 String expected = String.format("%s/%s (%s/%s; java/%s; %s/%s)",
-                        HttpResolver.class.getSimpleName(),
+                        HttpSource.class.getSimpleName(),
                         Application.getVersion(),
                         Application.getName(),
                         Application.getVersion(),

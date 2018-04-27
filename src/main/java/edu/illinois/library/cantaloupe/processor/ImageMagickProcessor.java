@@ -695,7 +695,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             throws ProcessorException {
         super.process(ops, imageInfo, outputStream);
 
-        try (InputStream inputStream = streamSource.newInputStream()) {
+        try (InputStream inputStream = streamFactory.newInputStream()) {
             final List<String> args = getConvertArguments(ops, imageInfo);
             final ProcessStarter cmd = new ProcessStarter();
             cmd.setInputProvider(new Pipe(inputStream, null));
@@ -709,7 +709,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
 
     @Override
     public Info readImageInfo() throws IOException {
-        try (InputStream inputStream = streamSource.newInputStream()) {
+        try (InputStream inputStream = streamFactory.newInputStream()) {
             final List<String> args = new ArrayList<>();
             if (IMVersion.VERSION_7.equals(getIMVersion())) {
                 args.add(getPath("magick"));

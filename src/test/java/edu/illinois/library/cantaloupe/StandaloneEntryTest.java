@@ -97,7 +97,7 @@ public class StandaloneEntryTest extends BaseTest {
         config.setProperty(Key.HTTP_ENABLED, true);
         config.setProperty(Key.HTTP_PORT, HTTP_PORT);
         config.setProperty(Key.HTTPS_ENABLED, false);
-        config.setProperty(Key.RESOLVER_STATIC, "FilesystemResolver");
+        config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
 
         httpClient = new Client(new Context(), Protocol.HTTP);

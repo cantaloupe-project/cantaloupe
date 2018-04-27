@@ -5,8 +5,8 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.source.PathStreamFactory;
+import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -181,7 +181,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
         Info imageInfo;
 
         // page option missing
-        instance.setStreamSource(new PathStreamSource(fixture));
+        instance.setStreamFactory(new PathStreamFactory(fixture));
         imageInfo = instance.readImageInfo();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -190,7 +190,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
         page1 = outputStream.toByteArray();
 
         // page option present
-        instance.setStreamSource(new PathStreamSource(fixture));
+        instance.setStreamFactory(new PathStreamFactory(fixture));
 
         ops = new OperationList();
         ops.getOptions().put("page", "2");
@@ -232,9 +232,9 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
                     }
 
                     StreamProcessor sproc = (StreamProcessor) proc;
-                    StreamSource streamSource =
-                            new PathStreamSource(fixture);
-                    sproc.setStreamSource(streamSource);
+                    StreamFactory streamFactory =
+                            new PathStreamFactory(fixture);
+                    sproc.setStreamFactory(streamFactory);
 
                     try {
                         // We don't know the dimensions of the source image and
@@ -269,7 +269,7 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
             return;
         }
 
-        instance.setStreamSource(new PathStreamSource(
+        instance.setStreamFactory(new PathStreamFactory(
                 TestUtil.getImage("pdf.pdf")));
 
         OperationList ops = new OperationList();

@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resolver;
+package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
@@ -15,55 +15,55 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import static edu.illinois.library.cantaloupe.resolver.ResolverFactory.SelectionStrategy.DELEGATE_SCRIPT;
+import static edu.illinois.library.cantaloupe.source.SourceFactory.SelectionStrategy.DELEGATE_SCRIPT;
 
 /**
- * Used to obtain an instance of a {@link Resolver} defined in the
+ * Used to obtain an instance of a {@link Source} defined in the
  * configuration, or returned by a delegate method.
  */
-public final class ResolverFactory {
+public final class SourceFactory {
 
     /**
-     * How resolvers are chosen by {@link #newResolver}.
+     * How sources are chosen by {@link #newSource}.
      */
     public enum SelectionStrategy {
 
         /**
-         * A global resolver is specified using the {@link Key#RESOLVER_STATIC}
+         * A global source is specified using the {@link Key#SOURCE_STATIC}
          * configuration key.
          */
         STATIC,
 
         /**
-         * A resolver specific to the request is acquired from the {@link
-         * DelegateMethod#RESOLVER} delegate method.
+         * A source specific to the request is acquired from the {@link
+         * DelegateMethod#SOURCE} delegate method.
          */
         DELEGATE_SCRIPT
 
     }
 
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(ResolverFactory.class);
+            LoggerFactory.getLogger(SourceFactory.class);
 
     /**
-     * @return Set of instances of each unique resolver.
+     * @return Set of instances of each unique source.
      */
-    public static Set<Resolver> getAllResolvers() {
+    public static Set<Source> getAllSources() {
         return new HashSet<>(Arrays.asList(
-                new AzureStorageResolver(),
-                new FilesystemResolver(),
-                new HttpResolver(),
-                new JdbcResolver(),
-                new S3Resolver()));
+                new AzureStorageSource(),
+                new FilesystemSource(),
+                new HttpSource(),
+                new JdbcSource(),
+                new S3Source()));
     }
 
     /**
-     * <p>If {@link Key#RESOLVER_STATIC} is not set, uses a delegate method to
-     * return an instance of a resolver for the given identifier. Otherwise,
-     * returns an instance of the resolver specified in {@link
-     * Key#RESOLVER_STATIC}.</p>
+     * <p>If {@link Key#SOURCE_STATIC} is not set, uses a delegate method to
+     * return an instance of a source for the given identifier. Otherwise,
+     * returns an instance of the source specified in {@link
+     * Key#SOURCE_STATIC}.</p>
      *
-     * <p>Resolver names, whether acquired from the configuration or from a
+     * <p>Source names, whether acquired from the configuration or from a
      * delegate method, may be full class names including package name, or
      * simple class names, in which case they will be assumed to reside in
      * this package.</p>
@@ -72,14 +72,14 @@ public final class ResolverFactory {
      * @param proxy      Delegate proxy. May be {@literal null} if
      *                   {@link #getSelectionStrategy()} returns {@link
      *                   SelectionStrategy#STATIC}.
-     * @return Instance of the appropriate resolver for the given identifier,
+     * @return Instance of the appropriate source for the given identifier,
      *         with identifier already set.
      * @throws IllegalArgumentException if the {@literal proxy} argument is
      *                                  {@literal null} while using {@link
      *                                  SelectionStrategy#DELEGATE_SCRIPT}.
      */
-    public Resolver newResolver(Identifier identifier,
-                                DelegateProxy proxy) throws Exception {
+    public Source newSource(Identifier identifier,
+                            DelegateProxy proxy) throws Exception {
         switch (getSelectionStrategy()) {
             case DELEGATE_SCRIPT:
                 if (proxy == null) {
@@ -88,62 +88,61 @@ public final class ResolverFactory {
                             " argument must be non-null when using " +
                             getSelectionStrategy() + ".");
                 }
-                Resolver resolver = newDynamicResolver(identifier, proxy);
+                Source source = newDynamicSource(identifier, proxy);
                 LOGGER.info("{}() returned a {} for {}",
-                        DelegateMethod.RESOLVER,
-                        resolver.getClass().getSimpleName(),
+                        DelegateMethod.SOURCE,
+                        source.getClass().getSimpleName(),
                         identifier);
-                return resolver;
+                return source;
             default:
                 final Configuration config = Configuration.getInstance();
-                final String resolverName =
-                        config.getString(Key.RESOLVER_STATIC);
-                if (resolverName != null) {
-                    return newResolver(resolverName, identifier, proxy);
+                final String sourceName = config.getString(Key.SOURCE_STATIC);
+                if (sourceName != null) {
+                    return newSource(sourceName, identifier, proxy);
                 } else {
-                    throw new ConfigurationException(Key.RESOLVER_STATIC +
-                            " is not set to a valid resolver.");
+                    throw new ConfigurationException(Key.SOURCE_STATIC +
+                            " is not set to a valid source.");
                 }
         }
     }
 
     /**
-     * @return How resolvers are chosen by {@link #newResolver}.
+     * @return How sources are chosen by {@link #newSource}.
      */
     public SelectionStrategy getSelectionStrategy() {
         final Configuration config = Configuration.getInstance();
-        return config.getBoolean(Key.RESOLVER_DELEGATE, false) ?
+        return config.getBoolean(Key.SOURCE_DELEGATE, false) ?
                 DELEGATE_SCRIPT : SelectionStrategy.STATIC;
     }
 
-    private Resolver newResolver(String name,
-                                 Identifier identifier,
-                                 DelegateProxy proxy) throws Exception {
+    private Source newSource(String name,
+                             Identifier identifier,
+                             DelegateProxy proxy) throws Exception {
         // If the name contains a dot, assume it's a  full class name,
         // including package. Otherwise, assume it's a simple class name in
         // this package.
         String fullName = name.contains(".") ?
-                name : ResolverFactory.class.getPackage().getName() + "." + name;
+                name : SourceFactory.class.getPackage().getName() + "." + name;
         Class<?> class_ = Class.forName(fullName);
 
-        Resolver resolver = (Resolver) class_.newInstance();
-        resolver.setIdentifier(identifier);
-        resolver.setDelegateProxy(proxy);
-        return resolver;
+        Source source = (Source) class_.newInstance();
+        source.setIdentifier(identifier);
+        source.setDelegateProxy(proxy);
+        return source;
     }
 
     /**
-     * @param identifier Identifier to return a resolver for.
-     * @param proxy      Delegate proxy from which to acquire the resolver
+     * @param identifier Identifier to return a source for.
+     * @param proxy      Delegate proxy from which to acquire the source
      *                   name.
-     * @return           Resolver as returned from the given delegate proxy.
+     * @return           Source as returned from the given delegate proxy.
      * @throws IOException     if the lookup script configuration key is
      *                         undefined.
      * @throws ScriptException if the delegate method failed to execute.
      */
-    private Resolver newDynamicResolver(Identifier identifier,
-                                        DelegateProxy proxy) throws Exception {
-        return newResolver(proxy.getResolver(), identifier, proxy);
+    private Source newDynamicSource(Identifier identifier,
+                                    DelegateProxy proxy) throws Exception {
+        return newSource(proxy.getSource(), identifier, proxy);
     }
 
 }

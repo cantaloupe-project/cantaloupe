@@ -175,33 +175,33 @@ public final class DelegateProxy {
 
     /**
      * {@return Return value of {@link
-     *          DelegateMethod#AZURESTORAGERESOLVER_BLOB_KEY}. May be
+     *          DelegateMethod#AZURESTORAGESOURCE_BLOB_KEY }. May be
      *          {@literal null}.
      */
-    public String getAzureStorageResolverBlobKey() throws ScriptException {
-        Object result = invoke(DelegateMethod.AZURESTORAGERESOLVER_BLOB_KEY);
+    public String getAzureStorageSourceBlobKey() throws ScriptException {
+        Object result = invoke(DelegateMethod.AZURESTORAGESOURCE_BLOB_KEY);
         return (String) result;
     }
 
     /**
      * @return Return value of {@link
-     *         DelegateMethod#FILESYSTEMRESOLVER_PATHMAME}. May be {@literal
+     *         DelegateMethod#FILESYSTEMSOURCE_PATHMAME}. May be {@literal
      *         null}.
      */
-    public String getFilesystemResolverPathname() throws ScriptException {
-        Object result = invoke(DelegateMethod.FILESYSTEMRESOLVER_PATHMAME);
+    public String getFilesystemSourcePathname() throws ScriptException {
+        Object result = invoke(DelegateMethod.FILESYSTEMSOURCE_PATHMAME);
         return (String) result;
     }
 
     /**
      * @return Map based on the return value of {@link
-     *         DelegateMethod#HTTPRESOLVER_RESOURCE_INFO}, or an empty map if
+     *         DelegateMethod#HTTPSOURCE_RESOURCE_INFO}, or an empty map if
      *         it returned {@literal nil}.
      */
     @SuppressWarnings("unchecked")
-    public Map<String,String> getHttpResolverResourceInfo()
+    public Map<String,String> getHttpSourceResourceInfo()
             throws ScriptException {
-        Object result = invoke(DelegateMethod.HTTPRESOLVER_RESOURCE_INFO);
+        Object result = invoke(DelegateMethod.HTTPSOURCE_RESOURCE_INFO);
         if (result instanceof String) {
             Map<String,String> map = new HashMap<>();
             map.put("uri", (String) result);
@@ -214,27 +214,27 @@ public final class DelegateProxy {
 
     /**
      * @return Return value of {@link
-     *         DelegateMethod#JDBCRESOLVER_DATABASE_IDENTIFIER}. May be
+     *         DelegateMethod#JDBCSOURCE_DATABASE_IDENTIFIER}. May be
      *         {@literal null}.
      */
-    public String getJdbcResolverDatabaseIdentifier() throws ScriptException {
-        Object result = invoke(DelegateMethod.JDBCRESOLVER_DATABASE_IDENTIFIER);
+    public String getJdbcSourceDatabaseIdentifier() throws ScriptException {
+        Object result = invoke(DelegateMethod.JDBCSOURCE_DATABASE_IDENTIFIER);
         return (String) result;
     }
 
     /**
-     * @return Return value of {@link DelegateMethod#JDBCRESOLVER_MEDIA_TYPE}.
+     * @return Return value of {@link DelegateMethod#JDBCSOURCE_MEDIA_TYPE}.
      */
-    public String getJdbcResolverMediaType() throws ScriptException {
-        Object result = invoke(DelegateMethod.JDBCRESOLVER_MEDIA_TYPE);
+    public String getJdbcSourceMediaType() throws ScriptException {
+        Object result = invoke(DelegateMethod.JDBCSOURCE_MEDIA_TYPE);
         return (String) result;
     }
 
     /**
-     * @return Return value of {@link DelegateMethod#JDBCRESOLVER_LOOKUP_SQL}.
+     * @return Return value of {@link DelegateMethod#JDBCSOURCE_LOOKUP_SQL}.
      */
-    public String getJdbcResolverLookupSQL() throws ScriptException {
-        Object result = invoke(DelegateMethod.JDBCRESOLVER_LOOKUP_SQL);
+    public String getJdbcSourceLookupSQL() throws ScriptException {
+        Object result = invoke(DelegateMethod.JDBCSOURCE_LOOKUP_SQL);
         return (String) result;
     }
 
@@ -278,21 +278,21 @@ public final class DelegateProxy {
     }
 
     /**
-     * @return Return value of {@link DelegateMethod#RESOLVER}. May be
+     * @return Return value of {@link DelegateMethod#SOURCE}. May be
      *         {@literal null}.
      */
-    public String getResolver() throws ScriptException {
-        Object result = invoke(DelegateMethod.RESOLVER);
+    public String getSource() throws ScriptException {
+        Object result = invoke(DelegateMethod.SOURCE);
         return (String) result;
     }
 
     /**
-     * @return Return value of {@link DelegateMethod#S3RESOLVER_OBJECT_INFO},
+     * @return Return value of {@link DelegateMethod#S3SOURCE_OBJECT_INFO},
      *         or an empty map if it returned {@literal nil}.
      */
     @SuppressWarnings("unchecked")
-    public Map<String,String> getS3ResolverObjectInfo() throws ScriptException {
-        Object result = invoke(DelegateMethod.S3RESOLVER_OBJECT_INFO);
+    public Map<String,String> getS3SourceObjectInfo() throws ScriptException {
+        Object result = invoke(DelegateMethod.S3SOURCE_OBJECT_INFO);
         if (result != null) {
             return (Map<String, String>) result;
         }

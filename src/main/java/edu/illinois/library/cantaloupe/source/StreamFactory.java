@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resolver;
+package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.processor.imageio.ClosingMemoryCacheImageInputStream;
 
@@ -9,7 +9,7 @@ import java.io.InputStream;
 /**
  * Provides input streams to read from.
  */
-public interface StreamSource {
+public interface StreamFactory {
 
     /**
      * <p>Provides a new {@link ImageInputStream} to read from.</p>

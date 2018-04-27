@@ -9,7 +9,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.source.StreamFactory;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
@@ -252,7 +252,7 @@ abstract class AbstractIIOImageReader {
         } else if (source instanceof Path) {
             setSource((Path) source);
         } else {
-            setSource((StreamSource) source);
+            setSource((StreamFactory) source);
         }
     }
 
@@ -276,15 +276,15 @@ abstract class AbstractIIOImageReader {
         createReader();
     }
 
-    public void setSource(StreamSource streamSource) throws IOException {
+    public void setSource(StreamFactory streamFactory) throws IOException {
         dispose();
-        source = streamSource;
+        source = streamFactory;
         try {
             if (inputStream != null) {
                 IOUtils.closeQuietly(inputStream);
             }
         } finally {
-            inputStream = streamSource.newImageInputStream();
+            inputStream = streamFactory.newImageInputStream();
         }
         createReader();
     }

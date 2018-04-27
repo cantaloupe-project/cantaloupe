@@ -11,9 +11,9 @@ public enum DelegateMethod {
     AUTHORIZED("authorized?"),
 
     /**
-     * Called by {@link DelegateProxy#getAzureStorageResolverBlobKey()}.
+     * Called by {@link DelegateProxy#getAzureStorageSourceBlobKey()}.
      */
-    AZURESTORAGERESOLVER_BLOB_KEY("azurestorageresolver_blob_key"),
+    AZURESTORAGESOURCE_BLOB_KEY("azurestoragesource_blob_key"),
 
     /**
      * Called by {@link DelegateProxy#getExtraIIIFInformationResponseKeys()}.
@@ -21,29 +21,29 @@ public enum DelegateMethod {
     EXTRA_IIIF2_INFORMATION_RESPONSE_KEYS("extra_iiif2_information_response_keys"),
 
     /**
-     * Called by {@link DelegateProxy#getFilesystemResolverPathname()}.
+     * Called by {@link DelegateProxy#getFilesystemSourcePathname()}.
      */
-    FILESYSTEMRESOLVER_PATHMAME("filesystemresolver_pathname"),
+    FILESYSTEMSOURCE_PATHMAME("filesystemsource_pathname"),
 
     /**
-     * Called by {@link DelegateProxy#getHttpResolverResourceInfo()}.
+     * Called by {@link DelegateProxy#getHttpSourceResourceInfo()}.
      */
-    HTTPRESOLVER_RESOURCE_INFO("httpresolver_resource_info"),
+    HTTPSOURCE_RESOURCE_INFO("httpsource_resource_info"),
 
     /**
-     * Called by {@link DelegateProxy#getJdbcResolverDatabaseIdentifier()}.
+     * Called by {@link DelegateProxy#getJdbcSourceDatabaseIdentifier()}.
      */
-    JDBCRESOLVER_DATABASE_IDENTIFIER("jdbcresolver_database_identifier"),
+    JDBCSOURCE_DATABASE_IDENTIFIER("jdbcsource_database_identifier"),
 
     /**
-     * Called by {@link DelegateProxy#getJdbcResolverMediaType()}.
+     * Called by {@link DelegateProxy#getJdbcSourceMediaType()}.
      */
-    JDBCRESOLVER_MEDIA_TYPE("jdbcresolver_media_type"),
+    JDBCSOURCE_MEDIA_TYPE("jdbcsource_media_type"),
 
     /**
-     * Called by {@link DelegateProxy#getJdbcResolverLookupSQL()}.
+     * Called by {@link DelegateProxy#getJdbcSourceLookupSQL()}.
      */
-    JDBCRESOLVER_LOOKUP_SQL("jdbcresolver_lookup_sql"),
+    JDBCSOURCE_LOOKUP_SQL("jdbcsource_lookup_sql"),
 
     /**
      * Called by {@link DelegateProxy#getOverlayProperties()}.
@@ -61,14 +61,14 @@ public enum DelegateMethod {
     REDIRECT("redirect"),
 
     /**
-     * Called by {@link DelegateProxy#getResolver()}.
+     * Called by {@link DelegateProxy#getSource()}.
      */
-    RESOLVER("resolver"),
+    SOURCE("source"),
 
     /**
-     * Called by {@link DelegateProxy#getS3ResolverObjectInfo()}.
+     * Called by {@link DelegateProxy#getS3SourceObjectInfo()}.
      */
-    S3RESOLVER_OBJECT_INFO("s3resolver_object_info");
+    S3SOURCE_OBJECT_INFO("s3source_object_info");
 
     private String methodName;
 

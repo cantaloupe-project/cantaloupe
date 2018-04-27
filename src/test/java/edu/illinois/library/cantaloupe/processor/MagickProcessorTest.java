@@ -8,8 +8,8 @@ import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
-import edu.illinois.library.cantaloupe.resolver.PathStreamSource;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.source.PathStreamFactory;
+import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -105,9 +105,9 @@ abstract class MagickProcessorTest extends AbstractProcessorTest {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final StreamProcessor instance = (StreamProcessor) newInstance();
         instance.setSourceFormat(Format.JPG);
-        StreamSource streamSource = new PathStreamSource(
+        StreamFactory streamFactory = new PathStreamFactory(
                 TestUtil.getImage("jpg-xmp.jpg"));
-        instance.setStreamSource(streamSource);
+        instance.setStreamFactory(streamFactory);
         instance.process(ops, imageInfo, outputStream);
 
         ByteArrayInputStream inputStream =
@@ -153,9 +153,9 @@ abstract class MagickProcessorTest extends AbstractProcessorTest {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final StreamProcessor instance = (StreamProcessor) newInstance();
         instance.setSourceFormat(Format.JPG);
-        StreamSource streamSource = new PathStreamSource(
+        StreamFactory streamFactory = new PathStreamFactory(
                 TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
-        instance.setStreamSource(streamSource);
+        instance.setStreamFactory(streamFactory);
         instance.process(ops, imageInfo, outputStream);
 
         ByteArrayInputStream inputStream =
@@ -180,9 +180,9 @@ abstract class MagickProcessorTest extends AbstractProcessorTest {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final StreamProcessor instance = (StreamProcessor) newInstance();
         instance.setSourceFormat(Format.JPG);
-        StreamSource streamSource = new PathStreamSource(
+        StreamFactory streamFactory = new PathStreamFactory(
                 TestUtil.getImage("jpg-rgb-64x56x8-baseline.jpg"));
-        instance.setStreamSource(streamSource);
+        instance.setStreamFactory(streamFactory);
         instance.process(ops, imageInfo, outputStream);
 
         ByteArrayInputStream inputStream =

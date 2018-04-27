@@ -9,11 +9,10 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.InitializationException;
 import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
-import edu.illinois.library.cantaloupe.resolver.Resolver;
-import edu.illinois.library.cantaloupe.resolver.ResolverFactory;
+import edu.illinois.library.cantaloupe.source.Source;
+import edu.illinois.library.cantaloupe.source.SourceFactory;
 import org.restlet.data.Header;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
@@ -37,7 +36,7 @@ import java.util.stream.Collectors;
 public class AdminResource extends AbstractAdminResource {
 
     /**
-     * <p>Resolvers, caches, etc. can't be accessed from the templates, so
+     * <p>Sources, caches, etc. can't be accessed from the templates, so
      * instances of this class will proxy for them.</p>
      *
      * <p>N.B.: Velocity requires this class to be public.</p>
@@ -141,30 +140,30 @@ public class AdminResource extends AbstractAdminResource {
                 configFile.getAbsolutePath() : "None");
 
         ////////////////////////////////////////////////////////////////////
-        /////////////////////// resolvers section //////////////////////////
+        //////////////////////// sources section ///////////////////////////
         ////////////////////////////////////////////////////////////////////
 
-        ResolverFactory.SelectionStrategy selectionStrategy =
-                new ResolverFactory().getSelectionStrategy();
-        vars.put("resolverSelectionStrategy", selectionStrategy);
+        SourceFactory.SelectionStrategy selectionStrategy =
+                new SourceFactory().getSelectionStrategy();
+        vars.put("sourceSelectionStrategy", selectionStrategy);
 
-        if (selectionStrategy.equals(ResolverFactory.SelectionStrategy.STATIC)) {
+        if (selectionStrategy.equals(SourceFactory.SelectionStrategy.STATIC)) {
             try {
-                Resolver resolver = new ResolverFactory().newResolver(
+                Source source = new SourceFactory().newSource(
                         new Identifier("irrelevant"),
                         getDelegateProxy());
-                vars.put("currentResolver", new ObjectProxy(resolver));
+                vars.put("currentSource", new ObjectProxy(source));
             } catch (Exception e) {
                 // nothing we can do
             }
         }
 
-        List<ObjectProxy> sortedProxies = ResolverFactory.getAllResolvers().
+        List<ObjectProxy> sortedProxies = SourceFactory.getAllSources().
                 stream().
                 map(ObjectProxy::new).
                 sorted(Comparator.comparing(ObjectProxy::getName)).
                 collect(Collectors.toList());
-        vars.put("resolvers", sortedProxies);
+        vars.put("sources", sortedProxies);
 
         ////////////////////////////////////////////////////////////////////
         ////////////////////// processors section //////////////////////////

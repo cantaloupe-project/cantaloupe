@@ -69,7 +69,7 @@
       <artifactId>logback-core</artifactId>
       <version>1.2.3</version>
     </dependency>
-    <!-- Used by S3Resolver and S3Cache -->
+    <!-- Used by S3Source and S3Cache -->
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-core</artifactId>
@@ -99,7 +99,7 @@
       <artifactId>protobuf-java</artifactId>
       <version>3.5.1</version>
     </dependency>
-    <!-- Used by JdbcResolverTest and JdbcCacheTest -->
+    <!-- Used by JdbcSourceTest and JdbcCacheTest -->
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
@@ -112,13 +112,13 @@
       <artifactId>filters</artifactId>
       <version>2.0.235</version>
     </dependency>
-    <!-- Used by AzureStorageResolver and AzureStorageCache-->
+    <!-- Used by AzureStorageSource and AzureStorageCache-->
     <dependency>
       <groupId>com.microsoft.azure</groupId>
       <artifactId>azure-storage</artifactId>
       <version>5.2.0</version>
     </dependency>
-    <!-- Provides a JDBC connection pool for JdbcResolver and JdbcCache -->
+    <!-- Provides a JDBC connection pool for JdbcSource and JdbcCache -->
     <dependency>
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
@@ -136,7 +136,7 @@
       <artifactId>commons-io</artifactId>
       <version>2.4</version>
     </dependency>
-    <!-- Used by S3ResolverTest and S3CacheTest -->
+    <!-- Used by S3SourceTest and S3CacheTest -->
     <dependency>
       <groupId>io.findify</groupId>
       <artifactId>s3mock_2.12</artifactId>
@@ -287,7 +287,7 @@
       <artifactId>jetty-alpn-java-server</artifactId>
       <version>${jetty.version}</version>
     </dependency>
-    <!-- Used by HttpResolver -->
+    <!-- Used by HttpSource -->
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-http</artifactId>

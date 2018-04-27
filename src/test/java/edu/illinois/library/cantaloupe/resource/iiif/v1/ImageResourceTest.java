@@ -311,27 +311,27 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testGETResolverCheckAccessNotCalledWithSourceCacheHit()
+    public void testGETSourceCheckAccessNotCalledWithSourceCacheHit()
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
-        tester.testResolverCheckAccessNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
+        tester.testSourceCheckAccessNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
     }
 
     @Test
-    public void testGETResolverGetSourceFormatNotCalledWithSourceCacheHit()
+    public void testGETSourceGetSourceFormatNotCalledWithSourceCacheHit()
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
-        tester.testResolverGetSourceFormatNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
+        tester.testSourceGetSourceFormatNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
     }
 
     /**
-     * Checks that the server responds with HTTP 500 when a non-FileResolver is
+     * Checks that the server responds with HTTP 500 when a non-FileSource is
      * used with a non-StreamProcessor.
      */
     @Test
-    public void testGETResolverProcessorCompatibility() {
+    public void testGETSourceProcessorCompatibility() {
         URI uri = getHTTPURI("/jp2/full/full/0/color.jpg");
-        tester.testResolverProcessorCompatibility(
+        tester.testSourceProcessorCompatibility(
                 uri, appServer.getHTTPHost(), appServer.getHTTPPort());
     }
 

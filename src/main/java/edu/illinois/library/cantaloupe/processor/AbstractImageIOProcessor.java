@@ -8,7 +8,7 @@ import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.source.StreamFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +32,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
             availableOutputFormats();
 
     protected Path sourceFile;
-    protected StreamSource streamSource;
+    protected StreamFactory streamFactory;
 
     /**
      * Access via {@link #getReader()}.
@@ -114,15 +114,15 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
     }
 
     /**
-     * ({@link #setSourceFile} or {@link #setStreamSource}) and
+     * ({@link #setSourceFile} or {@link #setStreamFactory}) and
      * {@link #setSourceFormat(Format)} must be invoked first.
      */
     protected ImageReader getReader() throws IOException {
         if (reader == null) {
             ImageReaderFactory rf = new ImageReaderFactory();
 
-            if (streamSource != null) {
-                reader = rf.newImageReader(streamSource, sourceFormat);
+            if (streamFactory != null) {
+                reader = rf.newImageReader(streamFactory, sourceFormat);
             } else {
                 reader = rf.newImageReader(sourceFile, sourceFormat);
             }
@@ -134,20 +134,20 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
         return sourceFile;
     }
 
-    public StreamSource getStreamSource() {
-        return streamSource;
+    public StreamFactory getStreamFactory() {
+        return streamFactory;
     }
 
     public void setSourceFile(Path sourceFile) {
         close();
-        this.streamSource = null;
+        this.streamFactory = null;
         this.sourceFile = sourceFile;
     }
 
-    public void setStreamSource(StreamSource streamSource) {
+    public void setStreamFactory(StreamFactory streamFactory) {
         close();
         this.sourceFile = null;
-        this.streamSource = streamSource;
+        this.streamFactory = streamFactory;
     }
 
 }

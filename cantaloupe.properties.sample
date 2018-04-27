@@ -114,133 +114,131 @@ endpoint.api.username =
 endpoint.api.secret =
 
 ###########################################################################
-# RESOLVERS
+# SOURCES
 ###########################################################################
 
-# Specifies one resolver to translate the identifier in the URL to an image
-# source for all requests. Available values are `FilesystemResolver`,
-# `HttpResolver`, `JdbcResolver`, `S3Resolver`, and `AzureStorageResolver`.
-resolver.static = FilesystemResolver
+# Uses one source for all requests. Available values are `FilesystemSource`,
+# `HttpSource`, `JdbcSource`, `S3Source`, and `AzureStorageSource`.
+source.static = FilesystemSource
 
-# If true, `resolver.static` will be overridden, and the
-# `get_resolver(identifier)` delegate script method will be used to select
-# a resolver per-request.
-resolver.delegate = false
+# If true, `source.static` will be overridden, and the `source()` delegate
+# method will be used to select a source per-request.
+source.delegate = false
 
 #----------------------------------------
-# FilesystemResolver
+# FilesystemSource
 #----------------------------------------
 
 # How to look up files. Allowed values are `BasicLookupStrategy` and
 # `ScriptLookupStrategy`. ScriptLookupStrategy uses the delegate script for
 # dynamic lookups; see the user manual.
-FilesystemResolver.lookup_strategy = BasicLookupStrategy
+FilesystemSource.lookup_strategy = BasicLookupStrategy
 
 # Server-side path that will be prefixed to the identifier in the URL.
 # Trailing slash is important!
-FilesystemResolver.BasicLookupStrategy.path_prefix = /home/myself/images/
+FilesystemSource.BasicLookupStrategy.path_prefix = /home/myself/images/
 
 # Server-side path or extension that will be suffixed to the identifier in
 # the URL.
-FilesystemResolver.BasicLookupStrategy.path_suffix =
+FilesystemSource.BasicLookupStrategy.path_suffix =
 
 #----------------------------------------
-# HttpResolver
+# HttpSource
 #----------------------------------------
 
-HttpResolver.trust_all_certs = false
-HttpResolver.request_timeout = 10
+HttpSource.trust_all_certs = false
+HttpSource.request_timeout = 10
 
-# Tells HttpResolver how to look up resources. Allowed values are
+# Tells HttpSource how to look up resources. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
-# uses the delegate script for dynamic lookups; see the user manual.
-HttpResolver.lookup_strategy = BasicLookupStrategy
+# uses a delegate method for dynamic lookups; see the user manual.
+HttpSource.lookup_strategy = BasicLookupStrategy
 
 # URL that will be prefixed to the identifier in the request URL.
 # Trailing slash is important!
-HttpResolver.BasicLookupStrategy.url_prefix = http://localhost/images/
+HttpSource.BasicLookupStrategy.url_prefix = http://localhost/images/
 
 # Path, extension, query string, etc. that will be suffixed to the
 # identifier in the request URL.
-HttpResolver.BasicLookupStrategy.url_suffix =
+HttpSource.BasicLookupStrategy.url_suffix =
 
 # Enables access to resources that require HTTP Basic authentication.
-HttpResolver.BasicLookupStrategy.auth.basic.username =
-HttpResolver.BasicLookupStrategy.auth.basic.secret =
+HttpSource.BasicLookupStrategy.auth.basic.username =
+HttpSource.BasicLookupStrategy.auth.basic.secret =
 
 #----------------------------------------
-# JdbcResolver
+# JdbcSource
 #----------------------------------------
 
-# Note: JdbcResolver requires some delegate methods to be implemented in
+# Note: JdbcSource requires some delegate methods to be implemented in
 # addition to the configuration here, and a JDBC driver to be installed on
 # the classpath; see the user manual.
 
 # !!
-JdbcResolver.url = jdbc:postgresql://localhost:5432/my_database
+JdbcSource.url = jdbc:postgresql://localhost:5432/my_database
 # !!
-JdbcResolver.user = postgres
+JdbcSource.user = postgres
 # !!
-JdbcResolver.password = postgres
+JdbcSource.password = postgres
 
 # !! Connection timeout in seconds.
-JdbcResolver.connection_timeout = 10
+JdbcSource.connection_timeout = 10
 
 #----------------------------------------
-# S3Resolver
+# S3Source
 #----------------------------------------
 
 # !! Endpoint URI.
 # For AWS endpoints, see:
 # https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
-S3Resolver.endpoint =
+S3Source.endpoint =
 
 # !! Credentials for your AWS account.
 # See: http://aws.amazon.com/security-credentials
 # Note that this info can be obtained from elsewhere rather than setting
 # it here; see the user manual.
-S3Resolver.access_key_id =
-S3Resolver.secret_key =
+S3Source.access_key_id =
+S3Source.secret_key =
 
 # !! Maximum number of concurrent HTTP connections to AWS. Leave blank to
 # use the default.
-S3Resolver.max_connections =
+S3Source.max_connections =
 
-# Tells S3Resolver how to look up objects. Allowed values are
+# Tells S3Source how to look up objects. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
-# uses the delegate script for dynamic lookups; see the user manual.
-S3Resolver.lookup_strategy = BasicLookupStrategy
+# uses a delegate method for dynamic lookups; see the user manual.
+S3Source.lookup_strategy = BasicLookupStrategy
 
 # !! Name of the bucket containing images to be served.
-S3Resolver.BasicLookupStrategy.bucket.name =
+S3Source.BasicLookupStrategy.bucket.name =
 
 # Path within the bucket that will be prefixed to the identifier in the URL.
 # Trailing slash is important!
-S3Resolver.BasicLookupStrategy.path_prefix = /path
+S3Source.BasicLookupStrategy.path_prefix = /path
 
 # Path or extension that will be suffixed to the identifier in the URL.
-S3Resolver.BasicLookupStrategy.path_suffix =
+S3Source.BasicLookupStrategy.path_suffix =
 
 #----------------------------------------
-# AzureStorageResolver
+# AzureStorageSource
 #----------------------------------------
 
 # !! Name of your Azure account.
 # Leave blank if using URI with a SAS token in your object key.
-AzureStorageResolver.account_name =
+AzureStorageSource.account_name =
 
 # !! Key of your Azure account.
 # Leave blank if using URI with a SAS token in your object key.
-AzureStorageResolver.account_key =
+AzureStorageSource.account_key =
 
 # !! Name of the container containing images to be served.
 # Leave blank if using URI with the container in your object key.
-AzureStorageResolver.container_name =
+AzureStorageSource.container_name =
 
-# Tells AzureStorageResolver how to look up objects. Allowed values are
+# Tells AzureStorageSource how to look up objects. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
-# uses the delegate script for dynamic lookups; see the user manual.
-AzureStorageResolver.lookup_strategy = BasicLookupStrategy
+# uses a delegate method for dynamic lookups; see the user manual.
+AzureStorageSource.lookup_strategy = BasicLookupStrategy
 
 ###########################################################################
 # PROCESSORS
@@ -279,8 +277,8 @@ processor.fallback = Java2dProcessor
 # Global Processor Configuration
 #----------------------------------------
 
-# Controls how content is fed to processors from stream-based resolvers.
-# * `StreamStrategy` will try to stream a source image from a resolver when
+# Controls how content is fed to processors from stream-based sources.
+# * `StreamStrategy` will try to stream a source image from a source when
 #   possible, and use `processor.fallback_retrieval_strategy` otherwise.
 # * `DownloadStrategy` will download it to a temporary file, and delete
 #   it after the request is complete.
@@ -289,7 +287,7 @@ processor.fallback = Java2dProcessor
 #   lot better than DownloadStrategy if you can spare the disk space.)
 processor.stream_retrieval_strategy = StreamStrategy
 
-# Controls how an incompatible StreamResolver + FileProcessor combination is
+# Controls how an incompatible StreamSource + FileProcessor combination is
 # dealt with.
 # * `DownloadStrategy` and `CacheStrategy` work the same as above.
 # * `AbortStrategy` causes the request to fail.
@@ -437,7 +435,7 @@ cache.server.derivative.ttl_seconds = 2592000
 # independently or in front of a "level 2" derivative cache (if enabled).
 cache.server.info.enabled = true
 
-# If true, when a resolver reports that the requested source image has gone
+# If true, when a source reports that the requested source image has gone
 # missing, all cached information relating to it (if any) will be deleted.
 # (This is effectively always false when cache.server.resolve_first is also
 # false.)

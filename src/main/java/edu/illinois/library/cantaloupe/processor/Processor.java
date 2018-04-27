@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.resolver.StreamSource;
+import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 import java.awt.Dimension;
@@ -20,7 +20,7 @@ import java.util.Set;
  * <p>Implementations must implement {@link FileProcessor} and/or
  * {@link StreamProcessor} and can assume that their source will be set (via
  * {@link FileProcessor#setSourceFile} or
- * {@link StreamProcessor#setStreamSource}) before any other methods are
+ * {@link StreamProcessor#setStreamFactory}) before any other methods are
  * called.</p>
  */
 public interface Processor extends AutoCloseable {
@@ -104,7 +104,7 @@ public interface Processor extends AutoCloseable {
      *         <ul>
      *             <li>If {@link FileProcessor#setSourceFile(Path)} has been
      *             called, but not {@link
-     *             StreamProcessor#setStreamSource(StreamSource)},
+     *             StreamProcessor#setStreamFactory(StreamFactory)},
      *             implementations should read from a file.</li>
      *             <li>If vice versa, or if both have been called,
      *             implementations should read from a stream.</li>

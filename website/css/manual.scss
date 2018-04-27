@@ -18,8 +18,8 @@ nav a:hover {
   color: #5bc0de !important;
 }
 
-.list-group-item-action.active a, .bg-success a, .bg-warning a, .bg-danger a, {
-  color: white;
+.list-group-item-action.active a, .bg-success a, .bg-warning a, .bg-danger a, .btn-primary {
+  color: white !important;
 }
 
 .bg-primary, .list-group-item.active, .alert-primary {
@@ -81,6 +81,3 @@ figcaption {
   font-size: 0.9em;
   font-style: italic;
   text-align: center; }
-
-.alert-danger code {
-  color: white; }
