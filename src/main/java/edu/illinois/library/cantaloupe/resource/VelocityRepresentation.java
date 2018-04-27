@@ -50,8 +50,8 @@ public class VelocityRepresentation extends OutputRepresentation {
         VelocityContext context = new VelocityContext();
 
         if (templateVars != null) {
-            for (String key : templateVars.keySet()) {
-                context.put(key, templateVars.get(key));
+            for (Map.Entry<String,Object> entry : templateVars.entrySet()) {
+                context.put(entry.getKey(), entry.getValue());
             }
         }
 
