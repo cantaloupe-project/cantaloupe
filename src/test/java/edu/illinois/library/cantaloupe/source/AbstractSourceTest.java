@@ -67,17 +67,17 @@ abstract class AbstractSourceTest extends BaseTest {
         }
     }
 
-    /* getSourceFormat() */
+    /* getFormat() */
 
     @Test
-    public void testGetSourceFormatInvokedMultipleTimes() throws Exception {
+    public void testGetFormatInvokedMultipleTimes() throws Exception {
         try {
             initializeEndpoint();
 
             Source instance = newInstance();
-            instance.getSourceFormat();
-            instance.getSourceFormat();
-            instance.getSourceFormat();
+            instance.getFormat();
+            instance.getFormat();
+            instance.getFormat();
         } finally {
             destroyEndpoint();
         }

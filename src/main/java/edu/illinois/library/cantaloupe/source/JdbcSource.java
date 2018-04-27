@@ -150,7 +150,7 @@ class JdbcSource extends AbstractSource implements StreamSource {
     }
 
     @Override
-    public Format getSourceFormat() throws IOException {
+    public Format getFormat() throws IOException {
         if (sourceFormat == null) {
             try {
                 String methodResult = getMediaType();

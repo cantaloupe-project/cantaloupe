@@ -151,12 +151,12 @@ public class JdbcSourceTest extends AbstractSourceTest {
         instance.checkAccess();
     }
 
-    /* getSourceFormat() */
+    /* getFormat() */
 
     @Test
     public void testGetSourceFormatWithExtensionInIdentifierWithMediaTypeInDB()
             throws Exception {
-        assertEquals(Format.JPG, instance.getSourceFormat());
+        assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
@@ -170,7 +170,7 @@ public class JdbcSourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
-        assertEquals(Format.JPG, instance.getSourceFormat());
+        assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
@@ -184,7 +184,7 @@ public class JdbcSourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
-        assertEquals(Format.JPG, instance.getSourceFormat());
+        assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
@@ -198,7 +198,7 @@ public class JdbcSourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
-        assertEquals(Format.JPG, instance.getSourceFormat());
+        assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
@@ -211,7 +211,7 @@ public class JdbcSourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
-        assertEquals(Format.UNKNOWN, instance.getSourceFormat());
+        assertEquals(Format.UNKNOWN, instance.getFormat());
     }
 
     /* getDatabaseIdentifier() */

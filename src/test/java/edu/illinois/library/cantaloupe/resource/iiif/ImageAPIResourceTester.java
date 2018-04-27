@@ -269,7 +269,7 @@ public class ImageAPIResourceTester {
         }
 
         @Override
-        public Format getSourceFormat() {
+        public Format getFormat() {
             return Format.JPG;
         }
 
@@ -319,7 +319,7 @@ public class ImageAPIResourceTester {
     }
 
     /**
-     * Used by {@link #testSourceGetSourceFormatNotCalledWithSourceCacheHit(Identifier, URI)}.
+     * Used by {@link #testSourceGetFormatNotCalledWithSourceCacheHit(Identifier, URI)}.
      */
     public static class NotReadingSourceFormatSource implements StreamSource {
 
@@ -327,8 +327,8 @@ public class ImageAPIResourceTester {
         public void checkAccess() {}
 
         @Override
-        public Format getSourceFormat() throws IOException {
-            throw new IOException("getSourceFormat() called!");
+        public Format getFormat() throws IOException {
+            throw new IOException("getFormat() called!");
         }
 
         @Override
@@ -344,8 +344,8 @@ public class ImageAPIResourceTester {
 
     }
 
-    public void testSourceGetSourceFormatNotCalledWithSourceCacheHit(Identifier identifier,
-                                                                     URI uri) throws Exception {
+    public void testSourceGetFormatNotCalledWithSourceCacheHit(Identifier identifier,
+                                                               URI uri) throws Exception {
         // Set up the environment to use the source cache, not resolve first,
         // and use a non-FileSource.
         Configuration config = Configuration.getInstance();
@@ -369,7 +369,7 @@ public class ImageAPIResourceTester {
         Client client = newClient(uri);
         try {
             client.send();
-            // We are expecting NotReadingSourceFormatSource.getSourceFormat()
+            // We are expecting NotReadingSourceFormatSource.getFormat()
             // to not throw an exception, which would cause a 500 response.
         } finally {
             client.stop();

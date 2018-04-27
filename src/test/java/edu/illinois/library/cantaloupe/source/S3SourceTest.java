@@ -337,67 +337,67 @@ public class S3SourceTest extends AbstractSourceTest {
         assertEquals("id", instance.getObjectInfo().getKey());
     }
 
-    /* getSourceFormat() */
+    /* getFormat() */
 
     @Test
     public void testGetSourceFormatUsingBasicLookupStrategy()
             throws IOException {
-        assertEquals(Format.JPG, instance.getSourceFormat());
+        assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
     public void testGetSourceFormatUsingScriptLookupStrategy()
             throws IOException {
         useScriptLookupStrategy();
-        assertEquals(Format.JPG, instance.getSourceFormat());
+        assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
     public void testGetSourceFormatWithContentTypeAndRecognizedExtensionInObjectKey()
             throws IOException {
         instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION));
-        assertEquals(Format.JPG, instance.getSourceFormat());
+        assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
     public void testGetSourceFormatWithContentTypeAndUnrecognizedExtensionInObjectKey()
             throws IOException {
         instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION));
-        assertEquals(Format.JPG, instance.getSourceFormat());
+        assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
     public void testGetSourceFormatWithContentTypeAndNoExtensionInObjectKey()
             throws IOException {
         instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_BUT_NO_EXTENSION));
-        assertEquals(Format.JPG, instance.getSourceFormat());
+        assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
     public void testGetSourceFormatWithNoContentTypeButRecognizedExtensionInObjectKey()
             throws IOException {
         instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION));
-        assertEquals(Format.JPG, instance.getSourceFormat());
+        assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
     public void testGetSourceFormatWithNoContentTypeAndUnrecognizedExtensionInObjectKey()
             throws IOException {
         instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION));
-        assertEquals(Format.JPG, instance.getSourceFormat());
+        assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
     public void testGetSourceFormatWithNoContentTypeOrExtensionInObjectKey()
             throws IOException {
         instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION));
-        assertEquals(Format.JPG, instance.getSourceFormat());
+        assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
     public void testGetSourceFormatWithNonImage() throws IOException {
         instance.setIdentifier(new Identifier(NON_IMAGE_KEY));
-        assertEquals(Format.UNKNOWN, instance.getSourceFormat());
+        assertEquals(Format.UNKNOWN, instance.getFormat());
     }
 
     /* newStreamFactory() */

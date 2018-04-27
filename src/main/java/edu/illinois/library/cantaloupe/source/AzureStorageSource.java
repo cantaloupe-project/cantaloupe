@@ -209,7 +209,7 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
     }
 
     @Override
-    public Format getSourceFormat() throws IOException {
+    public Format getFormat() throws IOException {
         if (sourceFormat == null) {
             final String key = getObjectKey();
 

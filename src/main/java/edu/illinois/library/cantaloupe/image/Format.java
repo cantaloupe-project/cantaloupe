@@ -213,8 +213,8 @@ public enum Format {
     /**
      * <p>Attempts to infer a format from the given identifier.</p>
      *
-     * <p>It is usually more reliable (but also maybe more expensive) to get
-     * this information from {@link Source#getSourceFormat()}.</p>
+     * <p>It is usually more reliable (but also maybe more expensive) to
+     * obtain this information from {@link Source#getFormat()}.</p>
      *
      * @param identifier
      * @return The source format corresponding to the given identifier,
@@ -228,8 +228,8 @@ public enum Format {
     /**
      * <p>Attempts to infer a format from the given pathname.</p>
      *
-     * <p>It is usually more reliable (but also maybe more expensive) to get
-     * this information from {@link Source#getSourceFormat()}.</p>
+     * <p>It is usually more reliable (but also maybe more expensive) to
+     * obtain this information from {@link Source#getFormat()}.</p>
      *
      * @param pathname
      * @return The source format corresponding to the given identifier,

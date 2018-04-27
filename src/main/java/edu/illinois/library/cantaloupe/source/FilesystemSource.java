@@ -125,7 +125,7 @@ class FilesystemSource extends AbstractSource
     }
 
     @Override
-    public Format getSourceFormat() throws IOException {
+    public Format getFormat() throws IOException {
         if (sourceFormat == null) {
             sourceFormat = Format.inferFormat(identifier);
             if (sourceFormat.equals(Format.UNKNOWN)) {

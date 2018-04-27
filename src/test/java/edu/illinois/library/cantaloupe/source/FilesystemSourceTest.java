@@ -234,62 +234,62 @@ public class FilesystemSourceTest extends AbstractSourceTest {
         assertEquals(IDENTIFIER.toString(), instance.getPath().toString());
     }
 
-    /* getSourceFormat() */
+    /* getFormat() */
 
     @Test
     public void testGetSourceFormatWithPresentReadableFile() throws Exception {
-        assertEquals(Format.JPG, instance.getSourceFormat());
+        assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
     public void testGetSourceFormatByDetection() throws Exception {
         instance.setIdentifier(new Identifier("bmp"));
-        assertEquals(Format.BMP, instance.getSourceFormat());
+        assertEquals(Format.BMP, instance.getFormat());
 
         instance.setIdentifier(new Identifier("gif"));
-        assertEquals(Format.GIF, instance.getSourceFormat());
+        assertEquals(Format.GIF, instance.getFormat());
 
         instance.setIdentifier(new Identifier("jp2"));
-        assertEquals(Format.JP2, instance.getSourceFormat());
+        assertEquals(Format.JP2, instance.getFormat());
 
         instance.setIdentifier(new Identifier("jpg"));
-        assertEquals(Format.JPG, instance.getSourceFormat());
+        assertEquals(Format.JPG, instance.getFormat());
 
         instance.setIdentifier(new Identifier("pdf"));
-        assertEquals(Format.PDF, instance.getSourceFormat());
+        assertEquals(Format.PDF, instance.getFormat());
 
         instance.setIdentifier(new Identifier("png"));
-        assertEquals(Format.PNG, instance.getSourceFormat());
+        assertEquals(Format.PNG, instance.getFormat());
 
         instance.setIdentifier(new Identifier("tif"));
-        assertEquals(Format.TIF, instance.getSourceFormat());
+        assertEquals(Format.TIF, instance.getFormat());
 
         instance.setIdentifier(new Identifier("txt"));
-        assertEquals(Format.UNKNOWN, instance.getSourceFormat());
+        assertEquals(Format.UNKNOWN, instance.getFormat());
     }
 
     @Test
     public void testGetSourceFormatByInference() throws Exception {
         instance.setIdentifier(new Identifier("bmp-rgb-64x56x8.bmp"));
-        assertEquals(Format.BMP, instance.getSourceFormat());
+        assertEquals(Format.BMP, instance.getFormat());
 
         instance.setIdentifier(new Identifier("gif-rgb-64x56x8.gif"));
-        assertEquals(Format.GIF, instance.getSourceFormat());
+        assertEquals(Format.GIF, instance.getFormat());
 
         instance.setIdentifier(new Identifier("jp2-5res-rgb-64x56x8-monotiled-lossy.jp2"));
-        assertEquals(Format.JP2, instance.getSourceFormat());
+        assertEquals(Format.JP2, instance.getFormat());
 
         instance.setIdentifier(new Identifier("jpg-rgb-64x56x8-baseline.jpg"));
-        assertEquals(Format.JPG, instance.getSourceFormat());
+        assertEquals(Format.JPG, instance.getFormat());
 
         instance.setIdentifier(new Identifier("pdf.pdf"));
-        assertEquals(Format.PDF, instance.getSourceFormat());
+        assertEquals(Format.PDF, instance.getFormat());
 
         instance.setIdentifier(new Identifier("png-rgb-64x56x8.png"));
-        assertEquals(Format.PNG, instance.getSourceFormat());
+        assertEquals(Format.PNG, instance.getFormat());
 
         instance.setIdentifier(new Identifier("tif-rgb-1res-64x56x8-striped-jpeg.tif"));
-        assertEquals(Format.TIF, instance.getSourceFormat());
+        assertEquals(Format.TIF, instance.getFormat());
     }
 
     /* newStreamFactory() */

@@ -302,7 +302,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         }
     }
 
-    /* getSourceFormat() */
+    /* getFormat() */
 
     @Test
     public void testGetSourceFormatUsingBasicLookupStrategyWithValidAuthentication()
@@ -317,7 +317,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         server.start();
 
         instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
-        assertEquals(Format.JPG, instance.getSourceFormat());
+        assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
@@ -352,7 +352,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         server.start();
 
         instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
-        assertEquals(Format.JPG, instance.getSourceFormat());
+        assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
@@ -371,7 +371,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         server.start();
 
         instance.setIdentifier(new Identifier("jpg"));
-        assertEquals(Format.JPG, instance.getSourceFormat());
+        assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
@@ -380,7 +380,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         server.start();
 
         instance.setIdentifier(new Identifier("jpg"));
-        assertEquals(Format.JPG, instance.getSourceFormat());
+        assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
@@ -401,7 +401,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         server.start();
 
         instance.setIdentifier(new Identifier("jpg"));
-        assertEquals(Format.JPG, instance.getSourceFormat());
+        assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
@@ -410,7 +410,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         server.start();
 
         instance.setIdentifier(new Identifier("txt"));
-        assertEquals(Format.UNKNOWN, instance.getSourceFormat());
+        assertEquals(Format.UNKNOWN, instance.getFormat());
     }
 
     private void doTestGetSourceFormatWithPresentReadableImage(
@@ -419,7 +419,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
             server.start();
 
             instance.setIdentifier(identifier);
-            assertEquals(Format.JPG, instance.getSourceFormat());
+            assertEquals(Format.JPG, instance.getFormat());
         } catch (Exception e) {
             fail();
         }
@@ -642,7 +642,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         server.start();
 
         instance.checkAccess();
-        instance.getSourceFormat();
+        instance.getFormat();
 
         StreamFactory source = instance.newStreamFactory();
         try (InputStream is = source.newInputStream()) {

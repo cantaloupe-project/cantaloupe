@@ -139,7 +139,7 @@ public class ImageResource extends IIIF2Resource {
                     sourceFormat = mediaTypes.get(0).toFormat();
                 }
             } else {
-                sourceFormat = source.getSourceFormat();
+                sourceFormat = source.getFormat();
             }
         }
 

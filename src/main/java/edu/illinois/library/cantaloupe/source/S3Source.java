@@ -288,7 +288,7 @@ class S3Source extends AbstractSource implements StreamSource {
     }
 
     @Override
-    public Format getSourceFormat() throws IOException {
+    public Format getFormat() throws IOException {
         if (sourceFormat == null) {
             sourceFormat = Format.UNKNOWN;
 

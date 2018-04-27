@@ -38,12 +38,12 @@ public interface Source {
     void checkAccess() throws IOException;
 
     /**
-     * @return The expected source format of the image corresponding to the
+     * @return The expected format of the image corresponding to the
      *         identifier set by {@link #setIdentifier}, or
      *         {@link Format#UNKNOWN} if unknown; never {@literal null}.
      * @throws IOException if anything goes wrong.
      */
-    Format getSourceFormat() throws IOException;
+    Format getFormat() throws IOException;
 
     /**
      * @param identifier Identifier of a source image.

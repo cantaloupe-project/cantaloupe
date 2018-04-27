@@ -255,7 +255,7 @@ class HttpSource extends AbstractSource implements StreamSource {
     }
 
     @Override
-    public Format getSourceFormat() {
+    public Format getFormat() {
         if (sourceFormat == null) {
             sourceFormat = Format.inferFormat(identifier);
             if (Format.UNKNOWN.equals(sourceFormat)) {

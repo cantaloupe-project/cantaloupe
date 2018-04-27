@@ -321,7 +321,7 @@ public class ImageResourceTest extends ResourceTest {
     public void testGETSourceGetSourceFormatNotCalledWithSourceCacheHit()
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
-        tester.testSourceGetSourceFormatNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
+        tester.testSourceGetFormatNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
     }
 
     /**

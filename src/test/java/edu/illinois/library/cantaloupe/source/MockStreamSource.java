@@ -10,7 +10,7 @@ public class MockStreamSource extends AbstractSource
     }
 
     @Override
-    public Format getSourceFormat() {
+    public Format getFormat() {
         return null;
     }
 

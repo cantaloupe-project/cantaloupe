@@ -125,7 +125,7 @@ public class InformationResource extends IIIF1Resource {
                 format = mediaTypes.get(0).toFormat();
             }
         } else {
-            format = source.getSourceFormat();
+            format = source.getFormat();
         }
 
         // Obtain an instance of the processor assigned to that format.

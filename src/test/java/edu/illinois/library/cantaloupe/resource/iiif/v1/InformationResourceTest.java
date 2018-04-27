@@ -282,7 +282,7 @@ public class InformationResourceTest extends ResourceTest {
     public void testGETResolverGetSourceFormatNotCalledWithSourceCacheHit()
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/info.json");
-        tester.testSourceGetSourceFormatNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
+        tester.testSourceGetFormatNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
     }
 
     /**
