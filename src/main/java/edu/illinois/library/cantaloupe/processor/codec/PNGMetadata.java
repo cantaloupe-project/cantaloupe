@@ -7,6 +7,7 @@ import org.w3c.dom.NodeList;
 
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -145,8 +146,9 @@ class PNGMetadata extends AbstractMetadata implements Metadata {
                     final String keyword = ((IIOMetadataNode) entries.item(j)).
                             getAttribute("keyword");
                     if ("XML:com.adobe.xmp".equals(keyword)) {
-                        xmp = ((IIOMetadataNode) entries.item(j)).
-                                getAttribute("text").getBytes();
+                        xmp = ((IIOMetadataNode) entries.item(j))
+                                .getAttribute("text")
+                                .getBytes(Charset.forName("UTF-8"));
                     }
                 }
             }
