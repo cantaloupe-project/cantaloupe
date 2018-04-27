@@ -33,8 +33,8 @@ class CustomDelegate
   # * `request_headers` [Hash<String,String>] Hash of header name-value pairs.
   # * `request_uri`     [String] Public request URI.
   #
-  # The hash will contain the following additional string keys in response to
-  # image requests:
+  # It will contain the following additional string keys in response to image
+  # requests:
   #
   # * `full_size`      [Hash<String,Integer>] Hash with `width` and `height`
   #                    keys corresponding to the pixel dimensions of the
@@ -45,7 +45,7 @@ class CustomDelegate
   #                    key corresponding to the operation class name, which
   #                    will be one of the `e.i.l.c.operation.Operation`
   #                    implementations.
-  # * `output_format`  [String] Format media (MIME) type.
+  # * `output_format`  [String] Output format media (MIME) type.
   # * `resulting_size` [Hash<String,Integer>] Hash with `width` and `height`
   #                    keys corresponding to the pixel dimensions of the
   #                    resulting image after all operations have been applied.

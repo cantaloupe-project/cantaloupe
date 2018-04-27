@@ -24,7 +24,7 @@ title: Resolvers
   </li>
 </ul>
 
-<p>Resolvers provide access to source images. A resolver translates an identifier in a request URL to a source image locator, such as a pathname, in the particular type of underlying storage it is written to interface with. It can then check whether the underlying object exists and is accessible, and if so, provide access to it to other application components. The rest of the application does not need to know where an image resides, be it on the filesystem, on a remote web server, or wherever&mdash;it can just ask the resolver to provide a generic interface from which an image can be read.</p>
+<p>Resolvers provide access to source images. A resolver translates an <a href="images.html#Identifiers">identifier</a> in a request URI to a source image locator, such as a pathname, in the particular type of underlying storage it is written to interface with. It can then check whether the underlying object exists and is accessible, and if so, provide access to it to other application components. The rest of the application does not need to know where an image resides, be it on the filesystem, on a remote web server, or wherever&mdash;it can just ask the resolver to provide a generic interface from which an image can be read.</p>
 
 <p>The interface in question may be a stream or a file. All resolvers can provide stream access, but only <a href="#FilesystemResolver">FilesystemResolver</a> can provide file access. This distinction is important because <a href="processors.html#Retrieval%20Strategies">not all processors can read from streams</a>. See <a href="images.html#Considerations">Image Considerations</a> for background on why this is an issue.</p>
 
@@ -124,7 +124,7 @@ FilesystemResolver.BasicLookupStrategy.path_suffix =
 <p>To prevent arbitrary directory traversal, BasicLookupStrategy will recursively strip out <code>../</code>, <code>/..</code>, <code>..\</code>, and <code>\..</code> from identifiers before resolving the path.</p>
 
 <div class="alert alert-danger">
-  <i class="fa fa-warning"></i> It may be dangerous to <strong>not</strong> use <code>path_prefix</code>. The shallower the path, the more of the filesystem that will be exposed.
+  <i class="fa fa-warning"></i> Consider making <code>FilesystemResolver.BasicLookupStrategy.path_prefix</code> as deep as possible. The shallower the path, the more of the filesystem that will be exposed.
 </div>
 
 <h5 id="FilesystemResolverScriptLookupStrategy">ScriptLookupStrategy</h5>

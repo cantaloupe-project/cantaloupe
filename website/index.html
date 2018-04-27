@@ -18,16 +18,14 @@ title: Home
 
 <p>Cantaloupe is an open-source dynamic image server for on-demand generation of derivatives of high-resolution source images. With available operations including cropping, scaling, and rotation, it can support deep-zooming image viewers, as well as on-the-fly thumbnail generation. Compliance with the <a href="http://iiif.io/">IIIF Image API</a> enables it to work with <a href="http://iiif.io/apps-demos/">a growing number of client applications</a>.</p>
 
-<p>Project goals include performance, scalability, and extensibility, without sacrificing ease-of-use.</p>
-
 <div class="text-center">
-  <button id="download-scroller" data-target="#get-started" type="button" class="btn btn-lg btn-success download-button">
+  <button id="download-scroller" data-target="#get-started" type="button" class="btn btn-lg btn-outline-success download-button">
     <span class="fa fa-download"></span> Download
   </button>
 </div>
 
 <figure style="margin-top: 2em">
-  <div id="openseadragon1" style="width: 96%; margin: 0 auto; min-height: 420px"></div>
+  <div id="openseadragon1" style="width: 96%; margin: 0 auto; height: 420px"></div>
   <figcaption class="text-muted">
     Andromeda Galaxy in <a href="https://openseadragon.github.io">OpenSeadragon</a>, powered by Cantaloupe
     <br>
@@ -52,10 +50,34 @@ title: Home
 
     <div class="card">
       <div class="card-body">
+        <h4 class="card-title">Standards-Compliant</h4>
+        <ul>
+          <li>Fully conformant to <span class="text-info">IIIF Image API</span> versions 1 and 2.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-group">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">Secure</h4>
+        <ul>
+          <li><span class="text-info">Dynamic, selective image and text watermarking</span> with fine-grained controls.</li>
+          <li><span class="text-info">On-the-fly redaction</span> of image regions.</li>
+          <li>Built-in support for HTTPS and HTTP Basic authentication.</li>
+          <li>Supports <span class="text-info">arbitrary authorization policies</span> for integration into diverse infrastructures.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
         <h4 class="card-title">Flexible</h4>
         <ul>
           <li>Drive deep-zooming image viewers and create thumbnails for images, PDFs, and videos on-the-fly.</li>
           <li>Serve images from multiple sources, with different settings, via the same application instance.</li>
+          <li>HTTP methods for common management functions like purging the cache and updating the configuration.</li>
         </ul>
       </div>
     </div>
@@ -87,40 +109,8 @@ title: Home
         <h4 class="card-title">Fast</h4>
         <ul>
           <li><span class="text-info">Optimized JPEG2000 and TIFF readers</span> capable of excellent performance with massive images.</li>
-          <li>Available asynchronous filesystem, database, Redis, in-memory, and cloud storage caches to speed up response times and reduce server load.</li>
+          <li>Available <span class="text-info">filesystem, database, Redis, in-memory, and cloud storage caches</span> to speed up response times and reduce server load.</li>
           <li>In-memory image metadata and delegate result caches to boost performance for frequently-accessed resources.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <div class="card-group">
-    <div class="card">
-      <div class="card-body">
-        <h4 class="card-title">Secure</h4>
-        <ul>
-          <li><span class="text-info">Dynamic, selective image and text watermarking</span> with fine-grained controls.</li>
-          <li><span class="text-info">On-the-fly redaction</span> of image regions.</li>
-          <li>Built-in support for HTTPS and HTTP Basic authentication.</li>
-          <li>Supports <span class="text-info">arbitrary authorization policies</span> for integration into diverse infrastructures.</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-body">
-        <h4 class="card-title">Manageable</h4>
-        <ul>
-          <li>HTTP methods for common management functions like purging the cache and updating the configuration.</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-body">
-        <h4 class="card-title">Standards-Compliant</h4>
-        <ul>
-          <li>Fully conformant to all versions of the <span class="text-info">IIIF Image API</span>, with separate endpoints for versions 1 and 2.</li>
         </ul>
       </div>
     </div>
@@ -140,7 +130,7 @@ title: Home
           <a href="https://github.com/medusa-project/cantaloupe/releases" class="btn btn-lg btn-success download-button"><span class="fa fa-download"></span> Download</a>
 
           <p class="text-muted">Requires Java 8, 9, or 10</p>
-          <p class="text-muted">Optional components, such as particular processors, may have additional requirements; see the <a href="manual/">user manual</a>.</p>
+          <p class="text-muted">Optional components, such as particular processors, may have additional requirements; see the <a href="manual/">user manual</a></p>
         </div>
       </div>
     </div>
@@ -150,7 +140,7 @@ title: Home
       <div class="card-body">
         <ol>
           <li>The distribution archive bundles a sample configuration file, named <span class="filename">cantaloupe.properties.sample</span>. Make a copy and open it in a text editor.</li>
-          <li>Set <code>FilesystemResolver.BasicLookupStrategy.path_prefix</code> to a folder path containing some images, and leave all the other options as-is.</li>
+          <li>Set <code>FilesystemResolver.BasicLookupStrategy.path_prefix</code> to a folder path containing some images.</li>
         </ol>
       </div>
     </div>
@@ -160,10 +150,10 @@ title: Home
       <div class="card-body">
         <ul class="nav nav-pills" role="tablist">
           <li class="nav-item">
-            <a class="nav-link active" id="run-mac-tab" data-toggle="tab" href="#run-mac" role="tab" aria-controls="home" aria-selected="true">macOS/Linux</a>
+            <a class="nav-link active" id="run-mac-tab" data-toggle="tab" href="#run-mac" role="tab" aria-controls="home" aria-selected="true"><i class="fa fa-apple"></i> macOS/Linux</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" id="run-windows-tab" data-toggle="tab" href="#run-windows" role="tab" aria-controls="profile" aria-selected="false">Windows</a>
+            <a class="nav-link" id="run-windows-tab" data-toggle="tab" href="#run-windows" role="tab" aria-controls="profile" aria-selected="false"><i class="fa fa-windows"></i> Windows</a>
           </li>
         </ul>
         <div class="tab-content">

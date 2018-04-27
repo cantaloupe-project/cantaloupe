@@ -10,9 +10,7 @@ $(window).on('resize', function() {
     var img_width = parseFloat($('#image-width').text());
     var img_height = parseFloat($('#image-height').text());
     var elem = $('#openseadragon1');
-    elem.css('height', (img_height / img_width) * elem.width());
+    if (elem.height() < 420) {
+        elem.css('height', (img_height / img_width) * elem.width());
+    }
 }).trigger('resize');
-
-setTimeout(function() {
-    viewer.viewport.goHome({ 'immediately': true });
-}, 100);

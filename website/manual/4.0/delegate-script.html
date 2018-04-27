@@ -243,17 +243,17 @@ end
 
 <h2 id="Logging">Logging</h2>
 
-<p>Delegate methods may access a logger that writes to the application log:</p>
+<p>Delegate methods may access a logger that writes to the <a href="logging.html#Application%20Log">application log</a>:</p>
 
 {% highlight ruby %}
 require 'java'
 
 logger = Java::edu.illinois.library.cantaloupe.script.Logger
-logger.trace('Hello world')
-logger.debug('Hello world')
-logger.info('Hello world')
-logger.warn('Hello world')
-logger.error('Hello world')
+logger.trace 'Hello world'
+logger.debug 'Hello world'
+logger.info 'Hello world'
+logger.warn 'Hello world'
+logger.error 'Hello world'
 {% endhighlight %}
 
 <hr>
@@ -278,4 +278,4 @@ puts obj.filesystemresolver_pathname
 
 <p>This script can then be run on the command line with a command like: <code>ruby test.rb</code>.</p>
 
-<p>Note that the <code>ruby</code> command will normally invoke the standard ("MRI") Ruby interpreter, and not the JRuby interpreter. While they mostly work the same, one thing to be aware of is that <em>gems with platform-native extensions won't work in JRuby</em>. Consider installing a standalone <a href="http://jruby.org">JRuby interpreter</a> and test with that instead. (Something like <a href="http://rvm.io/">RVM</a> can make it easier to switch between different versions of the Ruby interpreter.)</p>
+<p class="text-info"><i class="fa fa-info-circle"></i> The <span class="filename">ruby</span> command will normally invoke the standard ("MRI") Ruby interpreter, and not the JRuby interpreter. While they mostly work the same, <strong>gems with platform-native extensions won't work in JRuby</strong>. Consider installing a standalone <a href="http://jruby.org">JRuby interpreter</a> and test with that instead. (Something like <a href="http://rvm.io/">RVM</a> can make it easier to switch between different versions of the Ruby interpreter.)</p>

@@ -684,10 +684,10 @@ title: Processors
   <i class="fa fa-info-circle"></i> Development on JAI ended a long time ago, and a <a href="https://github.com/medusa-project/cantaloupe/issues/176">minor incompatibility</a> has cropped up in Java 9. Given that supporting JAI is likely to become more problematic as time goes on, this processor should be considered deprecated, and it may be removed in a future release.</li>
 </p>
 
-<div class="alert alert-primary">
+<div class="text-info">
   <p><i class="fa fa-info-circle"></i> When using this processor, it is normal to see the following log message:</p>
   <blockquote>Error: Could not find mediaLib accelerator wrapper classes. Continuing in pure Java mode.</blockquote>
-  <p>This is caused by the absence of a mediaLib JAR on the classpath, and is harmless and expected. Either add the <code>-Dcom.sun.media.jai.disableMediaLib=true</code> VM option to suppress it, or put a mediaLib JAR on your classpath.</p>
+  <p>This is harmless and expected when there is no mediaLib JAR on the classpath. Either add the <code>-Dcom.sun.media.jai.disableMediaLib=true</code> VM option to suppress it, or put a mediaLib JAR on your classpath.</p>
 </div>
 
 <h4>Data Flow</h4>
@@ -973,7 +973,7 @@ title: Processors
 
 <h4>Optional Arguments</h4>
 
-<p>This processor supports a <code>time</code> URL query argument (which is nonstandard and Cantaloupe-specific) which can be used to return a frame at a particular second in the source video. The value of this parameter should be in <code>HH:MM:SS</code> format, like:</p>
+<p>This processor supports a <code>time</code> URL query argument (which is nonstandard and Cantaloupe-specific) which can be used to return a frame at a particular second in the source video. The value of this argument should be in <code>HH:MM:SS</code> format, like:</p>
 
 <pre>http://example.org/iiif/2/video.mp4/full/full/0/default.jpg?time=00:02:15</pre>
 
@@ -1015,7 +1015,7 @@ title: Processors
 
 <p>PdfBoxProcessor uses the <a href="https://pdfbox.apache.org">Apache PDFBox</a> library to read and rasterize PDF files. This is a pure-Java library that is bundled in and has no dependencies.</p>
 
-<p>As PDF is a vector format, PdfBoxProcessor will convert to a raster (pixel) image and use a Java 2D pipeline to transform it according to the request parameters. The size of the base raster image, corresponding to a scale of 1, is configurable with the <code>processor.dpi</code> configuration option. Then, rather than scaling a fixed-DPI raster, the vectorization DPI will be auto-scaled based on the requested scale.</p>
+<p>As PDF is a vector format, PdfBoxProcessor will convert to a raster (pixel) image and use a Java 2D pipeline to transform it according to the request arguments. The size of the base raster image, corresponding to a scale of 1, is configurable with the <code>processor.dpi</code> configuration option. Then, rather than scaling a fixed-DPI raster, the vectorization DPI will be auto-scaled based on the requested scale.</p>
 
 <h4>Optional Arguments</h4>
 

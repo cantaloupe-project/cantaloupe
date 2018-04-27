@@ -1,7 +1,49 @@
 ---
 ---
 
+@import "bootstrap-flatly.min.css";
 @import "common";
+
+body {
+  font-size: 1em;
+}
+
+.container, .container-fluid {
+  a {
+    color: #5bc0de;
+  }
+}
+
+nav a:hover {
+  color: #5bc0de !important;
+}
+
+.list-group-item-action.active a, .bg-success a, .bg-warning a, .bg-danger a, {
+  color: white;
+}
+
+.bg-primary, .list-group-item.active, .alert-primary {
+  background-color: #3A3F44 !important;
+}
+
+h2 {
+  color: #404040;
+  font-size: 2em;
+}
+
+h3 {
+  color: #606060;
+  font-size: 1.7em;
+}
+
+h4 { font-size: 1.4em; }
+h5 { font-size: 1.25em; }
+h6 { font-size: 1.1em; }
+
+h4, h5, h6 {
+  color: #808080;
+  font-weight: 200;
+}
 
 table .bg-success, table .bg-warning, table .bg-danger {
   color: #2e3238;
@@ -27,6 +69,11 @@ ul.processor-data-flow li:before {
   padding-right: 5px;
 }
 
+code, span.filename, var, pre {
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+  font-size: 0.9em;
+  padding: 0.25em; }
+
 figure {
   margin: 1em auto; }
 
@@ -34,3 +81,6 @@ figcaption {
   font-size: 0.9em;
   font-style: italic;
   text-align: center; }
+
+.alert-danger code {
+  color: white; }

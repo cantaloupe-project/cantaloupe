@@ -7,6 +7,7 @@ title: Images
 
 <ul class="toc">
   <li><a href="#Considerations">Considerations</a></li>
+  <li><a href="#Identifiers">Identifiers</a></li>
   <li><a href="#Sample%20Sizes">Sample Sizes</a></li>
   <li><a href="#Normalization">Normalization</a></li>
   <li><a href="#Source%20Formats">Source Formats</a>
@@ -44,9 +45,21 @@ title: Images
 
 <hr>
 
+<h2 id="Identifiers">Identifiers</h2>
+
+<p>Every source image served by the application is considered to have a unique identifier, which is used throughout the application to refer to the image, and appears in <a href="endpoints.html">endpoint</a> URIs.</p>
+
+<p>An identifier maps to a filename, pathname, object key, or some other identifier string in the underlying storage. The <a href="getting-started.html">Getting Started</a> section describes a simple setup in which URI identifiers map to pathname fragments on a filesystem, but this can make for identifiers that are ugly, unstable, and/or insecure. See <a href="resolvers.html">Resolvers</a> for information on your resolver of choice and setting it up to meet a particular use case.</p>
+
+<h3>URI Considerations</h3>
+
+Identifiers in URIs must be URI-escaped&mdash;its URI-illegal characters must be encoded. For example, an image with an identifier of <span class="filename">a6/b3/c4.jp2</span> would need to appear in a URI as <span class="filename">a6%2Fb3%2Fc4.jp2</span>. If you are behind a reverse proxy that cannot pass through encoded slashes (<span class="filename">%2F</span>) without decoding them, the <code>slash_substitute</code> configuration key can be used to specify a different character or character sequence to treat as a slash.</p>
+
+<hr>
+
 <h2 id="Sample Sizes">Sample Sizes</h2>
 
-<p>Most processors can read images that have more than 8 bits per sample. However, as most web clients can't display more than 8 bits per sample, version 3.4 introduces a <code>processor.limit_to_8_bits</code> configuration option that will cause all images with more than 8 bits per sample to be rescaled to 8 bits.</p>
+<p>Most processors can read images that have more than 8 bits per sample. However, as most web clients can't display more than 8 bits per sample, a <code>processor.limit_to_8_bits</code> configuration option is available that will cause all images with more than 8 bits per sample to be rescaled to 8 bits.</p>
 
 <h2 id="Normalization">Normalization</h2>
 
@@ -70,7 +83,7 @@ title: Images
 
 <p><a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a>'s JPEG2000 delegate, if installed, will also use the OpenJPEG library, but less efficiently as it will decompress the whole image, not just the region of interest, and won't be able to discard decomposition levels. (This is not recommended.)</p>
 
-<p><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> can read and write JPEG2000 using JasPer, if the necessary plugin is installed. This will probably be too slow to be usable for most purposes.</p>
+<p><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> can read and write JPEG2000 using JasPer, if the necessary plugin is installed, with the same caveats as ImageMagickProcessor.</p>
 
 <h3 id="PNG">PNG</h3>
 

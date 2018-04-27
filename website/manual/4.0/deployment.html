@@ -66,7 +66,7 @@ title: Deployment
 
 <p>The commands in the <a href="getting-started.html">Getting Started</a> section specify a relatively small maximum heap size, and a production server may need larger.</p>
 
-<p>Operating system utilities like <code>top</code>, Task Manager, Activity Monitor, etc. can show you what a process looks like as the OS sees it, but they don't show what's happening inside a process. A tool like <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/management/jconsole.html">JConsole</a>, included in the Java Development Kit (JDK), can show you what memory usage looks like inside a running JVM.</p>
+<p>Operating system utilities like <code>top</code>, Task Manager, Activity Monitor, etc. can show you what a process looks like as the OS sees it, but they can't show what's happening inside a process. A tool like <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/management/jconsole.html">JConsole</a>, included in the Java Development Kit (JDK), can visualize memory usage inside a running JVM.</p>
 
 <figure>
   <img src="images/jconsole.png" class="img img-fluid" alt="JConsole screenshot">
@@ -78,6 +78,8 @@ title: Deployment
 <h3 id="HardwareStorage">Storage</h3>
 
 <p>Most source formats benefit from fast read performance&mdash;in terms of both latency and throughput&mdash;in the underlying storage system. Throughput is more important for less efficient source formats&mdash;like JPEG, PNG, and mono-resolution TIFF&mdash;especially as source image size increases. <a href="resolvers.html#FilesystemResolver">Local filesystem storage</a> usually performs best.</p>
+
+<p>As derivative images tend to be small, storage performance is less important for derivative caches.</p>
 
 <hr>
 

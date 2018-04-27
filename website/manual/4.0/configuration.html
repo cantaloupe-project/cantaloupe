@@ -14,9 +14,9 @@ title: Configuration
 
 <h2 id="Overview">Overview</h2>
 
-<p>Cantaloupe obtains its configuration from a <a href="https://en.wikipedia.org/wiki/.properties">.properties file</a>. A sample configuration file, called <span class="filename">cantaloupe.properties.sample</span>, is included in the distribution archive. It is recommended to make a copy of this file and use the copy as your primary configuration file.</p>
+<p>Cantaloupe normally obtains its configuration from a file in <a href="https://en.wikipedia.org/wiki/.properties">.properties format</a>. A sample file, called <span class="filename">cantaloupe.properties.sample</span>, is included in the distribution archive. It is recommended to make a copy of this file and use the copy as your primary configuration file.</p>
 
-<p>To tell the application where the file is located, supply the <code>-Dcantaloupe.config</code> VM option, pointing to an absolute or relative path to the file. The file can be located anywhere, and named anything. (See <a href="getting-started.html#Running">Getting Started</a> for examples.)</p>
+<p>To tell the application where the file is located, supply the <code>-Dcantaloupe.config</code> VM option, pointing to an absolute or relative path to the file. (See <a href="getting-started.html#Running">Getting Started</a> for examples.) The file can be located anywhere, and named anything.</p>
 
 <hr>
 
@@ -32,7 +32,7 @@ title: Configuration
 
 <h2 id="Live Changes">Live Changes</h2>
 
-<p>The configuration file will be automatically reloaded within a few seconds of a change. Changes to most keys take effect immediately, but some require a restart; see the sample configuration file for documentation of which.</p>
+<p>The configuration file will be automatically reloaded within a few seconds of a change. Changes to most keys take effect immediately, but some require a restart; see the inline comments for documentation of which.</p>
 
 <p>When using <a href="#Inheritance">inheritance</a>, any file in the <code>extends</code> chain that changes will be reloaded by all instances in whose <code>extends</code> chain it appears.</p>
 

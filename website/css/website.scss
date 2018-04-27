@@ -1,13 +1,78 @@
 ---
 ---
 
+@import url("https://fonts.googleapis.com/css?family=Lato:400,700,400italic");
+@import "bootstrap-slate.min.css";
 @import "common";
+
+body {
+  font-family: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-size: 1em;
+}
+
+nav.navbar {
+  a.navbar-brand {
+    border: 0px;
+    padding: 1em 1em 1em 0;
+  }
+  a.nav-link {
+    color: white !important;
+    border: 0px;
+    padding: 1.1em 1em 1em 1em;
+  }
+  .nav-link:hover {
+    background-image: none !important;
+    border: 0px;
+    color: #5bc0de !important;
+  }
+}
+
+header {
+  padding-top: 0.8em;
+  padding-bottom: 1.2em;
+  img {
+    float: left;
+    margin: 0 1.2em 0 0;
+  }
+  h1 {
+    font-size: 2.34375rem;
+    font-weight: 500;
+    line-height: 1em;
+    margin: 0;
+    padding: 0.1em 0em 0em 0em;
+  }
+  h1 > small {
+    color: #808080;
+    font-size: 0.5em;
+  }
+}
+
+h1 {
+  font-size: 3.5rem;
+  font-weight: 300;
+  line-height: 1.2; }
+
+h2 {
+  font-size: 2.5rem;
+  font-weight: 300;
+  line-height: 1.2; }
+
+code, span.filename, var, pre {
+  background-color: #404046;
+  color: #e0e0e0;
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+  font-size: 0.95em;
+  padding: 0.25em; }
 
 #openseadragon1 {
   background-color: black; }
 
 figcaption {
   margin-bottom: 2em; }
+
+li {
+  line-height: 1.7em;
+}
 
 section#features {
   ul {

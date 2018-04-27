@@ -10,7 +10,18 @@ title: Access Control
   <li><a href="#Authorization">Authorization</a>
     <ul>
       <li><a href="#Authorization%20Notes">Notes</a></li>
-      <li><a href="#Authorization%20Examples">Examples</a></li>
+      <li><a href="#Authorization%20Examples">Examples</a>
+        <ul>
+          <li><a href="#example-2">Allow only requests for half-scale images or smaller</a></li>
+          <li><a href="#example-3">Allow only requests for identifiers matching a certain pattern</a></li>
+          <li><a href="#example-4">Allow only requests for images set as "public" in a MySQL database</a></li>
+          <li><a href="#example-5">Allow only JPEG output</a></li>
+          <li><a href="#example-6">Allow only certain user agents</a></li>
+          <li><a href="#example-7">Allow only requests from clients that supply a valid token in a header</a></li>
+          <li><a href="#example-8">Restrict a region of an image</a></li>
+          <li><a href="#example-9">Redirect to another URL</a></li>
+        </ul>
+      </li>
     </ul>
   </li>
 </ul>
@@ -49,23 +60,12 @@ endpoint.public.auth.basic.secret = mypassword
 
 <h3 id="Authorization Examples">Examples</h3>
 
-<ul>
-  <li><a href="#example-2">Allow only requests for half-scale images or smaller</a></li>
-  <li><a href="#example-3">Allow only requests for identifiers matching a certain pattern</a></li>
-  <li><a href="#example-4">Allow only requests for images set as "public" in a MySQL database</a></li>
-  <li><a href="#example-5">Allow only JPEG output</a></li>
-  <li><a href="#example-6">Allow only certain user agents</a></li>
-  <li><a href="#example-7">Allow only requests from clients that supply a valid token in a header</a></li>
-  <li><a href="#example-8">Restrict a region of an image</a></li>
-  <li><a href="#example-9">Redirect to another URL</a></li>
-</ul>
-
 <h4 id="example-2">Allow only requests for half-scale images or smaller</h4>
 
 {% highlight ruby %}
 class CustomDelegate
   def authorized?(options = {})
-    scale = operations.select{ |op| op['class'] == 'Scale' }.first
+    scale = context['operations'].find{ |op| op['class'] == 'Scale' }
     if scale
       max_scale = 0.5
       return scale['width'] <= full_size['width'] * max_scale and
@@ -140,7 +140,7 @@ end
 {% highlight ruby %}
 class CustomDelegate
   def authorized?(options = {})
-    output_format['media_type'] == 'image/jpeg'
+    context['output_format'] == 'image/jpeg'
   end
 end
 {% endhighlight %}
@@ -155,7 +155,7 @@ end
 class CustomDelegate
   def authorized?(options = {})
     headers = context['request_headers']
-    agent = headers.select{ |h, v| h.downcase == 'user-agent' }.first
+    agent = headers.find{ |h, v| h.downcase == 'user-agent' }
     agent.start_with?('MyAllowedUserAgent/')
   end
 end
@@ -180,10 +180,10 @@ end
 {% highlight ruby %}
 class CustomDelegate
   def authorized?(options = {})
-    crop = context['operations'].select{ |op| op['class'] == 'Crop' }.first
+    crop = context['operations'].find{ |op| op['class'] == 'Crop' }
     if crop
-      max_x = full_size['width'] / 2
-      max_y = full_size['height'] / 2
+      max_x = full_size['width'] / 2.0
+      max_y = full_size['height'] / 2.0
       return !(crop['x'] + crop['width'] > max_x and
           crop['y'] + crop['height'] > max_y)
     end

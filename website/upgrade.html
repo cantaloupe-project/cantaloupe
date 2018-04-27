@@ -1,11 +1,11 @@
 ---
-layout: default
+layout: manual
 title: Upgrading
 ---
 
 <div class="alert alert-primary"><i class="fa fa-info-circle"></i> If you are skipping versions, work through this page backwards from your current version.</div>
 
-<h1>3.4 &rarr; 4.0</h1>
+<h1>3.4.x &rarr; 4.0</h1>
 
 <ol>
   <li>Rename the following configuration keys:
@@ -42,7 +42,7 @@ title: Upgrading
   <li>Cache keys have changed, and purging your cache is recommended, but not required.</li>
   <li>The delegate script architecture has changed, and the 3.x script is not compatible. See the "Delegate Script" section of the user manual for migration info.</li>
   <li>The deprecated <code>DELETE /cache/:identifier</code> HTTP API method has been removed. See the "Remote Management" section of the user manual for information about its successor.</li>
-  <li>Note that the <code>X-IIIF-ID</code> reverse proxy header is deprecated and will be removed in a future version. Use <code>X-Forwarded-ID</code> instead.</li>
+  <li>The <code>X-IIIF-ID</code> reverse proxy header is deprecated and will be removed in a future version. Start using <code>X-Forwarded-ID</code> instead.</li>
   <li>If you'd like to use the new KakaduNativeProcessor non-commercially for decoding JPEG2000 images, see the "Processors" section of the user manual for information on configuring it.</li>
 </ol>
 
@@ -95,9 +95,9 @@ title: Upgrading
 
 <p>Nothing to do.</p>
 
-<h1>3.2.x &rarr; to 3.3</h1>
+<h1>3.2.x &rarr; 3.3</h1>
 
-<ul>
+<ol>
   <li>Add the following keys from the sample configuration:
     <ul>
       <li><code>delegate_script.cache.enabled</code></li>
@@ -158,7 +158,7 @@ title: Upgrading
   <li>If you are using the <code>authorized?()</code> or <code>watermark()</code> delegate methods, note that the contents of the <code>operations</code> argument have changed; see the new sample delegate script for more information.</li>
   <li>If you are using the <code>watermark()</code> delegate method, note that the <code>pathname</code> key in the returned hash must be changed to <code>image</code>.</li>
   <li>Rename the <code>watermark()</code> delegate method to <code>overlay()</code>.</li>
-</ul>
+</ol>
 
 <h1>3.2 &rarr; 3.2.4</h1>
 
@@ -166,7 +166,7 @@ title: Upgrading
 
 <h1>3.1.2 &rarr; 3.2</h1>
 
-<ul>
+<ol>
   <li>Add the following keys from the sample configuration:
     <ul>
       <li><code>FfmpegProcessor.sharpen</code></li>
@@ -196,7 +196,7 @@ title: Upgrading
       <li><code>PdfBoxProcessor.post_processor.*</code></li>
     </ul>
   </li>
-</ul>
+</ol>
 
 <h1>3.1.1 &rarr; 3.1.2</h1>
 
@@ -220,7 +220,7 @@ title: Upgrading
 
 <h1>2.2 &rarr; 3.0</h1>
 
-<ul>
+<ol>
   <li>Add the following keys from the sample configuration:
     <ul>
       <li><code>admin.*</code></li>
@@ -266,56 +266,4 @@ title: Upgrading
 ALTER TABLE {JdbcCache.derivative_image_table} CHANGE COLUMN last_modified last_accessed;</pre>
   </li>
   <li>Note that the information that used to be available on the landing page (<span class="filename">/</span>) has moved to the Control Panel (<span class="filename">/admin</span>). Log in with a username of "admin" and the password defined in the <code>admin.password</code> configuration option.</li>
-</ul>
-
-<h1>2.1.1 &rarr; 2.2</h1>
-
-<ul>
-  <li>Add the following keys from the sample configuration:
-    <ul>
-      <li><code>endpoint.iiif.min_tile_size</code></li>
-      <li><code>AzureStorageResolver.*</code></li>
-      <li><code>GraphicsMagickProcessor.background_color</code></li>
-      <li><code>ImageMagickProcessor.background_color</code></li>
-      <li><code>processor.pdf</code></li>
-      <li><code>PdfBoxProcessor.*</code></li>
-      <li><code>cache.server.worker.*</code></li>
-      <li><code>watermark.*</code></li>
-    </ul>
-  </li>
-  <li>If you are using FilesystemCache, purge your info cache by deleting the <span class="filename">{FilesystemCache.pathname}/info</span> directory.</li>
-  <li>If you are using JdbcCache, modify your table schema and purge your info cache:
-    <pre>ALTER TABLE {JdbcCache.info_table} DROP COLUMN width;
-ALTER TABLE {JdbcCache.info_table} DROP COLUMN height;
-ALTER TABLE {JdbcCache.info_table} ADD info VARCHAR(8192) NOT NULL;
-DELETE FROM {JdbcCache.info_table};</pre>
-  </li>
-</ul>
-
-<h1>2.1 &rarr; 2.1.1</h1>
-
-<p>Nothing to do.</p>
-
-<h1>2.0 &rarr; 2.1</h1>
-
-<ul>
-  <li>Add the following keys from the sample configuration:
-    <ul>
-      <li><code>JaiProcessor.*</code></li>
-      <li><code>Java2dProcessor.tif.compression</code></li>
-      <li><code>FilesystemCache.dir.*</code></li>
-      <li><code>log.*.SyslogAppender.*</code></li>
-    </ul>
-  </li>
-  <li>Add the <code>authorized?</code> method from the sample delegate script.</li>
-  <li>Purge your cache.</li>
-</ul>
-
-<h1>1.x &rarr; 2.0</h1>
-
-<ul>
-  <li>There are so many new and renamed configuration keys in this version that it's recommended to start over with a new configuration file. The inline comments, which serve as the primary source of configuration documentation, have also been updated.</li>
-  <li>Because the cache naming format has changed, it will be necessary to purge your cache before using this version.</li>
-  <li>The Image API 2.0 endpoint, which used to be located at <span class="filename">/iiif</span>, has moved to <span class="filename">/iiif/2</a>.</li>
-  <li>The landing page has moved to <span class="filename">/</span>.</li>
-</ul>
+</ol>
