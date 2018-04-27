@@ -54,6 +54,14 @@ public final class Headers implements Iterable<Header> {
     }
 
     @Override
+    public int hashCode() {
+        return stream()
+                .map(h -> h.getName() + ": " + h.getValue())
+                .collect(Collectors.joining())
+                .hashCode();
+    }
+
+    @Override
     public Iterator<Header> iterator() {
         return headers.iterator();
     }

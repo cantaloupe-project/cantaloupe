@@ -84,6 +84,30 @@ public class HeadersTest {
     }
 
     @Test
+    public void testHashCodeWithEqualObjects() {
+        Headers h1 = new Headers();
+        Headers h2 = new Headers();
+        assertEquals(h1.hashCode(), h2.hashCode());
+
+        h1.add("test", "cats1");
+        h1.add("test", "cats2");
+        h2.add("test", "cats1");
+        h2.add("test", "cats2");
+        assertEquals(h1.hashCode(), h2.hashCode());
+    }
+
+    @Test
+    public void testHashCodeWithUnequalObjects() {
+        Headers h1 = new Headers();
+        Headers h2 = new Headers();
+        h1.add("test", "cats1");
+        h1.add("test", "cats2");
+        h2.add("test", "cats1");
+        h2.add("test2", "cats2");
+        assertNotEquals(h1.hashCode(), h2.hashCode());
+    }
+
+    @Test
     public void testIterator() {
         instance.add("name", "value1");
         instance.add("name", "value2");
