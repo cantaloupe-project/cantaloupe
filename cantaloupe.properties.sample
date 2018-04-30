@@ -147,7 +147,7 @@ FilesystemSource.BasicLookupStrategy.path_suffix =
 #----------------------------------------
 
 HttpSource.trust_all_certs = false
-HttpSource.request_timeout = 10
+HttpSource.request_timeout =
 
 # Tells HttpSource how to look up resources. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy

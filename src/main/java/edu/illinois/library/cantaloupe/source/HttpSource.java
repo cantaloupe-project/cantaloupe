@@ -163,6 +163,8 @@ class HttpSource extends AbstractSource implements StreamSource {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(HttpSource.class);
 
+    private static final int DEFAULT_REQUEST_TIMEOUT = 30;
+
     /**
      * Byte length of the range used to infer the source image format.
      */
@@ -219,8 +221,9 @@ class HttpSource extends AbstractSource implements StreamSource {
      *         reasonable default if not set.
      */
     private static int getRequestTimeout() {
-        return Configuration.getInstance().
-                getInt(Key.HTTPSOURCE_REQUEST_TIMEOUT, 10);
+        return Configuration.getInstance().getInt(
+                Key.HTTPSOURCE_REQUEST_TIMEOUT,
+                DEFAULT_REQUEST_TIMEOUT);
     }
 
     private static String getUserAgent() {
