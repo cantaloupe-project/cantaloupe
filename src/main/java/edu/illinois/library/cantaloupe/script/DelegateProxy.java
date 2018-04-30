@@ -51,7 +51,7 @@ public final class DelegateProxy {
 
     /**
      * JSR-223 interface to the script interpreter. Invoke methods by casting
-     * to {@link Invocable}.
+     * this to {@link Invocable}.
      */
     private static ScriptEngine scriptEngine;
 
@@ -70,6 +70,8 @@ public final class DelegateProxy {
      * The Ruby delegate object.
      */
     private Object delegate;
+
+    private RequestContext requestContext;
 
     static {
         // N.B.: These must be set before the ScriptEngine is instantiated.
@@ -113,16 +115,21 @@ public final class DelegateProxy {
     }
 
     /**
-     * @param methodName Name of the method being invoked.
-     * @param args       Method arguments.
-     * @return           Cache key corresponding to the given arguments.
+     * @param requestContext Request context.
+     * @param methodName     Name of the method being invoked.
+     * @param args           Method arguments.
+     * @return               Cache key corresponding to the given arguments.
      */
-    private static Object getCacheKey(String methodName, Object... args) {
-        // The cache key is comprised of the method name at position 0 followed
-        // by the arguments at succeeding positions.
+    private static Object getCacheKey(RequestContext requestContext,
+                                      String methodName,
+                                      Object... args) {
+        // The cache key is comprised of the method name at position 0, the
+        // request context at position 1, and the arguments at succeeding
+        // positions.
         List<Object> key = Arrays.asList(args);
         key = new LinkedList<>(key);
         key.add(0, methodName);
+        key.add(1, requestContext);
         return key;
     }
 
@@ -154,8 +161,9 @@ public final class DelegateProxy {
      */
     public void setRequestContext(RequestContext context)
             throws ScriptException {
-        invoke(RUBY_REQUEST_CONTEXT_SETTER,
+        invokeUncached(RUBY_REQUEST_CONTEXT_SETTER,
                 Collections.unmodifiableMap(context.toMap()));
+        requestContext = context;
     }
 
     /**
@@ -335,8 +343,8 @@ public final class DelegateProxy {
             final Stopwatch watch = new Stopwatch();
 
             Object returnValue = isInvocationCacheEnabled() ?
-                retrieveFromCacheOrInvoke(method, args) :
-                    doInvoke(method, args);
+                    retrieveFromCacheOrInvoke(method, args) :
+                    invokeUncached(method, args);
 
             LOGGER.debug("invoke({}): exec time: {}", method, watch);
             return returnValue;
@@ -347,14 +355,14 @@ public final class DelegateProxy {
 
     private Object retrieveFromCacheOrInvoke(String method, Object... args)
             throws ScriptException {
-        final Object cacheKey = getCacheKey(method, args);
+        final Object cacheKey = getCacheKey(requestContext, method, args);
         Object returnValue = invocationCache.get(cacheKey);
 
         if (returnValue != null) {
             LOGGER.debug("invoke({}): cache hit (skipping invocation)", method);
         } else {
             LOGGER.debug("invoke({}): cache miss", method);
-            returnValue = doInvoke(method, args);
+            returnValue = invokeUncached(method, args);
             if (returnValue != null) {
                 invocationCache.put(cacheKey, returnValue);
             }
@@ -362,8 +370,8 @@ public final class DelegateProxy {
         return returnValue;
     }
 
-    private Object doInvoke(String methodName,
-                            Object... args) throws ScriptException {
+    private Object invokeUncached(String methodName,
+                                  Object... args) throws ScriptException {
         try {
             return ((Invocable) scriptEngine).invokeMethod(
                     delegate, methodName, args);
