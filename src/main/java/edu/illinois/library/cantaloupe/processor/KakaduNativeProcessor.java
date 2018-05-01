@@ -452,14 +452,14 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             final int referenceComponent = channels.Get_source_component(0);
             final Kdu_dims regionDims = getRegion(opList, fullSize);
             final int accessMode = Kdu_global.KDU_WANT_OUTPUT_COMPONENTS;
-            final Kdu_coords expandNumerator = getExpandNumerator(
+            final Kdu_coords refExpansion = determineReferenceExpansion(
                     referenceComponent, channels, codestream);
             final Kdu_coords expandDenominator = new Kdu_coords(1, 1);
 
             // Get the effective source image size.
             final Kdu_dims renderedDims = decompressor.Get_rendered_image_dims(
                     codestream, channels, -1, reductionFactor.factor,
-                    expandNumerator, expandDenominator, accessMode);
+                    refExpansion, expandDenominator, accessMode);
 
             final Kdu_coords renderedPos = renderedDims.Access_pos();
             final Kdu_coords renderedSize = renderedDims.Access_size();
@@ -485,7 +485,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
 
             decompressor.Start(codestream, channels, -1,
                     reductionFactor.factor, MAX_LAYERS, regionDims,
-                    expandNumerator, expandDenominator, false, accessMode,
+                    refExpansion, expandDenominator, false, accessMode,
                     false, threadEnv);
 
             Kdu_dims newRegion = new Kdu_dims();
@@ -575,30 +575,63 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
         return regionDims;
     }
 
-    private static Kdu_coords getExpandNumerator(
-            final int referenceComponent,
-            final Kdu_channel_mapping channels,
-            final Kdu_codestream codestream) throws KduException {
-        Kdu_coords refSubs = new Kdu_coords();
+    /**
+     * <p>This method is largely lifted from the {@literal KduRender.java} file
+     * in the Kakadu SDK. The author's documentation follows:</p>
+     *
+     * <blockquote>This function almost invariably returns (1,1), but there can
+     * be some wacky images for which larger expansions are required. The need
+     * for it arises from the fact that {@link Kdu_region_decompressor}
+     * performs its decompressed image sizing based upon a single image
+     * component (the {@literal image_component}). Specifically, the size of
+     * the decompressed result is obtained by expanding the dimensions of the
+     * reference component by the x-y values returned by this function.
+     * Reference expansion factors must have the property that when the first
+     * component is expanded by this much, any other components (typically
+     * colour components) are also expanded by an integral amount. The {@link
+     * Kdu_region_decompressor} actually does support rational expansion of
+     * individual image components, but we do not exploit this feature in the
+     * present coding example.</blockquote>
+     */
+    private static Kdu_coords determineReferenceExpansion(
+            int reference_component,
+            Kdu_channel_mapping channels,
+            Kdu_codestream codestream) throws KduException {
+        int c;
+        Kdu_coords ref_subs = new Kdu_coords();
         Kdu_coords subs = new Kdu_coords();
-        codestream.Get_subsampling(referenceComponent, refSubs);
-        Kdu_coords minSubs = new Kdu_coords();
-        minSubs.Assign(refSubs);
+        codestream.Get_subsampling(reference_component,ref_subs);
+        Kdu_coords min_subs = new Kdu_coords(); min_subs.Assign(ref_subs);
 
-        for (int c = 0; c < channels.Get_num_channels(); c++) {
-            codestream.Get_subsampling(channels.Get_source_component(c), subs);
-            if (subs.Get_x() < minSubs.Get_x()) {
-                minSubs.Set_x(subs.Get_x());
+        for (c = 0; c < channels.Get_num_channels(); c++) {
+            codestream.Get_subsampling(channels.Get_source_component(c),subs);
+            if (subs.Get_x() < min_subs.Get_x()) {
+                min_subs.Set_x(subs.Get_x());
             }
-            if (subs.Get_y() < minSubs.Get_y()) {
-                minSubs.Set_y(subs.Get_y());
+            if (subs.Get_y() < min_subs.Get_y()) {
+                min_subs.Set_y(subs.Get_y());
             }
         }
 
         Kdu_coords expansion = new Kdu_coords();
-        expansion.Set_x(refSubs.Get_x() / minSubs.Get_x());
-        expansion.Set_y(refSubs.Get_y() / minSubs.Get_y());
+        expansion.Set_x(ref_subs.Get_x() / min_subs.Get_x());
+        expansion.Set_y(ref_subs.Get_y() / min_subs.Get_y());
 
+        for (c = 0; c < channels.Get_num_channels(); c++) {
+            codestream.Get_subsampling(channels.Get_source_component(c),subs);
+
+            if ((((subs.Get_x() * expansion.Get_x()) % ref_subs.Get_x()) != 0) ||
+                    (((subs.Get_y() * expansion.Get_y()) % ref_subs.Get_y()) != 0)) {
+                Kdu_global.Kdu_print_error(
+                        "The supplied JP2 file contains colour channels " +
+                                "whose sub-sampling factors are not integer " +
+                                "multiples of one another.");
+                codestream.Apply_input_restrictions(0, 1, 0, 0, null,
+                        Kdu_global.KDU_WANT_OUTPUT_COMPONENTS);
+                channels.Configure(codestream);
+                expansion = new Kdu_coords(1,1);
+            }
+        }
         return expansion;
     }
 
