@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.script;
 
 import edu.illinois.library.cantaloupe.util.FilesystemWatcher;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +9,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 /**
  * Listens for changes to a script file and reloads it when it has changed.
@@ -18,7 +20,7 @@ final class ScriptWatcher implements Runnable {
 
     private static class CallbackImpl implements FilesystemWatcher.Callback {
 
-        private String contentsChecksum = "";
+        private byte[] currentChecksum = new byte[0];
 
         @Override
         public void created(Path path) {
@@ -42,24 +44,28 @@ final class ScriptWatcher implements Runnable {
         private void handle(Path path) {
             try {
                 if (path.equals(DelegateProxyService.getScriptFile())) {
-                    // Calculate the checksum of the file contents and compare
-                    // it to what has already been loaded. If the checksums
-                    // match, skip the load.
+                    // Some filesystems will generate multiple events that
+                    // could result in this method being invoked multiple
+                    // times. To avoid that, we will calculate the checksum of
+                    // the file contents and compare it to what has already
+                    // been loaded. If the checksums match, skip the load.
                     final byte[] fileBytes = Files.readAllBytes(path);
-                    final String newChecksum = DigestUtils.md5Hex(fileBytes);
+                    final MessageDigest md = MessageDigest.getInstance("SHA-1");
+                    md.update(fileBytes);
+                    byte[] newChecksum = md.digest();
 
-                    if (newChecksum.equals(contentsChecksum)) {
+                    if (!Arrays.equals(newChecksum, currentChecksum)) {
+                        LOGGER.debug("Script checksums differ; reloading");
+                        currentChecksum = newChecksum;
+                        final String code = new String(fileBytes, "UTF-8");
+                        DelegateProxy.load(code);
+                    } else {
                         LOGGER.debug("Script checksums match; skipping reload");
-                        return;
                     }
-                    contentsChecksum = newChecksum;
-
-                    final String code = new String(fileBytes, "UTF-8");
-                    DelegateProxy.load(code);
                 }
             } catch (NoSuchFileException e) {
                 LOGGER.error("File not found: {}", e.getMessage());
-            } catch (ScriptException | IOException e) {
+            } catch (NoSuchAlgorithmException | ScriptException | IOException e) {
                 LOGGER.error(e.getMessage());
             }
         }
