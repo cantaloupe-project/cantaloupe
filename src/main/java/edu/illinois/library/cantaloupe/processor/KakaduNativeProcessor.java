@@ -19,9 +19,9 @@ import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import kdu_jni.Jp2_family_src;
 import kdu_jni.Jp2_locator;
 import kdu_jni.Jp2_source;
+import kdu_jni.Jp2_threadsafe_family_src;
 import kdu_jni.KduException;
 import kdu_jni.Kdu_channel_mapping;
 import kdu_jni.Kdu_codestream;
@@ -56,9 +56,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <p>Processor using the Kakadu native library ({@literal libkdu}) via the
  * Java Native Interface (JNI). Written against version 7.10.</p>
  *
- * <p>A {@literal kdu_region_decompressor} is used to acquire a cropped,
- * scale-reduced image that is {@link BufferedImage buffered in memory}, and
- * Java 2D is used for all remaining processing steps.</p>
+ * <p>A {@link Kdu_region_decompressor} is used to acquire a cropped, scale-
+ * reduced image that is {@link BufferedImage buffered in memory}, and Java 2D
+ * is used for all remaining processing steps.</p>
  *
  * <h1>Comparison with {@link KakaduDemoProcessor}</h1>
  *
@@ -75,9 +75,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *     {@literal /dev/stdout}.</li>
  * </ol>
  *
- * <p>And also some drawbacks:</p>
+ * <p>Some drawbacks are:</p>
  *
  * <ol>
+ *     <li>Despite the efficiency advantages described above, {@link
+ *     Kdu_region_decompressor} is high-level API that doesn't benefit from
+ *     the expert tuning of {@literal kdu_expand}, and isn't able to achieve
+ *     the same effective performance.</li>
  *     <li>All output is scaled to 8 bits.</li>
  * </ol>
  *
@@ -95,6 +99,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <a href="http://kakadusoftware.com/wp-content/uploads/2014/06/Kakadu-Licence-Terms-Feb-2018.pdf">
  * Kakadu Software License Terms and Conditions</a> for detailed terms.</p>
  *
+ * @since 4.0
  * @author Alex Dolski UIUC
  */
 class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
@@ -114,6 +119,8 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
 
         @Override
         public int Get_capabilities() {
+            // seekable because ImageInputStream is seekable, even if it has to
+            // employ buffering.
             return Kdu_global.KDU_SOURCE_CAP_SEQUENTIAL |
                     Kdu_global.KDU_SOURCE_CAP_SEEKABLE;
         }
@@ -405,9 +412,10 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
 
         // N.B.: see the end notes in the KduRender.java file in the Kakadu
         // SDK for explanation of how these need to be destroyed.
+        // N.B. 2: see KduRender2.java for use of the Kdu_thread_env.
         final Jp2_locator locator                  = new Jp2_locator();
         final Jp2_source inputSource               = new Jp2_source();
-        final Jp2_family_src familySrc             = new Jp2_family_src();
+        final Jp2_threadsafe_family_src familySrc  = new Jp2_threadsafe_family_src();
         Kdu_compressed_source compSrc              = null;
         final Kdu_codestream codestream            = new Kdu_codestream();
         final Kdu_channel_mapping channels         = new Kdu_channel_mapping();
@@ -492,21 +500,20 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
 
             int regionBufferSize = regionSize.Get_x() * regionSize.Get_y();
             int[] regionBuffer = new int[regionBufferSize];
-            int[] kduBuffer;
+
             while (decompressor.Process(regionBuffer, regionDims.Access_pos(),
                     0, 0, regionBufferSize, incompleteRegion, newRegion)) {
                 Kdu_coords newPos = newRegion.Access_pos();
                 Kdu_coords newSize = newRegion.Access_size();
                 newPos.Subtract(viewDims.Access_pos());
 
-                kduBuffer = regionBuffer;
                 int imgBufferIndex = newPos.Get_x() + newPos.Get_y() *
                         viewSize.Get_x();
                 int kduBufferIndex = 0;
                 int xDiff = viewSize.Get_x() - newSize.Get_x();
                 for (int y = 0; y < newSize.Get_y(); y++, imgBufferIndex += xDiff) {
                     for (int x = 0; x < newSize.Get_x(); x++) {
-                        image.setRGB(x, y, kduBuffer[kduBufferIndex++]);
+                        image.setRGB(x, y, regionBuffer[kduBufferIndex++]);
                     }
                 }
             }
@@ -522,7 +529,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             throw new IOException(e);
         } finally {
             try {
-                threadEnv.Cs_terminate(codestream);
+                threadEnv.Destroy();
             } catch (KduException e) {
                 LOGGER.warn("readImage(): failed to destroy the kdu_thread_env: {} (code: {})",
                         e.getMessage(),
@@ -674,13 +681,13 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
     public Info readImageInfo() throws IOException {
         // N.B.: see the end notes in the KduRender.java file in the Kakadu
         // SDK for explanation of how these need to be destroyed.
-        ImageInputStream inputStream   = null;
-        final Jp2_source jp2Src        = new Jp2_source();
-        Kdu_compressed_source compSrc  = null;
-        final Jp2_family_src familySrc = new Jp2_family_src();
-        final Jp2_locator loc          = new Jp2_locator();
-        Kdu_codestream codestream      = null;
-        Kdu_channel_mapping channels   = null;
+        ImageInputStream inputStream              = null;
+        final Jp2_source jp2Src                   = new Jp2_source();
+        Kdu_compressed_source compSrc             = null;
+        final Jp2_threadsafe_family_src familySrc = new Jp2_threadsafe_family_src();
+        final Jp2_locator loc                     = new Jp2_locator();
+        Kdu_codestream codestream                 = null;
+        Kdu_channel_mapping channels              = null;
 
         try {
             if (sourceFile != null) {
@@ -733,7 +740,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                     .withFormat(Format.JP2)
                     .withSize(width, height)
                     .withTileSize(tileWidth, tileHeight)
-                    .withOrientation(Orientation.ROTATE_0) // TODO: fix
+                    .withOrientation(Orientation.ROTATE_0) // TODO: may need to parse the EXIF to get this?
                     .withNumResolutions(levels + 1)
                     .build();
         } catch (KduException e) {
