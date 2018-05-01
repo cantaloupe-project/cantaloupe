@@ -18,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.StampedLock;
+import java.util.stream.Collectors;
 
 /**
  * <p>Proxy for a delegate object. Invokes delegate object methods, optionally
@@ -338,19 +339,9 @@ public final class DelegateProxy {
      */
     private Object invoke(String method,
                           Object... args) throws ScriptException {
-        final long stamp = lock.readLock();
-        try {
-            final Stopwatch watch = new Stopwatch();
-
-            Object returnValue = isInvocationCacheEnabled() ?
-                    retrieveFromCacheOrInvoke(method, args) :
-                    invokeUncached(method, args);
-
-            LOGGER.debug("invoke({}): exec time: {}", method, watch);
-            return returnValue;
-        } finally {
-            lock.unlock(stamp);
-        }
+        return isInvocationCacheEnabled() ?
+                retrieveFromCacheOrInvoke(method, args) :
+                invokeUncached(method, args);
     }
 
     private Object retrieveFromCacheOrInvoke(String method, Object... args)
@@ -372,11 +363,29 @@ public final class DelegateProxy {
 
     private Object invokeUncached(String methodName,
                                   Object... args) throws ScriptException {
+        final long stamp = lock.readLock();
+
+        final String argsList = (args.length > 0) ?
+                Arrays.stream(args)
+                        .map(Object::toString)
+                        .collect(Collectors.joining(", ")) : "none";
+        LOGGER.debug("invokeUncached(): invoking {} with args: ({})",
+                methodName, argsList);
+
+        final Stopwatch watch = new Stopwatch();
         try {
-            return ((Invocable) scriptEngine).invokeMethod(
+            final Object retval = ((Invocable) scriptEngine).invokeMethod(
                     delegate, methodName, args);
+
+            if (!RUBY_REQUEST_CONTEXT_SETTER.equals(methodName)) {
+                LOGGER.debug("invokeUncached(): {} returned {} for args: ({}) in {}",
+                        methodName, retval, argsList, watch);
+            }
+            return retval;
         } catch (NoSuchMethodException e) {
             throw new ScriptException(e);
+        } finally {
+            lock.unlock(stamp);
         }
     }
 
