@@ -492,14 +492,13 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             Kdu_dims incompleteRegion = new Kdu_dims();
             Kdu_dims viewDims = new Kdu_dims();
             viewDims.Assign(regionDims);
-            Kdu_coords viewSize = viewDims.Access_size();
             incompleteRegion.Assign(regionDims);
 
             image = new BufferedImage(regionSize.Get_x(), regionSize.Get_y(),
                     BufferedImage.TYPE_INT_ARGB);
 
-            int regionBufferSize = regionSize.Get_x() * regionSize.Get_y();
-            int[] regionBuffer = new int[regionBufferSize];
+            final int regionBufferSize = regionSize.Get_x() * 128;
+            final int[] regionBuffer = new int[regionBufferSize];
 
             while (decompressor.Process(regionBuffer, regionDims.Access_pos(),
                     0, 0, regionBufferSize, incompleteRegion, newRegion)) {
@@ -507,13 +506,10 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                 Kdu_coords newSize = newRegion.Access_size();
                 newPos.Subtract(viewDims.Access_pos());
 
-                int imgBufferIndex = newPos.Get_x() + newPos.Get_y() *
-                        viewSize.Get_x();
-                int kduBufferIndex = 0;
-                int xDiff = viewSize.Get_x() - newSize.Get_x();
-                for (int y = 0; y < newSize.Get_y(); y++, imgBufferIndex += xDiff) {
-                    for (int x = 0; x < newSize.Get_x(); x++) {
-                        image.setRGB(x, y, regionBuffer[kduBufferIndex++]);
+                int bufferIndex = 0;
+                for (int y = newPos.Get_y(); y < newPos.Get_y() + newSize.Get_y(); y++) {
+                    for (int x = newPos.Get_x(); x < newSize.Get_x(); x++) {
+                        image.setRGB(x, y, regionBuffer[bufferIndex++]);
                     }
                 }
             }
