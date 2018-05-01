@@ -517,7 +517,13 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                     }
                 }
             }
-            decompressor.Finish();
+            if (decompressor.Finish()) {
+                if (reductionFactor.factor - 1 > codestream.Get_min_dwt_levels()) {
+                    LOGGER.error("Insufficient DWT levels ({}) for reduction factor ({})",
+                            codestream.Get_min_dwt_levels(),
+                            reductionFactor.factor);
+                }
+            }
         } catch (KduException e) {
             try {
                 threadEnv.Handle_exception(e.Get_kdu_exception_code());
