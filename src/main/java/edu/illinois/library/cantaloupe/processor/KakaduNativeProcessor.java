@@ -188,7 +188,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
         public void Flush(boolean isEndOfMessage) throws KduException {
             if (isEndOfMessage) {
                 throw new KduException(Kdu_global.KDU_ERROR_EXCEPTION,
-                        "In " + this.getClass().getSimpleName() +  ".");
+                        "In " + this.getClass().getSimpleName());
             }
         }
 
@@ -515,14 +515,18 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             try {
                 threadEnv.Handle_exception(e.Get_kdu_exception_code());
             } catch (KduException e2) {
-                LOGGER.warn("readImage(): {}", e2.getMessage());
+                LOGGER.warn("readImage(): {} (code: {})",
+                        e2.getMessage(),
+                        Integer.toHexString(e2.Get_kdu_exception_code()));
             }
             throw new IOException(e);
         } finally {
             try {
                 threadEnv.Cs_terminate(codestream);
             } catch (KduException e) {
-                LOGGER.warn("readImage(): {}", e.getMessage());
+                LOGGER.warn("readImage(): failed to destroy the kdu_thread_env: {} (code: {})",
+                        e.getMessage(),
+                        Integer.toHexString(e.Get_kdu_exception_code()));
             }
             threadEnv.Native_destroy();
             decompressor.Native_destroy();
@@ -532,7 +536,9 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                     codestream.Destroy();
                 }
             } catch (KduException e) {
-                LOGGER.warn("readImage(): {}", e.getMessage());
+                LOGGER.warn("readImage(): failed to destroy the codestream: {} (code: {})",
+                        e.getMessage(),
+                        Integer.toHexString(e.Get_kdu_exception_code()));
             }
             if (compSrc != null) {
                 compSrc.Native_destroy();
@@ -743,7 +749,9 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                         codestream.Destroy();
                     }
                 } catch (KduException e) {
-                    LOGGER.error("readImageInfo(): {}", e.getMessage());
+                    LOGGER.error("readImageInfo(): {} (code: {})",
+                            e.getMessage(),
+                            Integer.toHexString(e.Get_kdu_exception_code()));
                 }
             }
             if (compSrc != null) {
