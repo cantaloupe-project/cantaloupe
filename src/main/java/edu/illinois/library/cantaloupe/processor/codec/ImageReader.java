@@ -95,7 +95,9 @@ public interface ImageReader {
      * Reads the region of the image corresponding to the given arguments.
      *
      * @throws IOException if there is an error reading the image.
+     * @deprecated Since version 4.0.
      */
+    @Deprecated
     RenderedImage readRendered(OperationList opList,
                                Orientation orientation,
                                ReductionFactor reductionFactor,

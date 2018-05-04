@@ -29,7 +29,9 @@ import java.awt.image.renderable.ParameterBlock;
 /**
  * @see <a href="http://docs.oracle.com/cd/E19957-01/806-5413-10/806-5413-10.pdf">
  *     Programming in Java Advanced Imaging</a>
+ * @deprecated Since version 4.0.
  */
+@Deprecated
 final class JAIUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JAIUtil.class);

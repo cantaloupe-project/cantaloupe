@@ -462,7 +462,10 @@ abstract class AbstractIIOImageReader {
 
     /**
      * Reads an image (excluding subimages).
+     *
+     * @deprecated Since version 4.0.
      */
+    @Deprecated
     RenderedImage readRendered() throws IOException {
         return iioReader.readAsRenderedImage(0,
                 iioReader.getDefaultReadParam());
@@ -482,7 +485,9 @@ abstract class AbstractIIOImageReader {
      *                        the reader. May also contain hints for the
      *                        reader. May be {@literal null}.
      * @return                Image best matching the given arguments.
+     * @deprecated            Since version 4.0.
      */
+    @Deprecated
     public RenderedImage readRendered(final OperationList ops,
                                       final Orientation orientation,
                                       final ReductionFactor reductionFactor,
@@ -520,7 +525,9 @@ abstract class AbstractIIOImageReader {
      *              reduction factor of the returned image.
      * @return      The smallest image fitting the requested crop and scale
      *              operations from the given reader.
+     * @deprecated Since version 4.0.
      */
+    @Deprecated
     private RenderedImage readSmallestUsableSubimage(
             final Crop crop,
             final Scale scale,
