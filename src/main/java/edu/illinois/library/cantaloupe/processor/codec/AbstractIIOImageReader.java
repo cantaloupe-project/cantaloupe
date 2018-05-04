@@ -188,8 +188,9 @@ abstract class AbstractIIOImageReader {
     }
 
     /**
-     * @return Tile size of the image at the given index, or the full image
-     *         dimensions if the image is not tiled.
+     * @return Tile or strip size of the image at the given index, or the full
+     *         image dimensions if the image is not tiled or striped (or is
+     *         mono-tiled or mono-striped).
      */
     public Dimension getTileSize(int imageIndex) throws IOException {
         final int width = iioReader.getTileWidth(imageIndex);
@@ -444,10 +445,23 @@ abstract class AbstractIIOImageReader {
                                         final Rectangle region,
                                         final Set<ReaderHint> hints) throws IOException {
         final Dimension imageSize = getSize(imageIndex);
+        final Dimension tileSize = getTileSize(imageIndex);
 
-        getLogger().debug("Acquiring region {},{}/{}x{} from {}x{} image",
-                region.x, region.y, region.width, region.height,
-                imageSize.width, imageSize.height);
+        if (tileSize.equals(imageSize)) {
+            getLogger().debug("Acquiring region {},{}/{}x{} from {}x{} mono-tiled/mono-striped image",
+                    region.x, region.y, region.width, region.height,
+                    imageSize.width, imageSize.height);
+        } else if (tileSize.width == imageSize.width) {
+            getLogger().debug("Acquiring region {},{}/{}x{} from {}x{} image ({}x{} strip size)",
+                    region.x, region.y, region.width, region.height,
+                    imageSize.width, imageSize.height,
+                    tileSize.width, tileSize.height);
+        } else {
+            getLogger().debug("Acquiring region {},{}/{}x{} from {}x{} image ({}x{} tile size)",
+                    region.x, region.y, region.width, region.height,
+                    imageSize.width, imageSize.height,
+                    tileSize.width, tileSize.height);
+        }
 
         hints.add(ReaderHint.ALREADY_CROPPED);
         final ImageReadParam param = iioReader.getDefaultReadParam();
