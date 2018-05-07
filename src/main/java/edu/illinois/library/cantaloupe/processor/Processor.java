@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
@@ -17,11 +18,11 @@ import java.util.Set;
 /**
  * <p>Abstract image processor interface.</p>
  *
- * <p>Implementations must implement {@link FileProcessor} and/or
- * {@link StreamProcessor} and can assume that their source will be set (via
- * {@link FileProcessor#setSourceFile} or
- * {@link StreamProcessor#setStreamFactory}) before any other methods are
- * called.</p>
+ * <p>Either or both of {@link FileProcessor} and/or {@link StreamProcessor}
+ * must be implemented. Implementations can assume that their source will be
+ * set (via {@link FileProcessor#setSourceFile} or
+ * {@link StreamProcessor#setStreamFactory}) before any methods that would
+ * access the source are called.</p>
  */
 public interface Processor extends AutoCloseable {
 
@@ -40,9 +41,9 @@ public interface Processor extends AutoCloseable {
     /**
      * <p>Implementations may need to perform initialization (such as scanning
      * for supported formats etc.) that is more efficient to do only once, at
-     * initialization time. If this fails, this method should return a
-     * non-null value, which signifies that the instance is in an unusable
-     * state.</p>
+     * application startup. If this fails, this method should return a
+     * non-{@literal null} value, signifying that the instance is in an
+     * unusable state.</p>
      *
      * <p>This default implementation returns {@literal null}.</p>
      *
@@ -121,10 +122,9 @@ public interface Processor extends AutoCloseable {
      *     with caching.</li>
      *     <li>In addition to operations, the operation list may contain a
      *     number of {@link OperationList#getOptions() options}, which
-     *     implementations should respect, where applicable. These typically
-     *     come from the configuration, so implementations should not try to
-     *     read the configuration themselves, except to get their own
-     *     processor-specific info, as this could cause problems with
+     *     implementations should respect, where applicable. These may come
+     *     from the configuration, so implementations should not try to read
+     *     the configuration themselves, as this could cause problems with
      *     caching.</li>
      * </ul>
      *
@@ -149,6 +149,10 @@ public interface Processor extends AutoCloseable {
 
     /**
      * <p>Reads and returns information about the source image.</p>
+     *
+     * <p>N.B.: The returned instance will not have its {@link
+     * Info#setIdentifier(Identifier) identifier set}. Clients should set it
+     * manually.</p>
      *
      * @return Information about the source image.
      * @throws IOException if anything goes wrong.

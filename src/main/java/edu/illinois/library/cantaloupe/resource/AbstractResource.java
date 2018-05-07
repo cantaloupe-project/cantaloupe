@@ -444,9 +444,11 @@ public abstract class AbstractResource extends ServerResource {
         Info info;
         if (!isBypassingCache()) {
             info = new CacheFacade().getOrReadInfo(identifier, proc);
+            info.setIdentifier(identifier);
         } else {
             LOGGER.debug("getOrReadInfo(): bypassing the cache, as requested");
             info = proc.readImageInfo();
+            info.setIdentifier(identifier);
         }
         return info;
     }

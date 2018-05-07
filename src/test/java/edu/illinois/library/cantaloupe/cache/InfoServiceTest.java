@@ -130,6 +130,7 @@ public class InfoServiceTest extends BaseTest {
         final Identifier identifier = new Identifier("jpg");
 
         Info info = instance.getOrReadInfo(identifier, newFileProcessor());
+        assertEquals(identifier, info.getIdentifier());
         assertEquals(64, info.getSize(0).width);
     }
 

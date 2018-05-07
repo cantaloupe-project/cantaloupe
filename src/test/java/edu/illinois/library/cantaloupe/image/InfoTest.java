@@ -26,6 +26,7 @@ public class InfoTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
         instance = Info.builder()
+                .withIdentifier(new Identifier("cats"))
                 .withSize(100, 80)
                 .withTileSize(50, 40)
                 .withFormat(Format.JPG)
@@ -83,6 +84,7 @@ public class InfoTest extends BaseTest {
     @Test
     public void testEqualsWithEqualInstances() {
         Info info2 = Info.builder()
+                .withIdentifier(new Identifier("cats"))
                 .withSize(100, 80)
                 .withTileSize(50, 40)
                 .withOrientation(Orientation.ROTATE_270)
@@ -90,6 +92,19 @@ public class InfoTest extends BaseTest {
                 .withFormat(Format.JPG)
                 .build();
         assertTrue(instance.equals(info2));
+    }
+
+    @Test
+    public void testEqualsWithDifferentIdentifiers() {
+        Info info2 = Info.builder()
+                .withIdentifier(new Identifier("dogs"))
+                .withSize(100, 80)
+                .withTileSize(50, 40)
+                .withOrientation(Orientation.ROTATE_270)
+                .withNumResolutions(3)
+                .withFormat(Format.JPG)
+                .build();
+        assertFalse(instance.equals(info2));
     }
 
     @Test
@@ -243,7 +258,25 @@ public class InfoTest extends BaseTest {
     /* toJSON() */
 
     @Test
-    public void testToJSON() throws Exception {
+    public void testToJSONContents() throws Exception {
+        assertEquals(
+                "{" +
+                    "\"identifier\":\"cats\"," +
+                    "\"mediaType\":\"image/jpeg\"," +
+                    "\"numResolutions\":3," +
+                    "\"images\":[" +
+                        "{\"width\":100," +
+                        "\"height\":80," +
+                        "\"tileWidth\":50," +
+                        "\"tileHeight\":40," +
+                        "\"orientation\":8}" +
+                    "]" +
+                "}",
+                instance.toJSON());
+    }
+
+    @Test
+    public void testToJSONRoundTrip() throws Exception {
         String json = instance.toJSON();
         Info info2 = Info.fromJSON(json);
         assertEquals(instance, info2);

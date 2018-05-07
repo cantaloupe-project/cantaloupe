@@ -201,10 +201,13 @@ public final class InfoService {
                           final Processor proc) throws IOException {
         final Stopwatch watch = new Stopwatch();
         final Info info = proc.readImageInfo();
+
         LOGGER.debug("readInfo(): read {} from {} in {}",
                 identifier,
                 proc.getClass().getSimpleName(),
                 watch);
+
+        info.setIdentifier(identifier);
         return info;
     }
 

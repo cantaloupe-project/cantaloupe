@@ -48,7 +48,7 @@ import java.util.Objects;
  * @see <a href="https://github.com/FasterXML/jackson-databind">jackson-databind
  *      docs</a>
  */
-@JsonPropertyOrder({ "mediaType", "images" })
+@JsonPropertyOrder({ "identifier", "mediaType", "numResolutions", "images" })
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class Info {
@@ -67,6 +67,11 @@ public final class Info {
 
         public Builder withFormat(Format format) {
             info.setSourceFormat(format);
+            return this;
+        }
+
+        public Builder withIdentifier(Identifier identifier) {
+            info.setIdentifier(identifier);
             return this;
         }
 
@@ -224,6 +229,8 @@ public final class Info {
 
     }
 
+    private Identifier identifier;
+
     /**
      * Ordered list of subimages. The main image is at index {@literal 0}.
      */
@@ -264,12 +271,23 @@ public final class Info {
             return true;
         } else if (obj instanceof Info) {
             Info other = (Info) obj;
-            return other.getImages().equals(getImages()) &&
-                    other.getOrientation().equals(getOrientation()) &&
-                    other.getSourceFormat().equals(getSourceFormat()) &&
-                    other.getNumResolutions() == getNumResolutions();
+            return Objects.equals(other.getIdentifier(), getIdentifier()) &&
+                    Objects.equals(other.getOrientation(), getOrientation()) &&
+                    Objects.equals(other.getSourceFormat(), getSourceFormat()) &&
+                    other.getNumResolutions() == getNumResolutions() &&
+                    other.getImages().equals(getImages());
         }
         return super.equals(obj);
+    }
+
+    /**
+     * @return Identifier. Will be {@literal null} if the instance was
+     *         serialized in an application version prior to 4.0.
+     * @since 4.0
+     */
+    @JsonGetter
+    public Identifier getIdentifier() {
+        return identifier;
     }
 
     public List<Image> getImages() {
@@ -303,7 +321,9 @@ public final class Info {
      *     will be {@literal -1}.</li>
      * </ul>
      *
-     * @return Number of resolutions contained in the image.
+     * @return Number of resolutions contained in the image, or {@literal -1}
+     *         if the instance was serialized in an application version prior
+     *         to 4.0.
      * @since 4.0
      */
     @JsonGetter
@@ -371,6 +391,15 @@ public final class Info {
         return String.format("%d%d",
                 getImages().hashCode(),
                 getSourceFormat().hashCode()).hashCode();
+    }
+
+    /**
+     * @param identifier Identifier of the image described by the instance.
+     * @since 4.0
+     */
+    @JsonSetter
+    public void setIdentifier(Identifier identifier) {
+        this.identifier = identifier;
     }
 
     /**

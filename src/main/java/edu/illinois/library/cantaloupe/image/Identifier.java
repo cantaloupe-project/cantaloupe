@@ -1,9 +1,45 @@
 package edu.illinois.library.cantaloupe.image;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import java.io.IOException;
+
 /**
- * Immutable image-server-unique source image identifier.
+ * Immutable application-unique source image identifier.
  */
+@JsonSerialize(using = Identifier.IdentifierSerializer.class)
+@JsonDeserialize(using = Identifier.IdentifierDeserializer.class)
 public class Identifier implements Comparable<Identifier> {
+
+    /**
+     * Deserializes a type/subtype string into an {@link Identifier}.
+     */
+    static class IdentifierDeserializer extends JsonDeserializer<Identifier> {
+        @Override
+        public Identifier deserialize(JsonParser jsonParser,
+                                      DeserializationContext deserializationContext) throws IOException {
+            return new Identifier(jsonParser.getValueAsString());
+        }
+    }
+
+    /**
+     * Serializes an {@link Identifier} as a string.
+     */
+    static class IdentifierSerializer extends JsonSerializer<Identifier> {
+        @Override
+        public void serialize(Identifier identifier,
+                              JsonGenerator jsonGenerator,
+                              SerializerProvider serializerProvider) throws IOException {
+            jsonGenerator.writeString(identifier.toString());
+        }
+    }
 
     private String value;
 

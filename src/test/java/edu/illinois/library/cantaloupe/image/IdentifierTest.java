@@ -1,8 +1,11 @@
 package edu.illinois.library.cantaloupe.image;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.StringWriter;
 
 import static org.junit.Assert.*;
 
@@ -13,6 +16,22 @@ public class IdentifierTest extends BaseTest {
     @Before
     public void setUp() {
         instance = new Identifier("cats");
+    }
+
+    @Test
+    public void testSerialization() throws Exception {
+        Identifier identifier = new Identifier("cats");
+        try (StringWriter writer = new StringWriter()) {
+            new ObjectMapper().writeValue(writer, identifier);
+            assertEquals("\"cats\"", writer.toString());
+        }
+    }
+
+    @Test
+    public void testDeserialization() throws Exception {
+        Identifier identifier = new ObjectMapper().readValue("\"cats\"",
+                Identifier.class);
+        assertEquals("cats", identifier.toString());
     }
 
     @Test
