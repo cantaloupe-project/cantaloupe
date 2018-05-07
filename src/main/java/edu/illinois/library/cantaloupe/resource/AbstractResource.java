@@ -228,9 +228,9 @@ public abstract class AbstractResource extends ServerResource {
             requestContext.setIdentifier(getIdentifier());
         }
 
-        String headersStr = getRequest().getHeaders()
-                .stream()
-                .map(h -> h.getName() + ": " + h.getValue())
+        String headersStr = getRequest().getHeaders().stream()
+                .map(h -> h.getName() + ": " +
+                        ("Authorization".equals(h.getName()) ? "******" : h.getValue()))
                 .collect(Collectors.joining("; "));
         LOGGER.info("doInit(): handling {} {} [{}]",
                 getMethod(), getReference(), headersStr);
