@@ -25,12 +25,7 @@ import java.util.List;
  *
  * <h1>Format Determination</h1>
  *
- * <p>For images with extensions, the extension will be assumed to correctly
- * denote the image format, based on the return value of
- * {@link Format#inferFormat(Identifier)}. Images with extensions that are
- * missing or unrecognized will have their "magic number" checked to determine
- * their format, which will incur a small performance penalty. It is therefore
- * slightly more efficient to serve images with extensions.</p>
+ * <p>See {@link #getFormat()}.</p>
  *
  * <h1>Lookup Strategies</h1>
  *
@@ -124,28 +119,48 @@ class FilesystemSource extends AbstractSource
         return Paths.get(pathname);
     }
 
+    /**
+     * <ol>
+     *     <li>If the file's filename contains an extension, the format is
+     *     inferred from that.</li>
+     *     <li>If unsuccessful, and the identifier contains an extension, the
+     *     format is inferred from that.</li>
+     *     <li>If unsuccessful, the format is inferred from the file's magic
+     *     bytes.</li>
+     * </ol>
+     *
+     * @return Best attempt at determining the file format.
+     * @throws IOException if the magic byte check fails.
+     */
     @Override
     public Format getFormat() throws IOException {
         if (sourceFormat == null) {
-            sourceFormat = Format.inferFormat(identifier);
-            if (sourceFormat.equals(Format.UNKNOWN)) {
-                sourceFormat = detectSourceFormat();
+            // Try to infer a format from the filename.
+            sourceFormat = Format.inferFormat(getPath().getFileName().toString());
+
+            if (Format.UNKNOWN.equals(sourceFormat)) {
+                // Try to infer a format from the identifier.
+                sourceFormat = Format.inferFormat(identifier);
+            }
+
+            if (Format.UNKNOWN.equals(sourceFormat)) {
+                // Fall back to reading the magic bytes.
+                sourceFormat = detectFormat();
             }
         }
         return sourceFormat;
     }
 
     /**
-     * Detects the source format of a file by reading its header.
+     * Detects the format of a file by reading its header.
      *
-     * @return Detected source format, or {@link Format#UNKNOWN} if
-     *         unknown.
+     * @return Detected format, or {@link Format#UNKNOWN}.
      */
-    private Format detectSourceFormat() throws IOException {
+    private Format detectFormat() throws IOException {
         Format format = Format.UNKNOWN;
         final Path path = getPath();
         List<MediaType> detectedTypes = MediaType.detectMediaTypes(path);
-        if (detectedTypes.size() > 0) {
+        if (!detectedTypes.isEmpty()) {
             format = detectedTypes.get(0).toFormat();
         }
         return format;
@@ -157,9 +172,8 @@ class FilesystemSource extends AbstractSource
     }
 
     /**
-     * Recursively filters out <code>fileseparator..</code> and
-     * <code>..fileseparator</code> to prevent arbitrary directory
-     * traversal.
+     * Recursively filters out {@literal fileseparator..} and
+     * {@literal ..fileseparator} to prevent moving up a directory tree.
      *
      * @return Sanitized identifier.
      */

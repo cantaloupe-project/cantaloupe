@@ -65,7 +65,14 @@ class CustomDelegate
   end
 
   def filesystemsource_pathname(options = {})
-    context['identifier'] != 'missing' ? context['identifier'] : nil
+    case context['identifier']
+      when 'missing'
+        nil
+      when 'FilesystemSourceTest-extension-in-identifier-but-not-filename.jpg'
+        'jpg'
+      else
+        context['identifier']
+    end
   end
 
   def httpsource_resource_info(options = {})
