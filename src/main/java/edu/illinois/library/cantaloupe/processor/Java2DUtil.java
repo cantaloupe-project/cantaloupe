@@ -726,10 +726,14 @@ public final class Java2DUtil {
     }
 
     /**
-     * Scales an image, taking an already-applied reduction factor into
+     * <p>Scales an image, taking an already-applied reduction factor into
      * account. In other words, the dimensions of the input image have already
      * been halved {@literal rf} times but the given size is relative to the
-     * full-sized image.
+     * full-sized image.</p>
+     *
+     * <p>If one or both target dimensions would end up being less than three
+     * pixels, an empty image (with the correct dimensions) will be
+     * returned.</p>
      *
      * @param inImage Image to scale.
      * @param scale   Requested size ignoring any reduction factor. If no
@@ -746,16 +750,14 @@ public final class Java2DUtil {
                                final Scale scale,
                                final ReductionFactor rf) {
         /*
-        This method uses the image scaling code in
+        This method uses unnamed resampling code derived from
         com.mortennobel.imagescaling (see
         https://blog.nobel-joergensen.com/2008/12/20/downscaling-images-in-java/)
-        as an alternative to the scaling available in Graphics2D.
-        Problem is, while the performance of Graphics2D.drawImage() is OK, the
-        quality, even using RenderingHints.VALUE_INTERPOLATION_BILINEAR, is
-        horrible for downscaling. BufferedImage.getScaledInstance() is
-        somewhat the opposite: great quality but very slow. There may be ways
-        to mitigate the former (like multi-step downscaling) but not without
-        cost.
+        as an alternative to the resampling available in Graphics2D.
+        While the performance of Graphics2D.drawImage() is OK, the quality,
+        even using RenderingHints.VALUE_INTERPOLATION_BILINEAR, is horrible.
+        BufferedImage.getScaledInstance() is the opposite: great quality but
+        very slow.
 
         Subjective quality of downscale from 2288x1520 to 200x200:
 
@@ -806,43 +808,49 @@ public final class Java2DUtil {
             targetSize = scale.getResultingSize(sourceSize);
         }
 
-        // ResampleFilter requires a target size
-        // of at least 3 pixels on a side.
-        // OpenSeadragon has been known to request smaller.
-        targetSize.width = (targetSize.width < 3) ? 3 : targetSize.width;
-        targetSize.height = (targetSize.height < 3) ? 3 : targetSize.height;
-
+        // ResampleFilter requires both target dimensions to be at least 3
+        // pixels. (OpenSeadragon has been known to request smaller.)
+        // If one or both are less than that, then given that the picture is
+        // virtually guaranteed to end up unrecognizable anyway, we will skip
+        // the scaling step and return a fake image with the target dimensions.
+        // Alternatives would be to use a different resampler, set a 3x3 floor,
+        // or error out.
         BufferedImage scaledImage = inImage;
-        if (scale.hasEffect() && (targetSize.width != sourceSize.width ||
-                targetSize.height != sourceSize.height)) {
-            final Stopwatch watch = new Stopwatch();
+        if (targetSize.width >= 3 && targetSize.height >= 3) {
+            if (scale.hasEffect() && (targetSize.width != sourceSize.width ||
+                    targetSize.height != sourceSize.height)) {
+                final Stopwatch watch = new Stopwatch();
 
-            final ResampleOp resampleOp = new ResampleOp(
-                    targetSize.width, targetSize.height);
+                final ResampleOp resampleOp = new ResampleOp(
+                        targetSize.width, targetSize.height);
 
-            // Try to use the requested resample filter.
-            ResampleFilter filter = null;
-            if (scale.getFilter() != null) {
-                filter = scale.getFilter().toResampleFilter();
-            }
-            // No particular filter requested, so select a default.
-            if (filter == null) {
-                if (targetSize.width < sourceSize.width ||
-                        targetSize.height < sourceSize.height) {
-                    filter = DEFAULT_DOWNSCALE_FILTER.toResampleFilter();
-                } else {
-                    filter = DEFAULT_UPSCALE_FILTER.toResampleFilter();
+                // Try to use the requested resample filter.
+                ResampleFilter filter = null;
+                if (scale.getFilter() != null) {
+                    filter = scale.getFilter().toResampleFilter();
                 }
+                // No particular filter requested, so select a default.
+                if (filter == null) {
+                    if (targetSize.width < sourceSize.width ||
+                            targetSize.height < sourceSize.height) {
+                        filter = DEFAULT_DOWNSCALE_FILTER.toResampleFilter();
+                    } else {
+                        filter = DEFAULT_UPSCALE_FILTER.toResampleFilter();
+                    }
+                }
+                resampleOp.setFilter(filter);
+
+                scaledImage = resampleOp.filter(inImage, null);
+
+                LOGGER.debug("scale(): scaled {}x{} image to {}x{} using " +
+                                "a {} filter in {}",
+                        sourceSize.width, sourceSize.height,
+                        targetSize.width, targetSize.height,
+                        filter.getName(), watch);
             }
-            resampleOp.setFilter(filter);
-
-            scaledImage = resampleOp.filter(inImage, null);
-
-            LOGGER.debug("scale(): scaled {}x{} image to {}x{} using " +
-                            "a {} filter in {}",
-                    sourceSize.width, sourceSize.height,
-                    targetSize.width, targetSize.height,
-                    filter.getName(), watch);
+        } else {
+            scaledImage = new BufferedImage(targetSize.width, targetSize.height,
+                    inImage.getType());
         }
         return scaledImage;
     }

@@ -32,6 +32,7 @@ title: Change Log
   <li>KakaduDemoProcessor and OpenJpegProcessor read image metadata using custom code, which is more efficient than using the respective <code>kdu_jp2info</code> and <code>opj_dump</code> tools, and enables them to read the number of decomposition levels, which improves reliability when decoding images with less-common level counts.</li>
   <li>ImageIO plugins can be selected on a per-format basis.</li>
   <li>Improved the efficiency of the Java 2D resample filters.</li>
+  <li>When downscaling to less than three pixels on a side, an empty image with the correct dimensions are returned, rather than a downscaled 3&times;3 image.</li>
   <li>Java2dProcessor supports animated GIFs.</li>
   <li>Java2dProcessor supports CMYK &amp; YCCK JPEGs.</li>
   <li>Worked around some behavior of the <code>opj_decompress</code> tool that could cause OpenJpegProcessor to break. (Thanks to @adam-vessey)</li>
