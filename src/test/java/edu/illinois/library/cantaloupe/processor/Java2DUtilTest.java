@@ -199,6 +199,28 @@ public class Java2DUtilTest extends BaseTest {
         assertTrue(blue > 240);
     }
 
+    /* convertIndexedToARGB() */
+
+    @Test
+    public void testConvertIndexedToARGB() {
+        BufferedImage inImage, outImage;
+
+        // RGB image
+        inImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
+        outImage = Java2DUtil.convertIndexedToARGB(inImage);
+        assertEquals(BufferedImage.TYPE_INT_RGB, outImage.getType());
+
+        // ARGB image
+        inImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
+        outImage = Java2DUtil.convertIndexedToARGB(inImage);
+        assertEquals(BufferedImage.TYPE_INT_ARGB, outImage.getType());
+
+        // indexed image
+        inImage = new BufferedImage(10, 10, BufferedImage.TYPE_BYTE_INDEXED);
+        outImage = Java2DUtil.convertIndexedToARGB(inImage);
+        assertEquals(BufferedImage.TYPE_INT_ARGB, outImage.getType());
+    }
+
     /* cropImage() */
 
     @Test
