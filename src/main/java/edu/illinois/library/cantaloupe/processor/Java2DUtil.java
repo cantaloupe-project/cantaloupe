@@ -190,6 +190,28 @@ public final class Java2DUtil {
     }
 
     /**
+     * @param inImage Image to convert.
+     * @return New image of type {@link BufferedImage#TYPE_INT_ARGB}, or the
+     *         input image if it is not indexed.
+     */
+    static BufferedImage convertIndexedToARGB(BufferedImage inImage) {
+        BufferedImage outImage = inImage;
+        if (inImage.getType() == BufferedImage.TYPE_BYTE_INDEXED) {
+            final Stopwatch watch = new Stopwatch();
+
+            outImage = new BufferedImage(
+                    inImage.getWidth(), inImage.getHeight(),
+                    BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2d = outImage.createGraphics();
+            g2d.drawImage(inImage, 0, 0, null);
+            g2d.dispose();
+
+            LOGGER.debug("convertIndexedToARGB(): converted in {}", watch);
+        }
+        return outImage;
+    }
+
+    /**
      * @param inImage Image to crop.
      * @param crop    Crop operation. Clients should call
      *                {@link Operation#hasEffect(Dimension, OperationList)}
@@ -204,8 +226,8 @@ public final class Java2DUtil {
 
     /**
      * Crops the given image taking into account a reduction factor
-     * (<code>reductionFactor</code>). In other words, the dimensions of the
-     * input image have already been halved <code>reductionFactor</code> times
+     * ({@literal reductionFactor}). In other words, the dimensions of the
+     * input image have already been halved {@literal reductionFactor} times
      * but the given region is relative to the full-sized image.
      *
      * @param inImage Image to crop.
@@ -218,27 +240,32 @@ public final class Java2DUtil {
      * @return        Cropped image, or the input image if the given operation
      *                is a no-op.
      */
-    static BufferedImage crop(final BufferedImage inImage,
+    static BufferedImage crop(BufferedImage inImage,
                               final Crop crop,
                               final ReductionFactor rf) {
+        BufferedImage outImage = inImage;
+
         final Dimension croppedSize = crop.getResultingSize(
                 new Dimension(inImage.getWidth(), inImage.getHeight()));
-        BufferedImage croppedImage;
-        if (!crop.hasEffect() || (croppedSize.width == inImage.getWidth() &&
-                croppedSize.height == inImage.getHeight())) {
-            croppedImage = inImage;
-        } else {
+
+        if (crop.hasEffect() && (croppedSize.width != inImage.getWidth() ||
+                croppedSize.height != inImage.getHeight())) {
             final Stopwatch watch = new Stopwatch();
+
+            // If the input image is indexed, cropping it would probably screw
+            // up the palette, so convert it to RGBA first.
+            // TODO: this should be done earlier, perhaps by the reader
+            inImage = convertIndexedToARGB(inImage);
 
             final Rectangle cropRegion = crop.getRectangle(
                     new Dimension(inImage.getWidth(), inImage.getHeight()), rf);
-            croppedImage = inImage.getSubimage(cropRegion.x, cropRegion.y,
+            outImage = inImage.getSubimage(cropRegion.x, cropRegion.y,
                     cropRegion.width, cropRegion.height);
 
             LOGGER.debug("crop(): cropped {}x{} image to {} in {}",
                     inImage.getWidth(), inImage.getHeight(), crop, watch);
         }
-        return croppedImage;
+        return outImage;
     }
 
     /**
