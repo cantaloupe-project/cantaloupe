@@ -8,6 +8,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import edu.illinois.library.cantaloupe.async.TaskQueue;
 import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -404,7 +405,7 @@ class S3Cache implements DerivativeCache {
     }
 
     private void purgeAsync(final String bucketName, final String key) {
-        ThreadPool.getInstance().submit(() -> {
+        TaskQueue.getInstance().submit(() -> {
             final AmazonS3 s3 = getClientInstance();
 
             LOGGER.debug("purgeAsync(): deleting {} from bucket {}",

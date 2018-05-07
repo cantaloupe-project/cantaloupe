@@ -3,9 +3,13 @@ package edu.illinois.library.cantaloupe.async;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+/**
+ * Queue of serial tasks, backed internally by {@link ThreadPool}. Should be
+ * preferred over {@link ThreadPool} for tasks that are not time-sensitive.
+ */
 public final class TaskQueue {
 
-    private static volatile TaskQueue instance;
+    private static TaskQueue instance = new TaskQueue();
 
     private final TaskRunner runner;
 
@@ -13,24 +17,14 @@ public final class TaskQueue {
      * For testing only.
      */
     static synchronized void clearInstance() {
-        instance = null;
+        instance = new TaskQueue();
     }
 
     /**
      * @return Singleton instance.
      */
-    public static TaskQueue getInstance() {
-        TaskQueue queue = instance;
-        if (queue == null) {
-            synchronized (TaskQueue.class) {
-                queue = instance;
-                if (queue == null) {
-                    instance = new TaskQueue();
-                    queue = instance;
-                }
-            }
-        }
-        return queue;
+    public static synchronized TaskQueue getInstance() {
+        return instance;
     }
 
     private TaskQueue() {
@@ -48,10 +42,16 @@ public final class TaskQueue {
         return runner.queuedTasks();
     }
 
+    /**
+     * Adds a task to the queue.
+     */
     public void submit(Callable<?> callable) {
         runner.submit(callable);
     }
 
+    /**
+     * Adds a task to the queue.
+     */
     public void submit(Runnable runnable) {
         runner.submit(runnable);
     }

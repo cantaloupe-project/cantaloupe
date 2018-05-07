@@ -8,6 +8,7 @@ import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.blob.ListBlobItem;
+import edu.illinois.library.cantaloupe.async.TaskQueue;
 import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -318,7 +319,7 @@ class AzureStorageCache implements DerivativeCache {
     }
 
     private void purgeAsync(CloudBlob blob) {
-        ThreadPool.getInstance().submit(() -> {
+        TaskQueue.getInstance().submit(() -> {
             LOGGER.debug("purgeAsync(): {}", blob);
             try {
                 blob.deleteIfExists();

@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import edu.illinois.library.cantaloupe.async.TaskQueue;
 import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -826,7 +827,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     private void purgeAsync(final Path path) {
-        ThreadPool.getInstance().submit(() -> {
+        TaskQueue.getInstance().submit(() -> {
             LOGGER.debug("purgeAsync(): deleting stale file: {}", path);
             try {
                 Files.deleteIfExists(path);

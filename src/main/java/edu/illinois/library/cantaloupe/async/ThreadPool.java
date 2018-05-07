@@ -104,10 +104,16 @@ public final class ThreadPool {
         isShutdown = true;
     }
 
+    /**
+     * Submits a task for immediate execution.
+     */
     public Future<?> submit(Callable<?> task) {
         return submit(task, Priority.NORMAL);
     }
 
+    /**
+     * Submits a task for immediate execution.
+     */
     public Future<?> submit(Callable<?> task, Priority priority) {
         switch (priority) {
             case LOW:
@@ -119,10 +125,16 @@ public final class ThreadPool {
         }
     }
 
+    /**
+     * Submits a task for immediate execution.
+     */
     public Future<?> submit(Runnable task) {
         return submit(task, Priority.NORMAL);
     }
 
+    /**
+     * Submits a task for immediate execution.
+     */
     public Future<?> submit(Runnable task, Priority priority) {
         switch (priority) {
             case LOW:

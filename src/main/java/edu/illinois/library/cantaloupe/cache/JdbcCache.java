@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.cache;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.zaxxer.hikari.HikariDataSource;
-import edu.illinois.library.cantaloupe.async.ThreadPool;
+import edu.illinois.library.cantaloupe.async.TaskQueue;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -253,7 +253,7 @@ class JdbcCache implements DerivativeCache {
      * the given operation list asynchronously.
      */
     private void accessDerivativeImageAsync(OperationList opList) {
-        ThreadPool.getInstance().submit(() -> {
+        TaskQueue.getInstance().submit(() -> {
             try (Connection conn = getConnection()) {
                 accessDerivativeImage(opList, conn);
             } catch (SQLException e) {
@@ -288,7 +288,7 @@ class JdbcCache implements DerivativeCache {
      * operation list asynchronously.
      */
     private void accessInfoAsync(Identifier identifier) {
-        ThreadPool.getInstance().submit(() -> {
+        TaskQueue.getInstance().submit(() -> {
             try (Connection conn = getConnection()) {
                 accessInfo(identifier, conn);
             } catch (SQLException e) {
@@ -487,7 +487,7 @@ class JdbcCache implements DerivativeCache {
      * @param ops Operation list corresponding to the derivative image to purge.
      */
     private void purgeDerivativeImageAsync(OperationList ops) {
-        ThreadPool.getInstance().submit(() -> {
+        TaskQueue.getInstance().submit(() -> {
             try (Connection conn = getConnection()) {
                 purgeDerivativeImage(ops, conn);
             } catch (SQLException e) {
@@ -565,7 +565,7 @@ class JdbcCache implements DerivativeCache {
     }
 
     private void purgeInfoAsync(Identifier identifier) {
-        ThreadPool.getInstance().submit(() -> {
+        TaskQueue.getInstance().submit(() -> {
             try (Connection conn = getConnection()) {
                 purgeInfo(identifier, conn);
             } catch (SQLException e) {

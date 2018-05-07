@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import edu.illinois.library.cantaloupe.async.TaskQueue;
 import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -183,7 +184,7 @@ public final class InfoService {
     private void putInCachesAsync(Identifier identifier,
                                   Info info,
                                   DerivativeCache derivCache) {
-        ThreadPool.getInstance().submit(() -> {
+        TaskQueue.getInstance().submit(() -> {
             putInObjectCache(identifier, info);
             try {
                 derivCache.put(identifier, info);
@@ -191,7 +192,7 @@ public final class InfoService {
                 LOGGER.error("putInCachesAsync(): {}", e.getMessage());
             }
             return null;
-        }, ThreadPool.Priority.LOW);
+        });
     }
 
     /**

@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.async.TaskQueue;
 import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -386,11 +387,11 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
                 reader.dispose();
             }
         } finally {
-            pool.submit(() -> {
+            TaskQueue.getInstance().submit(() -> {
                 LOGGER.debug("Deleting {}", intermediateFile);
                 Files.delete(intermediateFile);
                 return null;
-            }, ThreadPool.Priority.LOW);
+            });
         }
     }
 

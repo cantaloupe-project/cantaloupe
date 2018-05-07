@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.async.TaskQueue;
 import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -463,11 +464,11 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                 reader.dispose();
             }
         } finally {
-            pool.submit(() -> {
+            TaskQueue.getInstance().submit(() -> {
                 LOGGER.debug("Deleting {}", intermediateFile);
                 Files.delete(intermediateFile);
                 return null;
-            }, ThreadPool.Priority.LOW);
+            });
         }
     }
 
@@ -518,11 +519,11 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         } finally {
             process.destroy();
 
-            ThreadPool.getInstance().submit(() -> {
+            TaskQueue.getInstance().submit(() -> {
                 LOGGER.debug("Deleting {}", stdoutSymlink);
                 Files.delete(stdoutSymlink);
                 return null;
-            }, ThreadPool.Priority.LOW);
+            });
         }
     }
 
