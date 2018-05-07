@@ -13,6 +13,12 @@ class CacheWorker implements Runnable {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(CacheWorker.class);
 
+    private int interval;
+
+    CacheWorker(int interval) {
+        this.interval = interval;
+    }
+
     /**
      * Runs one sweep of the worker.
      */
@@ -51,7 +57,7 @@ class CacheWorker implements Runnable {
             }
         }
 
-        LOGGER.info("Done working.");
+        LOGGER.info("Done working. Next shift starts in {} seconds.", interval);
     }
 
 }

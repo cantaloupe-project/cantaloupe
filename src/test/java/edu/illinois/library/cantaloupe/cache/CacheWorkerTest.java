@@ -38,7 +38,7 @@ public class CacheWorkerTest extends BaseTest {
         config.setProperty(Key.SOURCE_CACHE,
                 FilesystemCache.class.getSimpleName());
 
-        instance = new CacheWorker();
+        instance = new CacheWorker(1);
     }
 
     @Ignore // this is currently too hard to test

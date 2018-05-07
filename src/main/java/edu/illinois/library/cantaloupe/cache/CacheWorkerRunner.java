@@ -39,17 +39,17 @@ public final class CacheWorkerRunner {
 
     public synchronized void start() {
         final Configuration config = Configuration.getInstance();
-        final int initialDelay = 5;
-        final int delay = config.getInt(Key.CACHE_WORKER_INTERVAL, -1);
+        final int delay = 5;
+        final int interval = config.getInt(Key.CACHE_WORKER_INTERVAL, -1);
 
-        LOGGER.info("Starting the cache worker ({} second initial delay, {} second delay)",
-                initialDelay, delay);
+        LOGGER.info("Starting the cache worker with {} second delay, {} second interval",
+                delay, interval);
 
         executorService = Executors.newSingleThreadScheduledExecutor();
         future = executorService.scheduleWithFixedDelay(
-                new CacheWorker(),
-                initialDelay,
+                new CacheWorker(interval),
                 delay,
+                interval,
                 TimeUnit.SECONDS);
     }
 
