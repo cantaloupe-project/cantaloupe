@@ -152,7 +152,7 @@ class JdbcSource extends AbstractSource implements StreamSource {
 
     @Override
     public Format getFormat() throws IOException {
-        if (sourceFormat == null) {
+        if (format == null) {
             try {
                 String methodResult = getMediaType();
                 if (methodResult != null) {
@@ -168,36 +168,36 @@ class JdbcSource extends AbstractSource implements StreamSource {
                                 if (resultSet.next()) {
                                     String value = resultSet.getString(1);
                                     if (value != null) {
-                                        sourceFormat =
+                                        format =
                                                 new MediaType(value).toFormat();
                                     }
                                 }
                             }
                         }
                     } else {
-                        sourceFormat = new MediaType(methodResult).toFormat();
+                        format = new MediaType(methodResult).toFormat();
                     }
                 }
                 // If we don't have a media type yet, attempt to infer one
                 // from the identifier.
-                if (sourceFormat == null || Format.UNKNOWN.equals(sourceFormat)) {
-                    sourceFormat = Format.inferFormat(identifier);
+                if (format == null || Format.UNKNOWN.equals(format)) {
+                    format = Format.inferFormat(identifier);
                 }
                 // If we still don't have a media type, attempt to detect it
                 // from the blob contents.
-                if (sourceFormat == null || Format.UNKNOWN.equals(sourceFormat)) {
+                if (format == null || Format.UNKNOWN.equals(format)) {
                     detectFormat();
                 }
             } catch (ScriptException | SQLException e) {
                 throw new IOException(e);
             }
         }
-        return sourceFormat;
+        return format;
     }
 
     /**
      * Reads the first few bytes of a blob and attempts to detect its type,
-     * saving the result in {@link #sourceFormat}. If unsuccessful, {@link
+     * saving the result in {@link #format}. If unsuccessful, {@link
      * Format#UNKNOWN} will be set.
      */
     private void detectFormat() throws IOException {
@@ -220,11 +220,11 @@ class JdbcSource extends AbstractSource implements StreamSource {
                                     new ByteArrayInputStream(headerBytes);
                             List<MediaType> types =
                                     MediaType.detectMediaTypes(headerBytesStream);
-                            sourceFormat = types.isEmpty() ?
+                            format = types.isEmpty() ?
                                     Format.UNKNOWN : types.get(0).toFormat();
                         }
                     } else {
-                        sourceFormat = Format.UNKNOWN;
+                        format = Format.UNKNOWN;
                     }
                 }
             }

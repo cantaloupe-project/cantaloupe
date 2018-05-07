@@ -266,26 +266,26 @@ class HttpSource extends AbstractSource implements StreamSource {
      */
     @Override
     public Format getFormat() {
-        if (sourceFormat == null) {
+        if (format == null) {
             // Try to infer a format from the path component of the URI.
             try {
-                sourceFormat = Format.inferFormat(
+                format = Format.inferFormat(
                         getResourceInfo().getURI().getPath());
             } catch (Exception ignore) {
                 // This is better caught and handled elsewhere.
             }
 
-            if (Format.UNKNOWN.equals(sourceFormat)) {
+            if (Format.UNKNOWN.equals(format)) {
                 // Try to infer a format from the identifier.
-                sourceFormat = Format.inferFormat(identifier);
+                format = Format.inferFormat(identifier);
             }
 
-            if (Format.UNKNOWN.equals(sourceFormat)) {
+            if (Format.UNKNOWN.equals(format)) {
                 // Try to infer a format from the magic bytes.
-                sourceFormat = inferSourceFormatFromResponse();
+                format = inferSourceFormatFromResponse();
             }
         }
-        return sourceFormat;
+        return format;
     }
 
     /**
@@ -483,7 +483,7 @@ class HttpSource extends AbstractSource implements StreamSource {
         rangedGETResponse = null;
         rangedGETResponseListener = null;
         resourceInfo = null;
-        sourceFormat = null;
+        format = null;
         this.identifier = identifier;
     }
 

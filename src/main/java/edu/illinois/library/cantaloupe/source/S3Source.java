@@ -289,34 +289,34 @@ class S3Source extends AbstractSource implements StreamSource {
 
     @Override
     public Format getFormat() throws IOException {
-        if (sourceFormat == null) {
-            sourceFormat = Format.UNKNOWN;
+        if (format == null) {
+            format = Format.UNKNOWN;
 
             final ObjectInfo info = getObjectInfo();
 
             // Try to infer a format from the object key.
             LOGGER.debug("Inferring format from the object key for {}",
                     info);
-            sourceFormat = Format.inferFormat(info.getKey());
+            format = Format.inferFormat(info.getKey());
 
-            if (Format.UNKNOWN.equals(sourceFormat)) {
+            if (Format.UNKNOWN.equals(format)) {
                 // Try to infer a format from the identifier.
                 LOGGER.debug("Inferring format from the identifier for {}",
                         info);
-                sourceFormat = Format.inferFormat(identifier);
+                format = Format.inferFormat(identifier);
             }
 
-            if (Format.UNKNOWN.equals(sourceFormat)) {
+            if (Format.UNKNOWN.equals(format)) {
                 try (S3Object object = getObject(FORMAT_INFERENCE_RANGE_LENGTH)) {
                     // Try to infer a format from the Content-Type header.
                     LOGGER.debug("Inferring format from the Content-Type header for {}",
                             info);
                     String contentType = object.getObjectMetadata().getContentType();
                     if (contentType != null && !contentType.isEmpty()) {
-                        sourceFormat = new MediaType(contentType).toFormat();
+                        format = new MediaType(contentType).toFormat();
                     }
 
-                    if (Format.UNKNOWN.equals(sourceFormat)) {
+                    if (Format.UNKNOWN.equals(format)) {
                         // Try to infer a format from the object's magic bytes.
                         LOGGER.debug("Inferring format from magic bytes for {}",
                                 info);
@@ -327,14 +327,14 @@ class S3Source extends AbstractSource implements StreamSource {
                             List<MediaType> types =
                                     MediaType.detectMediaTypes(contentStream);
                             if (!types.isEmpty()) {
-                                sourceFormat = types.get(0).toFormat();
+                                format = types.get(0).toFormat();
                             }
                         }
                     }
                 }
             }
         }
-        return sourceFormat;
+        return format;
     }
 
     @Override

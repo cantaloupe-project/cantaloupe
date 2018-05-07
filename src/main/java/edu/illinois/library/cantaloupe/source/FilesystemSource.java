@@ -134,21 +134,21 @@ class FilesystemSource extends AbstractSource
      */
     @Override
     public Format getFormat() throws IOException {
-        if (sourceFormat == null) {
+        if (format == null) {
             // Try to infer a format from the filename.
-            sourceFormat = Format.inferFormat(getPath().getFileName().toString());
+            format = Format.inferFormat(getPath().getFileName().toString());
 
-            if (Format.UNKNOWN.equals(sourceFormat)) {
+            if (Format.UNKNOWN.equals(format)) {
                 // Try to infer a format from the identifier.
-                sourceFormat = Format.inferFormat(identifier);
+                format = Format.inferFormat(identifier);
             }
 
-            if (Format.UNKNOWN.equals(sourceFormat)) {
+            if (Format.UNKNOWN.equals(format)) {
                 // Fall back to reading the magic bytes.
-                sourceFormat = detectFormat();
+                format = detectFormat();
             }
         }
-        return sourceFormat;
+        return format;
     }
 
     /**
@@ -190,7 +190,7 @@ class FilesystemSource extends AbstractSource
     @Override
     public void setIdentifier(Identifier identifier) {
         path = null;
-        sourceFormat = null;
+        format = null;
         this.identifier = identifier;
     }
 

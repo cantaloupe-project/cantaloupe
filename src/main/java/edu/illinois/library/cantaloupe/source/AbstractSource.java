@@ -8,7 +8,7 @@ import edu.illinois.library.cantaloupe.script.DelegateProxy;
 abstract class AbstractSource {
 
     protected Identifier identifier;
-    protected Format sourceFormat;
+    protected Format format;
     protected DelegateProxy delegateProxy;
 
     /**
@@ -30,7 +30,7 @@ abstract class AbstractSource {
      */
     public void setIdentifier(Identifier identifier) {
         this.identifier = identifier;
-        this.sourceFormat = null;
+        this.format = null;
     }
 
 }

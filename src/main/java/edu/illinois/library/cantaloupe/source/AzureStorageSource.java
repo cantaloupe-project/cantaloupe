@@ -210,30 +210,30 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
 
     @Override
     public Format getFormat() throws IOException {
-        if (sourceFormat == null) {
+        if (format == null) {
             final String key = getObjectKey();
 
             // Try to infer a format based on the object key.
             LOGGER.debug("Inferring format from the object key for {}", key);
-            sourceFormat = Format.inferFormat(key);
+            format = Format.inferFormat(key);
 
-            if (Format.UNKNOWN.equals(sourceFormat)) {
+            if (Format.UNKNOWN.equals(format)) {
                 // Try to infer a format based on the identifier.
                 LOGGER.debug("Inferring format from the identifier for {}", key);
-                sourceFormat = Format.inferFormat(identifier);
+                format = Format.inferFormat(identifier);
             }
 
-            if (Format.UNKNOWN.equals(sourceFormat)) {
+            if (Format.UNKNOWN.equals(format)) {
                 // Try to infer the format from the Content-Type header.
                 LOGGER.debug("Inferring format from the Content-Type header for {}",
                         key);
                 final CloudBlockBlob blob = getObject();
                 final String contentType = blob.getProperties().getContentType();
                 if (contentType != null && !contentType.isEmpty()) {
-                    sourceFormat = new MediaType(contentType).toFormat();
+                    format = new MediaType(contentType).toFormat();
                 }
 
-                if (Format.UNKNOWN.equals(sourceFormat)) {
+                if (Format.UNKNOWN.equals(format)) {
                     // Try to infer a format from the object's magic bytes.
                     LOGGER.debug("Inferring format from magic bytes for {}",
                             key);
@@ -245,7 +245,7 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
                         try (InputStream is = new ByteArrayInputStream(bytes)) {
                             List<MediaType> types = MediaType.detectMediaTypes(is);
                             if (!types.isEmpty()) {
-                                sourceFormat = types.get(0).toFormat();
+                                format = types.get(0).toFormat();
                             }
                         }
                     } catch (StorageException e) {
@@ -254,7 +254,7 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
                 }
             }
         }
-        return sourceFormat;
+        return format;
     }
 
     @Override
