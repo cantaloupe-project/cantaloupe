@@ -184,7 +184,7 @@ public class AdminResource extends AbstractAdminResource {
 
         // image source formats
         List<Format> imageFormats = Arrays.stream(Format.values()).
-                filter(f -> Format.Type.IMAGE.equals(f.getType())).
+                filter(f -> Format.Type.IMAGE.equals(f.getType()) && !Format.DCM.equals(f)).
                 sorted(Comparator.comparing(Format::getName)).
                 collect(Collectors.toList());
         vars.put("imageSourceFormats", imageFormats);
