@@ -10,9 +10,8 @@
     <div class="container-fluid">
         <h1>IIIF Image API 1.x Endpoint</h1>
 
-        <div class="alert alert-info">This endpoint has been deprecated and
-            may be removed in a future version. Please migrate to the
-            <a href="$baseUri/iiif/2">IIIF Image API 2.x endpoint</a>.</div>
+        <div class="alert alert-info">This endpoint has been deprecated.
+            Please migrate to a newer Image API endpoint.</div>
 
         <ul>
             <li>Documentation

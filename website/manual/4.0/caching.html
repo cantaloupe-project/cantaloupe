@@ -36,10 +36,10 @@ title: Caching
 <p>Cantaloupe offers a sophisticated and customizable caching subsystem that is capable of meeting a variety of needs while remaining easy to use. Several tiers of cache are available:</p>
 
 <ol>
-  <li><a href="#Client-Side Caching">Client-side caches</a>, which it has no control over but can provide hints to;</li>
-  <li>A <a href="#Source%20Cache">source cache</a>, which caches source images on a local filesystem on-demand for faster reading (if they are not already on one);</li>
-  <li>An <a href="#Info%20Cache">info cache</a>, which caches source image metadata in memory;</li>
-  <li>A <a href="#Derivative%20Cache">derivative cache</a>, which caches processed images and basic source image characteristics.</li>
+  <li><a href="#Client-Side Caching">Client-side caches</a>, which it has no control over but can provide hints to</li>
+  <li>A <a href="#Source%20Cache">source cache</a>, which caches source images on a local filesystem (if they are not already on one) for faster reading</li>
+  <li>A <a href="#Derivative%20Cache">derivative cache</a>, which caches processed images and source image characteristics</li>
+  <li>An <a href="#Info%20Cache">info cache</a>, which caches source image characteristics in memory</li>
 </ol>
 
 <hr>
@@ -75,13 +75,13 @@ cache.client.no_transform = true
 
 <p>Commonly, source images will be served from a local filesystem using <a href="sources.html#FilesystemSource">FilesystemSource</a>. There, they are already as local as they can be, so there would be no point in caching them&mdash;although a <a href="#Derivative%20Cache">derivative cache</a> could still be of great benefit.</p>
 
-<p>As mentioned in the <a href="sources.html">Sources</a> section, though, images do not have to be served from a local filesystem&mdash;they can also be served from a remote web server, cloud storage, or wherever. The source cache can be beneficial when one of these non-filesystem sources performs poorer than ideal. By setting <code>processor.stream_retrieval_strategy</code> to <code>CacheStrategy</code> and <a href="#FilesystemCache">configuring FilesystemCache</a>, all source images from non-FilesystemSources will be automatically downloaded into the source cache and read from there.</p>
+<p>As mentioned in the <a href="sources.html">Sources</a> section, though, images do not have to be served from a local filesystem&mdash;they can also be served from a remote web server, cloud storage, or wherever. The source cache can be beneficial when one of these non-filesystem sources performs poorer than ideal. By setting the <a href="processors.html#Stream%20Retrieval%20Strategy">stream retrieval strategy</a> to <code>CacheStrategy</code> and <a href="#FilesystemCache">configuring FilesystemCache</a>, all source images from non-FilesystemSources will be automatically downloaded into the source cache and read from there.</p>
 
-<p>Another reason for a source cache is to work around the <a href="processors.html#Retrieval%20Strategies">incompatibility between certain processors and sources</a>. Some processors are only capable of reading source images located on the filesystem. By setting <code>processor.fallback_retrieval_strategy</code> to <code>CacheStrategy</code>, and then <a href="#FilesystemCache">configuring FilesystemCache</a>, the source cache will be utilized to deal with incompatible processor/source situations by automatically pre-downloading source images, as a more robust alternative to <code>DownloadStrategy</code>.</p>
+<p>Another reason for a source cache is to work around the <a href="processors.html#Retrieval%20Strategies">incompatibility between certain processors and sources</a>. Some processors are only capable of reading source images located on the filesystem. By setting the <a href="processors.html#Fallback%20Retrieval%20Strategy">fallback retrieval strategy</a> to <code>CacheStrategy</code>, and then <a href="#FilesystemCache">configuring FilesystemCache</a>, the source cache will be utilized to deal with incompatible processor/source situations by automatically pre-downloading source images, as a more robust alternative to <code>DownloadStrategy</code>.</p>
 
-<p>The source cache is integrated into the larger caching architecture, so all of the information about <a href="#Modes%20of%20Operation">modes of operation</a> and <a href="#Maintenance">maintenance</a> is applicable to both the source and derivative caches.</p>
+<p>The source cache is integrated into the larger caching architecture, so all of the information about <a href="#Modes%20of%20Operation">modes of operation</a> and <a href="#Maintenance">maintenance</a> applies to both the source and derivative caches.</p>
 
-<p>Note that unlike the derivative cache, there is only one available source cache implementation&mdash;<a href="#FilesystemCache">FilesystemCache</a>&mdash;and it is used independently of the derivative cache.</p>
+<p>Note that there is only one available source cache implementation&mdash;<a href="#FilesystemCache">FilesystemCache</a>&mdash;and it is used independently of the derivative cache.</p>
 
 <hr>
 
@@ -101,7 +101,7 @@ cache.client.no_transform = true
 
 <ul>
   <li>Requests for full-sized, unaltered source images are not cached, and are instead streamed through with no processing.</li>
-  <li>IIIF information response representations are not cached&mdash;only image metadata, which is the only expensive part to acquire. This means it is possible to change other configuration options that would affect the contents of information responses without invalidating the cache.</li>
+  <li>IIIF information response representations are not cached&mdash;only image info, which is the only expensive part to acquire. This means it is possible to change other configuration options that would affect the contents of information responses without invalidating the cache.</li>
   <li>When derivative caching is enabled, "miss" responses are streamed to the client and cache simultaneously. If the cache I/O is slower than the connection to the client, response times may be impaired.</li>
   <li>The derivative cache is shared across endpoints. Requests for the same image from different endpoints will return the same cached image.</li>
 </ul>
@@ -142,7 +142,7 @@ cache.client.no_transform = true
 
 <h3 id="Maintenance">Maintenance</h3>
 
-<p>Because cached content is not automatically deleted after becoming invalid, there will likely be a certain amount of invalid content taking up space in the cache at any given time. Without periodic maintenance, the amount can only grow. If this is a problem, it can be dealt with manually via the <a href="remote-management.html#HTTP%20API">HTTP API</a>, or automatically, using a cache worker, which periodically cleans and purges invalid items from the cache. (See the <code>cache.server.worker.*</code> configuration options.)</p>
+<p>Because cached content is not automatically deleted after becoming invalid, there will likely be a certain amount of invalid content taking up space in the cache at any given time. Without periodic maintenance, the amount can only grow. If this is a problem, it can be dealt with manually via the <a href="remote-management.html#HTTP%20API">HTTP API</a>, or automatically, using a cache worker, which periodically cleans and purges invalid items. (See the <code>cache.server.worker.*</code> configuration options.)</p>
 
 <hr>
 
@@ -159,6 +159,8 @@ cache.client.no_transform = true
 <hr>
 
 <h3 id="Implementations">Implementations</h3>
+
+<p class="text text-info"><i class="fa fa-info-circle"></i> All implementations are thread-, process-, and cluster-safe, where applicable. Multiple application instances can be pointed at the same cache store without conflicting.</p>
 
 <h4 id="FilesystemCache">FilesystemCache</h4>
 
@@ -213,8 +215,6 @@ cache.client.no_transform = true
 
 <p>Cache files are created with a <span class="filename">.tmp</span> extension and moved into place when closed for writing.</p>
 
-<p>This cache is process-safe: it is safe to point multiple server instances at the same cache directory.</p>
-
 <p class="text-info">
   <i class="fa fa-info-circle"></i> On macOS, files' last-modified time is used instead of their last-accessed time, as the latter is not reliable.
 </p>
@@ -223,7 +223,7 @@ cache.client.no_transform = true
 
 <h4 id="HeapCache">HeapCache</h4>
 
-<p>HeapCache, available since version 3.4, caches derivative images and metadata in the Java heap, which is the main area of RAM available to the JVM. This is the fastest of the caches, with the main drawback being that it cannot be shared across instances.</p>
+<p>HeapCache caches derivative images and metadata in the Java heap, which is the main area of memory available to the JVM. This is the fastest of the caches, with the main drawback being that it cannot be shared across instances.</p>
 
 <p>Unlike most of the other caches, this one does not age-limit content. When the target size (<code>HeapCache.target_size</code>) has been exceeded, the minimum number of least-recently-accessed items are purged that will reduce it back down to this size. (The configured target size may be safely changed while the application is running.)</p>
 
@@ -279,13 +279,11 @@ CREATE INDEX operations_idx ON {JdbcCache.derivative_image_table} (operations);
 CREATE INDEX identifier_idx ON {JdbcCache.info_table} (identifier);
 {% endhighlight %}
 
-<p>JdbcCache uses write transactions and is process-safe: it is safe to point multiple server instances at the same database tables.</p>
-
 <hr>
 
 <h4 id="S3Cache">S3Cache</h4>
 
-<p>S3Cache caches derivative images and metadata in an Amazon Simple Storage Service (S3) bucket.</p>
+<p>S3Cache caches derivative images and metadata in an Amazon Simple Storage Service (S3) bucket. It supports both AWS and non-AWS endpoints.</p>
 
 <h5>Configuration</h5>
 
@@ -293,7 +291,7 @@ CREATE INDEX identifier_idx ON {JdbcCache.info_table} (identifier);
 
 <dl>
   <dt><code>S3Cache.endpoint</code></dt>
-  <dd>URI or hostname of an S3 endpont. For AWS endpoints, this will be a value like <code>s3.us-east-2.amazonaws.com</code>. (See the <a href="http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region">list of AWS S3 Regions</a>.)</dd>
+  <dd>URI or hostname of an S3 endpont. For AWS endpoints, this will be a value like <code>s3.us-east-2.amazonaws.com</code>. (See the <a href="https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region">list of AWS S3 regions</a>.)</dd>
   <dt><code>S3Cache.bucket.name</code></dt>
   <dd>Name of the bucket to contain cached content.</dd>
   <dt><code>S3Cache.object_key_prefix</code></dt>

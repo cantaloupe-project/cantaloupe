@@ -24,19 +24,19 @@ title: Change Log
 
 <h2>Processors</h2>
 <ul>
-  <li>Added KakaduNativeProcessor, as well as precompiled libraries for Linux, macOS, and Windows, which are free to use with it for non-commercial purposes.</li>
   <li>KakaduProcessor has been renamed KakaduDemoProcessor to reflect the fact that it interfaces with the Kakadu demo tool, <span class="filename">kdu_expand</span>, and not the native library.</li>
-  <li>Added <code>DownloadStrategy</code> as another optional retrieval strategy for <code>StreamProcessor</code>s, and as an optional fallback strategy. This enables all processors to work with all sources with no extra configuration.</li>
+  <li>Added KakaduNativeProcessor, as well as compiled libraries for Linux, macOS, and Windows, which are free to use with it for non-commercial purposes.</li>
+  <li>Added <code>DownloadStrategy</code> as another optional retrieval strategy for stream-based processors, and as an optional fallback strategy. This enables all processors to work with all sources with no extra configuration.</li>
   <li>JaiProcessor has been deprecated. See the user manual for more information.</li>
   <li>KakaduDemoProcessor and OpenJpegProcessor work in Windows.</li>
-  <li>KakaduDemoProcessor and OpenJpegProcessor read image metadata using custom code, which is more efficient than using the respective <code>kdu_jp2info</code> and <code>opj_dump</code> tools, and enables them to read the number of decomposition levels, which improves reliability when decoding images with less-common level counts.</li>
+  <li>KakaduDemoProcessor and OpenJpegProcessor read image metadata using custom code, which is more efficient than using the respective <span class="filename">kdu_jp2info</span> and <span class="filename">opj_dump</span> tools, and enables them to read the number of decomposition levels, which improves reliability when decoding images with less-common level counts.</li>
   <li>ImageIO plugins can be selected on a per-format basis.</li>
   <li>Improved the efficiency of the Java 2D resample filters.</li>
-  <li>When downscaling to less than three pixels on a side, an empty image with the correct dimensions are returned, rather than a downscaled 3&times;3 image.</li>
+  <li>When using the Java 2D pipeline to downscale to less than three pixels on a side, an empty image with the correct dimensions is returned, rather than a downscaled 3&times;3 image.</li>
   <li>Java2dProcessor supports animated GIFs.</li>
   <li>Java2dProcessor supports CMYK &amp; YCCK JPEGs.</li>
-  <li>Worked around some behavior of the <code>opj_decompress</code> tool that could cause OpenJpegProcessor to break. (Thanks to @adam-vessey)</li>
-  <li>Improved PdfBoxProcessor's validation of requests for multi-page PDFs whose pages have different dimensions.</li>
+  <li>Worked around some behavior of the <span class="filename">opj_decompress</span> tool that could cause OpenJpegProcessor to break. (Thanks to @adam-vessey)</li>
+  <li>Improved PdfBoxProcessor's validation of requests for multi-page PDFs whose pages have inconsistent dimensions.</li>
   <li>Disabled support for GIF source images in JaiProcessor, as it was buggy and other processors can handle GIF better.</li>
 </ul>
 

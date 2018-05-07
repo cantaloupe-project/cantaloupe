@@ -30,9 +30,9 @@ title: Images
 
 <h2 id="Considerations">Considerations</h2>
 
-<p>Most requests to an image server will be for cropped tiles and/or downscaled derivatives of a source image. Both of these will contain fewer pixels than the entire source image. A basic image reader, disregarding efficiency, will try to read the entire source image into memory before the cropping and scaling operations are carried out. This works fine for small images, because they can be read quickly and won't consume much memory. But as pixel count increases, read time and memory consumption also increase, an increasing burden is placed on the server, and requests take longer to fulfill.</p>
+<p>A typical request to an image server calls for cropping and/or downscaling operations to be applied to a source image. Both will result in derivative images containing fewer pixels than the source image. A basic image reader, disregarding efficiency, will try to read the entire source image into memory before the cropping and scaling operations are carried out. This works fine for small images, because they can be read quickly and won't consume much memory. But as pixel count increases, read time and memory consumption also increase, an increasing burden is placed on the server, and requests take longer to fulfill.</p>
 
-<p>It would be better if the image reader could read only the requested region, and even employ subsampling to read only the pixels within that region that are needed to satisfy the requested scale factor. This would require three things:</p>
+<p>It would be better if the image reader could read only the requested region, and even employ subsampling to read only the pixels within it that are needed to satisfy the requested scale factor. This would require three things:</p>
 
 <ol>
   <li>An image format that can be selectively read. Two such formats&mdash;<a href="#JPEG2000">JPEG2000</a> and <a href="#TIFF">multi-resolution tiled TIFF</a>&mdash;are detailed later in this section.</li>
@@ -46,13 +46,13 @@ title: Images
 
 <h2 id="Identifiers">Identifiers</h2>
 
-<p>Every source image served by the application is considered to have a unique identifier, which is used throughout the application to refer to the image, and appears in <a href="endpoints.html">endpoint</a> URIs.</p>
+<p>Every source image served by the application is considered to have a unique identifier, which appears in <a href="endpoints.html">endpoint</a> URIs, and is used throughout the application to refer to the image.</p>
 
-<p>An identifier maps to a filename, pathname, object key, or some other identifier string in the underlying storage. The <a href="getting-started.html">Getting Started</a> section describes a simple setup in which URI identifiers map to pathname fragments on a filesystem, but this can make for identifiers that are ugly, unstable, and/or insecure. See <a href="sources.html">Sources</a> for information on your source of choice and setting it up to meet a particular use case.</p>
+<p>An identifier may be the same as, or may map to, a filename, pathname, object key, or some other identifier string in the underlying storage. The <a href="getting-started.html">Getting Started</a> section describes a simple setup in which URI identifiers map to pathname fragments on a filesystem, but this can make for identifiers that are ugly, unstable, and/or insecure. See <a href="sources.html">Sources</a> for information on your source of choice and setting it up to meet a particular use case.</p>
 
 <h3>URI Considerations</h3>
 
-<p>URI-illegal characters in identifiers must be encoded. For example, an image with an identifier of <span class="filename">a6/b3/c4.jp2</span> would need to appear in a URI as <span class="filename">a6%2Fb3%2Fc4.jp2</span>. If you are behind a reverse proxy that cannot pass through encoded slashes (<span class="filename">%2F</span>) without decoding them, the <code>slash_substitute</code> configuration key can be used to specify a different character or character sequence to treat as a slash.</p>
+<p>URI-illegal characters in identifiers must be encoded. For example, an image with an identifier of <span class="filename">a6/b3/c4.jp2</span> would need to appear in a URI as <span class="filename">a6%2Fb3%2Fc4.jp2</span>. When the application is behind a reverse proxy that cannot pass through encoded slashes (<span class="filename">%2F</span>) without decoding them, the <code>slash_substitute</code> configuration key can be used to specify a different character or character sequence to treat as a slash.</p>
 
 <hr>
 
@@ -80,7 +80,7 @@ title: Images
 
 <p><a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a> uses the <a href="http://www.openjpeg.org">OpenJPEG</a> decoder, which is one of the fastest open-source JPEG2000 decoders.</p>
 
-<p><a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a>'s JPEG2000 delegate, if installed, will also use the OpenJPEG library, but less efficiently as it will decompress the whole image, not just the region of interest, and won't be able to discard decomposition levels. (This is not recommended.)</p>
+<p><a href="processors.html#ImageMagickProcessor">ImageMagickProcessor</a>'s JPEG2000 delegate, if installed, will also use the OpenJPEG library, but less efficiently as it will decompress the whole image, not just the region of interest, and won't be able to discard decomposition levels.</p>
 
 <p><a href="processors.html#GraphicsMagickProcessor">GraphicsMagickProcessor</a> can read and write JPEG2000 using JasPer, if the necessary plugin is installed, with the same caveats as ImageMagickProcessor.</p>
 
@@ -96,17 +96,17 @@ title: Images
 
 <h4 id="Strip-Based vs. Tile-Based">Strip-Based vs. Tile-Based</h4>
 
-<p>The <a href="http://www.exif.org/TIFF6.pdf">Adobe TIFF 6.0 specification</a> permits arrangements of image data in either strips or tiles. Most TIFF encoders produce strip-based TIFFs unless told to do otherwise. These are increasingly slow to read as their size increases. <strong>High-resolution TIFFs should be tile-based</strong> in order to permit efficient region extraction. An easy way to check is with the <span class="filename">tiffdump</span> utility:</p>
+<p>The <a href="http://www.exif.org/TIFF6.pdf">Adobe TIFF 6.0 specification</a> permits arrangements of image data in either strips or tiles. Strips may consist of one or more whole rows of pixels, but tiles are typically square. By default, most TIFF encoders produce strip-based TIFFs, which are increasingly slow to read as their size increases. <strong>High-resolution TIFFs must be tile-based</strong> in order to permit efficient region extraction.</p>
 
-<pre>$ tiffdump image.tif</pre>
+<p>Information about TIFF source images is <a href="logging.html#Application%20Log">logged</a> at debug level. A request for a tiled TIFF will generate a log message like:</p>
 
-<p>For strip-based TIFFs, this will print out some information including <code>StripOffsets</code>, <code>StripByteCounts</code>, and so on. For tile-based TIFFs, it will print <code>TileOffsets</code>, <code>TileByteCounts</code>, and so on, instead.</p>
+<pre>DEBUG e.i.l.c.p.c.TIFFImageReader - Acquiring region 0,0/500x500 from 8848x6928 image (128x128 tile size)</pre>
 
 <h4 id="Multi-Resolution">Multi-Resolution (Pyramidal) TIFF</h4>
 
-<p>Multi-resolution TIFF is a special type of TIFF file that can be read more efficiently at reduced scales. In addition to the main image, a multi-resolution TIFF file will contain a sequence of progressively half-sized sub-images: for example, a 10000&times;10000 pixel main image would include versions of 5000&times;5000 pixels, 2500&times;2500 pixels, and so on, in the same file.</p>
+<p>Multi-resolution TIFF is a subtype of TIFF that can be read more efficiently at reduced scales. In addition to the main image, a multi-resolution TIFF file will contain a sequence of progressively half-sized sub-images: for example, a 10000&times;10000 pixel main image would include versions of 5000&times;5000 pixels, 2500&times;2500 pixels, 1250&times1250 pixels, and so on, in the same file.</p>
 
-<p>Each of the levels in a multi-resolution TIFF file can be striped or tiled, just as in a mono-resolution file. (They can even be encoded in other, non-TIFF formats.) Tiled and pyramidal encodings are complementary: the former improves efficiency with reduced regions at large scales, and the latter improves efficiency at reduced scales. For efficient deep zooming, TIFF images need to be pyramidal, and each level of the pyramid should be tiled.</p>
+<p>Each of the images in a multi-resolution TIFF file can be striped or tiled, just as in a mono-resolution file. (They can even be encoded in other, non-TIFF formats.) Tiled and pyramidal encodings are complementary: the former improves efficiency with reduced regions at large scales, and the latter improves efficiency at reduced scales. For efficient deep zooming, TIFF images need to be pyramidal, and each level of the pyramid must be tiled.</p>
 
 <h4 id="Processor Considerations">Processor Considerations</h4>
 

@@ -22,8 +22,16 @@ nav a:hover {
   color: white !important;
 }
 
+.alert-danger code {
+  color: white;
+}
+
 .bg-primary, .list-group-item.active, .alert-primary {
   background-color: #3A3F44 !important;
+}
+
+.dropdown-item:hover {
+  color:white !important;
 }
 
 h2 {
@@ -53,26 +61,10 @@ ul.toc, ul.toc ul {
   margin-left: 1.5em;
   padding-left: 0em; }
 
-ul.processor-data-flow, ul.processor-data-flow ul {
-  list-style: none;
-  margin-left: 0;
-  padding-left: 0;
-}
-
-ul.processor-data-flow li {
-  padding-left: 1em;
-  text-indent: -1em;
-}
-
-ul.processor-data-flow li:before {
-  content: "\2192";
-  padding-right: 5px;
-}
-
 code, span.filename, var, pre {
   font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
   font-size: 0.9em;
-  padding: 0.25em; }
+  padding: 0.25em 0.1em; }
 
 figure {
   margin: 1em auto; }

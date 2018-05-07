@@ -14,9 +14,9 @@ title: Configuration
 
 <h2 id="Overview">Overview</h2>
 
-<p>Configuration is normally obtained from a file in <a href="https://en.wikipedia.org/wiki/.properties">.properties format</a>. A sample file, called <span class="filename">cantaloupe.properties.sample</span>, is included in the distribution archive. It is recommended to make a copy of this file and use the copy as your primary configuration file.</p>
+<p>Configuration is normally obtained from a file in <a href="https://en.wikipedia.org/wiki/.properties">.properties format</a>. A sample file, called <span class="filename">cantaloupe.properties.sample</span>, is included in the distribution archive. It is recommended to make a copy of this file and use the copy as your configuration file. It can be located anywhere, and named anything.</p>
 
-<p>To tell the application where the file is located, supply the <code>-Dcantaloupe.config</code> VM option, pointing to an absolute or relative path to the file. (See <a href="getting-started.html#Running">Getting Started</a> for examples.) The file can be located anywhere, and named anything.</p>
+<p>To tell the application where the file is located, supply the <code>-Dcantaloupe.config</code> VM option, pointing to an absolute or relative path to the file. (See <a href="getting-started.html#Running">Getting Started</a> for examples.)</p>
 
 <hr>
 
@@ -24,9 +24,9 @@ title: Configuration
 
 <p>Configuration files may contain an <code>extends</code> key pointing to the pathname or same-directory filename of another configuration file. This enables multiple instances to share common configuration keys.</p>
 
-<p>Child files override parent files. When the same key is defined in multiple files, instances will use the most specific one.</p>
+<p>Keys in child files override ones in parent files. When the same key is defined in multiple files, instances will use the most specific one.</p>
 
-<p>Multiple extends keys in the same file are not supported. If they are present, the last one will be used.</p>
+<p>Multiple <code>extends</code> keys in the same file are not supported. If they are present, only the last one will be used.</p>
 
 <hr>
 

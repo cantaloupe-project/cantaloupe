@@ -553,7 +553,7 @@ transforms and all IIIF output formats, assuming the necessary delegates are ins
 <h3 id="KakaduProcessor">KakaduProcessor</h3>
 
 <p>KakaduProcessor uses the <span class="filename">kdu_expand</span> and <span class="filename">kdu_jp2info</span> binaries from the
-<a href="http://www.kakadusoftware.com">Kakadu</a> SDK to efficiently decode JPEG2000 source images. This processor is capable of performing well even with large JP2s. Kakadu is extensively hardware-optimized and will make full use of all available CPU cores.</p>
+<a href="http://kakadusoftware.com">Kakadu</a> SDK to efficiently decode JPEG2000 source images. This processor is capable of performing well even with large JP2s. Kakadu is extensively hardware-optimized and will make full use of all available CPU cores.</p>
 
 <p>Although it does support some other operations, <span class="filename">kdu_expand</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. All other operations (differential scaling, rotation, etc.) are performed using either the Java 2D or JAI APIs (configurable).</p>
 

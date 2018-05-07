@@ -82,7 +82,10 @@ endpoint.public.auth.basic.enabled = false
 endpoint.public.auth.basic.username = myself
 endpoint.public.auth.basic.secret = mypassword
 
+# Enables the IIIF Image API 1.x endpoint, at /iiif/1.
 endpoint.iiif.1.enabled = false
+
+# Enables the IIIF Image API 2.x endpoint, at /iiif/2.
 endpoint.iiif.2.enabled = true
 
 # Controls the response Content-Disposition header for images. Allowed
@@ -93,11 +96,11 @@ endpoint.iiif.content_disposition = none
 # Minimum size that will be used in info.json `sizes` keys.
 endpoint.iiif.min_size = 64
 
-# Minimum size that will be used in info.json `tiles` keys. See the user
-# manual to learn how these are calculated.
+# Minimum size that will be used in info.json `tiles` keys. The user manual
+# explains how these are calculated.
 endpoint.iiif.min_tile_size = 512
 
-# If true, requests for sizes other than those specified in an info.json
+# If true, requests for sizes other than those contained in an information
 # response will be denied.
 endpoint.iiif.2.restrict_to_sizes = false
 
@@ -214,7 +217,7 @@ S3Source.BasicLookupStrategy.bucket.name =
 
 # Path within the bucket that will be prefixed to the identifier in the URL.
 # Trailing slash is important!
-S3Source.BasicLookupStrategy.path_prefix = /path
+S3Source.BasicLookupStrategy.path_prefix =
 
 # Path or extension that will be suffixed to the identifier in the URL.
 S3Source.BasicLookupStrategy.path_suffix =
@@ -296,8 +299,8 @@ processor.fallback_retrieval_strategy = DownloadStrategy
 # Resolution of vector rasterization (of e.g. PDFs) at a scale of 1.
 processor.dpi = 150
 
-# Expands contrast to utilize available dynamic range. This forces the entire
-# source image to be read into memory, so can be slow with large images.
+# Expands contrast to utilize available dynamic range. This usually requires
+# the whole source image to be read into memory, so it can be inefficient.
 processor.normalize = false
 
 # Color of the background when an image is rotated or alpha-flattened, for
@@ -374,13 +377,13 @@ GraphicsMagickProcessor.path_to_binaries =
 
 # !! Optional absolute path of the directory containing the ImageMagick
 # binary. Overrides the PATH.
-ImageMagickProcessor.path_to_binaries = /usr/local/bin
+ImageMagickProcessor.path_to_binaries =
 
 #----------------------------------------
 # KakaduDemoProcessor
 #----------------------------------------
 
-# Optional absolute path of the directory containing the Kakadu binaries.
+# Optional absolute path of the directory containing kdu_expand.
 # Overrides the PATH.
 KakaduDemoProcessor.path_to_binaries =
 
@@ -388,7 +391,7 @@ KakaduDemoProcessor.path_to_binaries =
 # OpenJpegProcessor
 #----------------------------------------
 
-# Optional absolute path of the directory containing the OpenJPEG binaries.
+# Optional absolute path of the directory containing opj_decompress.
 # Overrides the PATH.
 OpenJpegProcessor.path_to_binaries =
 
@@ -412,6 +415,10 @@ cache.client.no_transform = true
 ###########################################################################
 # SERVER-SIDE CACHING
 ###########################################################################
+
+# N.B.: The source cache may be used if the
+# `processor.stream_retrieval_strategy` and/or
+# `processor.fallback_retrieval_strategy` keys are set to `CacheStrategy`.
 
 # FilesystemCache is the only available source cache.
 cache.server.source = FilesystemCache
@@ -462,11 +469,11 @@ cache.server.worker.interval = 86400
 FilesystemCache.pathname = /var/cache/cantaloupe
 
 # Levels of folder hierarchy in which to store cached images. Deeper depth
-# results in fewer files per directory. Set to 0 to disable subfolders.
+# results in fewer files per directory. Set to 0 to disable subdirectories.
 # Purge the cache after changing this.
 FilesystemCache.dir.depth = 3
 
-# Number of characters in hierarchy directory names. Should be set to
+# Number of characters in tree directory names. Should be set to
 # 16^n < (max number of directory entries your filesystem can deal with).
 # Purge the cache after changing this.
 FilesystemCache.dir.name_length = 2
@@ -477,7 +484,7 @@ FilesystemCache.dir.name_length = 2
 
 # Target cache size, in bytes or a number ending in M, MB, G, GB, etc.
 # This is not a hard limit, and may be transiently exceeded.
-# Ensure your heap can accommodate this size using the -Xmx= VM argument.
+# Ensure your heap can accommodate this size.
 HeapCache.target_size = 2G
 
 # If true, the cache contents will be written to a file on exit and during
@@ -567,8 +574,7 @@ overlays.enabled = false
 
 # Controls how overlays are configured. `BasicStrategy` will use the
 # `overlays.BasicStrategy.*` keys in this section. `ScriptStrategy` will
-# use the `overlay` delegate method. See the user manual for more
-# information.
+# use a delegate method. (See the user manual.)
 overlays.strategy = BasicStrategy
 
 # `image` or `string`.

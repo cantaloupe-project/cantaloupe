@@ -39,9 +39,7 @@ title: Logging
 
 <p>Currently, the only available rolling policy (<code>log.application.RollingFileAppender.policy</code>) is <code>TimeBasedRollingPolicy</code>, which rolls over the log file based on the value of <code>log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern</code>. <code>log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history</code> defines how many rolled-over log files will be kept.</p>
 
-<div class="alert alert-info">
-  <i class="fa fa-info-circle"></i> FileAppender and RollingFileAppender should not be enabled simultaneously, or if they are, they should not log to the same file.
-</div>
+<p class="text-info"><i class="fa fa-info-circle"></i> FileAppender and RollingFileAppender should not be enabled simultaneously, or if they are, they should not log to the same file.</p>
 
 <h4>SyslogAppender</h4>
 

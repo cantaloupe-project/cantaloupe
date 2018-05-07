@@ -40,15 +40,9 @@ endpoint.public.auth.basic.secret = mypassword
 
 <h2 id="Authorization">Authorization</h2>
 
-<p>A custom <a href="delegate-script.html">delegate method</a> can be used to implement authorization logic ranging from simple to complex. The method will be invoked upon every image request. Depending on its return value, it can either:</p>
+<p>A custom <a href="delegate-script.html">delegate method</a>, <code>authorized?()</code>, can be used to implement authorization logic ranging from simple to complex. It will be invoked upon every image request. A skeleton with documented parameters and return values is present in the <span class="filename">delegates.rb.sample</span> file. By default, it just returns <code>true</code>, authorizing all requests.</p>
 
-<ul>
-  <li>Authorize the request (by returning <code>HTTP 200 OK</code>);</li>
-  <li>Forbid the request (by returning <code>HTTP 403 Forbidden</code>); or</li>
-  <li>Redirect to a different URL via a response code returned from the method.</li>
-</ul>
-
-<p>The delegate method is named <code>authorized?()</code>. A skeleton with documented parameters and return values is present in the <span class="filename">delegates.rb.sample</span> file. By default, it just returns <code>true</code>, authorizing all requests.</p>
+<p>Another method, <code>redirect()</code>, can be used to conditionally redirect to a different URL.</p>
 
 <h3 id="Authorization Notes">Notes</h3>
 
@@ -148,7 +142,7 @@ end
 <h4 id="example-6">Allow only certain user agents</h4>
 
 <p class="text-warning">
-  <i class="fa fa-info-circle"></i> This is not foolproof&mdash;if a client knows what <var>User-Agent</var> you are checking for, they can spoof it.
+  <i class="fa fa-warning"></i> This is not foolproof&mdash;if a client knows what <var>User-Agent</var> you are checking for, they can spoof it.
 </p>
 
 {% highlight ruby %}

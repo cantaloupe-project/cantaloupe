@@ -13,7 +13,6 @@ title: Delegate Script
   <li><a href="#Calling%20Java%20Code">Calling Java Code</a></li>
   <li><a href="#Improving%20Efficiency">Improving Efficiency</a>
     <ul>
-      <li><a href="#HTTP%20Connection%20Pooling">HTTP Connection Pooling</a></li>
       <li><a href="#Sharing%20Information">Sharing Information</a></li>
       <li><a href="#Caching">Caching</a></li>
     </ul>
@@ -183,7 +182,7 @@ require 'mygem'
 
 <h2 id="Calling Java Code">Calling Java Code</h2>
 
-<p>This example uses <a href="https://docs.oracle.com/javase/8/docs/api/java/net/HttpURLConnection.html">HttpURLConnection</a>, which is part of the JDK, to execute an HTTP request, as an alternative to other examples which use Ruby's Net::HTTP library.</p>
+<p>This example uses <a href="https://docs.oracle.com/javase/10/docs/api/java/net/URLConnection.html">URLConnection</a>, which is part of the JDK, to execute an HTTP request, as an alternative to other examples which use Ruby's Net::HTTP library.</p>
 
 {% highlight ruby %}
 require 'java'
@@ -191,6 +190,7 @@ require 'java'
 java_import java.net.HttpURLConnection
 java_import java.net.URL
 java_import java.io.BufferedReader
+java_import java.io.FileNotFoundException
 java_import java.io.InputStreamReader
 java_import java.util.stream.Collectors
 
@@ -213,15 +213,15 @@ class CustomDelegate
           entity = reader.lines.collect(Collectors.joining("\n"))
           puts entity
         else
-          Java::edu.illinois.library.cantaloupe.script.Logger.warn(
-              "Unexpected Content-Type: #{content_type}")
+          raise IOError, "Unexpected Content-Type: #{content_type}"
         end
       else
-        Java::edu.illinois.library.cantaloupe.script.Logger.warn(
-            "Unexpected status: #{status}")
+        raise IOError, "Unexpected status: #{status}"
       end
+    rescue FileNotFoundException => e
+      return nil
     rescue => e
-      Java::edu.illinois.library.cantaloupe.script.Logger.error("#{e}")
+      Java::edu.illinois.library.cantaloupe.script.Logger.error("#{e}", e)
     ensure
       reader&.close
       is&.close
@@ -233,15 +233,13 @@ end
 
 <p>See also: <a href="https://github.com/jruby/jruby/wiki/CallingJavaFromJRuby">CallingJavaFromJRuby</a></p>
 
+<p class="text-warning"><i class="fa fa-warning"></i> There's nothing to stop you from using third-party JARs and accessing their API from JRuby. This is not recommended, though, as JARs may contain code that conflicts with the application's dependencies&mdash;different versions of the same library, for example.</p>
+
 <hr>
 
 <h2 id="Improving Efficiency">Improving Efficiency</h2>
 
 <p>Several delegate methods will be called over the course of a single request, and making them as efficient as possible will improve response times. A couple of techniques for improving efficiency are:</p>
-
-<h3 id="HTTP Connection Pooling">HTTP Connection Pooling</h3>
-
-<p>Most of the examples throughout this documentation use Ruby's Net::HTTP library to make HTTP requests, because it's built-in and relatively simple. Unfortunately, Net::HTTP opens and closes a separate TCP connection for each request, which is not very efficient. One way of solving this, short of writing a custom connection pool, is to switch to a different client, such as <a href="https://github.com/nahi/httpclient">HTTPClient</a> (which is also friendier to use). Also, because this is JRuby, any Java HTTP client can be used, many of which are pooling-capable. See the <a href="#Calling%20Java%20Code">Calling Java Code</a> section for an example.</p>
 
 <h3 id="Sharing Information">Sharing Information</h3>
 
@@ -272,7 +270,7 @@ class CustomDelegate
   end
 
   # Performs an expensive query only once, caching the result.
-  def perform_expensive_query(options = {})
+  def perform_expensive_query
     unless @result
       # perform the query
       @result = ... # save the result in an instance variable
@@ -290,7 +288,7 @@ end
 
 <p>The cache is not persisted. It will be lost when the application is stopped.</p>
 
-<p>Cached invocations are <strong>not</strong> purged when the script file is auto-reloaded, such as in response to a change. If, while the application is running, you modify the script file in a way that would change a return value based on the same request context, you should either purge the invocation cache or restart.</p>
+<p>Cached invocations are <strong>not</strong> purged when the script file is auto-reloaded, such as in response to a change. If, while the application is running, you modify the script file in a way that would cause a return value to be different based on the same request context, you should either purge the invocation cache or restart.</p>
 
 <hr>
 

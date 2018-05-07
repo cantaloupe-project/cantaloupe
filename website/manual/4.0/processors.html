@@ -25,7 +25,7 @@ title: Processors
   </li>
 </ul>
 
-<p>A processor reads a source image from a <a href="sources.html">source</a>, decodes it, transforms it according to request arguments, and encodes a derivative image to return to the client. Particular processors can be assigned to handle particular source formats, and a fallback processor can be assigned to handle all others.</p>
+<p>A processor reads an image from a <a href="sources.html">source</a>, decodes it, transforms it according to request arguments, and encodes and writes a derivative image to the client. Particular processors can be assigned to handle particular source formats, and a fallback processor can be assigned to handle all others.</p>
 
 <p>Different processors use different underlying codecs and image processing engines, which may have different quality, compatibility, dependency, performance, and cost characteristics. The ability to choose among different processors is intended to make it straightforward to add support for new image formats; improve support for existing image formats via the substitution of better codecs; and decouple the image server implementation from any one codec.</p>
 
@@ -39,7 +39,7 @@ title: Processors
 
 <h2 id="Retrieval Strategies">Retrieval Strategies</h2>
 
-<p>Processors ultimately read images from <a href="sources.html">sources</a>, of which there are two main types: those that can supply files (FileSources), and those that can supply streams (StreamSources). Correspondingly, there are two types of processors: those that can read from files (FileProcessors), and those that can read from streams (StreamProcessors). These distinctions are important because they influence how data flows through the processing pipeline. Generally files are preferable to streams for efficiency's sake.</p>
+<p>Processors ultimately read images from <a href="sources.html">sources</a>, of which there are two main types: those that can supply files (FileSources), and those that can supply streams (StreamSources). Correspondingly, there are two types of processors: those that can read from files (FileProcessors), and those that can read from streams (StreamProcessors). These distinctions are important because they influence how data flows through the processing pipeline, which influences performance. Generally files are preferable to streams where performance is a priority.</p>
 
 <table class="table table-bordered">
   <tr>
@@ -53,7 +53,7 @@ title: Processors
       </ul>
     </td>
     <td>
-      StreamProcessor (all of these are also FileProcessors)
+      StreamProcessor (all of these can also function as FileProcessors)
       <ul>
         <li><a href="#GraphicsMagickProcessor">GraphicsMagickProcessor</a></li>
         <li><a href="#ImageMagickProcessor">ImageMagickProcessor</a></li>
@@ -648,31 +648,9 @@ title: Processors
 
 <h3 id="Java2dProcessor">Java2dProcessor</h3>
 
-<p>Java2dProcessor uses the Java Image I/O and Java 2D libraries to read and process images in a native-Java way. It is a good all-around processor with no external dependencies.</p>
+<p>Java2dProcessor uses the Java Image I/O and Java 2D libraries to read and process images in a native-Java way. It is a good all-around processor with no dependencies.</p>
 
-<p>This processor has been written to exploit the Image I/O image readers as efficiently as possible. Special attention has been paid to its handling of tiled images, such as tile-encoded TIFFs, for which it reads only the necessary tiles for a given request. It is also capable of reading the sub-images contained within multi-resolution (pyramidal) TIFF images.</p>
-
-<h4>Data Flow</h4>
-
-<ul class="processor-data-flow">
-  <li>FileSource or StreamSource
-    <ul>
-      <li>Image I/O reader
-        <ul>
-          <li>java.awt.image.BufferedImage (one per operation)
-            <ul>
-              <li>Image I/O writer
-                <ul>
-                  <li>Response OutputStream</li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-</ul>
+<p>This processor has been written to exploit the Image I/O readers as efficiently as possible. Special attention has been paid to its handling of tiled images, such as tile-encoded TIFFs, for which it reads only the necessary tiles for a given request. It is also capable of reading the sub-images contained within multi-resolution (pyramidal) TIFF images.</p>
 
 <hr>
 
@@ -681,7 +659,7 @@ title: Processors
 <p>Java Advanced Imaging (JAI) is a sophisticated image processing library developed by Sun Microsystems until the mid-2000s. It offers several advantages over Java 2D that make it ideal for an image server: a pull-based rendering pipeline that can reduce memory usage, and efficient region-of-interest decoding with some formats.</p>
 
 <p class="text-warning">
-  <i class="fa fa-info-circle"></i> Development on JAI ended a long time ago, and a <a href="https://github.com/medusa-project/cantaloupe/issues/176">minor incompatibility</a> has cropped up in Java 9. Given that supporting JAI is likely to become more problematic as time goes on, this processor should be considered deprecated, and it may be removed in a future release.</li>
+  <i class="fa fa-warning"></i> Development on JAI ended a long time ago, and a <a href="https://github.com/medusa-project/cantaloupe/issues/176">minor incompatibility</a> has cropped up in Java 9. Given that supporting JAI is likely to become more problematic as time goes on, this processor should be considered deprecated, and it may be removed in a future release.</li>
 </p>
 
 <div class="text-info">
@@ -689,28 +667,6 @@ title: Processors
   <blockquote>Error: Could not find mediaLib accelerator wrapper classes. Continuing in pure Java mode.</blockquote>
   <p>This is harmless and expected when there is no mediaLib JAR on the classpath. Either add the <code>-Dcom.sun.media.jai.disableMediaLib=true</code> VM option to suppress it, or put a mediaLib JAR on your classpath.</p>
 </div>
-
-<h4>Data Flow</h4>
-
-<ul class="processor-data-flow">
-  <li>FileSource or StreamSource
-    <ul>
-      <li>Image I/O reader
-        <ul>
-          <li>JAI
-            <ul>
-              <li>Image I/O writer
-                <ul>
-                  <li>Response OutputStream</li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-</ul>
 
 <hr>
 
@@ -731,24 +687,6 @@ title: Processors
 
 <p>If the <code>page</code> argument is missing, the first page will be returned.</p>
 
-<h4>Data Flow</h4>
-
-<ul class="processor-data-flow">
-  <li>FileSource or StreamSource
-    <ul>
-      <li><span class="filename">gm</span>
-        <ul>
-          <li>java.lang.Process
-            <ul>
-              <li>Response OutputStream</li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-</ul>
-
 <hr>
 
 <h3 id="ImageMagickProcessor">ImageMagickProcessor</h3>
@@ -767,31 +705,11 @@ title: Processors
 
 <p>If the <code>page</code> argument is missing, the first page will be returned.</p>
 
-<h4>Data Flow</h4>
-
-<ul class="processor-data-flow">
-  <li>FileSource or StreamSource
-    <ul>
-      <li><span class="filename">magick</span>
-        <ul>
-          <li>java.lang.Process
-            <ul>
-              <li>Response OutputStream</li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-</ul>
-
 <hr>
 
 <h3 id="KakaduDemoProcessor">KakaduDemoProcessor</h3>
 
-<p><a href="http://www.kakadusoftware.com">Kakadu</a> is widely considered the fastest available general-purpose JPEG2000 codec. This processor uses Kakadu's <span class="filename">kdu_expand</span> demo application to decode JPEG2000 source images.</p>
-
-<p><span class="filename">kdu_expand</span> is mainly a decompression tool, and Cantaloupe uses only its cropping and level-reduction features. All other operations are performed using Java 2D, and basic image characteristics are read using custom code.</p>
+<p><a href="http://kakadusoftware.com">Kakadu</a> is widely considered the fastest available general-purpose JPEG2000 codec. This processor uses Kakadu's <span class="filename">kdu_expand</span> demo application to decode JPEG2000 source images. All other operations are performed using Java 2D, and basic image characteristics are read using custom code.</p>
 
 <p>The Kakadu demo binaries must be installed in order for this processor to work. They will automatically be detected if they are on the path; otherwise, set the <code>KakaduDemoProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory. The <code>LD_LIBRARY_PATH</code> environment variable (or your operating system's equivalent) will also need to be set to locate the Kakadu shared library.</p>
 
@@ -799,50 +717,17 @@ title: Processors
   <i class="fa fa-info-circle"></i> This processor was named KakaduProcessor in versions prior to 4.0. It was renamed in order to distinguish it from <a href="#KakaduNativeProcessor">KakaduNativeProcessor</a>, which is new in 4.0.
 </p>
 
-<p class="text-warning">
+<p class="text-info">
   <i class="fa fa-info-circle"></i> Kakadu is not free and the demo tools are not included with Cantaloupe. As of this writing, they can be downloaded from the <a href="http://kakadusoftware.com">Kakadu website</a> and used for demonstration purposes.
 </p>
-
-<h4>Data Flow</h4>
-
-<ul class="processor-data-flow">
-  <li>FileSource or StreamSource
-    <ul>
-      <li>kdu_expand
-        <br>
-        <span class="text-warning">
-          <i class="fa fa-info-circle"></i> In Windows, output from this step is written to a temporary file rather than streamed into the next step, which is less efficient.</span>
-        <ul>
-          <li>java.lang.Process
-            <ul>
-              <li>Image I/O TIFF plugin
-                <ul>
-                  <li>java.awt.image.BufferedImage (one per post-scale operation)
-                    <ul>
-                      <li>Image I/O writer
-                        <ul>
-                          <li>Response OutputStream</li>
-                        </ul>
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-</ul>
 
 <hr>
 
 <h3 id="KakaduNativeProcessor">KakaduNativeProcessor</h3>
 
-<p><a href="http://www.kakadusoftware.com">Kakadu</a> is a commercial JPEG2000 codec that is widely considered the fastest available general-purpose JP2 codec. KakaduNativeProcessor calls directly into the Kakadu native library to decode JPEG2000 source images.</p>
+<p><a href="http://kakadusoftware.com">Kakadu</a> is a commercial JPEG2000 codec that is widely considered the fastest available general-purpose JP2 codec. KakaduNativeProcessor calls directly into the Kakadu native library to decode JPEG2000 source images.</p>
 
-<p>Compared to <a href="#KakaduDemoProcessor">KakaduDemoProcessor</a>, this one is more efficient in that it doesn't need to invoke a process, and doesn't have to do internal intermediary format conversions. It also offers benefits not related to performance:</p>
+<p>Compared to <a href="#KakaduDemoProcessor">KakaduDemoProcessor</a>, this one is more efficient in terms of its internal implementation. It also offers benefits not related to performance:</p>
 
 <ul>
   <li>It can read from both FileSources and StreamSources.</li>
@@ -853,7 +738,7 @@ title: Processors
 
 <h4>Configuration</h4>
 
-<p>To get this processor to work, it must be able to locate the Kakadu JNI binding and shared library. When the release archive is extracted, a subdirectory named <span class="filename">libs</span> is created, containing precompiled libraries for several platforms.</p>
+<p>To get this processor to work, it must be able to locate the Kakadu JNI binding and shared library. When the release archive is extracted, a subdirectory named <span class="filename">libs</span> is created, containing compiled libraries for several platforms.</p>
 
 <ul class="nav nav-pills" role="tablist">
   <li class="nav-item">
@@ -868,7 +753,7 @@ title: Processors
 </ul>
 <div class="tab-content">
   <div class="tab-pane fade show active" id="KakaduNativeProcessor-macOS" role="tabpanel" aria-labelledby="KakaduNativeProcessor-macOS-tab">
-    <p>Copy the library files from the macOS-specific <span class="filename">libs</span> folder into <code>/usr/local/lib</code>.</p>
+    <p>Copy the library files from the macOS-specific <span class="filename">libs</span> folder into <span class="filename">/usr/local/lib</span>.</p>
   </div>
   <div class="tab-pane fade" id="KakaduNativeProcessor-Linux" role="tabpanel" aria-labelledby="KakaduNativeProcessor-Linux-tab">
     <p>Do <strong>one</strong> of the following:</p>
@@ -895,28 +780,6 @@ title: Processors
   <i class="fa fa-info-circle"></i> This processor was developed using a Kakadu Public Service License and may not be used commercially. See the <a href="http://kakadusoftware.com/wp-content/uploads/2014/06/Kakadu-Licence-Terms-Feb-2018.pdf">Kakadu Software License Terms and Conditions</a> for detailed terms.
 </p>
 
-<h4>Data Flow</h4>
-
-<ul class="processor-data-flow">
-  <li>FileSource or StreamSource
-    <ul>
-      <li>libkdu
-        <ul>
-          <li>java.awt.image.BufferedImage (one per post-scale operation)
-            <ul>
-              <li>Image I/O writer
-                <ul>
-                  <li>Response OutputStream</li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-</ul>
-
 <hr>
 
 <h3 id="OpenJpegProcessor">OpenJpegProcessor</h3>
@@ -928,44 +791,11 @@ title: Processors
 
 <p>To use this processor, OpenJPEG must be installed. The OpenJPEG binaries will automatically be detected if they are on the path; otherwise, set the <code>OpenJpegProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory. The <code>LD_LIBRARY_PATH</code> environment variable will also need to be set to locate the OpenJPEG shared library.</p>
 
-<h4>Data Flow</h4>
-
-<ul class="processor-data-flow">
-  <li>FileSource
-    <ul>
-
-      <li>opj_decompress
-        <br>
-        <span class="text-warning"><i class="fa fa-info-circle"></i> In Windows, output must be written to a temporary file rather than streamed into the next step, which is less efficient.</span>
-        <ul>
-          <li>java.lang.Process
-            <ul>
-              <li>Image I/O BMP reader
-                <ul>
-                  <li>java.awt.image.BufferedImage
-                    <ul>
-                      <li>Image I/O writer
-                        <ul>
-                          <li>Response OutputStream</li>
-                        </ul>
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-</ul>
-
 <hr>
 
 <h3 id="FfmpegProcessor">FfmpegProcessor</h3>
 
-<p>FfmpegProcessor uses the <a href="http://www.ffmpeg.org">FFmpeg</a> tool to extract still frames from video files. It can be used for thumbnail generation á la YouTube, as well as deep zooming of high-resolution still frames.</p>
+<p>FfmpegProcessor uses the <a href="http://www.ffmpeg.org">FFmpeg</a> tool to extract still frames from video files.</p>
 
 <p>It has been tested with FFmpeg version 2.8. Other versions may or may not work.</p>
 
@@ -978,36 +808,6 @@ title: Processors
 <pre>http://example.org/iiif/2/video.mp4/full/full/0/default.jpg?time=00:02:15</pre>
 
 <p>If it's missing, the first frame will be returned.</p>
-
-<h4>Data Flow</h4>
-
-<ul class="processor-data-flow">
-  <li>FileSource
-    <ul>
-      <li>ffmpeg
-        <ul>
-          <li>java.lang.Process
-            <ul>
-              <li>Image I/O BMP plugin
-                <ul>
-                  <li>java.awt.image.BufferedImage (one per operation)
-                    <ul>
-                      <li>Image I/O writer
-                        <ul>
-                          <li>Response OutputStream</li>
-                        </ul>
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-</ul>
 
 <hr>
 
@@ -1024,26 +824,3 @@ title: Processors
 <pre>http://example.org/iiif/2/document.pdf/full/full/0/default.jpg?page=2</pre>
 
 <p>If the <code>page</code> argument is missing, the first page will be returned.</p>
-
-<h4>Data Flow</h4>
-
-<ul class="processor-data-flow">
-  <li>FileSource or StreamSource
-    <ul>
-      <li>PDFBox
-        <ul>
-          <li>java.awt.image.BufferedImage (one per post-scale operation)
-            <ul>
-              <li>Image I/O writer
-                <ul>
-                  <li>Response OutputStream
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-</ul>

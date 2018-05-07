@@ -33,7 +33,7 @@ title: Deployment
 
 <h2 id="Temporary Directory">Temporary Directory</h2>
 
-<p>When running in standalone mode, the embedded Jetty server, by default, caches class files in the system temp directory, which most operating systems will periodically clean out. If this happens while the application is running, it can lead to <code>NoClassDefFoundError</code>s that can only be remedied by restarting the application. Consider either reconfiguring your OS's temp-cleaning strategy to work only at boot or shutdown, or using the <code>temp_pathname</code> configuration key to use a different location for temporary data.</p>
+<p>When running in standalone mode, the embedded Jetty server, by default, caches class files in the system temp directory, which most operating systems will periodically clean out. If this happens while the application is running, it can lead to <code>NoClassDefFoundError</code>s that can only be remedied by restarting the application. Consider either reconfiguring your OS's temp-cleaning strategy to work only at boot or shutdown, or setting the <code>temp_pathname</code> configuration key to use a different location for temporary data.</p>
 
 <hr>
 
