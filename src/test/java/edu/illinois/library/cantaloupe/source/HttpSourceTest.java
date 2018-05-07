@@ -305,59 +305,34 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     /* getFormat() */
 
     @Test
-    public void testGetSourceFormatUsingBasicLookupStrategyWithValidAuthentication()
-            throws Exception {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.HTTPSOURCE_BASIC_AUTH_USERNAME,
-                WebServer.BASIC_USER);
-        config.setProperty(Key.HTTPSOURCE_BASIC_AUTH_SECRET,
-                WebServer.BASIC_SECRET);
-
-        server.setBasicAuthEnabled(true);
-        server.start();
-
-        instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
+    public void testGetFormatWithURIExtension() {
         assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
-    public void testGetSourceFormatUsingBasicLookupStrategyWithPresentReadableImage() {
-        doTestGetSourceFormatWithPresentReadableImage(PRESENT_READABLE_IDENTIFIER);
-    }
-
-    @Test
-    public void testGetSourceFormatUsingScriptLookupStrategyWithPresentReadableImage() {
+    public void testGetFormatWithIdentifierExtension() throws Exception {
         useScriptLookupStrategy();
-        Identifier identifier = new Identifier(getServerURI() + "/" +
-                PRESENT_READABLE_IDENTIFIER);
-        doTestGetSourceFormatWithPresentReadableImage(identifier);
-    }
 
-    @Test
-    public void testGetSourceFormatFollowsRedirect() throws Exception {
-        server.setHandler(new DefaultHandler() {
-            @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response) {
-                if (baseRequest.getPathInfo().startsWith("/" + PRESENT_READABLE_IDENTIFIER)) {
-                    response.setStatus(301);
-                    response.setHeader("Location",
-                            getServerURI().resolve("/jpg-rgb-64x56x8-line.jpg").toString());
-                }
-                baseRequest.setHandled(true);
-            }
-        });
-        server.start();
+        Identifier identifier = new Identifier("HttpSourceTest-" +
+                "extension-in-identifier-but-not-filename.jpg");
+        RequestContext context = new RequestContext();
+        context.setIdentifier(identifier);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
+        instance.setIdentifier(new Identifier(getServerURI() + "/" + identifier));
 
-        instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
         assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
-    public void testGetSourceFormatWithNoIdentifierExtensionAndContentType()
-            throws Exception {
+    public void testGetFormatByDetectionWithPresentReadableImage() {
+        Identifier identifier = new Identifier("jpg");
+        doTestGetFormatWithPresentReadableImage(identifier);
+    }
+
+    @Test
+    public void testGetFormatWithContentType() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
             public void handle(String target,
@@ -375,7 +350,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testGetSourceFormatWithNoIdentifierExtensionAndNoContentType()
+    public void testGetFormatWithNoIdentifierExtensionAndNoContentType()
             throws Exception {
         server.start();
 
@@ -384,7 +359,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testGetSourceFormatWithNoIdentifierExtensionAndUnrecognizedContentType()
+    public void testGetFormatWithNoIdentifierExtensionAndUnrecognizedContentType()
             throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
@@ -405,7 +380,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testGetSourceFormatWithNoIdentifierExtensionAndNoContentTypeAndUnrecognizedMagicBytes()
+    public void testGetFormatWithNoIdentifierExtensionAndNoContentTypeAndUnrecognizedMagicBytes()
             throws Exception {
         server.start();
 
@@ -413,15 +388,14 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         assertEquals(Format.UNKNOWN, instance.getFormat());
     }
 
-    private void doTestGetSourceFormatWithPresentReadableImage(
-            Identifier identifier) {
+    private void doTestGetFormatWithPresentReadableImage(Identifier identifier) {
         try {
             server.start();
 
             instance.setIdentifier(identifier);
             assertEquals(Format.JPG, instance.getFormat());
         } catch (Exception e) {
-            fail();
+            fail(e.getMessage());
         }
     }
 

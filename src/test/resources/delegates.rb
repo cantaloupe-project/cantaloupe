@@ -89,6 +89,10 @@ class CustomDelegate
 
     ############################ HttpSourceTest #############################
 
+    if identifier == 'HttpSourceTest-extension-in-identifier-but-not-filename.jpg'
+      return 'jpg'
+    end
+
     # Supply a localhost URL to return the same URL.
     if identifier.start_with?('http://localhost') or
         identifier.start_with?('https://localhost')

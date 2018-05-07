@@ -48,22 +48,7 @@ import java.util.concurrent.TimeoutException;
  *
  * <h1>Format Inference</h1>
  *
- * <ol>
- *     <li>If the source image's identifier has a recognized filename
- *     extension, the format will be inferred from that.</li>
- *     <li>Otherwise, a {@literal GET} request will be sent with a {@literal
- *     Range} header specifying a small range of data from the beginning of the
- *     resource.
- *         <ol>
- *             <li>If a {@literal Content-Type} header is present in the
- *             response, and is specific enough (i.e. not {@literal
- *             application/octet-stream}), a format will be inferred from
- *             it.</li>
- *             <li>Otherwise, a format will be inferred from the magic bytes in
- *             the respone body.</li>
- *         </ol>
- *     </li>
- * </ol>
+ * <p>See {@link #getFormat()}.</p>
  *
  * <h1>Lookup Strategies</h1>
  *
@@ -257,11 +242,46 @@ class HttpSource extends AbstractSource implements StreamSource {
         }
     }
 
+    /**
+     * <ol>
+     *     <li>If the path component of the URI contains a recognized filename
+     *     extension, the format is inferred from that.</li>
+     *     <li>Otherwise, if the identifier contains a recognized filename
+     *     extension, the format is inferred from that.</li>
+     *     <li>Otherwise, a {@literal GET} request is sent with a {@literal
+     *     Range} header specifying a small range of data from the beginning of
+     *     the resource.
+     *         <ol>
+     *             <li>If a {@literal Content-Type} header is present in the
+     *             response, and its value is specific enough (i.e. not
+     *             {@literal application/octet-stream}), a format is inferred
+     *             from it.</li>
+     *             <li>Otherwise, a format is inferred from the magic bytes in
+     *             the response entity.</li>
+     *         </ol>
+     *     </li>
+     * </ol>
+     *
+     * @return Best attempt at determining the format.
+     */
     @Override
     public Format getFormat() {
         if (sourceFormat == null) {
-            sourceFormat = Format.inferFormat(identifier);
+            // Try to infer a format from the path component of the URI.
+            try {
+                sourceFormat = Format.inferFormat(
+                        getResourceInfo().getURI().getPath());
+            } catch (Exception ignore) {
+                // This is better caught and handled elsewhere.
+            }
+
             if (Format.UNKNOWN.equals(sourceFormat)) {
+                // Try to infer a format from the identifier.
+                sourceFormat = Format.inferFormat(identifier);
+            }
+
+            if (Format.UNKNOWN.equals(sourceFormat)) {
+                // Try to infer a format from the magic bytes.
                 sourceFormat = inferSourceFormatFromResponse();
             }
         }
@@ -328,7 +348,8 @@ class HttpSource extends AbstractSource implements StreamSource {
     /**
      * @param contentType {@literal Content-Type} header value.
      * @return Media type corresponding to the given header value.
-     * @see <a href="https://tools.ietf.org/html/rfc7231#section-3.1.1.5">RFC 7231</a>
+     * @see <a href="https://tools.ietf.org/html/rfc7231#section-3.1.1.5">RFC
+     * 7231</a>
      */
     static MediaType mediaTypeFromContentType(String contentType) {
         String[] parts = contentType.split(";");
@@ -443,8 +464,7 @@ class HttpSource extends AbstractSource implements StreamSource {
             throws URISyntaxException, NoSuchFileException, ScriptException {
         final DelegateProxy proxy = getDelegateProxy();
 
-        final Map<String, String> infoProps =
-                proxy.getHttpSourceResourceInfo();
+        final Map<String, String> infoProps = proxy.getHttpSourceResourceInfo();
 
         if (infoProps.isEmpty()) {
             throw new NoSuchFileException(
