@@ -726,7 +726,7 @@ abstract class AbstractProcessorTest extends BaseTest {
 
                         try {
                             doProcessTest(file, sourceFormat, ops, assertion);
-                        } catch (Exception e) {
+                        } catch (Exception | AssertionError e) {
                             System.err.println("FAILED: " + file);
                             throw new IOException(e.getMessage(), e);
                         }
@@ -756,7 +756,7 @@ abstract class AbstractProcessorTest extends BaseTest {
             assertion.opList = opList;
             assertion.image = image;
             assertion.run();
-        } catch (Exception e) {
+        } catch (Exception | AssertionError e) {
             System.err.println("Errored fixture: " + fixture);
             System.err.println("Errored op list: " + opList);
             throw e;
@@ -775,7 +775,7 @@ abstract class AbstractProcessorTest extends BaseTest {
         final Processor proc = newInstance(fixture, sourceFormat);
         try {
             proc.process(opList, proc.readImageInfo(), os);
-        } catch (Exception e) {
+        } catch (Exception | AssertionError e) {
             System.err.println("Errored fixture: " + fixture);
             System.err.println("Errored op list: " + opList);
             throw e;
