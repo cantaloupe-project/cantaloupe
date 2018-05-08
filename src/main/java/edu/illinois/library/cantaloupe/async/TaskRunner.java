@@ -35,18 +35,16 @@ final class TaskRunner implements Runnable {
         while (true) {
             Object object;
             try {
-                // This will block while the queue is empty.
-                LOGGER.debug("run(): waiting for a task...");
                 object = queue.take();
 
-                LOGGER.debug("run(): running {}", object);
+                LOGGER.trace("run(): running {}", object);
                 if (object instanceof Runnable) {
                     ((Runnable) object).run();
                 } else if (object instanceof Callable) {
                     ((Callable<?>) object).call();
                 }
             } catch (Exception e) {
-                LOGGER.error("run(): {}", e.getMessage());
+                LOGGER.error("run(): {}", e.getMessage(), e);
             }
         }
     }
@@ -56,7 +54,7 @@ final class TaskRunner implements Runnable {
      * @throws IllegalStateException If the queue is full.
      */
     boolean submit(Callable<?> callable) {
-        LOGGER.debug("submit(): {} (queue size: {})", callable, queue.size());
+        LOGGER.trace("submit(): {} (queue size: {})", callable, queue.size());
         return queue.add(callable);
     }
 
@@ -65,7 +63,7 @@ final class TaskRunner implements Runnable {
      * @throws IllegalStateException If the queue is full.
      */
     boolean submit(Runnable runnable) {
-        LOGGER.debug("submit(): {} (queue size: {})", runnable, queue.size());
+        LOGGER.trace("submit(): {} (queue size: {})", runnable, queue.size());
         final boolean result = queue.add(runnable);
 
         if (runnable instanceof AuditableFutureTask) {

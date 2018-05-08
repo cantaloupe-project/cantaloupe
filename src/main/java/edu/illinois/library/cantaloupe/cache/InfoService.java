@@ -130,16 +130,9 @@ public final class InfoService {
         // Try to retrieve it from an object or derivative cache.
         Info info = getInfo(identifier);
         if (info == null) {
-            Stopwatch watch = new Stopwatch();
-
             // Read it from the processor and then add it to both the
             // derivative and object caches.
             info = readInfo(identifier, proc);
-
-            LOGGER.debug("getOrReadInfo(): read info of {} from {} in {}",
-                    identifier,
-                    proc.getClass().getSimpleName(),
-                    watch);
 
             // Add it to the derivative and object caches.
             final DerivativeCache derivCache = CacheFactory.getDerivativeCache();
