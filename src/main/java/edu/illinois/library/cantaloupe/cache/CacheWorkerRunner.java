@@ -15,6 +15,8 @@ public final class CacheWorkerRunner {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(CacheWorkerRunner.class);
 
+    private static final int DELAY = 60;
+
     private static CacheWorkerRunner instance;
 
     private ScheduledExecutorService executorService;
@@ -39,16 +41,15 @@ public final class CacheWorkerRunner {
 
     public synchronized void start() {
         final Configuration config = Configuration.getInstance();
-        final int delay = 5;
         final int interval = config.getInt(Key.CACHE_WORKER_INTERVAL, -1);
 
         LOGGER.info("Starting the cache worker with {} second delay, {} second interval",
-                delay, interval);
+                DELAY, interval);
 
         executorService = Executors.newSingleThreadScheduledExecutor();
         future = executorService.scheduleWithFixedDelay(
                 new CacheWorker(interval),
-                delay,
+                DELAY,
                 interval,
                 TimeUnit.SECONDS);
     }
