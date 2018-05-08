@@ -646,7 +646,6 @@
                 <exclude>GraphicsMagickProcessorTest</exclude>
                 <exclude>ImageMagickProcessorTest</exclude>
                 <exclude>KakaduDemoProcessorTest</exclude>
-                <exclude>KakaduNativeProcessorTest</exclude>
                 <exclude>OpenJpegProcessorTest</exclude>
                 <exclude>RedisCacheTest</exclude>
               </excludes>
