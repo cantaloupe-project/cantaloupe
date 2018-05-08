@@ -715,7 +715,7 @@ public final class Java2DUtil {
      */
     static BufferedImage rotate(final BufferedImage inImage,
                                 final Rotate rotate) {
-        BufferedImage rotatedImage = inImage;
+        BufferedImage outImage = inImage;
         if (rotate.hasEffect()) {
             final Stopwatch watch = new Stopwatch();
             final double radians = Math.toRadians(rotate.getDegrees());
@@ -737,15 +737,28 @@ public final class Java2DUtil {
             // 1. translate the image so that it is rotated about the center
             tx.translate(-sourceWidth / 2f, -sourceHeight / 2f);
 
-            if (inImage.getType() == BufferedImage.TYPE_CUSTOM) {
-                rotatedImage = newImage(inImage.getColorModel(),
-                        canvasWidth, canvasHeight, true);
-            } else {
-                rotatedImage = new BufferedImage(
-                        canvasWidth, canvasHeight, inImage.getType());
+            switch (inImage.getType()) {
+                case BufferedImage.TYPE_CUSTOM:
+                    outImage = newImage(inImage.getColorModel(),
+                            canvasWidth, canvasHeight, true);
+                    break;
+                case BufferedImage.TYPE_BYTE_BINARY:
+                    outImage = new BufferedImage(
+                            canvasWidth, canvasHeight,
+                            BufferedImage.TYPE_INT_ARGB);
+                    break;
+                case BufferedImage.TYPE_USHORT_GRAY:
+                    outImage = newImage(inImage.getColorModel(),
+                            canvasWidth, canvasHeight, true);
+                    break;
+                default:
+                    outImage = new BufferedImage(
+                            canvasWidth, canvasHeight,
+                            BufferedImage.TYPE_INT_ARGB);
+                    break;
             }
 
-            final Graphics2D g2d = rotatedImage.createGraphics();
+            final Graphics2D g2d = outImage.createGraphics();
             g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
                     RenderingHints.VALUE_RENDER_QUALITY);
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -756,7 +769,7 @@ public final class Java2DUtil {
             g2d.drawImage(inImage, tx, null);
             LOGGER.debug("rotate() executed in {}", watch);
         }
-        return rotatedImage;
+        return outImage;
     }
 
     /**

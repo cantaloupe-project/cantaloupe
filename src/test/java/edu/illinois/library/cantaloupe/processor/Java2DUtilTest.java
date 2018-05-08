@@ -464,9 +464,9 @@ public class Java2DUtilTest extends BaseTest {
         Rotate rotate = new Rotate(15);
         BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
 
-        assertFalse(outImage.getColorModel().hasAlpha());
+        assertTrue(outImage.getColorModel().hasAlpha());
         assertEquals(8, outImage.getColorModel().getComponentSize(0));
-        assertEquals(BufferedImage.TYPE_BYTE_GRAY, outImage.getType());
+        assertEquals(BufferedImage.TYPE_INT_ARGB, outImage.getType());
     }
 
     @Test
@@ -486,9 +486,9 @@ public class Java2DUtilTest extends BaseTest {
         Rotate rotate = new Rotate(15);
         BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
 
-        assertFalse(outImage.getColorModel().hasAlpha());
+        assertTrue(outImage.getColorModel().hasAlpha());
         assertEquals(8, outImage.getColorModel().getComponentSize(0));
-        assertEquals(BufferedImage.TYPE_3BYTE_BGR, outImage.getType());
+        assertEquals(BufferedImage.TYPE_INT_ARGB, outImage.getType());
     }
 
     @Test
@@ -499,7 +499,7 @@ public class Java2DUtilTest extends BaseTest {
 
         assertTrue(outImage.getColorModel().hasAlpha());
         assertEquals(8, outImage.getColorModel().getComponentSize(0));
-        assertEquals(BufferedImage.TYPE_4BYTE_ABGR, outImage.getType());
+        assertEquals(BufferedImage.TYPE_INT_ARGB, outImage.getType());
     }
 
     @Test
@@ -508,9 +508,9 @@ public class Java2DUtilTest extends BaseTest {
         Rotate rotate = new Rotate(15);
         BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
 
-        assertFalse(outImage.getColorModel().hasAlpha());
+        assertTrue(outImage.getColorModel().hasAlpha());
         assertEquals(16, outImage.getColorModel().getComponentSize(0));
-        assertEquals(BufferedImage.TYPE_USHORT_GRAY, outImage.getType());
+        assertEquals(BufferedImage.TYPE_CUSTOM, outImage.getType());
     }
 
     @Test
@@ -754,7 +754,7 @@ public class Java2DUtilTest extends BaseTest {
                 ColorTransform.GRAY);
 
         assertGray(outImage.getRGB(0, 0));
-        assertEquals(BufferedImage.TYPE_BYTE_GRAY, outImage.getType());
+        assertEquals(BufferedImage.TYPE_3BYTE_BGR, outImage.getType());
     }
 
     @Test
@@ -772,7 +772,6 @@ public class Java2DUtilTest extends BaseTest {
                 ColorTransform.GRAY);
 
         assertGray(outImage.getRGB(0, 0));
-        assertEquals(BufferedImage.TYPE_USHORT_GRAY, outImage.getType());
         assertEquals(16, outImage.getColorModel().getComponentSize(0));
     }
 
