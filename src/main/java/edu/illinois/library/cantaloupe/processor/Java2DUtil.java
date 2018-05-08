@@ -235,9 +235,8 @@ public final class Java2DUtil {
      * @param crop    Crop operation. Clients should call
      *                {@link Operation#hasEffect(Dimension, OperationList)}
      *                before invoking.
-     * @param rf      Number of times the dimensions of <code>inImage</code>
-     *                have already been halved relative to the full-sized
-     *                version.
+     * @param rf      Number of times the dimensions of {@literal inImage} have
+     *                already been halved relative to the full-sized version.
      * @return        Cropped image, or the input image if the given operation
      *                is a no-op.
      */
@@ -1042,43 +1041,50 @@ public final class Java2DUtil {
      */
     static BufferedImage transformColor(final BufferedImage inImage,
                                         final ColorTransform colorTransform) {
-        BufferedImage filteredImage = inImage;
+        BufferedImage outImage = inImage;
         final Stopwatch watch = new Stopwatch();
 
         switch (colorTransform) {
             case GRAY:
-                if (inImage.getColorModel().getNumComponents() < 3) {
-                    // It's already gray (maybe with alpha).
-                    filteredImage = inImage;
-                } else {
-                    int filteredType = (inImage.getColorModel().getComponentSize(0) > 8) ?
-                            BufferedImage.TYPE_USHORT_GRAY :
-                            BufferedImage.TYPE_BYTE_GRAY;
-                    filteredImage = new BufferedImage(
-                            inImage.getWidth(),
-                            inImage.getHeight(),
-                            filteredType);
-                }
+                outImage = convertIndexedToARGB(outImage);
+                convertPixelsToGray(outImage);
                 break;
             case BITONAL:
                 if (inImage.getType() != BufferedImage.TYPE_BYTE_BINARY) {
-                    filteredImage = new BufferedImage(
+                    outImage = new BufferedImage(
                             inImage.getWidth(),
                             inImage.getHeight(),
                             BufferedImage.TYPE_BYTE_BINARY);
                 }
+                if (outImage != inImage) {
+                    Graphics2D g2d = outImage.createGraphics();
+                    g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
+                            RenderingHints.VALUE_RENDER_QUALITY);
+                    g2d.drawImage(inImage, 0, 0, null);
+
+                    LOGGER.debug("transformColor(): transformed {}x{} image in {}",
+                            inImage.getWidth(), inImage.getHeight(), watch);
+                }
                 break;
         }
-        if (filteredImage != inImage) {
-            Graphics2D g2d = filteredImage.createGraphics();
-            g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
-                    RenderingHints.VALUE_RENDER_QUALITY);
-            g2d.drawImage(inImage, 0, 0, null);
+        return outImage;
+    }
 
-            LOGGER.debug("transformColor(): filtered {}x{} image in {}",
-                    inImage.getWidth(), inImage.getHeight(), watch);
+    /**
+     * Converts an image to grayscale in-place.
+     */
+    private static void convertPixelsToGray(BufferedImage image) {
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int rgb = image.getRGB(x, y);
+                int r = (rgb >> 16) & 0xFF;
+                int g = (rgb >> 8) & 0xFF;
+                int b = (rgb & 0xFF);
+                int gray = (r + g + b) / 3;
+                int val = (rgb & 0xff000000) | (gray << 16) | (gray << 8) | gray;
+                image.setRGB(x, y, val);
+            }
         }
-        return filteredImage;
     }
 
     /**

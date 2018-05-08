@@ -8,8 +8,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.Iterator;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public final class ImageAssert {
 
@@ -65,8 +64,9 @@ public final class ImageAssert {
         int red = (pixel >> 16) & 0xff;
         int green = (pixel >> 8) & 0xff;
         int blue = (pixel) & 0xff;
-        assertEquals(red, green);
-        assertEquals(green, blue);
+        if (red != green || green != blue) {
+            fail("Red: " + red + " green: " + green + " blue: " + blue);
+        }
     }
 
     /**
