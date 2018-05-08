@@ -19,8 +19,7 @@ public class UnsupportedSourceFormatExceptionTest {
     public void testConstructor4WithUnknownFormat() {
         Exception e = new UnsupportedSourceFormatException(
                 new MockStreamProcessor(), Format.UNKNOWN);
-        assertEquals(MockStreamProcessor.class.getSimpleName() + " only supports known source formats",
-                e.getMessage());
+        assertEquals("Unknown source format", e.getMessage());
     }
 
 }
