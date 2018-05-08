@@ -41,6 +41,7 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.util.Collection;
@@ -588,12 +589,32 @@ public final class Java2DUtil {
      * @param colorModel Color model of the new image.
      * @param width      Width of the new image.
      * @param height     Height of the new image.
+     * @param forceAlpha Whether the resulting image should definitely have
+     *                   alpha.
      * @return           New image with the given color model and dimensions.
      */
     private static BufferedImage newImage(ColorModel colorModel,
-                                          int width,
-                                          int height) {
-        boolean isAlphaPremultiplied = colorModel.isAlphaPremultiplied();
+                                          final int width,
+                                          final int height,
+                                          final boolean forceAlpha) {
+        final boolean isAlphaPremultiplied = colorModel.isAlphaPremultiplied();
+
+        // Manually create a compatible ColorModel respecting forceAlpha.
+        if (colorModel instanceof ComponentColorModel) {
+            int[] componentSizes = colorModel.getComponentSize();
+            // If the array does not contain an alpha element but we need it,
+            // add it.
+            if (!colorModel.hasAlpha() && forceAlpha) {
+                int[] tmp = new int[componentSizes.length + 1];
+                System.arraycopy(componentSizes, 0, tmp, 0, componentSizes.length);
+                tmp[tmp.length - 1] = tmp[0];
+                componentSizes = tmp;
+            }
+            colorModel = new ComponentColorModel(colorModel.getColorSpace(),
+                    componentSizes, forceAlpha, isAlphaPremultiplied,
+                    colorModel.getTransparency(), colorModel.getTransferType());
+        }
+
         WritableRaster raster =
                 colorModel.createCompatibleWritableRaster(width, height);
         return new BufferedImage(colorModel, raster, isAlphaPremultiplied, null);
@@ -716,12 +737,12 @@ public final class Java2DUtil {
             // 1. translate the image so that it is rotated about the center
             tx.translate(-sourceWidth / 2f, -sourceHeight / 2f);
 
-            if (inImage.getType() != BufferedImage.TYPE_CUSTOM) {
+            if (inImage.getType() == BufferedImage.TYPE_CUSTOM) {
+                rotatedImage = newImage(inImage.getColorModel(),
+                        canvasWidth, canvasHeight, true);
+            } else {
                 rotatedImage = new BufferedImage(
                         canvasWidth, canvasHeight, inImage.getType());
-            } else {
-                rotatedImage = newImage(
-                        inImage.getColorModel(), canvasWidth, canvasHeight);
             }
 
             final Graphics2D g2d = rotatedImage.createGraphics();

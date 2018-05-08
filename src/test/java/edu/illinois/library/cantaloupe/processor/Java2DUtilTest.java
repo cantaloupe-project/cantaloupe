@@ -530,7 +530,7 @@ public class Java2DUtilTest extends BaseTest {
         Rotate rotate = new Rotate(15);
         BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
 
-        assertFalse(outImage.getColorModel().hasAlpha());
+        assertTrue(outImage.getColorModel().hasAlpha());
         assertEquals(16, outImage.getColorModel().getComponentSize(0));
         assertEquals(BufferedImage.TYPE_CUSTOM, outImage.getType());
     }
