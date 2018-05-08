@@ -646,6 +646,7 @@
                 <exclude>GraphicsMagickProcessorTest</exclude>
                 <exclude>ImageMagickProcessorTest</exclude>
                 <exclude>KakaduDemoProcessorTest</exclude>
+                <exclude>KakaduNativeProcessorTest</exclude>
                 <exclude>OpenJpegProcessorTest</exclude>
                 <exclude>RedisCacheTest</exclude>
               </excludes>
@@ -670,7 +671,7 @@
               <reuseForks>false</reuseForks>
               <excludes>
                 <exclude>Azure*Test</exclude>
-                <exclude>Kakadu*Test</exclude>
+                <exclude>KakaduDemoProcessorTest</exclude>
               </excludes>
             </configuration>
           </plugin>
