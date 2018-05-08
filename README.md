@@ -22,8 +22,7 @@
 
 ### IDE
 
-There are a few ways to do this, in accordance with the options above. The
-simplest is probably to:
+There are a few ways to do this. The simplest is probably:
 
 1. Add a new run configuration using the "Java Application" template or its
    equivalent.
@@ -33,7 +32,7 @@ simplest is probably to:
    [servlet-api-3.1.jar](http://central.maven.org/maven2/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar)
    and add it to your classpath: `--class-path=/path/to/servlet-api-3.1.jar`
 
-   Or, in Java 9, your module path: `--module-path=/path/to/containing/dir`
+   Or, in Java 9+, your module path: `--module-path=/path/to/containing/dir`
 
 ## Test
 
@@ -75,6 +74,11 @@ dependencies are required in addition to the ones above:
 Performance tests use [JMH](http://openjdk.java.net/projects/code-tools/jmh/).
 Run them with `mvn clean test -Pbenchmark`.
 
+### 5. Output tests
+
+There is an [output tester tool](https://gitlab.com/cantaloupe/iiif-endpoint-output-test)
+that enables visual inspection of image output.
+
 ## Build the website
 
 The website is built using [Jekyll](http://jekyllrb.com/). With that installed,
@@ -82,9 +86,9 @@ run `jekyll serve` from the `website` directory. Then, open
 [http://localhost:4000/cantaloupe/](http://localhost:4000/cantaloupe/) in a
 web browser.
 
-An effort is made to keep the documentation in sync with development on the
-same branch. The "Upgrading" and "Changes" sections of the website are
-usually current.
+An effort is made to keep the website in sync with development on the same
+branch. The "Upgrading" and "Change Log" sections of the website are usually
+current.
 
 ## Contribute
 
@@ -128,37 +132,42 @@ the next non-bugfix release. Significant features branch off of that into
 feature branches (`feature/feature-name`), from which they can be integrated
 into a particular release.
 
-When a non-bugfix version is ready for release in `develop`, it branches
-off into a new `release/n.n` branch, where its version is set. Finally, that
-is merged into `master`, where the release is tagged and the release
-distribution is created.
+When a major or minor version is ready for release in `develop`, it branches
+off into a `release/n.n` branch, where its version is set. Finally, that is
+merged into `master`, where the release is tagged and the release archive is
+created.
 
 Bugfixes that would increment a minor version of a release are applied to the
 release branch for that release, and merged back into `develop`.
 
-## Releasing
+## Prerelease
 
-1. Finalize the code to be released, addressing any relevant milestone issues,
+1. Run the Maven Verifier plugin (`mvn verify -DskipTests=true`)
+2. Run an OWASP dependency check (`mvn org.owasp:dependency-check-maven:check`)
+3. Run Findbugs (`mvn clean compile findbugs:findbugs findbugs:gui`)
+4. Run the tests:
+   * JUnit
+   * Endpoint tests
+5. Finalize the code to be released, addressing any relevant milestone issues,
    TODOs, etc.
-2. Run the Maven Verifier plugin (`mvn verify -DskipTests=true`)
-3. Run an OWASP dependency check (`mvn org.owasp:dependency-check-maven:check`)
-4. Run Findbugs (`mvn clean compile findbugs:findbugs findbugs:gui`)
-5. Ensure that the tests are current, comprehensive, and passing
 6. Finalize the documentation, including the website, user manual, and change
    log
-7. Merge into `release/vX.X`
-8. Update the version in `pom.xml` and commit this change
-9. Merge into `master`
-10. Create the release `.zip` archive with `mvn clean package`
-11. Verify that the `.zip` archive is as expected
-12. Push the code: `git push origin master; git push origin release/x.x`
-13. Wait for CI tests to pass
-14. Tag the release: `git tag -a v{version} -m 'Tag v{version}'`
-15. git push --tags
-16. Add the `.zip` archive and change log info to the release tag on GitHub
-17. Deploy the updated website using `build/deploy_website.rb`
-18. Append `-SNAPSHOT` to the version in `pom.xml` and commit this change
-19. Close the release's GitHub milestone
+
+## Releasing
+
+1. Merge into `release/vX.X`
+2. Update the version in `pom.xml` and commit this change
+3. Merge into `master`
+4. Create the release `.zip` archive with `mvn clean package -DskipTests`
+5. Verify that the `.zip` archive is as expected
+6. Push the code: `git push origin master; git push origin release/x.x`
+7. Wait for CI tests to pass
+8. Tag the release: `git tag -a v{version} -m 'Tag v{version}'`
+9. git push --tags
+10. Add the `.zip` archive and change log info to the release tag on GitHub
+11. Deploy the updated website using `build/deploy_website.rb`
+12. Append `-SNAPSHOT` to the version in `pom.xml` and commit this change
+13. Close the release's GitHub milestone
 
 ## License
 
