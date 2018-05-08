@@ -186,10 +186,12 @@ public final class InfoService {
                                   DerivativeCache derivCache) {
         TaskQueue.getInstance().submit(() -> {
             putInObjectCache(identifier, info);
-            try {
-                derivCache.put(identifier, info);
-            } catch (IOException e) {
-                LOGGER.error("putInCachesAsync(): {}", e.getMessage());
+            if (derivCache != null) {
+                try {
+                    derivCache.put(identifier, info);
+                } catch (IOException e) {
+                    LOGGER.error("putInCachesAsync(): {}", e.getMessage());
+                }
             }
             return null;
         });

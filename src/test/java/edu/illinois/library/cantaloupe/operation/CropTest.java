@@ -247,16 +247,63 @@ public class CropTest extends BaseTest {
     }
 
     @Test
-    public void hasEffectWithArguments() {
+    public void hasEffectWithArgumentsWithSquareShape() {
+        Dimension fullSize = new Dimension(600, 400);
+        OperationList opList = new OperationList();
+
+        instance = new Crop();
+        instance.setShape(Crop.Shape.SQUARE);
+        assertTrue(instance.hasEffect(fullSize, opList));
+    }
+
+    @Test
+    public void hasEffectWithArgumentsWithFullArea() {
         Dimension fullSize = new Dimension(600, 400);
         OperationList opList = new OperationList();
 
         instance.setWidth(600);
         instance.setHeight(400);
         assertFalse(instance.hasEffect(fullSize, opList));
+    }
 
-        instance = new Crop();
-        instance.setShape(Crop.Shape.SQUARE);
+    @Test
+    public void hasEffectWithArgumentsWithNonzeroOrigin() {
+        Dimension fullSize = new Dimension(600, 400);
+        OperationList opList = new OperationList();
+
+        instance.setX(5);
+        instance.setY(5);
+        instance.setWidth(595);
+        instance.setHeight(395);
+        assertTrue(instance.hasEffect(fullSize, opList));
+
+        instance.setWidth(600);
+        instance.setHeight(400);
+        assertTrue(instance.hasEffect(fullSize, opList));
+    }
+
+    @Test
+    public void hasEffectWithArgumentsWithCropByPercent() {
+        Dimension fullSize = new Dimension(600, 400);
+        OperationList opList = new OperationList();
+
+        instance.setUnit(Crop.Unit.PERCENT);
+        instance.setX(0f);
+        instance.setY(0f);
+        instance.setWidth(1f);
+        instance.setHeight(1f);
+        assertFalse(instance.hasEffect(fullSize, opList));
+
+        instance.setX(0f);
+        instance.setY(0f);
+        instance.setWidth(0.8f);
+        instance.setHeight(0.8f);
+        assertTrue(instance.hasEffect(fullSize, opList));
+
+        instance.setX(0.1f);
+        instance.setY(0.1f);
+        instance.setWidth(1f);
+        instance.setHeight(1f);
         assertTrue(instance.hasEffect(fullSize, opList));
     }
 

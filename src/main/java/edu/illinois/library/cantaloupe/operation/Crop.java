@@ -282,16 +282,27 @@ public class Crop implements Operation {
      */
     @Override
     public boolean hasEffect(Dimension fullSize, OperationList opList) {
-        if (!hasEffect()) {
+        if (!hasEffect() && !Unit.PERCENT.equals(getUnit())) {
             return false;
-        }
-        if (Shape.SQUARE.equals(getShape()) &&
+        } else if (Shape.SQUARE.equals(getShape()) &&
                 fullSize.width != fullSize.height) {
             return true;
+        } else if (Unit.PIXELS.equals(getUnit())) {
+            if (Math.abs(fullSize.width - getWidth()) > 0.00001f ||
+                    Math.abs(fullSize.height - getHeight()) > 0.00001f) {
+                return true;
+            } else if (getX() > 0 || getY() > 0) {
+                return true;
+            }
+        } else if (Unit.PERCENT.equals(getUnit())) {
+            final float delta = 0.00001f;
+            return getX() > delta || getY() > delta ||
+                    Math.abs((getWidth() * fullSize.width) -
+                            (getX() * fullSize.width) - fullSize.width) > delta ||
+                    Math.abs((getHeight() * fullSize.height) -
+                            (getY() * fullSize.height) - fullSize.height) > delta;
         }
-        return !(Unit.PIXELS.equals(getUnit()) &&
-                fullSize.width == Math.round(getWidth()) &&
-                fullSize.height == Math.round(getHeight()));
+        return false;
     }
 
     @Override

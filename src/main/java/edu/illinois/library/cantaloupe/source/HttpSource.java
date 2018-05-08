@@ -367,8 +367,8 @@ class HttpSource extends AbstractSource implements StreamSource {
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {
-            LOGGER.error("newStreamFactory(): {}", e.getMessage());
-            throw new IOException(e.getMessage(), e);
+            LOGGER.error("newStreamSource(): {}", e.getMessage());
+            throw new IOException(e);
         }
 
         if (info != null) {
@@ -389,7 +389,7 @@ class HttpSource extends AbstractSource implements StreamSource {
                 info = getResourceInfo();
             } catch (InterruptedException | TimeoutException e) {
                 LOGGER.error(e.getMessage(), e);
-                throw new IOException(e.getMessage(), e);
+                throw new IOException(e);
             } catch (Exception e) {
                 LOGGER.error("retrieveRangedGETResponse(): {}", e.getMessage());
                 throw new IOException(e.getMessage(), e);
@@ -413,7 +413,7 @@ class HttpSource extends AbstractSource implements StreamSource {
             } catch (ExecutionException e ) {
                 throw new AccessDeniedException(info.getURI().toString());
             } catch (InterruptedException | TimeoutException e) {
-                throw new IOException(e.getMessage(), e);
+                throw new IOException(e);
             }
         }
         return rangedGETResponse;

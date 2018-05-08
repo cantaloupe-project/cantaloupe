@@ -255,10 +255,11 @@ public final class Java2DUtil {
             // If the input image is indexed, cropping it would probably screw
             // up the palette, so convert it to RGBA first.
             // TODO: this should be done earlier, perhaps by the reader
-            inImage = convertIndexedToARGB(inImage);
+            outImage = convertIndexedToARGB(outImage);
 
             final Rectangle cropRegion = crop.getRectangle(
-                    new Dimension(inImage.getWidth(), inImage.getHeight()), rf);
+                    new Dimension(outImage.getWidth(), outImage.getHeight()), rf);
+
             outImage = inImage.getSubimage(cropRegion.x, cropRegion.y,
                     cropRegion.width, cropRegion.height);
 
