@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
+import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
@@ -75,74 +76,78 @@ public class ImageRepresentation extends CustomOutputRepresentation {
      */
     @Override
     public void write(OutputStream responseOutputStream) throws IOException {
-        // N.B. We don't need to close outputStream after writing to it;
-        // Restlet will take care of that.
-        if (!bypassCache) {
-            final CacheFacade cacheFacade = new CacheFacade();
-            if (cacheFacade.isDerivativeCacheAvailable()) {
-                // Try to get the image from the cache.
-                try (InputStream cacheInputStream =
-                             cacheFacade.newDerivativeImageInputStream(opList)) {
-                    if (cacheInputStream != null) {
-                        // The image is available in the cache; write it to the
-                        // response output stream.
-                        final Stopwatch watch = new Stopwatch();
-                        IOUtils.copy(cacheInputStream, responseOutputStream);
+        // N.B.: Restlet will close responseOutputStream.
 
-                        LOGGER.debug("Streamed from {} in {}: {}",
-                                cacheFacade.getDerivativeCache().getClass().getSimpleName(),
-                                watch, opList);
-                    } else {
-                        // Create a TeeOutputStream to write to the response
-                        // output stream and the cache pseudo-simultaneously.
-                        //
-                        // N.B.: The contract for this method says we can't
-                        // close responseOutputStream, which means we also
-                        // can't close teeOutputStream (because that would
-                        // close its wrapped streams). So, we have to leave it
-                        // up to the finalizer. But, when the finalizer closes
-                        // teeOutputStream, the end result will be close()
-                        // having been called twice on both of its wrapped
-                        // streams. So, it's important that these two output
-                        // streams' close() methods can deal with being called
-                        // twice.
-                        try (OutputStream cacheOutputStream =
-                                     cacheFacade.newDerivativeImageOutputStream(opList)) {
-                            OutputStream teeStream = new TeeOutputStream(
-                                    responseOutputStream, cacheOutputStream);
-                            LOGGER.debug("Writing to the response & " +
-                                    "derivative cache simultaneously");
-                            doWrite(teeStream);
-                        } catch (Throwable e) {
-                            // The cached image has been incompletely written
-                            // and is corrupt, so it must be purged. This may
-                            // happen in response to a VM error like
-                            // OutOfMemoryError, or when the connection has
-                            // been closed prematurely, as in the case of e.g.
-                            // the client hitting the stop button.
-                            if (e.getMessage().contains("heap space")) {
-                                LOGGER.error("write(): out of heap space! " +
-                                        "Consider adjusting your -Xmx JVM argument.");
-                            } else {
-                                LOGGER.debug("write(): {}", e.getMessage());
-                            }
-                            cacheFacade.purge(opList);
+        // If we are bypassing the cache, write directly to the response.
+        if (bypassCache) {
+            LOGGER.debug("Bypassing the cache and writing directly to the response");
+            doWrite(responseOutputStream);
+            return;
+        }
 
-                            doWrite(responseOutputStream);
-                        }
-                    }
-                } catch (IOException e) {
-                    LOGGER.error("Failed to read from the derivative cache: {}",
-                            e.getMessage(), e);
-                    doWrite(responseOutputStream);
-                }
-            } else {
-                LOGGER.debug("Derivative cache not available; writing " +
-                        "directly to the response");
-                doWrite(responseOutputStream);
+        // If no derivative cache is available, write directly to the response.
+        final CacheFacade cacheFacade = new CacheFacade();
+        if (!cacheFacade.isDerivativeCacheAvailable()) {
+            LOGGER.debug("Derivative cache not available; writing directly " +
+                    "to the response");
+            doWrite(responseOutputStream);
+            return;
+        }
+
+        // A derivative cache is available, so try to copy the image from the
+        // cache to the response.
+        final DerivativeCache cache = cacheFacade.getDerivativeCache();
+        try (InputStream cacheInputStream = cache.newDerivativeImageInputStream(opList)) {
+            if (cacheInputStream != null) {
+                // The image is available, so write it to the response.
+                final Stopwatch watch = new Stopwatch();
+                IOUtils.copy(cacheInputStream, responseOutputStream);
+
+                LOGGER.debug("Streamed from {} in {}: {}",
+                        cache.getClass().getSimpleName(), watch, opList);
+                return;
             }
-        } else {
-            LOGGER.debug("Writing directly to the response, bypassing the cache");
+        } catch (IOException e) {
+            LOGGER.error("Failed to read from {}: {}",
+                    cache.getClass().getSimpleName(), e.getMessage(), e);
+            doWrite(responseOutputStream);
+            return;
+        }
+
+        // At this point, a derivative cache is available, but it doesn't
+        // contain an image that can fulfill the request. So, we will create a
+        // TeeOutputStream to write to the response output stream and the cache
+        // pseudo-simultaneously.
+        //
+        // N.B.: The contract for this method says we can't close
+        // responseOutputStream, which means we also can't close
+        // teeOutputStream, because that would close its wrapped streams. So,
+        // we have to leave it up to the finalizer. But, when the finalizer
+        // closes teeOutputStream, its close() method will have been called
+        // twice on both of its wrapped streams. It's therefore important that
+        // these two output streams' close() methods can deal with being called
+        // twice.
+        try (OutputStream cacheOutputStream =
+                     cacheFacade.newDerivativeImageOutputStream(opList)) {
+            OutputStream teeOutputStream = new TeeOutputStream(
+                    responseOutputStream, cacheOutputStream);
+            LOGGER.debug("Writing to the response & derivative " +
+                    "cache simultaneously");
+            doWrite(teeOutputStream);
+        } catch (Throwable e) {
+            // The cached image has been incompletely written and is corrupt,
+            // so it must be purged. This may happen in response to a VM error
+            // like OutOfMemoryError, or when the connection has been closed
+            // prematurely, as in the case of e.g. the client hitting the stop
+            // button.
+            if (e.getMessage().contains("heap space")) {
+                LOGGER.error("write(): out of heap space! " +
+                        "Consider adjusting your -Xmx JVM argument.");
+            } else {
+                LOGGER.debug("write(): {}", e.getMessage());
+            }
+            cacheFacade.purge(opList);
+
             doWrite(responseOutputStream);
         }
     }
