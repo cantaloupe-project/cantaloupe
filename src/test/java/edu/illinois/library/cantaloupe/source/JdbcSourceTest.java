@@ -258,7 +258,7 @@ public class JdbcSourceTest extends AbstractSourceTest {
     /* newStreamFactory() */
 
     @Test
-    public void testNewStreamSourceWithPresentImage() throws Exception {
+    public void testNewStreamFactoryWithPresentImage() throws Exception {
         assertNotNull(instance.newStreamFactory());
     }
 

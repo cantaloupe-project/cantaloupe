@@ -306,7 +306,7 @@ public class FilesystemSourceTest extends AbstractSourceTest {
     /* newStreamFactory() */
 
     @Test
-    public void testNewStreamSourceWithPresentReadableFile() throws Exception {
+    public void testNewStreamFactoryWithPresentReadableFile() throws Exception {
         assertNotNull(instance.newStreamFactory());
     }
 

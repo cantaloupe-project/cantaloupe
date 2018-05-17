@@ -529,7 +529,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     /* newStreamFactory() */
 
     @Test
-    public void testNewStreamSourceUsingBasicLookupStrategyWithValidAuthentication()
+    public void testNewStreamFactoryUsingBasicLookupStrategyWithValidAuthentication()
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPSOURCE_BASIC_AUTH_USERNAME,
@@ -545,13 +545,13 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testNewStreamSourceUsingBasicLookupStrategyWithPresentReadableImage()
+    public void testNewStreamFactoryUsingBasicLookupStrategyWithPresentReadableImage()
             throws Exception {
-        doTestNewStreamSourceWithPresentReadableImage(PRESENT_READABLE_IDENTIFIER);
+        doTestNewStreamFactoryWithPresentReadableImage(PRESENT_READABLE_IDENTIFIER);
     }
 
     @Test
-    public void testNewStreamSourceUsingScriptLookupStrategyWithValidAuthentication()
+    public void testNewStreamFactoryUsingScriptLookupStrategyWithValidAuthentication()
             throws Exception {
         useScriptLookupStrategy();
 
@@ -571,15 +571,15 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testNewStreamSourceUsingScriptLookupStrategyWithPresentReadableImage()
+    public void testNewStreamFactoryUsingScriptLookupStrategyWithPresentReadableImage()
             throws Exception {
         useScriptLookupStrategy();
         Identifier identifier = new Identifier(getServerURI() + "/" +
                 PRESENT_READABLE_IDENTIFIER);
-        doTestNewStreamSourceWithPresentReadableImage(identifier);
+        doTestNewStreamFactoryWithPresentReadableImage(identifier);
     }
 
-    private void doTestNewStreamSourceWithPresentReadableImage(Identifier identifier)
+    private void doTestNewStreamFactoryWithPresentReadableImage(Identifier identifier)
             throws Exception {
         server.start();
 

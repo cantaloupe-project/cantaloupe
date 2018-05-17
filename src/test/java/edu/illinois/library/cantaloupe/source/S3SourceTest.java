@@ -403,12 +403,12 @@ public class S3SourceTest extends AbstractSourceTest {
     /* newStreamFactory() */
 
     @Test
-    public void testNewStreamSourceUsingBasicLookupStrategy() throws Exception {
+    public void testNewStreamFactoryUsingBasicLookupStrategy() throws Exception {
         assertNotNull(instance.newStreamFactory());
     }
 
     @Test
-    public void testNewStreamSourceUsingScriptLookupStrategy()
+    public void testNewStreamFactoryUsingScriptLookupStrategy()
             throws Exception {
         useScriptLookupStrategy();
         assertNotNull(instance.newStreamFactory());

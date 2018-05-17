@@ -86,7 +86,7 @@ abstract class AbstractSourceTest extends BaseTest {
     /* newStreamFactory() */
 
     @Test
-    public void testNewStreamSourceInvokedMultipleTimes() throws Exception {
+    public void testNewStreamFactoryInvokedMultipleTimes() throws Exception {
         Source instance = newInstance();
         if (instance instanceof StreamSource) {
             try {
@@ -103,7 +103,7 @@ abstract class AbstractSourceTest extends BaseTest {
     }
 
     @Test
-    public void testNewStreamSourceReturnedInstanceIsReusable()
+    public void testNewStreamFactoryReturnedInstanceIsReusable()
             throws Exception {
         Source instance = newInstance();
         if (instance instanceof StreamSource) {

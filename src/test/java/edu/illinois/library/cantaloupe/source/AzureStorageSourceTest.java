@@ -338,19 +338,18 @@ public class AzureStorageSourceTest extends AbstractSourceTest {
     /* newStreamFactory() */
 
     @Test
-    public void testNewStreamSourceUsingBasicLookupStrategy() throws Exception {
+    public void testNewStreamFactoryUsingBasicLookupStrategy() throws Exception {
         instance.newStreamFactory();
     }
 
     @Test
-    public void testNewStreamSourceUsingScriptLookupStrategy()
-            throws Exception {
+    public void testNewStreamFactoryUsingScriptLookupStrategy() throws Exception {
         useScriptLookupStrategy();
         assertNotNull(instance.newStreamFactory());
     }
 
     @Test
-    public void testNewStreamSourceWithSAS() throws Exception {
+    public void testNewStreamFactoryWithSAS() throws Exception {
         instance.setIdentifier(new Identifier(getSASURI()));
         clearConfig();
         instance.newStreamFactory();

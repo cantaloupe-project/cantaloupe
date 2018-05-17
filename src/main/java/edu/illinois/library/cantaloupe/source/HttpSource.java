@@ -367,7 +367,7 @@ class HttpSource extends AbstractSource implements StreamSource {
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {
-            LOGGER.error("newStreamSource(): {}", e.getMessage());
+            LOGGER.error("newStreamFactory(): {}", e.getMessage());
             throw new IOException(e);
         }
 
