@@ -38,12 +38,17 @@ import static org.junit.Assert.*;
 
 public class Java2DUtilTest extends BaseTest {
 
-    private BufferedImage newColorImage(int componentSize, boolean hasAlpha) {
+    private static final float DELTA = 0.0000001f;
+
+    private static BufferedImage newColorImage(int componentSize,
+                                               boolean hasAlpha) {
         return newColorImage(20, 20, componentSize, hasAlpha);
     }
 
-    private BufferedImage newColorImage(int width, int height,
-                                        int componentSize, boolean hasAlpha) {
+    private static BufferedImage newColorImage(int width,
+                                               int height,
+                                               int componentSize,
+                                               boolean hasAlpha) {
         if (componentSize <= 8) {
             int type = hasAlpha ?
                     BufferedImage.TYPE_4BYTE_ABGR : BufferedImage.TYPE_3BYTE_BGR;
@@ -62,12 +67,15 @@ public class Java2DUtilTest extends BaseTest {
         return new BufferedImage(colorModel, raster, isAlphaPremultiplied, null);
     }
 
-    private BufferedImage newGrayImage(int componentSize, boolean hasAlpha) {
+    private static BufferedImage newGrayImage(int componentSize,
+                                              boolean hasAlpha) {
         return newGrayImage(20, 20, componentSize, hasAlpha);
     }
 
-    private BufferedImage newGrayImage(int width, int height,
-                                       int componentSize, boolean hasAlpha) {
+    private static BufferedImage newGrayImage(int width,
+                                              int height,
+                                              int componentSize,
+                                              boolean hasAlpha) {
         if (!hasAlpha) {
             int type = (componentSize > 8) ?
                     BufferedImage.TYPE_USHORT_GRAY : BufferedImage.TYPE_BYTE_GRAY;
@@ -92,7 +100,6 @@ public class Java2DUtilTest extends BaseTest {
     @Test
     public void testApplyRedactions() {
         final BufferedImage image = newColorImage(64, 56, 8, false);
-        final ReductionFactor rf = new ReductionFactor(0);
 
         // fill it with white
         Graphics2D g2d = image.createGraphics();
@@ -104,11 +111,12 @@ public class Java2DUtilTest extends BaseTest {
         List<Redaction> redactions = new ArrayList<>();
         redactions.add(new Redaction(new Rectangle(0, 0, 20, 20)));
         redactions.add(new Redaction(new Rectangle(20, 20, 20, 20)));
-        final Crop crop = new Crop(0, 0, image.getWidth(),
-                image.getTileHeight());
+        final Crop crop = new Crop(0, 0,
+                image.getWidth(), image.getTileHeight());
 
         // apply them
-        Java2DUtil.applyRedactions(image, crop, rf, redactions);
+        Java2DUtil.applyRedactions(image, crop, new ReductionFactor(0),
+                redactions);
 
         // test for the first one
         assertRGBA(image.getRGB(0, 0), 0, 0, 0, 255);
@@ -195,75 +203,91 @@ public class Java2DUtilTest extends BaseTest {
         assertTrue(blue > 240);
     }
 
-    /* convertIndexedToARGB() */
+    /* convertIndexedTo8BitARGB() */
 
     @Test
-    public void testConvertIndexedToARGB() {
+    public void testConvertIndexedTo8BitARGB() {
         BufferedImage inImage, outImage;
 
         // RGB image
         inImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
-        outImage = Java2DUtil.convertIndexedToARGB(inImage);
+        outImage = Java2DUtil.convertIndexedTo8BitARGB(inImage);
         assertEquals(BufferedImage.TYPE_INT_RGB, outImage.getType());
 
         // ARGB image
         inImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
-        outImage = Java2DUtil.convertIndexedToARGB(inImage);
+        outImage = Java2DUtil.convertIndexedTo8BitARGB(inImage);
         assertEquals(BufferedImage.TYPE_INT_ARGB, outImage.getType());
 
         // indexed image
         inImage = new BufferedImage(10, 10, BufferedImage.TYPE_BYTE_INDEXED);
-        outImage = Java2DUtil.convertIndexedToARGB(inImage);
+        outImage = Java2DUtil.convertIndexedTo8BitARGB(inImage);
         assertEquals(BufferedImage.TYPE_INT_ARGB, outImage.getType());
     }
 
-    /* crop() */
+    /* crop(BufferedImage, Crop) */
 
     @Test
-    public void testCrop() {
-        final float fudge = 0.0000001f;
-        final int width = 200, height = 100;
-        BufferedImage inImage = newColorImage(width, height, 8, false);
+    public void testCropWithFullCrop() {
+        BufferedImage inImage = newColorImage(20, 20, 8, false);
         BufferedImage outImage;
 
-        // full
         Crop crop = new Crop();
         crop.setFull(true);
         outImage = Java2DUtil.crop(inImage, crop);
         assertSame(inImage, outImage);
+    }
 
-        // square crop
-        crop = new Crop();
+    @Test
+    public void testCropWithSquareCrop() {
+        final int width = 200, height = 100;
+        BufferedImage inImage = newColorImage(width, height, 8, false);
+        BufferedImage outImage;
+
+        Crop crop = new Crop();
         crop.setShape(Crop.Shape.SQUARE);
         crop.setWidth(50f);
         crop.setHeight(50f);
         outImage = Java2DUtil.crop(inImage, crop);
         assertEquals(height, outImage.getWidth());
         assertEquals(height, outImage.getHeight());
+    }
 
-        // pixel crop
-        crop = new Crop();
+    @Test
+    public void testCropWithPixelCrop() {
+        final int width = 200, height = 100;
+        BufferedImage inImage = newColorImage(width, height, 8, false);
+        BufferedImage outImage;
+
+        Crop crop = new Crop();
         crop.setWidth(50f);
         crop.setHeight(50f);
         outImage = Java2DUtil.crop(inImage, crop);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
+    }
 
-        // percentage crop
-        crop = new Crop();
+    @Test
+    public void testCropWithPercentageCrop() {
+        final int width = 200, height = 100;
+        BufferedImage inImage = newColorImage(width, height, 8, false);
+        BufferedImage outImage;
+
+        Crop crop = new Crop();
         crop.setUnit(Crop.Unit.PERCENT);
         crop.setX(0.5f);
         crop.setY(0.5f);
         crop.setWidth(0.5f);
         crop.setHeight(0.5f);
         outImage = Java2DUtil.crop(inImage, crop);
-        assertEquals(width * 0.5f, outImage.getWidth(), fudge);
-        assertEquals(height * 0.5f, outImage.getHeight(), fudge);
+        assertEquals(width * 0.5f, outImage.getWidth(), DELTA);
+        assertEquals(height * 0.5f, outImage.getHeight(), DELTA);
     }
+
+    /* crop(BufferedImage, Crop, ReductionFactor) */
 
     @Test
     public void testCropWithReductionFactor() {
-        final float fudge = 0.0000001f;
         final int width = 100, height = 100;
         BufferedImage inImage = newColorImage(width, height, 8, false);
         BufferedImage outImage;
@@ -281,8 +305,8 @@ public class Java2DUtilTest extends BaseTest {
         crop.setHeight(height / 2f);
         rf = new ReductionFactor(1);
         outImage = Java2DUtil.crop(inImage, crop, rf);
-        assertEquals(width / 4f, outImage.getWidth(), fudge);
-        assertEquals(height / 4f, outImage.getHeight(), fudge);
+        assertEquals(width / 4f, outImage.getWidth(), DELTA);
+        assertEquals(height / 4f, outImage.getHeight(), DELTA);
 
         // percentage crop
         crop = new Crop();
@@ -293,8 +317,8 @@ public class Java2DUtilTest extends BaseTest {
         crop.setHeight(0.5f);
         rf = new ReductionFactor(1);
         outImage = Java2DUtil.crop(inImage, crop, rf);
-        assertEquals(width / 4f, outImage.getWidth(), fudge);
-        assertEquals(height / 4f, outImage.getHeight(), fudge);
+        assertEquals(width / 4f, outImage.getWidth(), DELTA);
+        assertEquals(height / 4f, outImage.getHeight(), DELTA);
     }
 
     /* getOverlayImage() */
@@ -545,86 +569,72 @@ public class Java2DUtilTest extends BaseTest {
     /* scale(BufferedImage, Scale) */
 
     @Test
-    public void testScale() {
+    public void testScaleWithFull() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
-        BufferedImage outImage;
 
-        // Scale.Mode.FULL
         Scale scale = new Scale();
-        outImage = Java2DUtil.scale(inImage, scale);
+        BufferedImage outImage = Java2DUtil.scale(inImage, scale);
         assertSame(inImage, outImage);
+    }
 
-        // Scale.Mode.ASPECT_FIT_WIDTH
+    @Test
+    public void testScaleWithAspectFitWidth() {
+        BufferedImage inImage = newColorImage(100, 100, 8, false);
+
+        Scale scale = new Scale();
         scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         scale.setWidth(50);
-        outImage = Java2DUtil.scale(inImage, scale);
+        BufferedImage outImage = Java2DUtil.scale(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
+    }
 
-        // Scale.Mode.ASPECT_FIT_HEIGHT
+    @Test
+    public void testScaleWithAspectFitHeight() {
+        BufferedImage inImage = newColorImage(100, 100, 8, false);
+
+        Scale scale = new Scale();
         scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
         scale.setHeight(50);
-        outImage = Java2DUtil.scale(inImage, scale);
+        BufferedImage outImage = Java2DUtil.scale(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
+    }
 
-        // Scale.Mode.ASPECT_FIT_INSIDE
+    @Test
+    public void testScaleWithAspectFitInside() {
+        BufferedImage inImage = newColorImage(100, 100, 8, false);
+
+        Scale scale = new Scale();
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setWidth(50);
         scale.setHeight(50);
-        outImage = Java2DUtil.scale(inImage, scale);
+        BufferedImage outImage = Java2DUtil.scale(inImage, scale);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
+    }
 
-        // Scale.Mode.NON_ASPECT_FILL
+    @Test
+    public void testScaleWithNonAspectFill() {
+        BufferedImage inImage = newColorImage(100, 100, 8, false);
+
+        Scale scale = new Scale();
         scale.setMode(Scale.Mode.NON_ASPECT_FILL);
         scale.setWidth(80);
         scale.setHeight(50);
-        outImage = Java2DUtil.scale(inImage, scale);
+        BufferedImage outImage = Java2DUtil.scale(inImage, scale);
         assertEquals(80, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
-
-        // scale-by percent
-        scale = new Scale(0.25f);
-        outImage = Java2DUtil.scale(inImage, scale);
-        assertEquals(25, outImage.getWidth());
-        assertEquals(25, outImage.getHeight());
     }
 
-    /* scale(BufferedImage, Scale, ReductionFactor) */
-
     @Test
-    public void testScaleWithReductionFactor() {
+    public void testScaleWithScaleByPercent() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
-        BufferedImage outImage;
 
-        // Scale.Mode.ASPECT_FIT_WIDTH
-        Scale scale = new Scale(50, null, Scale.Mode.ASPECT_FIT_WIDTH);
-        ReductionFactor rf = new ReductionFactor(1);
-        outImage = Java2DUtil.scale(inImage, scale, rf);
-        assertEquals(50, outImage.getWidth());
-        assertEquals(50, outImage.getHeight());
-
-        // Scale.Mode.ASPECT_FIT_HEIGHT
-        scale = new Scale(null, 50, Scale.Mode.ASPECT_FIT_HEIGHT);
-        rf = new ReductionFactor(1);
-        outImage = Java2DUtil.scale(inImage, scale, rf);
-        assertEquals(50, outImage.getWidth());
-        assertEquals(50, outImage.getHeight());
-
-        // Scale.Mode.ASPECT_FIT_INSIDE
-        scale = new Scale(50, 50, Scale.Mode.ASPECT_FIT_INSIDE);
-        rf = new ReductionFactor(1);
-        outImage = Java2DUtil.scale(inImage, scale, rf);
-        assertEquals(50, outImage.getWidth());
-        assertEquals(50, outImage.getHeight());
-
-        // scale-by-percent
-        scale = new Scale(0.25f);
-        rf = new ReductionFactor(2);
-        outImage = Java2DUtil.scale(inImage, scale, rf);
-        assertEquals(100, outImage.getWidth());
-        assertEquals(100, outImage.getHeight());
+        Scale scale = new Scale(0.25f);
+        BufferedImage outImage = Java2DUtil.scale(inImage, scale);
+        assertEquals(25, outImage.getWidth());
+        assertEquals(25, outImage.getHeight());
     }
 
     @Test
@@ -635,6 +645,52 @@ public class Java2DUtilTest extends BaseTest {
         BufferedImage outImage = Java2DUtil.scale(inImage, scale);
         assertEquals(2, outImage.getWidth());
         assertEquals(1, outImage.getHeight());
+    }
+
+    /* scale(BufferedImage, Scale, ReductionFactor) */
+
+    @Test
+    public void testScaleWithReductionFactorWithAspectFitWidth() {
+        BufferedImage inImage = newColorImage(100, 100, 8, false);
+
+        Scale scale = new Scale(50, null, Scale.Mode.ASPECT_FIT_WIDTH);
+        ReductionFactor rf = new ReductionFactor(1);
+        BufferedImage outImage = Java2DUtil.scale(inImage, scale, rf);
+        assertEquals(50, outImage.getWidth());
+        assertEquals(50, outImage.getHeight());
+    }
+
+    @Test
+    public void testScaleWithReductionFactorWithAspectFitHeight() {
+        BufferedImage inImage = newColorImage(100, 100, 8, false);
+
+        Scale scale = new Scale(null, 50, Scale.Mode.ASPECT_FIT_HEIGHT);
+        ReductionFactor rf = new ReductionFactor(1);
+        BufferedImage outImage = Java2DUtil.scale(inImage, scale, rf);
+        assertEquals(50, outImage.getWidth());
+        assertEquals(50, outImage.getHeight());
+    }
+
+    @Test
+    public void testScaleWithReductionFactorWithAspectFitInside() {
+        BufferedImage inImage = newColorImage(100, 100, 8, false);
+
+        Scale scale = new Scale(50, 50, Scale.Mode.ASPECT_FIT_INSIDE);
+        ReductionFactor rf = new ReductionFactor(1);
+        BufferedImage outImage = Java2DUtil.scale(inImage, scale, rf);
+        assertEquals(50, outImage.getWidth());
+        assertEquals(50, outImage.getHeight());
+    }
+
+    @Test
+    public void testScaleWithReductionFactorWithScaleByPercent() {
+        BufferedImage inImage = newColorImage(100, 100, 8, false);
+
+        Scale scale = new Scale(0.25f);
+        ReductionFactor rf = new ReductionFactor(2);
+        BufferedImage outImage = Java2DUtil.scale(inImage, scale, rf);
+        assertEquals(100, outImage.getWidth());
+        assertEquals(100, outImage.getHeight());
     }
 
     /* sharpen() */

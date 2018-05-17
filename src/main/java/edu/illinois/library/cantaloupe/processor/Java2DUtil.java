@@ -50,6 +50,25 @@ import java.util.Collection;
 /**
  * <p>Collection of methods for operating on {@link BufferedImage}s.</p>
  *
+ * <h1>{@link BufferedImage} Cliff's Notes</h1>
+ *
+ * <p>{@link BufferedImage}s can have a variety of different internal data
+ * layouts that are partially dictated by their {@link BufferedImage#getType()
+ * type}, which corresponds to <em>display hardware</em>, not necessarily
+ * source image data. All of the standard types are limited to 8 bits per
+ * sample; larger sample sizes require {@link BufferedImage#TYPE_CUSTOM}.
+ * Unfortunately, whereas operations on many of the standard types (by e.g.
+ * {@link Graphics2D}) tend to be well-optimized, that doesn't carry over to
+ * {@link BufferedImage#TYPE_CUSTOM} and so most operations on images of this
+ * type are relatively slow.</p>
+ *
+ * <p>The setting of {@link
+ * edu.illinois.library.cantaloupe.config.Key#PROCESSOR_LIMIT_TO_8_BITS} is
+ * critical; for performance's sake, it should always be set to {@literal true}.
+ * This will force an early conversion from {@link BufferedImage#TYPE_CUSTOM}
+ * to {@link BufferedImage#TYPE_INT_ARGB} which is much more efficient to work
+ * with.</p>
+ *
  * <h1>{@link BufferedImage} Type Cheat Sheet</h1>
  *
  * <dl>
@@ -133,7 +152,7 @@ public final class Java2DUtil {
                                 final Crop appliedCrop,
                                 final ReductionFactor reductionFactor,
                                 final Collection<Redaction> redactions) {
-        if (image != null && redactions.size() > 0) {
+        if (image != null && !redactions.isEmpty()) {
             final Stopwatch watch = new Stopwatch();
             final Dimension imageSize = new Dimension(
                     image.getWidth(), image.getHeight());
@@ -190,7 +209,7 @@ public final class Java2DUtil {
      * @return New image of type {@link BufferedImage#TYPE_INT_ARGB}, or the
      *         input image if it is not indexed.
      */
-    static BufferedImage convertIndexedToARGB(BufferedImage inImage) {
+    static BufferedImage convertIndexedTo8BitARGB(BufferedImage inImage) {
         BufferedImage outImage = inImage;
         if (inImage.getType() == BufferedImage.TYPE_BYTE_INDEXED) {
             final Stopwatch watch = new Stopwatch();
@@ -202,7 +221,7 @@ public final class Java2DUtil {
             g2d.drawImage(inImage, 0, 0, null);
             g2d.dispose();
 
-            LOGGER.debug("convertIndexedToARGB(): converted in {}", watch);
+            LOGGER.debug("convertIndexedTo8BitARGB(): converted in {}", watch);
         }
         return outImage;
     }
@@ -248,10 +267,9 @@ public final class Java2DUtil {
                 croppedSize.height != inImage.getHeight())) {
             final Stopwatch watch = new Stopwatch();
 
-            // If the input image is indexed, cropping it would probably screw
-            // up the palette, so convert it to RGBA first.
-            // TODO: this should be done earlier, perhaps by the reader
-            outImage = convertIndexedToARGB(outImage);
+            // If the input image is indexed, cropping it will probably screw
+            // up its palette, so convert it to RGBA first.
+            outImage = convertIndexedTo8BitARGB(outImage);
 
             final Rectangle cropRegion = crop.getRectangle(
                     new Dimension(outImage.getWidth(), outImage.getHeight()), rf);
@@ -1037,7 +1055,7 @@ public final class Java2DUtil {
 
         switch (colorTransform) {
             case GRAY:
-                outImage = convertIndexedToARGB(outImage);
+                outImage = convertIndexedTo8BitARGB(outImage);
                 convertPixelsToGray(outImage);
                 break;
             case BITONAL:
