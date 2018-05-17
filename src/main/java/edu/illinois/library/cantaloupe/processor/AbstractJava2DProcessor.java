@@ -222,7 +222,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
         // here could make subsequent processing steps more efficient as they
         // will have less data to deal with.
         Encode encode = (Encode) opList.getFirst(Encode.class);
-        if (((encode != null && encode.getMaxComponentSize() != null && encode.getMaxComponentSize() <= 8)
+        if (((encode != null && encode.getMaxComponentSize() <= 8)
                 || outputFormat.getMaxSampleSize() <= 8)
                 && !Format.GIF.equals(outputFormat)) {
             image = Java2DUtil.reduceTo8Bits(image);

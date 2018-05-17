@@ -525,7 +525,7 @@ abstract class AbstractProcessorTest extends BaseTest {
         final Format sourceFormat = getSupported16BitSourceFormat();
 
         final Encode encode = new Encode(Format.PNG);
-        encode.setMaxComponentSize(null);
+        encode.setMaxComponentSize(0);
 
         OperationList ops = new OperationList(encode);
 

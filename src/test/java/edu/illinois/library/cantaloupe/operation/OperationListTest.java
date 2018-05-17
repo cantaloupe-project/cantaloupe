@@ -391,7 +391,7 @@ public class OperationListTest extends BaseTest {
         opList.applyNonEndpointMutations(info, proxy);
 
         Encode encode = (Encode) opList.getFirst(Encode.class);
-        assertEquals(8, encode.getMaxComponentSize().intValue());
+        assertEquals(8, encode.getMaxComponentSize());
     }
 
     @Test
@@ -412,7 +412,7 @@ public class OperationListTest extends BaseTest {
         opList.applyNonEndpointMutations(info, proxy);
 
         Encode encode = (Encode) opList.getFirst(Encode.class);
-        assertNull(encode.getMaxComponentSize());
+        assertEquals(Integer.MAX_VALUE, encode.getMaxComponentSize());
     }
 
     @Test

@@ -24,8 +24,7 @@ public class Encode implements Operation {
     private Format format = Format.UNKNOWN;
     private boolean interlace = false;
     private boolean isFrozen = false;
-    /** May be null to indicate no max. */
-    private Integer maxComponentSize;
+    private int maxComponentSize = Integer.MAX_VALUE;
     private int quality = MAX_QUALITY;
 
     public Encode(Format format) {
@@ -61,10 +60,10 @@ public class Encode implements Operation {
     }
 
     /**
-     * @return Maximum sample size to encode. May be <code>null</code> to
-     *         indicate no max.
+     * @return Maximum sample size to encode. May be {@link Integer#MAX_VALUE}
+     *         indicating no max.
      */
-    public Integer getMaxComponentSize() {
+    public int getMaxComponentSize() {
         return maxComponentSize;
     }
 
@@ -159,15 +158,15 @@ public class Encode implements Operation {
     }
 
     /**
-     * @param depth Maximum sample size to encode. Supply <code>null</code> to
+     * @param depth Maximum sample size to encode. Supply {@literal 0} to
      *              indicate no max.
      * @throws IllegalStateException If the instance is frozen.
      */
-    public void setMaxComponentSize(Integer depth) {
+    public void setMaxComponentSize(int depth) {
         if (isFrozen) {
             throw new IllegalStateException("Instance is frozen.");
         }
-        this.maxComponentSize = depth;
+        this.maxComponentSize = (depth == 0) ? Integer.MAX_VALUE : depth;
     }
 
     /**
@@ -240,7 +239,7 @@ public class Encode implements Operation {
         if (getBackgroundColor() != null) {
             parts.add(getBackgroundColor().toRGBHex());
         }
-        if (getMaxComponentSize() != null) {
+        if (getMaxComponentSize() != Integer.MAX_VALUE) {
             parts.add(getMaxComponentSize() + "");
         }
         return String.join("_", parts);

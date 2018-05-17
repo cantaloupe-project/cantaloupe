@@ -62,6 +62,12 @@ public class EncodeTest extends BaseTest {
         instance.setInterlacing(false);
     }
 
+    @Test
+    public void setMaxComponentSizeWithZeroArgument() {
+        instance.setMaxComponentSize(0);
+        assertEquals(Integer.MAX_VALUE, instance.getMaxComponentSize());
+    }
+
     @Test(expected = IllegalStateException.class)
     public void setMaxComponentSizeWhenFrozenThrowsException() {
         instance.freeze();
