@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.operation;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -64,9 +63,9 @@ public class EncodeTest extends BaseTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void setMaxSampleSizeWhenFrozenThrowsException() {
+    public void setMaxComponentSizeWhenFrozenThrowsException() {
         instance.freeze();
-        instance.setMaxSampleSize(8);
+        instance.setMaxComponentSize(8);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -102,7 +101,7 @@ public class EncodeTest extends BaseTest {
         instance.setInterlacing(true);
         instance.setQuality(50);
         instance.setBackgroundColor(Color.BLUE);
-        instance.setMaxSampleSize(10);
+        instance.setMaxComponentSize(10);
 
         final Map<String,Object> map = instance.toMap(new Dimension(500, 500));
         assertEquals("Encode", map.get("class"));
@@ -127,7 +126,7 @@ public class EncodeTest extends BaseTest {
         instance.setInterlacing(true);
         instance.setQuality(50);
         instance.setBackgroundColor(Color.BLUE);
-        instance.setMaxSampleSize(10);
+        instance.setMaxComponentSize(10);
         assertEquals("jpg_JPEG_50_interlace_#0000FF_10", instance.toString());
     }
 

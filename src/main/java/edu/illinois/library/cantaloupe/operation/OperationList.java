@@ -319,7 +319,7 @@ public final class OperationList implements Comparable<OperationList>,
 
         // Set the Encode operation's max sample size.
         boolean limit = config.getBoolean(Key.PROCESSOR_LIMIT_TO_8_BITS, true);
-        encode.setMaxSampleSize(limit ? 8 : null);
+        encode.setMaxComponentSize(limit ? 8 : null);
 
         // Now that mutations have been applied, we don't want any more
         // changes to the instance down the pike.

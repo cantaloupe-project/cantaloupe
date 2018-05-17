@@ -59,7 +59,7 @@ import java.util.regex.Pattern;
  * opj_decompress} converts the RGB source data itself. {@literal
  * opj_decompress} does not produce BMPs with more than 8 bits per sample,
  * which means that this processor can't respect {@link
- * Encode#getMaxSampleSize()}, and all output is &le; 8 bits.)</p>
+ * Encode#getMaxComponentSize()}, and all output is &le; 8 bits.)</p>
  *
  * <p>{@literal opj_decompress} reads and writes the files named in the
  * {@literal -i} and {@literal -o} arguments passed to it, respectively. The

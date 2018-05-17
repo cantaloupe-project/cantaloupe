@@ -17,7 +17,6 @@ import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.processor.codec.BufferedImageSequence;
-import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.Metadata;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
@@ -223,7 +222,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
         // here could make subsequent processing steps more efficient as they
         // will have less data to deal with.
         Encode encode = (Encode) opList.getFirst(Encode.class);
-        if (((encode != null && encode.getMaxSampleSize() != null && encode.getMaxSampleSize() <= 8)
+        if (((encode != null && encode.getMaxComponentSize() != null && encode.getMaxComponentSize() <= 8)
                 || outputFormat.getMaxSampleSize() <= 8)
                 && !Format.GIF.equals(outputFormat)) {
             image = Java2DUtil.reduceTo8Bits(image);

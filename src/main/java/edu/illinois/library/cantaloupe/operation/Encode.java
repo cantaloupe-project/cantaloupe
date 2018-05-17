@@ -25,7 +25,7 @@ public class Encode implements Operation {
     private boolean interlace = false;
     private boolean isFrozen = false;
     /** May be null to indicate no max. */
-    private Integer maxSampleSize;
+    private Integer maxComponentSize;
     private int quality = MAX_QUALITY;
 
     public Encode(Format format) {
@@ -64,8 +64,8 @@ public class Encode implements Operation {
      * @return Maximum sample size to encode. May be <code>null</code> to
      *         indicate no max.
      */
-    public Integer getMaxSampleSize() {
-        return maxSampleSize;
+    public Integer getMaxComponentSize() {
+        return maxComponentSize;
     }
 
     /**
@@ -163,11 +163,11 @@ public class Encode implements Operation {
      *              indicate no max.
      * @throws IllegalStateException If the instance is frozen.
      */
-    public void setMaxSampleSize(Integer depth) {
+    public void setMaxComponentSize(Integer depth) {
         if (isFrozen) {
             throw new IllegalStateException("Instance is frozen.");
         }
-        this.maxSampleSize = depth;
+        this.maxComponentSize = depth;
     }
 
     /**
@@ -214,7 +214,7 @@ public class Encode implements Operation {
         map.put("format", getFormat().getPreferredMediaType());
         map.put("interlace", isInterlacing());
         map.put("quality", getQuality());
-        map.put("max_sample_size", getMaxSampleSize());
+        map.put("max_sample_size", getMaxComponentSize());
         return Collections.unmodifiableMap(map);
     }
 
@@ -240,8 +240,8 @@ public class Encode implements Operation {
         if (getBackgroundColor() != null) {
             parts.add(getBackgroundColor().toRGBHex());
         }
-        if (getMaxSampleSize() != null) {
-            parts.add(getMaxSampleSize() + "");
+        if (getMaxComponentSize() != null) {
+            parts.add(getMaxComponentSize() + "");
         }
         return String.join("_", parts);
     }

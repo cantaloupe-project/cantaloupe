@@ -173,8 +173,8 @@ class JaiProcessor extends AbstractImageIOProcessor
             // LESS THAN 8 bits (I'm looking at you, GIF), don't do anything
             // and let the writer handle it.
             Encode encode = (Encode) opList.getFirst(Encode.class);
-            if (((encode != null && encode.getMaxSampleSize() != null
-                    && encode.getMaxSampleSize() <= 8)
+            if (((encode != null && encode.getMaxComponentSize() != null
+                    && encode.getMaxComponentSize() <= 8)
                     || outputFormat.getMaxSampleSize() <= 8)
                     && !Format.GIF.equals(outputFormat)) {
                 renderedOp = JAIUtil.rescalePixels(renderedOp);
