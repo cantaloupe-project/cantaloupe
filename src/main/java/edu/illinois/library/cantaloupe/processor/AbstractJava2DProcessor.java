@@ -210,7 +210,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
             readerHints = EnumSet.noneOf(ReaderHint.class);
         }
         if (opList.getFirst(Normalize.class) != null) {
-            image = Java2DUtil.stretchContrast(image);
+            Java2DUtil.stretchContrast(image);
         }
 
         // If the Encode operation specifies a max sample size of 8 bits, or if
@@ -254,8 +254,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
                 }
             }
         }
-        image = Java2DUtil.applyRedactions(image, crop, reductionFactor,
-                redactions);
+        Java2DUtil.applyRedactions(image, crop, reductionFactor, redactions);
 
         // Apply remaining operations.
         for (Operation op : opList) {
@@ -273,7 +272,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
                 } else if (op instanceof Sharpen) {
                     image = Java2DUtil.sharpen(image, (Sharpen) op);
                 } else if (op instanceof Overlay) {
-                    image = Java2DUtil.applyOverlay(image, (Overlay) op);
+                    Java2DUtil.applyOverlay(image, (Overlay) op);
                 }
             }
         }

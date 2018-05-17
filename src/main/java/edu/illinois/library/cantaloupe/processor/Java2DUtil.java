@@ -44,6 +44,7 @@ import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 
 /**
@@ -122,23 +123,22 @@ public final class Java2DUtil {
     /**
      * Redacts regions from the given image.
      *
-     * @param baseImage       Image to apply the overlay on top of.
-     * @param appliedCrop     Crop already applied to {@literal baseImage}.
+     * @param image           Image to redact.
+     * @param appliedCrop     Crop already applied to {@literal image}.
      * @param reductionFactor Reduction factor already applied to
-     *                        {@literal baseImage}.
+     *                        {@literal image}.
      * @param redactions      Regions of the image to redact.
-     * @return                Input image with redactions applied.
      */
-    static BufferedImage applyRedactions(final BufferedImage baseImage,
-                                         final Crop appliedCrop,
-                                         final ReductionFactor reductionFactor,
-                                         final Collection<Redaction> redactions) {
-        if (baseImage != null && redactions.size() > 0) {
+    static void applyRedactions(final BufferedImage image,
+                                final Crop appliedCrop,
+                                final ReductionFactor reductionFactor,
+                                final Collection<Redaction> redactions) {
+        if (image != null && redactions.size() > 0) {
             final Stopwatch watch = new Stopwatch();
             final Dimension imageSize = new Dimension(
-                    baseImage.getWidth(), baseImage.getHeight());
+                    image.getWidth(), image.getHeight());
 
-            final Graphics2D g2d = baseImage.createGraphics();
+            final Graphics2D g2d = image.createGraphics();
             g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
                     RenderingHints.VALUE_RENDER_QUALITY);
             g2d.setColor(java.awt.Color.BLACK);
@@ -164,30 +164,25 @@ public final class Java2DUtil {
             g2d.dispose();
             LOGGER.debug("applyRedactions() executed in {}", watch);
         }
-        return baseImage;
     }
 
     /**
      * Applies the given overlay to the given image. The overlay may be a
-     * string ({@link StringOverlay}) or an image ({@link ImageOverlay}).
+     * {@link StringOverlay string} or an {@link ImageOverlay image}.
      *
      * @param baseImage Image to apply the overlay on top of.
      * @param overlay   Overlay to apply to the base image.
-     * @return          Overlaid image.
      */
-    static BufferedImage applyOverlay(final BufferedImage baseImage,
-                                      final Overlay overlay)
-            throws IOException {
-        BufferedImage markedImage = baseImage;
+    static void applyOverlay(final BufferedImage baseImage,
+                             final Overlay overlay) throws IOException {
         if (overlay instanceof ImageOverlay) {
-            markedImage = overlayImage(baseImage,
+            overlayImage(baseImage,
                     getOverlayImage((ImageOverlay) overlay),
                     overlay.getPosition(),
                     overlay.getInset());
         } else if (overlay instanceof StringOverlay) {
-            markedImage = overlayString(baseImage, (StringOverlay) overlay);
+            overlayString(baseImage, (StringOverlay) overlay);
         }
-        return markedImage;
     }
 
     /**
@@ -213,10 +208,11 @@ public final class Java2DUtil {
     }
 
     /**
+     * N.B.: This method should only be invoked if {@link
+     * Crop#hasEffect(Dimension, OperationList)} returns {@literal true}.
+     *
      * @param inImage Image to crop.
-     * @param crop    Crop operation. Clients should call
-     *                {@link Operation#hasEffect(Dimension, OperationList)}
-     *                before invoking.
+     * @param crop    Crop operation.
      * @return        Cropped image, or the input image if the given operation
      *                is a no-op.
      */
@@ -276,9 +272,8 @@ public final class Java2DUtil {
     static BufferedImage getOverlayImage(ImageOverlay overlay)
             throws IOException {
         ImageReader reader = null;
-        try {
-            reader = new ImageReaderFactory().newImageReader(
-                    overlay.openStream(), Format.PNG);
+        try (InputStream is = overlay.openStream()) {
+            reader = new ImageReaderFactory().newImageReader(is, Format.PNG);
             return reader.read();
         } finally {
             if (reader != null) {
@@ -293,10 +288,10 @@ public final class Java2DUtil {
      * @param position     Position of the overlaid image.
      * @param inset        Inset in pixels.
      */
-    private static BufferedImage overlayImage(final BufferedImage baseImage,
-                                              final BufferedImage overlayImage,
-                                              final Position position,
-                                              final int inset) {
+    private static void overlayImage(final BufferedImage baseImage,
+                                     final BufferedImage overlayImage,
+                                     final Position position,
+                                     final int inset) {
         if (overlayImage != null) {
             final Stopwatch watch = new Stopwatch();
             int overlayX, overlayY;
@@ -362,7 +357,6 @@ public final class Java2DUtil {
             g2d.dispose();
             LOGGER.debug("overlayImage() executed in {}", watch);
         }
-        return baseImage;
     }
 
     /**
@@ -370,10 +364,9 @@ public final class Java2DUtil {
      *
      * @param baseImage Image to overlay the string onto.
      * @param overlay   String to overlay onto the image.
-     * @return          Image with a string overlaid on top of it.
      */
-    private static BufferedImage overlayString(final BufferedImage baseImage,
-                                               final StringOverlay overlay) {
+    private static void overlayString(final BufferedImage baseImage,
+                                      final StringOverlay overlay) {
         if (overlay.hasEffect()) {
             final Stopwatch watch = new Stopwatch();
 
@@ -524,7 +517,6 @@ public final class Java2DUtil {
             }
             g2d.dispose();
         }
-        return baseImage;
     }
 
     private static Rectangle getBoundingBox(final StringOverlay overlay,
@@ -949,88 +941,87 @@ public final class Java2DUtil {
      *
      * <p>Does not work with indexed images.</p>
      *
-     * @param inImage Image to stretch.
-     * @return        Stretched image.
+     * @param image Image to stretch.
      */
-    static BufferedImage stretchContrast(BufferedImage inImage) {
-        if (inImage.getType() != BufferedImage.TYPE_BYTE_INDEXED) {
-            // Stretch only if there is at least this difference between
-            // minimum and maximum luminance.
-            final float threshold = 0.01f;
-            final float maxColor =
-                    (float) Math.pow(2, inImage.getColorModel().getComponentSize(0));
+    static void stretchContrast(BufferedImage image) {
+        if (image.getType() == BufferedImage.TYPE_BYTE_INDEXED) {
+            LOGGER.debug("stretchContrast(): can't stretch an indexed image.");
+            return;
+        }
 
-            final Stopwatch watch = new Stopwatch();
-            final int minX = inImage.getMinX();
-            final int minY = inImage.getMinY();
-            final int width = inImage.getWidth();
-            final int height = inImage.getHeight();
-            float lowRgb = maxColor, highRgb = 0;
+        // Stretch only if there is at least this difference between
+        // minimum and maximum luminance.
+        final float threshold = 0.01f;
+        final float maxColor =
+                (float) Math.pow(2, image.getColorModel().getComponentSize(0));
 
-            // Scan every pixel to find the darkest and brightest.
+        final Stopwatch watch = new Stopwatch();
+        final int minX = image.getMinX();
+        final int minY = image.getMinY();
+        final int width = image.getWidth();
+        final int height = image.getHeight();
+        float lowRgb = maxColor, highRgb = 0;
+
+        // Scan every pixel to find the darkest and brightest.
+        for (int x = minX; x < minX + width; x++) {
+            for (int y = minY; y < minY + height; y++) {
+                final int color = image.getRGB(x, y);
+                final int red = (color >>> 16) & 0xFF;
+                final int green = (color >>> 8) & 0xFF;
+                final int blue = color & 0xFF;
+                if (red < lowRgb) {
+                    lowRgb = red;
+                }
+                if (green < lowRgb) {
+                    lowRgb = green;
+                }
+                if (blue < lowRgb) {
+                    lowRgb = blue;
+                }
+                if (red > highRgb) {
+                    highRgb = red;
+                }
+                if (green > highRgb) {
+                    highRgb = green;
+                }
+                if (blue > highRgb) {
+                    highRgb = blue;
+                }
+            }
+        }
+
+        if (Math.abs(highRgb - lowRgb) > threshold) {
             for (int x = minX; x < minX + width; x++) {
                 for (int y = minY; y < minY + height; y++) {
-                    final int color = inImage.getRGB(x, y);
+                    final int color = image.getRGB(x, y);
                     final int red = (color >>> 16) & 0xFF;
                     final int green = (color >>> 8) & 0xFF;
                     final int blue = color & 0xFF;
-                    if (red < lowRgb) {
-                        lowRgb = red;
+
+                    float stretchedRed =
+                            Math.abs((red - lowRgb) / (highRgb - lowRgb));
+                    if (stretchedRed > 1) {
+                        stretchedRed = 1;
                     }
-                    if (green < lowRgb) {
-                        lowRgb = green;
+                    float stretchedGreen =
+                            Math.abs((green - lowRgb) / (highRgb - lowRgb));
+                    if (stretchedGreen > 1) {
+                        stretchedGreen = 1;
                     }
-                    if (blue < lowRgb) {
-                        lowRgb = blue;
+                    float stretchedBlue =
+                            Math.abs((blue - lowRgb) / (highRgb - lowRgb));
+                    if (stretchedBlue > 1) {
+                        stretchedBlue = 1;
                     }
-                    if (red > highRgb) {
-                        highRgb = red;
-                    }
-                    if (green > highRgb) {
-                        highRgb = green;
-                    }
-                    if (blue > highRgb) {
-                        highRgb = blue;
-                    }
+                    final java.awt.Color outColor = new java.awt.Color(
+                            stretchedRed, stretchedGreen, stretchedBlue);
+                    image.setRGB(x, y, outColor.getRGB());
                 }
             }
-
-            if (Math.abs(highRgb - lowRgb) > threshold) {
-                for (int x = minX; x < minX + width; x++) {
-                    for (int y = minY; y < minY + height; y++) {
-                        final int color = inImage.getRGB(x, y);
-                        final int red = (color >>> 16) & 0xFF;
-                        final int green = (color >>> 8) & 0xFF;
-                        final int blue = color & 0xFF;
-
-                        float stretchedRed =
-                                Math.abs((red - lowRgb) / (highRgb - lowRgb));
-                        if (stretchedRed > 1) {
-                            stretchedRed = 1;
-                        }
-                        float stretchedGreen =
-                                Math.abs((green - lowRgb) / (highRgb - lowRgb));
-                        if (stretchedGreen > 1) {
-                            stretchedGreen = 1;
-                        }
-                        float stretchedBlue =
-                                Math.abs((blue - lowRgb) / (highRgb - lowRgb));
-                        if (stretchedBlue > 1) {
-                            stretchedBlue = 1;
-                        }
-                        final java.awt.Color outColor = new java.awt.Color(
-                                stretchedRed, stretchedGreen, stretchedBlue);
-                        inImage.setRGB(x, y, outColor.getRGB());
-                    }
-                }
-                LOGGER.debug("stretchContrast(): rescaled in {}", watch);
-            } else {
-                LOGGER.debug("stretchContrast(): not enough contrast to stretch.");
-            }
+            LOGGER.debug("stretchContrast(): rescaled in {}", watch);
         } else {
-            LOGGER.debug("stretchContrast(): can't stretch an indexed image.");
+            LOGGER.debug("stretchContrast(): not enough contrast to stretch.");
         }
-        return inImage;
     }
 
     /**

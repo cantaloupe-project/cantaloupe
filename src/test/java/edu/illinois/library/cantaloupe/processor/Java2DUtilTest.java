@@ -91,31 +91,30 @@ public class Java2DUtilTest extends BaseTest {
 
     @Test
     public void testApplyRedactions() {
-        final BufferedImage baseImage = newColorImage(64, 56, 8, false);
+        final BufferedImage image = newColorImage(64, 56, 8, false);
         final ReductionFactor rf = new ReductionFactor(0);
 
         // fill it with white
-        Graphics2D g2d = baseImage.createGraphics();
+        Graphics2D g2d = image.createGraphics();
         g2d.setColor(Color.WHITE.toColor());
-        g2d.fillRect(0, 0, baseImage.getWidth(), baseImage.getHeight());
+        g2d.fillRect(0, 0, image.getWidth(), image.getHeight());
         g2d.dispose();
 
         // create some Redactions
         List<Redaction> redactions = new ArrayList<>();
         redactions.add(new Redaction(new Rectangle(0, 0, 20, 20)));
         redactions.add(new Redaction(new Rectangle(20, 20, 20, 20)));
-        final Crop crop = new Crop(0, 0, baseImage.getWidth(),
-                baseImage.getTileHeight());
+        final Crop crop = new Crop(0, 0, image.getWidth(),
+                image.getTileHeight());
 
         // apply them
-        final BufferedImage redactedImage = Java2DUtil.applyRedactions(
-                baseImage, crop, rf, redactions);
+        Java2DUtil.applyRedactions(image, crop, rf, redactions);
 
         // test for the first one
-        assertRGBA(redactedImage.getRGB(0, 0), 0, 0, 0, 255);
+        assertRGBA(image.getRGB(0, 0), 0, 0, 0, 255);
 
         // test for the second one
-        assertRGBA(redactedImage.getRGB(25, 25), 0, 0, 0, 255);
+        assertRGBA(image.getRGB(25, 25), 0, 0, 0, 255);
     }
 
     /* applyOverlay() */
@@ -136,10 +135,9 @@ public class Java2DUtilTest extends BaseTest {
                 Position.TOP_LEFT, 0);
 
         // apply it
-        final BufferedImage overlaidImage = Java2DUtil.applyOverlay(
-                baseImage, overlay);
+        Java2DUtil.applyOverlay(baseImage, overlay);
 
-        assertRGBA(overlaidImage.getRGB(0, 0), 0, 0, 0, 255);
+        assertRGBA(baseImage.getRGB(0, 0), 0, 0, 0, 255);
     }
 
     @Test
@@ -160,10 +158,9 @@ public class Java2DUtilTest extends BaseTest {
                 inset);
 
         // apply it
-        final BufferedImage overlaidImage = Java2DUtil.applyOverlay(
-                baseImage, overlay);
+        Java2DUtil.applyOverlay(baseImage, overlay);
 
-        int pixel = overlaidImage.getRGB(
+        int pixel = baseImage.getRGB(
                 baseImage.getWidth() - inset - 1,
                 baseImage.getHeight() - inset - 1);
         assertRGBA(pixel, 0, 0, 0, 255);
@@ -181,14 +178,13 @@ public class Java2DUtilTest extends BaseTest {
                 Color.WHITE, Color.BLACK, Color.WHITE, 0f);
 
         // apply it
-        final BufferedImage overlaidImage = Java2DUtil.applyOverlay(
-                baseImage, overlay);
+        Java2DUtil.applyOverlay(baseImage, overlay);
 
         // Test the background color
-        assertRGBA(overlaidImage.getRGB(2, 2), 0, 0, 0, 255);
+        assertRGBA(baseImage.getRGB(2, 2), 0, 0, 0, 255);
 
         // Test the font color TODO: this pixel will be different colors on different JVMs and/or with different versions of the SansSerif font
-        int pixel = overlaidImage.getRGB(9, 8);
+        int pixel = baseImage.getRGB(9, 8);
         int alpha = (pixel >> 24) & 0xff;
         int red = (pixel >> 16) & 0xff;
         int green = (pixel >> 8) & 0xff;
@@ -657,20 +653,20 @@ public class Java2DUtilTest extends BaseTest {
 
     @Test
     public void testStretchContrast() {
-        BufferedImage inImage = newColorImage(100, 100, 8, false);
+        BufferedImage image = newColorImage(100, 100, 8, false);
         final Rectangle leftHalf = new Rectangle(0, 0, 50, 100);
         final Rectangle rightHalf = new Rectangle(50, 0, 50, 100);
 
-        final Graphics2D g2d = inImage.createGraphics();
+        final Graphics2D g2d = image.createGraphics();
         g2d.setColor(java.awt.Color.DARK_GRAY);
         g2d.fill(leftHalf);
         g2d.setColor(java.awt.Color.LIGHT_GRAY);
         g2d.fill(rightHalf);
 
-        BufferedImage outImage = Java2DUtil.stretchContrast(inImage);
+        Java2DUtil.stretchContrast(image);
 
-        assertEquals(-16777216, outImage.getRGB(10, 10));
-        assertEquals(-1, outImage.getRGB(90, 90));
+        assertEquals(-16777216, image.getRGB(10, 10));
+        assertEquals(-1, image.getRGB(90, 90));
     }
 
     /* transformColor() */

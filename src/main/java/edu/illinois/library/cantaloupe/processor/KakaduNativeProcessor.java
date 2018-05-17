@@ -683,8 +683,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
         if (!redactions.isEmpty()) {
             Crop crop = new Crop(0, 0, image.getWidth(), image.getHeight(),
                     imageInfo.getOrientation(), imageInfo.getSize());
-            image = Java2DUtil.applyRedactions(image, crop, reductionFactor,
-                    redactions);
+            Java2DUtil.applyRedactions(image, crop, reductionFactor, redactions);
         }
 
         // Apply remaining operations.
@@ -703,7 +702,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                 } else if (op instanceof Sharpen) {
                     image = Java2DUtil.sharpen(image, (Sharpen) op);
                 } else if (op instanceof Overlay) {
-                    image = Java2DUtil.applyOverlay(image, (Overlay) op);
+                    Java2DUtil.applyOverlay(image, (Overlay) op);
                 }
             }
         }
