@@ -12,9 +12,10 @@ jdk:
   #- openjdk10
 
 before_install:
-  # install optional libraries
-  - sudo mkdir -p /usr/local/lib
-  - sudo cp dist/libs/Linux-x86-64/* /usr/local/lib
+  # install optional dependencies
+  - sudo mkdir -p /usr/local/bin /usr/local/lib
+  - sudo cp dist/deps/Linux-x86-64/bin/* /usr/local/bin
+  - sudo cp dist/deps/Linux-x86-64/lib/* /usr/local/lib
   - export LIBRARY_PATH="/usr/local/lib:$LIBRARY_PATH"
   - export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
   # copy properties file
