@@ -671,7 +671,6 @@
               <reuseForks>false</reuseForks>
               <excludes>
                 <exclude>Azure*Test</exclude>
-                <exclude>KakaduDemoProcessorTest</exclude>
               </excludes>
             </configuration>
           </plugin>
