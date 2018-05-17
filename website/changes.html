@@ -8,7 +8,11 @@ title: Change Log
 <h2>3.4.3</h2>
 
 <ul>
+  <li>Fixed a potential resource leak involving stream-based resolvers.</li>
   <li>Fixed HttpResolver's handling of semicolon-delimited <code>Content-Type</code> header values.</li>
+  <li>Fixed palette corruption when cropping source images with indexed color.</li>
+  <li>Fixed a <code>NullPointerException</code> when using the info cache without a derivative cache.</li>
+  <li>Other minor fixes.</li>
 </ul>
 
 <h2>3.4.2</h2>
