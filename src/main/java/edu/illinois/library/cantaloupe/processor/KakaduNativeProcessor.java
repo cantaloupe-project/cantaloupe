@@ -475,6 +475,17 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
 
             // N.B.: if the region is not entirely within the canvas,
             // Kdu_region_decompressor.Process() will crash the JVM.
+            if (!toRectangle(renderedDims).contains(toRectangle(regionDims))) {
+                throw new IllegalArgumentException(String.format(
+                        "Rendered region is not entirely within the canvas. " +
+                                "This is probably a bug. " +
+                                "(Region: %d,%d/%dx%d; canvas: %d,%d/%dx%d)",
+                        regionPos.Get_x(), regionPos.Get_y(),
+                        regionSize.Get_x(), regionSize.Get_y(),
+                        renderedPos.Get_x(), renderedPos.Get_y(),
+                        renderedSize.Get_x(), renderedSize.Get_y()));
+            }
+
             LOGGER.debug("Rendered region {},{}/{}x{}; " +
                             "canvas {},{}/{}x{}; {}x reduction factor",
                     regionPos.Get_x(), regionPos.Get_y(),
@@ -559,6 +570,12 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             IOUtils.closeQuietly(inputStream);
         }
         return image;
+    }
+
+    private static Rectangle toRectangle(Kdu_dims dims) throws KduException {
+        Kdu_coords pos = dims.Access_pos();
+        Kdu_coords size = dims.Access_size();
+        return new Rectangle(pos.Get_x(), pos.Get_y(), size.Get_x(), size.Get_y());
     }
 
     /**
