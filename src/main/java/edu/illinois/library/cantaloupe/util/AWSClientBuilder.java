@@ -2,19 +2,13 @@ package edu.illinois.library.cantaloupe.util;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSCredentialsProviderChain;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.AnonymousAWSCredentials;
-import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
-import com.amazonaws.auth.InstanceProfileCredentialsProvider;
-import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -26,6 +20,34 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
  *     AWS SDK for Java</a>
  */
 public final class AWSClientBuilder {
+
+    /**
+     * Draws credentials from the parent class' instance variables, which
+     * generally come from the application configuration, although not
+     * necessarily the same keys all the time.
+     */
+    private class ConfigurationCredentialsProvider
+            implements AWSCredentialsProvider {
+
+        @Override
+        public AWSCredentials getCredentials() {
+            return new AWSCredentials() {
+                @Override
+                public String getAWSAccessKeyId() {
+                    return accessKeyID;
+                }
+
+                @Override
+                public String getAWSSecretKey() {
+                    return secretKey;
+                }
+            };
+        }
+
+        @Override
+        public void refresh() {}
+
+    }
 
     private static final int DEFAULT_CLIENT_EXECUTION_TIMEOUT_MSEC = 10 * 60 * 1000;
     private static final long DEFAULT_CONNECTION_TTL_MSEC          = 30 * 60 * 1000;
@@ -97,43 +119,24 @@ public final class AWSClientBuilder {
     }
 
     private AWSCredentialsProvider getCredentialsProvider() {
-        if ((accessKeyID == null || accessKeyID.isEmpty()) &&
-                (secretKey == null || secretKey.isEmpty())) {
-            return new AWSStaticCredentialsProvider(new AnonymousAWSCredentials());
+        // The AWS client will consult each provider in this list in order,
+        // and use the first one that works.
+        final List<AWSCredentialsProvider> providers = new ArrayList<>();
+
+        // As a first resort, add a provider that draws from the application
+        // configuration.
+        AWSCredentialsProvider configProvider =
+                new ConfigurationCredentialsProvider();
+        String accessKeyId = configProvider.getCredentials().getAWSAccessKeyId();
+        if (accessKeyId != null && !accessKeyId.isEmpty()) {
+            providers.add(configProvider);
         }
 
-        final List<AWSCredentialsProvider> creds = new ArrayList<>(
-                Arrays.asList(
-                        new EnvironmentVariableCredentialsProvider(),
-                        new SystemPropertiesCredentialsProvider(),
-                        new ProfileCredentialsProvider(),
-                        new InstanceProfileCredentialsProvider(false)));
+        // Add default providers as fallbacks:
+        // https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/index.html?com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html
+        providers.add(new DefaultAWSCredentialsProviderChain());
 
-        final AWSCredentialsProvider provider = new AWSCredentialsProvider () {
-            @Override
-            public AWSCredentials getCredentials() {
-                return new AWSCredentials() {
-                    @Override
-                    public String getAWSAccessKeyId() {
-                        return accessKeyID;
-                    }
-
-                    @Override
-                    public String getAWSSecretKey() {
-                        return secretKey;
-                    }
-                };
-            }
-
-            @Override
-            public void refresh() {}
-
-        };
-
-        if (!provider.getCredentials().getAWSAccessKeyId().isEmpty()) {
-            creds.add(0, provider);
-        }
-        return new AWSCredentialsProviderChain(creds);
+        return new AWSCredentialsProviderChain(providers);
     }
 
     /**
