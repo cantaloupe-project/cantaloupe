@@ -321,29 +321,7 @@ end
 
 <h4 id="AmazonS3ResolverCredentialsSources">Credentials Sources</h4>
 
-<p>AmazonS3Resolver can obtain its credentials from several different sources. It will search each one in order and use the first that it finds:</p>
-
-<dl>
-  <dt>Configuration File</dt>
-  <dd>
-    <p>Credentials can be set via the following keys in the configuration file:</p>
-
-    <dl>
-      <dt><code>AmazonS3Resolver.access_key_id</code></dt>
-      <dd>An access key associated with your AWS account. (See <a href="http://aws.amazon.com/security-credentials">AWS Security Credentials</a>.)</dd>
-      <dt><code>AmazonS3Resolver.secret_key</code></dt>
-      <dd>A secret key associated with your AWS account. (See <a href="http://aws.amazon.com/security-credentials">AWS Security Credentials</a>.)</dd>
-    </dl>
-  </dt>
-  <dt>Environment Variables</dt>
-  <dd>Credentials are read from the <code>AWS_ACCESS_KEY_ID</code> (or <code>AWS_ACCESS_KEY</code>) and <code>AWS_SECRET_KEY</code> (or <code>AWS_SECRET_ACCESS_KEY</code>) environment variables. If the <code>AWS_SESSION_TOKEN</code> environment variable is also set, then temporary credentials will be used.</dd>
-  <dt>VM Arguments</dt>
-  <dd>Credentials are provided via the <code>aws.accessKeyId</code> and <code>aws.secretKey</code> VM arguments.</dd>
-  <dt>AWS Configuration Profile</dt>
-  <dd>Credentials are provided by the profile configuration file for the default profile.</dd>
-  <dt>Instance Profile</dt>
-  <dd>Credentials are loaded from the Amazon EC2 Instance Metadata Service.</dd>
-</dl>
+<p>AmazonS3Resolver can obtain its credentials from several different sources. It will first consult the <code>AmazonS3Resolver.access_key_id</code> and  <code>AmazonS3Resolver.secret_key</code> keys in the application configuration. If those are not set, it will fall back to the strategy employed by the AWS SDK's <code>DefaultAWSCredentialsProviderChain</code>; see its <a href="https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/index.html?com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html">class documentation</a> for details.</p>
 
 <h4 id="AmazonS3ResolverLookupStrategies">Lookup Strategies</h4>
 

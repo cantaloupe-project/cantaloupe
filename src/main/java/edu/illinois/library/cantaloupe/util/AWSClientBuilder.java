@@ -1,17 +1,13 @@
 package edu.illinois.library.cantaloupe.util;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSCredentialsProviderChain;
-import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
-import com.amazonaws.auth.InstanceProfileCredentialsProvider;
-import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import org.slf4j.Logger;
@@ -22,7 +18,12 @@ import org.slf4j.LoggerFactory;
  */
 public class AWSClientBuilder {
 
-    private class CustomCredentialsProvider implements AWSCredentialsProvider {
+    /**
+     * Draws credentials from the parent class' instance variables, which
+     * generally come from the application configuration.
+     */
+    private class ConfigurationCredentialsProvider
+            implements AWSCredentialsProvider {
 
         @Override
         public AWSCredentials getCredentials() {
@@ -104,24 +105,25 @@ public class AWSClientBuilder {
         clientConfig.setConnectionTTL(DEFAULT_CONNECTION_TTL_MSEC);
         clientConfig.setClientExecutionTimeout(DEFAULT_CLIENT_EXECUTION_TIMEOUT_MSEC);
         clientConfig.setUseTcpKeepAlive(true);
-        
-    	List<AWSCredentialsProvider> creds = new ArrayList<>(
-    	        Arrays.asList(
-    	                new EnvironmentVariableCredentialsProvider(),
-                        new SystemPropertiesCredentialsProvider(),
-                        new ProfileCredentialsProvider(),
-                        new InstanceProfileCredentialsProvider(false)));
 
-        final AWSCredentialsProvider credsProvider =
-                new CustomCredentialsProvider();
-    	if (!credsProvider.getCredentials().getAWSAccessKeyId().isEmpty()) {
-    		creds.add(0, credsProvider);
+        // The AWS client will consult each provider in this list in order,
+        // and use the first one that works.
+    	final List<AWSCredentialsProvider> providers = new ArrayList<>();
+
+    	// As a first resort, add a provider that draws from the application
+        // configuration.
+        AWSCredentialsProvider configProvider = new ConfigurationCredentialsProvider();
+        String accessKeyId = configProvider.getCredentials().getAWSAccessKeyId();
+        if (accessKeyId != null && !accessKeyId.isEmpty()) {
+            providers.add(configProvider);
         }
-    	
-    	final AWSCredentialsProviderChain chain = new AWSCredentialsProviderChain(creds);
-    	
+
+        // Add default providers as fallbacks:
+        // https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/index.html?com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html
+        providers.add(new DefaultAWSCredentialsProviderChain());
+
         AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard()
-        		.withCredentials(chain)
+        		.withCredentials(new AWSCredentialsProviderChain(providers))
         		.withClientConfiguration(clientConfig);
         
         String regionStr = region;
