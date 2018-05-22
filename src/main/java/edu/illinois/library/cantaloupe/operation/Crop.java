@@ -24,6 +24,8 @@ public class Crop implements Operation {
         PERCENT, PIXELS
     }
 
+    private static final float DELTA = 0.000001f;
+
     private float height = 0.0f;
     private boolean isFrozen = false;
     private boolean isFull = false;
@@ -255,15 +257,18 @@ public class Crop implements Operation {
     }
 
     /**
+     * This method may produce false positives. {@link #hasEffect(Dimension,
+     * OperationList)} should be used instead where possible.
+     *
      * @return Whether the crop is effectively a no-op.
      */
     @Override
     public boolean hasEffect() {
-        if (this.isFull()) {
+        if (isFull()) {
             return false;
         } else if (Unit.PERCENT.equals(getUnit()) &&
-                Math.abs(getWidth() - 1f) < 0.000001f &&
-                Math.abs(getHeight() - 1f) < 0.000001f) {
+                Math.abs(getWidth() - 1f) < DELTA &&
+                Math.abs(getHeight() - 1f) < DELTA) {
             return false;
         }
         return true;
@@ -282,19 +287,18 @@ public class Crop implements Operation {
                 fullSize.width != fullSize.height) {
             return true;
         } else if (Unit.PIXELS.equals(getUnit())) {
-            if (Math.abs(fullSize.width - getWidth()) > 0.00001f ||
-                    Math.abs(fullSize.height - getHeight()) > 0.00001f) {
+            if (getX() > 0 || getY() > 0) {
                 return true;
-            } else if (getX() > 0 || getY() > 0) {
+            } else if ((Math.abs(fullSize.width - getWidth()) > DELTA || Math.abs(fullSize.height - getHeight()) > DELTA) &&
+                    (getWidth() < fullSize.width || getHeight() < fullSize.height)) {
                 return true;
             }
         } else if (Unit.PERCENT.equals(getUnit())) {
-            final float delta = 0.00001f;
-            return getX() > delta || getY() > delta ||
+            return getX() > DELTA || getY() > DELTA ||
                     Math.abs((getWidth() * fullSize.width) -
-                            (getX() * fullSize.width) - fullSize.width) > delta ||
+                            (getX() * fullSize.width) - fullSize.width) > DELTA ||
                     Math.abs((getHeight() * fullSize.height) -
-                            (getY() * fullSize.height) - fullSize.height) > delta;
+                            (getY() * fullSize.height) - fullSize.height) > DELTA;
         }
         return false;
     }
