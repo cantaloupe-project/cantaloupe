@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -54,10 +53,17 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
         assertNull(instance.getInitializationException());
     }
 
-    @Ignore
     @Override
     @Test
-    public void testProcessOf16BitImageWithEncodeOperationWithNoLimit() {}
+    public void testProcessOf16BitImageWithEncodeOperationWithNoLimit() {
+        // This processor doesn't support 16-bit output.
+    }
+
+    @Override
+    @Test
+    public void testProcessWithNonAspectFillScaleOperation() {
+        // This processor doesn't support this scale mode.
+    }
 
     @Test
     public void testReadImageInfoWithUntiledImage() throws Exception {
@@ -95,7 +101,6 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
                 ProcessorFeature.ROTATION_ARBITRARY,
                 ProcessorFeature.ROTATION_BY_90S,
                 ProcessorFeature.SIZE_ABOVE_FULL,
-                ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
                 ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
                 ProcessorFeature.SIZE_BY_HEIGHT,
                 ProcessorFeature.SIZE_BY_PERCENT,

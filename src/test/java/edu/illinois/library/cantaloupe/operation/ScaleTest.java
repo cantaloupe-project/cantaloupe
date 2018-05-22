@@ -1,8 +1,6 @@
 package edu.illinois.library.cantaloupe.operation;
 
 import edu.illinois.library.cantaloupe.processor.resample.ResampleFilters;
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +36,8 @@ public class ScaleTest extends BaseTest {
 
     }
 
+    private static final float DELTA = 0.00000001f;
+
     private Scale instance;
 
     @Before
@@ -67,6 +67,91 @@ public class ScaleTest extends BaseTest {
         assertEquals(Scale.Mode.ASPECT_FIT_HEIGHT, instance.getMode());
         assertEquals(300, (long) instance.getWidth());
         assertEquals(200, (long) instance.getHeight());
+    }
+
+    @Test
+    public void getDifferentialScaleWithFull() {
+        final Dimension fullSize = new Dimension(300, 200);
+        final ReductionFactor factor = new ReductionFactor(1);
+
+        instance.setMode(Scale.Mode.FULL);
+        assertEquals(1f, instance.getDifferentialScale(fullSize, factor), DELTA);
+    }
+
+    @Test
+    public void getDifferentialScaleWithAspectFitWidth() {
+        final Dimension fullSize = new Dimension(300, 200);
+        final ReductionFactor factor = new ReductionFactor(1);
+
+        instance.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        instance.setWidth(150);
+        instance.setHeight(100);
+
+        assertEquals(1f, instance.getDifferentialScale(fullSize, factor), DELTA);
+        instance.setWidth(75);
+        instance.setHeight(50);
+        assertEquals(0.5f, instance.getDifferentialScale(fullSize, factor), DELTA);
+    }
+
+    @Test
+    public void getDifferentialScaleWithAspectFitHeight() {
+        final Dimension fullSize = new Dimension(300, 200);
+        final ReductionFactor factor = new ReductionFactor(1);
+
+        instance.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        instance.setWidth(150);
+        instance.setHeight(100);
+        assertEquals(1f, instance.getDifferentialScale(fullSize, factor), DELTA);
+
+        instance.setWidth(75);
+        instance.setHeight(50);
+        assertEquals(0.5f, instance.getDifferentialScale(fullSize, factor), DELTA);
+    }
+
+    @Test
+    public void getDifferentialScaleWithAspectFitInside() {
+        final Dimension fullSize = new Dimension(300, 200);
+        final ReductionFactor factor = new ReductionFactor(1);
+
+        instance.setMode(Scale.Mode.FULL);
+        assertEquals(1f, instance.getDifferentialScale(fullSize, factor), DELTA);
+
+        instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        instance.setWidth(200);
+        instance.setHeight(100);
+        assertEquals(1f, instance.getDifferentialScale(fullSize, factor), DELTA);
+
+        instance.setWidth(100);
+        instance.setHeight(50);
+        assertEquals(0.5f, instance.getDifferentialScale(fullSize, factor), DELTA);
+    }
+
+    @Test
+    public void getDifferentialScaleWithNonAspectFill() {
+        final Dimension fullSize = new Dimension(300, 200);
+        final ReductionFactor factor = new ReductionFactor(1);
+
+        instance.setMode(Scale.Mode.NON_ASPECT_FILL);
+        instance.setWidth(200);
+        instance.setHeight(100);
+        assertNull(instance.getDifferentialScale(fullSize, factor));
+    }
+
+    @Test
+    public void getDifferentialScaleWithPercent() {
+        final Dimension fullSize = new Dimension(300, 200);
+        ReductionFactor factor = new ReductionFactor(1);
+
+        instance = new Scale();
+        instance.setPercent(0.5f);
+        assertEquals(1f, instance.getDifferentialScale(fullSize, factor), DELTA);
+
+        instance.setPercent(0.25f);
+        assertEquals(0.5f, instance.getDifferentialScale(fullSize, factor), DELTA);
+
+        instance.setPercent(1.5f);
+        factor = new ReductionFactor(0);
+        assertEquals(1.5f, instance.getDifferentialScale(fullSize, factor), DELTA);
     }
 
     @Test
@@ -110,7 +195,7 @@ public class ScaleTest extends BaseTest {
     }
 
     @Test
-    public void getResultingScale() {
+    public void getResultingScale1() {
         final Dimension fullSize = new Dimension(300, 200);
         final float fudge = 0.0000001f;
 

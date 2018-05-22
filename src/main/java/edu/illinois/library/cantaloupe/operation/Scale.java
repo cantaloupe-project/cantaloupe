@@ -84,8 +84,8 @@ public class Scale implements Operation {
         /**
          * @param fullSize Full size of the source image on which the operation
          *                 is being applied.
-         * @return Map with a <code>name</code> key and string value
-         *         corresponding to the filter name.
+         * @return         Map with a {@literal name} key and string value
+         *                 corresponding to the filter name.
          */
         @Override
         public Map<String, Object> toMap(Dimension fullSize) {
@@ -184,7 +184,35 @@ public class Scale implements Operation {
     }
 
     /**
-     * @param reducedSize Size of an image that has been halved <code>n</code>
+     * This method is useful for calculating additional required differential
+     * scaling of images at reduced resolution levels.
+     *
+     * @param fullSize        Full source image dimensions.
+     * @param reductionFactor Reduction factor of an intermediate (e.g.
+     *                        downsampled) version of the full image whose
+     *                        dimensions have been halved {@link
+     *                        ReductionFactor#factor} times.
+     * @return                Scale yet to be applied to an intermediate image
+     *                        of the given size with the given reduction
+     *                        factor, or {@literal null} if the scale mode is
+     *                        {@link Mode#NON_ASPECT_FILL}.
+     */
+    public Float getDifferentialScale(Dimension fullSize,
+                                      ReductionFactor reductionFactor) {
+        if (Mode.FULL.equals(getMode())) {
+            return 1f;
+        } else if (Mode.NON_ASPECT_FILL.equals(getMode())) {
+            return null;
+        }
+
+        final float scale = getResultingScale(fullSize);
+        final float rfScale = (float) reductionFactor.getScale();
+
+        return scale / rfScale;
+    }
+
+    /**
+     * @param reducedSize Size of an image that has been halved {@literal n}
      *                    times.
      * @param maxFactor Maximum factor to return.
      * @return Reduction factor appropriate for the instance.
@@ -222,9 +250,10 @@ public class Scale implements Operation {
     }
 
     /**
-     * @param fullSize
-     * @return Resulting scale when the scale is applied to the given full
-     *         size; or null if the scale mode is {@link Mode#NON_ASPECT_FILL}.
+     * @param fullSize Full source image dimensions.
+     * @return         Resulting scale when the instance is applied to the
+     *                 given full size; or {@literal null} if the scale mode
+     *                 is {@link Mode#NON_ASPECT_FILL}.
      */
     public Float getResultingScale(Dimension fullSize) {
         Float scale = null;
@@ -236,17 +265,15 @@ public class Scale implements Operation {
                     scale = 1f;
                     break;
                 case ASPECT_FIT_HEIGHT:
-                    scale = (float) (this.getHeight() /
-                            (double) fullSize.height);
+                    scale = getHeight() / (float) fullSize.height;
                     break;
                 case ASPECT_FIT_WIDTH:
-                    scale = (float) (this.getWidth() /
-                            (double) fullSize.width);
+                    scale = getWidth() / (float) fullSize.width;
                     break;
                 case ASPECT_FIT_INSIDE:
-                    scale = (float) Math.min(
-                            this.getWidth() / (double) fullSize.width,
-                            this.getHeight() / (double) fullSize.height);
+                    scale = Math.min(
+                            getWidth() / (float) fullSize.width,
+                            getHeight() / (float) fullSize.height);
                     break;
                 case NON_ASPECT_FILL:
                     break;

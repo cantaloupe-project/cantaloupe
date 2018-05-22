@@ -16,7 +16,6 @@ import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
-import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import kdu_jni.Jp2_locator;
@@ -56,33 +55,35 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <p>Processor using the Kakadu native library ({@literal libkdu}) via the
  * Java Native Interface (JNI). Written against version 7.10.</p>
  *
- * <p>A {@link Kdu_region_decompressor} is used to acquire a cropped, scale-
- * reduced image that is {@link BufferedImage buffered in memory}, and Java 2D
- * is used for all remaining processing steps.</p>
+ * <p>A {@link Kdu_region_decompressor} is used to acquire a cropped and scaled
+ * image that is {@link BufferedImage buffered in memory}, and Java 2D is used
+ * for all post-scale processing steps.</p>
  *
  * <h1>Comparison with {@link KakaduDemoProcessor}</h1>
  *
- * <p>Compared to {@link KakaduDemoProcessor}, this one is more efficient in
- * that it doesn't need to invoke a process, and doesn't have to do
- * intermediary conversions to and from TIFF. It also offers other
+ * <p>Compared to {@link KakaduDemoProcessor}, this one offers a number of
  * benefits:</p>
  *
- * <ol>
+ * <ul>
+ *     <li>It doesn't need to invoke a process.</li>
+ *     <li>It doesn't have to do intermediary conversions to and from TIFF.</li>
+ *     <li>It doesn't have to do differential scaling in Java, and instead uses
+ *     the high-quality, hardware-accelerated scaler built into
+ *     <code>kdu_region_decompress()</code>.</li>
  *     <li>It can read from both {@link FileProcessor files} and {@link
  *     StreamProcessor streams}.</li>
  *     <li>It works equally efficiently in Windows.</li>
  *     <li>It doesn't have to resort to silly tricks involving symlinks and
  *     {@literal /dev/stdout}.</li>
- * </ol>
+ * </ul>
  *
- * <p>Some drawbacks are:</p>
+ * <p>As well as some drawbacks:</p>
  *
  * <ol>
  *     <li>Despite the efficiency advantages described above, {@link
  *     Kdu_region_decompressor} is high-level API that doesn't benefit from
  *     the expert tuning of {@literal kdu_expand}, and isn't able to achieve
  *     the same effective performance.</li>
- *     <li>All output is scaled to 8 bits.</li>
  * </ol>
  *
  * <h1>Usage</h1>
@@ -119,8 +120,8 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
 
         @Override
         public int Get_capabilities() {
-            // seekable because ImageInputStream is seekable, even if it has to
-            // employ buffering.
+            // ImageInputStream is seekable, even if it has to employ buffering
+            // (will depend on the implementation).
             return Kdu_global.KDU_SOURCE_CAP_SEQUENTIAL |
                     Kdu_global.KDU_SOURCE_CAP_SEEKABLE;
         }
@@ -204,9 +205,13 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(KakaduNativeProcessor.class);
 
-    private static final Set<Format> AVAILABLE_OUTPUT_FORMATS = EnumSet.of(
-            Format.GIF, Format.JPG, Format.PNG, Format.TIF);
-
+    /**
+     * This is set to roughly 210x smaller than {@link Integer#MAX_VALUE} to
+     * allow for 210x enlargement, still with good precision.
+     *
+     * @see #readImage
+     */
+    private static final int EXPAND_DENOMINATOR = 10000000;
     private static final int MAX_LAYERS = 16384;
     private static final int NUM_THREADS =
             Runtime.getRuntime().availableProcessors() - 1;
@@ -219,7 +224,6 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             ProcessorFeature.ROTATION_ARBITRARY,
             ProcessorFeature.ROTATION_BY_90S,
             ProcessorFeature.SIZE_ABOVE_FULL,
-            ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
             ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
             ProcessorFeature.SIZE_BY_HEIGHT,
             ProcessorFeature.SIZE_BY_PERCENT,
@@ -280,7 +284,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
 
     @Override
     public Set<Format> getAvailableOutputFormats() {
-        return AVAILABLE_OUTPUT_FORMATS;
+        return ImageWriterFactory.supportedFormats();
     }
 
     @Override
@@ -366,15 +370,12 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                         final OutputStream outputStream) throws ProcessorException {
         try {
             final ReductionFactor reductionFactor = new ReductionFactor();
-            final Set<ReaderHint> hints =
-                    EnumSet.of(ReaderHint.ALREADY_CROPPED);
             final BufferedImage image = readImage(
                     opList,
                     info.getSize(),
                     info.getNumResolutions() - 1,
                     reductionFactor);
-            postProcess(image, hints, opList, info,
-                    reductionFactor, outputStream);
+            postProcess(image, opList, info, reductionFactor, outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
@@ -395,11 +396,11 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                                     final Dimension fullSize,
                                     final int numLevels,
                                     final ReductionFactor reductionFactor) throws IOException {
-        // Find the best decomposition level to read.
+        // Use the Scale operation to find the best decomposition level a.k.a.
+        // reduction factor to read.
         final Scale scale = (Scale) opList.getFirst(Scale.class);
         if (scale != null) {
             final Dimension tileSize = getCroppedSize(opList, fullSize);
-
             reductionFactor.factor =
                     scale.getReductionFactor(tileSize, numLevels).factor;
             if (reductionFactor.factor < 0) {
@@ -450,32 +451,47 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             }
 
             final int referenceComponent = channels.Get_source_component(0);
-            final Kdu_dims regionDims = getRegion(opList, fullSize);
             final int accessMode = Kdu_global.KDU_WANT_OUTPUT_COMPONENTS;
-            final Kdu_coords refExpansion = determineReferenceExpansion(
+
+            // The expand numerator & denominator here tell
+            // kdu_region_decompressor.start() at what scale to render the
+            // result. (Weird that it doesn't just take floats, but whatever.)
+            // The expansion is relative to the selected decomposition level,
+            // NOT the full image dimensions.
+            final Kdu_coords expandNumerator = determineReferenceExpansion(
                     referenceComponent, channels, codestream);
-            final Kdu_coords expandDenominator = new Kdu_coords(1, 1);
+            float diffScale = (scale != null) ?
+                    scale.getDifferentialScale(fullSize, reductionFactor) : 1f;
+            expandNumerator.Set_x(Math.round(
+                    expandNumerator.Get_x() * diffScale * EXPAND_DENOMINATOR));
+            expandNumerator.Set_y(Math.round(
+                    expandNumerator.Get_y() * diffScale * EXPAND_DENOMINATOR));
+            final Kdu_coords expandDenominator =
+                    new Kdu_coords(EXPAND_DENOMINATOR, EXPAND_DENOMINATOR);
 
             // Get the effective source image size.
             final Kdu_dims renderedDims = decompressor.Get_rendered_image_dims(
                     codestream, channels, -1, reductionFactor.factor,
-                    refExpansion, expandDenominator, accessMode);
-
+                    expandNumerator, expandDenominator, accessMode);
             final Kdu_coords renderedPos = renderedDims.Access_pos();
             final Kdu_coords renderedSize = renderedDims.Access_size();
+
+            // Get the ROI coordinates relative to the source image.
+            final Kdu_dims regionDims = getRegion(opList, fullSize);
             final Kdu_coords regionPos = regionDims.Access_pos();
             final Kdu_coords regionSize = regionDims.Access_size();
-
-            // Adjust the ROI coordinates for the selected decomposition level.
-            final double reducedScale = reductionFactor.getScale();
-            regionPos.Set_x((int) Math.round(regionPos.Get_x() * reducedScale) + renderedPos.Get_x());
-            regionPos.Set_y((int) Math.round(regionPos.Get_y() * reducedScale) + renderedPos.Get_y());
-            regionSize.Set_x((int) Math.round(regionSize.Get_x() * reducedScale));
-            regionSize.Set_y((int) Math.round(regionSize.Get_y() * reducedScale));
+            // Adjust them for the selected decomposition level.
+            final float reducedScale = (float) reductionFactor.getScale();
+            regionPos.Set_x(Math.round(regionPos.Get_x() * diffScale * reducedScale) +
+                    renderedPos.Get_x());
+            regionPos.Set_y(Math.round(regionPos.Get_y() * diffScale * reducedScale) +
+                    renderedPos.Get_y());
+            regionSize.Set_x(Math.round(regionSize.Get_x() * diffScale * reducedScale));
+            regionSize.Set_y(Math.round(regionSize.Get_y() * diffScale * reducedScale));
 
             // N.B.: if the region is not entirely within the canvas,
-            // Kdu_region_decompressor.Process() will crash the JVM.
-            if (!toRectangle(renderedDims).contains(toRectangle(regionDims))) {
+            // kdu_region_decompressor.process() will crash the JVM.
+            if (!renderedDims.Contains(regionDims)) {
                 throw new IllegalArgumentException(String.format(
                         "Rendered region is not entirely within the canvas. " +
                                 "This is probably a bug. " +
@@ -487,16 +503,18 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             }
 
             LOGGER.debug("Rendered region {},{}/{}x{}; " +
-                            "canvas {},{}/{}x{}; {}x reduction factor",
+                            "canvas {},{}/{}x{}; {}x reduction factor; " +
+                            "differential scale {}/{}",
                     regionPos.Get_x(), regionPos.Get_y(),
                     regionSize.Get_x(), regionSize.Get_y(),
                     renderedPos.Get_x(), renderedPos.Get_y(),
                     renderedSize.Get_x(), renderedSize.Get_y(),
-                    reductionFactor.factor);
+                    reductionFactor.factor,
+                    expandNumerator.Get_x(), expandDenominator.Get_x()); // y should be the same
 
             decompressor.Start(codestream, channels, -1,
                     reductionFactor.factor, MAX_LAYERS, regionDims,
-                    refExpansion, expandDenominator, false, accessMode,
+                    expandNumerator, expandDenominator, false, accessMode,
                     false, threadEnv);
 
             Kdu_dims newRegion = new Kdu_dims();
@@ -570,12 +588,6 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             IOUtils.closeQuietly(inputStream);
         }
         return image;
-    }
-
-    private static Rectangle toRectangle(Kdu_dims dims) throws KduException {
-        Kdu_coords pos = dims.Access_pos();
-        Kdu_coords size = dims.Access_size();
-        return new Rectangle(pos.Get_x(), pos.Get_y(), size.Get_x(), size.Get_y());
     }
 
     /**
@@ -671,15 +683,12 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
 
     /**
      * @param image           Image to process.
-     * @param readerHints     Hints from the image reader. May be {@literal
-     *                        null}.
      * @param opList          Operations to apply to the image.
      * @param imageInfo       Information about the source image.
      * @param reductionFactor May be {@literal null}.
      * @param outputStream    Output stream to write the resulting image to.
      */
     private void postProcess(BufferedImage image,
-                             final Set<ReaderHint> readerHints,
                              final OperationList opList,
                              final Info imageInfo,
                              ReductionFactor reductionFactor,
@@ -706,11 +715,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
         // Apply remaining operations.
         for (Operation op : opList) {
             if (op.hasEffect(fullSize, opList)) {
-                if (op instanceof Scale &&
-                        !readerHints.contains(ReaderHint.IGNORE_SCALE)) {
-                    image = Java2DUtil.scale(image, (Scale) op,
-                            reductionFactor);
-                } else if (op instanceof Transpose) {
+                if (op instanceof Transpose) {
                     image = Java2DUtil.transpose(image, (Transpose) op);
                 } else if (op instanceof Rotate) {
                     image = Java2DUtil.rotate(image, (Rotate) op);

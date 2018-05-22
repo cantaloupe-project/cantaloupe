@@ -735,16 +735,15 @@ title: Processors
 
 <h3 id="KakaduNativeProcessor">KakaduNativeProcessor</h3>
 
-<p><a href="http://kakadusoftware.com">Kakadu</a> is a commercial JPEG2000 codec that is widely considered the fastest available general-purpose JP2 codec. KakaduNativeProcessor calls directly into the Kakadu native library to decode JPEG2000 source images.</p>
-
-<p>Compared to <a href="#KakaduDemoProcessor">KakaduDemoProcessor</a>, this one is more efficient in terms of its internal implementation. It also offers benefits not related to performance:</p>
+<p><a href="http://kakadusoftware.com">Kakadu</a> is a commercial JPEG2000 codec that is widely considered the fastest available general-purpose JP2 codec. In contrast to <a href="#KakaduDemoProcessor">KakaduDemoProcessor</a>, this processor calls directly into the Kakadu native library to decode JPEG2000 source images, which offers a number of benefits:</p>
 
 <ul>
+  <li>It doesn't have to invoke a process.</li>
+  <li>It doesn't have to do intermediary format conversions.</li>
+  <li>It uses the high-quality, hardware-accelerated interpolation offered by the Kakadu library for differential scaling.</li>
   <li>It can read from both FileSources and StreamSources.</li>
   <li>It works equally efficiently in Windows.</li>
 </ul>
-
-<p>The Kakadu library is used only for region decompression. All other operations are performed using Java 2D.</p>
 
 <h4>Configuration</h4>
 
