@@ -20,13 +20,12 @@ import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.process.ArrayListOutputConsumer;
 import edu.illinois.library.cantaloupe.process.Pipe;
 import edu.illinois.library.cantaloupe.process.ProcessStarter;
-import org.apache.commons.lang3.StringUtils;
+import edu.illinois.library.cantaloupe.util.CommandLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -64,7 +63,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     private static final Logger LOGGER =
             LoggerFactory.getLogger(GraphicsMagickProcessor.class);
 
-    private static final String BINARY_NAME = "gm";
+    private static final String GM_NAME = "gm";
 
     private static final AtomicBoolean initializationAttempted =
             new AtomicBoolean(false);
@@ -77,15 +76,9 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             new HashMap<>();
 
     private static String getPath() {
-        String path = Configuration.getInstance().
+        String searchPath = Configuration.getInstance().
                 getString(Key.GRAPHICSMAGICKPROCESSOR_PATH_TO_BINARIES);
-        if (path != null && path.length() > 0) {
-            path = StringUtils.stripEnd(path, File.separator) + File.separator +
-                    BINARY_NAME;
-        } else {
-            path = BINARY_NAME;
-        }
-        return path;
+        return CommandLocator.locate(GM_NAME, searchPath);
     }
 
     /**

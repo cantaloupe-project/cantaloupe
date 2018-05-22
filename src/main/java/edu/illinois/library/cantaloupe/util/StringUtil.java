@@ -46,7 +46,7 @@ public final class StringUtil {
     }
 
     /**
-     * Recursively filters out <code>removeables</code> from the given dirty
+     * Recursively filters out {@literal removeables} from the given dirty
      * string.
      *
      * @param dirty
@@ -64,7 +64,7 @@ public final class StringUtil {
     }
 
     /**
-     * Recursively filters out <code>removeables</code> from the given dirty
+     * Recursively filters out {@literal removeables} from the given dirty
      * string.
      *
      * @param dirty
@@ -80,6 +80,21 @@ public final class StringUtil {
             }
         }
         return dirty;
+    }
+
+    /**
+     * Strips a string from the end of another string.
+     *
+     * @param str     String to search.
+     * @param toStrip String to strip off the end of the search string.
+     */
+    public static String stripEnd(String str, String toStrip) {
+        final int expectedIndex = str.length() - toStrip.length();
+        final int lastIndex = str.lastIndexOf(toStrip);
+        if (expectedIndex >= 0 && lastIndex == expectedIndex) {
+            return str.substring(0, expectedIndex);
+        }
+        return str;
     }
 
     private StringUtil() {}

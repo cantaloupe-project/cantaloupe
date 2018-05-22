@@ -49,4 +49,21 @@ public class StringUtilTest extends BaseTest {
                 Pattern.compile("cats"), Pattern.compile("dogs")));
     }
 
+    @Test
+    public void testStripEndWithMatch() {
+        String str = "ababab";
+        String toStrip = "ab";
+        assertEquals("abab", StringUtil.stripEnd(str, toStrip));
+    }
+
+    @Test
+    public void testStripEndWithoutMatch() {
+        String str = "ababab";
+        String toStrip = "c";
+        assertSame(str, StringUtil.stripEnd(str, toStrip));
+
+        toStrip = "longer than str";
+        assertSame(str, StringUtil.stripEnd(str, toStrip));
+    }
+
 }

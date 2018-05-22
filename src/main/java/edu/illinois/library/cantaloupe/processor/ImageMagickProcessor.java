@@ -24,6 +24,7 @@ import edu.illinois.library.cantaloupe.operation.overlay.Position;
 import edu.illinois.library.cantaloupe.process.ArrayListOutputConsumer;
 import edu.illinois.library.cantaloupe.process.Pipe;
 import edu.illinois.library.cantaloupe.process.ProcessStarter;
+import edu.illinois.library.cantaloupe.util.CommandLocator;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -153,19 +154,10 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         return imVersion;
     }
 
-    /**
-     * @param binaryName Name of an executable.
-     */
-    private static String getPath(final String binaryName) {
-        String path = Configuration.getInstance().
+    private static String getPath(String binaryName) {
+        String searchPath = Configuration.getInstance().
                 getString(Key.IMAGEMAGICKPROCESSOR_PATH_TO_BINARIES);
-        if (path != null && path.length() > 0) {
-            path = StringUtils.stripEnd(path, File.separator) + File.separator +
-                    binaryName;
-        } else {
-            path = binaryName;
-        }
-        return path;
+        return CommandLocator.locate(binaryName, searchPath);
     }
 
     /**

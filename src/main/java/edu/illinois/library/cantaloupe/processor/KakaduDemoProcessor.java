@@ -17,6 +17,7 @@ import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
+import edu.illinois.library.cantaloupe.util.CommandLocator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
@@ -27,7 +28,6 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -51,9 +51,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * their command-line interface is compatible.</p>
  *
  * <p>{@literal kdu_expand} is used for cropping and an initial scale reduction
- * factor, and Java 2D for all remaining processing steps. It generates TIFF
- * output which is streamed (with some buffering) to an ImageIO reader. (TIFF
- * is used in order to preserve embedded ICC profiles.)</p>
+ * factor, and Java 2D for differential scaling and all other remaining
+ * processing steps. It generates TIFF output which is streamed (with some
+ * buffering) to an ImageIO reader. (TIFF is used in order to preserve
+ * the ICC profiles that {@literal kdu_expand} embeds in the files it
+ * generates.)</p>
  *
  * <p>{@literal kdu_expand} reads and writes the files named in the {@literal
  * -i} and {@literal -o} flags passed to it, respectively. The file in the
@@ -100,6 +102,8 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
      */
     private static final short FALLBACK_NUM_DWT_LEVELS = 5;
 
+    private static final String KDU_EXPAND_NAME = "kdu_expand";
+
     /**
      * Used only in Windows.
      */
@@ -140,20 +144,10 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
         stdoutSymlink.toFile().deleteOnExit();
     }
 
-    /**
-     * @param binaryName Name of one of the Kakadu binaries.
-     * @return           Absolute path to the given binary.
-     */
-    private static String getPath(String binaryName) {
-        String path = Configuration.getInstance().
+    private static String getPath() {
+        String searchPath = Configuration.getInstance().
                 getString(Key.KAKADUDEMOPROCESSOR_PATH_TO_BINARIES);
-        if (path != null && !path.isEmpty()) {
-            path = StringUtils.stripEnd(path, File.separator) +
-                    File.separator + binaryName;
-        } else {
-            path = binaryName;
-        }
-        return path;
+        return CommandLocator.locate(KDU_EXPAND_NAME, searchPath);
     }
 
     /**
@@ -184,7 +178,7 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
 
         try {
             // Check for the presence of kdu_expand.
-            invoke("kdu_expand");
+            invoke();
 
             if (isWindows()) {
                 initializeForWindows();
@@ -213,10 +207,10 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
         }
     }
 
-    private static void invoke(String kduBinary) throws IOException {
+    private static void invoke() throws IOException {
         final ProcessBuilder pb = new ProcessBuilder();
         List<String> command = new ArrayList<>();
-        command.add(getPath(kduBinary));
+        command.add(getPath());
         pb.command(command);
         String commandString = String.join(" ", pb.command());
         LOGGER.info("invoke(): {}", commandString);
@@ -362,7 +356,7 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
 
             final int code = process.waitFor();
             if (code != 0) {
-                LOGGER.warn("kdu_expand returned with code {}", code);
+                LOGGER.warn("{} returned with code {}", KDU_EXPAND_NAME, code);
                 String errorStr = toString(errorOutput);
                 errorStr += "\nPathname: " + getSourceFile();
                 throw new IOException(errorStr);
@@ -431,7 +425,8 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
 
                 final int code = process.waitFor();
                 if (code != 0) {
-                    LOGGER.warn("kdu_expand returned with code {}", code);
+                    LOGGER.warn("{} returned with code {}",
+                            KDU_EXPAND_NAME, code);
                     String errorStr = toString(errorOutput);
                     errorStr += "\nPathname: " + getSourceFile();
                     throw new IOException(errorStr);
@@ -463,7 +458,7 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
                                              final boolean ignoreCrop,
                                              final Path outputFile) {
         final List<String> command = new ArrayList<>(30);
-        command.add(getPath("kdu_expand"));
+        command.add(getPath());
         command.add("-quiet");
         command.add("-resilient");
         command.add("-no_alpha");

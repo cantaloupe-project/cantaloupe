@@ -18,6 +18,7 @@ import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
+import edu.illinois.library.cantaloupe.util.CommandLocator;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -30,7 +31,6 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -107,6 +107,8 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
      */
     private static final short FALLBACK_NUM_DWT_LEVELS = 5;
 
+    private static final String OPJ_DECOMPRESS_NAME = "opj_decompress";
+
     /**
      * Used only in Windows.
      */
@@ -140,20 +142,10 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
      */
     private final static Format intermediateFormat = Format.BMP;
 
-    /**
-     * @param binaryName Name of one of the OpenJPEG binaries.
-     * @return           Absolute path to the given binary.
-     */
-    private static String getPath(String binaryName) {
-        String path = Configuration.getInstance().
+    private static String getPath() {
+        String searchPath = Configuration.getInstance().
                 getString(Key.OPENJPEGPROCESSOR_PATH_TO_BINARIES);
-        if (path != null && !path.isEmpty()) {
-            path = StringUtils.stripEnd(path, File.separator) +
-                    File.separator + binaryName;
-        } else {
-            path = binaryName;
-        }
-        return path;
+        return CommandLocator.locate(OPJ_DECOMPRESS_NAME, searchPath);
     }
 
     /**
@@ -176,8 +168,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
      *         {@literal opj_decompress}.
      */
     private static Path getScratchDir() {
-        Path tempPath = Application.getTempPath();
-        return tempPath.resolve(WINDOWS_SCRATCH_DIR_NAME);
+        return Application.getTempPath().resolve(WINDOWS_SCRATCH_DIR_NAME);
     }
 
     private static synchronized void initialize() {
@@ -185,7 +176,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
         try {
             // Check for the presence of opj_decompress.
-            invoke("opj_decompress");
+            invoke();
 
             if (isWindows()) {
                 initializeForWindows();
@@ -209,10 +200,10 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         }
     }
 
-    private static void invoke(String opjBinary) throws IOException {
+    private static void invoke() throws IOException {
         final ProcessBuilder pb = new ProcessBuilder();
         List<String> command = new ArrayList<>();
-        command.add(getPath(opjBinary));
+        command.add(getPath());
         pb.command(command);
         String commandString = String.join(" ", pb.command());
         LOGGER.info("invoke(): {}", commandString);
@@ -222,7 +213,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
     static synchronized boolean isQuietModeSupported() {
         if (!checkedForQuietMode) {
             final List<String> command = new ArrayList<>();
-            command.add(getPath("opj_decompress"));
+            command.add(getPath());
             command.add("-h");
 
             ProcessBuilder pb = new ProcessBuilder(command);
@@ -244,7 +235,8 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
                     if (matcher.find()) {
                         String version = matcher.group(0).substring(2); // after " v"
-                        LOGGER.info("opj_decompress reports version {}", version);
+                        LOGGER.info("{} reports version {}",
+                                OPJ_DECOMPRESS_NAME, version);
 
                         String[] parts = StringUtils.split(version, ".");
                         if (parts.length == 3) {
@@ -260,9 +252,9 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
             }
 
             if (!isQuietModeSupported) {
-                LOGGER.warn("This version of opj_decompress doesn't support " +
-                        "quiet mode. Please upgrade OpenJPEG to version 2.2.0 "+
-                        "or later.");
+                LOGGER.warn("This version of " + OPJ_DECOMPRESS_NAME +
+                        " doesn't support quiet mode. Please upgrade" +
+                        " OpenJPEG to version 2.2.0 or later.");
             }
 
             checkedForQuietMode = true;
@@ -508,7 +500,8 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
                 final int code = process.waitFor();
                 if (code != 0) {
-                    LOGGER.warn("opj_decompress returned with code {}", code);
+                    LOGGER.warn("{} returned with code {}",
+                            OPJ_DECOMPRESS_NAME, code);
                     String errorStr = toString(errorOutput);
                     errorStr += "\nPathname: " + getSourceFile();
                     throw new IOException(errorStr);
@@ -547,7 +540,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                                              final boolean ignoreCrop,
                                              final Path outputFile) {
         final List<String> command = new ArrayList<>(30);
-        command.add(getPath("opj_decompress"));
+        command.add(getPath());
 
         if (isQuietModeSupported()) {
             command.add("-quiet");
