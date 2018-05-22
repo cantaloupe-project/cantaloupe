@@ -32,6 +32,8 @@ public class FormatTest extends BaseTest {
         // JP2
         assertEquals(Format.JP2,
                 Format.inferFormat(new Identifier("bla.jp2")));
+        assertEquals(Format.JP2,
+                Format.inferFormat(new Identifier("bla.jpx")));
         // JPG
         assertEquals(Format.JPG,
                 Format.inferFormat(new Identifier("bla.jpg")));
@@ -79,6 +81,7 @@ public class FormatTest extends BaseTest {
         assertEquals(Format.GIF, Format.inferFormat("bla.gif"));
         // JP2
         assertEquals(Format.JP2, Format.inferFormat("bla.jp2"));
+        assertEquals(Format.JP2, Format.inferFormat("bla.jpx"));
         // JPG
         assertEquals(Format.JPG, Format.inferFormat("bla.jpg"));
         // MOV
@@ -114,7 +117,8 @@ public class FormatTest extends BaseTest {
         // GIF
         assertEquals(Arrays.asList("gif"), Format.GIF.getExtensions());
         // JP2
-        assertEquals(Arrays.asList("jp2", "j2k"), Format.JP2.getExtensions());
+        assertEquals(Arrays.asList("jp2", "j2k", "jpx", "jpf"),
+                Format.JP2.getExtensions());
         // JPG
         assertEquals(Arrays.asList("jpg", "jpeg"), Format.JPG.getExtensions());
         // MOV

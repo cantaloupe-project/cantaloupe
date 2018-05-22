@@ -26,6 +26,7 @@ title: Change Log
   <li>KakaduProcessor has been renamed KakaduDemoProcessor to reflect the fact that it interfaces with the Kakadu demo tool, <span class="filename">kdu_expand</span>, and not the native library.</li>
   <li>Added KakaduNativeProcessor, as well as compiled libraries for Linux, macOS, and Windows, which are free to use with it for non-commercial purposes.</li>
   <li>Added <code>DownloadStrategy</code> as another optional retrieval strategy for stream-based processors, and as an optional fallback strategy. This enables all processors to work with all sources with no extra configuration.</li>
+  <li>JPEG2000-compatible JPX images are readable by all processors that support JPEG2000.</li>
   <li>JaiProcessor has been deprecated. See the user manual for more information.</li>
   <li>KakaduDemoProcessor and OpenJpegProcessor work in Windows.</li>
   <li>KakaduDemoProcessor and OpenJpegProcessor read image metadata using custom code, which is more efficient than using the respective <span class="filename">kdu_jp2info</span> and <span class="filename">opj_dump</span> tools, and enables them to read the number of decomposition levels, which improves reliability when decoding images with less-common level counts.</li>

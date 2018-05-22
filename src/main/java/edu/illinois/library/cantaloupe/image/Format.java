@@ -79,7 +79,7 @@ public enum Format {
     JP2("JPEG2000",
             ImageType.RASTER,
             Arrays.asList("image/jp2"),
-            Arrays.asList("jp2", "j2k"),
+            Arrays.asList("jp2", "j2k", "jpx", "jpf"),
             Type.IMAGE,
             16,
             true),
