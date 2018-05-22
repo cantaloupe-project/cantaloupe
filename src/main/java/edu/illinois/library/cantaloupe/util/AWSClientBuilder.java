@@ -8,13 +8,10 @@ import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSCredentialsProviderChain;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.AnonymousAWSCredentials;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 
 /**
  * Creates an AWS client using the Builder pattern.
@@ -125,12 +122,6 @@ public final class AWSClientBuilder {
         // The AWS client will consult each provider in this list in order,
         // and use the first one that works.
         final List<AWSCredentialsProvider> providers = new ArrayList<>();
-
-        // Use anonymous credentials with S3Mock when testing.
-        // This is rather crude but will do for now.
-        if ("memory".equals(System.getProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT))) {
-            providers.add(new AWSStaticCredentialsProvider(new AnonymousAWSCredentials()));
-        }
 
         // As a first resort, add a provider that draws from the application
         // configuration.

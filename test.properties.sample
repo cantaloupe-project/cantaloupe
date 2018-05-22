@@ -2,14 +2,16 @@
 # and edit that.
 
 # Used by S3SourceTest and S3CacheTest.
-# Leave blank to use a built-in mock S3 endpoint.
+# Note: to use S3Mock, leave the endpoint blank and set the keys to non-empty
+# strings.
 s3.endpoint =
-s3.access_key_id =
-s3.secret_key =
+s3.access_key_id = s3mock
+s3.secret_key = s3mock
 s3.bucket = test.cantaloupe.library.illinois.edu
 
 # Used by AzureStorageSourceTest and AzureStorageCacheTest.
-# Note: leave blank to test sas and container specified in a URL to the object key.
+# Note: leave blank to test SAS and container specified in a URL to the object
+# key.
 azurestorage.account_name =
 azurestorage.account_key =
 azurestorage.container =
