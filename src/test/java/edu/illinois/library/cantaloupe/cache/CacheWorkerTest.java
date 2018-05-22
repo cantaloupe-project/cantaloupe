@@ -18,6 +18,8 @@ import static org.junit.Assert.*;
 
 public class CacheWorkerTest extends BaseTest {
 
+    private static final int TTL = 2;
+
     private CacheWorker instance;
 
     @Before
@@ -30,15 +32,15 @@ public class CacheWorkerTest extends BaseTest {
                 Files.createTempDirectory("test"));
 
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
-        config.setProperty(Key.DERIVATIVE_CACHE_TTL, 1);
+        config.setProperty(Key.DERIVATIVE_CACHE_TTL, TTL);
         config.setProperty(Key.DERIVATIVE_CACHE,
                 FilesystemCache.class.getSimpleName());
 
-        config.setProperty(Key.SOURCE_CACHE_TTL, 1);
+        config.setProperty(Key.SOURCE_CACHE_TTL, TTL);
         config.setProperty(Key.SOURCE_CACHE,
                 FilesystemCache.class.getSimpleName());
 
-        instance = new CacheWorker(1);
+        instance = new CacheWorker(-1); // we aren't using the interval
     }
 
     @Ignore // this is currently too hard to test
@@ -54,7 +56,7 @@ public class CacheWorkerTest extends BaseTest {
 
         assertNotNull(cache.getImageInfo(identifier));
 
-        Thread.sleep(1001);
+        Thread.sleep(TTL * 1000 * 2);
 
         instance.run();
 
@@ -72,7 +74,7 @@ public class CacheWorkerTest extends BaseTest {
 
         assertNotNull(cache.getSourceImageFile(identifier));
 
-        Thread.sleep(1001);
+        Thread.sleep(TTL * 1000 * 2);
 
         instance.run();
 
