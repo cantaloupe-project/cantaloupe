@@ -16,7 +16,6 @@ import org.junit.Test;
 import java.awt.Dimension;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -33,16 +32,6 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_DPI, 72);
         instance = newInstance();
-    }
-
-    @Override
-    protected Format getSupported16BitSourceFormat() {
-        return null;
-    }
-
-    @Override
-    protected Path getSupported16BitImage() {
-        return null;
     }
 
     @Override

@@ -1,13 +1,9 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -21,16 +17,6 @@ public class JaiProcessorTest extends ImageIOProcessorTest {
     public void setUp() throws Exception {
         super.setUp();
         instance = newInstance();
-    }
-
-    @Override
-    protected Format getSupported16BitSourceFormat() {
-        return Format.PNG;
-    }
-
-    @Override
-    protected Path getSupported16BitImage() throws IOException {
-        return TestUtil.getImage("png-rgb-64x56x16.png");
     }
 
     @Override

@@ -138,16 +138,6 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Override
-    protected Format getSupported16BitSourceFormat() {
-        return Format.PNG;
-    }
-
-    @Override
-    protected Path getSupported16BitImage() throws IOException {
-        return TestUtil.getImage("png-rgb-64x56x16.png");
-    }
-
-    @Override
     protected ImageMagickProcessor newInstance() {
         return new ImageMagickProcessor();
     }
@@ -257,22 +247,6 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
     }
 
     /* process() */
-
-    @Override
-    @Test
-    public void testProcessOf16BitImageWithEncodeOperationLimitingTo8Bits() {
-        // >8-bit output is not currently available in this processor.
-        // IM only has a -depth argument that forces all output to that depth.
-        // In order to accomplish this, we would probably need readImageInfo()
-        // to return a sample size in the Info and use that to determine
-        // whether we need to call -depth.
-    }
-
-    @Override
-    @Test
-    public void testProcessOf16BitImageWithEncodeOperationWithNoLimit() {
-        // See above method.
-    }
 
     @Ignore // TODO: why does this fail?
     @Test

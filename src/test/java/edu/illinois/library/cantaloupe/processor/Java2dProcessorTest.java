@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -14,7 +13,6 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -30,16 +28,6 @@ public class Java2dProcessorTest extends ImageIOProcessorTest {
     public void setUp() throws Exception {
         super.setUp();
         instance = newInstance();
-    }
-
-    @Override
-    protected Format getSupported16BitSourceFormat() {
-        return Format.PNG;
-    }
-
-    @Override
-    protected Path getSupported16BitImage() throws IOException {
-        return TestUtil.getImage("png-rgb-64x56x16.png");
     }
 
     @Override

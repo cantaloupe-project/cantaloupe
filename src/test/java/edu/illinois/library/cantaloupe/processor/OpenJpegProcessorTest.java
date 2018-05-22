@@ -9,8 +9,6 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -29,16 +27,6 @@ public class OpenJpegProcessorTest extends AbstractProcessorTest {
         OpenJpegProcessor.resetInitialization();
 
         instance = newInstance();
-    }
-
-    @Override
-    protected Format getSupported16BitSourceFormat() {
-        return Format.JP2;
-    }
-
-    @Override
-    protected Path getSupported16BitImage() throws IOException {
-        return TestUtil.getImage("jp2-5res-rgb-64x56x16-monotiled-lossy.jp2");
     }
 
     @Override
@@ -83,20 +71,6 @@ public class OpenJpegProcessorTest extends AbstractProcessorTest {
                 ProcessorFeature.SIZE_BY_WIDTH,
                 ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
         assertEquals(expectedFeatures, instance.getSupportedFeatures());
-    }
-
-    @Override
-    @Test
-    public void testProcessOf16BitImageWithEncodeOperationLimitingTo8Bits() {
-        // Skipped. See OpenJpegProcessor's class doc for an explanation of why
-        // it doesn't support 16-bit output.
-    }
-
-    @Override
-    @Test
-    public void testProcessOf16BitImageWithEncodeOperationWithNoLimit() {
-        // Skipped. See OpenJpegProcessor's class doc for an explanation of why
-        // it doesn't support 16-bit output.
     }
 
     @Test

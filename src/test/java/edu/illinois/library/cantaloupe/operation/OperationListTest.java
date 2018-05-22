@@ -374,48 +374,6 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void applyNonEndpointMutationsWithLimitTo8Bits() throws Exception {
-        final Configuration config = Configuration.getInstance();
-        config.setProperty(Key.PROCESSOR_LIMIT_TO_8_BITS, true);
-
-        final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = Info.builder().withSize(fullSize).build();
-        final OperationList opList = new OperationList(
-                new Identifier("cats"), new Encode(Format.JPG));
-
-        final RequestContext context = new RequestContext();
-        context.setOperationList(opList, fullSize);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
-
-        opList.applyNonEndpointMutations(info, proxy);
-
-        Encode encode = (Encode) opList.getFirst(Encode.class);
-        assertEquals(8, encode.getMaxComponentSize());
-    }
-
-    @Test
-    public void applyNonEndpointMutationsWithoutLimitTo8Bits()
-            throws Exception {
-        final Configuration config = Configuration.getInstance();
-        config.setProperty(Key.PROCESSOR_LIMIT_TO_8_BITS, false);
-
-        final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = Info.builder().withSize(fullSize).build();
-        final OperationList opList = new OperationList(
-                new Identifier("cats"), new Encode(Format.JPG));
-        final RequestContext context = new RequestContext();
-        context.setOperationList(opList, fullSize);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
-
-        opList.applyNonEndpointMutations(info, proxy);
-
-        Encode encode = (Encode) opList.getFirst(Encode.class);
-        assertEquals(Integer.MAX_VALUE, encode.getMaxComponentSize());
-    }
-
-    @Test
     public void applyNonEndpointMutationsWithDownscaleFilter() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_DOWNSCALE_FILTER, "bicubic");

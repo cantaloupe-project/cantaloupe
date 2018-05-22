@@ -7,8 +7,6 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -28,16 +26,6 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
     }
 
     @Override
-    protected Format getSupported16BitSourceFormat() {
-        return Format.JP2;
-    }
-
-    @Override
-    protected Path getSupported16BitImage() throws IOException {
-        return TestUtil.getImage("jp2-6res-rgb-64x56x16-monotiled-lossy.jp2");
-    }
-
-    @Override
     protected KakaduNativeProcessor newInstance() {
         KakaduNativeProcessor proc = new KakaduNativeProcessor();
         try {
@@ -51,12 +39,6 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
     @Test
     public void testGetInitializationExceptionWithNoException() {
         assertNull(instance.getInitializationException());
-    }
-
-    @Override
-    @Test
-    public void testProcessOf16BitImageWithEncodeOperationWithNoLimit() {
-        // This processor doesn't support 16-bit output.
     }
 
     @Override

@@ -1,11 +1,9 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.async.ThreadPool;
-import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
-import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -34,6 +32,9 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Abstract base class for processors that use a Java 2D processing pipeline.
+ */
 abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
@@ -99,10 +100,9 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
     }
 
     /**
-     * Convenience method for processors that use a Java 2D pipeline. Can be
-     * used for all images but not {@link BufferedImageSequence image
-     * sequences}; for those, use {@link #postProcess(BufferedImageSequence,
-     * OperationList, Info, OutputStream)}.
+     * Convenience method. Can be used for all images but not {@link
+     * BufferedImageSequence image sequences}; for those, use {@link
+     * #postProcess(BufferedImageSequence, OperationList, Info, OutputStream)}.
      *
      * @param image           Image to process.
      * @param readerHints     Hints from the image reader. May be
@@ -127,8 +127,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
     /**
      * Variation of {@link #postProcess(BufferedImage, Set, OperationList,
      * Info, ReductionFactor, OutputStream)} for processing {@link
-     * BufferedImageSequence image sequences}, such as to support animated
-     * GIFs.
+     * BufferedImageSequence image sequences}, such as to support animated GIFs.
      *
      * @param sequence     Sequence containing one or more images, which will
      *                     be replaced with the post-processed versions.
@@ -200,8 +199,6 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
                                         final OperationList opList,
                                         final Info imageInfo,
                                         ReductionFactor reductionFactor) throws IOException {
-        final Format outputFormat = opList.getOutputFormat();
-
         if (reductionFactor == null) {
             reductionFactor = new ReductionFactor();
         }
@@ -212,21 +209,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
             Java2DUtil.stretchContrast(image);
         }
 
-        // If the Encode operation specifies a max sample size of 8 bits, or if
-        // the output format's max sample size is 8 bits, we will need to
-        // clamp the image's sample size to 8 bits. HOWEVER, if the output
-        // format's max sample size is LESS THAN 8 bits (e.g. GIF), don't do
-        // anything and let the writer handle it.
-        //
-        // The writer could actually do this itself regardless, but doing it
-        // here could make subsequent processing steps more efficient as they
-        // will have less data to deal with.
-        Encode encode = (Encode) opList.getFirst(Encode.class);
-        if (((encode != null && encode.getMaxComponentSize() <= 8)
-                || outputFormat.getMaxSampleSize() <= 8)
-                && !Format.GIF.equals(outputFormat)) {
-            image = Java2DUtil.reduceTo8Bits(image);
-        }
+        image = Java2DUtil.reduceTo8Bits(image);
 
         final Dimension fullSize = imageInfo.getSize();
 

@@ -56,10 +56,7 @@ import java.util.regex.Pattern;
  * reduction factor, and Java 2D is used for all remaining processing steps.
  * It produces BMP output which is streamed into an ImageIO reader. (BMP does
  * not copy embedded ICC profiles into output images, but {@literal
- * opj_decompress} converts the RGB source data itself. {@literal
- * opj_decompress} does not produce BMPs with more than 8 bits per sample,
- * which means that this processor can't respect {@link
- * Encode#getMaxComponentSize()}, and all output is &le; 8 bits.)</p>
+ * opj_decompress} converts the RGB source data itself.)</p>
  *
  * <p>{@literal opj_decompress} reads and writes the files named in the
  * {@literal -i} and {@literal -o} arguments passed to it, respectively. The

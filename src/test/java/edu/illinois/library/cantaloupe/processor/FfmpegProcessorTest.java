@@ -45,16 +45,6 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
     }
 
     @Override
-    protected Format getSupported16BitSourceFormat() {
-        return null;
-    }
-
-    @Override
-    protected Path getSupported16BitImage() {
-        return null;
-    }
-
-    @Override
     protected FfmpegProcessor newInstance() {
         FfmpegProcessor instance = new FfmpegProcessor();
         try {

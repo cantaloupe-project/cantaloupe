@@ -24,7 +24,7 @@ public class Encode implements Operation {
     private Format format = Format.UNKNOWN;
     private boolean interlace = false;
     private boolean isFrozen = false;
-    private int maxComponentSize = Integer.MAX_VALUE;
+    private int maxComponentSize = 8;
     private int quality = MAX_QUALITY;
 
     public Encode(Format format) {

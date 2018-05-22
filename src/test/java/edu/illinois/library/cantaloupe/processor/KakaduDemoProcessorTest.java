@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Encode;
@@ -13,8 +12,6 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -33,16 +30,6 @@ public class KakaduDemoProcessorTest extends AbstractProcessorTest {
         KakaduDemoProcessor.resetInitialization();
 
         instance = newInstance();
-    }
-
-    @Override
-    protected Format getSupported16BitSourceFormat() {
-        return Format.JP2;
-    }
-
-    @Override
-    protected Path getSupported16BitImage() throws IOException {
-        return TestUtil.getImage("jp2-6res-rgb-64x56x16-monotiled-lossy.jp2");
     }
 
     @Override

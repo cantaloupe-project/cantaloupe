@@ -62,13 +62,6 @@ import java.util.Collection;
  * {@link BufferedImage#TYPE_CUSTOM} and so most operations on images of this
  * type are relatively slow.</p>
  *
- * <p>The setting of {@link
- * edu.illinois.library.cantaloupe.config.Key#PROCESSOR_LIMIT_TO_8_BITS} is
- * critical; for performance's sake, it should always be set to {@literal true}.
- * This will force an early conversion from {@link BufferedImage#TYPE_CUSTOM}
- * to {@link BufferedImage#TYPE_INT_ARGB} which is much more efficient to work
- * with.</p>
- *
  * <h1>{@link BufferedImage} Type Cheat Sheet</h1>
  *
  * <dl>

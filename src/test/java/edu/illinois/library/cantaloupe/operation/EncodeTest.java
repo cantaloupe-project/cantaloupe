@@ -18,6 +18,7 @@ public class EncodeTest extends BaseTest {
     @Before
     public void setUp() {
         instance = new Encode(Format.JPG);
+        assertEquals(8, instance.getMaxComponentSize());
     }
 
     @Test

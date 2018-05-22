@@ -324,11 +324,6 @@ processor.metadata.preserve = false
 # The check for this field can impair performance slightly.
 processor.metadata.respect_orientation = false
 
-# Whether to reduce images with more than 8 bits per sample to 8 bits.
-# This only applies to formats that support >8-bit samples, and not all
-# processors respect this setting; see the user manual.
-processor.limit_to_8_bits = true
-
 # Progressive JPEGs are usually more compact.
 processor.jpg.progressive = true
 

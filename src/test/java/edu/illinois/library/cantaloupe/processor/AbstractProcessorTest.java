@@ -37,7 +37,6 @@ import java.util.regex.Pattern;
 
 import static edu.illinois.library.cantaloupe.test.Assert.ImageAssert.*;
 import static org.junit.Assert.*;
-import static org.junit.Assume.*;
 
 /**
  * <p>Contains tests common to all {@link Processor}s.</p>
@@ -53,18 +52,6 @@ import static org.junit.Assume.*;
 abstract class AbstractProcessorTest extends BaseTest {
 
     private static final double DELTA = 0.00000001f;
-
-    /**
-     * @return Supported 16-bit image file as returned by
-     *         {@link TestUtil#getImage(String)}.
-     */
-    protected abstract Path getSupported16BitImage() throws IOException;
-
-    /**
-     * @return Format aligning with that of {@link #getSupported16BitImage()}.
-     */
-    protected abstract Format getSupported16BitSourceFormat()
-            throws IOException;
 
     protected abstract Processor newInstance();
 
@@ -495,44 +482,6 @@ abstract class AbstractProcessorTest extends BaseTest {
                 assertGray(this.image);
             }
         });
-    }
-
-    @Test
-    public void testProcessOf16BitImageWithEncodeOperationLimitingTo8Bits()
-            throws Exception {
-        final Path fixture = getSupported16BitImage();
-        assumeNotNull(fixture);
-
-        final Format sourceFormat = getSupported16BitSourceFormat();
-
-        final Encode encode = new Encode(Format.PNG);
-        encode.setMaxComponentSize(8);
-
-        OperationList ops = new OperationList(encode);
-
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        doProcessTest(fixture, sourceFormat, ops, os);
-
-        assertSampleSize(8, os.toByteArray());
-    }
-
-    @Test
-    public void testProcessOf16BitImageWithEncodeOperationWithNoLimit()
-            throws Exception {
-        final Path fixture = getSupported16BitImage();
-        assumeNotNull(fixture);
-
-        final Format sourceFormat = getSupported16BitSourceFormat();
-
-        final Encode encode = new Encode(Format.PNG);
-        encode.setMaxComponentSize(0);
-
-        OperationList ops = new OperationList(encode);
-
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        doProcessTest(fixture, sourceFormat, ops, os);
-
-        assertSampleSize(16, os.toByteArray());
     }
 
     @Test
