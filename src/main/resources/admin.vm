@@ -1961,7 +1961,8 @@
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
                                            data-content="Selectable downscale filters are supported
-                                           by all processors except JaiProcessor.">?</a>
+                                           by all processors except JaiProcessor and
+                                           KakaduNativeProcessor.">?</a>
                                     </td>
                                     <td>
                                         <select class="form-control"
@@ -1979,7 +1980,8 @@
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
                                            data-content="Selectable upscale filters are supported
-                                           by all processors except JaiProcessor.">?</a>
+                                           by all processors except JaiProcessor and
+                                           KakaduNativeProcessor.">?</a>
                                     </td>
                                     <td>
                                         <select class="form-control"

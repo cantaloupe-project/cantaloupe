@@ -309,7 +309,8 @@ processor.normalize = false
 processor.background_color = white
 
 # Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
-# `lanczos3`, `mitchell`, `triangle`. (JaiProcessor ignores these.)
+# `lanczos3`, `mitchell`, `triangle`. (JaiProcessor & KakaduNativeProcessor
+# ignore these.)
 processor.downscale_filter = bicubic
 processor.upscale_filter = bicubic
 
