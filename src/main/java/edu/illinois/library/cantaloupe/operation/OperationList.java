@@ -586,10 +586,10 @@ public final class OperationList implements Comparable<OperationList>,
         if (getIdentifier() != null) {
             map.put("identifier", getIdentifier().toString());
         }
-        map.put("operations", this.stream().
-                filter(Operation::hasEffect).
-                map(op -> op.toMap(fullSize)).
-                collect(Collectors.toList()));
+        map.put("operations", this.stream()
+                .filter(op -> op.hasEffect(fullSize, this))
+                .map(op -> op.toMap(fullSize))
+                .collect(Collectors.toList()));
         map.put("options", getOptions());
         return Collections.unmodifiableMap(map);
     }

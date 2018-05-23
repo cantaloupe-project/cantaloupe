@@ -656,7 +656,7 @@ public class OperationListTest extends BaseTest {
         instance.add(new Encode(Format.JPG));
         instance.getOptions().put("animal", "cat");
 
-        String expected = "50c63748527e634134449ae20b199cc0_2d047243d6275ffc6ec9f30f4cdd8b5e.jpg";
+        String expected = "50c63748527e634134449ae20b199cc0_caea6c57cfd6acccd67252c327666517.jpg";
         assertEquals(expected, instance.toFilename());
 
         // Assert that changing an operation changes the filename
@@ -719,7 +719,7 @@ public class OperationListTest extends BaseTest {
         instance.add(new Encode(Format.JPG));
         instance.getOptions().put("animal", "cat");
 
-        String expected = "identifier.jpg_crop:5,6,20,22_scale:40%_rotate:15_colortransform:bitonal_encode:jpg_UNDEFINED_animal:cat";
+        String expected = "identifier.jpg_crop:5,6,20,22_scale:40%_rotate:15_colortransform:bitonal_encode:jpg_UNDEFINED_8_animal:cat";
         assertEquals(expected, instance.toString());
     }
 
