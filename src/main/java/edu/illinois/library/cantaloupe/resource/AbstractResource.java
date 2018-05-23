@@ -98,7 +98,7 @@ public abstract class AbstractResource extends ServerResource {
         if (".".equals(appRootRelativePath)) { // when the paths are the same
             appRootRelativePath = "";
         }
-        Reference newRef;
+        Reference newRef = new Reference(requestRef);
 
         // If base_uri is set in the configuration, build a URI based on that.
         final String baseUri = Configuration.getInstance().
@@ -135,48 +135,45 @@ public abstract class AbstractResource extends ServerResource {
             final String hostHeader = requestHeaders.getFirstValue(
                     "X-Forwarded-Host", true, null);
             if (hostHeader != null) {
-                final String protocolHeader = requestHeaders.getFirstValue(
-                        "X-Forwarded-Proto", true, "HTTP");
-                final String portHeader = requestHeaders.getFirstValue(
-                        "X-Forwarded-Port", true, "80");
-                final String pathHeader = requestHeaders.getFirstValue(
-                        "X-Forwarded-Path", true, "");
-
-                LOGGER.debug("X-Forwarded headers: Proto: {}; Host: {}; " +
-                                "Port: {}; Path: {}",
-                        protocolHeader, hostHeader, portHeader, pathHeader);
-
                 final String hostStr = hostHeader.split(",")[0].trim();
-                final String protocolStr =
-                        protocolHeader.split(",")[0].trim().toUpperCase();
-                final Protocol protocol = protocolStr.equals("HTTPS") ?
-                        Protocol.HTTPS : Protocol.HTTP;
+                newRef.setHostDomain(hostStr);
+            }
+            
+            final String protocolHeader = requestHeaders.getFirstValue(
+                        "X-Forwarded-Proto", true, "HTTP");
+            final String protocolStr =
+                    protocolHeader.split(",")[0].trim().toUpperCase();
+            final Protocol protocol = protocolStr.equals("HTTPS") ?
+                    Protocol.HTTPS : Protocol.HTTP;
+            newRef.setProtocol(protocol);
+
+            final String portHeader = requestHeaders.getFirstValue(
+                        "X-Forwarded-Port", true, null);
+            if (portHeader != null) {
                 final String portStr = portHeader.split(",")[0].trim();
                 Integer port = Integer.parseInt(portStr);
                 if ((port == 80 && protocol.equals(Protocol.HTTP)) ||
                         (port == 443 && protocol.equals(Protocol.HTTPS))) {
                     port = null;
                 }
+                newRef.setHostPort(port);
+            }
 
+            final String pathHeader = requestHeaders.getFirstValue(
+                        "X-Forwarded-Path", true, "");
+            if (!pathHeader.isEmpty()) {
                 String pathStr = pathHeader.split(",")[0].trim();
                 if (!appRootRelativePath.isEmpty()) {
                     pathStr = StringUtils.stripEnd(pathStr, "/") + "/" +
                             StringUtils.stripStart(appRootRelativePath, "/");
                 }
-
-                newRef = new Reference(requestRootRef);
-                newRef.setPath(pathStr);
-                newRef.setHostDomain(hostStr);
                 newRef.setPath(StringUtils.stripEnd(pathStr, "/"));
-                newRef.setProtocol(protocol);
-                newRef.setHostPort(port);
-
-                LOGGER.debug("Base URI assembled from X-Forwarded headers: {}",
-                                newRef);
-            } else {
-                newRef = requestRef;
-                LOGGER.debug("Base URI assembled from request: {}", newRef);
             }
+
+            LOGGER.debug("X-Forwarded headers: Proto: {}; Host: {}; " +
+                    "Port: {}; Path: {}",
+                    protocolHeader, hostHeader, portHeader, pathHeader);
+            LOGGER.debug("Base URI assembled: {}", newRef);
         }
         return newRef;
     }
