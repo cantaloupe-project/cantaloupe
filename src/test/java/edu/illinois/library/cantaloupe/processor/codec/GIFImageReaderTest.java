@@ -92,7 +92,7 @@ public class GIFImageReaderTest extends AbstractImageReaderTest {
         assertEquals(64, image.getWidth());
         assertEquals(56, image.getHeight());
         assertEquals(0, rf.factor);
-        assertTrue(hints.contains(ReaderHint.ALREADY_CROPPED));
+        assertFalse(hints.contains(ReaderHint.ALREADY_CROPPED));
     }
 
     /* readSequence() */
