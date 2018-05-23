@@ -2,10 +2,18 @@ package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Compression;
+import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.ReductionFactor;
+import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -60,6 +68,31 @@ public class GIFImageReaderTest extends AbstractImageReaderTest {
         config.setProperty(GIFImageReader.IMAGEIO_PLUGIN_CONFIG_KEY, "cats");
         assertEquals("cats",
                 ((GIFImageReader) instance).getUserPreferredIIOImplementation());
+    }
+
+    /* read() */
+
+    @Test
+    public void testReadWithArguments() throws Exception {
+        OperationList ops = new OperationList();
+        Crop crop = new Crop();
+        crop.setX(10f);
+        crop.setY(10f);
+        crop.setWidth(40f);
+        crop.setHeight(40f);
+        ops.add(crop);
+        Scale scale = new Scale(35, 35, Scale.Mode.ASPECT_FIT_INSIDE);
+        ops.add(scale);
+        Orientation orientation = Orientation.ROTATE_0;
+        ReductionFactor rf = new ReductionFactor();
+        Set<ReaderHint> hints = new HashSet<>();
+
+        BufferedImage image = instance.read(ops, orientation, rf, hints);
+
+        assertEquals(64, image.getWidth());
+        assertEquals(56, image.getHeight());
+        assertEquals(0, rf.factor);
+        assertTrue(hints.contains(ReaderHint.ALREADY_CROPPED));
     }
 
     /* readSequence() */
