@@ -453,6 +453,11 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             final int referenceComponent = channels.Get_source_component(0);
             final int accessMode = Kdu_global.KDU_WANT_OUTPUT_COMPONENTS;
 
+            // Get the ROI coordinates relative to the source image.
+            final Kdu_dims regionDims = getRegion(opList, fullSize);
+            final Kdu_coords regionPos = regionDims.Access_pos();
+            final Kdu_coords regionSize = regionDims.Access_size();
+
             // The expand numerator & denominator here tell
             // kdu_region_decompressor.start() at what scale to render the
             // result. (Weird that it doesn't just take floats, but whatever.)
@@ -460,8 +465,10 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             // NOT the full image dimensions.
             final Kdu_coords expandNumerator = determineReferenceExpansion(
                     referenceComponent, channels, codestream);
+            final Dimension regionArea = new Dimension(
+                    regionSize.Get_x(), regionSize.Get_y());
             float diffScale = (scale != null) ?
-                    scale.getDifferentialScale(fullSize, reductionFactor) : 1f;
+                    scale.getDifferentialScale(regionArea, reductionFactor) : 1f;
             expandNumerator.Set_x(Math.round(
                     expandNumerator.Get_x() * diffScale * EXPAND_DENOMINATOR));
             expandNumerator.Set_y(Math.round(
@@ -476,11 +483,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             final Kdu_coords renderedPos = renderedDims.Access_pos();
             final Kdu_coords renderedSize = renderedDims.Access_size();
 
-            // Get the ROI coordinates relative to the source image.
-            final Kdu_dims regionDims = getRegion(opList, fullSize);
-            final Kdu_coords regionPos = regionDims.Access_pos();
-            final Kdu_coords regionSize = regionDims.Access_size();
-            // Adjust them for the selected decomposition level.
+            // Adjust the ROI coordinates for the selected decomposition level.
             final float reducedScale = (float) reductionFactor.getScale();
             regionPos.Set_x(Math.round(regionPos.Get_x() * diffScale * reducedScale) +
                     renderedPos.Get_x());
