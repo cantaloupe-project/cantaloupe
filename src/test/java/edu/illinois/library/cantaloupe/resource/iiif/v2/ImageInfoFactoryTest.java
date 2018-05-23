@@ -4,10 +4,9 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.processor.FileProcessor;
-import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
+import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -15,6 +14,7 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,262 +23,294 @@ import static org.junit.Assert.*;
 
 public class ImageInfoFactoryTest extends BaseTest {
 
-    private String imageUri;
-    private ImageInfo<String, Object> imageInfo;
-    private Processor processor;
+    private ImageInfoFactory instance;
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
 
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
-        config.setProperty(Key.MAX_PIXELS, 0);
+        final Set<ProcessorFeature> processorFeatures =
+                EnumSet.allOf(ProcessorFeature.class);
+        final Set<Quality> processorQualities = EnumSet.allOf(Quality.class);
+        final Set<Format> processorFormats =
+                EnumSet.of(Format.GIF, Format.JPG, Format.PNG);
 
-        imageUri = "http://example.org/bla";
-        processor = new ProcessorFactory().newProcessor(Format.JPG);
-        ((FileProcessor) processor).setSourceFile(
-                TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
-        imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, processor.readImageInfo(), 0, null);
+        instance = new ImageInfoFactory(processorFeatures,
+                processorQualities, processorFormats);
+        instance.setMinSize(64);
+        instance.setMaxPixels(0);
     }
 
-    @Override
-    public void tearDown() throws Exception {
-        try {
-            super.tearDown();
-        } finally {
-            processor.close();
-        }
-    }
-
-    private void setUpForRotatedImage() throws Exception {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.PROCESSOR_RESPECT_ORIENTATION, true);
-
-        processor.close();
-
-        processor = new ProcessorFactory().newProcessor(Format.JPG);
-        ((FileProcessor) processor).setSourceFile(
-                TestUtil.getImage("jpg-rotated.jpg"));
-
-        imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, processor.readImageInfo(), 0, null);
+    private ImageInfo<String,Object> invokeNewImageInfo() {
+        final String imageURI = "http://example.org/bla";
+        final Info info = Info.builder().withSize(1500, 1200).build();
+        return instance.newImageInfo(imageURI, info, 0);
     }
 
     @Test
     public void testNewImageInfoContext() {
+        ImageInfo<String,Object> info = invokeNewImageInfo();
         assertEquals("http://iiif.io/api/image/2/context.json",
-                imageInfo.get("@context"));
+                info.get("@context"));
     }
 
     @Test
-    public void testNewImageInfoId() {
-        assertEquals("http://example.org/bla", imageInfo.get("@id"));
+    public void testNewImageInfoID() {
+        ImageInfo<String,Object> info = invokeNewImageInfo();
+        assertEquals("http://example.org/bla", info.get("@id"));
     }
 
     @Test
     public void testNewImageInfoProtocol() {
-        assertEquals("http://iiif.io/api/image", imageInfo.get("protocol"));
+        ImageInfo<String,Object> info = invokeNewImageInfo();
+        assertEquals("http://iiif.io/api/image", info.get("protocol"));
     }
 
     @Test
     public void testNewImageInfoWidth() {
-        assertEquals(594, (int) imageInfo.get("width"));
+        ImageInfo<String,Object> info = invokeNewImageInfo();
+        assertEquals(1500, info.get("width"));
     }
 
     @Test
-    public void testNewImageInfoWidthWithRotatedImage() throws Exception {
-        setUpForRotatedImage();
-        assertEquals(64, imageInfo.get("width"));
+    public void testNewImageInfoWidthWithRotatedImage() {
+        final String imageURI = "http://example.org/bla";
+        final Info info = Info.builder()
+                .withSize(1500, 1200)
+                .withOrientation(Orientation.ROTATE_90)
+                .build();
+        ImageInfo<String, Object> imageInfo =
+                instance.newImageInfo(imageURI, info, 0);
+
+        assertEquals(1200, imageInfo.get("width"));
     }
 
     @Test
     public void testNewImageInfoHeight() {
-        assertEquals(522, (int) imageInfo.get("height"));
+        ImageInfo<String,Object> info = invokeNewImageInfo();
+        assertEquals(1200, info.get("height"));
     }
 
     @Test
-    public void testNewImageInfoHeightWithRotatedImage() throws Exception {
-        setUpForRotatedImage();
-        assertEquals(56, imageInfo.get("height"));
+    public void testNewImageInfoHeightWithRotatedImage() {
+        final String imageURI = "http://example.org/bla";
+        final Info info = Info.builder()
+                .withSize(1500, 1200)
+                .withOrientation(Orientation.ROTATE_90)
+                .build();
+        ImageInfo<String, Object> imageInfo =
+                instance.newImageInfo(imageURI, info, 0);
+
+        assertEquals(1500, imageInfo.get("height"));
     }
 
     @Test
     public void testNewImageInfoSizes() {
+        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
+
         @SuppressWarnings("unchecked")
         List<ImageInfo.Size> sizes =
                 (List<ImageInfo.Size>) imageInfo.get("sizes");
-        assertEquals(4, sizes.size());
-        assertEquals(74, (long) sizes.get(0).width);
-        assertEquals(65, (long) sizes.get(0).height);
-        assertEquals(149, (long) sizes.get(1).width);
-        assertEquals(131, (long) sizes.get(1).height);
-        assertEquals(297, (long) sizes.get(2).width);
-        assertEquals(261, (long) sizes.get(2).height);
-        assertEquals(594, (long) sizes.get(3).width);
-        assertEquals(522, (long) sizes.get(3).height);
+        assertEquals(5, sizes.size());
+        assertEquals(94, (int) sizes.get(0).width);
+        assertEquals(75, (int) sizes.get(0).height);
+        assertEquals(188, (int) sizes.get(1).width);
+        assertEquals(150, (int) sizes.get(1).height);
+        assertEquals(375, (int) sizes.get(2).width);
+        assertEquals(300, (int) sizes.get(2).height);
+        assertEquals(750, (int) sizes.get(3).width);
+        assertEquals(600, (int) sizes.get(3).height);
+        assertEquals(1500, (int) sizes.get(4).width);
+        assertEquals(1200, (int) sizes.get(4).height);
     }
 
     @Test
-    public void testNewImageInfoSizesMinSize() throws Exception {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.IIIF_MIN_SIZE, 200);
+    public void testNewImageInfoSizesMinSize() {
+        instance.setMinSize(500);
+        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
 
-        imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, processor.readImageInfo(), 0, null);
         @SuppressWarnings("unchecked")
         List<ImageInfo.Size> sizes =
                 (List<ImageInfo.Size>) imageInfo.get("sizes");
         assertEquals(2, sizes.size());
-        assertEquals(297, (long) sizes.get(0).width);
-        assertEquals(261, (long) sizes.get(0).height);
-        assertEquals(594, (long) sizes.get(1).width);
-        assertEquals(522, (long) sizes.get(1).height);
+        assertEquals(750, (int) sizes.get(0).width);
+        assertEquals(600, (int) sizes.get(0).height);
+        assertEquals(1500, (int) sizes.get(1).width);
+        assertEquals(1200, (int) sizes.get(1).height);
     }
 
     @Test
-    public void testNewImageInfoSizesMaxSize() throws Exception {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.MAX_PIXELS, 10000);
+    public void testNewImageInfoSizesMaxSize() {
+        instance.setMaxPixels(10000);
+        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
 
-        imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, processor.readImageInfo(), 0, null);
         @SuppressWarnings("unchecked")
         List<ImageInfo.Size> sizes =
                 (List<ImageInfo.Size>) imageInfo.get("sizes");
         assertEquals(1, sizes.size());
-        assertEquals(74, (long) sizes.get(0).width);
-        assertEquals(65, (long) sizes.get(0).height);
+        assertEquals(94, (int) sizes.get(0).width);
+        assertEquals(75, (int) sizes.get(0).height);
     }
 
     @Test
     public void testNewImageInfoSizesWithRotatedImage() {
-        // TODO: write this (need a bigger rotated image)
+        final String imageURI = "http://example.org/bla";
+        final Info info = Info.builder()
+                .withSize(1500, 1200)
+                .withOrientation(Orientation.ROTATE_90)
+                .build();
+        ImageInfo<String, Object> imageInfo =
+                instance.newImageInfo(imageURI, info, 0);
+
+        @SuppressWarnings("unchecked")
+        List<ImageInfo.Size> sizes =
+                (List<ImageInfo.Size>) imageInfo.get("sizes");
+        assertEquals(5, sizes.size());
+        assertEquals(75, (int) sizes.get(0).width);
+        assertEquals(94, (int) sizes.get(0).height);
+        assertEquals(150, (int) sizes.get(1).width);
+        assertEquals(188, (int) sizes.get(1).height);
+        assertEquals(300, (int) sizes.get(2).width);
+        assertEquals(375, (int) sizes.get(2).height);
+        assertEquals(600, (int) sizes.get(3).width);
+        assertEquals(750, (int) sizes.get(3).height);
+        assertEquals(1200, (int) sizes.get(4).width);
+        assertEquals(1500, (int) sizes.get(4).height);
     }
 
     @Test
     public void testNewImageInfoTilesWithUntiledMonoResolutionImage() {
+        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
+
         @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =
                 (List<ImageInfo.Tile>) imageInfo.get("tiles");
         assertEquals(1, tiles.size());
-        assertEquals(594, (long) tiles.get(0).width);
-        assertEquals(522, (long) tiles.get(0).height);
+        assertEquals(750, (int) tiles.get(0).width);
+        assertEquals(600, (int) tiles.get(0).height);
 
-        assertEquals(4, (long) tiles.get(0).scaleFactors.size());
-        assertEquals(1, (long) tiles.get(0).scaleFactors.get(0));
-        assertEquals(2, (long) tiles.get(0).scaleFactors.get(1));
-        assertEquals(4, (long) tiles.get(0).scaleFactors.get(2));
-        assertEquals(8, (long) tiles.get(0).scaleFactors.get(3));
+        assertEquals(5, tiles.get(0).scaleFactors.size());
+        assertEquals(1, (int) tiles.get(0).scaleFactors.get(0));
+        assertEquals(2, (int) tiles.get(0).scaleFactors.get(1));
+        assertEquals(4, (int) tiles.get(0).scaleFactors.get(2));
+        assertEquals(8, (int) tiles.get(0).scaleFactors.get(3));
+        assertEquals(16, (int) tiles.get(0).scaleFactors.get(4));
     }
 
     @Test
     public void testNewImageInfoTilesWithUntiledMultiResolutionImage() {
-        Info info = Info.builder()
-                .withSize(2000, 2000)
+        final String imageURI = "http://example.org/bla";
+        final Info info = Info.builder()
+                .withSize(3000, 2000)
                 .withNumResolutions(3)
                 .build();
-        imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, info, 0, null);
+        ImageInfo<String, Object> imageInfo =
+                instance.newImageInfo(imageURI, info, 0);
 
         @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =
                 (List<ImageInfo.Tile>) imageInfo.get("tiles");
         assertEquals(1, tiles.size());
-        assertEquals(1000, (long) tiles.get(0).width);
-        assertEquals(1000, (long) tiles.get(0).height);
+        assertEquals(1500, (int) tiles.get(0).width);
+        assertEquals(1000, (int) tiles.get(0).height);
 
-        assertEquals(5, (long) tiles.get(0).scaleFactors.size());
-        assertEquals(1, (long) tiles.get(0).scaleFactors.get(0));
-        assertEquals(2, (long) tiles.get(0).scaleFactors.get(1));
-        assertEquals(4, (long) tiles.get(0).scaleFactors.get(2));
-        assertEquals(8, (long) tiles.get(0).scaleFactors.get(3));
-        assertEquals(16, (long) tiles.get(0).scaleFactors.get(4));
+        assertEquals(5, tiles.get(0).scaleFactors.size());
+        assertEquals(1, (int) tiles.get(0).scaleFactors.get(0));
+        assertEquals(2, (int) tiles.get(0).scaleFactors.get(1));
+        assertEquals(4, (int) tiles.get(0).scaleFactors.get(2));
+        assertEquals(8, (int) tiles.get(0).scaleFactors.get(3));
+        assertEquals(16, (int) tiles.get(0).scaleFactors.get(4));
     }
 
     @Test
-    public void testNewImageInfoTilesWithRotatedImage() throws Exception {
-        setUpForRotatedImage();
+    public void testNewImageInfoTilesWithRotatedImage() {
+        final String imageURI = "http://example.org/bla";
+        Info info = Info.builder()
+                .withSize(64, 56)
+                .withOrientation(Orientation.ROTATE_90)
+                .withTileSize(64, 56)
+                .build();
+        ImageInfo<String, Object> imageInfo =
+                instance.newImageInfo(imageURI, info, 0);
+
         @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =
                 (List<ImageInfo.Tile>) imageInfo.get("tiles");
-        assertEquals(64, (long) tiles.get(0).width);
-        assertEquals(56, (long) tiles.get(0).height);
+        assertEquals(56, (int) tiles.get(0).width);
+        assertEquals(64, (int) tiles.get(0).height);
     }
 
     @Test
-    public void testNewImageInfoTilesWithTiledImage() throws Exception {
-        processor.setSourceFormat(Format.TIF);
+    public void testNewImageInfoTilesWithTiledImage() {
+        final String imageURI = "http://example.org/bla";
         Info info = Info.builder()
                 .withSize(64, 56)
                 .withTileSize(64, 56)
                 .build();
-        imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, info, 0, null);
+        ImageInfo<String, Object> imageInfo =
+                instance.newImageInfo(imageURI, info, 0);
 
         @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =
                 (List<ImageInfo.Tile>) imageInfo.get("tiles");
         assertEquals(1, tiles.size());
-        assertEquals(64, (long) tiles.get(0).width);
-        assertEquals(56, (long) tiles.get(0).height);
+        assertEquals(64, (int) tiles.get(0).width);
+        assertEquals(56, (int) tiles.get(0).height);
 
-        assertEquals(1, (long) tiles.get(0).scaleFactors.size());
-        assertEquals(1, (long) tiles.get(0).scaleFactors.get(0));
+        assertEquals(1, tiles.get(0).scaleFactors.size());
+        assertEquals(1, (int) tiles.get(0).scaleFactors.get(0));
     }
 
     @Test
     public void testNewImageInfoProfile() {
+        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
         List<?> profile = (List<?>) imageInfo.get("profile");
         assertEquals("http://iiif.io/api/image/2/level2.json", profile.get(0));
     }
 
     @Test
     public void testNewImageInfoFormats() {
+        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
         List<?> profile = (List<?>) imageInfo.get("profile");
         // If some are present, we will assume the rest are. (The exact
-        // contents of the sets are processor-dependent and this is not a
-        // processor test.)
+        // contents of the sets are processor-dependent.)
         assertTrue(((Set<?>) ((Map<?, ?>) profile.get(1)).get("formats")).contains("gif"));
     }
 
     @Test
     public void testNewImageInfoQualities() {
+        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
         List<?> profile = (List<?>) imageInfo.get("profile");
         // If some are present, we will assume the rest are. (The exact
-        // contents of the sets are processor-dependent and this is not a
-        // processor test.)
+        // contents of the sets are processor-dependent.)
         assertTrue(((Set<?>) ((Map<?, ?>) profile.get(1)).get("qualities")).contains("color"));
     }
 
     @Test
-    public void testNewImageInfoMaxAreaWithPositiveMaxPixels() throws Exception {
-        final Configuration config = Configuration.getInstance();
-        config.setProperty(Key.MAX_PIXELS, 100);
+    public void testNewImageInfoMaxAreaWithPositiveMaxPixels() {
+        final int maxPixels = 100;
+        instance.setMaxPixels(maxPixels);
 
-        imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, processor.readImageInfo(), 0, null);
+        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
         List<?> profile = (List<?>) imageInfo.get("profile");
-        assertTrue(((Map<?, ?>) profile.get(1)).get("maxArea").
-                equals(config.getInt(Key.MAX_PIXELS)));
+        assertEquals(maxPixels, ((Map<?, ?>) profile.get(1)).get("maxArea"));
     }
 
     @Test
-    public void testNewImageInfoMaxAreaWithZeroMaxPixels() throws Exception {
-        final Configuration config = Configuration.getInstance();
-        config.setProperty(Key.MAX_PIXELS, 0);
+    public void testNewImageInfoMaxAreaWithZeroMaxPixels() {
+        final int maxPixels = 0;
+        instance.setMaxPixels(maxPixels);
 
-        imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, processor.readImageInfo(), 0, null);
+        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
         List<?> profile = (List<?>) imageInfo.get("profile");
         assertFalse(((Map<?, ?>) profile.get(1)).containsKey("maxArea"));
     }
 
     @Test
     public void testNewImageInfoSupports() {
-        List<?> profile = (List<?>) imageInfo.get("profile");
+        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
 
+        List<?> profile = (List<?>) imageInfo.get("profile");
         final Set<?> supportsSet = (Set<?>) ((Map<?, ?>) profile.get(1)).get("supports");
         assertTrue(supportsSet.contains("baseUriRedirect"));
         assertTrue(supportsSet.contains("canonicalLinkHeader"));
@@ -290,7 +322,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoDelegateScriptKeys() throws Exception {
+    public void testNewImageInfoDelegateKeys() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
@@ -299,9 +331,9 @@ public class ImageInfoFactoryTest extends BaseTest {
         RequestContext context = new RequestContext();
         DelegateProxyService service = DelegateProxyService.getInstance();
         DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
 
-        imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, processor.readImageInfo(), 0, proxy);
+        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
 
         assertEquals("Copyright My Great Organization. All rights reserved.",
                 imageInfo.get("attribution"));

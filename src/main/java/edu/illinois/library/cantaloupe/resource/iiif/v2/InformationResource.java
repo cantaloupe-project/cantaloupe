@@ -162,10 +162,14 @@ public class InformationResource extends IIIF2Resource {
 
     private Representation newRepresentation(Info info,
                                              Processor processor) {
-        final ImageInfo<String, Object> imageInfo =
-                new ImageInfoFactory().newImageInfo(
-                        getImageURI(), processor, info, getPageIndex(),
-                        getDelegateProxy());
+        final ImageInfoFactory factory = new ImageInfoFactory(
+                processor.getSupportedFeatures(),
+                processor.getSupportedIIIF2Qualities(),
+                processor.getAvailableOutputFormats());
+        factory.setDelegateProxy(getDelegateProxy());
+
+        final ImageInfo<String, Object> imageInfo = factory.newImageInfo(
+                getImageURI(), info, getPageIndex());
         final MediaType mediaType = getNegotiatedMediaType();
 
         return new JSONRepresentation(imageInfo, mediaType, () -> {

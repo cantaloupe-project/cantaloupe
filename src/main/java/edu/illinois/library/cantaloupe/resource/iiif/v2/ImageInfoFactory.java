@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.resource.iiif.Feature;
 import edu.illinois.library.cantaloupe.resource.iiif.ImageInfoUtil;
+import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,21 +43,42 @@ final class ImageInfoFactory {
                             ServiceFeature.JSON_LD_MEDIA_TYPE,
                             ServiceFeature.PROFILE_LINK_HEADER));
 
+    private Set<ProcessorFeature> processorFeatures;
+    private Set<Quality> processorQualities;
+    private Set<Format> processorOutputFormats;
+    private DelegateProxy delegateProxy;
+    private int maxPixels, minSize;
+    private int minTileSize = DEFAULT_MIN_TILE_SIZE;
+
+    /**
+     * @param processorFeatures      Return value of {@link
+     *                               Processor#getSupportedFeatures()}.
+     * @param processorQualities     Return value of {@link
+     *                               Processor#getSupportedIIIF2Qualities()}.
+     * @param processorOutputFormats Return value of {@link
+     *                               Processor#getAvailableOutputFormats()}.
+     */
+    ImageInfoFactory(final Set<ProcessorFeature> processorFeatures,
+                     final Set<Quality> processorQualities,
+                     final Set<Format> processorOutputFormats) {
+        Configuration config = Configuration.getInstance();
+        maxPixels = config.getInt(Key.MAX_PIXELS, 0);
+        minSize = config.getInt(Key.IIIF_MIN_SIZE, 64);
+
+        this.processorFeatures = processorFeatures;
+        this.processorQualities = processorQualities;
+        this.processorOutputFormats = processorOutputFormats;
+    }
+
     /**
      * @param imageURI       May be {@literal null}.
-     * @param processor
-     * @param info
-     * @param infoImageIndex Index of the image in the {@link Info} argument's
-     *                       {@link Info#getImages()} list.
-     * @param proxy          May be {@literal null}.
+     * @param info           Info describing the image.
+     * @param infoImageIndex Index of the full/main image in the {@link Info}
+     *                       argument's {@link Info#getImages()} list.
      */
     ImageInfo<String,Object> newImageInfo(final String imageURI,
-                                          final Processor processor,
                                           final Info info,
-                                          final int infoImageIndex,
-                                          final DelegateProxy proxy) {
-        final Configuration config = Configuration.getInstance();
-
+                                          final int infoImageIndex) {
         // We want to use the orientation-aware full size, which takes the
         // embedded orientation into account.
         final Dimension virtualSize = info.getOrientationSize(infoImageIndex);
@@ -75,9 +97,6 @@ final class ImageInfoFactory {
         final List<ImageInfo.Size> sizes = getSizes(info.getOrientationSize());
         responseInfo.put("sizes", sizes);
 
-        final int minSize = getMinSize();
-        final int maxPixels = getMaxPixels();
-
         // The max reduction factor is the maximum number of times the full
         // image size can be halved until it's smaller than minSize.
         final int maxReductionFactor =
@@ -88,17 +107,12 @@ final class ImageInfoFactory {
         // to what is efficient to deliver.
         final Set<Dimension> uniqueTileSizes = new HashSet<>();
 
-        final int minTileSize = config.getInt(Key.IIIF_MIN_TILE_SIZE,
-                DEFAULT_MIN_TILE_SIZE);
-
         // Find a tile width and height. If the image is not tiled,
         // calculate a tile size close to IIIF_MIN_TILE_SIZE pixels.
         // Otherwise, use the smallest multiple of the tile size above that
         // of image resolution 0.
         final List<ImageInfo.Tile> tiles = new ArrayList<>();
         responseInfo.put("tiles", tiles);
-
-        final Info.Image firstImage = info.getImages().get(0);
 
         if (info.getImages().size() > 1) {
             // This branch is used for images that have multiple physical
@@ -116,47 +130,47 @@ final class ImageInfoFactory {
             final ImageInfo.Tile tile = new ImageInfo.Tile();
             tile.width = uniqueTileSize.width;
             tile.height = uniqueTileSize.height;
-            // Add every scale factor up to 2^n.
+            // Add every scale factor up to 2^RFmax.
             for (int i = 0; i <= maxReductionFactor; i++) {
                 tile.scaleFactors.add((int) Math.pow(2, i));
             }
             tiles.add(tile);
         }
 
-        final List<Object> profile = new ArrayList<>();
+        final List<Object> profile = new ArrayList<>(2);
         responseInfo.put("profile", profile);
 
         final String complianceUri = ComplianceLevel.getLevel(
                 SUPPORTED_SERVICE_FEATURES,
-                processor.getSupportedFeatures(),
-                processor.getSupportedIIIF2Qualities(),
-                processor.getAvailableOutputFormats()).getUri();
+                processorFeatures,
+                processorQualities,
+                processorOutputFormats).getUri();
         profile.add(complianceUri);
 
         // formats
         Map<String, Object> profileMap = new HashMap<>();
         Set<String> formatStrings = new HashSet<>();
-        for (Format format : processor.getAvailableOutputFormats()) {
+        for (Format format : processorOutputFormats) {
             formatStrings.add(format.getPreferredExtension());
         }
         profileMap.put("formats", formatStrings);
         profile.add(profileMap);
 
-        // maxArea (maxWidth and maxHeight are currently not supported)
+        // maxArea (maxWidth and maxHeight are not supported)
         if (maxPixels > 0) {
             profileMap.put("maxArea", maxPixels);
         }
 
         // qualities
         final Set<String> qualityStrings = new HashSet<>();
-        for (Quality quality : processor.getSupportedIIIF2Qualities()) {
+        for (Quality quality : processorQualities) {
             qualityStrings.add(quality.toString().toLowerCase());
         }
         profileMap.put("qualities", qualityStrings);
 
         // supports
         final Set<String> featureStrings = new HashSet<>();
-        for (Feature feature : processor.getSupportedFeatures()) {
+        for (Feature feature : processorFeatures) {
             featureStrings.add(feature.getName());
         }
         for (Feature feature : SUPPORTED_SERVICE_FEATURES) {
@@ -165,10 +179,10 @@ final class ImageInfoFactory {
         profileMap.put("supports", featureStrings);
 
         // additional keys
-        if (proxy != null) {
+        if (delegateProxy != null) {
             try {
                 final Map<String, Object> keyMap =
-                        proxy.getExtraIIIFInformationResponseKeys();
+                        delegateProxy.getExtraIIIFInformationResponseKeys();
                 responseInfo.putAll(keyMap);
             } catch (ScriptException e) {
                 LOGGER.error(e.getMessage());
@@ -187,15 +201,12 @@ final class ImageInfoFactory {
         // monoresolution images.
         final List<ImageInfo.Size> sizes = new ArrayList<>();
 
-        final int minSize = getMinSize();
-        final int maxPixels = getMaxPixels();
-
         // The min reduction factor is the smallest number of reductions that
-        // are required in order to fit within max pixels.
+        // are required in order to fit within maxPixels.
         final int minReductionFactor = (maxPixels > 0) ?
                 ImageInfoUtil.minReductionFactor(virtualSize, maxPixels) : 0;
-        // The max reduction factor is the maximum number of times the full
-        // image size can be halved until it's smaller than minSize.
+        // The max reduction factor is the number of times the full image
+        // dimensions can be halved until they're smaller than minSize.
         final int maxReductionFactor =
                 ImageInfoUtil.maxReductionFactor(virtualSize, minSize);
 
@@ -209,19 +220,30 @@ final class ImageInfoFactory {
         return sizes;
     }
 
-    /**
-     * @return Maximum number of pixels that will be used in {@literal sizes}
-     *         keys.
-     */
-    private int getMaxPixels() {
-        return Configuration.getInstance().getInt(Key.MAX_PIXELS, 0);
+    void setDelegateProxy(DelegateProxy proxy) {
+        this.delegateProxy = proxy;
     }
 
     /**
-     * @return Minimum size that will be used in {@literal sizes} keys.
+     * @param maxPixels Maximum number of pixels that will be used in {@literal
+     *                  sizes} keys.
      */
-    private int getMinSize() {
-        return Configuration.getInstance().getInt(Key.IIIF_MIN_SIZE, 64);
+    void setMaxPixels(int maxPixels) {
+        this.maxPixels = maxPixels;
+    }
+
+    /**
+     * @param minSize Minimum size that will be used in {@literal sizes} keys.
+     */
+    void setMinSize(int minSize) {
+        this.minSize = minSize;
+    }
+
+    /**
+     * @param minTileSize Minimum size that will be used in a tile dimension.
+     */
+    void setMinTileSize(int minTileSize) {
+        this.minTileSize = minTileSize;
     }
 
 }

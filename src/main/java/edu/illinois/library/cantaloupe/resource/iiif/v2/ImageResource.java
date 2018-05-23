@@ -180,7 +180,7 @@ public class ImageResource extends IIIF2Resource {
             }
 
             final Dimension resultingSize = ops.getResultingSize(info.getSize());
-            validateSize(resultingSize, info.getOrientationSize());
+            validateSize(resultingSize, info.getOrientationSize(), processor);
 
             try {
                 ops.applyNonEndpointMutations(info, getDelegateProxy());
@@ -232,12 +232,18 @@ public class ImageResource extends IIIF2Resource {
                 RestletApplication.IIIF_2_PATH, paramsStr));
     }
 
-    private void validateSize(Dimension resultingSize, Dimension virtualSize) {
+    private void validateSize(Dimension resultingSize,
+                              Dimension virtualSize,
+                              Processor processor) {
         final Configuration config = Configuration.getInstance();
 
         if (config.getBoolean(Key.IIIF_2_RESTRICT_TO_SIZES, false)) {
-            final List<ImageInfo.Size> sizes =
-                    new ImageInfoFactory().getSizes(virtualSize);
+            final ImageInfoFactory factory = new ImageInfoFactory(
+                    processor.getSupportedFeatures(),
+                    processor.getSupportedIIIF2Qualities(),
+                    processor.getAvailableOutputFormats());
+
+            final List<ImageInfo.Size> sizes = factory.getSizes(virtualSize);
 
             boolean ok = false;
             for (ImageInfo.Size size : sizes) {
