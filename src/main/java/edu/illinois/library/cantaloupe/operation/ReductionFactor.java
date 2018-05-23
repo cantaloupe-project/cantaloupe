@@ -96,4 +96,9 @@ public class ReductionFactor {
         return Float.hashCode(factor);
     }
 
+    @Override
+    public String toString() {
+        return factor + "";
+    }
+
 }

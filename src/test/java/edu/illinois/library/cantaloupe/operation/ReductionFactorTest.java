@@ -1,12 +1,13 @@
 package edu.illinois.library.cantaloupe.operation;
 
-import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 public class ReductionFactorTest extends BaseTest {
+
+    private static final float DELTA = 0.0000001f;
 
     @Test
     public void testForScale() {
@@ -32,14 +33,38 @@ public class ReductionFactorTest extends BaseTest {
     }
 
     @Test
+    public void testEqualsWithSameInstance() {
+        ReductionFactor rf = new ReductionFactor();
+        assertEquals(rf, rf);
+    }
+
+    @Test
+    public void testEqualsWithEqualInstances() {
+        ReductionFactor rf1 = new ReductionFactor(2);
+        ReductionFactor rf2 = new ReductionFactor(2);
+        assertEquals(rf1, rf2);
+    }
+
+    @Test
+    public void testEqualsWithUnequalInstances() {
+        ReductionFactor rf1 = new ReductionFactor(2);
+        ReductionFactor rf2 = new ReductionFactor(3);
+        assertNotEquals(rf1, rf2);
+    }
+
+    @Test
     public void testGetScale() {
-        final double fudge = 0.0000001f;
-        assertTrue(Math.abs(new ReductionFactor(0).getScale() - 1.0f) < fudge);
-        assertTrue(Math.abs(new ReductionFactor(1).getScale() - 0.5f) < fudge);
-        assertTrue(Math.abs(new ReductionFactor(2).getScale() - 0.25f) < fudge);
-        assertTrue(Math.abs(new ReductionFactor(3).getScale() - 0.125f) < fudge);
-        assertTrue(Math.abs(new ReductionFactor(4).getScale() - 0.0625f) < fudge);
-        assertTrue(Math.abs(new ReductionFactor(5).getScale() - 0.03125f) < fudge);
+        assertTrue(Math.abs(new ReductionFactor(0).getScale() - 1.0f) < DELTA);
+        assertTrue(Math.abs(new ReductionFactor(1).getScale() - 0.5f) < DELTA);
+        assertTrue(Math.abs(new ReductionFactor(2).getScale() - 0.25f) < DELTA);
+        assertTrue(Math.abs(new ReductionFactor(3).getScale() - 0.125f) < DELTA);
+        assertTrue(Math.abs(new ReductionFactor(4).getScale() - 0.0625f) < DELTA);
+        assertTrue(Math.abs(new ReductionFactor(5).getScale() - 0.03125f) < DELTA);
+    }
+
+    @Test
+    public void testToString() {
+        assertEquals("1", new ReductionFactor(1).toString());
     }
 
 }
