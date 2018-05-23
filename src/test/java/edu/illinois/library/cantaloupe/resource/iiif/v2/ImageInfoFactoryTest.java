@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
@@ -157,7 +158,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoTilesWithUntiledImage() {
+    public void testNewImageInfoTilesWithUntiledMonoResolutionImage() {
         @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =
                 (List<ImageInfo.Tile>) imageInfo.get("tiles");
@@ -173,6 +174,30 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
+    public void testNewImageInfoTilesWithUntiledMultiResolutionImage() {
+        Info info = Info.builder()
+                .withSize(2000, 2000)
+                .withNumResolutions(3)
+                .build();
+        imageInfo = new ImageInfoFactory().newImageInfo(
+                imageUri, processor, info, 0, null);
+
+        @SuppressWarnings("unchecked")
+        List<ImageInfo.Tile> tiles =
+                (List<ImageInfo.Tile>) imageInfo.get("tiles");
+        assertEquals(1, tiles.size());
+        assertEquals(1000, (long) tiles.get(0).width);
+        assertEquals(1000, (long) tiles.get(0).height);
+
+        assertEquals(5, (long) tiles.get(0).scaleFactors.size());
+        assertEquals(1, (long) tiles.get(0).scaleFactors.get(0));
+        assertEquals(2, (long) tiles.get(0).scaleFactors.get(1));
+        assertEquals(4, (long) tiles.get(0).scaleFactors.get(2));
+        assertEquals(8, (long) tiles.get(0).scaleFactors.get(3));
+        assertEquals(16, (long) tiles.get(0).scaleFactors.get(4));
+    }
+
+    @Test
     public void testNewImageInfoTilesWithRotatedImage() throws Exception {
         setUpForRotatedImage();
         @SuppressWarnings("unchecked")
@@ -185,10 +210,12 @@ public class ImageInfoFactoryTest extends BaseTest {
     @Test
     public void testNewImageInfoTilesWithTiledImage() throws Exception {
         processor.setSourceFormat(Format.TIF);
-        ((FileProcessor) processor).setSourceFile(
-                TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-uncompressed.tif"));
+        Info info = Info.builder()
+                .withSize(64, 56)
+                .withTileSize(64, 56)
+                .build();
         imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, processor.readImageInfo(), 0, null);
+                imageUri, processor, info, 0, null);
 
         @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =

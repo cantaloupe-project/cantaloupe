@@ -27,6 +27,11 @@ final class ImageInfoFactory {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ImageInfoFactory.class);
 
+    /**
+     * Will be used if {@link Key#IIIF_MIN_TILE_SIZE} is not set.
+     */
+    private static final int DEFAULT_MIN_TILE_SIZE = 512;
+
     private static final Set<ServiceFeature> SUPPORTED_SERVICE_FEATURES =
             Collections.unmodifiableSet(
                     EnumSet.of(ServiceFeature.SIZE_BY_CONFINED_WIDTH_HEIGHT,
@@ -80,10 +85,11 @@ final class ImageInfoFactory {
 
         // tiles -- this is not a canonical listing of tiles that are
         // actually encoded in the image, but rather a hint to the client as
-        // to what can be delivered efficiently.
+        // to what is efficient to deliver.
         final Set<Dimension> uniqueTileSizes = new HashSet<>();
 
-        final int minTileSize = config.getInt(Key.IIIF_MIN_TILE_SIZE, 1024);
+        final int minTileSize = config.getInt(Key.IIIF_MIN_TILE_SIZE,
+                DEFAULT_MIN_TILE_SIZE);
 
         // Find a tile width and height. If the image is not tiled,
         // calculate a tile size close to IIIF_MIN_TILE_SIZE pixels.
@@ -94,19 +100,17 @@ final class ImageInfoFactory {
 
         final Info.Image firstImage = info.getImages().get(0);
 
-        // Find the virtual tile size based on the virtual full image size.
-        final Dimension virtualTileSize = firstImage.getOrientationTileSize();
-
-        if (info.getNumResolutions() == 1 &&
-                virtualTileSize.equals(virtualSize)) {
-            uniqueTileSizes.add(
-                    ImageInfoUtil.smallestTileSize(virtualSize, minTileSize));
-        } else {
+        if (info.getImages().size() > 1) {
+            // This branch is used for images that have multiple physical
+            // embedded subimages, such as pyramidal tiled TIFF.
             for (Info.Image image : info.getImages()) {
                 uniqueTileSizes.add(
                         ImageInfoUtil.smallestTileSize(virtualSize,
                                 image.getOrientationTileSize(), minTileSize));
             }
+        } else {
+            uniqueTileSizes.add(ImageInfoUtil.smallestTileSize(
+                    virtualSize, minTileSize));
         }
         for (Dimension uniqueTileSize : uniqueTileSizes) {
             final ImageInfo.Tile tile = new ImageInfo.Tile();
@@ -144,14 +148,14 @@ final class ImageInfoFactory {
         }
 
         // qualities
-        Set<String> qualityStrings = new HashSet<>();
+        final Set<String> qualityStrings = new HashSet<>();
         for (Quality quality : processor.getSupportedIIIF2Qualities()) {
             qualityStrings.add(quality.toString().toLowerCase());
         }
         profileMap.put("qualities", qualityStrings);
 
         // supports
-        Set<String> featureStrings = new HashSet<>();
+        final Set<String> featureStrings = new HashSet<>();
         for (Feature feature : processor.getSupportedFeatures()) {
             featureStrings.add(feature.getName());
         }
