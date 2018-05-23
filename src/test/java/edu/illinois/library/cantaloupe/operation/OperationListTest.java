@@ -20,7 +20,6 @@ import org.junit.Test;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.net.URI;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -609,19 +608,19 @@ public class OperationListTest extends BaseTest {
         // same format
         instance = new OperationList(new Identifier("identifier.gif"),
                 Format.GIF);
-        assertFalse(instance.hasEffect(Format.GIF));
+        assertFalse(instance.hasEffect(new Dimension(100, 100), Format.GIF));
 
         // different formats
         instance = new OperationList(new Identifier("identifier.jpg"),
                 Format.GIF);
-        assertTrue(instance.hasEffect(Format.JPG));
+        assertTrue(instance.hasEffect(new Dimension(100, 100), Format.JPG));
     }
 
     @Test
-    public void hasEffectWithPdfSourceAndPdfOutputAndOverlay() {
+    public void hasEffectWithPDFSourceAndPDFOutputAndOverlay() {
         instance = new OperationList(new Identifier("identifier.pdf"),
                 Format.PDF);
-        assertFalse(instance.hasEffect(Format.PDF));
+        assertFalse(instance.hasEffect(new Dimension(100, 100), Format.PDF));
     }
 
     @Test
@@ -629,7 +628,7 @@ public class OperationListTest extends BaseTest {
         instance = new OperationList(new Identifier("identifier.jpg"),
                 Format.JPG);
         instance.add(new Encode(Format.JPG));
-        assertFalse(instance.hasEffect(Format.JPG));
+        assertFalse(instance.hasEffect(new Dimension(100, 100), Format.JPG));
     }
 
     @Test

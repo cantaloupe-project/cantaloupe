@@ -143,7 +143,7 @@ public class ImageResource extends IIIF2Resource {
                 return redirectingRep;
             }
 
-            validateRequestedArea(ops, sourceFormat, info);
+            validateRequestedArea(ops, sourceFormat, fullSize);
 
             processor.validate(ops, fullSize);
 

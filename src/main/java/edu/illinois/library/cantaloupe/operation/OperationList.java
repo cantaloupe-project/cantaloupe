@@ -77,7 +77,7 @@ public final class OperationList implements Comparable<OperationList>,
      * Adds an operation to the end of the list.
      *
      * @param op Operation to add. Null values are silently discarded.
-     * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalStateException if the instance is frozen.
      */
     public void add(Operation op) {
         checkFrozen();
@@ -91,10 +91,10 @@ public final class OperationList implements Comparable<OperationList>,
      * class in the list. If there are no such instances in the list, the
      * operation will be added to the end of the list.
      *
-     * @param op Operation to add.
+     * @param op         Operation to add.
      * @param afterClass The operation will be added after the last
      *                   instance of this class in the list.
-     * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalStateException if the instance is frozen.
      */
     public void addAfter(Operation op,
                          Class<? extends Operation> afterClass) {
@@ -112,10 +112,10 @@ public final class OperationList implements Comparable<OperationList>,
      * class in the list. If there are no such instances in the list, the
      * operation will be added to the end of the list.
      *
-     * @param op Operation to add.
+     * @param op          Operation to add.
      * @param beforeClass The operation will be added before the first
      *                    instance of this class in the list.
-     * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalStateException if the instance is frozen.
      */
     public void addBefore(Operation op,
                           Class<? extends Operation> beforeClass) {
@@ -437,16 +437,17 @@ public final class OperationList implements Comparable<OperationList>,
      * Determines whether the operations are effectively calling for the
      * unmodified source image, based on the given source format.
      *
-     * @param format
-     * @return Whether the operations are effectively calling for the
-     *         unmodified source image.
+     * @param fullSize Full size of the source image.
+     * @param format   Source image format.
+     * @return         Whether the operations are effectively calling for the
+     *                 unmodified source image.
      */
-    public boolean hasEffect(Format format) {
-        if (!this.getOutputFormat().equals(format)) {
+    public boolean hasEffect(Dimension fullSize, Format format) {
+        if (!getOutputFormat().equals(format)) {
             return true;
         }
         for (Operation op : this) {
-            if (op.hasEffect()) {
+            if (op.hasEffect(fullSize, this)) {
                 // 1. Ignore MetadataCopies. If the instance would otherwise be
                 //    a no-op, metadata will get passed through anyway, and if
                 //    it isn't, then this method will return false anyway.
