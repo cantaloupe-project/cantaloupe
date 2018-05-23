@@ -65,6 +65,7 @@ title: Change Log
 
 <ul>
   <li>AmazonS3Resolver and AmazonS3Cache can obtain credentials from Amazon container environment variables or EC2 Instance Metadata Service.</li>
+  <li>Arbitrary <code>X-Forwarded-*</code> headers are respected without <code>X-Forwarded-Host</code> needing to be set. (Thanks to @jweisman)</li>
   <li>Fixed a potential resource leak involving stream-based resolvers.</li>
   <li>Fixed HttpResolver's handling of semicolon-delimited <code>Content-Type</code> header values.</li>
   <li>Fixed palette corruption when cropping source images with indexed color.</li>

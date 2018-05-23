@@ -103,10 +103,10 @@ abstract class AbstractImageReaderTest extends BaseTest {
 
         BufferedImage image = instance.read(ops, orientation, rf, hints);
 
-        assertEquals(40, image.getWidth());
-        assertEquals(40, image.getHeight());
+        assertEquals(64, image.getWidth());
+        assertEquals(56, image.getHeight());
         assertEquals(0, rf.factor);
-        assertTrue(hints.contains(ReaderHint.ALREADY_CROPPED));
+        assertFalse(hints.contains(ReaderHint.ALREADY_CROPPED));
     }
 
     @Test

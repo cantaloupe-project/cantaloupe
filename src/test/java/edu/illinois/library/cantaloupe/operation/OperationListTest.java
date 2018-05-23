@@ -594,25 +594,25 @@ public class OperationListTest extends BaseTest {
     @Test
     public void hasEffectWithSameFormat() {
         instance = new OperationList(new Encode(Format.GIF));
-        assertFalse(instance.hasEffect(Format.GIF));
+        assertFalse(instance.hasEffect(new Dimension(100, 100), Format.GIF));
     }
 
     @Test
     public void hasEffectWithDifferentFormats() {
         instance = new OperationList(new Encode(Format.GIF));
-        assertTrue(instance.hasEffect(Format.JPG));
+        assertTrue(instance.hasEffect(new Dimension(100, 100), Format.JPG));
     }
 
     @Test
-    public void hasEffectWithPdfSourceAndPdfOutputAndOverlay() {
+    public void hasEffectWithPDFSourceAndPDFOutputAndOverlay() {
         instance = new OperationList(new Encode(Format.PDF));
-        assertFalse(instance.hasEffect(Format.PDF));
+        assertFalse(instance.hasEffect(new Dimension(100, 100), Format.PDF));
     }
 
     @Test
     public void hasEffectWithEncodeAndSameOutputFormat() {
         instance = new OperationList(new Encode(Format.JPG));
-        assertFalse(instance.hasEffect(Format.JPG));
+        assertFalse(instance.hasEffect(new Dimension(100, 100), Format.JPG));
     }
 
     @Test

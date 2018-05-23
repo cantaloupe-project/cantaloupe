@@ -60,7 +60,7 @@ public abstract class PublicResource extends AbstractResource {
         }
 
         // Max allowed size is ignored when the processing is a no-op.
-        if (opList.hasEffect(sourceFormat)) {
+        if (opList.hasEffect(fullSize, sourceFormat)) {
             final long maxAllowedSize =
                     Configuration.getInstance().getLong(Key.MAX_PIXELS, 0);
             if (maxAllowedSize > 0 &&

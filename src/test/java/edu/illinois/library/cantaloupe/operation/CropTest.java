@@ -267,6 +267,16 @@ public class CropTest extends BaseTest {
     }
 
     @Test
+    public void hasEffectWithArgumentsWithGreaterThanFullArea() {
+        Dimension fullSize = new Dimension(600, 400);
+        OperationList opList = new OperationList();
+
+        instance.setWidth(800);
+        instance.setHeight(600);
+        assertFalse(instance.hasEffect(fullSize, opList));
+    }
+
+    @Test
     public void hasEffectWithArgumentsWithNonzeroOrigin() {
         Dimension fullSize = new Dimension(600, 400);
         OperationList opList = new OperationList();

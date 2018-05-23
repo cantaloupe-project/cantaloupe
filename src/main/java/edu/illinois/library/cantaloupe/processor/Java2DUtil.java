@@ -260,15 +260,13 @@ public final class Java2DUtil {
                 croppedSize.height != inImage.getHeight())) {
             final Stopwatch watch = new Stopwatch();
 
-            // If the input image is indexed, cropping it will probably screw
-            // up its palette, so convert it to RGBA first.
-            outImage = convertIndexedTo8BitARGB(outImage);
-
             final Rectangle cropRegion = crop.getRectangle(
                     new Dimension(outImage.getWidth(), outImage.getHeight()), rf);
 
             outImage = inImage.getSubimage(cropRegion.x, cropRegion.y,
                     cropRegion.width, cropRegion.height);
+
+            outImage = convertIndexedTo8BitARGB(outImage);
 
             LOGGER.debug("crop(): cropped {}x{} image to {} in {}",
                     inImage.getWidth(), inImage.getHeight(), crop, watch);

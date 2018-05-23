@@ -442,13 +442,17 @@ public final class OperationList implements Comparable<OperationList>,
      * Determines whether the operations are effectively calling for the
      * unmodified source image, based on the given source format.
      *
-     * @param format
-     * @return Whether the operations are effectively calling for the
-     *         unmodified source image.
+     * @param fullSize Full size of the source image.
+     * @param format   Source image format.
+     * @return         Whether the operations are effectively calling for the
+     *                 unmodified source image.
      */
-    public boolean hasEffect(Format format) {
+    public boolean hasEffect(Dimension fullSize, Format format) {
+        if (!format.equals(getOutputFormat())) {
+            return true;
+        }
         for (Operation op : this) {
-            if (op.hasEffect()) {
+            if (op.hasEffect(fullSize, this)) {
                 // 1. Ignore MetadataCopies. If the instance would otherwise be
                 //    a no-op, metadata will get passed through anyway, and if
                 //    it isn't, then this method will return false anyway.
