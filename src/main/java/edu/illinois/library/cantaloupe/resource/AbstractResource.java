@@ -98,7 +98,7 @@ public abstract class AbstractResource extends ServerResource {
         if (".".equals(appRootRelativePath)) { // when the paths are the same
             appRootRelativePath = "";
         }
-        Reference newRef = requestRef;
+        Reference newRef = new Reference(requestRef);
 
         // If base_uri is set in the configuration, build a URI based on that.
         final String baseUri = Configuration.getInstance().
@@ -135,7 +135,7 @@ public abstract class AbstractResource extends ServerResource {
             final String hostHeader = requestHeaders.getFirstValue(
                     "X-Forwarded-Host", true, null);
             if (hostHeader != null) {
-            	final String hostStr = hostHeader.split(",")[0].trim();
+                final String hostStr = hostHeader.split(",")[0].trim();
                 newRef.setHostDomain(hostStr);
             }
             
@@ -150,24 +150,24 @@ public abstract class AbstractResource extends ServerResource {
             final String portHeader = requestHeaders.getFirstValue(
                         "X-Forwarded-Port", true, null);
             if (portHeader != null) {
-	            final String portStr = portHeader.split(",")[0].trim();
-	            Integer port = Integer.parseInt(portStr);
-	            if ((port == 80 && protocol.equals(Protocol.HTTP)) ||
-	                    (port == 443 && protocol.equals(Protocol.HTTPS))) {
-	                port = null;
-	            }
-	            newRef.setHostPort(port);
+                final String portStr = portHeader.split(",")[0].trim();
+                Integer port = Integer.parseInt(portStr);
+                if ((port == 80 && protocol.equals(Protocol.HTTP)) ||
+                        (port == 443 && protocol.equals(Protocol.HTTPS))) {
+                    port = null;
+                }
+                newRef.setHostPort(port);
             }
 
             final String pathHeader = requestHeaders.getFirstValue(
                         "X-Forwarded-Path", true, "");
             if (!pathHeader.isEmpty()) {
-	            String pathStr = pathHeader.split(",")[0].trim();
-	            if (!appRootRelativePath.isEmpty()) {
-	                pathStr = StringUtils.stripEnd(pathStr, "/") + "/" +
-	                        StringUtils.stripStart(appRootRelativePath, "/");
-	            }
-	            newRef.setPath(StringUtils.stripEnd(pathStr, "/"));
+                String pathStr = pathHeader.split(",")[0].trim();
+                if (!appRootRelativePath.isEmpty()) {
+                    pathStr = StringUtils.stripEnd(pathStr, "/") + "/" +
+                            StringUtils.stripStart(appRootRelativePath, "/");
+                }
+                newRef.setPath(StringUtils.stripEnd(pathStr, "/"));
             }
 
             LOGGER.debug("X-Forwarded headers: Proto: {}; Host: {}; " +
