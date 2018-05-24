@@ -3,9 +3,11 @@ layout: manual
 title: Upgrading
 ---
 
-<div class="alert alert-primary"><i class="fa fa-info-circle"></i> If you are skipping versions, work through this page backwards from your current version.</div>
+<h1>Upgrading</h1>
 
-<h1>3.4.x &rarr; 4.0</h1>
+<p class="text-info"><i class="fa fa-info-circle"></i> If you are skipping versions, work through this page backwards from your current version.</p>
+
+<h2>3.4.x &rarr; 4.0</h2>
 
 <ol>
   <li>Rename the following configuration keys:
@@ -30,7 +32,7 @@ title: Upgrading
       <li><code>cache.server.derivative.ttl_seconds</code></li>
     </ul>
   </li>
-  <li>Remove the following keys from the configuration:
+  <li>Remove the following configuration keys:
     <ul>
       <li><code>S3Source.bucket.region</code></li>
       <li><code>processor.limit_to_8_bits</code></li>
@@ -48,11 +50,11 @@ title: Upgrading
   <li>If you'd like to use the new KakaduNativeProcessor non-commercially for decoding JPEG2000 images, see the "Processors" section of the user manual for information on configuring it.</li>
 </ol>
 
-<h1>3.4 &rarr; 3.4.3</h1>
+<h2>3.4 &rarr; 3.4.3</h2>
 
 <p>Nothing to do.</p>
 
-<h1>3.3.x &rarr; 3.4</h1>
+<h2>3.3.x &rarr; 3.4</h2>
 
 <ol>
   <li>Add the following keys from the sample configuration:
@@ -93,11 +95,11 @@ title: Upgrading
   <li>Managing the cache on the command line with VM arguments is deprecated and will be removed in version 4. Begin migrating now to the cache management methods in the HTTP API.</li>
 </ol>
 
-<h1>3.3 &rarr; 3.3.5</h1>
+<h2>3.3 &rarr; 3.3.5</h2>
 
 <p>Nothing to do.</p>
 
-<h1>3.2.x &rarr; 3.3</h1>
+<h2>3.2.x &rarr; 3.3</h2>
 
 <ol>
   <li>Add the following keys from the sample configuration:
@@ -124,7 +126,7 @@ title: Upgrading
       <li><code>watermark.*</code> to <code>overlays.*</code></li>
     </ul>
   </li>
-  <li>Remove the following keys from the configuration:
+  <li>Remove the following configuration keys:
     <ul>
       <li><code>JdbcResolver.max_pool_size</code></li>
       <li><code>FfmpegProcessor.sharpen</code></li>
@@ -162,11 +164,11 @@ title: Upgrading
   <li>Rename the <code>watermark()</code> delegate method to <code>overlay()</code>.</li>
 </ol>
 
-<h1>3.2 &rarr; 3.2.4</h1>
+<h2>3.2 &rarr; 3.2.4</h2>
 
 <p>Nothing to do.</p>
 
-<h1>3.1.2 &rarr; 3.2</h1>
+<h2>3.1.2 &rarr; 3.2</h2>
 
 <ol>
   <li>Add the following keys from the sample configuration:
@@ -190,7 +192,7 @@ title: Upgrading
       <li><code>metadata.*</code></li>
     </ul>
   </li>
-  <li>Remove the following keys from the configuration:
+  <li>Remove the following configuration keys:
     <ul>
       <li><code>Java2dProcessor.scale_mode</code></li>
       <li><code>KakaduProcessor.post_processor.*</code></li>
@@ -200,27 +202,27 @@ title: Upgrading
   </li>
 </ol>
 
-<h1>3.1.1 &rarr; 3.1.2</h1>
+<h2>3.1.1 &rarr; 3.1.2</h2>
 
 <p>Nothing to do.</p>
 
-<h1>3.1 &rarr; 3.1.1</h1>
+<h2>3.1 &rarr; 3.1.1</h2>
 
 <ul>
   <li>Add the <code>http.host</code> and <code>https.host</code> keys from the sample configuration.</li>
 </ul>
 
-<h1>3.0.1 &rarr; 3.1</h1>
+<h2>3.0.1 &rarr; 3.1</h2>
 
 <ul>
   <li>Replace the <code>get_iiif2_service</code> delegate script method with <code>extra_iiif2_information_response_keys</code>.</li>
 </ul>
 
-<h1>3.0 &rarr; 3.0.1</h1>
+<h2>3.0 &rarr; 3.0.1</h2>
 
 <p>Nothing to do.</p>
 
-<h1>2.2 &rarr; 3.0</h1>
+<h2>2.2 &rarr; 3.0</h2>
 
 <ol>
   <li>Add the following keys from the sample configuration:

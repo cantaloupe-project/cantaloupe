@@ -31,7 +31,7 @@ title: Processors
 
 <hr>
 
-<h2>Format Support</h2>
+<h2 id="Format Support">Format Support</h2>
 
 <p>Different processors support different source formats. A table of supported formats is displayed in the <a href="remote-management.html#Control%20Panel">Control Panel</a>, as well as in the <a href="#Supported%20Source%20Formats">Supported Source Formats</a> table below. A list of output formats supported <em>for a given source format</em> is contained within the response to an information request (such as <span class="filename">/iiif/2/:identifier/info.json</span>).</p>
 
@@ -490,7 +490,7 @@ title: Processors
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-success">&check;</td>
-    <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
@@ -521,8 +521,8 @@ title: Processors
   </tr>
 </table>
 
-<p>&check;*: Copied into derivative images.</p>
-<p>&check;**: Derivative image pixel data is modified according to the ICC profile.</p>
+<p>&check;* Copied into derivative images.</p>
+<p>&check;** Derivative image pixel data is modified according to the ICC profile.</p>
 
 <hr>
 
@@ -653,7 +653,7 @@ title: Processors
 <div class="text-info">
   <p><i class="fa fa-info-circle"></i> When using this processor, it is normal to see the following log message:</p>
   <blockquote>Error: Could not find mediaLib accelerator wrapper classes. Continuing in pure Java mode.</blockquote>
-  <p>This is harmless and expected when there is no mediaLib JAR on the classpath. Either add the <code>-Dcom.sun.media.jai.disableMediaLib=true</code> VM option to suppress it, or put a mediaLib JAR on your classpath.</p>
+  <p>This is harmless and expected when there is no mediaLib JAR on the classpath. Add the <code>-Dcom.sun.media.jai.disableMediaLib=true</code> VM option to suppress it.</p>
 </div>
 
 <hr>
@@ -663,7 +663,7 @@ title: Processors
 <p>GraphicsMagickProcessor invokes the <a href="http://www.graphicsmagick.org">GraphicsMagick</a> executable
 (<span class="filename">gm</span>). GraphicsMagick is not included and must be installed separately.</p>
 
-<p>GraphicsMagick produces high-quality output and supports all of the IIIF transforms and most IIIF output formats (assuming the necessary libraries are installed; see <a href="http://www.graphicsmagick.org/formats.html">Supported Formats</a>).</p>
+<p>GraphicsMagick supports all of the IIIF transforms and most IIIF output formats (assuming the necessary libraries are installed; see <a href="http://www.graphicsmagick.org/formats.html">Supported Formats</a>).</p>
 
 <p>GraphicsMagickProcessor is usually faster than <a href="#ImageMagickProcessor">ImageMagickProcessor</a>. However, like ImageMagickProcessor, it is neither tile- nor multi-resolution-aware and thus fares poorly with large images.</p>
 
@@ -681,7 +681,7 @@ title: Processors
 
 <p>ImageMagickProcessor invokes <a href="http://www.imagemagick.org/">ImageMagick</a> commands&mdash;either <span class="filename">convert</span> and <span class="filename">identify</span> (version 6 and below) or <span class="filename">magick</span> (version 7+). (The version will be autodetected at startup.) ImageMagick is not included and must be installed separately.</p>
 
-<p>ImageMagick supports all of the IIIF transforms and all IIIF output formats, assuming the necessary delegates are installed. It also supports a wide array of source formats.</p>
+<p>ImageMagick supports all of the IIIF transforms and all IIIF output formats, assuming the necessary delegates are installed. It can also support a wide array of source formats.</p>
 
 <p>ImageMagick offers excellent output quality at the expense of performance, which suffers increasingly as image size increases.</p>
 
@@ -707,7 +707,7 @@ title: Processors
 
 <ol>
   <li>The <span class="filename">deps</span> folder of the download archive contains prebuilt binaries for several platforms.</li>
-  <li>Download them from the <a href="http://kakadusoftware.com">Kakadu website</a>.</li>
+  <li>Download them from the <a href="http://kakadusoftware.com/downloads/">Kakadu website</a>.</li>
 </ol>
 
 <p>Once installed, the binaries will be detected automatically if they are on the path; otherwise, set the <code>KakaduDemoProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory. The <code>LD_LIBRARY_PATH</code> environment variable (or your operating system's equivalent) will also need to be set to locate the Kakadu shared library.</p>

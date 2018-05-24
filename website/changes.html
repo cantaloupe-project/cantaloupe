@@ -3,36 +3,38 @@ layout: manual
 title: Change Log
 ---
 
-<h1>4.0</h1>
+<h1>Change Log</h1>
 
-<h2>Endpoints</h2>
+<h2>4.0</h2>
+
+<h3>Endpoints</h3>
 <ul>
   <li>A new <code>X-Forwarded-ID</code> reverse proxy header replaces <code>X-IIIF-ID</code>, which has been deprecated, and will be removed in a future version.</li>
   <li>Error response representations are in <code>text/plain</code> format in the absence of a client preference.</li>
 </ul>
 
-<h2>Sources</h2>
+<h3>Sources</h3>
 <ul>
   <li>Resolvers have been renamed sources to better reflect their core function.</li>
   <li>AmazonS3Resolver has been renamed S3Source, and it now supports non-AWS endpoints.</li>
   <li>S3Source supports a configurable path prefix and suffix when using <code>BasicLookupStrategy</code>.</li>
   <li>AzureStorageSource supports shared access signature (SAS) URIs. (Thanks to @ddisciascio)</li>
   <li>Improved the efficiency of source cache content access when <code>cache.server.resolve_first = false</code>.</li>
-  <li>HttpSource, S3Source, AzureStorageSource, and JdbcSource fall back to checking the magic bytes in the source image data if they cannot infer a source format any other way.</li>
+  <li>All sources fall back to checking the magic bytes in image data if they cannot infer a format any other way.</li>
 </ul>
 
-<h2>Processors</h2>
+<h3>Processors</h3>
 <ul>
   <li>KakaduProcessor has been renamed KakaduDemoProcessor to reflect the fact that it interfaces with the Kakadu demo tool, <span class="filename">kdu_expand</span>, and not the native library.</li>
-  <li>Added KakaduNativeProcessor, as well as compiled libraries for Linux, macOS, and Windows, which are free to use with it for non-commercial purposes.</li>
+  <li>Added KakaduNativeProcessor, as well as compiled binaries for Linux, macOS, and Windows, which are free to use with it for non-commercial purposes.</li>
   <li>Added <code>DownloadStrategy</code> as another optional retrieval strategy for stream-based processors, and as an optional fallback strategy. This enables all processors to work with all sources with no extra configuration.</li>
   <li>JPEG2000-compatible JPX images are readable by all processors that support JPEG2000.</li>
   <li>JaiProcessor has been deprecated. See the user manual for more information.</li>
   <li>KakaduDemoProcessor and OpenJpegProcessor work in Windows.</li>
   <li>KakaduDemoProcessor and OpenJpegProcessor read image metadata using custom code, which is more efficient than using the respective <span class="filename">kdu_jp2info</span> and <span class="filename">opj_dump</span> tools, and enables them to read the number of decomposition levels, which improves reliability when decoding images with less-common level counts.</li>
-  <li>ImageIO plugins can be selected on a per-format basis.</li>
+  <li>Image I/O plugins can be selected on a per-format basis.</li>
   <li>Improved the efficiency of the Java 2D resample filters.</li>
-  <li>When using the Java 2D pipeline to downscale to less than three pixels on a side, an empty image with the correct dimensions is returned, rather than a downscaled 3&times;3 image.</li>
+  <li>When using the Java 2D pipeline to downscale to less than three pixels on a side, an empty image with the correct dimensions is returned, rather than a downscaled 3&times;3 image, which is the smallest size that the Java 2D resample filters support.</li>
   <li>Java2dProcessor supports animated GIFs.</li>
   <li>Java2dProcessor supports CMYK &amp; YCCK JPEGs.</li>
   <li>Worked around some behavior of the <span class="filename">opj_decompress</span> tool that could cause OpenJpegProcessor to break. (Thanks to @adam-vessey)</li>
@@ -41,7 +43,7 @@ title: Change Log
   <li>Disabled support for GIF source images in JaiProcessor, as it was buggy and other processors can handle GIF better.</li>
 </ul>
 
-<h2>Caching</h2>
+<h3>Caching</h3>
 <ul>
   <li>AmazonS3Cache has been renamed S3Cache, and it now supports non-AWS endpoints.</li>
   <li>The time-to-live of the source and derivative caches is independently configurable.</li>
@@ -50,18 +52,18 @@ title: Change Log
   <li>The deprecated <code>DELETE /cache/:identifier</code> HTTP API method has been removed.</li>
 </ul>
 
-<h2>Delegate Script</h2>
+<h3>Delegate Script</h3>
 <ul>
   <li>The delegate script has been redesigned as a class that is instantiated per-request. See the "Delegate Script" section of the user manual for detailed information.</li>
 </ul>
 
-<h2>Other</h2>
+<h3>Other</h3>
 <ul>
   <li>Java 10 (18.3) is supported.</li>
   <li>Updated JRuby to 9.1.17.0.</li>
 </ul>
 
-<h1>3.4.3</h1>
+<h2>3.4.3</h2>
 
 <ul>
   <li>AmazonS3Resolver and AmazonS3Cache can obtain credentials from Amazon container environment variables or EC2 Instance Metadata Service.</li>
@@ -73,7 +75,7 @@ title: Change Log
   <li>Other minor fixes.</li>
 </ul>
 
-<h1>3.4.2</h1>
+<h2>3.4.2</h2>
 
 <ul>
   <li>Fixed a leak when using HttpResolver in a Servlet container that resulted in an inability to shut down properly. (Thanks to @punkfairy)</li>
@@ -81,11 +83,11 @@ title: Change Log
   <li>Fixed incorrect URIs in responses when using slash substitution or URI-encoded identifiers.</li>
   <li>Efficiency improvements in AmazonS3Resolver and AzureStorageResolver.</li>
   <li><code>OutOfMemoryError</code>s during image responses are logged at error level rather than info-level.</li>
-  <li>Improved the reliability of ImageIO plugin selection.</li>
+  <li>Improved the reliability of Image I/O plugin selection.</li>
   <li>Updated the PDFBox dependency to version 2.0.8.</li>
 </ul>
 
-<h1>3.4.1</h1>
+<h2>3.4.1</h2>
 
 <ul>
   <li>Improved efficiency when handling a request for a bitonal or gray image when the source image is already bitonal or gray. (Thanks to @adam-vessey)</li>
@@ -96,11 +98,11 @@ title: Change Log
   <li>Server misconfigurations cause HTTP 500 (Internal Server Error) responses rather than HTTP 400 (Bad Request).</li>
 </ul>
 
-<h1>3.4</h1>
+<h2>3.4</h2>
 
-<h2>Endpoints</h2>
+<h3>Endpoints</h3>
 <ul>
-  <li>HTTP/2 can be enabled in standalone mode. (H2 requires Java 9, but H2C works in Java 8.)</li>
+  <li>HTTP/2 can be enabled in standalone mode. (h3 requires Java 9, but h3C works in Java 8.)</li>
   <li>The accept queue limit of the standalone HTTP &amp; HTTPS servers is configurable.</li>
   <li>The minimum size in IIIF Image API 2.x <code>info.json</code> responses is configurable. (Thanks to @cbeer)</li>
   <li>The maximum size in IIIF Image API 2.x <code>info.json</code> responses is the full image size, rather than half size. (Thanks to @cbeer)</li>
@@ -116,7 +118,7 @@ title: Change Log
   <li>The username used to access the Control Panel is configurable.</li>
 </ul>
 
-<h2>Resolvers</h2>
+<h3>Resolvers</h3>
 <ul>
   <li>Miscellaneous efficiency improvements across all resolvers.</li>
   <li>The <code>HttpResolver::get_url()</code> delegate method may return a hash containing authentication credentials.</li>
@@ -128,7 +130,7 @@ title: Change Log
   <li>Resolver delegates are passed an additional context parameter. (Thanks to @jonathangreen)</li>
 </ul>
 
-<h2>Processors</h2>
+<h3>Processors</h3>
 <ul>
   <li>Added an option that enables Java2dProcessor, JaiProcessor, KakaduProcessor, and PdfBoxProcessor to preserve the sample depth of &gt;8-bits-per-sample source images.</li>
   <li>GraphicsMagickProcessor and ImageMagickProcessor respect the <code>processor.dpi</code> configuration key.</li>
@@ -138,11 +140,11 @@ title: Change Log
   <li>The <code>processor.background_color</code> configuration key affects alpha blending as well as non-90&deg;-multiple rotations. (Thanks to @Algae666)</li>
   <li>ImageMagickProcessor's support for ImageMagick versions prior to 7 is deprecated.</li>
   <li>OpenJpegProcessor's support for OpenJPEG versions prior to 2.2.0 is deprecated.</li>
-  <li>Improved the predictability of ImageIO plugin selection.</li>
+  <li>Improved the predictability of Image I/O plugin selection.</li>
   <li>Initialization warnings (related to missing dependencies, for example) are displayed in the Control Panel.</li>
 </ul>
 
-<h2>Caching</h2>
+<h3>Caching</h3>
 <ul>
   <li>Image info is written to caches asynchronously to enable faster responses.</li>
   <li>Added an optional in-memory image info cache.</li>
@@ -154,7 +156,7 @@ title: Change Log
   <li>On macOS, FilesystemCache uses file last-modified times rather than last-accessed times as the latter are not reliable.</li>
 </ul>
 
-<h2>Other</h2>
+<h3>Other</h3>
 <ul>
   <li>Configuration files support inheritance via an <code>extends</code> key.</li>
   <li>The temporary directory is configurable.</li>
@@ -162,7 +164,7 @@ title: Change Log
   <li>A logger is accessible from the delegate script.</li>
 </ul>
 
-<h1>3.3.5</h1>
+<h2>3.3.5</h2>
 
 <ul>
   <li>Fixed FilesystemCache failing to purge invalid source images. (Thanks to @jhosteny)</li>
@@ -172,14 +174,14 @@ title: Change Log
   <li>HttpResolver makes fewer HTTP requests.</li>
 </ul>
 
-<h1>3.3.4</h1>
+<h2>3.3.4</h2>
 
 <ul>
   <li>Fixed an <code>AbstractMethodError</code> in HTML views, caused by a regression in 3.3.3.</li>
   <li>Fixed the <code>X-IIIF-ID</code> header not being respected when redirecting from <code>/:identifier</code> to <code>/:identifier/info.json</code> in both IIIF Image API endpoint versions. (Thanks to @jonathangreen)</li>
 </ul>
 
-<h1>3.3.3</h1>
+<h2>3.3.3</h2>
 
 <ul>
   <li>Added Java 9 compatibility.</li>
@@ -189,12 +191,12 @@ title: Change Log
   <li>Fixed potentially incorrect tile sizes in information responses when using OpenJpegProcessor.</li>
   <li>Fixed a bug in FfmpegProcessor that caused video info parsing to fail for some videos.</li>
   <li>Added <code>Origin</code> to all <code>Vary</code> response headers, which fixes a potential CORS-related caching issue.</li>
-  <li>Fixed an issue where certain ImageIO plugins could fail to register when multiple applications that use ImageIO are running in the same container. (Thanks to @mmatela)</li>
+  <li>Fixed an issue where certain Image I/O plugins could fail to register when multiple applications that use Image I/O are running in the same container. (Thanks to @mmatela)</li>
   <li>Fixed a resource leak when using image overlays.</li>
   <li>Improvements in the testing and build process. (Thanks to @kinow)</li>
 </ul>
 
-<h1>3.3.2</h1>
+<h2>3.3.2</h2>
 
 <ul>
   <li>Fixed an inefficiency that caused image metadata to be read multiple times in a single image response.</li>
@@ -206,7 +208,7 @@ title: Change Log
   <li>GraphicsMagickProcessor and ImageMagickProcessor support a <code>?page</code> query argument with PDFs.</li>
 </ul>
 
-<h1>3.3.1</h1>
+<h2>3.3.1</h2>
 
 <ul>
     <li>Fixed caches failing to take URL query arguments into account.</li>
@@ -222,9 +224,9 @@ title: Change Log
     <li>Upgraded JRuby to 9.1.10.0.</li>
 </ul>
 
-<h1>3.3</h1>
+<h2>3.3</h2>
 
-<h2>Endpoints</h2>
+<h3>Endpoints</h3>
 <ul>
   <li>Auto-computed tile sizes of source images with an odd number of pixels in a dimension in information responses are rounded up, to prevent clients from requesting extremely narrow edge tiles.</li>
   <li>Operations that would have no effect in their context&mdash;for example, a crop to 0,0/300&times;200, followed by a scale-to-fit to 300 pixels wide&mdash;are skipped.</li>
@@ -232,7 +234,7 @@ title: Change Log
   <li>Added a RESTful API endpoint to retrieve and update the configuration.</li>
 </ul>
 
-<h2>Processors</h2>
+<h3>Processors</h3>
 <ul>
   <li>Most processor-specific configuration settings now apply across all processors, making them integrate better into the caching architecture.</li>
   <li>Added an auto-normalize option to all image processors.</li>
@@ -248,7 +250,7 @@ title: Change Log
   <li>FfmpegProcessor returns HTTP 400 when given an illegal time.</li>
 </ul>
 
-<h2>Caching</h2>
+<h3>Caching</h3>
 <ul>
   <li>The <code>-Dcantaloupe.cache.purge</code> VM option accepts an identifier argument to purge all content related to an individual identifier.</li>
   <li>Added a RESTful API endpoint to purge individual images from the cache.</li>
@@ -256,7 +258,7 @@ title: Change Log
   <li>FilesystemCache supports identifiers longer than the filesystem's filename length limit.</li>
 </ul>
 
-<h2>Overlays</h2>
+<h3>Overlays</h3>
 <ul>
   <li>Watermarks have been renamed overlays.</li>
   <li>Added textual overlays.</li>
@@ -264,14 +266,14 @@ title: Change Log
   <li>Overlay images are cached in memory for better efficiency.</li>
 </ul>
 
-<h2>Delegate Script</h2>
+<h3>Delegate Script</h3>
 <ul>
   <li>Added an optional delegate method invocation cache.</li>
   <li>Added the ability to redirect to another URL via the <code>authorized?()</code> delegate method.</li>
   <li>The delegate script is reloaded on change rather than per-request.</li>
 </ul>
 
-<h1>3.2.4</h1>
+<h2>3.2.4</h2>
 
 <ul>
   <li>Fixed all processors except JaiProcessor treating scale-to-dimensions requests (<code>w,h</code>) as scale-to-fit (<code>!w,h</code>).</li>
@@ -279,7 +281,7 @@ title: Change Log
   <li>Worked around a bug in JAI involving downscaling of compressed TIFF tiles, affecting JaiProcessor.</li>
 </ul>
 
-<h1>3.2.3</h1>
+<h2>3.2.3</h2>
 
 <ul>
   <li>Fixed inability to upscale in JaiProcessor, omitted in error from 3.2.2.</li>
@@ -289,7 +291,7 @@ title: Change Log
   <li>Fixed a bug that could cause incompletely-written cached images (with any cache) to not get cleaned up properly.</li>
 </ul>
 
-<h1>3.2.2</h1>
+<h2>3.2.2</h2>
 
 <ul>
   <li>Fixed inability to upscale by pixels.</li>
@@ -300,7 +302,7 @@ title: Change Log
   <li>Trailing slashes in <code>X-Forwarded-Path</code> header values are trimmed off, preventing double-slashes from appearing in generated URLs.</li>
 </ul>
 
-<h1>3.2.1</h1>
+<h2>3.2.1</h2>
 
 <ul>
   <li>Fixed a bug that caused the resolver selected by the <code>get_resolver()</code> delegate method to not be initielized properly.</li>
@@ -309,7 +311,7 @@ title: Change Log
   <li>Improved support for 16-bit source images in Java2dProcessor, JaiProcessor, GraphicsMagickProcessor, and ImageMagickProcessor.</li>
 </ul>
 
-<h1>3.2</h1>
+<h2>3.2</h2>
 
 <ul>
   <li>Java 8 is now required.</li>
@@ -331,7 +333,7 @@ title: Change Log
   <li>Upgraded a number of libraries.</li>
 </ul>
 
-<h1>3.1.2</h1>
+<h2>3.1.2</h2>
 
 <ul>
   <li>Fixed a resource leak that would cause landing pages, error pages, and the Control Panel to become inaccessible after a long time running.</li>
@@ -340,13 +342,13 @@ title: Change Log
   <li>HTTP 400 is returned in response to a request for an image that would be zero pixels on a side, even when the zero dimension is not explicit in the request. (For example, a size of <code>4,</code> for an image that is at least five times wider than it is tall.) (Previously, it was only returned when zero pixels was explicitly requested, and the image returned for implicit zero sizes was incorrect.)</li>
 </ul>
 
-<h1>3.1.1</h1>
+<h2>3.1.1</h2>
 
 <ul>
   <li>Added the <code>http.host</code> and <code>https.host</code> standalone mode configuration options, defaulting to listen on <code>0.0.0.0</code> (all interfaces).</li>
 </ul>
 
-<h1>3.1</h1>
+<h2>3.1</h2>
 
 <ul>
   <li>Added support for version 2.1 of the IIIF Image API.
@@ -361,13 +363,13 @@ title: Change Log
   <li>Replaced the <code>get_iiif2_service</code> delegate method with <code>extra_iiif2_information_response_keys</code>.</li>
 </ul>
 
-<h1>3.0.1</h1>
+<h2>3.0.1</h2>
 
 <ul>
   <li>Fixed a broken build in standalone mode.</li>
 </ul>
 
-<h1>3.0</h1>
+<h2>3.0</h2>
 
 <ul>
   <li>Added a Control Panel for web-based configuration changes.</li>
@@ -383,78 +385,4 @@ title: Change Log
   <li>Requests for more than <code>max_pixels</code> receive an HTTP 403 response rather than 500.</li>
   <li>Upgraded the Amazon S3 client to version 1.10.56.</li>
   <li>Upgraded the Restlet framework to version 2.3.7.</li>
-</ul>
-
-<h1>2.2</h1>
-
-<ul>
-  <li>Added watermarking.</li>
-  <li>Added PdfBoxProcessor.</li>
-  <li>Added CacheWorker.</li>
-  <li>Added AzureStorageResolver.</li>
-  <li>Improved the performance of FilesystemCache under load.</li>
-  <li>A FilesystemCache cache can be safely shared across multiple server instances.</li>
-  <li>Improved the efficiency of JdbcCache.</li>
-  <li>Added the <code>-Dcantaloupe.cache.clean</code> startup argument.</li>
-  <li>Java2dProcessor and JaiProcessor support BigTIFF source images.</li>
-  <li>Java2dProcessor uses a scale-appropriate source subsampling factor for improved performance at reduced scales.</li>
-  <li>ImageMagickProcessor and GraphicsMagickProcessor support a custom background color with non-90&deg;-multiple rotations, and use a transparent background for output formats that support it.</li>
-  <li>IIIF information responses include native image tile sizes (or multiples), if available, and inverse multiple sizes, if not.</li>
-  <li>The <code>X-Forwarded-For</code> header is respected.</li>
-  <li><code>cache.server.resolve_first</code> works with the IIIF Image API 1.1 endpoint.</li>
-  <li>Redesigned the website.</li>
-  <li>Moved documentation content to a versioned user manual.</li>
-</ul>
-
-<h1>2.1.1</h1>
-
-<ul>
-  <li>Fixed an HTTP 500 error when an invalid size parameter was used in an IIIF Image API endpoint.</li>
-  <li>Fixed a bug in Java2dProcessor where an unnecessarily large TIFF pyramid level would be used when scaling by percent.</li>
-  <li>Changed the JaiProcessor scaler to use nearest-neighbor interpolation in order to work around a bug in JAI.</li>
-</ul>
-
-<h1>2.1</h1>
-
-<ul>
-  <li>Added a delegate script method for authorization.</li>
-  <li>Optimized JaiProcessor for tiled images.</li>
-  <li>Made some aspects of JaiProcessor's JPEG and TIFF output configurable.</li>
-  <li>Made Java2dProcessor's TIFF output compression configurable.</li>
-  <li>Added SyslogAppenders for the application and access logs.</li>
-  <li>Added support for <code>sizeAboveFull</code>.</li>
-  <li>Changed the cache structure used by FilesystemCache to better accommodate large numbers of images.</li>
-  <li>Fixed a SAXParserException in KakaduProcessor that could occur in OpenJDK 8.</li>
-  <li>Upgraded JRuby to 9.0.5.0.</li>
-  <li>Upgraded the Restlet framework to 2.3.6.</li>
-</ul>
-
-<h1>2.0.1</h1>
-
-<ul>
-  <li>Fixed FilesystemCache failing to delete incompletely-written images (as due to e.g. a broken connection).</li>
-  <li>Fixed a Java2dProcessor cropping bug affecting PNG and GIF source formats.</li>
-  <li>Fixed a JaiProcessor scale-to-fit-inside bug.</li>
-</ul>
-
-<h1>2.0</h1>
-
-<ul>
-  <li>Redesigned internal APIs to abstract internal processing operations away from request processing directives and leverage Java NIO, where appropriate.</li>
-  <li>Added an IIIF Image API 1.1 endpoint, moving the 2.0 endpoint to /iiif/2 to accommodate it.</li>
-  <li>Added OpenJpegProcessor.</li>
-  <li>Added support for SSL/TLS connections over HTTPS.</li>
-  <li>Most configuration file changes are auto-detected and applied without restarting.</li>
-  <li>Resolvers can be chosen dynamically using a custom Ruby delegate method.</li>
-  <li>FilesystemResolver, HttpResolver, and AmazonS3Resolver can use a custom Ruby delegate method.</li>
-  <li>Added support for custom service profiles in the IIIF Image API 2.0 information endpoint.</li>
-  <li>Added configuration options to improve downscaling quality with Java2dProcessor and KakaduProcessor.</li>
-  <li>Enhanced Java2dProcessor's efficiency with tiled source images.</li>
-  <li>Added multi-resolution TIFF support to JaiProcessor.</li>
-  <li>Improved the efficiency of KakaduProcessor and FfmpegProcessor.</li>
-  <li>Improved the robustness of FilesystemCache.</li>
-  <li>JdbcResolver and JdbcCache use a JDBC connection pool.</li>
-  <li>JdbcCache uses transactions for nonatomic operations.</li>
-  <li>Added an option to auto-purge missing (HTTP 404) images from the cache.</li>
-  <li>Added an option to limit the pixel count of returned images, to prevent overloading the server.</li>
 </ul>

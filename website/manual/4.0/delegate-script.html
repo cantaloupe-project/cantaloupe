@@ -307,6 +307,20 @@ logger.warn 'Hello world'
 logger.error 'Hello world'
 {% endhighlight %}
 
+<p>Error stack traces may also be logged:</p>
+
+{% highlight ruby %}
+require 'java'
+
+logger = Java::edu.illinois.library.cantaloupe.script.Logger
+
+begin
+  raise 'Goodbye world'
+rescue => e
+  logger.error "#{e}", e
+end
+{% endhighlight %}
+
 <hr>
 
 <h2 id="Testing Delegate Methods">Testing Delegate Methods</h2>

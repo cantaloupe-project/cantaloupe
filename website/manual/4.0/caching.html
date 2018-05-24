@@ -10,11 +10,7 @@ title: Caching
   <li><a href="#Server-Side Caching">Server-Side Caching</li>
     <ul>
       <li><a href="#Source Cache">Source Cache</a></li>
-      <li><a href="#Derivative Cache">Derivative Cache</a>
-        <ul>
-          <li><a href="#Derivative Cache Bypassing">Bypassing</a></li>
-        </ul>
-      </li>
+      <li><a href="#Derivative Cache">Derivative Cache</a></li>
       <li><a href="#Info Cache">Info Cache</a></li>
       <li><a href="#Modes of Operation">Modes of Operation</a></li>
       <li><a href="#Maintenance">Maintenance</a></li>
@@ -92,10 +88,6 @@ cache.client.no_transform = true
 <p>Derivative caching is recommended in production, as it will greatly reduce load on the server and improve response times accordingly. There are other ways of caching derivatives, such as by using a caching reverse proxy, but the built-in derivative cache is custom-tailored for this application and easy enough to set up.</p>
 
 <p>Derivative caching is disabled by default. To enable it, set <code>cache.server.derivative.enabled</code> to <code>true</code>, and set <code>cache.server.derivative</code> to the name of a cache, such as <a href="#FilesystemCache">FilesystemCache</a>.</p>
-
-<h4 id="Derivative Cache Bypassing">Bypassing</h4>
-
-<p>The derivative cache can be bypassed on a per-request basis by supplying a <code>cache=false</code> query argument in the URL. When present, the derivative cache will not be read from, nor written to, whether or not it is enabled. The <code>Cache-Control</code> header will also be omitted from responses.</p>
 
 <h4 id="Notes">Notes</h4>
 

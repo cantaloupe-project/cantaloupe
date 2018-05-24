@@ -33,6 +33,10 @@ header {
   img {
     float: left;
     margin: 0 1.2em 0 0;
+    @media screen and (max-width: 480px) {
+      width: 80px;
+      height: 42px;
+    }
   }
   h1 {
     font-size: 2.34375rem;

@@ -37,7 +37,7 @@ title: Images
 <ol>
   <li>An image format that can be selectively read. Two such formats&mdash;<a href="#JPEG2000">JPEG2000</a> and <a href="#TIFF">multi-resolution tiled TIFF</a>&mdash;are detailed later in this section.</li>
   <li>A reader capable of reading one of these formats selectively.</li>
-  <li>A data source capable of facilitating selective reads. Local filesystems are great for reading and seeking through arbitrary byte ranges, and most readers work best with them. (Some even require them.) Other sources may not offer this functionality.</li>
+  <li>A data source capable of facilitating selective reads. Local filesystems are great for seeking forward and backward through arbitrary byte ranges, and most readers work best with them. (Some even require them.) Other sources may not offer this functionality.</li>
 </ol>
 
 <p>The application tries to do the best it can with whatever source formats it is asked to serve, and from whatever data source. However, some image formats are inherently better suited for large sizes and some <a href="processors.html#Supported%20Source%20Formats">processor/format combinations</a> will perform better than others.</p>
@@ -98,7 +98,7 @@ title: Images
 
 <p>The <a href="http://www.exif.org/TIFF6.pdf">Adobe TIFF 6.0 specification</a> permits arrangements of image data in either strips or tiles. Strips may consist of one or more whole rows of pixels, but tiles are typically square. By default, most TIFF encoders produce strip-based TIFFs, which are increasingly slow to read as their size increases. <strong>High-resolution TIFFs must be tile-based</strong> in order to permit efficient region extraction.</p>
 
-<p>Information about TIFF source images is <a href="logging.html#Application%20Log">logged</a> at debug level. A request for a tiled TIFF will generate a log message like:</p>
+<p>When using an Image I/O-based <a href="processors.html">processor</a>, information about TIFF source images is <a href="logging.html#Application%20Log">logged</a> at debug level. These messages will tell you whether a TIFF is strip-based or tile-based. For example, a request for a tiled TIFF will generate a log message like:</p>
 
 <pre>DEBUG e.i.l.c.p.c.TIFFImageReader - Acquiring region 0,0/500x500 from 8848x6928 image (128x128 tile size)</pre>
 

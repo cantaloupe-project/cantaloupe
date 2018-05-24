@@ -242,9 +242,9 @@ HttpSource.BasicLookupStrategy.url_suffix =
 <p>An identifier of <span class="filename">image.jpg</span> in the URL will resolve to
 <span class="filename">http://example.org/images/image.jpg</span>.</p>
 
-<p>It's also possible to include a partial path in the identifier using URL-encoded slashes (<code>%2F</code>) as path separators. <span class="filename">subpath%2Fimage.jpg</span> in the URL would then resolve to <span class="filename">http://example.org/images/subpath/image.jpg</span>.</p>
+<p>It's possible to include a partial path in the identifier using URL-encoded slashes (<code>%2F</code>) as path separators. <span class="filename">subpath%2Fimage.jpg</span> in the URL would then resolve to <span class="filename">http://example.org/images/subpath/image.jpg</span>.</p>
 
-<p>It's possible to use a full URL as an identifier by leaving both of the above keys blank. In that case, an identifier of <span class="filename">http%3A%2F%2Fexample.org%2Fimages%2Fimage.jpg</span> in the URL will resolve to
+<p>It's also possible to use a full URL as an identifier by leaving both of the above keys blank. In that case, an identifier of <span class="filename">http%3A%2F%2Fexample.org%2Fimages%2Fimage.jpg</span> in the URL will resolve to
 <span class="filename">http://example.org/images/image.jpg</span>.</p>
 
 <p class="text-info">
@@ -253,9 +253,9 @@ HttpSource.BasicLookupStrategy.url_suffix =
 
 <h5 id="HttpSourceScriptLookupStrategy">ScriptLookupStrategy</h5>
 
-<p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple URLs, or perhaps your identifiers are opaque and you need to run a database or web service request to locate them.  With this lookup strategy, you can tell HttpSource to invoke a <a href="delegate-script.html">delegate method</a> and capture the URL it returns.</p>
+<p>Sometimes, BasicLookupStrategy will not offer enough control. Perhaps you want to serve images from multiple URLs, or perhaps your identifiers are opaque and you need to run a database or web service request to locate them.  With this lookup strategy, you can tell HttpSource to invoke the <code>httpsource_resource_info()</code> <a href="delegate-script.html">delegate method</a> and capture the URL it returns.</p>
 
-<p>The delegate method, <code>httpsource_resource_info()</code>, returns a URL if available, or <code>nil</code> if not. See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script, and the <a href="#FilesystemSourceScriptLookupStrategy">FilesystemSource ScriptLookupStrategy</a> section for examples of similar methods.</p>
+<p>See the <a href="delegate-script.html">Delegate Script</a> section for general information about the delegate script, and the <a href="#FilesystemSourceScriptLookupStrategy">FilesystemSource ScriptLookupStrategy</a> section for examples of similar methods.</p>
 
 <h4>Authentication</h1>
 
