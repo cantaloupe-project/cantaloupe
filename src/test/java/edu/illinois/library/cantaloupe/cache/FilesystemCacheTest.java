@@ -99,7 +99,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         Identifier identifier = new Identifier("cats_~!@#$%^&*()");
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        scale.setPercent(0.905f);
+        scale.setPercent(0.905);
 
         OperationList ops = new OperationList(
                 identifier, scale, new Encode(Format.TIF));
@@ -123,7 +123,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         crop.setHeight(50f);
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        scale.setPercent(0.905f);
+        scale.setPercent(0.905);
         Rotate rotate = new Rotate(10);
         ColorTransform transform = ColorTransform.BITONAL;
         Encode encode = new Encode(Format.TIF);

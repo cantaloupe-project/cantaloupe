@@ -36,7 +36,7 @@ public class ScaleTest extends BaseTest {
 
     }
 
-    private static final float DELTA = 0.00000001f;
+    private static final double DELTA = 0.00000001f;
 
     private Scale instance;
 
@@ -143,13 +143,13 @@ public class ScaleTest extends BaseTest {
         ReductionFactor factor = new ReductionFactor(1);
 
         instance = new Scale();
-        instance.setPercent(0.5f);
+        instance.setPercent(0.5);
         assertEquals(1f, instance.getDifferentialScale(fullSize, factor), DELTA);
 
-        instance.setPercent(0.25f);
+        instance.setPercent(0.25);
         assertEquals(0.5f, instance.getDifferentialScale(fullSize, factor), DELTA);
 
-        instance.setPercent(1.5f);
+        instance.setPercent(1.5);
         factor = new ReductionFactor(0);
         assertEquals(1.5f, instance.getDifferentialScale(fullSize, factor), DELTA);
     }
@@ -187,9 +187,9 @@ public class ScaleTest extends BaseTest {
 
         // percent
         instance = new Scale();
-        instance.setPercent(0.45f);
+        instance.setPercent(0.45);
         assertEquals(1, instance.getReductionFactor(size, 999).factor);
-        instance.setPercent(0.2f);
+        instance.setPercent(0.2);
         assertEquals(2, instance.getReductionFactor(size, 999).factor);
         assertEquals(1, instance.getReductionFactor(size, 1).factor);
     }
@@ -197,28 +197,27 @@ public class ScaleTest extends BaseTest {
     @Test
     public void getResultingScale1() {
         final Dimension fullSize = new Dimension(300, 200);
-        final float fudge = 0.0000001f;
 
         instance.setMode(Scale.Mode.FULL);
-        assertEquals(1f, instance.getResultingScale(fullSize), fudge);
+        assertEquals(1, instance.getResultingScale(fullSize), DELTA);
 
         // ASPECT_FIT_WIDTH
         instance.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         instance.setWidth(200);
         instance.setHeight(100);
-        assertEquals(0.6666667f, instance.getResultingScale(fullSize), fudge);
+        assertEquals(0.66666666, instance.getResultingScale(fullSize), DELTA);
 
         // ASPECT_FIT_HEIGHT
         instance.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
         instance.setWidth(200);
         instance.setHeight(100);
-        assertEquals(0.5f, instance.getResultingScale(fullSize), fudge);
+        assertEquals(0.5, instance.getResultingScale(fullSize), DELTA);
 
         // ASPECT_FIT_INSIDE
         instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         instance.setWidth(200);
         instance.setHeight(100);
-        assertEquals(0.5f, instance.getResultingScale(fullSize), fudge);
+        assertEquals(0.5, instance.getResultingScale(fullSize), DELTA);
 
         // NON_ASPECT_FILL
         instance.setMode(Scale.Mode.NON_ASPECT_FILL);
@@ -228,8 +227,8 @@ public class ScaleTest extends BaseTest {
 
         // percent
         instance = new Scale();
-        instance.setPercent(0.5f);
-        assertEquals(0.5f, instance.getResultingScale(fullSize), fudge);
+        instance.setPercent(0.5);
+        assertEquals(0.5, instance.getResultingScale(fullSize), DELTA);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -291,10 +290,10 @@ public class ScaleTest extends BaseTest {
         // percent
         instance = new Scale();
         // down
-        instance.setPercent(0.5f);
+        instance.setPercent(0.5);
         assertEquals(new Dimension(300, 200), instance.getResultingSize(fullSize));
         // up
-        instance.setPercent(1.5f);
+        instance.setPercent(1.5);
         assertEquals(new Dimension(900, 600), instance.getResultingSize(fullSize));
     }
 
@@ -302,9 +301,9 @@ public class ScaleTest extends BaseTest {
     public void hasEffect() {
         instance.setMode(Scale.Mode.FULL);
         assertFalse(instance.hasEffect());
-        instance = new Scale(1f);
+        instance = new Scale(1);
         assertFalse(instance.hasEffect());
-        instance = new Scale(0.5f);
+        instance = new Scale(0.5);
         assertTrue(instance.hasEffect());
         instance = new Scale(100, 100, Scale.Mode.ASPECT_FIT_INSIDE);
         assertTrue(instance.hasEffect());
@@ -320,7 +319,7 @@ public class ScaleTest extends BaseTest {
         final OperationList opList = new OperationList(new Crop(0, 0, 300, 200));
 
         instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        instance.setPercent(0.5f);
+        instance.setPercent(0.5);
         assertTrue(instance.hasEffect(fullSize, opList));
 
         instance.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
@@ -350,11 +349,11 @@ public class ScaleTest extends BaseTest {
         Dimension size = new Dimension(600, 400);
         // Percent
         instance = new Scale();
-        instance.setPercent(0.5f); // down
+        instance.setPercent(0.5); // down
         assertFalse(instance.isUp(size));
-        instance.setPercent(1f); // even
+        instance.setPercent(1.0); // even
         assertFalse(instance.isUp(size));
-        instance.setPercent(1.2f); // up
+        instance.setPercent(1.2); // up
         assertTrue(instance.isUp(size));
 
         // FULL
@@ -462,7 +461,7 @@ public class ScaleTest extends BaseTest {
 
     @Test
     public void setPercent() {
-        float percent = 0.5f;
+        double percent = 0.5;
         instance.setPercent(percent);
         assertEquals(percent, instance.getPercent(), 0.000001f);
         assertEquals(Scale.Mode.ASPECT_FIT_INSIDE, instance.getMode());
@@ -471,7 +470,7 @@ public class ScaleTest extends BaseTest {
     @Test
     public void setPercentWithNegativePercent() {
         try {
-            instance.setPercent(-0.5f);
+            instance.setPercent(-0.5);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Percent must be greater than zero", e.getMessage());
@@ -481,7 +480,7 @@ public class ScaleTest extends BaseTest {
     @Test
     public void setPercentWithZeroPercent() {
         try {
-            instance.setPercent(0f);
+            instance.setPercent(0.0);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
             assertEquals("Percent must be greater than zero", e.getMessage());
@@ -497,7 +496,7 @@ public class ScaleTest extends BaseTest {
     @Test(expected = IllegalStateException.class)
     public void setPercentWhenFrozenThrowsException() {
         instance.freeze();
-        instance.setPercent(0.5f);
+        instance.setPercent(0.5);
     }
 
     @Test(expected = IllegalStateException.class)

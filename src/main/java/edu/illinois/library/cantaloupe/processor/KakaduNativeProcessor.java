@@ -459,19 +459,18 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             final Kdu_coords regionSize = regionDims.Access_size();
 
             // The expand numerator & denominator here tell
-            // kdu_region_decompressor.start() at what scale to render the
-            // result. (Weird that it doesn't just take floats, but whatever.)
-            // The expansion is relative to the selected decomposition level,
-            // NOT the full image dimensions.
+            // kdu_region_decompressor.start() at what fractional scale to
+            // render the result. The expansion is relative to the selected
+            // resolution level, NOT the full image dimensions.
             final Kdu_coords expandNumerator = determineReferenceExpansion(
                     referenceComponent, channels, codestream);
             final Dimension regionArea = new Dimension(
                     regionSize.Get_x(), regionSize.Get_y());
-            float diffScale = (scale != null) ?
-                    scale.getDifferentialScale(regionArea, reductionFactor) : 1f;
-            expandNumerator.Set_x(Math.round(
+            double diffScale = (scale != null) ?
+                    scale.getDifferentialScale(regionArea, reductionFactor) : 1.0;
+            expandNumerator.Set_x((int) Math.round(
                     expandNumerator.Get_x() * diffScale * EXPAND_DENOMINATOR));
-            expandNumerator.Set_y(Math.round(
+            expandNumerator.Set_y((int) Math.round(
                     expandNumerator.Get_y() * diffScale * EXPAND_DENOMINATOR));
             final Kdu_coords expandDenominator =
                     new Kdu_coords(EXPAND_DENOMINATOR, EXPAND_DENOMINATOR);
@@ -484,21 +483,21 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             final Kdu_coords renderedSize = renderedDims.Access_size();
 
             // Adjust the ROI coordinates for the selected decomposition level.
-            final float reducedScale = (float) reductionFactor.getScale();
-            regionPos.Set_x(Math.round(regionPos.Get_x() * diffScale * reducedScale) +
+            final double reducedScale = reductionFactor.getScale();
+            regionPos.Set_x((int) Math.round(regionPos.Get_x() * diffScale * reducedScale) +
                     renderedPos.Get_x());
-            regionPos.Set_y(Math.round(regionPos.Get_y() * diffScale * reducedScale) +
+            regionPos.Set_y((int) Math.round(regionPos.Get_y() * diffScale * reducedScale) +
                     renderedPos.Get_y());
-            regionSize.Set_x(Math.round(regionSize.Get_x() * diffScale * reducedScale));
-            regionSize.Set_y(Math.round(regionSize.Get_y() * diffScale * reducedScale));
+            regionSize.Set_x((int) Math.round(regionSize.Get_x() * diffScale * reducedScale));
+            regionSize.Set_y((int) Math.round(regionSize.Get_y() * diffScale * reducedScale));
 
             // N.B.: if the region is not entirely within the canvas,
             // kdu_region_decompressor.process() will crash the JVM.
             if (!renderedDims.Contains(regionDims)) {
                 throw new IllegalArgumentException(String.format(
-                        "Rendered region is not entirely within the canvas. " +
-                                "This is probably a bug. " +
-                                "(Region: %d,%d/%dx%d; canvas: %d,%d/%dx%d)",
+                        "Rendered region is not entirely within the full " +
+                                "image on the canvas. This is probably a bug. " +
+                                "(Region: %d,%d/%dx%d; image: %d,%d/%dx%d)",
                         regionPos.Get_x(), regionPos.Get_y(),
                         regionSize.Get_x(), regionSize.Get_y(),
                         renderedPos.Get_x(), renderedPos.Get_y(),

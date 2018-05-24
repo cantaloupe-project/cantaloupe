@@ -290,13 +290,13 @@ public class JAIUtilTest extends BaseTest {
         // Percent
         scale = new Scale();
         // down
-        float percent = 0.5f;
+        double percent = 0.5;
         scale.setPercent(percent);
         scaledImage = JAIUtil.scaleImage(image, scale, interpolation, rf);
         assertEquals(image.getWidth() * percent, scaledImage.getWidth(), fudge);
         assertEquals(image.getHeight() * percent, scaledImage.getHeight(), fudge);
         // up
-        percent = 1.1f;
+        percent = 1.1;
         scale.setPercent(percent);
         scaledImage = JAIUtil.scaleImage(image, scale, interpolation, rf);
         assertEquals(Math.round(image.getWidth() * percent),
@@ -406,13 +406,13 @@ public class JAIUtilTest extends BaseTest {
         // Percent
         scale = new Scale();
         // down
-        float percent = 0.5f;
+        double percent = 0.5;
         scale.setPercent(percent);
         scaledImage = JAIUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
         assertEquals(image.getWidth() * percent, scaledImage.getWidth(), fudge);
         assertEquals(image.getHeight() * percent, scaledImage.getHeight(), fudge);
         // up
-        percent = 1.2f;
+        percent = 1.2;
         scale.setPercent(percent);
         scaledImage = JAIUtil.scaleImageUsingSubsampleAverage(image, scale, rf);
         assertEquals(Math.round(image.getWidth() * percent),

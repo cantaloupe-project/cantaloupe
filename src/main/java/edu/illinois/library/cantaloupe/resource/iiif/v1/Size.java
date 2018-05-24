@@ -163,17 +163,17 @@ class Size {
 
     public Scale toScale() {
         Scale scale = new Scale();
-        if (this.getHeight() != null) {
+        if (getHeight() != null) {
             scale.setHeight(this.getHeight());
         }
-        if (this.getWidth() != null) {
+        if (getWidth() != null) {
             scale.setWidth(this.getWidth());
         }
-        if (this.getPercent() != null) {
-            scale.setPercent(this.getPercent() / 100f);
+        if (getPercent() != null) {
+            scale.setPercent(getPercent() / 100.0);
         }
-        if (this.getScaleMode() != null) {
-            scale.setMode(this.getScaleMode().toMode());
+        if (getScaleMode() != null) {
+            scale.setMode(getScaleMode().toMode());
         }
         return scale;
     }

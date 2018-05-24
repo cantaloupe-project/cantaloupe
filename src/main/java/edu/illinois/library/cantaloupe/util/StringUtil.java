@@ -36,11 +36,11 @@ public final class StringUtil {
 
     /**
      * @param f
-     * @return String representation of the given float with trailing zeroes
+     * @return String representation of the given number with trailing zeroes
      *         removed.
      */
-    public static String removeTrailingZeroes(Float f) {
-        String s = f.toString();
+    public static String removeTrailingZeroes(double f) {
+        String s = Double.toString(f);
         return s.indexOf(".") < 0 ? s : s.replaceAll("0*$", "").
                 replaceAll("\\.$", "");
     }

@@ -31,7 +31,7 @@ class RasterizationHelper {
      * @param reductionFactor May be positive, zero, or negative.
      * @return DPI appropriate for the given reduction factor.
      */
-    float getDPI(int reductionFactor) {
+    double getDPI(int reductionFactor) {
         float dpi = baseDPI;
         // Decrease the DPI if the reduction factor is positive.
         for (int i = 0; i < reductionFactor; i++) {
@@ -44,8 +44,8 @@ class RasterizationHelper {
         return dpi;
     }
 
-    float getDPI(Scale scale, Dimension fullSize) {
-        Float pct = scale.getResultingScale(fullSize);
+    double getDPI(Scale scale, Dimension fullSize) {
+        Double pct = scale.getResultingScale(fullSize);
         if (pct != null) {
             return baseDPI * scale.getResultingScale(fullSize);
         }

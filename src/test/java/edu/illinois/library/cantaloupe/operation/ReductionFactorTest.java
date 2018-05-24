@@ -7,29 +7,39 @@ import static org.junit.Assert.*;
 
 public class ReductionFactorTest extends BaseTest {
 
-    private static final float DELTA = 0.0000001f;
+    private static final double DELTA = 0.0000001;
 
     @Test
-    public void testForScale() {
-        assertEquals(new ReductionFactor(0), ReductionFactor.forScale(0.75f, 5));
-        assertEquals(new ReductionFactor(1), ReductionFactor.forScale(0.5f, 5));
-        assertEquals(new ReductionFactor(1), ReductionFactor.forScale(0.45f, 5));
-        assertEquals(new ReductionFactor(2), ReductionFactor.forScale(0.25f, 5));
-        assertEquals(new ReductionFactor(2), ReductionFactor.forScale(0.2f, 5));
-        assertEquals(new ReductionFactor(3), ReductionFactor.forScale(0.125f, 5));
-        assertEquals(new ReductionFactor(4), ReductionFactor.forScale(0.0625f, 5));
-        assertEquals(new ReductionFactor(5), ReductionFactor.forScale(0.03125f, 5));
-        // max
-        assertEquals(new ReductionFactor(1), ReductionFactor.forScale(0.2f, 1));
-
+    public void testForScale1() {
+        assertEquals(new ReductionFactor(0), ReductionFactor.forScale(0.75));
+        assertEquals(new ReductionFactor(1), ReductionFactor.forScale(0.5));
+        assertEquals(new ReductionFactor(1), ReductionFactor.forScale(0.45));
+        assertEquals(new ReductionFactor(2), ReductionFactor.forScale(0.25));
+        assertEquals(new ReductionFactor(2), ReductionFactor.forScale(0.2));
+        assertEquals(new ReductionFactor(2), ReductionFactor.forScale(0.1250001));
+        assertEquals(new ReductionFactor(3), ReductionFactor.forScale(0.125));
+        assertEquals(new ReductionFactor(3), ReductionFactor.forScale(0.1249999));
+        assertEquals(new ReductionFactor(4), ReductionFactor.forScale(0.0625));
+        assertEquals(new ReductionFactor(5), ReductionFactor.forScale(0.03125));
         // negative
-        assertEquals(new ReductionFactor(0), ReductionFactor.forScale(1.5f, 5));
-        assertEquals(new ReductionFactor(-1), ReductionFactor.forScale(2f, 5));
-        assertEquals(new ReductionFactor(-1), ReductionFactor.forScale(2.25f, 5));
-        assertEquals(new ReductionFactor(-1), ReductionFactor.forScale(3.25f, 5));
-        assertEquals(new ReductionFactor(-2), ReductionFactor.forScale(4.f, 5));
-        assertEquals(new ReductionFactor(-2), ReductionFactor.forScale(7f, 5));
-        assertEquals(new ReductionFactor(-3), ReductionFactor.forScale(8f, 5));
+        assertEquals(new ReductionFactor(0), ReductionFactor.forScale(1.5));
+        assertEquals(new ReductionFactor(-1), ReductionFactor.forScale(2));
+        assertEquals(new ReductionFactor(-1), ReductionFactor.forScale(2.25));
+        assertEquals(new ReductionFactor(-1), ReductionFactor.forScale(3.25));
+        assertEquals(new ReductionFactor(-2), ReductionFactor.forScale(4));
+        assertEquals(new ReductionFactor(-2), ReductionFactor.forScale(7));
+        assertEquals(new ReductionFactor(-3), ReductionFactor.forScale(8));
+    }
+
+    @Test
+    public void testForScale2() {
+        assertEquals(new ReductionFactor(1), ReductionFactor.forScale(0.2, 1));
+    }
+
+    @Test
+    public void testForScale3() {
+        assertEquals(new ReductionFactor(2), ReductionFactor.forScale(0.75, 2, 5));
+        assertEquals(new ReductionFactor(3), ReductionFactor.forScale(0.03125, 2, 3));
     }
 
     @Test
@@ -54,12 +64,12 @@ public class ReductionFactorTest extends BaseTest {
 
     @Test
     public void testGetScale() {
-        assertTrue(Math.abs(new ReductionFactor(0).getScale() - 1.0f) < DELTA);
-        assertTrue(Math.abs(new ReductionFactor(1).getScale() - 0.5f) < DELTA);
-        assertTrue(Math.abs(new ReductionFactor(2).getScale() - 0.25f) < DELTA);
-        assertTrue(Math.abs(new ReductionFactor(3).getScale() - 0.125f) < DELTA);
-        assertTrue(Math.abs(new ReductionFactor(4).getScale() - 0.0625f) < DELTA);
-        assertTrue(Math.abs(new ReductionFactor(5).getScale() - 0.03125f) < DELTA);
+        assertTrue(Math.abs(new ReductionFactor(0).getScale() - 1.0) < DELTA);
+        assertTrue(Math.abs(new ReductionFactor(1).getScale() - 0.5) < DELTA);
+        assertTrue(Math.abs(new ReductionFactor(2).getScale() - 0.25) < DELTA);
+        assertTrue(Math.abs(new ReductionFactor(3).getScale() - 0.125) < DELTA);
+        assertTrue(Math.abs(new ReductionFactor(4).getScale() - 0.0625) < DELTA);
+        assertTrue(Math.abs(new ReductionFactor(5).getScale() - 0.03125) < DELTA);
     }
 
     @Test

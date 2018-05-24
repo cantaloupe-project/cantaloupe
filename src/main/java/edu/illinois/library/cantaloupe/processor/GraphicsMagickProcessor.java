@@ -254,10 +254,10 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                     } else if (crop.getUnit().equals(Crop.Unit.PERCENT)) {
                         // GM doesn't support cropping x/y by percentage
                         // (only width/height), so we have to calculate them.
-                        final int x = Math.round(crop.getX() * fullSize.width);
-                        final int y = Math.round(crop.getY() * fullSize.height);
-                        final int width = Math.round(crop.getWidth() * 100);
-                        final int height = Math.round(crop.getHeight() * 100);
+                        final long x = Math.round(crop.getX() * fullSize.width);
+                        final long y = Math.round(crop.getY() * fullSize.height);
+                        final long width = Math.round(crop.getWidth() * 100);
+                        final long height = Math.round(crop.getHeight() * 100);
                         final String string = String.format("%dx%d+%d+%d%%",
                                 width, height, x, y);
                         args.add(string);

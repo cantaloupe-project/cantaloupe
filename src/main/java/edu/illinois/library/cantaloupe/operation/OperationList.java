@@ -241,7 +241,7 @@ public final class OperationList implements Comparable<OperationList>,
         // Scale filter
         final Scale scale = (Scale) getFirst(Scale.class);
         if (scale != null) {
-            final Float scalePct = scale.getResultingScale(sourceImageSize);
+            final Double scalePct = scale.getResultingScale(sourceImageSize);
             if (scalePct != null) {
                 final Key filterKey = (scalePct > 1) ?
                         Key.PROCESSOR_UPSCALE_FILTER :

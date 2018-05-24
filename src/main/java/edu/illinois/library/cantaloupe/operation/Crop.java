@@ -25,16 +25,16 @@ public class Crop implements Operation {
         PERCENT, PIXELS
     }
 
-    private static final float DELTA = 0.000001f;
+    private static final double DELTA = 0.000001f;
 
-    private float height = 0.0f;
+    private double height = 0.0f;
     private boolean isFrozen = false;
     private boolean isFull = false;
     private Shape shape = Shape.ARBITRARY;
     private Unit unit = Unit.PIXELS;
-    private float width = 0.0f;
-    private float x = 0.0f;
-    private float y = 0.0f;
+    private double width = 0.0f;
+    private double x = 0.0f;
+    private double y = 0.0f;
 
     private void checkFrozen() {
         if (isFrozen) {
@@ -81,7 +81,7 @@ public class Crop implements Operation {
         applyOrientation(orientation, fullSize);
     }
 
-    public Crop(float x, float y, float width, float height) {
+    public Crop(double x, double y, double width, double height) {
         setX(x);
         setY(y);
         setWidth(width);
@@ -108,12 +108,12 @@ public class Crop implements Operation {
         }
         switch (orientation) {
             case ROTATE_90:
-                float originalX = getX();
+                double originalX = getX();
                 setX(getY());
-                float y = fullSize.height - originalX - getWidth();
+                double y = fullSize.height - originalX - getWidth();
                 setY(y >= 0 ? y : 0);
                 // Swap width and height
-                float originalW = getWidth();
+                double originalW = getWidth();
                 setWidth(getHeight());
                 setHeight(Math.min(fullSize.height - originalX, originalW));
                 break;
@@ -122,13 +122,13 @@ public class Crop implements Operation {
                 setY(fullSize.height - getY() - getHeight());
                 break;
             case ROTATE_270:
-                float originalY = getY();
+                double originalY = getY();
                 setY(getX());
                 setX(fullSize.width - originalY - getHeight());
                 // Swap width and height
                 originalW = getWidth();
                 setWidth(getHeight());
-                float height = (originalW <= fullSize.height - getY()) ?
+                double height = (originalW <= fullSize.height - getY()) ?
                         originalW : fullSize.height - getY();
                 setHeight(height);
                 break;
@@ -148,10 +148,10 @@ public class Crop implements Operation {
 
     /**
      * @return The height of the operation. If {@link #getUnit()} returns
-     * {@link Unit#PERCENT}, this will be a percentage of the full image height
-     * between 0 and 1.
+     *         {@link Unit#PERCENT}, this will be a percentage of the full
+     *         image height between 0 and 1.
      */
-    public float getHeight() {
+    public double getHeight() {
         return height;
     }
 
@@ -232,7 +232,7 @@ public class Crop implements Operation {
      *         {@link Unit#PERCENT}, this will be a percentage of the full
      *         image width between 0 and 1.
      */
-    public float getWidth() {
+    public double getWidth() {
         return width;
     }
 
@@ -241,7 +241,7 @@ public class Crop implements Operation {
      * {@link #getUnit()} returns {@link Unit#PERCENT}, this will be a
      * percentage of the full image width between 0 and 1.
      */
-    public float getX() {
+    public double getX() {
         return x;
     }
 
@@ -250,7 +250,7 @@ public class Crop implements Operation {
      *         {@link #getUnit()} returns {@link Unit#PERCENT}, this will be a
      *         percentage of the full image height between 0 and 1.
      */
-    public float getY() {
+    public double getY() {
         return y;
     }
 
@@ -320,10 +320,10 @@ public class Crop implements Operation {
 
     /**
      * @param height Height to set.
-     * @throws IllegalArgumentException If the given height is invalid.
-     * @throws IllegalStateException    If the instance is frozen.
+     * @throws IllegalArgumentException if the given height is invalid.
+     * @throws IllegalStateException    if the instance is frozen.
      */
-    public void setHeight(float height) {
+    public void setHeight(double height) {
         checkFrozen();
         if (height <= 0) {
             throw new IllegalArgumentException("Height must be a positive integer");
@@ -354,10 +354,10 @@ public class Crop implements Operation {
 
     /**
      * @param width Width to set.
-     * @throws IllegalArgumentException If the given width is invalid.
-     * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalArgumentException if the given width is invalid.
+     * @throws IllegalStateException    if the instance is frozen.
      */
-    public void setWidth(float width) {
+    public void setWidth(double width) {
         checkFrozen();
         if (width <= 0) {
             throw new IllegalArgumentException("Width must be a positive integer");
@@ -373,10 +373,10 @@ public class Crop implements Operation {
      * @throws IllegalArgumentException If the given X coordinate is invalid.
      * @throws IllegalStateException If the instance is frozen.
      */
-    public void setX(float x) {
+    public void setX(double x) {
         checkFrozen();
         if (x < 0) {
-            throw new IllegalArgumentException("X must be a positive float");
+            throw new IllegalArgumentException("X must be positive");
         }
         if (Unit.PERCENT.equals(getUnit()) && x > 1) {
             throw new IllegalArgumentException("X percentage must be <= 1");
@@ -389,10 +389,10 @@ public class Crop implements Operation {
      * @throws IllegalArgumentException If the given Y coordinate is invalid.
      * @throws IllegalStateException If the instance is frozen.
      */
-    public void setY(float y) {
+    public void setY(double y) {
         checkFrozen();
         if (y < 0) {
-            throw new IllegalArgumentException("Y must be a positive float");
+            throw new IllegalArgumentException("Y must be positive");
         }
         if (Unit.PERCENT.equals(getUnit()) && y > 1) {
             throw new IllegalArgumentException("Y percentage must be <= 1");
@@ -445,15 +445,15 @@ public class Crop implements Operation {
                 str+= "square";
             } else {
                 if (this.getUnit().equals(Unit.PERCENT)) {
-                    x = StringUtil.removeTrailingZeroes(this.getX() * 100) + "%";
-                    y = StringUtil.removeTrailingZeroes(this.getY() * 100) + "%";
-                    width = StringUtil.removeTrailingZeroes(this.getWidth() * 100) + "%";
-                    height = StringUtil.removeTrailingZeroes(this.getHeight() * 100) + "%";
+                    x = StringUtil.removeTrailingZeroes(getX() * 100) + "%";
+                    y = StringUtil.removeTrailingZeroes(getY() * 100) + "%";
+                    width = StringUtil.removeTrailingZeroes(getWidth() * 100) + "%";
+                    height = StringUtil.removeTrailingZeroes(getHeight() * 100) + "%";
                 } else {
-                    x = Integer.toString(Math.round(this.getX()));
-                    y = Integer.toString(Math.round(this.getY()));
-                    width = StringUtil.removeTrailingZeroes(this.getWidth());
-                    height = StringUtil.removeTrailingZeroes(this.getHeight());
+                    x = Long.toString(Math.round(getX()));
+                    y = Long.toString(Math.round(getY()));
+                    width = StringUtil.removeTrailingZeroes(getWidth());
+                    height = StringUtil.removeTrailingZeroes(getHeight());
                 }
                 str += String.format("%s,%s,%s,%s", x, y, width, height);
             }

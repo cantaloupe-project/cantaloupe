@@ -121,7 +121,7 @@ public class Scale implements Operation {
     private Integer height;
     private boolean isFrozen = false;
     private Mode scaleMode = Mode.FULL;
-    private Float percent;
+    private Double percent;
     private Integer width;
 
     /**
@@ -129,7 +129,7 @@ public class Scale implements Operation {
      */
     public Scale() {}
 
-    public Scale(float percent) {
+    public Scale(double percent) {
         setPercent(percent);
         setMode(Mode.ASPECT_FIT_INSIDE);
     }
@@ -177,9 +177,9 @@ public class Scale implements Operation {
     }
 
     /**
-     * @return Float from 0 to 1. May be null.
+     * @return Double from 0 to 1. May be null.
      */
-    public Float getPercent() {
+    public Double getPercent() {
         return percent;
     }
 
@@ -197,16 +197,16 @@ public class Scale implements Operation {
      *                        factor, or {@literal null} if the scale mode is
      *                        {@link Mode#NON_ASPECT_FILL}.
      */
-    public Float getDifferentialScale(Dimension fullSize,
-                                      ReductionFactor reductionFactor) {
+    public Double getDifferentialScale(Dimension fullSize,
+                                       ReductionFactor reductionFactor) {
         if (Mode.FULL.equals(getMode())) {
-            return 1f;
+            return 1.0;
         } else if (Mode.NON_ASPECT_FILL.equals(getMode())) {
             return null;
         }
 
-        final float scale = getResultingScale(fullSize);
-        final float rfScale = (float) reductionFactor.getScale();
+        final double scale = getResultingScale(fullSize);
+        final double rfScale = reductionFactor.getScale();
 
         return scale / rfScale;
     }
@@ -226,22 +226,18 @@ public class Scale implements Operation {
             } else {
                 switch (getMode()) {
                     case ASPECT_FIT_WIDTH:
-                        double hvScale = (double) getWidth() /
-                                (double) reducedSize.width;
                         rf = ReductionFactor.forScale(hvScale, maxFactor);
+                        double hvScale = getWidth() / (double) reducedSize.width;
                         break;
                     case ASPECT_FIT_HEIGHT:
-                        hvScale = (double) getHeight() /
-                                (double) reducedSize.height;
                         rf = ReductionFactor.forScale(hvScale, maxFactor);
+                        hvScale = getHeight() / (double) reducedSize.height;
                         break;
                     case ASPECT_FIT_INSIDE:
-                        double hScale = (double) getWidth() /
-                                (double) reducedSize.width;
-                        double vScale = (double) getHeight() /
-                                (double) reducedSize.height;
                         rf = ReductionFactor.forScale(
                                 Math.min(hScale, vScale), maxFactor);
+                        double hScale = getWidth() / (double) reducedSize.width;
+                        double vScale = getHeight() / (double) reducedSize.height;
                         break;
                 }
             }
@@ -255,25 +251,25 @@ public class Scale implements Operation {
      *                 given full size; or {@literal null} if the scale mode
      *                 is {@link Mode#NON_ASPECT_FILL}.
      */
-    public Float getResultingScale(Dimension fullSize) {
-        Float scale = null;
-        if (this.getPercent() != null) {
-            scale = this.getPercent();
+    public Double getResultingScale(Dimension fullSize) {
+        Double scale = null;
+        if (getPercent() != null) {
+            scale = getPercent();
         } else {
-            switch (this.getMode()) {
+            switch (getMode()) {
                 case FULL:
-                    scale = 1f;
+                    scale = 1.0;
                     break;
                 case ASPECT_FIT_HEIGHT:
-                    scale = getHeight() / (float) fullSize.height;
+                    scale = getHeight() / (double) fullSize.height;
                     break;
                 case ASPECT_FIT_WIDTH:
-                    scale = getWidth() / (float) fullSize.width;
+                    scale = getWidth() / (double) fullSize.width;
                     break;
                 case ASPECT_FIT_INSIDE:
                     scale = Math.min(
-                            getWidth() / (float) fullSize.width,
-                            getHeight() / (float) fullSize.height);
+                            getWidth() / (double) fullSize.width,
+                            getHeight() / (double) fullSize.height);
                     break;
                 case NON_ASPECT_FILL:
                     break;
@@ -404,11 +400,11 @@ public class Scale implements Operation {
      * N.B. Invoking this method also sets the instance's mode to
      * {@link Mode#ASPECT_FIT_INSIDE}.
      *
-     * @param percent Float &gt; 0 and &le; 1.
+     * @param percent Double &gt; 0 and &le; 1.
      * @throws IllegalArgumentException If the given percent is invalid.
      * @throws IllegalStateException If the instance is frozen.
      */
-    public void setPercent(Float percent) {
+    public void setPercent(Double percent) {
         checkFrozen();
         if (percent != null && percent <= 0) {
             throw new IllegalArgumentException("Percent must be greater than zero");
@@ -479,7 +475,7 @@ public class Scale implements Operation {
         if (!hasEffect()) {
             return "none";
         } else if (this.getPercent() != null) {
-            str += StringUtil.removeTrailingZeroes(this.getPercent() * 100) + "%";
+            str += StringUtil.removeTrailingZeroes(getPercent() * 100) + "%";
         } else {
             if (this.getMode().equals(Mode.ASPECT_FIT_INSIDE)) {
                 str += "!";

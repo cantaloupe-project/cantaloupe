@@ -29,38 +29,45 @@ public class ReductionFactor {
      */
     public static ReductionFactor forScale(final double scalePercent,
                                            final int maxFactor) {
-        return ReductionFactor.forScale(scalePercent, maxFactor, 0);
+        return ReductionFactor.forScale(scalePercent, 0, maxFactor);
     }
 
     /**
      * Factory method.
      *
      * @param scalePercent Scale percentage greater than 0
-     * @param maxFactor Maximum factor to return.
-     * @return Instance corresponding to the given scale.
+     * @param minFactor    Minimum factor to return.
+     * @param maxFactor    Maximum factor to return.
+     * @return             Instance corresponding to the given scale.
      */
     public static ReductionFactor forScale(final double scalePercent,
-                                           int maxFactor, int minFactor) {
-        if (maxFactor == 0) {
-            maxFactor = 9999;
-        }
+                                           int minFactor, int maxFactor) {
         if (minFactor == 0) {
-            minFactor = -9999;
+            minFactor = -999;
+        }
+        if (maxFactor == 0) {
+            maxFactor = 999;
         }
         int factor = 0;
 
-        if (scalePercent < 1) {
-            double nextPct = 0.5f;
+        if (scalePercent < 1.0) {
+            double nextPct = 0.5;
             while (scalePercent <= nextPct && factor < maxFactor) {
-                nextPct /= 2f;
+                nextPct /= 2.0;
                 factor++;
             }
-        } else if (scalePercent > 1) {
-            double nextPct = 2f;
+        } else if (scalePercent > 1.0) {
+            double nextPct = 2.0;
             while (scalePercent >= nextPct && factor > minFactor) {
-                nextPct *= 2f;
+                nextPct *= 2.0;
                 factor--;
             }
+        }
+        if (factor < minFactor) {
+            factor = minFactor;
+        }
+        if (factor > maxFactor) {
+            factor = maxFactor;
         }
         return new ReductionFactor(factor);
     }
@@ -88,7 +95,7 @@ public class ReductionFactor {
      * @return Scale corresponding to the instance.
      */
     public double getScale() {
-        return Math.pow(0.5f, this.factor);
+        return Math.pow(0.5, this.factor);
     }
 
     @Override

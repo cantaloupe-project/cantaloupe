@@ -93,7 +93,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
         }
 
         ReductionFactor reductionFactor = new ReductionFactor();
-        Float pct = scale.getResultingScale(imageInfo.getSize());
+        Double pct = scale.getResultingScale(imageInfo.getSize());
         if (pct != null) {
             reductionFactor = ReductionFactor.forScale(pct);
         }
@@ -165,7 +165,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     private BufferedImage readImage(int pageIndex,
                                     Scale scale,
                                     Dimension fullSize) throws IOException {
-        float dpi = new RasterizationHelper().getDPI(scale, fullSize);
+        double dpi = new RasterizationHelper().getDPI(scale, fullSize);
         return readImage(pageIndex, dpi);
     }
 
@@ -175,12 +175,12 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
      *                                   bounds.
      */
     private BufferedImage readImage(int pageIndex,
-                                    float dpi) throws IOException {
+                                    double dpi) throws IOException {
         LOGGER.debug("DPI: {}", dpi);
 
         readDocument();
         PDFRenderer renderer = new PDFRenderer(doc);
-        return renderer.renderImageWithDPI(pageIndex, dpi);
+        return renderer.renderImageWithDPI(pageIndex, (float) dpi);
     }
 
     @Override

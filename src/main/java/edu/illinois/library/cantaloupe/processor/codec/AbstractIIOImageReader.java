@@ -616,7 +616,7 @@ abstract class AbstractIIOImageReader {
                          double reducedScale) {
         boolean fits = false;
         if (scale.getPercent() != null) {
-            float cappedScale = (scale.getPercent() > 1) ?
+            double cappedScale = (scale.getPercent() > 1) ?
                     1 : scale.getPercent();
             fits = (cappedScale <= reducedScale);
         } else if (Scale.Mode.ASPECT_FIT_WIDTH.equals(scale.getMode())) {
