@@ -11,8 +11,10 @@ import java.security.ProtectionDomain;
  * <p>Serves as the main application class in a standalone context.</p>
  *
  * <p>This class will be unavailable in a Servlet container, so it should not
- * be referred to externally. It should also have as few dependencies as
- * possible.</p>
+ * be referred to externally. It should also have as few non-JDK dependencies
+ * as possible. When the non-JDK dependencies are changed, the part of the POM
+ * that controls how the application is packaged will need to be updated as
+ * well.</p>
  */
 public class StandaloneEntry {
 
@@ -29,19 +31,20 @@ public class StandaloneEntry {
 
     /**
      * When set to "true", calls to {@link System#exit} will be disabled,
-     * necessary for testing output-to-console-followed-by-exit.
+     * in order to test output-to-console-followed-by-exit.
      */
     static final String TEST_VM_ARGUMENT = "cantaloupe.test";
 
     private static ApplicationServer appServer;
 
     static {
+        // Suppress a Dock icon in macOS.
         System.setProperty("java.awt.headless", "true");
     }
 
     /**
      * Calls {@link System#exit(int)} unless {@link #isTesting()} returns
-     * <code>true</code>.
+     * {@literal true}.
      *
      * @param status Process return status.
      */
@@ -53,7 +56,7 @@ public class StandaloneEntry {
 
     /**
      * @return Whether the value of the {@link #TEST_VM_ARGUMENT} VM option is
-     *         <code>true</code>.
+     *         {@literal true}.
      */
     private static boolean isTesting() {
         return "true".equals(System.getProperty(TEST_VM_ARGUMENT));
@@ -72,8 +75,8 @@ public class StandaloneEntry {
      *     will be disabled. Should only be supplied when testing.</dd>
      * </dl>
      *
-     * @param args Ignored.
-     * @throws Exception If there is a problem starting the web server.
+     * @param args       Ignored.
+     * @throws Exception if there is a problem starting the web server.
      */
     public static void main(String... args) throws Exception {
         final Configuration config = Configuration.getInstance();
@@ -120,14 +123,14 @@ public class StandaloneEntry {
     }
 
     /**
-     * Prints program usage.
+     * Prints program usage to {@link System#out}.
      */
     private static void printUsage() {
         System.out.println("\n" + usage());
     }
 
     /**
-     * @return Program usage.
+     * @return Program usage message.
      */
     static String usage() {
         return "Usage: java <VM options> -jar " + getWarFile().getName() +
