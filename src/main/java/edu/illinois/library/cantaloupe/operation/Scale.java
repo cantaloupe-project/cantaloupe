@@ -222,25 +222,27 @@ public class Scale implements Operation {
         ReductionFactor rf = new ReductionFactor();
         if (hasEffect()) {
             if (getPercent() != null) {
-                rf = ReductionFactor.forScale(getPercent(), maxFactor);
+                rf = ReductionFactor.forScale(getPercent());
             } else {
                 switch (getMode()) {
                     case ASPECT_FIT_WIDTH:
-                        rf = ReductionFactor.forScale(hvScale, maxFactor);
                         double hvScale = getWidth() / (double) reducedSize.width;
+                        rf = ReductionFactor.forScale(hvScale);
                         break;
                     case ASPECT_FIT_HEIGHT:
-                        rf = ReductionFactor.forScale(hvScale, maxFactor);
                         hvScale = getHeight() / (double) reducedSize.height;
+                        rf = ReductionFactor.forScale(hvScale);
                         break;
                     case ASPECT_FIT_INSIDE:
-                        rf = ReductionFactor.forScale(
-                                Math.min(hScale, vScale), maxFactor);
                         double hScale = getWidth() / (double) reducedSize.width;
                         double vScale = getHeight() / (double) reducedSize.height;
+                        rf = ReductionFactor.forScale(Math.min(hScale, vScale));
                         break;
                 }
             }
+        }
+        if (rf.factor > maxFactor) {
+            rf.factor = maxFactor;
         }
         return rf;
     }

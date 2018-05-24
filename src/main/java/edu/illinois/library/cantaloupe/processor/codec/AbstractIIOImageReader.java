@@ -399,8 +399,7 @@ abstract class AbstractIIOImageReader {
                     final double reducedScale = (double) subimageWidth /
                             (double) fullSize.width;
                     if (fits(regionRect, scale, reducedScale)) {
-                        rf.factor = ReductionFactor.
-                                forScale(reducedScale, 0).factor;
+                        rf.factor = ReductionFactor.forScale(reducedScale).factor;
                         getLogger().debug("Subimage {}: {}x{} - fits! " +
                                         "({}x reduction factor)",
                                 i + 1, subimageWidth, subimageHeight,
@@ -585,7 +584,7 @@ abstract class AbstractIIOImageReader {
                     final double reducedScale = (double) subimageWidth /
                             (double) fullSize.width;
                     if (fits(regionRect, scale, reducedScale)) {
-                        rf.factor = ReductionFactor.forScale(reducedScale, 0).factor;
+                        rf.factor = ReductionFactor.forScale(reducedScale).factor;
                         getLogger().debug("Subimage {}: {}x{} - fits! " +
                                         "({}x reduction factor)",
                                 i + 1, subimageWidth, subimageHeight,
