@@ -195,6 +195,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
         @Override
         public void Flush(boolean isEndOfMessage) throws KduException {
             if (isEndOfMessage) {
+                LOGGER.error(builder.toString());
                 throw new KduException(Kdu_global.KDU_ERROR_EXCEPTION,
                         "In " + this.getClass().getSimpleName());
             }
@@ -209,7 +210,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
      * This is set to roughly 210x smaller than {@link Integer#MAX_VALUE} to
      * allow for 210x enlargement, still with good precision.
      *
-     * @see #readImage
+     * @see #readRegion
      */
     private static final int EXPAND_DENOMINATOR = 10000000;
     private static final int MAX_LAYERS = 16384;
@@ -263,15 +264,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
         if (!IS_CLASS_INITIALIZED.get()) {
             IS_CLASS_INITIALIZED.set(true);
             try {
-                KduDebugMessage sysout = new KduDebugMessage();
-                KduErrorMessage syserr = new KduErrorMessage();
-                Kdu_message_formatter prettySysout =
-                        new Kdu_message_formatter(sysout);
-                Kdu_message_formatter prettySyserr =
-                        new Kdu_message_formatter(syserr);
-
-                Kdu_global.Kdu_customize_warnings(prettySysout);
-                Kdu_global.Kdu_customize_errors(prettySyserr);
+                Kdu_global.Kdu_get_core_version(); // call something trivial
             } catch (KduException | UnsatisfiedLinkError e) {
                 initializationException = new InitializationException(e);
             }
@@ -370,7 +363,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                         final OutputStream outputStream) throws ProcessorException {
         try {
             final ReductionFactor reductionFactor = new ReductionFactor();
-            final BufferedImage image = readImage(
+            final BufferedImage image = readRegion(
                     opList,
                     info.getSize(),
                     info.getNumResolutions() - 1,
@@ -385,226 +378,245 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
      * Reads a region of interest into a {@link BufferedImage}.
      *
      * @param fullSize        Full size of the source image.
-     * @param numLevels       Number of decomposition levels in the source
-     *                        image.
+     * @param numLevels       Number of decomposition levels (not resolution
+     *                        levels) contained in the source image.
      * @param reductionFactor {@link ReductionFactor#factor} will be set
      *                        according to the given {@link Scale}.
      * @param opList          List of operations to apply. Only some will be
      *                        used.
      */
-    private BufferedImage readImage(final OperationList opList,
-                                    final Dimension fullSize,
-                                    final int numLevels,
-                                    final ReductionFactor reductionFactor) throws IOException {
-        // Use the Scale operation to find the best decomposition level a.k.a.
-        // reduction factor to read.
+    private BufferedImage readRegion(final OperationList opList,
+                                     final Dimension fullSize,
+                                     final int numLevels,
+                                     final ReductionFactor reductionFactor) throws IOException {
+        final Rectangle roi = getRegion(opList, fullSize);
         final Scale scale = (Scale) opList.getFirst(Scale.class);
+
+        // Find the best resolution level to read.
         if (scale != null) {
-            final Dimension tileSize = getCroppedSize(opList, fullSize);
+            final double resultingScale = scale.getResultingScale(roi.getSize());
             reductionFactor.factor =
-                    scale.getReductionFactor(tileSize, numLevels).factor;
+                    ReductionFactor.forScale(resultingScale, 0.001).factor;
+
+            // Clamp the reduction factor to the range of 0-numLevels.
             if (reductionFactor.factor < 0) {
-                // Don't allow a negative factor.
                 reductionFactor.factor = 0;
+            }
+            if (reductionFactor.factor > numLevels) {
+                reductionFactor.factor = numLevels;
             }
         }
 
         BufferedImage image;
 
-        // N.B.: see the end notes in the KduRender.java file in the Kakadu
-        // SDK for explanation of how these need to be destroyed.
-        // N.B. 2: see KduRender2.java for use of the Kdu_thread_env.
-        final Jp2_locator locator                  = new Jp2_locator();
-        final Jp2_source inputSource               = new Jp2_source();
-        final Jp2_threadsafe_family_src familySrc  = new Jp2_threadsafe_family_src();
-        Kdu_compressed_source compSrc              = null;
-        final Kdu_codestream codestream            = new Kdu_codestream();
-        final Kdu_channel_mapping channels         = new Kdu_channel_mapping();
-        final Kdu_region_decompressor decompressor = new Kdu_region_decompressor();
-        ImageInputStream inputStream               = null;
-        final Kdu_thread_env threadEnv             = new Kdu_thread_env();
-
         try {
-            if (sourceFile != null) {
-                familySrc.Open(sourceFile.toString(), true);
-            } else {
-                inputStream = streamFactory.newImageInputStream();
-                compSrc = new KduImageInputStreamSource(inputStream);
-                familySrc.Open(compSrc);
-            }
+            // Initialize error handling. (Is it just me or is Kakadu's error
+            // handling system not thread-safe?)
+            KduDebugMessage sysout = new KduDebugMessage();
+            KduErrorMessage syserr = new KduErrorMessage();
+            Kdu_message_formatter prettySysout =
+                    new Kdu_message_formatter(sysout);
+            Kdu_message_formatter prettySyserr =
+                    new Kdu_message_formatter(syserr);
+            Kdu_global.Kdu_customize_warnings(prettySysout);
+            Kdu_global.Kdu_customize_errors(prettySyserr);
 
-            inputSource.Open(familySrc, locator);
-            inputSource.Read_header();
-            compSrc = inputSource;
+            // N.B.: see the end notes in the KduRender.java file in the Kakadu
+            // SDK for explanation of how these need to be destroyed.
+            // N.B. 2: see KduRender2.java for use of the Kdu_thread_env.
+            final Jp2_locator locator = new Jp2_locator();
+            final Jp2_source inputSource = new Jp2_source();
+            final Jp2_threadsafe_family_src familySrc = new Jp2_threadsafe_family_src();
+            Kdu_compressed_source compSrc = null;
+            final Kdu_codestream codestream = new Kdu_codestream();
+            final Kdu_channel_mapping channels = new Kdu_channel_mapping();
+            final Kdu_region_decompressor decompressor = new Kdu_region_decompressor();
+            ImageInputStream inputStream = null;
+            final Kdu_thread_env threadEnv = new Kdu_thread_env();
 
-            threadEnv.Create();
-            for (int t = 0; t < NUM_THREADS; t++) {
-                threadEnv.Add_thread();
-            }
+            try {
+                if (sourceFile != null) {
+                    familySrc.Open(sourceFile.toString(), true);
+                } else {
+                    inputStream = streamFactory.newImageInputStream();
+                    compSrc = new KduImageInputStreamSource(inputStream);
+                    familySrc.Open(compSrc);
+                }
 
-            codestream.Create(compSrc, threadEnv);
+                inputSource.Open(familySrc, locator);
+                inputSource.Read_header();
+                compSrc = inputSource;
 
-            if (inputSource.Exists()) {
-                channels.Configure(inputSource, false);
-            } else {
-                channels.Configure(codestream);
-            }
+                threadEnv.Create();
+                for (int t = 0; t < NUM_THREADS; t++) {
+                    threadEnv.Add_thread();
+                }
 
-            final int referenceComponent = channels.Get_source_component(0);
-            final int accessMode = Kdu_global.KDU_WANT_OUTPUT_COMPONENTS;
+                codestream.Create(compSrc, threadEnv);
 
-            // Get the ROI coordinates relative to the source image.
-            final Kdu_dims regionDims = getRegion(opList, fullSize);
-            final Kdu_coords regionPos = regionDims.Access_pos();
-            final Kdu_coords regionSize = regionDims.Access_size();
+                if (inputSource.Exists()) {
+                    channels.Configure(inputSource, false);
+                } else {
+                    channels.Configure(codestream);
+                }
 
-            // The expand numerator & denominator here tell
-            // kdu_region_decompressor.start() at what fractional scale to
-            // render the result. The expansion is relative to the selected
-            // resolution level, NOT the full image dimensions.
-            final Kdu_coords expandNumerator = determineReferenceExpansion(
-                    referenceComponent, channels, codestream);
-            final Dimension regionArea = new Dimension(
-                    regionSize.Get_x(), regionSize.Get_y());
-            double diffScale = (scale != null) ?
-                    scale.getDifferentialScale(regionArea, reductionFactor) : 1.0;
-            expandNumerator.Set_x((int) Math.round(
-                    expandNumerator.Get_x() * diffScale * EXPAND_DENOMINATOR));
-            expandNumerator.Set_y((int) Math.round(
-                    expandNumerator.Get_y() * diffScale * EXPAND_DENOMINATOR));
-            final Kdu_coords expandDenominator =
-                    new Kdu_coords(EXPAND_DENOMINATOR, EXPAND_DENOMINATOR);
+                final int referenceComponent = channels.Get_source_component(0);
+                final int accessMode = Kdu_global.KDU_WANT_OUTPUT_COMPONENTS;
 
-            // Get the effective source image size.
-            final Kdu_dims renderedDims = decompressor.Get_rendered_image_dims(
-                    codestream, channels, -1, reductionFactor.factor,
-                    expandNumerator, expandDenominator, accessMode);
-            final Kdu_coords renderedPos = renderedDims.Access_pos();
-            final Kdu_coords renderedSize = renderedDims.Access_size();
+                // Get the ROI coordinates relative to the source image.
+                final Kdu_dims regionDims = toKduDims(roi);
+                final Kdu_coords regionPos = regionDims.Access_pos();
+                final Kdu_coords regionSize = regionDims.Access_size();
 
-            // Adjust the ROI coordinates for the selected decomposition level.
-            final double reducedScale = reductionFactor.getScale();
-            regionPos.Set_x((int) Math.round(regionPos.Get_x() * diffScale * reducedScale) +
-                    renderedPos.Get_x());
-            regionPos.Set_y((int) Math.round(regionPos.Get_y() * diffScale * reducedScale) +
-                    renderedPos.Get_y());
-            regionSize.Set_x((int) Math.round(regionSize.Get_x() * diffScale * reducedScale));
-            regionSize.Set_y((int) Math.round(regionSize.Get_y() * diffScale * reducedScale));
+                // The expand numerator & denominator here tell
+                // kdu_region_decompressor.start() at what fractional scale to
+                // render the result. The expansion is relative to the selected
+                // resolution level, NOT the full image dimensions.
+                final Kdu_coords expandNumerator = determineReferenceExpansion(
+                        referenceComponent, channels, codestream);
+                final Dimension regionArea = new Dimension(
+                        regionSize.Get_x(), regionSize.Get_y());
+                double diffScale = (scale != null) ?
+                        scale.getDifferentialScale(regionArea, reductionFactor) : 1.0;
+                expandNumerator.Set_x((int) Math.round(
+                        expandNumerator.Get_x() * diffScale * EXPAND_DENOMINATOR));
+                expandNumerator.Set_y((int) Math.round(
+                        expandNumerator.Get_y() * diffScale * EXPAND_DENOMINATOR));
+                final Kdu_coords expandDenominator =
+                        new Kdu_coords(EXPAND_DENOMINATOR, EXPAND_DENOMINATOR);
 
-            // N.B.: if the region is not entirely within the canvas,
-            // kdu_region_decompressor.process() will crash the JVM.
-            if (!renderedDims.Contains(regionDims)) {
-                throw new IllegalArgumentException(String.format(
-                        "Rendered region is not entirely within the full " +
-                                "image on the canvas. This is probably a bug. " +
-                                "(Region: %d,%d/%dx%d; image: %d,%d/%dx%d)",
+                // Get the effective source image size.
+                final Kdu_dims sourceDims = decompressor.Get_rendered_image_dims(
+                        codestream, channels, -1, reductionFactor.factor,
+                        expandNumerator, expandDenominator, accessMode);
+                final Kdu_coords sourcePos = sourceDims.Access_pos();
+                final Kdu_coords sourceSize = sourceDims.Access_size();
+
+                // Adjust the ROI coordinates for the selected decomposition level.
+                // N.B.: if the region is not entirely within the source image
+                // coordinates, either kdu_region_decompressor::start() or
+                // process() will crash the JVM.
+                final double reducedScale = reductionFactor.getScale();
+                regionPos.Set_x((int) Math.round(regionPos.Get_x() * diffScale * reducedScale));
+                regionPos.Set_y((int) Math.round(regionPos.Get_y() * diffScale * reducedScale));
+                regionSize.Set_x((int) Math.round(regionSize.Get_x() * diffScale * reducedScale));
+                regionSize.Set_y((int) Math.round(regionSize.Get_y() * diffScale * reducedScale));
+
+                LOGGER.debug("Rendered region {},{}/{}x{}; " +
+                                "source {},{}/{}x{}; {}x reduction factor; " +
+                                "differential scale {}/{}",
                         regionPos.Get_x(), regionPos.Get_y(),
                         regionSize.Get_x(), regionSize.Get_y(),
-                        renderedPos.Get_x(), renderedPos.Get_y(),
-                        renderedSize.Get_x(), renderedSize.Get_y()));
-            }
+                        sourcePos.Get_x(), sourcePos.Get_y(),
+                        sourceSize.Get_x(), sourceSize.Get_y(),
+                        reductionFactor.factor,
+                        expandNumerator.Get_x(), expandDenominator.Get_x()); // y should be the same
 
-            LOGGER.debug("Rendered region {},{}/{}x{}; " +
-                            "canvas {},{}/{}x{}; {}x reduction factor; " +
-                            "differential scale {}/{}",
-                    regionPos.Get_x(), regionPos.Get_y(),
-                    regionSize.Get_x(), regionSize.Get_y(),
-                    renderedPos.Get_x(), renderedPos.Get_y(),
-                    renderedSize.Get_x(), renderedSize.Get_y(),
-                    reductionFactor.factor,
-                    expandNumerator.Get_x(), expandDenominator.Get_x()); // y should be the same
+                decompressor.Start(codestream, channels, -1,
+                        reductionFactor.factor, MAX_LAYERS, regionDims,
+                        expandNumerator, expandDenominator, false, accessMode,
+                        false, threadEnv);
 
-            decompressor.Start(codestream, channels, -1,
-                    reductionFactor.factor, MAX_LAYERS, regionDims,
-                    expandNumerator, expandDenominator, false, accessMode,
-                    false, threadEnv);
+                Kdu_dims newRegion = new Kdu_dims();
+                Kdu_dims incompleteRegion = new Kdu_dims();
+                Kdu_dims viewDims = new Kdu_dims();
+                viewDims.Assign(regionDims);
+                incompleteRegion.Assign(regionDims);
 
-            Kdu_dims newRegion = new Kdu_dims();
-            Kdu_dims incompleteRegion = new Kdu_dims();
-            Kdu_dims viewDims = new Kdu_dims();
-            viewDims.Assign(regionDims);
-            incompleteRegion.Assign(regionDims);
+                image = new BufferedImage(regionSize.Get_x(), regionSize.Get_y(),
+                        BufferedImage.TYPE_INT_ARGB);
 
-            image = new BufferedImage(regionSize.Get_x(), regionSize.Get_y(),
-                    BufferedImage.TYPE_INT_ARGB);
+                final int regionBufferSize = regionSize.Get_x() * 128;
+                final int[] regionBuffer = new int[regionBufferSize];
 
-            final int regionBufferSize = regionSize.Get_x() * 128;
-            final int[] regionBuffer = new int[regionBufferSize];
+                while (decompressor.Process(regionBuffer, regionDims.Access_pos(),
+                        0, 0, regionBufferSize, incompleteRegion, newRegion)) {
+                    Kdu_coords newPos = newRegion.Access_pos();
+                    Kdu_coords newSize = newRegion.Access_size();
+                    newPos.Subtract(viewDims.Access_pos());
 
-            while (decompressor.Process(regionBuffer, regionDims.Access_pos(),
-                    0, 0, regionBufferSize, incompleteRegion, newRegion)) {
-                Kdu_coords newPos = newRegion.Access_pos();
-                Kdu_coords newSize = newRegion.Access_size();
-                newPos.Subtract(viewDims.Access_pos());
-
-                int bufferIndex = 0;
-                for (int y = newPos.Get_y(); y < newPos.Get_y() + newSize.Get_y(); y++) {
-                    for (int x = newPos.Get_x(); x < newSize.Get_x(); x++) {
-                        image.setRGB(x, y, regionBuffer[bufferIndex++]);
+                    int bufferIndex = 0;
+                    for (int y = newPos.Get_y(); y < newPos.Get_y() + newSize.Get_y(); y++) {
+                        for (int x = newPos.Get_x(); x < newSize.Get_x(); x++) {
+                            image.setRGB(x, y, regionBuffer[bufferIndex++]);
+                        }
                     }
                 }
-            }
-            if (decompressor.Finish()) {
-                if (reductionFactor.factor - 1 > codestream.Get_min_dwt_levels()) {
-                    LOGGER.error("Insufficient DWT levels ({}) for reduction factor ({})",
-                            codestream.Get_min_dwt_levels(),
-                            reductionFactor.factor);
+                if (decompressor.Finish()) {
+                    if (reductionFactor.factor - 1 > codestream.Get_min_dwt_levels()) {
+                        LOGGER.error("Insufficient DWT levels ({}) for reduction factor ({})",
+                                codestream.Get_min_dwt_levels(),
+                                reductionFactor.factor);
+                    }
                 }
+            } catch (KduException e) {
+                try {
+                    threadEnv.Handle_exception(e.Get_kdu_exception_code());
+                } catch (KduException e2) {
+                    LOGGER.warn("readRegion(): {} (code: {})",
+                            e2.getMessage(),
+                            Integer.toHexString(e2.Get_kdu_exception_code()));
+                }
+                throw new IOException(e);
+            } finally {
+                try {
+                    threadEnv.Destroy();
+                } catch (KduException e) {
+                    LOGGER.warn("readRegion(): failed to destroy the kdu_thread_env: {} (code: {})",
+                            e.getMessage(),
+                            Integer.toHexString(e.Get_kdu_exception_code()));
+                }
+                threadEnv.Native_destroy();
+                decompressor.Native_destroy();
+                channels.Native_destroy();
+                try {
+                    if (codestream.Exists()) {
+                        codestream.Destroy();
+                    }
+                } catch (KduException e) {
+                    LOGGER.warn("readRegion(): failed to destroy the codestream: {} (code: {})",
+                            e.getMessage(),
+                            Integer.toHexString(e.Get_kdu_exception_code()));
+                }
+                if (compSrc != null) {
+                    compSrc.Native_destroy();
+                }
+                inputSource.Native_destroy();
+                familySrc.Native_destroy();
+                locator.Native_destroy();
+
+                IOUtils.closeQuietly(inputStream);
             }
         } catch (KduException e) {
-            try {
-                threadEnv.Handle_exception(e.Get_kdu_exception_code());
-            } catch (KduException e2) {
-                LOGGER.warn("readImage(): {} (code: {})",
-                        e2.getMessage(),
-                        Integer.toHexString(e2.Get_kdu_exception_code()));
-            }
+            LOGGER.error("readRegion(): {} (code: {})",
+                    e.getMessage(),
+                    Integer.toHexString(e.Get_kdu_exception_code()));
             throw new IOException(e);
-        } finally {
-            try {
-                threadEnv.Destroy();
-            } catch (KduException e) {
-                LOGGER.warn("readImage(): failed to destroy the kdu_thread_env: {} (code: {})",
-                        e.getMessage(),
-                        Integer.toHexString(e.Get_kdu_exception_code()));
-            }
-            threadEnv.Native_destroy();
-            decompressor.Native_destroy();
-            channels.Native_destroy();
-            try {
-                if (codestream.Exists()) {
-                    codestream.Destroy();
-                }
-            } catch (KduException e) {
-                LOGGER.warn("readImage(): failed to destroy the codestream: {} (code: {})",
-                        e.getMessage(),
-                        Integer.toHexString(e.Get_kdu_exception_code()));
-            }
-            if (compSrc != null) {
-                compSrc.Native_destroy();
-            }
-            inputSource.Native_destroy();
-            familySrc.Native_destroy();
-            locator.Native_destroy();
-
-            IOUtils.closeQuietly(inputStream);
         }
         return image;
     }
 
     /**
-     * @return Region of interest in source image coordinates.
+     * Computes the effective size of an image after all crop operations are
+     * applied but excluding any scale operations, in order to select the best
+     * decomposition level.
      */
-    private static Kdu_dims getRegion(OperationList opList,
-                                      Dimension fullSize) throws KduException {
+    private static Rectangle getRegion(OperationList opList,
+                                       Dimension fullSize) {
         Rectangle regionRect = new Rectangle(0, 0, fullSize.width, fullSize.height);
-        final Crop crop = (Crop) opList.getFirst(Crop.class);
+        Crop crop = (Crop) opList.getFirst(Crop.class);
         if (crop != null && crop.hasEffect(fullSize, opList)) {
             regionRect = crop.getRectangle(fullSize);
         }
+        return regionRect;
+    }
+
+    /**
+     * @return Region of interest in source image coordinates.
+     */
+    private static Kdu_dims toKduDims(Rectangle rect) throws KduException {
         Kdu_dims regionDims = new Kdu_dims();
-        regionDims.From_u32(regionRect.x, regionRect.y,
-                regionRect.width, regionRect.height);
+        regionDims.From_u32(rect.x, rect.y, rect.width, rect.height);
         return regionDims;
     }
 
@@ -669,21 +681,6 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
     }
 
     /**
-     * Computes the effective size of an image after all crop operations are
-     * applied but excluding any scale operations, in order to select the best
-     * decomposition level.
-     */
-    private Dimension getCroppedSize(OperationList opList, Dimension fullSize) {
-        Dimension regionSize = (Dimension) fullSize.clone();
-        for (Operation op : opList) {
-            if (op instanceof Crop) {
-                regionSize = ((Crop) op).getRectangle(regionSize).getSize();
-            }
-        }
-        return regionSize;
-    }
-
-    /**
      * @param image           Image to process.
      * @param opList          Operations to apply to the image.
      * @param imageInfo       Information about the source image.
@@ -737,97 +734,115 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
 
     @Override
     public Info readImageInfo() throws IOException {
-        // N.B.: see the end notes in the KduRender.java file in the Kakadu
-        // SDK for explanation of how these need to be destroyed.
-        ImageInputStream inputStream              = null;
-        final Jp2_source jp2Src                   = new Jp2_source();
-        Kdu_compressed_source compSrc             = null;
-        final Jp2_threadsafe_family_src familySrc = new Jp2_threadsafe_family_src();
-        final Jp2_locator loc                     = new Jp2_locator();
-        Kdu_codestream codestream                 = null;
-        Kdu_channel_mapping channels              = null;
-
         try {
-            if (sourceFile != null) {
-                familySrc.Open(sourceFile.toString(), true);
-            } else {
-                inputStream = streamFactory.newImageInputStream();
-                familySrc.Open(new KduImageInputStreamSource(inputStream));
-            }
-            jp2Src.Open(familySrc, loc);
-            jp2Src.Read_header();
-            compSrc = jp2Src;
+            // Initialize error handling. (Is it just me or is Kakadu's error
+            // handling system not thread-safe?)
+            KduDebugMessage sysout = new KduDebugMessage();
+            KduErrorMessage syserr = new KduErrorMessage();
+            Kdu_message_formatter prettySysout =
+                    new Kdu_message_formatter(sysout);
+            Kdu_message_formatter prettySyserr =
+                    new Kdu_message_formatter(syserr);
+            Kdu_global.Kdu_customize_warnings(prettySysout);
+            Kdu_global.Kdu_customize_errors(prettySyserr);
 
-            codestream = new Kdu_codestream();
-            codestream.Create(compSrc);
+            // N.B.: see the end notes in the KduRender.java file in the Kakadu
+            // SDK for explanation of how these need to be destroyed.
+            ImageInputStream inputStream = null;
+            final Jp2_source jp2Src = new Jp2_source();
+            Kdu_compressed_source compSrc = null;
+            final Jp2_threadsafe_family_src familySrc = new Jp2_threadsafe_family_src();
+            final Jp2_locator loc = new Jp2_locator();
+            Kdu_codestream codestream = null;
+            Kdu_channel_mapping channels = null;
 
-            channels = new Kdu_channel_mapping();
-            if (jp2Src.Exists()) {
-                channels.Configure(jp2Src, false);
-            } else {
-                channels.Configure(codestream);
-            }
+            try {
+                if (sourceFile != null) {
+                    familySrc.Open(sourceFile.toString(), true);
+                } else {
+                    inputStream = streamFactory.newImageInputStream();
+                    familySrc.Open(new KduImageInputStreamSource(inputStream));
+                }
+                jp2Src.Open(familySrc, loc);
+                jp2Src.Read_header();
+                compSrc = jp2Src;
 
-            final int referenceComponent = channels.Get_source_component(0);
+                codestream = new Kdu_codestream();
+                codestream.Create(compSrc);
 
-            // Get the main image dimensions.
-            Kdu_dims image_dims = new Kdu_dims();
-            codestream.Get_dims(referenceComponent, image_dims);
-            final int width = image_dims.Access_size().Get_x();
-            final int height = image_dims.Access_size().Get_y();
+                channels = new Kdu_channel_mapping();
+                if (jp2Src.Exists()) {
+                    channels.Configure(jp2Src, false);
+                } else {
+                    channels.Configure(codestream);
+                }
 
-            // Get the tile size.
-            Kdu_coords tileIndex = new Kdu_coords();
-            Kdu_dims tileDims = new Kdu_dims();
-            codestream.Get_tile_dims(tileIndex, -1, tileDims, false);
-            int tileWidth = tileDims.Access_size().Get_x();
-            int tileHeight = tileDims.Access_size().Get_y();
-            // Swap dimensions to harmonize with the main image dimensions, if
-            // necessary.
-            if (width > height && tileWidth < tileHeight ||
-                    width < height && tileWidth > tileHeight) {
-                int tmp = tileWidth;
-                tileWidth = tileHeight;
-                tileHeight = tmp;
-            }
+                final int referenceComponent = channels.Get_source_component(0);
 
-            // Get the DWT level count.
-            final int levels = codestream.Get_min_dwt_levels();
+                // Get the main image dimensions.
+                Kdu_dims image_dims = new Kdu_dims();
+                codestream.Get_dims(referenceComponent, image_dims);
+                final int width = image_dims.Access_size().Get_x();
+                final int height = image_dims.Access_size().Get_y();
 
-            return Info.builder()
-                    .withFormat(Format.JP2)
-                    .withSize(width, height)
-                    .withTileSize(tileWidth, tileHeight)
-                    .withOrientation(Orientation.ROTATE_0) // TODO: may need to parse the EXIF to get this?
-                    .withNumResolutions(levels + 1)
-                    .build();
-        } catch (KduException e) {
-            throw new IOException(e.getMessage() + " (code: " +
-                    Integer.toHexString(e.Get_kdu_exception_code()) + ")", e);
-        } finally {
-            if (channels != null) {
-                channels.Native_destroy();
-            }
-            if (codestream != null) {
-                try {
-                    if (codestream.Exists()) {
-                        codestream.Destroy();
+                // Get the tile size.
+                Kdu_coords tileIndex = new Kdu_coords();
+                Kdu_dims tileDims = new Kdu_dims();
+                codestream.Get_tile_dims(tileIndex, -1, tileDims, false);
+                int tileWidth = tileDims.Access_size().Get_x();
+                int tileHeight = tileDims.Access_size().Get_y();
+                // Swap dimensions to harmonize with the main image dimensions, if
+                // necessary.
+                if (width > height && tileWidth < tileHeight ||
+                        width < height && tileWidth > tileHeight) {
+                    int tmp = tileWidth;
+                    tileWidth = tileHeight;
+                    tileHeight = tmp;
+                }
+
+                // Get the DWT level count.
+                final int levels = codestream.Get_min_dwt_levels();
+
+                return Info.builder()
+                        .withFormat(Format.JP2)
+                        .withSize(width, height)
+                        .withTileSize(tileWidth, tileHeight)
+                        .withOrientation(Orientation.ROTATE_0) // TODO: may need to parse the EXIF to get this?
+                        .withNumResolutions(levels + 1)
+                        .build();
+            } catch (KduException e) {
+                throw new IOException(e.getMessage() + " (code: " +
+                        Integer.toHexString(e.Get_kdu_exception_code()) + ")", e);
+            } finally {
+                if (channels != null) {
+                    channels.Native_destroy();
+                }
+                if (codestream != null) {
+                    try {
+                        if (codestream.Exists()) {
+                            codestream.Destroy();
+                        }
+                    } catch (KduException e) {
+                        LOGGER.error("readImageInfo(): {} (code: {})",
+                                e.getMessage(),
+                                Integer.toHexString(e.Get_kdu_exception_code()));
                     }
-                } catch (KduException e) {
-                    LOGGER.error("readImageInfo(): {} (code: {})",
-                            e.getMessage(),
-                            Integer.toHexString(e.Get_kdu_exception_code()));
+                }
+                if (compSrc != null) {
+                    compSrc.Native_destroy();
+                }
+                jp2Src.Native_destroy();
+                familySrc.Native_destroy();
+
+                if (inputStream != null) {
+                    inputStream.close();
                 }
             }
-            if (compSrc != null) {
-                compSrc.Native_destroy();
-            }
-            jp2Src.Native_destroy();
-            familySrc.Native_destroy();
-
-            if (inputStream != null) {
-                inputStream.close();
-            }
+        } catch (KduException e) {
+            LOGGER.error("readImageInfo(): {} (code: {})",
+                    e.getMessage(),
+                    Integer.toHexString(e.Get_kdu_exception_code()));
+            throw new IOException(e);
         }
     }
 
