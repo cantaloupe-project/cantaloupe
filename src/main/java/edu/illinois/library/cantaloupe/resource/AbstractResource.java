@@ -109,7 +109,7 @@ public abstract class AbstractResource extends ServerResource {
      * @param requestRootRef Application root URI.
      * @param requestRef     Request URI.
      * @param requestHeaders Request headers.
-     * @return Reference usable in public.
+     * @return               Reference usable in public.
      */
     protected static Reference getPublicReference(Reference requestRootRef,
                                                   Reference requestRef,
@@ -541,6 +541,8 @@ public abstract class AbstractResource extends ServerResource {
                     .getString(Key.IIIF_CONTENT_DISPOSITION, "none")) {
                 case "inline":
                     disposition.setType(Disposition.TYPE_INLINE);
+                    disposition.setFilename(getContentDispositionFilename(
+                            identifier, outputFormat));
                     break;
                 case "attachment":
                     disposition.setType(Disposition.TYPE_ATTACHMENT);
@@ -566,7 +568,7 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * @return Whether there is a <var>cache</var> query argument set to
+     * @return Whether there is a {@literal cache} query argument set to
      *         {@literal false} in the URI.
      */
     protected boolean isBypassingCache() {

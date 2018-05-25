@@ -347,7 +347,7 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         Client client = newClient(uri);
         try {
             Response response = client.send();
-            assertEquals("inline",
+            assertEquals("inline; filename=" + IMAGE + ".jpg",
                     response.getHeaders().getFirstValue("Content-Disposition"));
         } finally {
             client.stop();

@@ -138,8 +138,7 @@ public class AbstractResourceTest extends BaseTest {
     }
 
     @Test
-    public void testGetRepresentationDispositionUsingConfiguration()
-            throws Exception {
+    public void testGetRepresentationDispositionUsingConfiguration() {
         Configuration config = Configuration.getInstance();
 
         final Identifier identifier = new Identifier("cats?/\\dogs");

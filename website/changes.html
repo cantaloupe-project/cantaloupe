@@ -11,6 +11,7 @@ title: Change Log
 <ul>
   <li>A new <code>X-Forwarded-ID</code> reverse proxy header replaces <code>X-IIIF-ID</code>, which has been deprecated, and will be removed in a future version.</li>
   <li>Error response representations are in <code>text/plain</code> format in the absence of a client preference.</li>
+  <li>When <code>endpoint.iiif.content_disposition</code> is set to <code>inline</code>, the <code>Content-Disposition</code> header value includes a filename-safe version of the image identifier.</li>
 </ul>
 
 <h3>Sources</h3>
