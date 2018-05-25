@@ -11,6 +11,9 @@ public class ReductionFactorTest extends BaseTest {
 
     @Test
     public void testForScale1() {
+        assertEquals(new ReductionFactor(0), ReductionFactor.forScale(2));
+        assertEquals(new ReductionFactor(0), ReductionFactor.forScale(1.5));
+        assertEquals(new ReductionFactor(0), ReductionFactor.forScale(1));
         assertEquals(new ReductionFactor(0), ReductionFactor.forScale(0.75));
         assertEquals(new ReductionFactor(1), ReductionFactor.forScale(0.5));
         assertEquals(new ReductionFactor(1), ReductionFactor.forScale(0.45));

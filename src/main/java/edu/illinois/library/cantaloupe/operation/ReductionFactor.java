@@ -33,32 +33,21 @@ public final class ReductionFactor {
      * @param scalePercent Scale percentage.
      * @param tolerance    Leeway that could allow a larger factor to be
      *                     selected.
-     * @return             Instance corresponding to the given scale.
+     * @return             Instance corresponding to the given scale. If the
+     *                     given scale is greater than 1, the factor will be
+     *                     {@literal 0}.
      */
     public static ReductionFactor forScale(final double scalePercent,
                                            final double tolerance) {
-        int minFactor = -99;
-        int maxFactor = 99;
         int factor = 0;
 
         if (scalePercent < 1.0) {
+            final int maxFactor = 99;
             double nextPct = 0.5;
-            while (scalePercent <= nextPct + tolerance) {
+            while (scalePercent <= nextPct + tolerance & factor < maxFactor) {
                 nextPct /= 2.0;
                 factor++;
             }
-        } else if (scalePercent > 1.0) {
-            double nextPct = 2.0;
-            while (scalePercent >= nextPct + tolerance) {
-                nextPct *= 2.0;
-                factor--;
-            }
-        }
-        if (factor < minFactor) {
-            factor = minFactor;
-        }
-        if (factor > maxFactor) {
-            factor = maxFactor;
         }
         return new ReductionFactor(factor);
     }

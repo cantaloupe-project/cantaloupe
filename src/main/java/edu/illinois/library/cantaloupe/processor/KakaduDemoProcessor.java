@@ -519,10 +519,10 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
                 }
             } else if (op instanceof Scale) {
                 // kdu_expand is not capable of arbitrary scaling, but it does
-                // offer a -reduce argument which is capable of downscaling by
-                // factors of 2, significantly speeding decompression. We can
-                // use it if the scale mode is ASPECT_FIT_* and either the
-                // percent is <=50, or the height/width are <=50% of full size.
+                // offer a -reduce argument to select a decomposition level,
+                // significantly speeding decompression. We can use it if the
+                // scale mode is ASPECT_FIT_* and either the percent is <=50,
+                // or the height/width are <=50% of full size.
                 final Scale scale = (Scale) op;
                 final Dimension tileSize = getCroppedSize(opList, imageSize);
                 if (!ignoreCrop) {
@@ -536,10 +536,6 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
                     if (reduction.factor > 0) {
                         command.add("-reduce");
                         command.add(reduction.factor + "");
-                    } else if (reduction.factor < 0) {
-                        // Don't allow a negative factor because kdu_expand
-                        // can only reduce, not enlarge.
-                        reduction.factor = 0;
                     }
                 }
             }

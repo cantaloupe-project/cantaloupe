@@ -558,11 +558,11 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                 }
             } else if (op instanceof Scale) {
                 // opj_decompress is not capable of arbitrary scaling, but it
-                // does offer a -r (reduce) argument which is capable of
-                // downscaling of factors of 2, significantly speeding
-                // decompression. We can use it if the scale mode is
-                // ASPECT_FIT_* and either the percent is <=50, or the
-                // height/width are <=50% of full size.
+                // does offer a -r (reduce) argument to select a
+                // decomposition level, significantly speeding decompression.
+                // We can use it if the scale mode is ASPECT_FIT_* and either
+                // the percent is <=50, or the height/width are <=50% of full
+                // size.
                 final Scale scale = (Scale) op;
                 final Dimension tileSize = getCroppedSize(opList, imageSize);
                 if (!ignoreCrop) {
@@ -576,10 +576,6 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                     if (reduction.factor > 0) {
                         command.add("-r");
                         command.add(reduction.factor + "");
-                    } else if (reduction.factor < 0) {
-                        // Don't allow a negative factor because opj_decompress
-                        // can only reduce, not enlarge.
-                        reduction.factor = 0;
                     }
                 }
             }
