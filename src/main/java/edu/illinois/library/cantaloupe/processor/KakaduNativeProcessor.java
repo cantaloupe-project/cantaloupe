@@ -497,10 +497,10 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                 // coordinates, either kdu_region_decompressor::start() or
                 // process() will crash the JVM.
                 final double reducedScale = reductionFactor.getScale();
-                regionPos.Set_x((int) Math.round(regionPos.Get_x() * diffScale * reducedScale));
-                regionPos.Set_y((int) Math.round(regionPos.Get_y() * diffScale * reducedScale));
-                regionSize.Set_x((int) Math.round(regionSize.Get_x() * diffScale * reducedScale));
-                regionSize.Set_y((int) Math.round(regionSize.Get_y() * diffScale * reducedScale));
+                regionPos.Set_x((int) Math.floor(regionPos.Get_x() * diffScale * reducedScale));
+                regionPos.Set_y((int) Math.floor(regionPos.Get_y() * diffScale * reducedScale));
+                regionSize.Set_x((int) Math.floor(regionSize.Get_x() * diffScale * reducedScale));
+                regionSize.Set_y((int) Math.floor(regionSize.Get_y() * diffScale * reducedScale));
 
                 LOGGER.debug("Rendered region {},{}/{}x{}; " +
                                 "source {},{}/{}x{}; {}x reduction factor; " +
