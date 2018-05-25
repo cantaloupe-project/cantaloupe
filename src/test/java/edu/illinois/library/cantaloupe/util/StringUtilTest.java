@@ -17,12 +17,21 @@ public class StringUtilTest extends BaseTest {
 
     @Test
     public void testRemoveTrailingZeroes() {
+        // with floats
         assertEquals("0", StringUtil.removeTrailingZeroes(0.0f));
         assertEquals("0.5", StringUtil.removeTrailingZeroes(0.5f));
         assertEquals("50", StringUtil.removeTrailingZeroes(50.0f));
         assertEquals("50.5", StringUtil.removeTrailingZeroes(50.5f));
         assertEquals("50.5", StringUtil.removeTrailingZeroes(50.50f));
         assertTrue(StringUtil.removeTrailingZeroes(50.5555555555555f).length() <= 13);
+
+        // with doubles
+        assertEquals("0", StringUtil.removeTrailingZeroes(0.0));
+        assertEquals("0.5", StringUtil.removeTrailingZeroes(0.5));
+        assertEquals("50", StringUtil.removeTrailingZeroes(50.0));
+        assertEquals("50.5", StringUtil.removeTrailingZeroes(50.5));
+        assertEquals("50.5", StringUtil.removeTrailingZeroes(50.50));
+        assertTrue(StringUtil.removeTrailingZeroes(50.5555555555555).length() <= 13);
     }
 
     @Test

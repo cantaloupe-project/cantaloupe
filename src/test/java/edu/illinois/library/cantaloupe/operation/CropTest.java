@@ -430,7 +430,7 @@ public class CropTest extends BaseTest {
             instance.setX(-1f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
-            assertEquals("X must be a positive float", e.getMessage());
+            assertEquals("X must be positive", e.getMessage());
         }
     }
 
@@ -464,7 +464,7 @@ public class CropTest extends BaseTest {
             instance.setY(-1f);
             fail("Expected exception");
         } catch (IllegalArgumentException e) {
-            assertEquals("Y must be a positive float", e.getMessage());
+            assertEquals("Y must be positive", e.getMessage());
         }
     }
 

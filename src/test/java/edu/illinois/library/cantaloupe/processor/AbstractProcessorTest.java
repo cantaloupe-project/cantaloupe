@@ -268,10 +268,10 @@ abstract class AbstractProcessorTest extends BaseTest {
             @Override
             public void run() {
                 if (this.sourceSize != null) {
-                    int expectedHeight =
-                            (int) Math.round((20 / (double) this.sourceSize.width) * this.sourceSize.height);
+                    double expectedHeight = 20 /
+                            (double) this.sourceSize.width * this.sourceSize.height;
                     assertEquals(20, this.image.getWidth());
-                    assertEquals(expectedHeight, this.image.getHeight());
+                    assertTrue(Math.abs(expectedHeight - this.image.getHeight()) < 1);
                 }
             }
         });
@@ -287,9 +287,9 @@ abstract class AbstractProcessorTest extends BaseTest {
             @Override
             public void run() {
                 if (this.sourceSize != null) {
-                    int expectedWidth =
-                            (int) Math.round(20 / (double) this.sourceSize.height * this.sourceSize.width);
-                    assertEquals(expectedWidth, this.image.getWidth());
+                    double expectedWidth = 20 /
+                            (double) this.sourceSize.height * this.sourceSize.width;
+                    assertTrue(Math.abs(expectedWidth - this.image.getWidth()) < 1);
                     assertEquals(20, this.image.getHeight());
                 }
             }
@@ -344,14 +344,14 @@ abstract class AbstractProcessorTest extends BaseTest {
             @Override
             public void run() {
                 if (this.sourceSize != null) {
-                    int expectedW = 20, expectedH = 20;
+                    double expectedW = 20, expectedH = 20;
                     if (this.sourceSize.width > this.sourceSize.height) {
-                        expectedH = (int) Math.round((this.sourceSize.height / (double) this.sourceSize.width) * 20);
+                        expectedH = (this.sourceSize.height / (double) this.sourceSize.width) * 20;
                     } else if (this.sourceSize.width < this.sourceSize.height) {
-                        expectedW = (int) Math.round((this.sourceSize.width / (double) this.sourceSize.height) * 20);
+                        expectedW = (this.sourceSize.width / (double) this.sourceSize.height) * 20;
                     }
-                    assertEquals(expectedW, this.image.getWidth());
-                    assertEquals(expectedH, this.image.getHeight());
+                    assertTrue(Math.abs(expectedW - this.image.getWidth()) < 1);
+                    assertTrue(Math.abs(expectedH - this.image.getHeight()) < 1);
                 }
             }
         });

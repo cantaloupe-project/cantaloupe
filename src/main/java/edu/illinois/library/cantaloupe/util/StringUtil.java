@@ -35,13 +35,13 @@ public final class StringUtil {
     }
 
     /**
-     * @param f
+     * @param d
      * @return String representation of the given number with trailing zeroes
      *         removed.
      */
-    public static String removeTrailingZeroes(double f) {
-        String s = Double.toString(f);
-        return s.indexOf(".") < 0 ? s : s.replaceAll("0*$", "").
+    public static String removeTrailingZeroes(double d) {
+        String s = Float.toString((float) d);
+        return !s.contains(".") ? s : s.replaceAll("0*$", "").
                 replaceAll("\\.$", "");
     }
 
