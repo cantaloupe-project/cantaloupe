@@ -390,11 +390,11 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                                      final int numLevels,
                                      final ReductionFactor reductionFactor) throws IOException {
         final Rectangle roi = getRegion(opList, fullSize);
-        final Scale scale = (Scale) opList.getFirst(Scale.class);
+        final Scale scaleOp = (Scale) opList.getFirst(Scale.class);
 
         // Find the best resolution level to read.
-        if (scale != null) {
-            final double resultingScale = scale.getResultingScale(roi.getSize());
+        if (scaleOp != null) {
+            final double resultingScale = scaleOp.getResultingScale(roi.getSize());
             reductionFactor.factor =
                     ReductionFactor.forScale(resultingScale, 0.001).factor;
 
@@ -476,8 +476,8 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                         referenceComponent, channels, codestream);
                 final Dimension regionArea = new Dimension(
                         regionSize.Get_x(), regionSize.Get_y());
-                double diffScale = (scale != null) ?
-                        scale.getDifferentialScale(regionArea, reductionFactor) : 1.0;
+                double diffScale = (scaleOp != null) ?
+                        scaleOp.getDifferentialScale(regionArea, reductionFactor) : 1.0;
                 expandNumerator.Set_x((int) Math.round(
                         expandNumerator.Get_x() * diffScale * EXPAND_DENOMINATOR));
                 expandNumerator.Set_y((int) Math.round(
@@ -493,14 +493,31 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                 final Kdu_coords sourceSize = sourceDims.Access_size();
 
                 // Adjust the ROI coordinates for the selected decomposition level.
-                // N.B.: if the region is not entirely within the source image
-                // coordinates, either kdu_region_decompressor::start() or
-                // process() will crash the JVM.
+                // Note that some wacky source images have a non-0,0 origin,
+                // in which case the ROI origin must be shifted to match.
                 final double reducedScale = reductionFactor.getScale();
-                regionPos.Set_x((int) Math.floor(regionPos.Get_x() * diffScale * reducedScale));
-                regionPos.Set_y((int) Math.floor(regionPos.Get_y() * diffScale * reducedScale));
+                regionPos.Set_x(sourcePos.Get_x() +
+                        (int) Math.floor(regionPos.Get_x() * diffScale * reducedScale));
+                regionPos.Set_y(sourcePos.Get_y() +
+                        (int) Math.floor(regionPos.Get_y() * diffScale * reducedScale));
                 regionSize.Set_x((int) Math.floor(regionSize.Get_x() * diffScale * reducedScale));
                 regionSize.Set_y((int) Math.floor(regionSize.Get_y() * diffScale * reducedScale));
+
+                // N.B.: if the region is not entirely within the source image
+                // coordinates, either kdu_region_decompressor::start() or
+                // process() will crash the JVM (which may be a bug in Kakadu
+                // or its Java binding). This should never be the case, but we
+                // check anyway to be safe.
+                if (!sourceDims.Contains(regionDims)) {
+                    throw new IllegalArgumentException(String.format(
+                            "Rendered region is not entirely within the full " +
+                                    "image on the canvas. This is probably a bug. " +
+                                    "(Region: %d,%d/%dx%d; image: %d,%d/%dx%d)",
+                            regionPos.Get_x(), regionPos.Get_y(),
+                            regionSize.Get_x(), regionSize.Get_y(),
+                            sourcePos.Get_x(), sourcePos.Get_y(),
+                            sourceSize.Get_x(), sourceSize.Get_y()));
+                }
 
                 LOGGER.debug("Rendered region {},{}/{}x{}; " +
                                 "source {},{}/{}x{}; {}x reduction factor; " +
