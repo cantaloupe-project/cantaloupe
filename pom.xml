@@ -14,6 +14,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <aws-sdk.version>1.11.291</aws-sdk.version>
+    <jackson.version>2.9.5</jackson.version>
     <jetty.version>9.4.7.v20170914</jetty.version>
     <restlet.version>2.3.11</restlet.version>
     <surefire.version>2.21.0</surefire.version>
@@ -345,23 +346,23 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
-      <version>2.9.0</version>
+      <version>${jackson.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
-      <version>2.9.0</version>
+      <version>${jackson.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.9.0</version>
+      <version>${jackson.version}</version>
     </dependency>
     <!-- Make Jackson aware of JDK8 date/time objects -->
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
-      <version>2.9.0</version>
+      <version>${jackson.version}</version>
     </dependency>
     <!-- Makes Restlet log to SLF4J -->
     <dependency>
