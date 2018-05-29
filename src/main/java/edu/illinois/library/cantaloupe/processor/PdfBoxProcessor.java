@@ -50,6 +50,17 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     private Path sourceFile;
     private StreamFactory streamFactory;
 
+    static {
+        // This "fixes" the rendering of several PDFs -- hopefully it doesn't
+        // break others...
+        // The docs say that this "may improve the performance of rendering
+        // PDFs on some systems especially if there are a lot of images on a
+        // page."
+        // See: https://github.com/medusa-project/cantaloupe/issues/198
+        // Also see: https://pdfbox.apache.org/2.0/getting-started.html
+        System.setProperty("org.apache.pdfbox.rendering.UsePureJavaCMYKConversion", "true");
+    }
+
     @Override
     public void close() {
         IOUtils.closeQuietly(doc);
