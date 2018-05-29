@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
@@ -455,7 +456,28 @@ public class Java2DUtilTest extends BaseTest {
         assertArrayEquals(expected, outImage.getRaster().getPixel(0, 0, actual));
     }
 
-    /* rotate() */
+    /* rotate(BufferedImage, Orientation) */
+
+    @Test
+    public void testRotateWithOrientation() {
+        BufferedImage inImage = newColorImage(8, false);
+        BufferedImage outImage = Java2DUtil.rotate(inImage, Orientation.ROTATE_0);
+        assertSame(inImage, outImage);
+
+        outImage = Java2DUtil.rotate(inImage, Orientation.ROTATE_90);
+        assertEquals(inImage.getHeight(), outImage.getWidth());
+        assertEquals(inImage.getWidth(), outImage.getHeight());
+
+        outImage = Java2DUtil.rotate(inImage, Orientation.ROTATE_180);
+        assertEquals(inImage.getWidth(), outImage.getWidth());
+        assertEquals(inImage.getHeight(), outImage.getHeight());
+
+        outImage = Java2DUtil.rotate(inImage, Orientation.ROTATE_270);
+        assertEquals(inImage.getHeight(), outImage.getWidth());
+        assertEquals(inImage.getWidth(), outImage.getHeight());
+    }
+
+    /* rotate(BufferedImage, Rotate) */
 
     @Test
     public void testRotateDimensions() {

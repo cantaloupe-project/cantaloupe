@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
@@ -708,8 +709,23 @@ public final class Java2DUtil {
     }
 
     /**
-     * @param inImage Image to rotate
-     * @param rotate  Rotate operation
+     * Alternative to {@link #rotate(BufferedImage, Rotate)} for orientations
+     * other than {@link Orientation#ROTATE_0} when there is no
+     * {@link Rotate} operation present.
+     *
+     * @param inImage     Image to rotate.
+     * @param orientation Orientation.
+     * @return            Rotated image, or the input image if the given
+     *                    orientation is a no-op.
+     */
+    static BufferedImage rotate(final BufferedImage inImage,
+                                final Orientation orientation) {
+        return rotate(inImage, new Rotate(orientation.getDegrees()));
+    }
+
+    /**
+     * @param inImage Image to rotate.
+     * @param rotate  Rotate operation.
      * @return        Rotated image, or the input image if the given rotation
      *                is a no-op.
      */

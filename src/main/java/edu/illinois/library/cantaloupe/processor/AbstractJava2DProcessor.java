@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Normalize;
@@ -250,6 +251,17 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
 
         final Dimension fullSize = imageInfo.getSize();
 
+        // N.B.: Orientation handling is somewhat hairy. Any Crop or Rotate
+        // operations present in the operation list have already been corrected
+        // for this orientation, but we also need to account for operation
+        // lists that don't include one or both of those.
+        final Orientation orientation = imageInfo.getOrientation();
+
+        if (!Orientation.ROTATE_0.equals(orientation) &&
+                opList.getFirst(Crop.class) == null) {
+            image = Java2DUtil.rotate(image, orientation);
+        }
+
         // Apply the crop operation, if present, and retain a reference
         // to it for subsequent operations to refer to.
         Crop crop = new Crop(0, 0, image.getWidth(), image.getHeight(),
@@ -274,6 +286,12 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
             }
         }
         Java2DUtil.applyRedactions(image, crop, reductionFactor, redactions);
+
+        if (!Orientation.ROTATE_0.equals(orientation) &&
+                opList.getFirst(Crop.class) != null &&
+                opList.getFirst(Rotate.class) == null) {
+            image = Java2DUtil.rotate(image, orientation);
+        }
 
         // Apply remaining operations.
         for (Operation op : opList) {
