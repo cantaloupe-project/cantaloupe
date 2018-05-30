@@ -703,14 +703,9 @@ title: Processors
 
 <p><a href="http://kakadusoftware.com">Kakadu</a> is widely considered the fastest available general-purpose JPEG2000 codec. This processor uses Kakadu's <span class="filename">kdu_expand</span> demo application to decode JPEG2000 source images. All other operations are performed using Java 2D.</p>
 
-<p>The Kakadu demo binaries must be installed in order for this processor to work. There are two ways to obtain them:</p>
+<p>The Kakadu demo binaries must be installed in order for this processor to work. It's recommended to obtain these from the <a href="http://kakadusoftware.com/downloads/">Kakadu website</a> and install them per Kakadu's instructions.</p>
 
-<ol>
-  <li>The <span class="filename">deps</span> folder of the download archive contains prebuilt binaries for several platforms.</li>
-  <li>Download them from the <a href="http://kakadusoftware.com/downloads/">Kakadu website</a>.</li>
-</ol>
-
-<p>Once installed, the binaries will be detected automatically if they are on the path; otherwise, set the <code>KakaduDemoProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory. The <code>LD_LIBRARY_PATH</code> environment variable (or your operating system's equivalent) will also need to be set to locate the Kakadu shared library.</p>
+<p>Alternatively, the <span class="filename">deps</span> folder of the download archive contains prebuilt binaries for several platforms. <span class="filename">kdu_expand</span> will be detected automatically if it is on the path; otherwise, set the <code>KakaduDemoProcessor.path_to_binaries</code> configuration key to the absolute path of the containing directory. The Kakadu shared library files will also need to be installed per the instructions in the <a href="#KakaduNativeProcessor">KakaduNativeProcessor</a> section.</p>
 
 <p class="text-info"><i class="fa fa-info-circle"></i> Kakadu is not free software. This processor may be used in only one of the following ways:</p>
 
@@ -735,43 +730,13 @@ title: Processors
 
 <h4>Configuration</h4>
 
-<p>To get this processor to work, it must be able to locate the Kakadu JNI binding and shared library. The extracted release archive contains a folder named <span class="filename">deps</span>, which contains compiled binaries for several platforms.</p>
+<p>To get this processor to work, it must be able to locate the Kakadu JNI binding and shared library. The extracted release archive contains a folder named <span class="filename">deps</span>, which contains compiled binaries for several platforms. Copy the files from the platform-specific <span class="filename">lib</span> folder into one of the locations on the Java library path. These are logged at application startup in a message that looks like:</p>
 
-<ul class="nav nav-pills" role="tablist">
-  <li class="nav-item">
-    <a class="nav-link active" id="KakaduNativeProcessor-macOS-tab" data-toggle="tab" href="#KakaduNativeProcessor-macOS" role="tab" aria-controls="home" aria-selected="true">macOS</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" id="KakaduNativeProcessor-Linux-tab" data-toggle="tab" href="#KakaduNativeProcessor-Linux" role="tab" aria-controls="home" aria-selected="true">Linux</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" id="KakaduNativeProcessor-Windows-tab" data-toggle="tab" href="#KakaduNativeProcessor-Windows" role="tab" aria-controls="home" aria-selected="true">Windows</a>
-  </li>
-</ul>
-<div class="tab-content">
-  <div class="tab-pane fade show active" id="KakaduNativeProcessor-macOS" role="tabpanel" aria-labelledby="KakaduNativeProcessor-macOS-tab">
-    <p>Copy the library files from the macOS-specific <span class="filename">lib</span> folder into <span class="filename">/usr/local/lib</span>.</p>
-  </div>
-  <div class="tab-pane fade" id="KakaduNativeProcessor-Linux" role="tabpanel" aria-labelledby="KakaduNativeProcessor-Linux-tab">
-    <p>Do <strong>one</strong> of the following:</p>
+<pre>
+  [main] INFO  e.i.l.c.ApplicationContextListener - Java library path: .....
+</pre>
 
-    <ol>
-      <li>Copy the files from the Linux-specific <span class="filename">lib</span> folder to a location that is on your <code>LD_LIBRARY_PATH</code>.</li>
-      <li>Adjust your <code>LD_LIBRARY_PATH</code> to include the pathname of the directory containing the binaries.</li>
-      <li>Tell the JVM where the libraries are located using a VM argument at launch, like: <code>-Djava.library.path=/path/to/cantaloupe-x.x/deps/Linux-x86-64/lib</code></li>
-      <li>Copy the libraries into one of the locations on the <code>java.library.path</code>. (These are logged at application startup.)</p>
-    </ol>
-  </div>
-  <div class="tab-pane fade" id="KakaduNativeProcessor-Windows" role="tabpanel" aria-labelledby="KakaduNativeProcessor-Windows-tab">
-    <p>Do <strong>one</strong> of the following:</p>
-
-    <ol>
-      <li>Copy the files from the Windows-specific folder to a location that is on your <code>PATH</code>.</li>
-      <li>Tell the JVM where the libraries are located using a VM argument at launch, like: <code>-Djava.library.path=C:\Users\me\cantaloupe-x.x\deps\Windows</code></li>
-      <li>Copy the libraries into one of the locations on the <code>java.library.path</code>. (These are logged at application startup.)</p>
-    </ol>
-  </div>
-</div>
+<p>For Windows, you may also need to install <a href="https://www.visualstudio.com/downloads/">Microsoft Visual C++ Redistributable</a>, if it isn't already.</p>
 
 <p class="text-info">
   <i class="fa fa-info-circle"></i> This processor was developed using a Kakadu Public Service License and may not be used commercially. See the <a href="http://kakadusoftware.com/wp-content/uploads/2014/06/Kakadu-Licence-Terms-Feb-2018.pdf">Kakadu Software License Terms and Conditions</a> for detailed terms.
