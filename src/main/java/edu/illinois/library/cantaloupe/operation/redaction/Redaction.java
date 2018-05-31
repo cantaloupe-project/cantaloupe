@@ -9,6 +9,7 @@ import java.awt.Rectangle;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * <p>Encapsulates a redacted region of an image.</p>
@@ -27,6 +28,17 @@ public class Redaction implements Operation {
 
     public Redaction(Rectangle region) {
         this.setRegion(region);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        } else if (obj instanceof Redaction) {
+            Redaction other = (Redaction) obj;
+            return Objects.equals(other.getRegion(), getRegion());
+        }
+        return super.equals(obj);
     }
 
     @Override
@@ -79,6 +91,11 @@ public class Redaction implements Operation {
         final Rectangle resultingImage = new Rectangle(0, 0,
                 resultingSize.width, resultingSize.height);
         return getRegion().intersects(resultingImage);
+    }
+
+    @Override
+    public int hashCode() {
+        return getRegion().hashCode();
     }
 
     /**

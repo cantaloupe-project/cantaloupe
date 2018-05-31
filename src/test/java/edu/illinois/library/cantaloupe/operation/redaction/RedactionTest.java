@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.operation.redaction;
 
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -21,6 +19,19 @@ public class RedactionTest extends BaseTest {
     @Before
     public void setUp() {
         instance = new Redaction(new Rectangle(50, 60, 200, 100));
+    }
+
+    @Test
+    public void equalsWithEqualInstances() {
+        assertEquals(instance, new Redaction(new Rectangle(50, 60, 200, 100)));
+    }
+
+    @Test
+    public void equalsWithUnequalInstances() {
+        assertNotEquals(instance, new Redaction(new Rectangle(51, 60, 200, 100)));
+        assertNotEquals(instance, new Redaction(new Rectangle(50, 61, 200, 100)));
+        assertNotEquals(instance, new Redaction(new Rectangle(50, 60, 201, 100)));
+        assertNotEquals(instance, new Redaction(new Rectangle(50, 60, 200, 101)));
     }
 
     @Test
