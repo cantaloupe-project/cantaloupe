@@ -46,7 +46,7 @@ import java.awt.image.ComponentColorModel;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
+import java.util.Set;
 
 /**
  * <p>Collection of methods for operating on {@link BufferedImage}s.</p>
@@ -145,7 +145,7 @@ public final class Java2DUtil {
     static void applyRedactions(final BufferedImage image,
                                 final Crop appliedCrop,
                                 final ReductionFactor reductionFactor,
-                                final Collection<Redaction> redactions) {
+                                final Set<Redaction> redactions) {
         if (image != null && !redactions.isEmpty()) {
             final Stopwatch watch = new Stopwatch();
             final Dimension imageSize = new Dimension(

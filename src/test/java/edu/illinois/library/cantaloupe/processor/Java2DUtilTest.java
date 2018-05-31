@@ -31,8 +31,8 @@ import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import static edu.illinois.library.cantaloupe.test.Assert.ImageAssert.*;
 import static org.junit.Assert.*;
@@ -109,7 +109,7 @@ public class Java2DUtilTest extends BaseTest {
         g2d.dispose();
 
         // create some Redactions
-        List<Redaction> redactions = new ArrayList<>();
+        Set<Redaction> redactions = new HashSet<>();
         redactions.add(new Redaction(new Rectangle(0, 0, 20, 20)));
         redactions.add(new Redaction(new Rectangle(20, 20, 20, 20)));
         final Crop crop = new Crop(0, 0,

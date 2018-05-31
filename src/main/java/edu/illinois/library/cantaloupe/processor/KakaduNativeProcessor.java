@@ -44,10 +44,9 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -716,7 +715,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
         final Dimension fullSize = imageInfo.getSize();
 
         // Apply redactions.
-        final List<Redaction> redactions = new ArrayList<>();
+        final Set<Redaction> redactions = new HashSet<>();
         for (Operation op : opList) {
             if (op instanceof Redaction && op.hasEffect(fullSize, opList)) {
                 redactions.add((Redaction) op);
