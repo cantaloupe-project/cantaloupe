@@ -1,0 +1,152 @@
+---
+layout: manual_4.1
+title: Endpoints
+---
+
+<h1>Endpoints</h1>
+
+<ul class="toc">
+  <li><a href="#IIIFImageAPI2">IIIF Image API 2.x</a></li>
+  <li><a href="#IIIFImageAPI1">IIIF Image API 1.x</a></li>
+  <li>
+    <a href="#Additional%20Features">Additional Features</a>
+    <ul>
+      <li><a href="#Response%20Content%20Disposition">Response Content Disposition</a></li>
+      <li><a href="#Bypassing%20the%20Caches">Bypassing the Caches</a></li>
+      <li><a href="#Processor-Specific%20Arguments">Processor-Specific Arguments</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="IIIFImageAPI2">IIIF Image API 2.x</h2>
+
+<h3>Documentation</h3>
+
+<ul>
+  <li><a href="http://iiif.io/api/image/2.0/">IIIF Image API 2.0</a></li>
+  <li><a href="http://iiif.io/api/image/2.1/">IIIF Image API 2.1</a></li>
+</ul>
+
+<h3>Location</h3>
+
+<p>This endpoint is available at <span class="filename">/iiif/2</span>.</p>
+
+<h3>Enabling/Disabling</h3>
+
+<p>This endpoint can be enabled or disabled using the <code>endpoint.iiif.2.enabled</code> configuration key.</p>
+
+<h3>Compliance</h3>
+
+<p>Cantaloupe implements version 2.1.1 of this API, for compatibility with all 2.x clients. <a href="http://iiif.io/api/image/2.1/compliance/">Compliance level</a> is dynamically computed and declared on a per-processor basis. Most processors are "Level 2"-compliant.</p>
+
+<h3>Information Response Notes</h3>
+
+<dl>
+  <dt><code>sizes</code></dt>
+  <dd>An array of width/height pairs according to the formula <i>dimension * 1/2<sup>n</sup> &gt; <code>endpoint.iiif.min_size</code></i>. (To restrict access to only these sizes, use the <code>endpoint.iiif.2.restrict_to_sizes</code> configuration option.)</dd>
+  <dt><code>tiles</code></dt>
+  <dd>A list of tile sizes that will be relatively efficient to deliver, along with a list of scale factors at which each size is available.
+    <ul>
+      <li>For images that are natively tiled, the <code>width</code> and <code>height</code> will be the smallest of the native tile dimensions, the value of the <code>endpoint.iiif.min_tile_size</code> configuration key, or the full image dimensions.</li>
+      <li>For untiled images, they will be the smallest value of <i>n</i> for the formula: <i>(smallest dimension) * 1/2<sup>n</sup> &gt; <code>endpoint.iiif.min_tile_size</code></i>.</li>
+    </ul>
+  </dd>
+  <dt><code>profile.formats</code></dt>
+  <dd>This list of output formats depends on the processor assigned to the format of the source image.</dd>
+  <dt><code>profile.maxArea</code></dt>
+  <dd>This value is based on the value of <code>max_pixels</code> in the configuration. If set to zero, it will be omitted.</dd>
+  <dt><code>profile.qualities</code></dt>
+  <dd>Depends on the qualities supported by the processor assigned to the format of the source image.</dd>
+  <dt><code>profile.supports</code></dt>
+  <dd>Dynamically computed based on the features supported by the processor assigned to the format of the source image, as well as features built into the image server itself.</dd>
+  <dt>Other keys (<code>attribution</code>, <code>service</code>, etc.)</dt>
+  <dd>See <a href="#Additional Information Response Keys">Additional Information Response Keys</a>.</dd>
+</dl>
+
+<h4 id="Additional Information Response Keys">Additional Information Response Keys</h4>
+
+<p>Custom keys can be added to the information JSON response, such as to declare <a href="http://iiif.io/api/annex/services/">service profiles</a> or, beginning in Image API 2.1, an optional rights statement and/or logo. The <a href="delegate-script.html">delegate script</a> needs to implement the <code>extra_iiif2_information_response_keys()</code> method. An example implementation follows:</p>
+
+{% highlight ruby %}
+class CustomDelegate
+  def extra_iiif2_information_response_keys(options = {})
+    {
+        'attribution' => 'Copyright My Great Organization. All rights reserved.',
+        'license' => 'http://example.org/license.html',
+        'logo' => 'http://example.org/logo.png',
+        'service' => {
+            '@context' => 'http://iiif.io/api/annex/services/physdim/1/context.json',
+            'profile' => 'http://iiif.io/api/annex/services/physdim',
+            'physicalScale' => 0.0025,
+            'physicalUnits' => 'in'
+        }
+    }
+  end
+end
+{% endhighlight %}
+
+<hr>
+
+<h2 id="IIIFImageAPI1">IIIF Image API 1.x</h2>
+
+<h3>Documentation</h3>
+
+<ul>
+  <li><a href="http://iiif.io/api/image/1.0/">IIIF Image API 1.0</a></li>
+  <li><a href="http://iiif.io/api/image/1.1/">IIIF Image API 1.1</a></li>
+</ul>
+
+<h3>Location</h3>
+
+<p>This endpoint is available at <span class="filename">/iiif/1</span>.</p>
+
+<h3>Enabling/Disabling</h3>
+
+<p>This endpoint can be enabled or disabled using the <code>endpoint.iiif.1.enabled</code> configuration key.</p>
+
+<h3>Compliance</h3>
+
+<p>Cantaloupe implements version 1.1 of this API, for compatibility with all 1.x clients. Compliance level is dynamically computed and declared on a per-processor basis. Most processors are "Level 2"-compliant.</p>
+
+<h3>Information Response Notes</h3>
+
+<dl>
+  <dt><code>tile_width</code> and <code>tile_height</code></dt>
+  <dd>These keys refer to tile dimensions that will be relatively efficient to deliver.
+    <ul>
+      <li>For images that are natively tiled, these will be the smallest of the native tile dimensions, the value of the <code>endpoint.iiif.min_tile_size</code> configuration key, or the full image dimensions.</li>
+      <li>For untiled images, these will be the smallest value of <i>n</i> for the formula: <i>(smallest dimension) * 1/2<sup>n</sup> &gt; <code>endpoint.iiif.min_tile_size</code></i>.</li>
+    </ul>
+  </dd>
+  <dt><code>formats</code></dt>
+  <dd>This list of output formats depends on the processor assigned to the format of the source image.</dd>
+  <dt><code>qualities</code></dt>
+  <dd>Depends on the qualities supported by the processor assigned to the format of the source image.</dd>
+  <dt><code>profile</code></dt>
+  <dd>Dynamically computed based on the features supported by the processor assigned to the format of the source image, as well as features built into the image server itself.</dd>
+</dl>
+
+<hr>
+
+<h2 id="Additional Features">Additional Features</h2>
+
+<p>All endpoints support some additional features that may not be obvious:</p>
+
+<h3 id="Response Content Disposition">Response Content Disposition</h3>
+
+<p>The <a href="https://tools.ietf.org/html/rfc6266"><code>Content-Disposition</code></a> HTTP response header tells clients whether to attempt to display a response entity inline or download it, perhaps accompanied by a user prompt. The <code>endpoint.iiif.content_disposition</code> configuration key can be used to set a value for this header in all responses. In addition, a <code>response-content-disposition</code> query argument can be used to suggest a value to override that on a per-request basis. This is useful for &quot;linking to a download.&quot;</p>
+
+<p>For example, the following URL will cause the image identified by <code>some-identifier</code> to be downloaded and saved as <span class="filename">image.jpg</span>:</p>
+
+<pre>http://my-image-server/iiif/2/some-identifier/full/full/0/default.jpg
+    ?response-content-disposition=attachment%3B%20filename%3Dimage.jpg</pre>
+
+<p>Note that the value of the query argument must be URL-encoded. In this case, the decoded form looks like: <code>attachment; filename=image.jpg</code>.</p>
+
+<h3 id="Bypassing the Caches">Bypassing the Caches</h3>
+
+<p>The <a href="caching.html">caches</a> can be bypassed on a per-request basis by supplying a <code>cache=false</code> URL query argument. This bypasses the source, derivative, and info caches, and also omits any <code>Cache-Control</code> response header that may be configured, on a per-request basis, which is useful for testing and health checks.</p>
+
+<h3 id="Processor-Specific Arguments">Processor-Specific Arguments</h3>
+
+<p>Various processors support various additional query arguments that the IIIF Image API cannot support in the path portion of an image request URL. These are detailed in the <a href="processors.html#Implementations">processor documentation</a>.</p>

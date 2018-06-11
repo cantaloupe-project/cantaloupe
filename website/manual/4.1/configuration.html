@@ -1,0 +1,45 @@
+---
+layout: manual_4.1
+title: Configuration
+---
+
+<h1>Configuration</h1>
+
+<ul class="toc">
+  <li><a href="#Overview">Overview</a></li>
+  <li><a href="#Inheritance">Inheritance</a></li>
+  <li><a href="#Live%20Changes">Live Changes</a></li>
+  <li><a href="#Remote%20Changes">Remote Changes</a></li>
+</ul>
+
+<h2 id="Overview">Overview</h2>
+
+<p>Configuration is normally obtained from a file in <a href="https://en.wikipedia.org/wiki/.properties">.properties format</a>. A sample file, called <span class="filename">cantaloupe.properties.sample</span>, is included in the distribution archive. It is recommended to make a copy of this file and use the copy as your configuration file. It can be located anywhere, and named anything.</p>
+
+<p>To tell the application where the file is located, supply the <code>-Dcantaloupe.config</code> VM option, pointing to an absolute or relative path to the file. (See <a href="getting-started.html#Running">Getting Started</a> for examples.)</p>
+
+<hr>
+
+<h2 id="Inheritance">Inheritance</h2>
+
+<p>Configuration files may contain an <code>extends</code> key pointing to the pathname or same-directory filename of another configuration file. This enables multiple instances to share common configuration keys.</p>
+
+<p>Keys in child files override ones in parent files. When the same key is defined in multiple files, instances will use the most specific one.</p>
+
+<p>Multiple <code>extends</code> keys in the same file are not supported. If they are present, only the last one will be used.</p>
+
+<hr>
+
+<h2 id="Live Changes">Live Changes</h2>
+
+<p>The configuration file will be automatically reloaded within a few seconds of a change. Changes to most keys take effect immediately, but some require a restart; see the inline comments for documentation of which.</p>
+
+<p>When using <a href="#Inheritance">inheritance</a>, any file in the <code>extends</code> chain that changes will be reloaded by all instances in whose <code>extends</code> chain it appears.</p>
+
+<hr>
+
+<h2 id="Remote Changes">Remote Changes</h2>
+
+<p>The configuration can be updated remotely via the <a href="remote-management.html#HTTP%20API">HTTP API</a>. When a change is received, it will be activated immediately and written out to the configuration file, if it is writable.</p>
+
+<p>When using <a href="#Inheritance">inheritance</a>, a key will be written to the most specific file that already contains it, or to the main (child) file, if none already contain it.</p>
