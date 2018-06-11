@@ -33,13 +33,14 @@ class FileConfigurationWatcher implements Runnable {
             final Configuration config = Configuration.getInstance();
             // If the configuration is heritable, check whether any of its
             // files changed.
-            if (config instanceof HeritableFileConfiguration) {
-                HeritableFileConfiguration hfc =
-                        (HeritableFileConfiguration) config;
+            if (config instanceof AbstractHeritableFileConfiguration) {
+                AbstractHeritableFileConfiguration hfc =
+                        (AbstractHeritableFileConfiguration) config;
                 if (hfc.getFiles().contains(path.toFile())) {
                     reload(config);
                 }
-            } else if (path.toFile().equals(config.getFile())) {
+            } else if (config instanceof FileConfiguration &&
+                    path.toFile().equals(((FileConfiguration) config).getFile())) {
                 reload(config);
             }
         }

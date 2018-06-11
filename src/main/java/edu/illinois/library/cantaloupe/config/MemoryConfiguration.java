@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.config;
 
 import org.apache.commons.configuration.ConversionException;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
@@ -81,14 +80,6 @@ class MemoryConfiguration extends AbstractConfiguration
         } catch (NoSuchElementException | ConversionException e) {
             return defaultValue;
         }
-    }
-
-    /**
-     * @return <code>null</code>.
-     */
-    @Override
-    public File getFile() {
-        return null;
     }
 
     @Override

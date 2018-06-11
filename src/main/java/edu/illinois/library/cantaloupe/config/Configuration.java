@@ -32,10 +32,19 @@ public interface Configuration {
 
     void clearProperty(String key);
 
+    /**
+     * @throws java.util.NoSuchElementException
+     */
     boolean getBoolean(Key key);
 
+    /**
+     * @throws java.util.NoSuchElementException
+     */
     boolean getBoolean(String key);
 
+    /**
+     * @see #getBoolean(String, boolean)
+     */
     boolean getBoolean(Key key, boolean defaultValue);
 
     /**
@@ -47,8 +56,14 @@ public interface Configuration {
      */
     boolean getBoolean(String key, boolean defaultValue);
 
+    /**
+     * @throws java.util.NoSuchElementException
+     */
     double getDouble(Key key);
 
+    /**
+     * @throws java.util.NoSuchElementException
+     */
     double getDouble(String key);
 
     double getDouble(Key key, double defaultValue);
@@ -63,13 +78,13 @@ public interface Configuration {
     double getDouble(String key, double defaultValue);
 
     /**
-     * @return File corresponding to the persistent configuration file, or
-     *         <code>null</code> if the implementation is not file-based.
+     * @throws java.util.NoSuchElementException
      */
-    File getFile();
-
     float getFloat(Key key);
 
+    /**
+     * @throws java.util.NoSuchElementException
+     */
     float getFloat(String key);
 
     float getFloat(Key key, float defaultValue);
@@ -83,8 +98,14 @@ public interface Configuration {
      */
     float getFloat(String key, float defaultValue);
 
+    /**
+     * @throws java.util.NoSuchElementException
+     */
     int getInt(Key key);
 
+    /**
+     * @throws java.util.NoSuchElementException
+     */
     int getInt(String key);
 
     int getInt(Key key, int defaultValue);
@@ -103,8 +124,14 @@ public interface Configuration {
      */
     Iterator<String> getKeys();
 
+    /**
+     * @throws java.util.NoSuchElementException
+     */
     long getLong(Key key);
 
+    /**
+     * @throws java.util.NoSuchElementException
+     */
     long getLong(String key);
 
     long getLong(Key key, long defaultValue);

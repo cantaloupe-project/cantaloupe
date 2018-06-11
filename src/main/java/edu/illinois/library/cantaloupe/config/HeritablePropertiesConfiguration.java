@@ -25,8 +25,8 @@ import java.util.concurrent.locks.StampedLock;
  * <p>This implementation uses optimistic reads via a {@link StampedLock} for
  * good performance with thread-safety.</p>
  */
-class HeritablePropertiesConfiguration extends HeritableFileConfiguration
-        implements Configuration {
+class HeritablePropertiesConfiguration extends AbstractHeritableFileConfiguration
+        implements FileConfiguration {
 
     private static final String EXTENDS_KEY = "extends";
 
@@ -54,7 +54,7 @@ class HeritablePropertiesConfiguration extends HeritableFileConfiguration
         return new ArrayList<>(commonsConfigs.values());
     }
 
-    ////////////////// HeritableFileConfiguration methods ///////////////////
+    ////////////////// AbstractHeritableFileConfiguration methods ///////////////////
 
     @Override
     Collection<File> getFiles() {

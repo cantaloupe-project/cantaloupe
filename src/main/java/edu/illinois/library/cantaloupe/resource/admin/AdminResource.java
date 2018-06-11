@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource.admin;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.FileConfiguration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -135,9 +136,12 @@ public class AdminResource extends AbstractAdminResource {
         vars.put("xForwardedForHeader",
                 headers.getFirstValue("X-Forwarded-For", true, ""));
 
-        final File configFile = Configuration.getInstance().getFile();
-        vars.put("configFilePath", (configFile != null) ?
-                configFile.getAbsolutePath() : "None");
+        Configuration config = Configuration.getInstance();
+        if (config instanceof FileConfiguration) {
+            final File configFile = ((FileConfiguration) config).getFile();
+            vars.put("configFilePath", (configFile != null) ?
+                    configFile.getAbsolutePath() : "None");
+        }
 
         ////////////////////////////////////////////////////////////////////
         //////////////////////// sources section ///////////////////////////

@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.FileConfiguration;
 
 import java.io.File;
 import java.net.URL;
@@ -84,7 +85,10 @@ public class StandaloneEntry {
             printUsage();
             exitUnlessTesting(-1);
         } else {
-            final File configFile = config.getFile();
+            File configFile = null;
+            if (config instanceof FileConfiguration) {
+                configFile = ((FileConfiguration) config).getFile();
+            }
             if (configFile == null) {
                 printUsage();
                 exitUnlessTesting(-1);

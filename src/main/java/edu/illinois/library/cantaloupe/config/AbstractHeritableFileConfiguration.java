@@ -10,7 +10,8 @@ import java.util.Map;
 /**
  * Configuration that allows file-based inheritance.
  */
-abstract class HeritableFileConfiguration extends FileConfiguration {
+abstract class AbstractHeritableFileConfiguration
+        extends AbstractFileConfiguration {
 
     private Map<File, FileConfigurationWatcher> watchers = new HashMap<>();
 
@@ -24,8 +25,7 @@ abstract class HeritableFileConfiguration extends FileConfiguration {
         for (File file : getFiles()) {
             FileConfigurationWatcher watcher = new FileConfigurationWatcher(file);
             watchers.put(file, watcher);
-            ThreadPool.getInstance().submit(watcher,
-                    ThreadPool.Priority.LOW);
+            ThreadPool.getInstance().submit(watcher, ThreadPool.Priority.LOW);
         }
     }
 

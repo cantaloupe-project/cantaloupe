@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.script;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.FileConfiguration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import org.slf4j.Logger;
@@ -109,12 +110,16 @@ public final class DelegateProxyService {
         if (!script.isAbsolute()) {
             // Search for it in the same directory as the application config
             // (if available), or the current working directory if not.
-            final File configFile = Configuration.getInstance().getFile();
-            if (configFile != null) {
-                script = Paths.get(configFile.getParent(),
-                        script.getFileName().toString());
-            } else {
-                script = Paths.get(".", script.getFileName().toString());
+            Configuration config = Configuration.getInstance();
+            if (config instanceof FileConfiguration) {
+                FileConfiguration fileConfig = (FileConfiguration) config;
+                final File configFile = fileConfig.getFile();
+                if (configFile != null) {
+                    script = Paths.get(configFile.getParent(),
+                            script.getFileName().toString());
+                } else {
+                    script = Paths.get(".", script.getFileName().toString());
+                }
             }
         }
         return script;
