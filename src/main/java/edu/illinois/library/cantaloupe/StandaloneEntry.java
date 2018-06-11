@@ -2,11 +2,13 @@ package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.ConfigurationProvider;
 import edu.illinois.library.cantaloupe.config.FileConfiguration;
 
 import java.io.File;
 import java.net.URL;
 import java.security.ProtectionDomain;
+import java.util.List;
 
 /**
  * <p>Serves as the main application class in a standalone context.</p>
@@ -85,10 +87,7 @@ public class StandaloneEntry {
             printUsage();
             exitUnlessTesting(-1);
         } else {
-            File configFile = null;
-            if (config instanceof FileConfiguration) {
-                configFile = ((FileConfiguration) config).getFile();
-            }
+            File configFile = getConfigFile();
             if (configFile == null) {
                 printUsage();
                 exitUnlessTesting(-1);
@@ -107,6 +106,18 @@ public class StandaloneEntry {
             }
         }
         getAppServer().start();
+    }
+
+    private static File getConfigFile() {
+        File configFile = null;
+        final Configuration config = Configuration.getInstance();
+        final ConfigurationProvider provider = (ConfigurationProvider) config;
+        final List<Configuration> wrappedConfigs = provider.getWrappedConfigurations();
+        if (wrappedConfigs.size() > 1 &&
+                wrappedConfigs.get(1) instanceof FileConfiguration) {
+            configFile = ((FileConfiguration) wrappedConfigs.get(1)).getFile();
+        }
+        return configFile;
     }
 
     static File getWarFile() {

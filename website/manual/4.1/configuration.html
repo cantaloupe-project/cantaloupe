@@ -6,21 +6,52 @@ title: Configuration
 <h1>Configuration</h1>
 
 <ul class="toc">
-  <li><a href="#Overview">Overview</a></li>
-  <li><a href="#Inheritance">Inheritance</a></li>
-  <li><a href="#Live%20Changes">Live Changes</a></li>
+  <li>
+    <a href="#Overview">Overview</a>
+    <ul>
+      <li><a href="#EnvironmentConfiguration">Environment Configuration</a></li>
+      <li>
+        <a href="#FileConfiguration">File Configuration</a>
+        <ul>
+          <li><a href="#Inheritance">Inheritance</a></li>
+          <li><a href="#Live%20Changes">Live Changes</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
   <li><a href="#Remote%20Changes">Remote Changes</a></li>
 </ul>
 
 <h2 id="Overview">Overview</h2>
 
-<p>Configuration is normally obtained from a file in <a href="https://en.wikipedia.org/wiki/.properties">.properties format</a>. A sample file, called <span class="filename">cantaloupe.properties.sample</span>, is included in the distribution archive. It is recommended to make a copy of this file and use the copy as your configuration file. It can be located anywhere, and named anything.</p>
+<p>The application is configured by a collection of key-value pairs. The sample configuration file contains an authoritative listing of all available keys, and it is perfectly legitimate to use only this file for all configuration.</p>
+
+<p>But, keys don't have to reside in a file. The following sources are consulted in order of precedence:</p>
+
+<ol>
+  <li>The <a href="#EnvironmentConfiguration">environment</a>.</li>
+  <li>A <a href="#FileConfiguration">file</a>.</li>
+</ol>
+
+<h3 id="EnvironmentConfiguration">Environment Configuration</h3>
+
+<p>Configuration can be obtained from environment variables. Environment variable names are uppercase versions of &quot;ordinary&quot; configuration key names, appended to the string <code>CANTALOUPE_</code>, with only alphanumerics and underscores allowed. For example, the following key-value pair in the configuration file:</p>
+
+<p><code>endpoint.iiif.2.enabled = true</code></p>
+
+<p>When set in the environment, would become:</p>
+
+<p><code>CANTALOUPE_ENDPOINT_IIIF_2_ENABLED=true</code></p>
+
+<p class="text-info"><i class="fa fa-info-circle"></i> Environment configuration is read-only.</p>
+
+<h3 id="FileConfiguration">File Configuration</h3>
+
+<p>The configuration file is encoded in the human-friendly <a href="https://en.wikipedia.org/wiki/.properties">.properties format</a>. A sample file, called <span class="filename">cantaloupe.properties.sample</span>, is included in the distribution archive. It is recommended to make a copy of this file and use the copy as your configuration file. It can be located anywhere, and named anything.</p>
 
 <p>To tell the application where the file is located, supply the <code>-Dcantaloupe.config</code> VM option, pointing to an absolute or relative path to the file. (See <a href="getting-started.html#Running">Getting Started</a> for examples.)</p>
 
-<hr>
-
-<h2 id="Inheritance">Inheritance</h2>
+<h4 id="Inheritance">Inheritance</h4>
 
 <p>Configuration files may contain an <code>extends</code> key pointing to the pathname or same-directory filename of another configuration file. This enables multiple instances to share common configuration keys.</p>
 
@@ -28,9 +59,7 @@ title: Configuration
 
 <p>Multiple <code>extends</code> keys in the same file are not supported. If they are present, only the last one will be used.</p>
 
-<hr>
-
-<h2 id="Live Changes">Live Changes</h2>
+<h4 id="Live Changes">Live Changes</h4>
 
 <p>The configuration file will be automatically reloaded within a few seconds of a change. Changes to most keys take effect immediately, but some require a restart; see the inline comments for documentation of which.</p>
 

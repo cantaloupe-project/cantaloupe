@@ -81,7 +81,7 @@ final class ScriptWatcher implements Runnable {
         try {
             Path scriptFile = DelegateProxyService.getScriptFile();
             if (scriptFile != null) {
-                Path path = scriptFile.getParent();
+                Path path = scriptFile.toAbsolutePath().getParent();
                 filesystemWatcher = new FilesystemWatcher(
                         path, new CallbackImpl());
             }

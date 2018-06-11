@@ -14,17 +14,22 @@ public class ConfigurationFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testGetInstanceReturnsMemoryConfiguration() throws Exception {
+    public void testGetInstanceInTesting() {
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
-        assertTrue(Configuration.getInstance() instanceof MemoryConfiguration);
+
+        ConfigurationProvider provider =
+                (ConfigurationProvider) Configuration.getInstance();
+        assertTrue(provider.getWrappedConfigurations().get(0) instanceof MemoryConfiguration);
     }
 
     @Test
-    public void testGetInstanceReturnsPropertiesConfiguration() throws Exception {
+    public void testGetInstanceInProduction() {
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "bogus");
 
-        Configuration config = Configuration.getInstance();
-        assertTrue(config instanceof HeritablePropertiesConfiguration);
+        ConfigurationProvider provider =
+                (ConfigurationProvider) Configuration.getInstance();
+        assertTrue(provider.getWrappedConfigurations().get(0) instanceof EnvironmentConfiguration);
+        assertTrue(provider.getWrappedConfigurations().get(1) instanceof HeritablePropertiesConfiguration);
     }
 
 }

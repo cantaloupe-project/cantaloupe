@@ -18,8 +18,8 @@ public final class LoggerUtil {
         Configuration appConfig = Configuration.getInstance();
         if (appConfig != null) {
             // Reset the logger context.
-            LoggerContext loggerContext = (LoggerContext)
-                    LoggerFactory.getILoggerFactory();
+            LoggerContext loggerContext =
+                    (LoggerContext) LoggerFactory.getILoggerFactory();
             JoranConfigurator jc = new JoranConfigurator();
             jc.setContext(loggerContext);
             loggerContext.reset();
@@ -27,8 +27,10 @@ public final class LoggerUtil {
             // context properties.
             final Iterator<String> it = appConfig.getKeys();
             while (it.hasNext()) {
-                final String key = (String) it.next();
-                if (key.startsWith("log.")) {
+                final String key = it.next();
+                // EnvironmentConfiguration keys start with "CANTALOUPE_LOG_";
+                // all others start with "log."
+                if (key.startsWith("log.") || key.startsWith("CANTALOUPE_LOG_")) {
                     loggerContext.putProperty(key, appConfig.getString(key));
                 }
             }
