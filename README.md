@@ -6,7 +6,7 @@
 
 # Users
 
-**[Get started with a release build.](https://medusa-project.github.io/cantaloupe/get-started.html)**
+**[Get started with a release build.](https://github.com/medusa-project/cantaloupe/releases)**
 
 # Developers
 
