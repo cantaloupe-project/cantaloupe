@@ -13,8 +13,7 @@ import java.util.stream.Collectors;
  * Configuration whose accessors access an ordered list of other configurations,
  * which enables "falling back" from one configuration source to another.
  */
-public final class ConfigurationProvider extends AbstractConfiguration
-        implements Configuration {
+public final class ConfigurationProvider implements Configuration {
 
     private List<Configuration> wrappedConfigs;
 

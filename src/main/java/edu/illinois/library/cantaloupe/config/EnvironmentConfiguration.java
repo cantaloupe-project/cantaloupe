@@ -15,8 +15,7 @@ import java.util.NoSuchElementException;
  *
  * <pre>this_is_a_key.name --&gt; CANTALOUPE_THIS_IS_A_KEY_NAME</pre>
  */
-class EnvironmentConfiguration extends AbstractConfiguration
-        implements Configuration {
+class EnvironmentConfiguration implements Configuration {
 
     static final String ENVIRONMENT_KEY_PREFIX = "CANTALOUPE";
     static final String ENVIRONMENT_KEY_REPLACEMENT = "[^A-Za-z0-9]";

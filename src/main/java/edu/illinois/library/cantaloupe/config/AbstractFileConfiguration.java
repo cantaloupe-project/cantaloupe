@@ -6,7 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Future;
 
-abstract class AbstractFileConfiguration extends AbstractConfiguration {
+abstract class AbstractFileConfiguration {
 
     private FileConfigurationWatcher watcher;
     private Future<?> watcherFuture;
