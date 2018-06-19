@@ -214,7 +214,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
     private static final int EXPAND_DENOMINATOR = 10000000;
     private static final int MAX_LAYERS = 16384;
     private static final int NUM_THREADS =
-            Runtime.getRuntime().availableProcessors() - 1;
+            Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
 
     private static final Set<ProcessorFeature> SUPPORTED_FEATURES = EnumSet.of(
             ProcessorFeature.MIRRORING,
@@ -224,6 +224,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             ProcessorFeature.ROTATION_ARBITRARY,
             ProcessorFeature.ROTATION_BY_90S,
             ProcessorFeature.SIZE_ABOVE_FULL,
+            //ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
             ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
             ProcessorFeature.SIZE_BY_HEIGHT,
             ProcessorFeature.SIZE_BY_PERCENT,

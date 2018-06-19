@@ -6,10 +6,9 @@ dist: trusty
 jdk:
   - oraclejdk8
   # JDK 9 disabled because of an incompatibility with JAI Image I/O that causes
-  # the log to exceed 4MB and Travis to kill the process; see
+  # the test log to exceed 4MB and Travis to kill the process; see
   # https://github.com/medusa-project/cantaloupe/issues/176
-  # TODO: enable JDK 10: https://github.com/travis-ci/travis-ci/issues/9368
-  #- openjdk10
+  - openjdk10
 
 before_install:
   # install optional dependencies
