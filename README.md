@@ -29,11 +29,12 @@ simplest is probably to:
    equivalent.
 2. Set the main class to `edu.illinois.library.cantaloupe.StandaloneEntry` and
    add the `-Dcantaloupe.config=...` VM option.
-3. You might have to download
+3. Set the run configuration to include dependencies with `provided` scope.
+   (IntelliJ has a checkbox for this.) Alternatively, download
    [servlet-api-3.1.jar](http://central.maven.org/maven2/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar)
    and add it to your classpath: `--class-path=/path/to/servlet-api-3.1.jar`
 
-   Or, in Java 9, your module path: `--module-path=/path/to/containing/dir`
+   Or, in Java 9+, your module path: `--module-path=/path/to/containing/dir`
 
 ## Test
 

@@ -540,24 +540,20 @@ public abstract class AbstractResource extends ServerResource {
      *
      * <p>This does not check that any requested crop lies entirely within the
      * bounds of the source image.</p>
-     *
-     * @param opList
-     * @param sourceFormat
-     * @param info
      */
     protected final void validateRequestedArea(final OperationList opList,
                                                final Format sourceFormat,
-                                               final Info info)
+                                               final java.awt.Dimension fullSize)
             throws EmptyPayloadException, PayloadTooLargeException {
         final java.awt.Dimension resultingSize =
-                opList.getResultingSize(info.getSize());
+                opList.getResultingSize(fullSize);
 
         if (resultingSize.width < 1 || resultingSize.height < 1) {
             throw new EmptyPayloadException();
         }
 
         // Max allowed size is ignored when the processing is a no-op.
-        if (opList.hasEffect(sourceFormat)) {
+        if (opList.hasEffect(fullSize, sourceFormat)) {
             final long maxAllowedSize =
                     Configuration.getInstance().getLong(Key.MAX_PIXELS, 0);
             if (maxAllowedSize > 0 &&
