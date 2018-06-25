@@ -161,7 +161,7 @@ public abstract class AbstractResource extends ServerResource {
             }
             
             final String protocolHeader = requestHeaders.getFirstValue(
-                        "X-Forwarded-Proto", true, "HTTP");
+                        "X-Forwarded-Proto", true, newRef.getScheme());
             final String protocolStr =
                     protocolHeader.split(",")[0].trim().toUpperCase();
             final Protocol protocol = protocolStr.equals("HTTPS") ?
