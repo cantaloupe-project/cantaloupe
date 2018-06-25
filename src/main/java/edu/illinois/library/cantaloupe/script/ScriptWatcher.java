@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.script;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.util.FilesystemWatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,7 +88,9 @@ final class ScriptWatcher implements Runnable {
                         path, new CallbackImpl());
             }
         } catch (IOException e) {
-            LOGGER.error(e.getMessage());
+            if (Configuration.getInstance().getBoolean(Key.DELEGATE_SCRIPT_ENABLED)) {
+                LOGGER.error(e.getMessage());
+            }
         }
     }
 

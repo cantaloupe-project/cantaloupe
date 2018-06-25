@@ -62,7 +62,8 @@ public final class DelegateProxyService {
         if (instance == null) {
             instance = new DelegateProxyService();
         }
-        if (!isCodeLoaded) {
+        if (Configuration.getInstance().getBoolean(Key.DELEGATE_SCRIPT_ENABLED) &&
+                !isCodeLoaded) {
             try {
                 Path file = getScriptFile();
                 if (file != null) {
