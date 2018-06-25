@@ -88,7 +88,7 @@ final class ScriptWatcher implements Runnable {
                         path, new CallbackImpl());
             }
         } catch (IOException e) {
-            if (Configuration.getInstance().getBoolean(Key.DELEGATE_SCRIPT_ENABLED)) {
+            if (Configuration.getInstance().getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false)) {
                 LOGGER.error(e.getMessage());
             }
         }
