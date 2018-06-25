@@ -22,6 +22,11 @@ public class AbstractResourceTest extends BaseTest {
 
     /* getPublicReference(Reference, Reference, Series<Header>) */
 
+    /**
+     * Tests behavior of {@link AbstractResource#getPublicReference(Reference,
+     * Reference, Series)} when using {@link Key#BASE_URI} instead of {@literal
+     * X-Forwarded} headers.
+     */
     @Test
     public void testGetPublicReferenceUsingConfiguration() {
         final String baseURI = "http://example.net/cats";
@@ -36,12 +41,16 @@ public class AbstractResourceTest extends BaseTest {
         assertEquals(baseURI + "/llamas", ref.toString());
     }
 
+    /**
+     * Tests behavior of {@link AbstractResource#getPublicReference(Reference,
+     * Reference, Series)} when using {@literal X-Forwarded} headers.
+     */
     @Test
     public void testGetPublicReferenceUsingXForwardedHeaders() {
         Reference rootRef = new Reference("http://bogus");
         Reference resourceRef = new Reference("http://bogus/cats");
 
-        // HTTP & port 80
+        // Proto: HTTP, Port: 80
         Series<Header> headers = new Series<>(Header.class);
         headers.set("X-Forwarded-Proto", "HTTP");
         headers.set("X-Forwarded-Host", "example.org");
@@ -50,7 +59,7 @@ public class AbstractResourceTest extends BaseTest {
         Reference ref = AbstractResource.getPublicReference(rootRef, resourceRef, headers);
         assertEquals("http://example.org/cats", ref.toString());
 
-        // HTTP & port != 80
+        // Proto: HTTP, Port: 85
         headers.set("X-Forwarded-Proto", "HTTP");
         headers.set("X-Forwarded-Host", "example.org");
         headers.set("X-Forwarded-Port", "85");
@@ -58,7 +67,7 @@ public class AbstractResourceTest extends BaseTest {
         ref = AbstractResource.getPublicReference(rootRef, resourceRef, headers);
         assertEquals("http://example.org:85/cats", ref.toString());
 
-        // HTTPS & port 443
+        // Proto: HTTPS, Port: 443
         headers.set("X-Forwarded-Proto", "HTTPS");
         headers.set("X-Forwarded-Host", "example.org");
         headers.set("X-Forwarded-Port", "443");
@@ -66,7 +75,7 @@ public class AbstractResourceTest extends BaseTest {
         ref = AbstractResource.getPublicReference(rootRef, resourceRef, headers);
         assertEquals("https://example.org/cats", ref.toString());
 
-        // HTTPS & port != 443
+        // Proto: HTTPS, Port: 450
         headers.set("X-Forwarded-Proto", "HTTPS");
         headers.set("X-Forwarded-Host", "example.org");
         headers.set("X-Forwarded-Port", "450");
@@ -74,7 +83,7 @@ public class AbstractResourceTest extends BaseTest {
         ref = AbstractResource.getPublicReference(rootRef, resourceRef, headers);
         assertEquals("https://example.org:450/cats", ref.toString());
 
-        // Multiple values
+        // Proxy chain
         headers.set("X-Forwarded-Proto", "http,http");
         headers.set("X-Forwarded-Host", "example.org,example.mil");
         headers.set("X-Forwarded-Port", "80,8080");
@@ -83,23 +92,38 @@ public class AbstractResourceTest extends BaseTest {
         assertEquals("http://example.org/foxes/cats", ref.toString());
     }
 
+    /**
+     * Tests behavior of {@link AbstractResource#getPublicReference(Reference,
+     * Reference, Series)} when using neither {@link Key#BASE_URI} nor
+     * {@literal X-Forwarded} headers.
+     */
     @Test
     public void testGetPublicReferenceFallsBackToRequest() {
-        final String rootURI = "http://example.net/cats";
-        final String resourceURI = "http://example.net/cats/dogs";
-
         Series<Header> headers = new Series<>(Header.class);
 
+        // HTTP
+        String rootURI = "http://example.net/cats";
+        String resourceURI = "http://example.net/cats/dogs";
         Reference ref = AbstractResource.getPublicReference(
-                new Reference(rootURI), new Reference(resourceURI), headers);
+                new Reference(rootURI),
+                new Reference(resourceURI),
+                headers);
+        assertEquals(resourceURI, ref.toString());
+
+        // HTTPS
+        rootURI = "https://example.net/cats";
+        resourceURI = "https://example.net/cats/dogs";
+        ref = AbstractResource.getPublicReference(
+                new Reference(rootURI),
+                new Reference(resourceURI),
+                headers);
         assertEquals(resourceURI, ref.toString());
     }
 
     /* getRepresentationDisposition() */
 
     @Test
-    public void testGetRepresentationDispositionWithQueryArg()
-            throws Exception {
+    public void testGetRepresentationDispositionWithQueryArg() {
         final Identifier identifier = new Identifier("cats?/\\dogs");
         final Format outputFormat = Format.JPG;
 
@@ -139,8 +163,7 @@ public class AbstractResourceTest extends BaseTest {
     }
 
     @Test
-    public void testGetRepresentationDispositionUsingConfiguration()
-            throws Exception {
+    public void testGetRepresentationDispositionUsingConfiguration() {
         Configuration config = Configuration.getInstance();
 
         final Identifier identifier = new Identifier("cats?/\\dogs");
@@ -161,8 +184,7 @@ public class AbstractResourceTest extends BaseTest {
     }
 
     @Test
-    public void testGetRepresentationDispositionFallsBackToNone()
-            throws Exception {
+    public void testGetRepresentationDispositionFallsBackToNone() {
         Configuration config = Configuration.getInstance();
 
         final Identifier identifier = new Identifier("cats?/\\dogs");
