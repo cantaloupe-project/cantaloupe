@@ -23,7 +23,8 @@ public class ApplicationServerTest extends BaseTest {
     private ApplicationServer instance;
 
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass() throws Exception {
+        BaseTest.beforeClass();
         int[] ports = SocketUtils.getOpenPorts(2);
         HTTP_PORT = ports[0];
         HTTPS_PORT = ports[1];
