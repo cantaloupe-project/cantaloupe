@@ -14,6 +14,7 @@ title: Delegate Script
   <li><a href="#Improving%20Efficiency">Improving Efficiency</a>
     <ul>
       <li><a href="#Sharing%20Information">Sharing Information</a></li>
+      <li><a href="#Connection Pooling">Connection Pooling</a></li>
       <li><a href="#Caching">Caching</a></li>
     </ul>
   </li>
@@ -279,6 +280,16 @@ class CustomDelegate
   end
 end
 {% endhighlight %}
+
+<h3 id="Connection Pooling">Connection Pooling</h3>
+
+<p>Most HTTP clients maintain an internal connection pool automatically, but JDBC adapters do not. Any code that accesses a database via JDBC should use a connection pool to improve performance. As of now, there is no &quot;official&quot; provision for this. Options include:</p>
+
+<ol>
+  <li>Use the built-in HikariCP pool used by JdbcSource and JdbcCache, noting that HikariCP is not part of the delegate script contract and may change or go away at some point (see <a href="https://github.com/medusa-project/cantaloupe/issues/221#issuecomment-398402952">here</a> for an example that may or may not work);</li>
+  <li>Supply a third-party connection pool JAR;</li>
+  <li>Write your own connection pool</li>
+</ol>
 
 <h3 id="Caching">Caching</h3>
 
