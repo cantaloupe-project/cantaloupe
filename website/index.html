@@ -127,10 +127,13 @@ title: Home
         <div class="text-center">
           <p class="text-info">Upgrading? Review the <a href="upgrade.html">upgrade guide</a> and <a href="changes.html">change log</a> for important info.</p>
 
-          <a href="https://github.com/medusa-project/cantaloupe/releases" class="btn btn-lg btn-success download-button"><span class="fa fa-download"></span> Download</a>
+          <a href="https://github.com/medusa-project/cantaloupe/releases" class="btn btn-lg btn-success download-button"><i class="fa fa-download"></i> Download</a>
 
           <p class="text-muted">Requires Java 8+</p>
           <p class="text-muted">Optional components, such as particular processors, may have additional requirements; see the <a href="manual/">user manual</a></p>
+
+          <p><a class="btn btn-sm btn-dark" href="https://github.com/medusa-project/cantaloupe/releases">
+            <i class="fa fa-download"></i> Download a Different Version</a></p>
         </div>
       </div>
     </div>
@@ -187,7 +190,7 @@ title: Home
 </section>
 
 <script type="text/javascript">
-    $(document).ready(function() { getLatestReleaseInfo(); });
+    $(document).ready(function() { injectLatestReleaseInfo(); });
 </script>
 
 <script src="{{ site.baseurl }}/scripts/openseadragon.min.js"></script>
