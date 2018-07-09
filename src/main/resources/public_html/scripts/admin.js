@@ -111,6 +111,15 @@ var Form = function(config) {
                 other_rows.hide();
             }
         }).trigger('change');
+        // Processors
+        $('[name="processor.selection_strategy"]').on('change', function() {
+            var next_section = $(this).parents('section').next('section');
+            if ($(this).val() === 'ManualSelectionStrategy') {
+                next_section.show();
+            } else {
+                next_section.hide();
+            }
+        }).trigger('change');
         // Caches
         showOrHideAllOtherTableRows(
             '[name="cache.client.enabled"], [name="cache.server.worker.enabled"]');

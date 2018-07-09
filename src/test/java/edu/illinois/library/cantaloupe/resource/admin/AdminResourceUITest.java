@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource.admin;
 import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.source.SourceFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -436,6 +437,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         css("#cl-processors-button > a").click();
 
         // Fill in the form
+        selectNamed(Key.PROCESSOR_SELECTION_STRATEGY).
+                selectByVisibleText("Manual");
         css("#cl-processors li > a[href=\"#cl-image-assignments\"]").click();
         selectNamed("processor.gif").selectByVisibleText("Java2dProcessor");
         selectNamed(Key.PROCESSOR_FALLBACK).selectByVisibleText("JaiProcessor");
@@ -482,6 +485,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
 
         // Assert that the application configuration has been updated correctly
         final Configuration config = Configuration.getInstance();
+        assertEquals("ManualSelectionStrategy",
+                config.getString(Key.PROCESSOR_SELECTION_STRATEGY));
         assertEquals("Java2dProcessor", config.getString("processor.gif"));
         assertEquals("JaiProcessor", config.getString(Key.PROCESSOR_FALLBACK));
         assertEquals("StreamStrategy",

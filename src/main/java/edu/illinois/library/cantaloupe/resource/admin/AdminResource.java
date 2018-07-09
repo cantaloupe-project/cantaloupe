@@ -173,6 +173,10 @@ public class AdminResource extends AbstractAdminResource {
         ////////////////////// processors section //////////////////////////
         ////////////////////////////////////////////////////////////////////
 
+        // selection strategy
+        vars.put("processorSelectionStrategy",
+                new ProcessorFactory().getSelectionStrategy());
+
         // source format assignments
         Map<Format,ProcessorProxy> assignments = new TreeMap<>();
         for (Format format : Format.values()) {

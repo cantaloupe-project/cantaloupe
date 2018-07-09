@@ -251,10 +251,17 @@ AzureStorageSource.lookup_strategy = BasicLookupStrategy
 # Processor Selection
 #----------------------------------------
 
-# Image processors to use for various source formats. Available values are
-# `Java2dProcessor`, `GraphicsMagickProcessor`, `ImageMagickProcessor`,
-# `KakaduDemoProcessor`, `KakaduNativeProcessor`, `OpenJpegProcessor`,
-# `JaiProcessor`, `PdfBoxProcessor`, and `FfmpegProcessor`.
+# * If set to `AutomaticSelectionStrategy`, a "best" available processor
+#   will be selected per-request based on formats and installed
+#   dependencies.
+# * If set to `ManualSelectionStrategy`, a processor will be chosen based
+#   on the rest of the keys in this section.
+processor.selection_strategy = AutomaticSelectionStrategy
+
+# Built-in processors are `Java2dProcessor`, `GraphicsMagickProcessor`,
+# `ImageMagickProcessor`, `KakaduDemoProcessor`, `KakaduNativeProcessor`,
+# `OpenJpegProcessor`, `JaiProcessor`, `PdfBoxProcessor`, and
+# `FfmpegProcessor`.
 
 # These extension-specific definitions are optional.
 processor.avi = FfmpegProcessor

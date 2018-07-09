@@ -71,6 +71,8 @@ public class ProcessorConnectorTest extends BaseTest {
                 "BasicLookupStrategy");
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
                 TestUtil.getImage("jpg").getParent().toString() + "/");
+        config.setProperty(Key.PROCESSOR_SELECTION_STRATEGY,
+                ManualSelectionStrategy.CONFIGURATION_VALUE);
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
     }
 

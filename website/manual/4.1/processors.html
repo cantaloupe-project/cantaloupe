@@ -7,6 +7,7 @@ title: Processors
 
 <ul class="toc">
   <li><a href="#Format%20Support">Format Support</a></li>
+  <li><a href="#Selection%20Strategies">Selection Strategies</a></li>
   <li><a href="#Retrieval%20Strategies">Retrieval Strategies</a></li>
   <li><a href="#Supported%20Features">Supported Features</a></li>
   <li><a href="#Supported%20Source%20Formats">Supported Source Formats</a></li>
@@ -25,7 +26,7 @@ title: Processors
   </li>
 </ul>
 
-<p>A processor reads an image from a <a href="sources.html">source</a>, decodes it, transforms it according to request arguments, and encodes and writes a derivative image to the client. Particular processors can be assigned to handle particular source formats, and a fallback processor can be assigned to handle all others.</p>
+<p>A processor reads an image from a <a href="sources.html">source</a>, decodes it, transforms it according to request arguments, and encodes and writes a derivative image to the client. Processors can be <a href="#Selection%20Strategies">selected in different ways</a> per-request.</p>
 
 <p>Different processors use different underlying codecs and image processing engines, which may have different quality, compatibility, dependency, performance, and cost characteristics. The ability to choose among different processors is intended to make it straightforward to add support for new image formats; improve support for existing image formats via the substitution of better codecs; and decouple the image server implementation from any one codec.</p>
 
@@ -34,6 +35,19 @@ title: Processors
 <h2 id="Format Support">Format Support</h2>
 
 <p>Different processors support different source formats. A table of supported formats is displayed in the <a href="remote-management.html#Control%20Panel">Control Panel</a>, as well as in the <a href="#Supported%20Source%20Formats">Supported Source Formats</a> table below. A list of output formats supported <em>for a given source format</em> is contained within the response to an information request (such as <span class="filename">/iiif/2/:identifier/info.json</span>).</p>
+
+<hr>
+
+<h2 id="Selection Strategies">Selection Strategies</h2>
+
+<p>The <code>processor.selection_strategy</code> configuration key controls how a processor is selected on a per-request basis.</p>
+
+<dl>
+  <dt><code>AutomaticSelectionStrategy</code></dt>
+  <dd>A processor is chosen automatically based on the source format, installed dependencies, and potentially other criteria, with priority given to those that are expected to be more efficient.</dd>
+  <dt><code>ManualSelectionStrategy</code></dt>
+  <dd>A processor is chosen based on the <code>processor.{format}</code> and <code>processor.fallback</code> keys in the application configuration. This strategy offers more control, but requires knowing <a href="#Format%20Support">which processors support which formats</a>, and may require testing different processors to find the ones that best meet a given use case.</dd>
+</dl>
 
 <hr>
 

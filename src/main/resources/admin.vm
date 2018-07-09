@@ -1736,6 +1736,41 @@
 
                     <form method="post">
                         <section>
+                            <h2>Selection Strategy</h2>
+
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>
+                                        Selection Strategy
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="&lt;ul&gt;
+                                           &lt;li&gt;If set to Automatic, the &quot;best&quot; available processor will
+                                           be selected per-request based on formats and installed
+                                           dependencies.&lt;/li&gt;
+                                           &lt;li&gt;If set to Manual, a processor will be chosen based
+                                           on the Source Format Assignments section.&lt;/li&gt;
+                                           &lt;/ul&gt;">?</a>
+                                    </td>
+                                    <td>
+                                        <select class="form-control"
+                                                name="processor.selection_strategy"
+                                                data-restart-required="false">
+                                            #if ($processorSelectionStrategy.toString().equals("AutomaticSelectionStrategy"))
+                                                <option value="AutomaticSelectionStrategy" selected>Automatic</option>
+                                                <option value="ManualSelectionStrategy">Manual</option>
+                                            #else
+                                                <option value="AutomaticSelectionStrategy">Automatic</option>
+                                                <option value="ManualSelectionStrategy" selected>Manual</option>
+                                            #end
+                                        </select>
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <section>
                             <h2>Source Format Assignments</h2>
 
                             <ul class="nav nav-pills" role="tablist">

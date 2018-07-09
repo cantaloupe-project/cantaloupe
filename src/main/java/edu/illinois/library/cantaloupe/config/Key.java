@@ -164,6 +164,7 @@ public enum Key {
     PROCESSOR_NORMALIZE("processor.normalize"),
     PROCESSOR_PRESERVE_METADATA("processor.metadata.preserve"),
     PROCESSOR_RESPECT_ORIENTATION("processor.metadata.respect_orientation"),
+    PROCESSOR_SELECTION_STRATEGY("processor.selection_strategy"),
     PROCESSOR_SHARPEN("processor.sharpen"),
     PROCESSOR_STREAM_RETRIEVAL_STRATEGY("processor.stream_retrieval_strategy"),
     PROCESSOR_TIF_COMPRESSION("processor.tif.compression"),

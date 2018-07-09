@@ -7,6 +7,8 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static org.junit.Assert.*;
 
 public class ProcessorFactoryTest extends BaseTest {
@@ -24,147 +26,47 @@ public class ProcessorFactoryTest extends BaseTest {
         assertEquals(9, ProcessorFactory.getAllProcessors().size());
     }
 
-    /**
-     * Assert that we can get Java2dProcessor for JPEGs when
-     * <code>processor.jpg = Java2dProcessor</code>.
-     */
     @Test
-    public void testNewProcessorWithSupportedAssignedFormat() throws Exception {
-        Configuration.getInstance().setProperty("processor.jpg",
-                Java2dProcessor.class.getSimpleName());
-        assertTrue(instance.newProcessor(Format.JPG) instanceof Java2dProcessor);
+    public void testNewProcessorWithWorkingFirstPreferenceMatch() throws Exception {
+        instance.setSelectionStrategy(f ->
+                Arrays.asList(PdfBoxProcessor.class, Java2dProcessor.class));
+        assertTrue(instance.newProcessor(Format.PDF) instanceof PdfBoxProcessor);
     }
 
-    /**
-     * Assert that we get GraphicsMagickProcessor for JPEGs when:
-     *
-     * <code>
-     * processor.webp = Java2dProcessor
-     * processor.fallback = GraphicsMagickProcessor
-     * </code>
-     */
     @Test
-    public void testNewProcessorWithUnsupportedAssignedFormat() throws Exception {
-        Configuration config = Configuration.getInstance();
-        config.setProperty("processor.webp",
-                Java2dProcessor.class.getSimpleName());
-        config.setProperty(Key.PROCESSOR_FALLBACK,
-                GraphicsMagickProcessor.class.getSimpleName());
-        try {
-            instance.newProcessor(Format.WEBP);
-            fail("Expected exception");
-        } catch (UnsupportedSourceFormatException e) {
-            assertEquals(e.getMessage(),
-                    "Java2dProcessor does not support the WebP source format");
-        }
-    }
-
-    /**
-     * Assert that we get Java2dProcessor for JPEGs when
-     * <code>processor.fallback = Java2dProcessor</code>.
-     */
-    @Test
-    public void testNewProcessorWithFormatSupportedByFallback() throws Exception {
-        Configuration.getInstance().setProperty(Key.PROCESSOR_FALLBACK,
-                Java2dProcessor.class.getSimpleName());
-        assertTrue(instance.newProcessor(Format.JPG) instanceof Java2dProcessor);
-    }
-
-    /**
-     * Assert that an UnsupportedFormatException is thrown when we try to get
-     * an unsupported format when
-     * <code>processor.fallback = Java2dProcessor</code>.
-     */
-    @Test
-    public void testNewProcessorWithFormatUnsupportedByFallback() throws Exception {
-        Configuration.getInstance().setProperty(Key.PROCESSOR_FALLBACK,
-                Java2dProcessor.class.getSimpleName());
-        try {
-            instance.newProcessor(Format.WEBP);
-            fail("Expected exception");
-        } catch (UnsupportedSourceFormatException e) {
-            assertEquals("Java2dProcessor does not support the WebP source format",
-                    e.getMessage());
-        }
-    }
-
-    /**
-     * Assert that a ClassNotFoundException is thrown when there is no processor
-     * assigned to the requested format and no fallback processor defined.
-     */
-    @Test
-    public void testNewProcessorWithFormatUnsupportedByFallbackAndNoFallback()
+    public void testNewProcessorWithBrokenFirstPreferenceMatchAndWorkingSecondPreferenceMatch()
             throws Exception {
-        try {
-            instance.newProcessor(Format.WEBP);
-            fail("Expected exception");
-        } catch (ClassNotFoundException e) {
-            assertEquals(e.getMessage(), "A fallback processor (" +
-                    Key.PROCESSOR_FALLBACK + ") is not set.");
-        }
-    }
-
-    /**
-     * Assert that a ClassNotFoundException is thrown when the processor
-     * assigned to the requested format does not exist.
-     */
-    @Test
-    public void testNewProcessorWithUnrecognizedProcessor() throws Exception {
-        Configuration.getInstance().setProperty("processor.jpg",
-                "AmazingFakeProcessor");
-        try {
-            instance.newProcessor(Format.JPG);
-            fail("Expected exception");
-        } catch (ClassNotFoundException e) {
-            assertEquals("AmazingFakeProcessor does not exist", e.getMessage());
-        }
-    }
-
-    @Test
-    public void testNewProcessorWithFullyQualifiedClassName() throws Exception {
-        Configuration.getInstance().setProperty(Key.PROCESSOR_FALLBACK,
-                Java2dProcessor.class.getName());
+        instance.setSelectionStrategy(f ->
+                Arrays.asList(MockBrokenProcessor.class, Java2dProcessor.class));
         assertTrue(instance.newProcessor(Format.JPG) instanceof Java2dProcessor);
     }
 
-    /**
-     * Assert that a ClassNotFoundException is thrown when the processor
-     * assigned to the requested format does not exist.
-     */
     @Test
-    public void testNewProcessorWithUnrecognizedFallbackProcessor()
-            throws Exception {
-        Configuration.getInstance().setProperty(Key.PROCESSOR_FALLBACK,
-                "AmazingFakeProcessor");
-        try {
-            instance.newProcessor(Format.JPG);
-            fail("Expected exception");
-        } catch (ClassNotFoundException e) {
-            assertEquals("AmazingFakeProcessor does not exist", e.getMessage());
-        }
+    public void testNewProcessorWithWorkingSecondPreferenceMatch() throws Exception {
+        instance.setSelectionStrategy(f ->
+                Arrays.asList(PdfBoxProcessor.class, Java2dProcessor.class));
+        assertTrue(instance.newProcessor(Format.JPG) instanceof Java2dProcessor);
     }
 
-    /**
-     * Assert that an {@link UnsupportedSourceFormatException} is thrown for
-     * {@link Format#UNKNOWN}.
-     */
+    @Test(expected = InitializationException.class)
+    public void testNewProcessorWithBrokenSecondPreferenceMatch() throws Exception {
+        instance.setSelectionStrategy(f ->
+                Arrays.asList(PdfBoxProcessor.class, MockBrokenProcessor.class));
+        instance.newProcessor(Format.JPG);
+    }
+
+    @Test(expected = UnsupportedSourceFormatException.class)
+    public void testNewProcessorWithNoMatch() throws Exception {
+        instance.setSelectionStrategy(f ->
+                Arrays.asList(PdfBoxProcessor.class, FfmpegProcessor.class));
+        instance.newProcessor(Format.JPG);
+    }
+
     @Test(expected = UnsupportedSourceFormatException.class)
     public void testNewProcessorWithUnknownFormat() throws Exception {
         Configuration.getInstance().setProperty(Key.PROCESSOR_FALLBACK,
                 Java2dProcessor.class.getSimpleName());
         instance.newProcessor(Format.UNKNOWN);
-    }
-
-    @Test(expected = InitializationException.class)
-    public void testNewProcessorWithMisconfiguredProcessor() throws Exception {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.PROCESSOR_FALLBACK,
-                GraphicsMagickProcessor.class.getSimpleName());
-        config.setProperty(Key.GRAPHICSMAGICKPROCESSOR_PATH_TO_BINARIES,
-                "/bogus/bogus/bogus");
-        GraphicsMagickProcessor.resetInitialization();
-
-        instance.newProcessor(Format.JPG);
     }
 
 }
