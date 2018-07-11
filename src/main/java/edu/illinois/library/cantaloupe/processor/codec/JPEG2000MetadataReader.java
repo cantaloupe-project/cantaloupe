@@ -211,7 +211,12 @@ final class JPEG2000MetadataReader {
      * call other private reading methods that will all expect {@link
      * #inputStream} to be pre-positioned for reading.</p>
      *
-     * <p>Safe to call multiple times.</p>
+     * <p>JPEG2000 files are based on a box structure, and several of the boxes
+     * contain various metadata that we are interested in. But, we ignore all
+     * of them except the codestream box, because we need to read the DWT level
+     * count, which is only present in the codestream.</p>
+     *
+     * <p>It's safe to call this method multiple times.</p>
      */
     private void readImage() throws IOException {
         if (isReadAttempted) {
@@ -224,13 +229,24 @@ final class JPEG2000MetadataReader {
 
         isReadAttempted = true;
 
-        // Find the SOC marker and position the stream immediately after it.
-        int b, previousB = 0;
+        // Scan for the Contiguous Codestream box. This isn't very efficient,
+        // but it's easier than parsing a potentially complicated box structure.
+        int b, b1 = 0, b2 = 0, b3 = 0;
         while ((b = inputStream.read()) != -1) {
-            if (Marker.SOC.equals(Marker.forBytes(previousB, b))) {
+            if (b3 == 0x6a && b2 == 0x70 && b1 == 0x32 && b == 0x63) {
                 break;
             }
-            previousB = b;
+            b3 = b2; b2 = b1; b1 = b;
+        }
+
+        // Find the codestream SOC marker and position the stream immediately
+        // after it.
+        b1 = 0;
+        while ((b = inputStream.read()) != -1) {
+            if (Marker.SOC.equals(Marker.forBytes(b1, b))) {
+                break;
+            }
+            b1 = b;
         }
 
         while (readSegment() != -1) {
