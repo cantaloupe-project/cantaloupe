@@ -58,10 +58,6 @@ public final class Route {
         MAPPINGS.put(Pattern.compile("^" + TASKS_PATH + "/([^/]+)$"),
                 edu.illinois.library.cantaloupe.resource.api.TaskResource.class);
 
-        // IIIF Image API routes
-        MAPPINGS.put(Pattern.compile("^" + IIIF_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.iiif.RedirectingResource.class);
-
         // IIIF Image API v2 routes
         MAPPINGS.put(Pattern.compile("^" + IIIF_2_PATH + "$"),
                 edu.illinois.library.cantaloupe.resource.iiif.v2.LandingResource.class);

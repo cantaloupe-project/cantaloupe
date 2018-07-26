@@ -40,10 +40,6 @@ public class RouteTest {
         assertEquals(edu.illinois.library.cantaloupe.resource.api.ConfigurationResource.class,
                 route.getResource());
 
-        route = Route.forPath(Route.IIIF_PATH);
-        assertEquals(edu.illinois.library.cantaloupe.resource.iiif.RedirectingResource.class,
-                route.getResource());
-
         route = Route.forPath(Route.TASKS_PATH);
         assertEquals(TasksResource.class, route.getResource());
 
