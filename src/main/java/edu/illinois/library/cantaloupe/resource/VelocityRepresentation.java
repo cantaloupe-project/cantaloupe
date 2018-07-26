@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
@@ -42,7 +43,16 @@ public class VelocityRepresentation extends OutputRepresentation {
     VelocityRepresentation(String templateName,
                            Map<String,Object> templateVars) {
         this(templateName);
-        this.templateVars = templateVars;
+        this.templateVars = escapeTemplateVars(templateVars);
+    }
+
+    private Map<String,Object> escapeTemplateVars(Map<String,Object> templateVars) {
+        for (Map.Entry<String,Object> entry : templateVars.entrySet()) {
+            if (entry.getValue() instanceof String) {
+                entry.setValue(StringUtil.escapeHTML((String) entry.getValue()));
+            }
+        }
+        return templateVars;
     }
 
     @Override

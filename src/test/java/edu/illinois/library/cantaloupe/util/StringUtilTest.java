@@ -10,6 +10,13 @@ import static org.junit.Assert.*;
 public class StringUtilTest extends BaseTest {
 
     @Test
+    public void testEscapeHTML() {
+        String html = "the quick brown <script type=\"text/javascript\">alert('hi');</script> fox";
+        String expected = "the quick brown &#60;script type=&#34;text/javascript&#34;&#62;alert('hi');&#60;/script&#62; fox";
+        assertEquals(expected, StringUtil.escapeHTML(html));
+    }
+
+    @Test
     public void testFilenameSafe() {
         assertEquals("0832c1202da8d382318e329a7c133ea0",
                 StringUtil.filesystemSafe("cats"));

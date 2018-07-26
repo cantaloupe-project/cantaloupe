@@ -17,6 +17,21 @@ public final class StringUtil {
 
     public static final String FILENAME_REGEX = "[^A-Za-z0-9._-]";
 
+    public static String escapeHTML(String html) {
+        StringBuilder out = new StringBuilder(Math.max(16, html.length()));
+        for (int i = 0, length = html.length(); i < length; i++) {
+            char c = html.charAt(i);
+            if (c > 127 || c == '"' || c == '<' || c == '>' || c == '&') {
+                out.append("&#");
+                out.append((int) c);
+                out.append(';');
+            } else {
+                out.append(c);
+            }
+        }
+        return out.toString();
+    }
+
     /**
      * Returns a filename-safe string guaranteed to uniquely represent the
      * given string.
