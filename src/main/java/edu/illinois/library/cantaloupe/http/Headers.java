@@ -56,7 +56,7 @@ public final class Headers implements Iterable<Header> {
     @Override
     public int hashCode() {
         return stream()
-                .map(h -> h.getName() + ": " + h.getValue())
+                .map(Header::toString)
                 .collect(Collectors.joining())
                 .hashCode();
     }
@@ -78,6 +78,7 @@ public final class Headers implements Iterable<Header> {
 
     /**
      * Replaces all headers with the given name with a single header.
+     *
      * @see #add
      */
     public void set(String name, String value) {
