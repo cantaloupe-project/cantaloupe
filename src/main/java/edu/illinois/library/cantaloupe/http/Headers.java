@@ -2,8 +2,10 @@ package edu.illinois.library.cantaloupe.http;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -53,6 +55,15 @@ public final class Headers implements Iterable<Header> {
         return header.orElse(null);
     }
 
+    public String getFirstValue(String name, String defaultValue) {
+        Optional<String> header = headers.stream()
+                .filter(h -> h.getName().equalsIgnoreCase(name))
+                .map(h -> (h.getValue() != null && !h.getValue().isEmpty()) ?
+                        h.getValue() : defaultValue)
+                .findFirst();
+        return header.orElse(defaultValue);
+    }
+
     @Override
     public int hashCode() {
         return stream()
@@ -92,6 +103,16 @@ public final class Headers implements Iterable<Header> {
 
     public Stream<Header> stream() {
         return headers.stream();
+    }
+
+    /**
+     * @return Headers as a map of name-value pairs. Multiple same-named
+     *         headers will be lost.
+     */
+    public Map<String,String> toMap() {
+        final Map<String,String> map = new HashMap<>();
+        headers.forEach(h -> map.put(h.getName(), h.getValue()));
+        return map;
     }
 
 }
