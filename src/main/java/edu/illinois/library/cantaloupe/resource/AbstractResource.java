@@ -3,55 +3,50 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.auth.AuthInfo;
 import edu.illinois.library.cantaloupe.auth.Authorizer;
+import edu.illinois.library.cantaloupe.auth.CredentialStore;
 import edu.illinois.library.cantaloupe.auth.RedirectInfo;
-import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.http.Method;
+import edu.illinois.library.cantaloupe.http.Reference;
+import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.script.DisabledException;
 import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.restlet.Request;
-import org.restlet.data.CacheDirective;
-import org.restlet.data.Disposition;
-import org.restlet.data.Header;
-import org.restlet.data.Parameter;
-import org.restlet.data.Protocol;
-import org.restlet.data.Reference;
-import org.restlet.data.Status;
-import org.restlet.representation.EmptyRepresentation;
-import org.restlet.representation.Representation;
-import org.restlet.representation.StringRepresentation;
-import org.restlet.resource.Options;
-import org.restlet.resource.ResourceException;
-import org.restlet.resource.ServerResource;
-import org.restlet.util.Series;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
-import java.io.IOException;
+import javax.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * N.B.: If subclasses need to send custom response headers, they should add
- * them to the {@link Series} returned by {@link #getBufferedResponseHeaders}.
+ * <p>Abstract HTTP resource. Instances should subclass and override one or
+ * more of the HTTP-method-specific methods {@link #doGET()} etc., and may
+ * optionally use {@link #doInit()} and {@link #destroy()}.</p>
+ *
+ * <p>This class is loosely modeled on Restlet framework's {@literal
+ * ServerResource}, both because this application used to use Restlet, and
+ * because it's a good design.</p>
+ *
+ * <p>Unlike {@link javax.servlet.http.HttpServlet}s, instances will only be
+ * used once and will not be shared across threads.</p>
  */
-public abstract class AbstractResource extends ServerResource {
+public abstract class AbstractResource {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(AbstractResource.class);
@@ -71,9 +66,6 @@ public abstract class AbstractResource extends ServerResource {
     protected static final String RESPONSE_CONTENT_DISPOSITION_QUERY_ARG =
             "response-content-disposition";
 
-    private final Series<Header> bufferedResponseHeaders =
-            new Series<>(Header.class);
-
     /**
      * Set by {@link #getDelegateProxy()}.
      */
@@ -81,213 +73,9 @@ public abstract class AbstractResource extends ServerResource {
 
     private final RequestContext requestContext = new RequestContext();
 
-    /**
-     * @return Map of template variables common to most or all views, such as
-     *         variables that appear in a common header.
-     */
-    public static Map<String, Object> getCommonTemplateVars(Request request) {
-        Map<String,Object> vars = new HashMap<>();
-        vars.put("version", Application.getVersion());
-        if (request != null) { // this will be null when testing
-            Reference publicRef = getPublicReference(
-                    request.getRootRef(),
-                    request.getRootRef(),
-                    request.getHeaders());
-            vars.put("baseUri", publicRef.toString());
-        }
-        return vars;
-    }
-
-    /**
-     * <p>Returns a root reference (URI) that can be used in public for display
-     * or internal linking.</p>
-     *
-     * <p>The URI respects {@link Key#BASE_URI}, if set. Otherwise, it respects
-     * the {@literal X-Forwarded-*} request headers, if available. Finally, the
-     * server hostname etc. otherwise.</p>
-     *
-     * @param requestRootRef Application root URI.
-     * @param requestRef     Request URI.
-     * @param requestHeaders Request headers.
-     * @return               Reference usable in public.
-     */
-    protected static Reference getPublicReference(Reference requestRootRef,
-                                                  Reference requestRef,
-                                                  Series<Header> requestHeaders) {
-        String appRootRelativePath =
-                requestRef.getRelativeRef(requestRootRef).getPath();
-        if (".".equals(appRootRelativePath)) { // when the paths are the same
-            appRootRelativePath = "";
-        }
-        Reference newRef = new Reference(requestRef);
-
-        // If base_uri is set in the configuration, build a URI based on that.
-        final String baseUri = Configuration.getInstance().
-                getString(Key.BASE_URI);
-        if (baseUri != null && baseUri.length() > 0) {
-            final Reference baseRef = new Reference(baseUri);
-            newRef = new Reference(requestRootRef);
-            newRef.setScheme(baseRef.getScheme());
-            newRef.setHostDomain(baseRef.getHostDomain());
-            // if the "port" is a local socket, Reference will serialize it
-            // as -1, so avoid that.
-            if (baseRef.getHostPort() < 0) {
-                newRef.setHostPort(null);
-            } else {
-                newRef.setHostPort(baseRef.getHostPort());
-            }
-            String pathStr = StringUtils.stripEnd(baseRef.getPath(), "/");
-            if (!appRootRelativePath.isEmpty()) {
-                pathStr = StringUtils.stripEnd(pathStr, "/") + "/" +
-                        StringUtils.stripStart(appRootRelativePath, "/");
-            }
-            newRef.setPath(pathStr);
-
-            LOGGER.debug("Base URI from assembled from {} key: {}",
-                    Key.BASE_URI, newRef);
-
-        } else {
-            if (requestHeaders == null) {
-                requestHeaders = new Series<>(Header.class);
-            }
-            // Try to use X-Forwarded-* headers.
-            // N.B. Header values here may be comma-separated lists when
-            // operating behind a chain of reverse proxies.
-            final String hostHeader = requestHeaders.getFirstValue(
-                    "X-Forwarded-Host", true, null);
-            if (hostHeader != null) {
-                final String hostStr = hostHeader.split(",")[0].trim();
-                newRef.setHostDomain(hostStr);
-            }
-            
-            final String protocolHeader = requestHeaders.getFirstValue(
-                        "X-Forwarded-Proto", true, newRef.getScheme());
-            final String protocolStr =
-                    protocolHeader.split(",")[0].trim().toUpperCase();
-            final Protocol protocol = protocolStr.equals("HTTPS") ?
-                    Protocol.HTTPS : Protocol.HTTP;
-            newRef.setProtocol(protocol);
-
-            final String portHeader = requestHeaders.getFirstValue(
-                        "X-Forwarded-Port", true, null);
-            if (portHeader != null) {
-                final String portStr = portHeader.split(",")[0].trim();
-                Integer port = Integer.parseInt(portStr);
-                if ((port == 80 && protocol.equals(Protocol.HTTP)) ||
-                        (port == 443 && protocol.equals(Protocol.HTTPS))) {
-                    port = null;
-                }
-                newRef.setHostPort(port);
-            }
-
-            final String pathHeader = requestHeaders.getFirstValue(
-                        "X-Forwarded-Path", true, "");
-            if (!pathHeader.isEmpty()) {
-                String pathStr = pathHeader.split(",")[0].trim();
-                if (!appRootRelativePath.isEmpty()) {
-                    pathStr = StringUtils.stripEnd(pathStr, "/") + "/" +
-                            StringUtils.stripStart(appRootRelativePath, "/");
-                }
-                newRef.setPath(StringUtils.stripEnd(pathStr, "/"));
-            }
-
-            LOGGER.debug("X-Forwarded headers: Proto: {}; Host: {}; " +
-                    "Port: {}; Path: {}",
-                    protocolHeader, hostHeader, portHeader, pathHeader);
-            LOGGER.debug("Base URI assembled: {}", newRef);
-        }
-        return newRef;
-    }
-
-    @Override
-    protected void doInit() throws ResourceException {
-        super.doInit();
-
-        // We don't honor the Range header as most responses will be streamed.
-        getResponse().getServerInfo().setAcceptingRanges(false);
-
-        // "Dimensions" are added to the Vary header. Restlet doesn't supply
-        // Origin by default, but it's needed.
-        // See: https://github.com/medusa-project/cantaloupe/issues/107
-        getResponse().getDimensions().addAll(Arrays.asList(
-                org.restlet.data.Dimension.CHARACTER_SET,
-                org.restlet.data.Dimension.ENCODING,
-                org.restlet.data.Dimension.LANGUAGE,
-                org.restlet.data.Dimension.ORIGIN));
-        getResponse().getHeaders().add("X-Powered-By",
-                Application.getName() + "/" + Application.getVersion());
-
-        if (DelegateProxyService.isEnabled()) {
-            requestContext.setRequestURI(getReference().toUri());
-            requestContext.setRequestHeaders(getRequest().getHeaders().getValuesMap());
-            requestContext.setClientIP(getCanonicalClientIPAddress());
-            requestContext.setCookies(getRequest().getCookies().getValuesMap());
-            requestContext.setIdentifier(getIdentifier());
-        }
-
-        String headersStr = getRequest().getHeaders().stream()
-                .map(h -> h.getName() + ": " +
-                        ("Authorization".equals(h.getName()) ? "******" : h.getValue()))
-                .collect(Collectors.joining("; "));
-        LOGGER.info("doInit(): handling {} {} [{}]",
-                getMethod(), getReference(), headersStr);
-    }
-
-    /**
-     * Enables HTTP OPTIONS requests. Restlet will set the {@literal Allow}
-     * header automatically.
-     */
-    @SuppressWarnings("unused")
-    @Options
-    public Representation doOptions() {
-        return new EmptyRepresentation();
-    }
-
-    /**
-     * Uses an {@link Authorizer} to determine whether the request is
-     * authorized.
-     */
-    protected final void checkAuthorization()
-            throws ScriptException, AccessDeniedException {
-        final Authorizer authorizer = new Authorizer(getDelegateProxy());
-        final AuthInfo info = authorizer.authorize();
-
-        if (!info.isAuthorized()) {
-            throw new AccessDeniedException();
-        }
-    }
-
-    /**
-     * Uses an {@link Authorizer} to determine whether the request needs to be
-     * redirected.
-     *
-     * @return {@literal null} if the request does not need to be redirected.
-     *         Otherwise, a redirecting representation.
-     */
-    protected final StringRepresentation checkRedirect()
-            throws ScriptException {
-        final Authorizer authorizer = new Authorizer(getDelegateProxy());
-        final RedirectInfo info = authorizer.redirect();
-
-        if (info != null) {
-            final URI location = info.getRedirectURI();
-            final int code = info.getRedirectStatus();
-            LOGGER.info("checkAuthorization(): redirecting to {} via HTTP {}",
-                    location, code);
-            final Status status = Status.valueOf(code);
-            final StringRepresentation rep =
-                    new StringRepresentation("Redirect: " + location);
-            getResponse().setLocationRef(location.toString());
-            getResponse().setStatus(status);
-            return rep;
-        }
-        return null;
-    }
-
-    protected void commitCustomResponseHeaders() {
-        getResponse().getHeaders().addAll(getBufferedResponseHeaders());
-        getResponseCacheDirectives().addAll(getCacheDirectives());
-    }
+    private List<String> pathArguments = Collections.emptyList();
+    private Request request;
+    private HttpServletResponse response;
 
     /**
      * Some web servers have issues dealing with encoded slashes ({@literal
@@ -298,7 +86,7 @@ public abstract class AbstractResource extends ServerResource {
      *                         after, or between slashes)
      * @return Path component with slashes decoded.
      */
-    private String decodeSlashes(final String uriPathComponent) {
+    private static String decodeSlashes(final String uriPathComponent) {
         final String substitute = Configuration.getInstance().
                 getString(Key.SLASH_SUBSTITUTE, "");
         if (!substitute.isEmpty()) {
@@ -307,88 +95,213 @@ public abstract class AbstractResource extends ServerResource {
         return uriPathComponent;
     }
 
-    protected Series<Header> getBufferedResponseHeaders() {
-        return bufferedResponseHeaders;
+    /**
+     * <p>Initialization method, called after all necessary setters have been
+     * called but before any request-handler method (like {@link #doGET()}
+     * etc.)</p>
+     *
+     * <p>Overrides must call {@literal super}.</p>
+     */
+    public void doInit() throws Exception {
+        response.setHeader("X-Powered-By",
+                Application.getName() + "/" + Application.getVersion());
+
+        if (DelegateProxyService.isEnabled()) {
+            requestContext.setRequestURI(request.getReference().toURI());
+            requestContext.setRequestHeaders(request.getHeaders().toMap());
+            requestContext.setClientIP(getCanonicalClientIPAddress());
+            requestContext.setCookies(request.getCookies());
+            requestContext.setIdentifier(getIdentifier());
+        }
+
+        // Log request info.
+        String headersStr = request.getHeaders().stream()
+                .map(h -> h.getName() + ": " +
+                        ("Authorization".equals(h.getName()) ? "******" : h.getValue()))
+                .collect(Collectors.joining("; "));
+        LOGGER.info("doInit(): handling {} {} [{}]",
+                request.getMethod(),
+                request.getReference().getPath(),
+                headersStr);
     }
 
     /**
-     * @return List of cache directives according to the configuration, or an
-     *         empty list if {@link #isBypassingCache()} returns {@literal
-     *         false}.
+     * <p>Called at the end of the instance's lifecycle.</p>
+     *
+     * <p>Overrides must call {@literal super}.</p>
      */
-    private List<CacheDirective> getCacheDirectives() {
-        final List<CacheDirective> directives = new ArrayList<>();
-        if (isBypassingCache()) {
-            return directives;
+    public void destroy() {
+    }
+
+    /**
+     * <p>Must be overridden by implementations that support {@literal
+     * DELETE}.</p>
+     *
+     * <p>Overrides must not call {@literal super}.</p>
+     */
+    public void doDELETE() throws Exception {
+        response.setStatus(Status.METHOD_NOT_ALLOWED.getCode());
+    }
+
+    /**
+     * <p>Must be overridden by implementations that support {@literal GET}.</p>
+     *
+     * <p>Overrides must not call {@literal super}.</p>
+     */
+    public void doGET() throws Exception {
+        response.setStatus(Status.METHOD_NOT_ALLOWED.getCode());
+    }
+
+    /**
+     * This implementation simply calls {@link #doGET}. When that is
+     * overridden, this may also be overridden in order to set headers only and
+     * not compute a response body.
+     */
+    public void doHEAD() throws Exception {
+        doGET();
+    }
+
+    final void doOPTIONS() {
+        Method[] methods = getSupportedMethods();
+        if (methods.length > 0) {
+            response.setStatus(Status.NO_CONTENT.getCode());
+            response.setHeader("Allow", Arrays.stream(methods)
+                    .map(Method::toString)
+                    .collect(Collectors.joining(",")));
+        } else {
+            response.setStatus(Status.METHOD_NOT_ALLOWED.getCode());
         }
-        try {
-            final Configuration config = Configuration.getInstance();
-            final boolean enabled =
-                    config.getBoolean(Key.CLIENT_CACHE_ENABLED, false);
-            if (enabled) {
-                final String maxAge = config.getString(Key.CLIENT_CACHE_MAX_AGE);
-                if (maxAge != null && maxAge.length() > 0) {
-                    directives.add(CacheDirective.maxAge(Integer.parseInt(maxAge)));
-                }
-                String sMaxAge = config.getString(Key.CLIENT_CACHE_SHARED_MAX_AGE);
-                if (sMaxAge != null && sMaxAge.length() > 0) {
-                    directives.add(CacheDirective.
-                            sharedMaxAge(Integer.parseInt(sMaxAge)));
-                }
-                if (config.getBoolean(Key.CLIENT_CACHE_PUBLIC, true)) {
-                    directives.add(CacheDirective.publicInfo());
-                } else if (config.getBoolean(Key.CLIENT_CACHE_PRIVATE, false)) {
-                    directives.add(CacheDirective.privateInfo());
-                }
-                if (config.getBoolean(Key.CLIENT_CACHE_NO_CACHE, false)) {
-                    directives.add(CacheDirective.noCache());
-                }
-                if (config.getBoolean(Key.CLIENT_CACHE_NO_STORE, false)) {
-                    directives.add(CacheDirective.noStore());
-                }
-                if (config.getBoolean(Key.CLIENT_CACHE_MUST_REVALIDATE, false)) {
-                    directives.add(CacheDirective.mustRevalidate());
-                }
-                if (config.getBoolean(Key.CLIENT_CACHE_PROXY_REVALIDATE, false)) {
-                    directives.add(CacheDirective.proxyMustRevalidate());
-                }
-                if (config.getBoolean(Key.CLIENT_CACHE_NO_TRANSFORM, false)) {
-                    directives.add(CacheDirective.noTransform());
+    }
+
+    /**
+     * <p>Must be overridden by implementations that support {@literal
+     * POST}.</p>
+     *
+     * <p>Overrides must not call {@literal super}.</p>
+     */
+    public void doPOST() throws Exception {
+        response.setStatus(Status.METHOD_NOT_ALLOWED.getCode());
+    }
+
+    /**
+     * <p>Must be overridden by implementations that support {@literal PUT}.</p>
+     *
+     * <p>Overrides must not call {@literal super}.</p>
+     */
+    public void doPUT() throws Exception {
+        response.setStatus(Status.METHOD_NOT_ALLOWED.getCode());
+    }
+
+    /**
+     * Checks the {@literal Authorization} header for credentials that exist in
+     * the given {@link CredentialStore}. If not found, sends a {@literal
+     * WWW-Authenticate} header and throws an exception.
+     *
+     * @param realm           Basic realm.
+     * @param credentialStore Credential store.
+     * @throws ResourceException if authentication failed.
+     */
+    protected final void authenticateUsingBasic(String realm,
+                                                CredentialStore credentialStore)
+            throws ResourceException {
+        boolean isAuthenticated = false;
+        String header = getRequest().getHeaders().getFirstValue("Authorization", "");
+        if ("Basic ".equals(header.substring(0, Math.min(header.length(), 6)))) {
+            String encoded = header.substring(6);
+            String decoded = new String(Base64.getDecoder().decode(encoded.getBytes()));
+            String[] parts = decoded.split(":");
+            if (parts.length == 2) {
+                String user = parts[0];
+                String secret = parts[1];
+                if (secret.equals(credentialStore.getSecret(user))) {
+                    isAuthenticated = true;
                 }
             }
-        } catch (NoSuchElementException e) {
-            LOGGER.warn("Cache-Control headers are invalid: {}",
-                    e.getMessage());
         }
-        return directives;
+
+        if (!isAuthenticated) {
+            getResponse().setHeader("WWW-Authenticate",
+                    "Basic realm=\"" + realm + "\" charset=\"UTF-8\"");
+            throw new ResourceException(Status.UNAUTHORIZED);
+        }
     }
 
     /**
-     * @return Best guess at the user agent's IP address, respecting the
-     *         {@literal X-Forwarded-For} request header, if present.
+     * Uses an {@link Authorizer} to determine whether the request is
+     * authorized.
+     */
+    protected final void checkAuthorization()
+            throws ScriptException, ResourceException {
+        final Authorizer authorizer = new Authorizer(getDelegateProxy());
+        final AuthInfo info = authorizer.authorize();
+
+        if (!info.isAuthorized()) {
+            throw new ResourceException(Status.FORBIDDEN);
+        }
+    }
+
+    /**
+     * Uses an {@link Authorizer} to determine whether the request needs to be
+     * redirected.
+     *
+     * @return {@literal null} if the request does not need to be redirected.
+     *         Otherwise, a redirecting representation.
+     */
+    protected final Representation checkRedirect() throws ScriptException {
+        final Authorizer authorizer = new Authorizer(getDelegateProxy());
+        final RedirectInfo info = authorizer.redirect();
+
+        if (info != null) {
+            final URI location = info.getRedirectURI();
+            final int code = info.getRedirectStatus();
+            LOGGER.info("checkRedirect(): redirecting to {} via HTTP {}",
+                    location, code);
+            final Status status = new Status(code);
+            response.setHeader("Location", location.toString());
+            response.setStatus(status.getCode());
+            return new StringRepresentation("Redirect: " + location);
+        }
+        return null;
+    }
+
+    /**
+     * @return User agent's IP address, respecting the {@literal
+     *         X-Forwarded-For} request header, if present.
      */
     private String getCanonicalClientIPAddress() {
-        String addr;
-        // The value is supposed to be in the format: "client, proxy1, proxy2"
+        // The value is expected to be in the format: "client, proxy1, proxy2"
         final String forwardedFor =
-                getRequest().getHeaders().getFirstValue("X-Forwarded-For", true);
-        if (forwardedFor != null) {
-            addr = forwardedFor.split(",")[0].trim();
+                request.getHeaders().getFirstValue("X-Forwarded-For", "");
+        if (!forwardedFor.isEmpty()) {
+            return forwardedFor.split(",")[0].trim();
         } else {
             // Fall back to the client IP address.
-            addr = getRequest().getClientInfo().getAddress();
+            return request.getRemoteAddr();
         }
-        return addr;
     }
 
     /**
-     * N.B.: This method should not be called with different arguments during
-     * the same request cycle.
-     *
-     * @return Delegate proxy for the current request. The result is cached.
-     *         May be {@literal null}.
+     * @return Map of template variables common to most or all templates, such
+     *         as variables that appear in a common header.
      */
-    protected DelegateProxy getDelegateProxy() {
+    protected final Map<String, Object> getCommonTemplateVars() {
+        final Map<String,Object> vars = new HashMap<>();
+        vars.put("version", Application.getVersion());
+
+        String baseURI = getPublicRootReference().toString();
+        // A trailing slash is needed to make the <base> tag work.
+        if (!baseURI.endsWith("/")) {
+            baseURI += "/";
+        }
+        vars.put("baseUri", baseURI);
+        return vars;
+    }
+
+    /**
+     * @return Instance for the current request. The result is cached. May be
+     *         {@literal null}.
+     */
+    protected final DelegateProxy getDelegateProxy() {
         if (delegateProxy == null && DelegateProxyService.isEnabled()) {
             DelegateProxyService service = DelegateProxyService.getInstance();
             try {
@@ -401,26 +314,25 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * @return Decoded identifier component of the URI. N.B.: This may not be
-     *         the identifier that the client supplies or sees; for that, use
-     *         {@link #getPublicIdentifier()}. Also may return {@literal null}.
+     * Returns the decoded identifier path component of the URI. (This may not
+     * be the identifier that the client supplies or sees; for that, use {@link
+     * #getPublicIdentifier()}.)
+     *
+     * @return Identifier, or {@literal null} if the URI does not have an
+     *         identifier path component.
      * @see #getPublicIdentifier()
      */
     protected Identifier getIdentifier() {
-        final Map<String,Object> attrs = getRequest().getAttributes();
-        // Get the raw identifier from the URI.
-        final String urlIdentifier = (String) attrs.get("identifier");
-        // It will be null if the current route does not have an identifier
-        // path component.
-        if (urlIdentifier != null) {
+        String uriIdentifier = getIdentifierPathComponent();
+        if (uriIdentifier != null) {
             // Decode entities.
-            final String decodedIdentifier = Reference.decode(urlIdentifier);
+            final String decodedIdentifier = Reference.decode(uriIdentifier);
             // Decode slash substitutes.
             final String identifier = decodeSlashes(decodedIdentifier);
 
             LOGGER.debug("Identifier requested: {} -> decoded: {} -> " +
                             "slashes substituted: {}",
-                    urlIdentifier, decodedIdentifier, identifier);
+                    uriIdentifier, decodedIdentifier, identifier);
 
             return new Identifier(identifier);
         }
@@ -428,70 +340,258 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
-     * <p>Returns the image info for the source image corresponding to the
-     * given identifier as efficiently as possible.</p>
+     * <p>Returns the first {@link #getPathArguments() path argument}. (Most
+     * resources have an identifier as the first path argument, so this will
+     * work for them, but if not, an override will be necessary.)</p>
      *
-     * @param identifier
-     * @param proc       Processor from which to read the info, if it can't be
-     *                   retrieved from a cache.
-     * @return           Info for the image with the given identifier.
+     * <p>The result is not decoded.</p>
+     *
+     * @return Identifier, or {@literal null} if no path arguments are
+     *         available.
      */
-    protected final Info getOrReadInfo(final Identifier identifier,
-                                       final Processor proc) throws IOException {
-        Info info;
-        if (!isBypassingCache()) {
-            info = new CacheFacade().getOrReadInfo(identifier, proc);
-            info.setIdentifier(identifier);
-        } else {
-            LOGGER.debug("getOrReadInfo(): bypassing the cache, as requested");
-            info = proc.readImageInfo();
-            info.setIdentifier(identifier);
-        }
-        return info;
+    private String getIdentifierPathComponent() {
+        List<String> args = getPathArguments();
+        return (!args.isEmpty()) ? args.get(0) : null;
     }
 
     /**
-     * @return Value of either the {@link #PUBLIC_IDENTIFIER_HEADER} or
-     *         {@link #PUBLIC_IDENTIFIER_HEADER_DEPRECATED} headers, if
-     *         available, or else the {@literal identifier} URI path
-     *         component, with any escaping preserved.
+     * Returns the segments of the URI path that are considered arguments.
+     * (These may correspond to regex match groups in {@link Route}.)
+     *
+     * @return Path arguments, or an empty list if there are none.
+     */
+    protected final List<String> getPathArguments() {
+        return pathArguments;
+    }
+
+    /**
+     * @return List of client-preferred media types as expressed in the
+     *         {@literal Accept} request header.
+     * @see    <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html">
+     *         RFC 2616</a>
+     */
+    protected final List<String> getPreferredMediaTypes() {
+        class Preference implements Comparable<Preference> {
+            private String mediaType;
+            private float qValue;
+
+            @Override
+            public int compareTo(Preference o) {
+                if (o.qValue < qValue) {
+                    return -1;
+                } else if (o.qValue > o.qValue) {
+                    return 1;
+                }
+                return 0;
+            }
+        }
+
+        final List<Preference> preferences = new ArrayList<>();
+        final String acceptHeader = request.getHeaders().getFirstValue("Accept");
+        if (acceptHeader != null) {
+            String[] clauses = acceptHeader.split(",");
+            for (String clause : clauses) {
+                String[] parts = clause.split(";");
+                Preference preference = new Preference();
+                preference.mediaType = parts[0].trim();
+                if (parts.length > 1) {
+                    String q = parts[1].trim();
+                    if (q.startsWith("q=")) {
+                        q = q.substring(2, q.length());
+                        preference.qValue = Float.parseFloat(q);
+                    }
+                } else {
+                    preference.qValue = 1;
+                }
+                preferences.add(preference);
+            }
+        }
+        return preferences.stream()
+                .sorted()
+                .map(p -> p.mediaType)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * <p>Returns the identifier that the client sees. This will be the value
+     * of either the {@link #PUBLIC_IDENTIFIER_HEADER} or {@link
+     * #PUBLIC_IDENTIFIER_HEADER_DEPRECATED} headers, if available, or else
+     * the {@literal identifier} URI path component.</p>
+     *
+     * <p>The result is not decoded, as the encoding may be influenced by
+     * {@link Key#SLASH_SUBSTITUTE}, for example.</p>
+     *
+     * @see #getIdentifier()
      */
     protected String getPublicIdentifier() {
-        final Map<String,Object> attrs = getRequest().getAttributes();
-        final String urlID = (String) attrs.get("identifier");
-
-        // Try to use the new header, if supplied.
+        String urlID = getIdentifierPathComponent();
+        // Try to use the value of the identifier header, if supplied.
         String header = PUBLIC_IDENTIFIER_HEADER;
-        String headerID = getRequest().getHeaders().getFirstValue(header, true);
-        if (headerID == null || headerID.isEmpty()) {
+        String headerID = request.getHeaders().getFirstValue(header, "");
+        if (headerID.isEmpty()) {
             // Fall back to the deprecated one.
             header = PUBLIC_IDENTIFIER_HEADER_DEPRECATED;
-            headerID = getRequest().getHeaders().getFirstValue(header, true);
+            headerID = request.getHeaders().getFirstValue(header, "");
         }
-        return (headerID != null && !headerID.isEmpty()) ? headerID : urlID;
+        return headerID.isEmpty() ? urlID : headerID;
     }
 
     /**
+     * <p>Returns the current reference.</p>
+     *
+     * <p>{@link Key#BASE_URI} is respected, if set. Otherwise, the {@literal
+     * X-Forwarded-*} request headers are respected, if available. Finally,
+     * Servlet-supplied information is used otherwise.</p>
+     *
+     * <p>Note that this value may not be something the client is expecting to
+     * see; for example, any {@link #getIdentifier() identifier} present in the
+     * URI path is not {@link #getPublicIdentifier() translated}.</p>
+     *
      * @see #getPublicRootReference()
      */
     protected Reference getPublicReference() {
-        final Request request = getRequest();
-        return getPublicReference(request.getRootRef(),
-                request.getResourceRef(), request.getHeaders());
+        final Reference requestRef = new Reference(getRequest().getReference());
+        final Reference appRootRef = new Reference(requestRef);
+        appRootRef.setPath(getRequest().getContextPath());
+
+        String appRootRelativePath =
+                requestRef.getRelativePath(appRootRef.getPath());
+        Reference newRef = new Reference(requestRef);
+
+        // If base_uri is set in the configuration, build a URI based on that.
+        final String baseUri = Configuration.getInstance()
+                .getString(Key.BASE_URI, "");
+        if (!baseUri.isEmpty()) {
+            final Reference baseRef = new Reference(baseUri);
+            newRef = new Reference(appRootRef);
+            newRef.setScheme(baseRef.getScheme());
+            newRef.setHost(baseRef.getHost());
+            newRef.setPort(baseRef.getPort());
+
+            String pathStr = StringUtils.stripEnd(baseRef.getPath(), "/");
+            if (!appRootRelativePath.isEmpty()) {
+                pathStr = StringUtils.stripEnd(pathStr, "/") + "/" +
+                        StringUtils.stripStart(appRootRelativePath, "/");
+            }
+            newRef.setPath(pathStr);
+
+            LOGGER.debug("Base URI from assembled from {} key: {}",
+                    Key.BASE_URI, newRef);
+        } else {
+            // Try to use X-Forwarded-* headers.
+            // N.B.: Header values may be comma-separated lists when operating
+            // behind a chain of reverse proxies.
+            final String hostHeader = getRequest().getHeaders()
+                    .getFirstValue("X-Forwarded-Host", "");
+            if (!hostHeader.isEmpty()) {
+                String hostStr = hostHeader.split(",")[0].trim();
+                newRef.setHost(hostStr);
+            }
+
+            String protoHeader = getRequest().getHeaders()
+                    .getFirstValue("X-Forwarded-Proto", "");
+            String protoStr = newRef.getScheme();
+            if (!protoHeader.isEmpty()) {
+                protoStr = protoHeader.split(",")[0].trim().toLowerCase();
+                newRef.setScheme(protoStr);
+            }
+
+            final String portHeader = getRequest().getHeaders()
+                    .getFirstValue("X-Forwarded-Port", "");
+            if (!portHeader.isEmpty()) {
+                String portStr = portHeader.split(",")[0].trim();
+                Integer port = Integer.parseInt(portStr);
+                if ((port == 80 && "http".equalsIgnoreCase(protoStr)) ||
+                        (port == 443 && "https".equalsIgnoreCase(protoStr))) {
+                    port = -1;
+                }
+                newRef.setPort(port);
+            }
+
+            final String pathHeader = getRequest().getHeaders()
+                    .getFirstValue("X-Forwarded-Path", "");
+            if (!pathHeader.isEmpty()) {
+                String pathStr = pathHeader.split(",")[0].trim();
+                if (!appRootRelativePath.isEmpty()) {
+                    pathStr = StringUtils.stripEnd(pathStr, "/") + "/" +
+                            StringUtils.stripStart(appRootRelativePath, "/");
+                }
+                newRef.setPath(StringUtils.stripEnd(pathStr, "/"));
+            }
+
+            LOGGER.debug("Base URI assembled from X-Forwarded headers: {}",
+                    newRef);
+        }
+        return newRef;
     }
 
     /**
+     * <p>Returns the root reference, i.e. a reference to the base URI path of
+     * the application.</p>
+     *
+     * <p>{@link Key#BASE_URI} is respected, if set. Otherwise, the {@literal
+     * X-Forwarded-*} request headers are respected, if available. Finally,
+     * Servlet-supplied information is used otherwise.</p>
+     *
      * @see #getPublicReference()
      */
     protected Reference getPublicRootReference() {
-        final Request request = getRequest();
-        return getPublicReference(request.getRootRef(),
-                request.getRootRef(), request.getHeaders());
+        final Reference ref = new Reference(getRequest().getReference());
+        ref.setPath(getRequest().getContextPath());
+
+        // If base_uri is set in the configuration, build a URI based on that.
+        final String baseUri = Configuration.getInstance()
+                .getString(Key.BASE_URI, "");
+        if (!baseUri.isEmpty()) {
+            final Reference baseRef = new Reference(baseUri);
+            ref.setScheme(baseRef.getScheme());
+            ref.setHost(baseRef.getHost());
+            ref.setPort(baseRef.getPort());
+            ref.setPath(StringUtils.stripEnd(baseRef.getPath(), "/"));
+        } else {
+            // Try to use X-Forwarded-* headers.
+            // N.B.: Header values may be comma-separated lists when operating
+            // behind a chain of reverse proxies.
+            final String hostHeader = getRequest().getHeaders()
+                    .getFirstValue("X-Forwarded-Host", "");
+            if (!hostHeader.isEmpty()) {
+                String hostStr = hostHeader.split(",")[0].trim();
+                ref.setHost(hostStr);
+            }
+
+            String protoHeader = getRequest().getHeaders()
+                    .getFirstValue("X-Forwarded-Proto", "");
+            String protoStr = ref.getScheme();
+            if (!protoHeader.isEmpty()) {
+                protoStr = protoHeader.split(",")[0].trim().toLowerCase();
+                ref.setScheme(protoStr);
+            }
+
+            final String portHeader = getRequest().getHeaders()
+                    .getFirstValue("X-Forwarded-Port", "");
+            if (!portHeader.isEmpty()) {
+                String portStr = portHeader.split(",")[0].trim();
+                Integer port = Integer.parseInt(portStr);
+                if ((port == 80 && "http".equalsIgnoreCase(protoStr)) ||
+                        (port == 443 && "https".equalsIgnoreCase(protoStr))) {
+                    port = -1;
+                }
+                ref.setPort(port);
+            }
+
+            final String pathHeader = getRequest().getHeaders()
+                    .getFirstValue("X-Forwarded-Path", "");
+            if (!pathHeader.isEmpty()) {
+                String pathStr = pathHeader.split(",")[0].trim();
+                ref.setPath(StringUtils.stripEnd(pathStr, "/"));
+            }
+        }
+        return ref;
     }
 
     /**
-     * <p>Returns a content disposition based on the following in order of
-     * preference:</p>
+     * <p>Returns a value for a {@literal Content-Disposition} header based on
+     * the following in order of preference:</p>
      *
      * <ol>
      *     <li>The value of the {@link #RESPONSE_CONTENT_DISPOSITION_QUERY_ARG}
@@ -500,7 +600,8 @@ public abstract class AbstractResource extends ServerResource {
      *     application configuration</li>
      * </ol>
      *
-     * <p>Falls back to an empty disposition.</p>
+     * <p>Falls back to an empty disposition, signified by a {@literal null}
+     * return value.</p>
      *
      * <p>If the disposition is {@literal attachment} and the filename is not
      * set, it will be set to a reasonable value based on the given identifier
@@ -511,17 +612,17 @@ public abstract class AbstractResource extends ServerResource {
      * @param identifier
      * @param outputFormat
      */
-    protected Disposition getRepresentationDisposition(String queryArg,
-                                                       Identifier identifier,
-                                                       Format outputFormat) {
-        final Disposition disposition = new Disposition();
+    protected String getRepresentationDisposition(String queryArg,
+                                                  Identifier identifier,
+                                                  Format outputFormat) {
+        String disposition = null;
         // If a query argument value is available, use that. Otherwise, consult
         // the configuration.
         if (queryArg != null) {
             if (queryArg.startsWith("inline")) {
-                disposition.setType(Disposition.TYPE_INLINE);
+                disposition = "inline";
             } else if (queryArg.startsWith("attachment")) {
-                Pattern pattern = Pattern.compile(".*filename=\\\"(.*)\\\".*");
+                Pattern pattern = Pattern.compile(".*filename=\"(.*)\".*");
                 Matcher m = pattern.matcher(queryArg);
                 String filename;
                 if (m.matches()) {
@@ -533,21 +634,18 @@ public abstract class AbstractResource extends ServerResource {
                     filename = getContentDispositionFilename(identifier,
                             outputFormat);
                 }
-                disposition.setType(Disposition.TYPE_ATTACHMENT);
-                disposition.setFilename(filename);
+                disposition = "attachment; filename=" + filename;
             }
         } else {
             switch (Configuration.getInstance()
                     .getString(Key.IIIF_CONTENT_DISPOSITION, "none")) {
                 case "inline":
-                    disposition.setType(Disposition.TYPE_INLINE);
-                    disposition.setFilename(getContentDispositionFilename(
-                            identifier, outputFormat));
+                    disposition = "inline; filename=" +
+                            getContentDispositionFilename(identifier, outputFormat);
                     break;
                 case "attachment":
-                    disposition.setType(Disposition.TYPE_ATTACHMENT);
-                    disposition.setFilename(getContentDispositionFilename(
-                            identifier, outputFormat));
+                    disposition = "attachment; filename=" +
+                            getContentDispositionFilename(identifier, outputFormat);
                     break;
             }
         }
@@ -561,43 +659,74 @@ public abstract class AbstractResource extends ServerResource {
     }
 
     /**
+     * @return Request being handled.
+     */
+    protected final Request getRequest() {
+        return request;
+    }
+
+    /**
      * @return Instance with basic info already set.
      */
-    protected RequestContext getRequestContext() {
+    protected final RequestContext getRequestContext() {
         return requestContext;
     }
 
     /**
-     * @return Whether there is a {@literal cache} query argument set to
-     *         {@literal false} in the URI.
+     * @return Response to be sent.
      */
-    protected boolean isBypassingCache() {
-        boolean bypassingCache = false;
-        Parameter cacheParam = getReference().getQueryAsForm().getFirst("cache");
-        if (cacheParam != null) {
-            bypassingCache = "false".equals(cacheParam.getValue());
-        }
-        return bypassingCache;
+    protected final HttpServletResponse getResponse() {
+        return response;
     }
 
     /**
-     * @param name Template pathname, with leading slash.
-     * @return     Representation using the given template and the common
-     *             template variables.
+     * <p>This implementation returns a one-element array containing {@link
+     * Method#OPTIONS}. It can be overridden to declare or not declare support
+     * for:</p>
+     *
+     * <ul>
+     *     <li>{@link #doGET() GET} (note that {@link #doHEAD() HEAD} is
+     *     implicitly supported when this is supported)</li>
+     *     <li>{@link #doPOST() POST}</li>
+     *     <li>{@link #doPUT() PUT}</li>
+     *     <li>{@link #doDELETE() DELETE}</li>
+     * </ul>
+     *
+     * <p>Overrides should include {@link Method#OPTIONS}.</p>
      */
-    public Representation template(String name) {
-        return template(name, new HashMap<>());
+    public Method[] getSupportedMethods() {
+        return new Method[] { Method.OPTIONS };
     }
 
     /**
-     * @param name Template pathname, with leading slash.
-     * @param vars Template variables.
-     * @return     Representation using the given template and the given
-     *             template variables.
+     * @param limitToTypes Media types to limit the result to, in order of
+     *                     most to least preferred by the application.
+     * @return Best media type conforming to client preferences as expressed in
+     *         the {@literal Accept} header.
      */
-    public Representation template(String name, Map<String,Object> vars) {
-        vars.putAll(getCommonTemplateVars(getRequest()));
-        return new VelocityRepresentation(name, vars);
+    protected final String negotiateContentType(List<String> limitToTypes) {
+        return getPreferredMediaTypes().stream()
+                .filter(limitToTypes::contains)
+                .findFirst()
+                .orElse(null);
+    }
+
+    final void setPathArguments(List<String> pathArguments) {
+        this.pathArguments = pathArguments;
+    }
+
+    /**
+     * @param request Request being handled.
+     */
+    public final void setRequest(Request request) {
+        this.request = request;
+    }
+
+    /**
+     * @param response Response that will be sent.
+     */
+    public final void setResponse(HttpServletResponse response) {
+        this.response = response;
     }
 
 }

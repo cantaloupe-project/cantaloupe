@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Headers;
@@ -9,6 +8,7 @@ import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
+import edu.illinois.library.cantaloupe.resource.Route;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
@@ -29,7 +29,7 @@ public class LandingResourceTest extends ResourceTest {
 
     @Override
     protected String getEndpointPath() {
-        return RestletApplication.IIIF_2_PATH;
+        return Route.IIIF_2_PATH;
     }
 
     @Test
@@ -58,17 +58,19 @@ public class LandingResourceTest extends ResourceTest {
         client = newClient("");
         Response response = client.send();
         Headers headers = response.getHeaders();
-        assertEquals(6, headers.size());
+        assertEquals(7, headers.size());
 
+        // Access-Control-Allow-Origin
+        assertEquals("*", headers.getFirstValue("Access-Control-Allow-Origin"));
+        // Content-Length
+        assertNotNull(headers.getFirstValue("Content-Length"));
         // Content-Type
         assertEquals("text/html;charset=UTF-8",
                 headers.getFirstValue("Content-Type"));
         // Date
         assertNotNull(headers.getFirstValue("Date"));
         // Server
-        assertTrue(headers.getFirstValue("Server").contains("Restlet"));
-        // Transfer-Encoding
-        assertEquals("chunked", headers.getFirstValue("Transfer-Encoding"));
+        assertNotNull(headers.getFirstValue("Server"));
         // Vary
         List<String> parts =
                 Arrays.asList(StringUtils.split(headers.getFirstValue("Vary"), ", "));

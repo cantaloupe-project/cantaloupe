@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.ResourceException;
@@ -11,6 +10,7 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
+import edu.illinois.library.cantaloupe.resource.Route;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
@@ -41,7 +41,7 @@ public class Version2_0ConformanceTest extends ResourceTest {
 
     @Override
     protected String getEndpointPath() {
-        return RestletApplication.IIIF_2_PATH;
+        return Route.IIIF_2_PATH;
     }
 
     /**
@@ -528,13 +528,13 @@ public class Version2_0ConformanceTest extends ResourceTest {
         client = newClient("/" + IMAGE + "/info.json");
         client.getHeaders().set("Accept", "application/ld+json");
         Response response = client.send();
-        assertEquals("application/ld+json; charset=UTF-8",
+        assertEquals("application/ld+json;charset=UTF-8",
                 response.getHeaders().getFirstValue("Content-Type"));
 
         client.getHeaders().set("Accept", "application/json");
         response = client.send();
-        assertEquals("application/json;charset=utf-8",
-                response.getHeaders().getFirstValue("Content-Type").replace(" ", "").toLowerCase());
+        assertEquals("application/json;charset=UTF-8",
+                response.getHeaders().getFirstValue("Content-Type").replace(" ", ""));
     }
 
     /**

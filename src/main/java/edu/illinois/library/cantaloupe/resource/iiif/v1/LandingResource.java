@@ -1,16 +1,27 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import org.restlet.representation.Representation;
-import org.restlet.resource.Get;
+import edu.illinois.library.cantaloupe.http.Method;
+import edu.illinois.library.cantaloupe.resource.VelocityRepresentation;
 
 /**
- * Handles the IIIF Image API 1.1 landing page.
+ * Handles the IIIF Image API 1.x landing page.
  */
 public class LandingResource extends IIIF1Resource {
 
-    @Get
-    public Representation doGet() throws Exception {
-        return template("/iiif_1_landing.vm");
+    private static final Method[] SUPPORTED_METHODS =
+            new Method[] { Method.GET, Method.OPTIONS };
+
+    @Override
+    public Method[] getSupportedMethods() {
+        return SUPPORTED_METHODS;
+    }
+
+    @Override
+    public void doGET() throws Exception {
+        getResponse().setHeader("Content-Type", "text/html;charset=UTF-8");
+
+        new VelocityRepresentation("/iiif_1_landing.vm", getCommonTemplateVars())
+                .write(getResponse().getOutputStream());
     }
 
 }

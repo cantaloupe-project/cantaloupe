@@ -1,30 +1,27 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.List;
 
-import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
+import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
-import edu.illinois.library.cantaloupe.resource.JSONRepresentation;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
-import org.restlet.data.MediaType;
-import org.restlet.data.Preference;
-import org.restlet.data.Reference;
-import org.restlet.representation.EmptyRepresentation;
-import org.restlet.representation.Representation;
-import org.restlet.resource.Get;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handles IIIF Image API 1.x information requests.
@@ -34,31 +31,22 @@ import org.restlet.resource.Get;
  */
 public class InformationResource extends IIIF1Resource {
 
-    /**
-     * Redirects {@literal /:identifier} to {@literal /:identifier/info.json},
-     * respecting the Servlet context root and {@link
-     * #PUBLIC_IDENTIFIER_HEADER} header.
-     */
-    public static class RedirectingResource extends IIIF1Resource {
-        @Get
-        public Representation doGet() {
-            final Reference newRef = new Reference(
-                    getPublicRootReference() +
-                            RestletApplication.IIIF_1_PATH + "/" +
-                            getPublicIdentifier() +
-                            "/info.json");
-            redirectSeeOther(newRef);
-            return new EmptyRepresentation();
-        }
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(InformationResource.class);
+
+    private static final Method[] SUPPORTED_METHODS =
+            new Method[] { Method.GET, Method.OPTIONS };
+
+    @Override
+    public Method[] getSupportedMethods() {
+        return SUPPORTED_METHODS;
     }
 
     /**
-     * Responds to information requests.
-     *
-     * @return {@link ImageInfo} instance serialized to JSON.
+     * Writes a JSON-serialized {@link ImageInfo} instance to the response.
      */
-    @Get
-    public Representation doGet() throws Exception {
+    @Override
+    public void doGET() throws Exception {
         final Configuration config = Configuration.getInstance();
         final Identifier identifier = getIdentifier();
         final CacheFacade cacheFacade = new CacheFacade();
@@ -82,14 +70,14 @@ public class InformationResource extends IIIF1Resource {
                                 new ImageInfoFactory().newImageInfo(
                                         getImageURI(), processor, infoImage,
                                         info.getNumResolutions());
-                        addLinkHeader(imageInfo);
-                        commitCustomResponseHeaders();
-                        return newRepresentation(imageInfo);
+                        addHeaders(imageInfo);
+                        newRepresentation(imageInfo)
+                                .write(getResponse().getOutputStream());
                     }
                 }
             } catch (IOException e) {
                 // Don't rethrow -- it's still possible to service the request.
-                getLogger().severe(e.getMessage());
+                LOGGER.error(e.getMessage());
             }
         }
 
@@ -119,8 +107,7 @@ public class InformationResource extends IIIF1Resource {
         // Otherwise, read it from the source.
         Format format = Format.UNKNOWN;
         if (!isResolvingFirst() && sourceImage != null) {
-            List<edu.illinois.library.cantaloupe.image.MediaType> mediaTypes =
-                    edu.illinois.library.cantaloupe.image.MediaType.detectMediaTypes(sourceImage);
+            List<MediaType> mediaTypes = MediaType.detectMediaTypes(sourceImage);
             if (!mediaTypes.isEmpty()) {
                 format = mediaTypes.get(0).toFormat();
             }
@@ -140,14 +127,14 @@ public class InformationResource extends IIIF1Resource {
                     getImageURI(), processor, infoImage,
                     info.getNumResolutions());
 
-            addLinkHeader(imageInfo);
-            commitCustomResponseHeaders();
-            return newRepresentation(imageInfo);
+            addHeaders(imageInfo);
+            newRepresentation(imageInfo).write(getResponse().getOutputStream());
         }
     }
 
-    private void addLinkHeader(ImageInfo info) {
-        getBufferedResponseHeaders().add("Link",
+    private void addHeaders(ImageInfo info) {
+        getResponse().setHeader("Content-Type", getNegotiatedMediaType());
+        getResponse().setHeader("Link",
                 String.format("<%s>;rel=\"profile\";", info.profile));
     }
 
@@ -157,23 +144,22 @@ public class InformationResource extends IIIF1Resource {
      *         {@link #PUBLIC_IDENTIFIER_HEADER} reverse proxy headers.
      */
     private String getImageURI() {
-        return getPublicRootReference() + RestletApplication.IIIF_1_PATH + "/" +
+        return getPublicRootReference() + Route.IIIF_1_PATH + "/" +
                 getPublicIdentifier();
     }
 
-    private MediaType getNegotiatedMediaType() {
-        MediaType mediaType;
+    private String getNegotiatedMediaType() {
+        String mediaType;
         // If the client has requested JSON-LD, set the content type to
         // that; otherwise set it to JSON.
-        List<Preference<MediaType>> preferences = getRequest().getClientInfo().
-                getAcceptedMediaTypes();
-        if (preferences.get(0) != null && preferences.get(0).toString().
-                startsWith("application/ld+json")) {
-            mediaType = new MediaType("application/ld+json");
+        final List<String> preferences = getPreferredMediaTypes();
+        if (!preferences.isEmpty() && preferences.get(0)
+                .startsWith("application/ld+json")) {
+            mediaType = "application/ld+json";
         } else {
-            mediaType = new MediaType("application/json");
+            mediaType = "application/json";
         }
-        return mediaType;
+        return mediaType + ";charset=UTF-8";
     }
 
     private boolean isResolvingFirst() {
@@ -181,17 +167,8 @@ public class InformationResource extends IIIF1Resource {
                 getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true);
     }
 
-    private Representation newRepresentation(ImageInfo imageInfo) {
-        final MediaType mediaType = getNegotiatedMediaType();
-        return new JSONRepresentation(imageInfo, mediaType, () -> {
-            if (tempFileFuture != null) {
-                Path tempFile = tempFileFuture.get();
-                if (tempFile != null) {
-                    Files.deleteIfExists(tempFile);
-                }
-            }
-            return null;
-        });
+    private JacksonRepresentation newRepresentation(ImageInfo imageInfo) {
+        return new JacksonRepresentation(imageInfo);
     }
 
 }

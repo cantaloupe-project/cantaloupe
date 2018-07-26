@@ -1,24 +1,25 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.util.StringUtil;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
-import org.restlet.data.CharacterSet;
-import org.restlet.data.MediaType;
-import org.restlet.representation.OutputRepresentation;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
- * Representation for Velocity templates. Instances should be obtained from
- * {@link AbstractResource#template}.
+ * Representation for Velocity templates.
  */
-public class VelocityRepresentation extends OutputRepresentation {
+public class VelocityRepresentation implements Representation {
+
+    private String templateName;
+    private Map<String, Object> templateVars;
 
     static {
         Velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
@@ -28,31 +29,32 @@ public class VelocityRepresentation extends OutputRepresentation {
         // http://velocity.apache.org/engine/2.0/developer-guide.html#space-gobbling
         Velocity.setProperty("space.gobbling", "lines");
         Velocity.init();
+
     }
 
-    private String templateName;
-    private Map<String,Object> templateVars;
-
-    VelocityRepresentation(String templateName) {
-        super(MediaType.TEXT_HTML);
-        setCharacterSet(CharacterSet.UTF_8);
+    /**
+     * @param templateName Template pathname, with leading slash.
+     */
+    public VelocityRepresentation(String templateName) {
         this.templateName = templateName;
     }
 
-    VelocityRepresentation(String templateName,
-                           Map<String,Object> templateVars) {
+    /**
+     * @param templateName Template pathname, with leading slash.
+     * @param templateVars Template variables.
+     */
+    public VelocityRepresentation(String templateName,
+                                  Map<String,Object> templateVars) {
         this(templateName);
         this.templateVars = templateVars;
     }
 
     @Override
     public void write(OutputStream outputStream) throws IOException {
+        // Copy template variables into the VelocityContext
         VelocityContext context = new VelocityContext();
-
-        if (templateVars != null) {
-            for (Map.Entry<String,Object> entry : templateVars.entrySet()) {
-                context.put(entry.getKey(), entry.getValue());
-            }
+        for (Map.Entry<String,Object> entry : templateVars.entrySet()) {
+            context.put(entry.getKey(), entry.getValue());
         }
 
         Template template = Velocity.getTemplate(templateName);

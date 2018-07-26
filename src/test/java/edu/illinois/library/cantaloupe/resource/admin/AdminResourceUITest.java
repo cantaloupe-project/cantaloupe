@@ -1,9 +1,8 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
-import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.source.SourceFactory;
+import edu.illinois.library.cantaloupe.resource.Route;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,7 +57,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
 
     @Override
     protected String getEndpointPath() {
-        return RestletApplication.ADMIN_PATH;
+        return Route.ADMIN_PATH;
     }
 
     @Override

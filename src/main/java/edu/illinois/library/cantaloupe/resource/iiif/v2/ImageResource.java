@@ -1,38 +1,36 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
+import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
-import edu.illinois.library.cantaloupe.source.Source;
-import edu.illinois.library.cantaloupe.source.SourceFactory;
-import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
+import edu.illinois.library.cantaloupe.resource.Representation;
+import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
-import org.restlet.data.Disposition;
-import org.restlet.representation.Representation;
-import org.restlet.representation.StringRepresentation;
-import org.restlet.resource.Get;
+import edu.illinois.library.cantaloupe.source.Source;
+import edu.illinois.library.cantaloupe.source.SourceFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -43,30 +41,36 @@ import java.util.Set;
  */
 public class ImageResource extends IIIF2Resource {
 
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(ImageResource.class);
+
+    private static final Method[] SUPPORTED_METHODS =
+            new Method[] { Method.GET, Method.OPTIONS };
+
+    @Override
+    public Method[] getSupportedMethods() {
+        return SUPPORTED_METHODS;
+    }
+
     /**
      * Responds to image requests.
      */
-    @Get
-    public Representation doGet() throws Exception {
+    @Override
+    public void doGET() throws Exception {
         final Configuration config = Configuration.getInstance();
-        final Map<String,Object> attrs = getRequest().getAttributes();
+        final List<String> args = getPathArguments();
         final Identifier identifier = getIdentifier();
         final CacheFacade cacheFacade = new CacheFacade();
 
         // Assemble the URI parameters into a Parameters object.
         final Parameters params = new Parameters(
-                identifier,
-                (String) attrs.get("region"),
-                (String) attrs.get("size"),
-                (String) attrs.get("rotation"),
-                (String) attrs.get("quality"),
-                (String) attrs.get("format"));
+                identifier, args.get(1), args.get(2),
+                args.get(3), args.get(4), args.get(5));
         final OperationList ops = params.toOperationList();
-        ops.getOptions().putAll(
-                getReference().getQueryAsForm(true).getValuesMap());
+        ops.getOptions().putAll(getRequest().getReference().getQuery().toMap());
 
-        final Disposition disposition = getRepresentationDisposition(
-                getReference().getQueryAsForm()
+        final String disposition = getRepresentationDisposition(
+                getRequest().getReference().getQuery()
                         .getFirstValue(RESPONSE_CONTENT_DISPOSITION_QUERY_ARG),
                 ops.getIdentifier(), ops.getOutputFormat());
 
@@ -88,17 +92,16 @@ public class ImageResource extends IIIF2Resource {
                 } catch (IOException e) {
                     // Don't rethrow -- it's still possible to service the
                     // request.
-                    getLogger().severe(e.getMessage());
+                    LOGGER.error(e.getMessage());
                 }
 
                 if (cacheStream != null) {
-                    addLinkHeader(params);
-                    commitCustomResponseHeaders();
+                    addHeaders(params, disposition,
+                            params.getOutputFormat().toFormat().getPreferredMediaType().toString());
 
-                    return new CachedImageRepresentation(
-                            cacheStream,
-                            params.getOutputFormat().toFormat().getPreferredMediaType(),
-                            disposition);
+                    new CachedImageRepresentation(cacheStream)
+                            .write(getResponse().getOutputStream());
+                    return;
                 } else {
                     Format infoFormat = info.getSourceFormat();
                     if (infoFormat != null) {
@@ -143,13 +146,9 @@ public class ImageResource extends IIIF2Resource {
             }
         }
 
-        // Obtain an instance of the processor assigned to that format. This
-        // must eventually be close()d, but we don't want to close it here
-        // unless there is an error.
-        final Processor processor = new ProcessorFactory().
-                newProcessor(sourceFormat);
-
-        try {
+        // Obtain an instance of the processor assigned to that format.
+        try (final Processor processor =
+                     new ProcessorFactory().newProcessor(sourceFormat)) {
             // Connect it to the source.
             tempFileFuture = new ProcessorConnector().connect(
                     source, processor, identifier, sourceFormat);
@@ -164,9 +163,10 @@ public class ImageResource extends IIIF2Resource {
 
             getRequestContext().setOperationList(ops, fullSize);
 
-            StringRepresentation redirectingRep = checkRedirect();
+            Representation redirectingRep = checkRedirect();
             if (redirectingRep != null) {
-                return redirectingRep;
+                redirectingRep.write(getResponse().getOutputStream());
+                return;
             }
 
             checkAuthorization();
@@ -196,45 +196,43 @@ public class ImageResource extends IIIF2Resource {
                 if (!availableOutputFormats.contains(ops.getOutputFormat())) {
                     Exception e = new UnsupportedOutputFormatException(
                             processor, ops.getOutputFormat());
-                    getLogger().warning(e.getMessage() + ": " + getReference());
+                    LOGGER.warn("{}: {}",
+                            e.getMessage(),
+                            getRequest().getReference());
                     throw e;
                 }
             } else {
                 throw new UnsupportedSourceFormatException(sourceFormat);
             }
 
-            addLinkHeader(params);
-            commitCustomResponseHeaders();
-            return new ImageRepresentation(info, processor, ops, disposition,
-                    isBypassingCache(), () -> {
-                if (tempFileFuture != null) {
-                    Path tempFile = tempFileFuture.get();
-                    if (tempFile != null) {
-                        Files.deleteIfExists(tempFile);
-                    }
-                }
-                return null;
-            });
-        } catch (Throwable t) {
-            processor.close();
-            throw t;
+            addHeaders(params, disposition,
+                    params.getOutputFormat().toFormat().getPreferredMediaType().toString());
+
+            new ImageRepresentation(info, processor, ops, isBypassingCache())
+                    .write(getResponse().getOutputStream());
         }
     }
 
-    private void addLinkHeader(Parameters params) {
+    private void addHeaders(Parameters params,
+                            String disposition,
+                            String contentType) {
+        if (disposition != null) {
+            getResponse().setHeader("Content-Disposition", disposition);
+        }
+        getResponse().setHeader("Content-Type", contentType);
+
         final Identifier identifier = params.getIdentifier();
         final String paramsStr = params.toString().replaceFirst(
                 identifier.toString(), getPublicIdentifier());
-
-        getBufferedResponseHeaders().add("Link",
+        getResponse().setHeader("Link",
                 String.format("<%s%s/%s>;rel=\"canonical\"",
                 getPublicRootReference(),
-                RestletApplication.IIIF_2_PATH, paramsStr));
+                Route.IIIF_2_PATH, paramsStr));
     }
 
     private void validateSize(Dimension resultingSize,
                               Dimension virtualSize,
-                              Processor processor) {
+                              Processor processor) throws SizeRestrictedException {
         final Configuration config = Configuration.getInstance();
 
         if (config.getBoolean(Key.IIIF_2_RESTRICT_TO_SIZES, false)) {

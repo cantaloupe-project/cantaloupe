@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Headers;
@@ -9,6 +8,7 @@ import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.image.MediaType;
+import edu.illinois.library.cantaloupe.resource.Route;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +33,7 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
 
     @Override
     protected String getEndpointPath() {
-        return RestletApplication.TASKS_PATH;
+        return Route.TASKS_PATH;
     }
 
     @Override
@@ -155,29 +155,18 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
         client.setContentType(MediaType.APPLICATION_JSON);
         Response response = client.send();
         Headers headers = response.getHeaders();
-        assertEquals(8, headers.size());
+        assertEquals(6, headers.size());
 
         // Cache-Control
         assertEquals("no-cache", headers.getFirstValue("Cache-Control"));
         // Content-Length
-        assertEquals("0", headers.getFirstValue("Content-Length"));
-        // Content-Type
-        assertTrue(headers.getFirstValue("Content-Type").contains("charset=UTF-8"));
+        assertNotNull(headers.getFirstValue("Content-Length"));
         // Date
         assertNotNull(headers.getFirstValue("Date"));
         // Location
         assertNotNull(headers.getFirstValue("Location"));
         // Server
-        assertTrue(headers.getFirstValue("Server").contains("Restlet"));
-        // Vary
-        List<String> parts =
-                Arrays.asList(StringUtils.split(headers.getFirstValue("Vary"), ", "));
-        assertEquals(5, parts.size());
-        assertTrue(parts.contains("Accept"));
-        assertTrue(parts.contains("Accept-Charset"));
-        assertTrue(parts.contains("Accept-Encoding"));
-        assertTrue(parts.contains("Accept-Language"));
-        assertTrue(parts.contains("Origin"));
+        assertNotNull(headers.getFirstValue("Server"));
         // X-Powered-By
         assertEquals(Application.getName() + "/" + Application.getVersion(),
                 headers.getFirstValue("X-Powered-By"));

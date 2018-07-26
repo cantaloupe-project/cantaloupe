@@ -6,11 +6,6 @@
                   http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
     <display-name>Cantaloupe</display-name>
 
-    <context-param>
-        <param-name>org.restlet.application</param-name>
-        <param-value>edu.illinois.library.cantaloupe.RestletApplication</param-value>
-    </context-param>
-
     <listener>
         <display-name>ApplicationListener</display-name>
         <listener-class>edu.illinois.library.cantaloupe.ApplicationContextListener</listener-class>
@@ -21,16 +16,16 @@
     </listener>
 
     <servlet>
-        <servlet-name>ServerServlet</servlet-name>
-        <servlet-class>org.restlet.ext.servlet.ServerServlet</servlet-class>
-        <init-param>
-            <param-name>org.restlet.clients</param-name>
-            <param-value>CLAP HTTP HTTPS</param-value>
-        </init-param>
+        <servlet-name>HandlerServlet</servlet-name>
+        <servlet-class>edu.illinois.library.cantaloupe.resource.HandlerServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>ServerServlet</servlet-name>
+        <servlet-name>HandlerServlet</servlet-name>
         <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>default</servlet-name>
+        <url-pattern>/static/*</url-pattern>
     </servlet-mapping>
 </web-app>

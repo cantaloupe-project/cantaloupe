@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Response;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -40,7 +39,7 @@ public class LandingResourceTest extends ResourceTest {
         client = newClient("");
         Response response = client.send();
         Headers headers = response.getHeaders();
-        assertEquals(7, headers.size());
+        assertEquals(6, headers.size());
 
         // Cache-Control
         assertTrue(headers.getFirstValue("Cache-Control").contains("public"));
@@ -48,22 +47,12 @@ public class LandingResourceTest extends ResourceTest {
         // Content-Type
         assertEquals("text/html;charset=UTF-8",
                 headers.getFirstValue("Content-Type"));
+        // Content-Length
+        assertTrue(Integer.parseInt(headers.getFirstValue("Content-Length")) > 10);
         // Date
         assertNotNull(headers.getFirstValue("Date"));
         // Server
-        assertTrue(headers.getFirstValue("Server").contains("Restlet"));
-        // Transfer-Encoding
-        assertEquals("chunked",
-                headers.getFirstValue("Transfer-Encoding"));
-        // Vary
-        List<String> parts =
-                Arrays.asList(StringUtils.split(headers.getFirstValue("Vary"), ", "));
-        assertEquals(5, parts.size());
-        assertTrue(parts.contains("Accept"));
-        assertTrue(parts.contains("Accept-Charset"));
-        assertTrue(parts.contains("Accept-Encoding"));
-        assertTrue(parts.contains("Accept-Language"));
-        assertTrue(parts.contains("Origin"));
+        assertNotNull(headers.getFirstValue("Server"));
         // X-Powered-By
         assertEquals(Application.getName() + "/" + Application.getVersion(),
                 headers.getFirstValue("X-Powered-By"));
@@ -78,7 +67,7 @@ public class LandingResourceTest extends ResourceTest {
 
         Headers headers = response.getHeaders();
         List<String> methods =
-                Arrays.asList(StringUtils.split(headers.getFirstValue("Allow"), ", "));
+                Arrays.asList(headers.getFirstValue("Allow").split(","));
         assertEquals(2, methods.size());
         assertTrue(methods.contains("GET"));
         assertTrue(methods.contains("OPTIONS"));

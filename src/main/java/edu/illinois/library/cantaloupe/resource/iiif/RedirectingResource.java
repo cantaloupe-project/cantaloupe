@@ -1,23 +1,30 @@
 package edu.illinois.library.cantaloupe.resource.iiif;
 
-import edu.illinois.library.cantaloupe.RestletApplication;
+import edu.illinois.library.cantaloupe.http.Method;
+import edu.illinois.library.cantaloupe.http.Reference;
+import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
-import org.restlet.data.Reference;
-import org.restlet.representation.EmptyRepresentation;
-import org.restlet.representation.Representation;
-import org.restlet.resource.Get;
+import edu.illinois.library.cantaloupe.resource.Route;
 
 /**
  * Redirects /iiif to a URI for a more specific version of the Image API.
  */
 public class RedirectingResource extends AbstractResource {
 
-    @Get
-    public Representation doGet() throws Exception {
+    private static final Method[] SUPPORTED_METHODS =
+            new Method[] { Method.GET, Method.OPTIONS };
+
+    @Override
+    public Method[] getSupportedMethods() {
+        return SUPPORTED_METHODS;
+    }
+
+    @Override
+    public void doGET() {
         final Reference newRef = new Reference(
-                getPublicRootReference() + RestletApplication.IIIF_2_PATH);
-        redirectSeeOther(newRef);
-        return new EmptyRepresentation();
+                getPublicRootReference() + Route.IIIF_2_PATH);
+        getResponse().setStatus(Status.SEE_OTHER.getCode());
+        getResponse().setHeader("Location", newRef.toString());
     }
 
 }

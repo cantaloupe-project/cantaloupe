@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif;
 
 import edu.illinois.library.cantaloupe.ApplicationServer;
-import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.InfoService;
 import edu.illinois.library.cantaloupe.cache.MockBrokenDerivativeInputStreamCache;
@@ -15,6 +14,7 @@ import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.http.Transport;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.resource.PublicResource;
 import edu.illinois.library.cantaloupe.source.FileSource;
 import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
@@ -64,7 +64,7 @@ public class ImageAPIResourceTester {
         initializeBasicAuth(appServer);
         try {
             Client client = newClient(uri);
-            client.setRealm(RestletApplication.PUBLIC_REALM);
+            client.setRealm(PublicResource.BASIC_REALM);
             client.setUsername("invalid");
             client.setSecret("invalid");
             try {
@@ -85,7 +85,7 @@ public class ImageAPIResourceTester {
         initializeBasicAuth(appServer);
         try {
             Client client = newClient(uri);
-            client.setRealm(RestletApplication.PUBLIC_REALM);
+            client.setRealm(PublicResource.BASIC_REALM);
             client.setUsername(BASIC_AUTH_USER);
             client.setSecret(BASIC_AUTH_SECRET);
             try {
@@ -126,7 +126,8 @@ public class ImageAPIResourceTester {
             client.send();
             fail("Expected exception");
         } catch (ResourceException e) {
-            assertNull(e.getResponse().getHeaders().get("Cache-Control"));
+            assertEquals("no-cache, must-revalidate",
+                    e.getResponse().getHeaders().get("Cache-Control"));
         } finally {
             client.stop();
         }

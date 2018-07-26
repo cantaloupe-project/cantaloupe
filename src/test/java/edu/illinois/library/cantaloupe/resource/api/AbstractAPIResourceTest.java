@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
-import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Headers;
@@ -32,7 +31,7 @@ abstract class AbstractAPIResourceTest extends ResourceTest {
         config.setProperty(Key.API_USERNAME, USERNAME);
         config.setProperty(Key.API_SECRET, SECRET);
 
-        client = newClient("", USERNAME, SECRET, RestletApplication.API_REALM);
+        client = newClient("", USERNAME, SECRET, AbstractAPIResource.BASIC_REALM);
     }
 
     @Test

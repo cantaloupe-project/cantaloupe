@@ -3,30 +3,16 @@ package edu.illinois.library.cantaloupe.resource;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.restlet.data.CharacterSet;
-import org.restlet.data.MediaType;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.concurrent.Callable;
 
-public class JSONRepresentation extends CustomOutputRepresentation {
+public class JacksonRepresentation implements Representation {
 
     private Object toWrite;
 
-    public JSONRepresentation(Object toWrite) {
-        super(MediaType.APPLICATION_JSON);
-        setCharacterSet(CharacterSet.UTF_8);
+    public JacksonRepresentation(Object toWrite) {
         this.toWrite = toWrite;
-    }
-
-    public JSONRepresentation(Object toWrite,
-                              MediaType mediaType,
-                              Callable<?> onRelease) {
-        super(mediaType);
-        setCharacterSet(CharacterSet.UTF_8);
-        this.toWrite = toWrite;
-        this.onRelease = onRelease;
     }
 
     @Override

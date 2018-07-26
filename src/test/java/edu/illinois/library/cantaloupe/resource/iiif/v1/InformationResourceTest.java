@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Headers;
@@ -12,6 +11,7 @@ import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
+import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.iiif.InformationResourceTester;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
@@ -37,7 +37,7 @@ public class InformationResourceTest extends ResourceTest {
 
     @Override
     protected String getEndpointPath() {
-        return RestletApplication.IIIF_1_PATH;
+        return Route.IIIF_1_PATH;
     }
 
     @Test
@@ -241,37 +241,6 @@ public class InformationResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testGETRedirectToInfoJSON() {
-        URI fromURI = getHTTPURI("/" + IMAGE);
-        URI toURI = getHTTPURI("/" + IMAGE + "/info.json");
-        tester.testRedirectToInfoJSON(fromURI, toURI);
-    }
-
-    @Test
-    public void testGETRedirectToInfoJSONWithEncodedCharacters() {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.SLASH_SUBSTITUTE, ":");
-
-        URI fromURI = getHTTPURI("/subfolder%3A" + IMAGE);
-        URI toURI = getHTTPURI("/subfolder%3A" + IMAGE + "/info.json");
-        tester.testRedirectToInfoJSONWithEncodedCharacters(fromURI, toURI);
-    }
-
-    @Test
-    public void testGETRedirectToInfoJSONWithDifferentPublicIdentifier()
-            throws Exception {
-        URI uri = getHTTPURI("/" + IMAGE);
-        tester.testRedirectToInfoJSONWithDifferentPublicIdentifier(uri);
-    }
-
-    @Test
-    public void testGETRedirectToInfoJSONWithDifferentDeprecatedPublicIdentifier()
-            throws Exception {
-        URI uri = getHTTPURI("/" + IMAGE);
-        tester.testRedirectToInfoJSONWithDifferentDeprecatedPublicIdentifier(uri);
-    }
-
-    @Test
     public void testGETResolverCheckAccessNotCalledWithSourceCacheHit()
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/info.json");
@@ -319,7 +288,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("http://localhost:" + HTTP_PORT +
-                RestletApplication.IIIF_1_PATH + "/" + IMAGE, info.id);
+                Route.IIIF_1_PATH + "/" + IMAGE, info.id);
     }
 
     @Test
@@ -333,8 +302,8 @@ public class InformationResourceTest extends ResourceTest {
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
-        assertEquals("http://example.org" +
-                RestletApplication.IIIF_1_PATH + "/" + IMAGE, info.id);
+        assertEquals("http://example.org" + Route.IIIF_1_PATH + "/" + IMAGE,
+                info.id);
     }
 
     @Test
@@ -349,8 +318,8 @@ public class InformationResourceTest extends ResourceTest {
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
-        assertEquals("http://localhost:" + HTTP_PORT +
-                RestletApplication.IIIF_1_PATH + path, info.id);
+        assertEquals("http://localhost:" + HTTP_PORT + Route.IIIF_1_PATH + path,
+                info.id);
     }
 
     @Test
@@ -366,7 +335,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("http://localhost:" + HTTP_PORT +
-                RestletApplication.IIIF_1_PATH + path, info.id);
+                Route.IIIF_1_PATH + path, info.id);
     }
 
     @Test
@@ -384,7 +353,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("http://example.org:8080/cats" +
-                RestletApplication.IIIF_1_PATH + "/originalID", info.id);
+                Route.IIIF_1_PATH + "/originalID", info.id);
     }
 
     @Test
@@ -403,7 +372,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         ImageInfo info = mapper.readValue(json, ImageInfo.class);
         assertEquals("https://example.net" +
-                RestletApplication.IIIF_1_PATH + "/" + IMAGE, info.id);
+                Route.IIIF_1_PATH + "/" + IMAGE, info.id);
     }
 
     /**
@@ -415,8 +384,12 @@ public class InformationResourceTest extends ResourceTest {
         client = newClient("/" + IMAGE + "/info.json");
         Response response = client.send();
         Headers headers = response.getHeaders();
-        assertEquals(7, headers.size());
+        assertEquals(8, headers.size());
 
+        // Access-Control-Allow-Origin
+        assertEquals("*", headers.getFirstValue("Access-Control-Allow-Origin"));
+        // Content-Length
+        assertNotNull(headers.getFirstValue("Content-Length"));
         // Content-Type
         assertEquals("application/json;charset=UTF-8",
                 headers.getFirstValue("Content-Type"));
@@ -425,9 +398,7 @@ public class InformationResourceTest extends ResourceTest {
         // Link
         assertTrue(headers.getFirstValue("Link").contains("://"));
         // Server
-        assertTrue(headers.getFirstValue("Server").contains("Restlet"));
-        // Transfer-Encoding
-        assertEquals("chunked", headers.getFirstValue("Transfer-Encoding"));
+        assertNotNull(headers.getFirstValue("Server"));
         // Vary
         List<String> parts = Arrays.asList(StringUtils.split(headers.getFirstValue("Vary"), ", "));
         assertEquals(5, parts.size());

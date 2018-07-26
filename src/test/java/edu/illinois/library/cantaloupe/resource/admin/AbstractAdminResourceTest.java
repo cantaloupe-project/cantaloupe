@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
-import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Headers;
@@ -34,7 +33,7 @@ abstract class AbstractAdminResourceTest extends ResourceTest {
         config.setProperty(Key.ADMIN_SECRET, SECRET);
 
         client = newClient("", USERNAME, SECRET,
-                RestletApplication.ADMIN_REALM);
+                AbstractAdminResource.BASIC_REALM);
     }
 
     @Test

@@ -1,13 +1,14 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
+import edu.illinois.library.cantaloupe.cache.InfoCache;
 import edu.illinois.library.cantaloupe.cache.InfoService;
-import edu.illinois.library.cantaloupe.resource.JSONRepresentation;
+import edu.illinois.library.cantaloupe.http.Method;
+import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.InvocationCache;
 import edu.illinois.library.cantaloupe.util.TimeUtils;
-import org.restlet.representation.Representation;
-import org.restlet.resource.Get;
 
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.HashMap;
@@ -18,7 +19,7 @@ import java.util.Map;
  */
 public class StatusResource extends AbstractAdminResource {
 
-    static class Status {
+    static class Info {
 
         private static final long MEGABYTE = 1024 * 1024;
 
@@ -26,7 +27,7 @@ public class StatusResource extends AbstractAdminResource {
         public final Map<String,Object> infoCache = new HashMap<>();
         public final Map<String,Object> vm = new HashMap<>();
 
-        public Status() {
+        public Info() {
             try {
                 InvocationCache cache = DelegateProxy.getInvocationCache();
                 delegateMethodInvocationCache.put("size", cache.size());
@@ -36,10 +37,9 @@ public class StatusResource extends AbstractAdminResource {
                 // elsewhere.
             }
 
-            this.infoCache.put("size",
-                    InfoService.getInstance().getInfoCache().size());
-            this.infoCache.put("maxSize",
-                    InfoService.getInstance().getInfoCache().maxSize());
+            InfoCache infoCache = InfoService.getInstance().getInfoCache();
+            this.infoCache.put("size", infoCache.size());
+            this.infoCache.put("maxSize", infoCache.maxSize());
 
             Runtime runtime = Runtime.getRuntime();
             RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
@@ -54,9 +54,21 @@ public class StatusResource extends AbstractAdminResource {
         }
     }
 
-    @Get("json")
-    public Representation getConfiguration() {
-        return new JSONRepresentation(new Status());
+    private static final Method[] SUPPORTED_METHODS =
+            new Method[] { Method.GET, Method.OPTIONS };
+
+    @Override
+    public Method[] getSupportedMethods() {
+        return SUPPORTED_METHODS;
+    }
+
+    @Override
+    public void doGET() throws IOException {
+        getResponse().setHeader("Content-Type",
+                "application/json;charset=UTF-8");
+
+        new JacksonRepresentation(new Info())
+                .write(getResponse().getOutputStream());
     }
 
 }

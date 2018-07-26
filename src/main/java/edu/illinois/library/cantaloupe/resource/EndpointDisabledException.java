@@ -1,12 +1,11 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import org.restlet.data.Status;
-import org.restlet.resource.ResourceException;
+import edu.illinois.library.cantaloupe.http.Status;
 
 public class EndpointDisabledException extends ResourceException {
 
     public EndpointDisabledException() {
-        super(Status.CLIENT_ERROR_FORBIDDEN, "This endpoint is disabled.");
+        super(Status.FORBIDDEN, "This endpoint is disabled.");
     }
 
 }

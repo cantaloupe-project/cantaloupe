@@ -1,15 +1,13 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
+import edu.illinois.library.cantaloupe.http.Query;
+import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import org.apache.commons.lang3.StringUtils;
-import org.restlet.data.Reference;
-import org.restlet.data.Form;
-
-import java.io.IOException;
 
 /**
  * Encapsulates the parameters of a request.
@@ -27,7 +25,7 @@ class Parameters {
     private Rotation rotation;
     private Quality quality;
     private OutputFormat outputFormat;
-    private Form query = new Form();
+    private Query query = new Query();
 
     /**
      * @param paramsStr URI path fragment beginning from the identifier onward.
@@ -121,7 +119,7 @@ class Parameters {
      *         operations not available in the parameters. Query keys and
      *         values are not sanitized.
      */
-    public Form getQuery() {
+    public Query getQuery() {
         return query;
     }
 
@@ -154,7 +152,7 @@ class Parameters {
         this.quality = quality;
     }
 
-    public void setQuery(Form query) {
+    public void setQuery(Query query) {
         this.query = query;
     }
 
@@ -198,17 +196,23 @@ class Parameters {
      * @return URI parameters with no leading slash.
      */
     public String toString() {
-        String str = String.format("%s/%s/%s/%s/%s.%s", getIdentifier(),
-                getRegion(), getSize(), getRotation(),
-                getQuality().toString().toLowerCase(), getOutputFormat());
-        if (this.getQuery().size() > 0) {
-            try {
-                str += "?" + this.getQuery().encode();
-            } catch (IOException e) {
-                throw new IllegalClientArgumentException(e.getMessage(), e);
-            }
+        final StringBuilder builder = new StringBuilder();
+        builder.append(getIdentifier());
+        builder.append("/");
+        builder.append(getRegion());
+        builder.append("/");
+        builder.append(getSize());
+        builder.append("/");
+        builder.append(getRotation());
+        builder.append("/");
+        builder.append(getQuality().toString().toLowerCase());
+        builder.append(".");
+        builder.append(getOutputFormat());
+        if (!getQuery().isEmpty()) {
+            builder.append("?");
+            builder.append(getQuery().toString());
         }
-        return str;
+        return builder.toString();
     }
 
 }
