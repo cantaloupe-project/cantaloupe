@@ -56,7 +56,7 @@ public final class Header {
 
     @Override
     public String toString() {
-        return getValue();
+        return getName() + ": " + getValue();
     }
 
 }

@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -84,6 +85,16 @@ public class HeadersTest {
     }
 
     @Test
+    public void testGetFirstValueWithDefaultValue() {
+        assertEquals("default value",
+                instance.getFirstValue("name", "default value"));
+
+        instance.add("name", "value1");
+        instance.add("name", "value2");
+        assertEquals("value1", instance.getFirstValue("name"));
+    }
+
+    @Test
     public void testHashCodeWithEqualObjects() {
         Headers h1 = new Headers();
         Headers h2 = new Headers();
@@ -152,6 +163,15 @@ public class HeadersTest {
         instance.add("name", "value");
         instance.add("name", "value");
         assertEquals(2, instance.stream().collect(Collectors.toList()).size());
+    }
+
+    @Test
+    public void testToMap() {
+        instance.add("name1", "value1");
+        instance.add("name1", "value2");
+        instance.add("name2", "value1");
+        Map<String, String> map = instance.toMap();
+        assertEquals(2, map.size());
     }
 
 }

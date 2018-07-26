@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.ResourceException;
@@ -10,6 +9,7 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
+import edu.illinois.library.cantaloupe.resource.Route;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
@@ -39,7 +39,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
 
     @Override
     protected String getEndpointPath() {
-        return RestletApplication.IIIF_1_PATH;
+        return Route.IIIF_1_PATH;
     }
 
     /**

@@ -33,11 +33,6 @@ public class ApplicationContextListener implements ServletContextListener {
         // This is also set at startup in StandaloneEntry, but doing it here
         // suppresses the icon when running the tests.
         System.setProperty("java.awt.headless", "true");
-
-        // Tell Restlet to use SLF4J instead of java.util.logging. This needs
-        // to be done before Restlet has been initialized.
-        System.setProperty("org.restlet.engine.loggerFacadeClass",
-                org.restlet.ext.slf4j.Slf4jLoggerFacade.class.getName());
     }
 
     private void handleVmArguments() {

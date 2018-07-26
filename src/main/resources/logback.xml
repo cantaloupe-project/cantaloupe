@@ -171,8 +171,6 @@
             </then>
         </if>
     </logger>
-    <logger name="edu.illinois.library.cantaloupe.logging.velocity.Slf4jLogChute" level="INFO" />
-    <logger name="org.restlet" level="INFO" />
 
     <root level="${log.application.level}">
         <!--

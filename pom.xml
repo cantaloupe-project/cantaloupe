@@ -17,7 +17,6 @@
     <jackson.version>2.9.5</jackson.version>
     <jetty.version>9.4.9.v20180320</jetty.version>
     <jruby.version>9.1.17.0</jruby.version>
-    <restlet.version>2.3.11</restlet.version>
     <surefire.version>2.21.0</surefire.version>
   </properties>
 
@@ -344,12 +343,6 @@
       <version>${jruby.version}</version>
       <scope>runtime</scope>
     </dependency>
-    <!-- Restlet is our REST framework. -->
-    <dependency>
-      <groupId>org.restlet.jee</groupId>
-      <artifactId>org.restlet</artifactId>
-      <version>${restlet.version}</version>
-    </dependency>
     <!-- Jackson for data serialization -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -371,18 +364,6 @@
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
       <version>${jackson.version}</version>
-    </dependency>
-    <!-- Makes Restlet log to SLF4J -->
-    <dependency>
-      <groupId>org.restlet.jee</groupId>
-      <artifactId>org.restlet.ext.slf4j</artifactId>
-      <version>${restlet.version}</version>
-    </dependency>
-    <!-- Enable usage of the application in a Servlet container -->
-    <dependency>
-      <groupId>org.restlet.jee</groupId>
-      <artifactId>org.restlet.ext.servlet</artifactId>
-      <version>${restlet.version}</version>
     </dependency>
     <!-- Provides Velocity for the landing and error page templates -->
     <dependency>
@@ -430,12 +411,6 @@
       <id>imageio-ext-repository</id>
       <name>imageio-ext Repository</name>
       <url>http://maven.geo-solutions.it/</url>
-    </repository>
-    <!-- Provides Restlet -->
-    <repository>
-      <id>maven-restlet</id>
-      <name>Restlet repository</name>
-      <url>http://maven.restlet.com</url>
     </repository>
   </repositories>
 

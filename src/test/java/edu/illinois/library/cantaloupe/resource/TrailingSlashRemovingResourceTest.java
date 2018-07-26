@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Response;
@@ -12,7 +11,7 @@ public class TrailingSlashRemovingResourceTest extends ResourceTest {
 
     @Override
     protected String getEndpointPath() {
-        return RestletApplication.IIIF_2_PATH;
+        return Route.IIIF_2_PATH;
     }
 
     @Test
@@ -42,15 +41,14 @@ public class TrailingSlashRemovingResourceTest extends ResourceTest {
     @Test
     public void testDoGetRespectsXForwardedHeaders() throws Exception {
         client = newClient("/");
-        client.getHeaders().set("X-Forwarded-Host", "http://example.org/");
+        client.getHeaders().set("X-Forwarded-Host", "example.org");
         client.getHeaders().set("X-Forwarded-Proto", "HTTP");
         client.getHeaders().set("X-Forwarded-Port", "80");
-        client.getHeaders().set("X-Forwarded-Path", "/cats");
         Response response = client.send();
 
         assertEquals(301, response.getStatus());
         assertTrue(response.getHeaders().getFirstValue("Location").
-                endsWith("/cats" + getEndpointPath()));
+                endsWith(getEndpointPath()));
         assertTrue(response.getBodyAsString().isEmpty());
     }
 

@@ -3,14 +3,11 @@ package edu.illinois.library.cantaloupe.resource.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.async.TaskQueue;
+import edu.illinois.library.cantaloupe.http.Method;
+import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
-import org.restlet.data.CharacterSet;
-import org.restlet.data.Status;
-import org.restlet.representation.EmptyRepresentation;
-import org.restlet.representation.Representation;
-import org.restlet.resource.Post;
+import edu.illinois.library.cantaloupe.resource.Route;
 
 import java.util.concurrent.Callable;
 
@@ -20,27 +17,33 @@ import java.util.concurrent.Callable;
  */
 public class TasksResource extends AbstractAPIResource {
 
-    private static final TaskMonitor taskMonitor = new TaskMonitor();
+    private static final Method[] SUPPORTED_METHODS =
+            new Method[] { Method.OPTIONS, Method.POST };
+
+    private static final TaskMonitor TASK_MONITOR = new TaskMonitor();
+
+    @Override
+    public Method[] getSupportedMethods() {
+        return SUPPORTED_METHODS;
+    }
 
     static TaskMonitor getTaskMonitor() {
-        return taskMonitor;
+        return TASK_MONITOR;
     }
 
     /**
-     * @param rep JSON object with, at a minimum, a <code>verb</code> key with
-     *            a value of one of the
-     *            {@link com.fasterxml.jackson.annotation.JsonSubTypes.Type}
-     *            annotations on {@link APITask}.
-     * @return    Empty representation.
+     * Accepts a JSON object in the request entity with, at a minimum, a
+     * {@literal verb} key with a value of one of the {@link
+     * com.fasterxml.jackson.annotation.JsonSubTypes.Type} annotations on
+     * {@link APITask}.
      */
-    @Post("json")
-    public Representation doPost(Representation rep) throws Exception {
+    @Override
+    public void doPOST() throws Exception {
         // N.B.: ObjectMapper will deserialize into the correct subclass.
         ObjectReader reader = new ObjectMapper().readerFor(Command.class);
 
         try {
-            // N.B.: Restlet will close this InputStream.
-            Command command = reader.readValue(rep.getStream());
+            Command command = reader.readValue(getRequest().getInputStream());
             Callable<?> callable = (Callable<?>) command;
             APITask<?> task = new APITask<>(callable);
 
@@ -57,17 +60,11 @@ public class TasksResource extends AbstractAPIResource {
 
             // Return 202 Accepted and a Location header pointing to the task
             // URI.
+            getResponse().setStatus(Status.ACCEPTED.getCode());
+
             final String taskURI = getPublicRootReference() +
-                    RestletApplication.TASKS_PATH + "/" +
-                    task.getUUID().toString();
-
-            setLocationRef(taskURI);
-            setStatus(Status.SUCCESS_ACCEPTED);
-            commitCustomResponseHeaders();
-
-            Representation responseRep = new EmptyRepresentation();
-            responseRep.setCharacterSet(CharacterSet.UTF_8);
-            return responseRep;
+                    Route.TASKS_PATH + "/" + task.getUUID().toString();
+            getResponse().setHeader("Location", taskURI);
         } catch (NullPointerException | JsonProcessingException e) {
             throw new IllegalClientArgumentException(e.getMessage(), e);
         }

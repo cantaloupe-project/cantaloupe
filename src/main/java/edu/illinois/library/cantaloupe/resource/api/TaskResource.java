@@ -1,11 +1,9 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
-import edu.illinois.library.cantaloupe.resource.JSONRepresentation;
-import org.restlet.representation.Representation;
-import org.restlet.resource.Get;
+import edu.illinois.library.cantaloupe.http.Method;
+import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
 
 import java.nio.file.NoSuchFileException;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -13,20 +11,29 @@ import java.util.UUID;
  */
 public class TaskResource extends AbstractAPIResource {
 
-    /**
-     * @return JSON task representation.
-     */
-    @Get
-    public Representation doGet() throws Exception {
-        final Map<String,Object> attrs = getRequest().getAttributes();
-        final String uuidStr = (String) attrs.get("uuid");
+    private static final Method[] SUPPORTED_METHODS =
+            new Method[] { Method.GET, Method.OPTIONS };
 
+    @Override
+    public Method[] getSupportedMethods() {
+        return SUPPORTED_METHODS;
+    }
+
+    /**
+     * Writes a JSON task representation to the response output stream.
+     */
+    public void doGET() throws Exception {
+        final String uuidStr = getPathArguments().get(0);
         try {
             final UUID uuid = UUID.fromString(uuidStr);
             APITask<?> task = TasksResource.getTaskMonitor().get(uuid);
 
             if (task != null) {
-                return new JSONRepresentation(task);
+                getResponse().setHeader("Content-Type",
+                        "application/json;charset=UTF-8");
+
+                new JacksonRepresentation(task)
+                        .write(getResponse().getOutputStream());
             } else {
                 throw new NoSuchFileException("No such task");
             }

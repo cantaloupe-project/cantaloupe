@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.resource.iiif;
 
-import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
+import edu.illinois.library.cantaloupe.resource.Route;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -14,7 +14,7 @@ public class RedirectingResourceTest extends ResourceTest {
 
     @Override
     protected String getEndpointPath() {
-        return RestletApplication.IIIF_PATH;
+        return Route.IIIF_PATH;
     }
 
     @Test
@@ -24,7 +24,7 @@ public class RedirectingResourceTest extends ResourceTest {
 
         assertEquals(303, response.getStatus());
         assertTrue(response.getHeaders().getFirstValue("Location").
-                endsWith(RestletApplication.IIIF_2_PATH));
+                endsWith(Route.IIIF_2_PATH));
         assertTrue(response.getBodyAsString().isEmpty());
     }
 

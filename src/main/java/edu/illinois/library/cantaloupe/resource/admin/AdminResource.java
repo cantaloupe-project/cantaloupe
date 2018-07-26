@@ -1,10 +1,11 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
-import edu.illinois.library.cantaloupe.RestletApplication;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.FileConfiguration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Headers;
+import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Scale;
@@ -12,12 +13,10 @@ import edu.illinois.library.cantaloupe.processor.InitializationException;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
+import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.resource.VelocityRepresentation;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
-import org.restlet.data.Header;
-import org.restlet.representation.Representation;
-import org.restlet.resource.Get;
-import org.restlet.util.Series;
 
 import java.awt.GraphicsEnvironment;
 import java.io.File;
@@ -95,12 +94,20 @@ public class AdminResource extends AbstractAdminResource {
         }
     }
 
-    /**
-     * @return HTML representation of the admin interface.
-     */
-    @Get("html")
-    public Representation doGet() {
-        return template("/admin.vm", getTemplateVars());
+    private static final Method[] SUPPORTED_METHODS =
+            new Method[] { Method.GET, Method.OPTIONS };
+
+    @Override
+    public Method[] getSupportedMethods() {
+        return SUPPORTED_METHODS;
+    }
+
+    @Override
+    public void doGET() throws Exception {
+        getResponse().setHeader("Content-Type", "text/html;charset=UTF-8");
+
+        new VelocityRepresentation("/admin.vm", getTemplateVars())
+                .write(getResponse().getOutputStream());
     }
 
     /**
@@ -108,8 +115,8 @@ public class AdminResource extends AbstractAdminResource {
      *         interface's HTML template.
      */
     private Map<String,Object> getTemplateVars() {
-        final Map<String, Object> vars = getCommonTemplateVars(getRequest());
-        vars.put("adminUri", vars.get("baseUri") + RestletApplication.ADMIN_PATH);
+        final Map<String, Object> vars = getCommonTemplateVars();
+        vars.put("adminUri", vars.get("baseUri") + Route.ADMIN_PATH.substring(1));
 
         ////////////////////////////////////////////////////////////////////
         //////////////////////// status section ////////////////////////////
@@ -124,17 +131,17 @@ public class AdminResource extends AbstractAdminResource {
         vars.put("javaVersion", runtimeMxBean.getSpecVersion());
 
         // Reverse-Proxy headers
-        final Series<Header> headers = getRequest().getHeaders();
+        final Headers headers = getRequest().getHeaders();
         vars.put("xForwardedProtoHeader",
-                headers.getFirstValue("X-Forwarded-Proto", true, ""));
+                headers.getFirstValue("X-Forwarded-Proto", ""));
         vars.put("xForwardedHostHeader",
-                headers.getFirstValue("X-Forwarded-Host", true, ""));
+                headers.getFirstValue("X-Forwarded-Host", ""));
         vars.put("xForwardedPortHeader",
-                headers.getFirstValue("X-Forwarded-Port", true, ""));
+                headers.getFirstValue("X-Forwarded-Port", ""));
         vars.put("xForwardedPathHeader",
-                headers.getFirstValue("X-Forwarded-Path", true, ""));
+                headers.getFirstValue("X-Forwarded-Path", ""));
         vars.put("xForwardedForHeader",
-                headers.getFirstValue("X-Forwarded-For", true, ""));
+                headers.getFirstValue("X-Forwarded-For", ""));
 
         Configuration config = Configuration.getInstance();
         if (config instanceof FileConfiguration) {

@@ -74,7 +74,8 @@ public class HeaderTest {
 
     @Test
     public void testToString() {
-        assertEquals(instance.getValue(), instance.toString());
+        assertEquals(instance.getName() + ": " + instance.getValue(),
+                instance.toString());
     }
 
 }

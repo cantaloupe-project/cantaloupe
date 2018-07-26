@@ -1,5 +1,5 @@
 #if ($baseUri)
-    <base href="$baseUri/">
+    <base href="$baseUri">
 #end
 <meta charset="utf-8">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">

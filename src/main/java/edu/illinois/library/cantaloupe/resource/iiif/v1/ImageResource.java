@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
@@ -12,28 +13,22 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
+import edu.illinois.library.cantaloupe.resource.Representation;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
-import org.apache.commons.lang3.StringUtils;
-import org.restlet.data.Disposition;
-import org.restlet.representation.Representation;
-import org.restlet.representation.StringRepresentation;
-import org.restlet.representation.Variant;
-import org.restlet.resource.Get;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 /**
@@ -44,20 +39,31 @@ import java.util.stream.Collectors;
  */
 public class ImageResource extends IIIF1Resource {
 
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(ImageResource.class);
+
     /**
      * Format to assume when no extension is present in the URI.
      */
     private static final Format DEFAULT_FORMAT = Format.JPG;
 
+    private static final Method[] SUPPORTED_METHODS =
+            new Method[] { Method.GET, Method.OPTIONS };
+
+    @Override
+    public Method[] getSupportedMethods() {
+        return SUPPORTED_METHODS;
+    }
+
     /**
      * <p>Responds to image requests.</p>
      *
-     * <p>N.B.: This method only respects
-     * {@link Key#CACHE_SERVER_RESOLVE_FIRST} for infos, as doing so with
-     * images is not really possible with current API.</p>
+     * <p>N.B.: This method only respects {@link
+     * Key#CACHE_SERVER_RESOLVE_FIRST} for infos, as doing so with images is
+     * not really possible with current API.</p>
      */
-    @Get
-    public Representation doGet() throws Exception {
+    @Override
+    public void doGET() throws Exception {
         final Configuration config = Configuration.getInstance();
         final Identifier identifier = getIdentifier();
         final CacheFacade cacheFacade = new CacheFacade();
@@ -77,7 +83,7 @@ public class ImageResource extends IIIF1Resource {
                 }
             } catch (IOException e) {
                 // Don't rethrow -- it's still possible to service the request.
-                getLogger().severe(e.getMessage());
+                LOGGER.error(e.getMessage());
             }
         }
 
@@ -116,15 +122,11 @@ public class ImageResource extends IIIF1Resource {
             }
         }
 
-        // Obtain an instance of the processor assigned to that format. This
-        // must eventually be close()d, but we don't want to close it here
-        // unless there is an error.
-        final Processor processor = new ProcessorFactory().
-                newProcessor(sourceFormat);
-
-        try {
+        // Obtain an instance of the processor assigned to that format.
+        try (final Processor processor =
+                     new ProcessorFactory().newProcessor(sourceFormat)) {
             // Connect it to the source.
-            Future<Path> tempFileFuture = new ProcessorConnector().connect(
+            tempFileFuture = new ProcessorConnector().connect(
                     source, processor, identifier, sourceFormat);
 
             final Set<Format> availableOutputFormats =
@@ -132,8 +134,8 @@ public class ImageResource extends IIIF1Resource {
 
             final OperationList ops = getOperationList(availableOutputFormats);
 
-            final Disposition disposition = getRepresentationDisposition(
-                    getReference().getQueryAsForm()
+            final String disposition = getRepresentationDisposition(
+                    getRequest().getReference().getQuery()
                             .getFirstValue(RESPONSE_CONTENT_DISPOSITION_QUERY_ARG),
                     ops.getIdentifier(), ops.getOutputFormat());
 
@@ -147,9 +149,10 @@ public class ImageResource extends IIIF1Resource {
 
             getRequestContext().setOperationList(ops, fullSize);
 
-            StringRepresentation redirectingRep = checkRedirect();
+            Representation redirectingRep = checkRedirect();
             if (redirectingRep != null) {
-                return redirectingRep;
+                redirectingRep.write(getResponse().getOutputStream());
+                return;
             }
 
             checkAuthorization();
@@ -162,75 +165,68 @@ public class ImageResource extends IIIF1Resource {
                 throw new IllegalClientArgumentException(e.getMessage(), e);
             }
 
-            addLinkHeader(processor);
-
             ops.applyNonEndpointMutations(info, getDelegateProxy());
 
-            // Find out whether the processor supports the source format by asking
-            // it whether it offers any output formats for it.
+            // Find out whether the processor supports the source format by
+            // asking it whether it offers any output formats for it.
             if (!availableOutputFormats.isEmpty()) {
                 if (!availableOutputFormats.contains(ops.getOutputFormat())) {
                     Exception e = new UnsupportedOutputFormatException(
                             processor, ops.getOutputFormat());
-                    getLogger().warning(e.getMessage() + ": " + getReference());
+                    LOGGER.warn("{}: {}",
+                            e.getMessage(),
+                            getRequest().getReference());
                     throw e;
                 }
             } else {
                 throw new UnsupportedSourceFormatException(sourceFormat);
             }
 
-            commitCustomResponseHeaders();
-            return new ImageRepresentation(info, processor, ops, disposition,
-                    isBypassingCache(), () -> {
-                if (tempFileFuture != null) {
-                    Path tempFile = tempFileFuture.get();
-                    if (tempFile != null) {
-                        Files.deleteIfExists(tempFile);
-                    }
-                }
-                return null;
-            });
-        } catch (Throwable t) {
-            processor.close();
-            throw t;
+            addHeaders(processor, ops.getOutputFormat(), disposition);
+
+            new ImageRepresentation(info, processor, ops, isBypassingCache())
+                    .write(getResponse().getOutputStream());
         }
     }
 
-    private void addLinkHeader(Processor processor) {
+    private void addHeaders(Processor processor,
+                            Format outputFormat,
+                            String disposition) {
+        if (disposition != null) {
+            getResponse().setHeader("Content-Disposition", disposition);
+        }
+        getResponse().setHeader("Content-Type",
+                outputFormat.getPreferredMediaType().toString());
+
         final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
                 processor.getSupportedFeatures(),
                 processor.getSupportedIIIF1Qualities(),
                 processor.getAvailableOutputFormats());
-        getBufferedResponseHeaders().add("Link",
+        getResponse().setHeader("Link",
                 String.format("<%s>;rel=\"profile\";", complianceLevel.getUri()));
     }
 
     private OperationList getOperationList(Set<Format> availableOutputFormats) {
-        final Map<String,Object> attrs = getRequest().getAttributes();
-        final String[] qualityAndFormat = StringUtils.
-                split((String) attrs.get("quality_format"), ".");
-        // If a format is present, try to use that. Otherwise, guess it based
-        // on the Accept header per Image API 1.1 spec section 4.5.
+        final List<String> args = getPathArguments();
+
+        // If the URI path contains a format extension, try to use that.
+        // Otherwise, negotiate it based on the Accept header per Image API 1.1
+        // spec section 4.5.
         String outputFormat;
-        if (qualityAndFormat.length > 1) {
-            outputFormat = qualityAndFormat[qualityAndFormat.length - 1];
-        } else {
+        try {
+            outputFormat = args.get(5);
+        } catch (IndexOutOfBoundsException e) {
             outputFormat = getEffectiveOutputFormat(availableOutputFormats).
                     getPreferredExtension();
         }
 
         final Identifier identifier = getIdentifier();
         final Parameters params = new Parameters(
-                identifier,
-                (String) attrs.get("region"),
-                (String) attrs.get("size"),
-                (String) attrs.get("rotation"),
-                qualityAndFormat[0],
-                outputFormat);
+                identifier, args.get(1), args.get(2),
+                args.get(3), args.get(4), outputFormat);
 
         final OperationList ops = params.toOperationList();
-        ops.getOptions().putAll(
-                getReference().getQueryAsForm(true).getValuesMap());
+        ops.getOptions().putAll(getRequest().getReference().getQuery().toMap());
         return ops;
     }
 
@@ -241,57 +237,27 @@ public class ImageResource extends IIIF1Resource {
      */
     private Format getEffectiveOutputFormat(Set<Format> limitToFormats) {
         // Check for a format extension in the URI.
+        final String extension = getRequest().getReference().getPathExtension();
+
         Format format = null;
-        if (getReference().getExtensions() != null) {
-            for (Format f : Format.values()) {
-                if (f.getPreferredExtension().
-                        equals(getReference().getExtensions())) {
-                    format = f;
-                    break;
-                }
-            }
+        if (extension != null) {
+            format = Arrays.stream(Format.values())
+                    .filter(f -> f.getPreferredExtension().equals(extension))
+                    .findFirst()
+                    .orElse(null);
         }
         if (format == null) { // if none, check the Accept header.
-            format = negotiateOutputFormat(limitToFormats);
-            if (format == null) {
+            String contentType = negotiateContentType(limitToFormats.stream()
+                    .map(Format::getPreferredMediaType)
+                    .map(MediaType::toString)
+                    .collect(Collectors.toList()));
+            if (contentType != null) {
+                format = new MediaType(contentType).toFormat();
+            } else {
                 format = DEFAULT_FORMAT;
             }
         }
         return format;
-    }
-
-    /**
-     * @param limitToFormats Set of OutputFormats to limit the result to.
-     * @return Best OutputFormat for the client preferences as specified in the
-     *         Accept header.
-     */
-    private Format negotiateOutputFormat(Set<Format> limitToFormats) {
-        // Transform limitToFormats into a list in order of the application's
-        // format preference, in case the client supplies something like */*.
-        final List<Format> appPreferredFormats =
-                new ArrayList<>(limitToFormats);
-        appPreferredFormats.sort((Format o1, Format o2) -> {
-            // Default format goes first.
-            if (DEFAULT_FORMAT.equals(o1)) {
-                return -1;
-            } else if (DEFAULT_FORMAT.equals(o2)) {
-                return 1;
-            }
-            return 0;
-        });
-
-        // Transform the list of Formats into a list of Variants.
-        final List<Variant> variants = appPreferredFormats.stream().
-                map(f -> new Variant(new org.restlet.data.MediaType(
-                        f.getPreferredMediaType().toString()))).
-                collect(Collectors.toList());
-
-        Variant preferred = getPreferredVariant(variants);
-        if (preferred != null) {
-            String mediaTypeStr = preferred.getMediaType().toString();
-            return new MediaType(mediaTypeStr).toFormat();
-        }
-        return null;
     }
 
     private boolean isResolvingFirst() {

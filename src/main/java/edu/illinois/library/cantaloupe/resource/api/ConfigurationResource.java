@@ -2,11 +2,9 @@ package edu.illinois.library.cantaloupe.resource.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.resource.JSONRepresentation;
-import org.restlet.representation.EmptyRepresentation;
-import org.restlet.representation.Representation;
-import org.restlet.resource.Get;
-import org.restlet.resource.Put;
+import edu.illinois.library.cantaloupe.http.Method;
+import edu.illinois.library.cantaloupe.http.Status;
+import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,26 +17,37 @@ public class ConfigurationResource extends AbstractAPIResource {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(ConfigurationResource.class);
 
+    private static final Method[] SUPPORTED_METHODS =
+            new Method[] { Method.GET, Method.OPTIONS, Method.PUT };
+
+    @Override
+    public Method[] getSupportedMethods() {
+        return SUPPORTED_METHODS;
+    }
+
     /**
-     * @return JSON application configuration. <strong>This may contain
-     *         sensitive info and must be protected.</strong>
+     * Returns JSON application configuration. <strong>This may contain
+     * sensitive info and must be protected.</strong>
      */
-    @Get("json")
-    public Representation getConfiguration() throws Exception {
+    @Override
+    public void doGET() throws IOException {
+        getResponse().setHeader("Content-Type",
+                "application/json;charset=UTF-8");
+
         Configuration config = Configuration.getInstance();
-        return new JSONRepresentation(config.toMap());
+        new JacksonRepresentation(config.toMap())
+                .write(getResponse().getOutputStream());
     }
 
     /**
      * Deserializes submitted JSON data and updates the application
      * configuration instance with it.
      */
-    @Put("json")
-    public Representation putConfiguration(Representation rep)
-            throws IOException {
+    @Override
+    public void doPUT() throws IOException {
         final Configuration config = Configuration.getInstance();
         final Map<?, ?> submittedConfig = new ObjectMapper().readValue(
-                rep.getStream(), HashMap.class);
+                getRequest().getInputStream(), HashMap.class);
 
         LOGGER.info("Updating {} configuration keys", submittedConfig.size());
 
@@ -50,7 +59,7 @@ public class ConfigurationResource extends AbstractAPIResource {
 
         config.save();
 
-        return new EmptyRepresentation();
+        getResponse().setStatus(Status.NO_CONTENT.getCode());
     }
 
 }

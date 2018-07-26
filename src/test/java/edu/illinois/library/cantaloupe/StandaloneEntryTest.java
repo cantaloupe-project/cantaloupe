@@ -3,6 +3,8 @@ package edu.illinois.library.cantaloupe;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Client;
+import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.DeletingFileVisitor;
@@ -12,16 +14,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
-import org.restlet.Client;
-import org.restlet.Context;
-import org.restlet.data.Protocol;
-import org.restlet.data.Reference;
-import org.restlet.data.Status;
-import org.restlet.resource.ClientResource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -35,7 +32,7 @@ public class StandaloneEntryTest extends BaseTest {
     private static final PrintStream CONSOLE_ERROR = System.err;
     private static final int HTTP_PORT = SocketUtils.getOpenPort();
 
-    private Client httpClient;
+    private Client httpClient = new Client();
 
     private Path cacheDir;
     private final ByteArrayOutputStream redirectedOutput =
@@ -46,13 +43,6 @@ public class StandaloneEntryTest extends BaseTest {
     // http://stackoverflow.com/questions/6141252/dealing-with-system-exit0-in-junit-tests
     @Rule
     public final ExpectedSystemExit exit = ExpectedSystemExit.none();
-
-    private ClientResource getClientResource() {
-        final Reference url = new Reference("http://localhost:" + HTTP_PORT + "/");
-        final ClientResource resource = new ClientResource(url);
-        resource.setNext(httpClient);
-        return resource;
-    }
 
     private void deleteCacheDir() throws IOException {
         Files.walkFileTree(getCacheDir(), new DeletingFileVisitor());
@@ -100,8 +90,7 @@ public class StandaloneEntryTest extends BaseTest {
         config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
 
-        httpClient = new Client(new Context(), Protocol.HTTP);
-        httpClient.start();
+        httpClient.setURI(new URI("http://localhost:" + HTTP_PORT + "/"));
     }
 
     @After
@@ -216,9 +205,8 @@ public class StandaloneEntryTest extends BaseTest {
     @Test
     public void mainWithValidConfigFileArgumentStartsServer() throws Exception {
         StandaloneEntry.main("");
-        ClientResource resource = getClientResource();
-        resource.get();
-        assertEquals(Status.SUCCESS_OK, resource.getResponse().getStatus());
+        Response response = httpClient.send();
+        assertEquals(200, response.getStatus());
     }
 
 }

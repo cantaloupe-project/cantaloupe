@@ -12,7 +12,6 @@ import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
-import org.restlet.data.Disposition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,12 +20,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.Callable;
 
 /**
- * Restlet representation for images.
+ * Representation that {@link Processor processes} an image and writes the
+ * result to the response (possibly also caching it).
  */
-public class ImageRepresentation extends CustomOutputRepresentation {
+public class ImageRepresentation implements Representation {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ImageRepresentation.class);
@@ -39,8 +38,7 @@ public class ImageRepresentation extends CustomOutputRepresentation {
     /**
      * @param imageInfo   Info corresponding to the source image.
      * @param processor   Processor configured for writing the image.
-     * @param opList      Will be frozen, if it isn't already.
-     * @param disposition
+     * @param opList      Instance describing the image.
      * @param bypassCache If {@literal true}, the cache will not be written to
      *                    nor read from, regardless of whether caching is
      *                    enabled in the application configuration.
@@ -48,36 +46,20 @@ public class ImageRepresentation extends CustomOutputRepresentation {
     public ImageRepresentation(final Info imageInfo,
                                final Processor processor,
                                final OperationList opList,
-                               final Disposition disposition,
-                               final boolean bypassCache,
-                               final Callable<?> onRelease) {
-        super(new org.restlet.data.MediaType(
-                opList.getOutputFormat().getPreferredMediaType().toString()));
+                               final boolean bypassCache) {
         this.imageInfo = imageInfo;
         this.processor = processor;
         this.opList = opList;
         this.bypassCache = bypassCache;
-        this.setDisposition(disposition);
-        this.onRelease = onRelease;
-    }
-
-    @Override
-    public void release() {
-        super.release();
-        processor.close();
     }
 
     /**
      * Writes the image requested in the constructor to the given output
      * stream, either retrieving it from the derivative cache, or getting it
      * from a processor (and caching it if so configured) as appropriate.
-     *
-     * @param responseOutputStream Response body output stream.
      */
     @Override
     public void write(OutputStream responseOutputStream) throws IOException {
-        // N.B.: Restlet will close responseOutputStream.
-
         // If we are bypassing the cache, write directly to the response.
         if (bypassCache) {
             LOGGER.debug("Bypassing the cache and writing directly to the response");
@@ -119,14 +101,13 @@ public class ImageRepresentation extends CustomOutputRepresentation {
         // TeeOutputStream to write to the response output stream and the cache
         // pseudo-simultaneously.
         //
-        // N.B.: The contract for this method says we can't close
-        // responseOutputStream, which means we also can't close
-        // teeOutputStream, because that would close its wrapped streams. So,
-        // we have to leave it up to the finalizer. But, when the finalizer
-        // closes teeOutputStream, its close() method will have been called
-        // twice on both of its wrapped streams. It's therefore important that
-        // these two output streams' close() methods can deal with being called
-        // twice.
+        // N.B.: Closing responseOutputStream is the Servlet container's
+        // responsibility. This means we also can't close teeOutputStream,
+        // because doing so would close its wrapped streams. So, we have to
+        // leave its closure up to the finalizer. But, when teeOutputStream is
+        // closed, its wrapped streams' close() methods will have been called
+        // twice, so it's important that these two streams' close() methods can
+        // deal with being called twice.
         try (OutputStream cacheOutputStream =
                      cacheFacade.newDerivativeImageOutputStream(opList)) {
             OutputStream teeOutputStream = new TeeOutputStream(
@@ -162,10 +143,11 @@ public class ImageRepresentation extends CustomOutputRepresentation {
         // If the operations are effectively a no-op, the source image can be
         // streamed through with no processing.
         if (!opList.hasEffect(imageInfo.getSize(), imageInfo.getSourceFormat())) {
-            if (processor instanceof FileProcessor &&
-                    ((FileProcessor) processor).getSourceFile() != null) {
+            if (processor instanceof FileProcessor) {
                 Path sourceFile = ((FileProcessor) processor).getSourceFile();
-                Files.copy(sourceFile, outputStream);
+                if (sourceFile != null) {
+                    Files.copy(sourceFile, outputStream);
+                }
             } else {
                 StreamFactory streamFactory =
                         ((StreamProcessor) processor).getStreamFactory();

@@ -106,6 +106,10 @@ public class ApplicationServer {
         context.setAttribute("org.eclipse.jetty.webapp.basetempdir",
                 Application.getTempPath().toString());
 
+        // Disable directory listing.
+        context.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed",
+                "false");
+
         // We also set it to NOT persist to avoid accumulating a bunch of
         // stale exploded apps.
         context.setPersistTempDirectory(false);
@@ -248,9 +252,7 @@ public class ApplicationServer {
             if (isHTTPEnabled()) {
                 ServerConnector connector;
                 HttpConfiguration config = new HttpConfiguration();
-                config.setSendDateHeader(false); // Restlet will take care of this
-                HttpConnectionFactory http1 =
-                        new HttpConnectionFactory(config);
+                HttpConnectionFactory http1 = new HttpConnectionFactory();
 
                 if (isInsecureHTTP2Enabled()) {
                     HTTP2CServerConnectionFactory http2 =
@@ -268,13 +270,10 @@ public class ApplicationServer {
             }
 
             // Initialize the HTTPS server.
-            // N.B.: HTTP/2 support requires ALPN, which requires either Java 9,
-            // or an ALPN JAR on the boot classpath,
-            // e.g.: -Xbootclasspath/p:/path/to/alpn-boot-8.1.5.v20150921.jar
+            // N.B.: HTTP/2 requires ALPN, which requires Java 9.
             // https://www.eclipse.org/jetty/documentation/9.3.x/alpn-chapter.html
             if (isHTTPSEnabled()) {
                 HttpConfiguration config = new HttpConfiguration();
-                config.setSendDateHeader(false); // Restlet will take care of this
                 config.setSecureScheme("https");
                 config.setSecurePort(getHTTPSPort());
                 config.addCustomizer(new SecureRequestCustomizer());
