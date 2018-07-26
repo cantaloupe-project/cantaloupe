@@ -41,13 +41,13 @@ public final class Headers implements Iterable<Header> {
 
     public List<Header> getAll(String name) {
         return headers.stream().
-                filter(h -> h.getName().equals(name)).
+                filter(h -> h.getName().equalsIgnoreCase(name)).
                 collect(Collectors.toList());
     }
 
     public String getFirstValue(String name) {
         Optional<String> header = headers.stream().
-                filter(h -> h.getName().equals(name)).
+                filter(h -> h.getName().equalsIgnoreCase(name)).
                 map(Header::getValue).
                 findFirst();
         return header.orElse(null);
