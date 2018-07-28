@@ -101,7 +101,7 @@ var Form = function(config) {
             '[name="http.enabled"], [name="https.enabled"]');
         // Endpoints
         showOrHideAllOtherTableRows(
-            '[name="endpoint.public.auth.basic.enabled"], [name="endpoint.iiif.1.enabled"], [name="endpoint.iiif.2.enabled"]');
+            '[name="endpoint.iiif.1.enabled"], [name="endpoint.iiif.2.enabled"]');
         // Source
         $('[name="source.delegate"]').on('change', function() {
             var other_rows = $(this).parents('tr').nextAll('tr');

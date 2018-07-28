@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.resource.iiif;
 
-import edu.illinois.library.cantaloupe.ApplicationServer;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.InfoService;
 import edu.illinois.library.cantaloupe.cache.MockBrokenDerivativeInputStreamCache;
@@ -14,7 +13,6 @@ import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.http.Transport;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.resource.PublicResource;
 import edu.illinois.library.cantaloupe.source.FileSource;
 import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
@@ -42,9 +40,6 @@ public class ImageAPIResourceTester {
 
     static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";
 
-    private static final String BASIC_AUTH_USER = "user";
-    private static final String BASIC_AUTH_SECRET = "secret";
-
     Client newClient(URI uri) {
         return new Client().builder().uri(uri).build();
     }
@@ -57,56 +52,6 @@ public class ImageAPIResourceTester {
         // This may vary depending on the return value of a delegate method,
         // but the way the tests are set up, it's 403.
         assertStatus(403, uri);
-    }
-
-    public void testBasicAuthWithNoCredentials(ApplicationServer appServer,
-                                               URI uri) throws Exception {
-        initializeBasicAuth(appServer);
-        try {
-            assertStatus(401, uri);
-        } finally {
-            uninitializeBasicAuth(appServer);
-        }
-    }
-
-    public void testBasicAuthWithInvalidCredentials(ApplicationServer appServer,
-                                                    URI uri) throws Exception {
-        initializeBasicAuth(appServer);
-        try {
-            Client client = newClient(uri);
-            client.setRealm(PublicResource.BASIC_REALM);
-            client.setUsername("invalid");
-            client.setSecret("invalid");
-            try {
-                client.send();
-                fail("Expected exception");
-            } catch (ResourceException e) {
-                assertEquals(401, e.getStatusCode());
-            } finally {
-                client.stop();
-            }
-        } finally {
-            uninitializeBasicAuth(appServer);
-        }
-    }
-
-    public void testBasicAuthWithValidCredentials(ApplicationServer appServer,
-                                                  URI uri) throws Exception {
-        initializeBasicAuth(appServer);
-        try {
-            Client client = newClient(uri);
-            client.setRealm(PublicResource.BASIC_REALM);
-            client.setUsername(BASIC_AUTH_USER);
-            client.setSecret(BASIC_AUTH_SECRET);
-            try {
-                Response response = client.send();
-                assertEquals(200, response.getStatus());
-            } finally {
-                client.stop();
-            }
-        } finally {
-            uninitializeBasicAuth(appServer);
-        }
     }
 
     public void testCacheHeadersWhenClientCachingIsEnabledAndResponseIsCacheable(URI uri)
@@ -433,26 +378,6 @@ public class ImageAPIResourceTester {
         config.setProperty(Key.CLIENT_CACHE_MUST_REVALIDATE, "false");
         config.setProperty(Key.CLIENT_CACHE_PROXY_REVALIDATE, "false");
         config.setProperty(Key.CLIENT_CACHE_NO_TRANSFORM, "true");
-    }
-
-    private void initializeBasicAuth(ApplicationServer appServer)
-            throws Exception {
-        final Configuration config = Configuration.getInstance();
-        config.setProperty(Key.BASIC_AUTH_ENABLED, true);
-        config.setProperty(Key.BASIC_AUTH_USERNAME, BASIC_AUTH_USER);
-        config.setProperty(Key.BASIC_AUTH_SECRET, BASIC_AUTH_SECRET);
-        // To enable auth, the app server needs to be restarted.
-        // It will need to be restarted again to disable it.
-        appServer.stop();
-        appServer.start();
-    }
-
-    private void uninitializeBasicAuth(ApplicationServer appServer)
-            throws Exception {
-        final Configuration config = Configuration.getInstance();
-        config.setProperty(Key.BASIC_AUTH_ENABLED, false);
-        appServer.stop();
-        appServer.start();
     }
 
     Path initializeFilesystemCache() throws IOException {

@@ -77,11 +77,6 @@ delegate_script.cache.enabled = false
 # ENDPOINTS
 ###########################################################################
 
-# !! Configures HTTP Basic authentication in all public endpoints.
-endpoint.public.auth.basic.enabled = false
-endpoint.public.auth.basic.username = myself
-endpoint.public.auth.basic.secret = mypassword
-
 # Enables the IIIF Image API 1.x endpoint, at /iiif/1.
 endpoint.iiif.1.enabled = false
 

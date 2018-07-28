@@ -25,8 +25,6 @@ public abstract class PublicResource extends AbstractResource {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(PublicResource.class);
 
-    public static final String BASIC_REALM = "Image Realm";
-
     protected Future<Path> tempFileFuture;
 
     @Override
@@ -34,21 +32,6 @@ public abstract class PublicResource extends AbstractResource {
         super.doInit();
 
         addHeaders();
-
-        final Configuration config = Configuration.getInstance();
-
-        if (getRequest().getReference().getPath().startsWith(Route.IIIF_PATH)) {
-            if (config.getBoolean(Key.BASIC_AUTH_ENABLED, false)) {
-                authenticateUsingBasic(BASIC_REALM, user -> {
-                    final String configUser =
-                            config.getString(Key.BASIC_AUTH_USERNAME, "");
-                    if (!configUser.isEmpty() && configUser.equals(user)) {
-                        return config.getString(Key.BASIC_AUTH_SECRET);
-                    }
-                    return null;
-                });
-            }
-        }
     }
 
     private void addHeaders() {

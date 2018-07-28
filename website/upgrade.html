@@ -15,7 +15,13 @@ title: Upgrading
       <li><code>processor.selection_strategy</code></li>
     </ul>
   </li>
+  <li>Remove the following configuration keys:
+    <ul>
+      <li><code>endpoint.public.auth.*</code></li>
+    </ul>
+  </li>
   <li>If you have implemented the <code>redirect()</code> or <code>authorized?()</code> delegate methods, migrate their logic into <code>authorize()</code> and remove them.</li>
+  <li>If you were using the <code>endpoint.public.auth.*</code> keys, you will need to use the new <code>authorize()</code> delegate method instead.</li>
 </ol>
 
 <h2>3.4.x &rarr; 4.0</h2>

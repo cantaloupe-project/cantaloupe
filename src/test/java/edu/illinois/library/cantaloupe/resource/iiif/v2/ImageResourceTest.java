@@ -55,26 +55,6 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testGETBasicAuthenticationWithNoCredentials() throws Exception {
-        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
-        tester.testBasicAuthWithNoCredentials(appServer, uri);
-    }
-
-    @Test
-    public void testGETBasicAuthenticationWithInvalidCredentials()
-            throws Exception {
-        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
-        tester.testBasicAuthWithInvalidCredentials(appServer, uri);
-    }
-
-    @Test
-    public void testGETBasicAuthenticationWithValidCredentials()
-            throws Exception {
-        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
-        tester.testBasicAuthWithValidCredentials(appServer, uri);
-    }
-
-    @Test
     public void testGETCacheHeadersWhenClientCachingIsEnabledAndResponseIsCacheable()
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");

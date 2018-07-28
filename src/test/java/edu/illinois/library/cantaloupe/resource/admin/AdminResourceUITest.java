@@ -277,9 +277,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
 
         // Fill in the form
         inputNamed(Key.MAX_PIXELS).sendKeys("5000");
-        inputNamed(Key.BASIC_AUTH_ENABLED).click();
-        inputNamed(Key.BASIC_AUTH_USERNAME).sendKeys("dogs");
-        inputNamed(Key.BASIC_AUTH_SECRET).sendKeys("foxes");
         selectNamed(Key.IIIF_CONTENT_DISPOSITION).selectByValue("attachment");
         inputNamed(Key.IIIF_MIN_SIZE).sendKeys("75");
         inputNamed(Key.IIIF_MIN_TILE_SIZE).sendKeys("250");
@@ -298,9 +295,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         // Assert that the application configuration has been updated correctly
         final Configuration config = Configuration.getInstance();
         assertEquals(5000, config.getInt(Key.MAX_PIXELS));
-        assertTrue(config.getBoolean(Key.BASIC_AUTH_ENABLED));
-        assertEquals("dogs", config.getString(Key.BASIC_AUTH_USERNAME));
-        assertEquals("foxes", config.getString(Key.BASIC_AUTH_SECRET));
         assertEquals("attachment",
                 config.getString(Key.IIIF_CONTENT_DISPOSITION));
         assertEquals(75, config.getInt(Key.IIIF_MIN_SIZE));

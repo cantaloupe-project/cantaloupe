@@ -969,39 +969,6 @@
                                     </td>
                                 </tr>
                             </table>
-
-                            <h3>HTTP Basic Authentication</h3>
-                            <table class="table table-striped">
-                                <tr>
-                                    <td></td>
-                                    <td>
-                                        <div class="checkbox">
-                                            <label>
-                                                <input type="checkbox"
-                                                       name="endpoint.public.auth.basic.enabled"
-                                                       data-requires-restart="true">
-                                                Enabled
-                                            </label>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Username</td>
-                                    <td>
-                                        <input class="form-control" type="text"
-                                               name="endpoint.public.auth.basic.username"
-                                               data-requires-restart="true">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Secret</td>
-                                    <td>
-                                        <input class="form-control" type="password"
-                                               name="endpoint.public.auth.basic.secret"
-                                               data-requires-restart="true">
-                                    </td>
-                                </tr>
-                            </table>
                         </section>
 
                         <section>

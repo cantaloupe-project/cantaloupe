@@ -6,57 +6,30 @@ title: Access Control
 <h1>Access Control</h1>
 
 <ul class="toc">
-  <li><a href="#Authentication">Authentication</a></li>
-  <li><a href="#Authorization">Authorization</a>
+  <li><a href="#Authorization%20Examples">Examples</a>
     <ul>
-      <li><a href="#Authorization%20Notes">Notes</a></li>
-      <li><a href="#Authorization%20Examples">Examples</a>
-        <ul>
-          <li><a href="#example-2">Allow only requests for half-scale images or smaller</a></li>
-          <li><a href="#example-3">Allow only requests for identifiers matching a certain pattern</a></li>
-          <li><a href="#example-5">Allow only JPEG output</a></li>
-          <li><a href="#example-6">Allow only certain user agents</a></li>
-          <li><a href="#example-7">Allow only requests from clients that supply a valid token in a header</a></li>
-          <li><a href="#example-8">Restrict a region of an image</a></li>
-          <li><a href="#example-10">Restrict using HTTP Basic</a></li>
-          <li><a href="#example-11">Restrict using the IIIF Authentication API</a></li>
-          <li><a href="#example-9">Redirect to another URL</a></li>
-        </ul>
-      </li>
+      <li><a href="#example-2">Allow only requests for half-scale images or smaller</a></li>
+      <li><a href="#example-3">Allow only requests for identifiers matching a certain pattern</a></li>
+      <li><a href="#example-5">Allow only JPEG output</a></li>
+      <li><a href="#example-6">Allow only certain user agents</a></li>
+      <li><a href="#example-7">Allow only requests from clients that supply a valid token in a header</a></li>
+      <li><a href="#example-8">Restrict a region of an image</a></li>
+      <li><a href="#example-10">Restrict using HTTP Basic</a></li>
+      <li><a href="#example-11">Restrict using the IIIF Authentication API</a></li>
+      <li><a href="#example-9">Redirect to another URL</a></li>
     </ul>
   </li>
+
 </ul>
 
-<h2 id="Authentication">Authentication</h2>
+<p>The <code>authorize()</code> <a href="delegate-script.html">delegate method</a> can be used to implement authorization logic ranging from simple to complex. A skeleton with documented parameters and return values is present in the <span class="filename">delegates.rb.sample</span> file. By default, it just returns <code>true</code>, authorizing all requests.</p>
 
-<p>To enable HTTP Basic authentication on image and information endpoints, set the following configuration keys:</p>
+<p class="text-info"><i class="fa fa-info-circle"></i> The authorization method will be called upon every request to a public endpoint, and should therefore be written to be efficient.</p>
+<p class="text-info"><i class="fa fa-info-circle"></i> Implementations should assume that the underlying source image exists, even though it may not. The existence check will happen separately.</p>
 
-{% highlight properties %}
-endpoint.public.auth.basic.enabled = true
-endpoint.public.auth.basic.username = myusername
-endpoint.public.auth.basic.secret = mypassword
-{% endhighlight %}
+<h2 id="Authorization Examples">Examples</h2>
 
-<p>See one of the <a href="#example-10">authorization examples</a> for a more flexible way to accomplish this.</p>
-
-<p class="text-warning"><i class="fa fa-warning"></i> Credentials encoded using the HTTP Basic scheme can be decoded easily. HTTP Basic should only be used in conjunction with SSL/TLS.</p>
-
-<hr>
-
-<h2 id="Authorization">Authorization</h2>
-
-<p>A custom <a href="delegate-script.html">delegate method</a>, <code>authorize()</code>, can be used to implement authorization logic ranging from simple to complex. A skeleton with documented parameters and return values is present in the <span class="filename">delegates.rb.sample</span> file. By default, it just returns <code>true</code>, authorizing all requests.</p>
-
-<h3 id="Authorization Notes">Notes</h3>
-
-<ul>
-  <li>The authorization method will be called upon every request and should therefore be written to be efficient.</li>
-  <li>Implementations should assume that the underlying source image exists, even though it may not. The existence check will happen separately.</li>
-</ul>
-
-<h3 id="Authorization Examples">Examples</h3>
-
-<h4 id="example-2">Allow only requests for half-scale images or smaller</h4>
+<h3 id="example-2">Allow only requests for half-scale images or smaller</h3>
 
 {% highlight ruby %}
 class CustomDelegate
@@ -72,7 +45,7 @@ class CustomDelegate
 end
 {% endhighlight %}
 
-<h4 id="example-3">Allow only requests for identifiers matching a certain pattern</h4>
+<h3 id="example-3">Allow only requests for identifiers matching a certain pattern</h3>
 
 {% highlight ruby %}
 class CustomDelegate
@@ -89,7 +62,7 @@ class CustomDelegate
 end
 {% endhighlight %}
 
-<h4 id="example-5">Allow only JPEG output</h4>
+<h3 id="example-5">Allow only JPEG output</h3>
 
 {% highlight ruby %}
 class CustomDelegate
@@ -99,7 +72,7 @@ class CustomDelegate
 end
 {% endhighlight %}
 
-<h4 id="example-6">Allow only certain user agents</h4>
+<h3 id="example-6">Allow only certain user agents</h3>
 
 <p class="text-warning"><i class="fa fa-warning"></i> This is not foolproof, as user agents can be faked.</p>
 
@@ -113,7 +86,7 @@ class CustomDelegate
 end
 {% endhighlight %}
 
-<h4 id="example-7">Allow only requests that supply a valid token in a header</h4>
+<h3 id="example-7">Allow only requests that supply a valid token in a header</h3>
 
 {% highlight ruby %}
 class CustomDelegate
@@ -123,7 +96,7 @@ class CustomDelegate
 end
 {% endhighlight %}
 
-<h4 id="example-8">Restrict a region of an image</h4>
+<h3 id="example-8">Restrict a region of an image</h3>
 
 <p>In this example, requests for images containing any part of the bottom right quadrant of the source image will be denied.</p>
 
@@ -144,7 +117,7 @@ class CustomDelegate
 end
 {% endhighlight %}
 
-<h4 id="example-10">Restrict with HTTP Basic authentication</h4>
+<h3 id="example-10">Restrict with HTTP Basic authentication</h3>
 
 <p>With HTTP Basic authentication, the server sends an HTTP 401 (Unauthorized) status code along with a <code>WWW-Authenticate: Basic</code> header, which tells the client that subsequent requests must include an <code>Authorization</code> header containing encoded credentials. (Web browsers normally acquire these from a user prompt or password store.)</p>
 
@@ -181,7 +154,7 @@ class CustomDelegate
 end
 {% endhighlight %}
 
-<h4 id="example-11">Restrict using the IIIF Authentication API</h4>
+<h3 id="example-11">Restrict using the IIIF Authentication API</h3>
 
 <p>The <a href="https://iiif.io/api/auth/1.0/">IIIF Authentication API 1.0</a> describes general patterns of access-restricting IIIF resources, including images, in a standard way. Cantaloupe does not implement this API by itself&mdash;that would be way beyond its scope&mdash;but it can slot into a broader architecture that does.</p>
 
@@ -212,7 +185,7 @@ end
 
 <p class="text-info"><i class="fa fa-info-circle"></i> Currently, only <a href="https://iiif.io/api/auth/1.0/#all-or-nothing-access">All-or-Nothing Access</a> is supported. <a href="https://iiif.io/api/auth/1.0/#tiered-access">Tiered access</a> is not.</p>
 
-<h4 id="example-9">Redirect to another URL</h4>
+<h3 id="example-9">Redirect to another URL</h3>
 
 {% highlight ruby %}
 class CustomDelegate

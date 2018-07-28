@@ -53,26 +53,6 @@ public class InformationResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testGETBasicAuthenticationWithNoCredentials() throws Exception {
-        URI uri = getHTTPURI("/" + IMAGE + "/info.json");
-        tester.testBasicAuthWithNoCredentials(appServer, uri);
-    }
-
-    @Test
-    public void testGETBasicAuthenticationWithInvalidCredentials()
-            throws Exception {
-        URI uri = getHTTPURI("/" + IMAGE + "/info.json");
-        tester.testBasicAuthWithInvalidCredentials(appServer, uri);
-    }
-
-    @Test
-    public void testGETBasicAuthenticationWithValidCredentials()
-            throws Exception {
-        URI uri = getHTTPURI("/" + IMAGE + "/info.json");
-        tester.testBasicAuthWithValidCredentials(appServer, uri);
-    }
-
-    @Test
     public void testGETCacheHeadersWhenClientCachingIsEnabledAndResponseIsCacheable()
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/info.json");
