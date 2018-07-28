@@ -8,7 +8,12 @@ title: Delegate Script
 <ul class="toc">
   <li><a href="#Enabling">Enabling</a></li>
   <li><a href="#How%20It%20Works">How It Works</a></li>
-  <li><a href="#Migrating">Migrating From the 3.x Script to the 4.x Script</a></li>
+  <li><a href="#Migrating">Migrating</a>
+    <ul>
+      <li><a href="#MigratingFrom3To4">From the 3.x Script to the 4.0 Script</a></li>
+      <li><a href="#MigratingFrom4To41">From the 4.0 Script to the 4.1 Script</a></li>
+    </ul>
+  </li>
   <li><a href="#Gems">Gems</a></li>
   <li><a href="#Calling%20Java%20Code">Calling Java Code</a></li>
   <li><a href="#Improving%20Efficiency">Improving Efficiency</a>
@@ -59,9 +64,11 @@ title: Delegate Script
 
 <hr>
 
-<h2 id="Migrating">Migrating From the 3.x Script to the 4.x Script</h2>
+<h2 id="Migrating">Migrating</h2>
 
-<p>In version 4, the delegate script was redesigned to address several limitations of the original design. A comparison of the two follows:</p>
+<h3 id="MigratingFrom3To4">From the 3.x Script to the 4.0 Script</h3>
+
+<p>In version 4.0, the delegate script was redesigned to address several limitations of the original design. A comparison of the two follows:</p>
 
 <table class="table table-bordered">
   <tr>
@@ -167,6 +174,10 @@ title: Delegate Script
   </tr>
 </table>
 
+<h3 id="MigratingFrom4To41">From the 4.0 Script to the 4.1 Script</h3>
+
+<p>In version 4.1, the <code>authorized?()</code> and <code>redirect()</code> methods were merged into <code>authorize()</code>. See the documentation in the sample delegate script file for more information.</p>
+
 <hr>
 
 <h2 id="Gems">Gems</h2>
@@ -244,15 +255,15 @@ end
 
 <h3 id="Sharing Information">Sharing Information</h3>
 
-<p>Some methods may need to do similar work. For example, <code>authorized?()</code> and <code>redirect()</code> may have to trigger the same expensive call to an authorization service. To avoid having to do this twice, a useful technique is to cache the result. So, rather than doing this:</p>
+<p>Some methods may need to do similar work, which may be expensive. To avoid having to do it twice, a useful technique is to cache the result. So, rather than doing this:</p>
 
 {% highlight ruby %}
 class CustomDelegate
-  def redirect(options = {})
+  def method1(options = {})
     # perform an expensive query and return the result
   end
 
-  def authorized?(options = {})
+  def method2(options = {})
     # perform an expensive query and return the result
   end
 end
@@ -262,11 +273,11 @@ end
 
 {% highlight ruby %}
 class CustomDelegate
-  def redirect(options = {})
+  def method1(options = {})
     result = perform_expensive_query
   end
 
-  def authorized?(options = {})
+  def method2(options = {})
     result = perform_expensive_query
   end
 

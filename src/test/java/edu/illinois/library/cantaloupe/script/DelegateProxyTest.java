@@ -32,6 +32,38 @@ public class DelegateProxyTest extends BaseTest {
         instance = new DelegateProxy(context);
     }
 
+    /* authorize() */
+
+    @Test
+    public void testAuthorizeReturningTrue() throws Exception {
+        RequestContext context = new RequestContext();
+        context.setIdentifier(new Identifier("whatever"));
+        instance.setRequestContext(context);
+
+        assertTrue((boolean) instance.authorize());
+    }
+
+    @Test
+    public void testAuthorizeReturningFalse() throws Exception {
+        RequestContext context = new RequestContext();
+        context.setIdentifier(new Identifier("forbidden-boolean.jpg"));
+        instance.setRequestContext(context);
+
+        assertFalse((boolean) instance.authorize());
+    }
+
+    @Test
+    public void testAuthorizeReturningMap() throws Exception {
+        RequestContext context = new RequestContext();
+        context.setIdentifier(new Identifier("redirect.jpg"));
+        instance.setRequestContext(context);
+
+        @SuppressWarnings("unchecked")
+        Map<String,Object> result = (Map<String,Object>) instance.authorize();
+        assertEquals("http://example.org/", result.get("location"));
+        assertEquals(303, (long) result.get("status_code"));
+    }
+
     /* getAzureStorageSourceBlobKey() */
 
     @Test
@@ -204,25 +236,6 @@ public class DelegateProxyTest extends BaseTest {
         assertTrue(result.isEmpty());
     }
 
-    /* getRedirect() */
-
-    @Test
-    public void testGetRedirect() throws Exception {
-        RequestContext context = new RequestContext();
-        context.setIdentifier(new Identifier("redirect.jpg"));
-        instance.setRequestContext(context);
-
-        Map<String,Object> result = instance.getRedirect();
-        assertEquals("http://example.org/", result.get("location"));
-        assertEquals(303, (long) result.get("status_code"));
-    }
-
-    @Test
-    public void testGetRedirectReturningNil() throws Exception {
-        Map<String,Object> result = instance.getRedirect();
-        assertTrue(result.isEmpty());
-    }
-
     /* getSource() */
 
     @Test
@@ -257,26 +270,6 @@ public class DelegateProxyTest extends BaseTest {
 
         Map<String,String> result = instance.getS3SourceObjectInfo();
         assertTrue(result.isEmpty());
-    }
-
-    /* isAuthorized() */
-
-    @Test
-    public void testIsAuthorizedReturningTrue() throws Exception {
-        RequestContext context = new RequestContext();
-        context.setIdentifier(new Identifier("whatever"));
-        instance.setRequestContext(context);
-
-        assertTrue(instance.isAuthorized());
-    }
-
-    @Test
-    public void testIsAuthorizedReturningFalse() throws Exception {
-        RequestContext context = new RequestContext();
-        context.setIdentifier(new Identifier("forbidden.jpg"));
-        instance.setRequestContext(context);
-
-        assertFalse(instance.isAuthorized());
     }
 
 }

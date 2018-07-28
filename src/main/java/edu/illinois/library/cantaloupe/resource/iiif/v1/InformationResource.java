@@ -16,6 +16,7 @@ import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
+import edu.illinois.library.cantaloupe.resource.ResourceException;
 import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
@@ -47,6 +48,17 @@ public class InformationResource extends IIIF1Resource {
      */
     @Override
     public void doGET() throws Exception {
+        // An authorization check is needed in the context of the IIIF
+        // Authentication API.
+        try {
+            if (!authorize()) {
+                return;
+            }
+        } catch (ResourceException ignore) {
+            // Continue anyway. All we needed was to set the response status:
+            // https://iiif.io/api/auth/1.0/#interaction-with-access-controlled-resources
+        }
+
         final Configuration config = Configuration.getInstance();
         final Identifier identifier = getIdentifier();
         final CacheFacade cacheFacade = new CacheFacade();

@@ -7,21 +7,20 @@ class CustomDelegate
 
   attr_accessor :context
 
-  def redirect(options = {})
+  def authorize(options = {})
     case context['identifier']
+      when 'forbidden.jpg', 'forbidden-boolean.jpg'
+        return false
+      when 'forbidden-code.jpg'
+        return {
+            'status_code' => 401,
+            'challenge' => 'Basic'
+        }
       when 'redirect.jpg'
         return {
             'location' => 'http://example.org/',
             'status_code' => 303
         }
-    end
-    nil
-  end
-
-  def authorized?(options = {})
-    case context['identifier']
-      when 'forbidden.jpg'
-        return false
       else
         true
     end

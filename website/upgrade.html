@@ -15,6 +15,7 @@ title: Upgrading
       <li><code>processor.selection_strategy</code></li>
     </ul>
   </li>
+  <li>If you have implemented the <code>redirect()</code> or <code>authorized?()</code> delegate methods, migrate their logic into <code>authorize()</code> and remove them.</li>
 </ol>
 
 <h2>3.4.x &rarr; 4.0</h2>

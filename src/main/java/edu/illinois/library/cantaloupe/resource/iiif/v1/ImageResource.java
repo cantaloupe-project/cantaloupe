@@ -13,7 +13,6 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
-import edu.illinois.library.cantaloupe.resource.Representation;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
@@ -149,13 +148,9 @@ public class ImageResource extends IIIF1Resource {
 
             getRequestContext().setOperationList(ops, fullSize);
 
-            Representation redirectingRep = checkRedirect();
-            if (redirectingRep != null) {
-                redirectingRep.write(getResponse().getOutputStream());
+            if (!authorize()) {
                 return;
             }
-
-            checkAuthorization();
 
             validateRequestedArea(ops, sourceFormat, fullSize);
 

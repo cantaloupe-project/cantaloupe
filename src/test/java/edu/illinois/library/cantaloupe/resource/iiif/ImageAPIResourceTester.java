@@ -49,6 +49,16 @@ public class ImageAPIResourceTester {
         return new Client().builder().uri(uri).build();
     }
 
+    public void testAuthorizationWhenAuthorized(URI uri) {
+        assertStatus(200, uri);
+    }
+
+    public void testAuthorizationWhenNotAuthorized(URI uri) {
+        // This may vary depending on the return value of a delegate method,
+        // but the way the tests are set up, it's 403.
+        assertStatus(403, uri);
+    }
+
     public void testBasicAuthWithNoCredentials(ApplicationServer appServer,
                                                URI uri) throws Exception {
         initializeBasicAuth(appServer);

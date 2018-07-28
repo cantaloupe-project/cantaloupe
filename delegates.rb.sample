@@ -55,28 +55,27 @@ class CustomDelegate
   attr_accessor :context
 
   ##
-  # Tells the server whether to redirect in response to the request. Will be
-  # called upon all image requests.
-  #
-  # @param options [Hash] Empty hash.
-  # @return [Hash<String,Object>,nil] Hash with `location` and `status_code`
-  #         keys. `location` must be a URI string; `status_code` must be an
-  #         integer from 300 to 399. Return nil for no redirect.
-  #
-  def redirect(options = {})
-  end
-
-  ##
   # Tells the server whether the given request is authorized. Will be called
   # upon all image requests to any endpoint.
   #
   # Implementations should assume that the underlying resource is available,
   # and not try to check for it.
   #
-  # @param options [Hash] Empty hash.
-  # @return [Boolean] Whether the request is authorized.
+  # There are several possible return values:
   #
-  def authorized?(options = {})
+  # 1. Boolean true/false, indicating whether the request is authorized. If
+  #    false, the response status will be 403 Forbidden.
+  # 2. Hash with a `status_code` key.
+  #     a. If it corresponds to an integer from 300-399, the request will
+  #        be redirected using that code to the URI corresponding to a
+  #        `location` key.
+  #     b. If it corresponds to 401, the hash must include a `challenge` key
+  #        corresponding to a WWW-Authenticate header value.
+  #
+  # @param options [Hash] Empty hash.
+  # @return [Boolean,Hash<String,Object>] See above.
+  #
+  def authorize(options = {})
     true
   end
 

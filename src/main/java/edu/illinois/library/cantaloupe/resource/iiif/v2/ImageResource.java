@@ -17,7 +17,6 @@ import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatExceptio
 import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
-import edu.illinois.library.cantaloupe.resource.Representation;
 import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import edu.illinois.library.cantaloupe.source.Source;
@@ -163,13 +162,9 @@ public class ImageResource extends IIIF2Resource {
 
             getRequestContext().setOperationList(ops, fullSize);
 
-            Representation redirectingRep = checkRedirect();
-            if (redirectingRep != null) {
-                redirectingRep.write(getResponse().getOutputStream());
+            if (!authorize()) {
                 return;
             }
-
-            checkAuthorization();
 
             validateRequestedArea(ops, sourceFormat, fullSize);
 

@@ -6,9 +6,9 @@ package edu.illinois.library.cantaloupe.script;
 public enum DelegateMethod {
 
     /**
-     * Called by {@link DelegateProxy#isAuthorized()}.
+     * Called by {@link DelegateProxy#authorize()}.
      */
-    AUTHORIZED("authorized?"),
+    AUTHORIZE("authorize"),
 
     /**
      * Called by {@link DelegateProxy#getAzureStorageSourceBlobKey()}.
@@ -54,11 +54,6 @@ public enum DelegateMethod {
      * Called by {@link DelegateProxy#getRedactions()}.
      */
     REDACTIONS("redactions"),
-
-    /**
-     * Called by {@link DelegateProxy#getRedirect()}.
-     */
-    REDIRECT("redirect"),
 
     /**
      * Called by {@link DelegateProxy#getSource()}.

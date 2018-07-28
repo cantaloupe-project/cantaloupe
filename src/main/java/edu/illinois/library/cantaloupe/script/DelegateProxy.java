@@ -168,6 +168,13 @@ public final class DelegateProxy {
     }
 
     /**
+     * @return Return value of {@link DelegateMethod#AUTHORIZE}.
+     */
+    public Object authorize() throws ScriptException {
+        return invoke(DelegateMethod.AUTHORIZE);
+    }
+
+    /**
      * @return Return value of {@link
      *         DelegateMethod#EXTRA_IIIF2_INFORMATION_RESPONSE_KEYS}, or an
      *         empty map if it returned {@literal nil}.
@@ -274,19 +281,6 @@ public final class DelegateProxy {
     }
 
     /**
-     * @return Return value of {@link DelegateMethod#REDIRECT}, or an empty map
-     *         if it returned {@literal nil}.
-     */
-    @SuppressWarnings("unchecked")
-    public Map<String,Object> getRedirect() throws ScriptException {
-        final Object result = invoke(DelegateMethod.REDIRECT);
-        if (result != null) {
-            return (Map<String,Object>) result;
-        }
-        return Collections.emptyMap();
-    }
-
-    /**
      * @return Return value of {@link DelegateMethod#SOURCE}. May be
      *         {@literal null}.
      */
@@ -306,14 +300,6 @@ public final class DelegateProxy {
             return (Map<String, String>) result;
         }
         return Collections.emptyMap();
-    }
-
-    /**
-     * @return Return value of {@link DelegateMethod#AUTHORIZED}.
-     */
-    public boolean isAuthorized() throws ScriptException {
-        Object result = invoke(DelegateMethod.AUTHORIZED);
-        return (boolean) result;
     }
 
     /**

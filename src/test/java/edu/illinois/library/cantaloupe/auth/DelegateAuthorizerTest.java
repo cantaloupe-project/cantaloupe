@@ -13,12 +13,14 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class AuthorizerTest extends BaseTest {
+public class DelegateAuthorizerTest extends BaseTest {
 
-    private Authorizer instance;
+    private DelegateAuthorizer instance;
 
     @Before
     public void setUp() throws Exception {
+        super.setUp();
+
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
@@ -28,67 +30,58 @@ public class AuthorizerTest extends BaseTest {
         DelegateProxyService service = DelegateProxyService.getInstance();
         DelegateProxy proxy = service.newDelegateProxy(context);
 
-        instance = new Authorizer(proxy);
+        instance = new DelegateAuthorizer(proxy);
     }
 
-    /* authorize() */
-
-    @Test
-    public void testAuthorizeWithNullDelegateProxy() throws Exception {
-        instance = new Authorizer();
-
-        AuthInfo info = instance.authorize();
-
-        assertTrue(info.isAuthorized());
+    @Test(expected = NullPointerException.class)
+    public void testConstructorWithEmptyArgument() {
+        new DelegateAuthorizer();
     }
 
     @Test
     public void testAuthorizeWithDelegateProxyReturningTrue() throws Exception {
         AuthInfo info = instance.authorize();
-        assertTrue(info.isAuthorized());
+        assertEquals(200, info.getResponseStatus());
+        assertNull(info.getRedirectURI());
     }
 
     @Test
     public void testAuthorizeWithDelegateProxyReturningFalse() throws Exception {
         RequestContext context = new RequestContext();
-        context.setIdentifier(new Identifier("forbidden.jpg"));
+        context.setIdentifier(new Identifier("forbidden-boolean.jpg"));
         DelegateProxyService service = DelegateProxyService.getInstance();
         DelegateProxy proxy = service.newDelegateProxy(context);
-        instance = new Authorizer(proxy);
+        instance = new DelegateAuthorizer(proxy);
 
         AuthInfo info = instance.authorize();
-        assertFalse(info.isAuthorized());
-    }
-
-    /* redirect() */
-
-    @Test
-    public void testRedirectWithNullDelegateProxy() throws Exception {
-        instance = new Authorizer();
-
-        RedirectInfo info = instance.redirect();
-
-        assertNull(info);
+        assertEquals(403, info.getResponseStatus());
+        assertNull(info.getRedirectURI());
     }
 
     @Test
-    public void testRedirectWithDelegateProxyReturningNull() throws Exception {
-        RedirectInfo info = instance.redirect();
-        assertNull(info);
+    public void testAuthorizeWithDelegateProxyReturningUnauthorizedMap() throws Exception {
+        RequestContext context = new RequestContext();
+        context.setIdentifier(new Identifier("forbidden-code.jpg"));
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance = new DelegateAuthorizer(proxy);
+
+        AuthInfo info = instance.authorize();
+        assertEquals(401, info.getResponseStatus());
+        assertNull(info.getRedirectURI());
     }
 
     @Test
-    public void testRedirectWithDelegateProxyReturningMap() throws Exception {
+    public void testAuthorizeWithDelegateProxyReturningRedirectMap() throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("redirect.jpg"));
         DelegateProxyService service = DelegateProxyService.getInstance();
         DelegateProxy proxy = service.newDelegateProxy(context);
-        instance = new Authorizer(proxy);
+        instance = new DelegateAuthorizer(proxy);
 
-        RedirectInfo info = instance.redirect();
-
-        assertEquals(303, info.getRedirectStatus());
-        assertEquals("http://example.org/", info.getRedirectURI().toString());
+        AuthInfo info = instance.authorize();
+        assertEquals(303, info.getResponseStatus());
+        assertEquals("http://example.org/", info.getRedirectURI());
     }
 
 }

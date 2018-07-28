@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
 /**
- * Functional test of the non-IIIF features of InformationResource.
+ * Functional test of the features of InformationResource.
  */
 public class InformationResourceTest extends ResourceTest {
 
@@ -38,6 +38,18 @@ public class InformationResourceTest extends ResourceTest {
     @Override
     protected String getEndpointPath() {
         return Route.IIIF_1_PATH;
+    }
+
+    @Test
+    public void testGETAuthorizationWhenAuthorized() {
+        URI uri = getHTTPURI("/" + IMAGE + "/info.json");
+        tester.testAuthorizationWhenAuthorized(uri);
+    }
+
+    @Test
+    public void testGETAuthorizationWhenNotAuthorized() {
+        URI uri = getHTTPURI("/forbidden.jpg/info.json");
+        tester.testAuthorizationWhenNotAuthorized(uri);
     }
 
     @Test

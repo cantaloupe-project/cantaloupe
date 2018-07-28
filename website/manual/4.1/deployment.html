@@ -91,7 +91,7 @@ title: Deployment
 
 <p>A <code>max_pixels</code> configuration option is available to limit the maximum returned size of processed images. This is a "safety net" to prevent clients from bogging down the server. It does not affect requests for full-sized unmodified images, which do not significantly load the server because they are streamed through with no processing.</p>
 
-<p>Note that the <code><a href="access-control.html#Authorization">authorized?</a></code> delegate method can perform the same function as <code>max_pixels</code>, with more granular control.</p>
+<p>Note that the <code><a href="access-control.html#Authorization">authorize()</a></code> delegate method can perform the same function as <code>max_pixels</code>, with more granular control.</p>
 
 <hr>
 

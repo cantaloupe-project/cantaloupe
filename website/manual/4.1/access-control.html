@@ -14,11 +14,12 @@ title: Access Control
         <ul>
           <li><a href="#example-2">Allow only requests for half-scale images or smaller</a></li>
           <li><a href="#example-3">Allow only requests for identifiers matching a certain pattern</a></li>
-          <li><a href="#example-4">Allow only requests for images set as "public" in a MySQL database</a></li>
           <li><a href="#example-5">Allow only JPEG output</a></li>
           <li><a href="#example-6">Allow only certain user agents</a></li>
           <li><a href="#example-7">Allow only requests from clients that supply a valid token in a header</a></li>
           <li><a href="#example-8">Restrict a region of an image</a></li>
+          <li><a href="#example-10">Restrict using HTTP Basic</a></li>
+          <li><a href="#example-11">Restrict using the IIIF Authentication API</a></li>
           <li><a href="#example-9">Redirect to another URL</a></li>
         </ul>
       </li>
@@ -36,20 +37,21 @@ endpoint.public.auth.basic.username = myusername
 endpoint.public.auth.basic.secret = mypassword
 {% endhighlight %}
 
+<p>See one of the <a href="#example-10">authorization examples</a> for a more flexible way to accomplish this.</p>
+
+<p class="text-warning"><i class="fa fa-warning"></i> Credentials encoded using the HTTP Basic scheme can be decoded easily. HTTP Basic should only be used in conjunction with SSL/TLS.</p>
+
 <hr>
 
 <h2 id="Authorization">Authorization</h2>
 
-<p>A custom <a href="delegate-script.html">delegate method</a>, <code>authorized?()</code>, can be used to implement authorization logic ranging from simple to complex. It will be invoked upon every image request. A skeleton with documented parameters and return values is present in the <span class="filename">delegates.rb.sample</span> file. By default, it just returns <code>true</code>, authorizing all requests.</p>
-
-<p>Another method, <code>redirect()</code>, can be used to conditionally redirect to a different URL.</p>
+<p>A custom <a href="delegate-script.html">delegate method</a>, <code>authorize()</code>, can be used to implement authorization logic ranging from simple to complex. A skeleton with documented parameters and return values is present in the <span class="filename">delegates.rb.sample</span> file. By default, it just returns <code>true</code>, authorizing all requests.</p>
 
 <h3 id="Authorization Notes">Notes</h3>
 
 <ul>
-  <li>The authorization method will be called on every image request and should therefore be written to be efficient.</li>
-  <li>The authorization method will be called upon requests to all image endpoints, <strong>but not information endpoints</strong>.</li>
-  <li>Implementations should assume that the underlying source image exists, even though it may not. The image server will check for existence, but the check may occur after the delegate method is invoked.</li>
+  <li>The authorization method will be called upon every request and should therefore be written to be efficient.</li>
+  <li>Implementations should assume that the underlying source image exists, even though it may not. The existence check will happen separately.</li>
 </ul>
 
 <h3 id="Authorization Examples">Examples</h3>
@@ -58,7 +60,7 @@ endpoint.public.auth.basic.secret = mypassword
 
 {% highlight ruby %}
 class CustomDelegate
-  def authorized?(options = {})
+  def authorize(options = {})
     scale = context['operations'].find{ |op| op['class'] == 'Scale' }
     if scale
       max_scale = 0.5
@@ -74,7 +76,7 @@ end
 
 {% highlight ruby %}
 class CustomDelegate
-  def authorized?(options = {})
+  def authorize(options = {})
     identifier = context['identifier']
 
     # Allow only identifiers that don't include "_restricted"
@@ -87,53 +89,11 @@ class CustomDelegate
 end
 {% endhighlight %}
 
-<h4 id="example-4">Allow only requests for images set as "public" in a MySQL database</h4>
-
-<p>(The <a href="https://dev.mysql.com/downloads/connector/j/">MySQL JDBC driver</a> will need to be installed first.)</p>
-
-<div class="alert alert-danger">
-  <i class="fa fa-warning"></i> The arguments in the context hash are not sanitized. <code>context['identifier']</code>, for example, will be exactly as the application receives it. Prefer prepared statements over string concatenation in order to reduce vulnerability to injection attacks.
-</div>
-
-{% highlight ruby %}
-require 'rubygems'
-require 'jdbc/mysql'
-require 'java'
-
-class CustomDelegate
-  def authorized?(options = {})
-    authorized = false
-
-    Java::com.mysql.jdbc.Driver
-    url = 'jdbc:mysql://HOST/DATABASE'
-    conn = java.sql.DriverManager.get_connection(url, 'USERNAME', 'PASSWORD')
-    stmt = conn.create_statement
-
-    begin
-      query = %q{SELECT is_public
-          FROM image
-          WHERE identifier = ?
-          LIMIT 1}
-      stmt = conn.prepare_statement(query)
-      stmt.setString(1, context['identifier']);
-      result_set = stmt.execute_query
-      while result_set.next do
-        authorized = result_set.getBoolean(1)
-      end
-    ensure
-      stmt.close
-      conn.close
-    end
-    authorized
-  end
-end
-{% endhighlight %}
-
 <h4 id="example-5">Allow only JPEG output</h4>
 
 {% highlight ruby %}
 class CustomDelegate
-  def authorized?(options = {})
+  def authorize(options = {})
     context['output_format'] == 'image/jpeg'
   end
 end
@@ -141,13 +101,11 @@ end
 
 <h4 id="example-6">Allow only certain user agents</h4>
 
-<p class="text-warning">
-  <i class="fa fa-warning"></i> This is not foolproof&mdash;if a client knows what <var>User-Agent</var> you are checking for, they can spoof it.
-</p>
+<p class="text-warning"><i class="fa fa-warning"></i> This is not foolproof, as user agents can be faked.</p>
 
 {% highlight ruby %}
 class CustomDelegate
-  def authorized?(options = {})
+  def authorize(options = {})
     headers = context['request_headers']
     agent = headers.find{ |h, v| h.downcase == 'user-agent' }
     agent.start_with?('MyAllowedUserAgent/')
@@ -159,7 +117,7 @@ end
 
 {% highlight ruby %}
 class CustomDelegate
-  def authorized?(options = {})
+  def authorize(options = {})
     headers['X-MyToken'] == ... # write code to authorize the token
   end
 end
@@ -173,7 +131,7 @@ end
 
 {% highlight ruby %}
 class CustomDelegate
-  def authorized?(options = {})
+  def authorize(options = {})
     crop = context['operations'].find{ |op| op['class'] == 'Crop' }
     if crop
       max_x = full_size['width'] / 2.0
@@ -186,14 +144,82 @@ class CustomDelegate
 end
 {% endhighlight %}
 
+<h4 id="example-10">Restrict with HTTP Basic authentication</h4>
+
+<p>With HTTP Basic authentication, the server sends an HTTP 401 (Unauthorized) status code along with a <code>WWW-Authenticate: Basic</code> header, which tells the client that subsequent requests must include an <code>Authorization</code> header containing encoded credentials. (Web browsers normally acquire these from a user prompt or password store.)</p>
+
+<p class="text-warning"><i class="fa fa-warning"></i> Credentials encoded using this scheme can be easily decoded. HTTP Basic should only be used over SSL/TLS.</p>
+
+<p>Here is an example of an HTTP Basic implementation:</p>
+
+{% highlight ruby %}
+require 'base64'
+
+class CustomDelegate
+  def authorize(options = {})
+    header = context['request_headers']
+                 .select{ |name, value| name.downcase == 'authorization' }
+                 .values.first
+    return true if authenticate_basic(header)
+    return {
+        'status_code' => 401,
+        'challenge' => 'Basic realm="MyRealm" charset="UTF-8"'
+    }
+
+  end
+
+  def authenticate_basic(header)
+    if header&.start_with?('Basic ')
+      encoded = header[6..header.length - 1]
+      creds = Base64.decode64(encoded).split(':')
+      if creds.length > 1
+        return (creds[0] == 'my_user' and creds[1] == 'my_secret')
+      end
+    end
+    false
+  end
+end
+{% endhighlight %}
+
+<h4 id="example-11">Restrict using the IIIF Authentication API</h4>
+
+<p>The <a href="https://iiif.io/api/auth/1.0/">IIIF Authentication API 1.0</a> describes general patterns of access-restricting IIIF resources, including images, in a standard way. Cantaloupe does not implement this API by itself&mdash;that would be way beyond its scope&mdash;but it can slot into a broader architecture that does.</p>
+
+<p>In order to accomplish this:</p>
+
+<ol>
+  <li><code>extra_iiif_2_information_response_keys()</code> must return the <a href="https://iiif.io/api/auth/1.0/#authentication-services">authentication services</a> used by the API.</li>
+  <li>The <code>authorize()</code> method must be implemented to accept bearer tokens from the client, and return a status of 200 (or <code>true</code>) for authorized requests; 302 for redirects; and 401 for unauthorized requests. Example:</li>
+</ol>
+
+{% highlight ruby %}
+class CustomDelegate
+  def authorize(options = {})
+    header = context['request_headers']
+                 .select{ |name, value| name.downcase == 'authorization' }
+                 .values.first
+    if header&.start_with?('Bearer ')
+      token = header[7..header.length - 1]
+      # Authenticate the token and return true if it's valid.
+    end
+    return {
+        'status_code' => 401,
+        'challenge' => 'Bearer charset="UTF-8"'
+    }
+  end
+end
+{% endhighlight %}
+
+<p class="text-info"><i class="fa fa-info-circle"></i> Currently, only <a href="https://iiif.io/api/auth/1.0/#all-or-nothing-access">All-or-Nothing Access</a> is supported. <a href="https://iiif.io/api/auth/1.0/#tiered-access">Tiered access</a> is not.</p>
+
 <h4 id="example-9">Redirect to another URL</h4>
 
 {% highlight ruby %}
 class CustomDelegate
-  def redirect(options = {})
+  def authorize(options = {})
     {
-      'location' => 'http://example.org/some-other-url',
-      'status_code' => 302
+      'status_code' => 303, # "See Other"
+      'location' => 'http://example.org/some-other-url'
     }
   end
 end

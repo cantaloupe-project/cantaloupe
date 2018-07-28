@@ -3,8 +3,8 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.auth.AuthInfo;
 import edu.illinois.library.cantaloupe.auth.Authorizer;
+import edu.illinois.library.cantaloupe.auth.AuthorizerFactory;
 import edu.illinois.library.cantaloupe.auth.CredentialStore;
-import edu.illinois.library.cantaloupe.auth.RedirectInfo;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Method;
@@ -20,9 +20,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.script.ScriptException;
 import javax.servlet.http.HttpServletResponse;
-import java.net.URI;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -227,41 +226,43 @@ public abstract class AbstractResource {
     }
 
     /**
-     * Uses an {@link Authorizer} to determine whether the request is
-     * authorized.
+     * Uses an {@link Authorizer} to determine how to respond to the request.
+     * The response will be modified if necessary.
+     *
+     * @return Whether authorization was successful. {@literal false} indicates
+     *         a redirect, and client code should abort.
+     * @throws IOException if there was an I/O error while checking
+     *                     authorization.
+     * @throws ResourceException if authorization resulted in an HTTP 400-level
+     *                           response.
      */
-    protected final void checkAuthorization()
-            throws ScriptException, ResourceException {
-        final Authorizer authorizer = new Authorizer(getDelegateProxy());
+    protected final boolean authorize() throws IOException, ResourceException {
+        final Authorizer authorizer =
+                new AuthorizerFactory().newAuthorizer(getDelegateProxy());
         final AuthInfo info = authorizer.authorize();
 
-        if (!info.isAuthorized()) {
-            throw new ResourceException(Status.FORBIDDEN);
-        }
-    }
-
-    /**
-     * Uses an {@link Authorizer} to determine whether the request needs to be
-     * redirected.
-     *
-     * @return {@literal null} if the request does not need to be redirected.
-     *         Otherwise, a redirecting representation.
-     */
-    protected final Representation checkRedirect() throws ScriptException {
-        final Authorizer authorizer = new Authorizer(getDelegateProxy());
-        final RedirectInfo info = authorizer.redirect();
-
         if (info != null) {
-            final URI location = info.getRedirectURI();
-            final int code = info.getRedirectStatus();
-            LOGGER.info("checkRedirect(): redirecting to {} via HTTP {}",
-                    location, code);
-            final Status status = new Status(code);
-            response.setHeader("Location", location.toString());
-            response.setStatus(status.getCode());
-            return new StringRepresentation("Redirect: " + location);
+            final int code = info.getResponseStatus();
+            final String location = info.getRedirectURI();
+
+            if (location != null) {
+                getResponse().setStatus(code);
+                getResponse().setHeader("Cache-Control", "no-cache");
+                getResponse().setHeader("Location", location);
+                new StringRepresentation("Redirect: " + location)
+                        .write(getResponse().getOutputStream());
+                return false;
+            } else if (code >= 400) {
+                getResponse().setStatus(code);
+                getResponse().setHeader("Cache-Control", "no-cache");
+                if (code == 401) {
+                    getResponse().setHeader("WWW-Authenticate",
+                            info.getChallengeValue());
+                }
+                throw new ResourceException(new Status(code));
+            }
         }
-        return null;
+        return true;
     }
 
     /**

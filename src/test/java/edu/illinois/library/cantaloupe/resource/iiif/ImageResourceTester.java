@@ -25,14 +25,6 @@ import static org.junit.Assert.*;
  */
 public class ImageResourceTester extends ImageAPIResourceTester {
 
-    public void testAuthorizationWhenAuthorized(URI uri) {
-        assertStatus(200, uri);
-    }
-
-    public void testAuthorizationWhenNotAuthorized(URI uri) {
-        assertStatus(403, uri);
-    }
-
     public void testAuthorizationWhenRedirecting(URI uri)
             throws Exception {
         Client client = newClient(uri);
