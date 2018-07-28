@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
-import org.apache.commons.lang3.StringUtils;
-
 public enum Position {
 
     TOP_LEFT("NW"),
@@ -12,7 +10,8 @@ public enum Position {
     RIGHT_CENTER("E"),
     BOTTOM_LEFT("SW"),
     BOTTOM_CENTER("S"),
-    BOTTOM_RIGHT("SE");
+    BOTTOM_RIGHT("SE"),
+    REPEAT("REPEAT");
 
     private final String shortName;
 
@@ -23,10 +22,9 @@ public enum Position {
      *         found.
      */
     public static Position fromString(final String positionStr) {
-        final String normalizedString = StringUtils.
-                replace(positionStr, " ", "_").trim().toLowerCase();
-        final String[] normalizedParts = StringUtils.
-                split(normalizedString, "_");
+        final String normalizedString =
+                positionStr.replaceAll(" ", "_").trim().toLowerCase();
+        final String[] normalizedParts = normalizedString.split("_");
 
         // check for an exact match
         for (Position pos : Position.values()) {
@@ -38,8 +36,7 @@ public enum Position {
         // check for a word match
         for (Position pos : Position.values()) {
             for (int i = 0; i < normalizedParts.length; i++) {
-                if (!StringUtils.contains(pos.name().toLowerCase(),
-                        normalizedParts[i])) {
+                if (!pos.name().toLowerCase().contains(normalizedParts[i])) {
                     break;
                 }
                 if (i == normalizedParts.length - 1) {

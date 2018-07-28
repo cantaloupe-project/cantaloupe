@@ -12,6 +12,7 @@ title: Change Log
   <li>Added configurable processor selection strategies, one of which uses the existing <code>processor.*</code> configuration keys, and the other of which uses an automatic strategy which attempts to choose a &quot;best&quot; processor on a per-request basis.</li>
   <li>The <code>redirect()</code> and <code>authorized?()</code> delegate methods have been merged into a new <code>authorize()</code> method, which enables a superset of their functionality, including compliance with the IIIF Authentication API version 1.0. The <code>endpoint.public.auth.*</code> keys that controlled global HTTP Basic protection have also been replaced by this new method.</li>
   <li>The <code>/iiif</code> URI path no longer redirects to a specific Image API version, and now returns HTTP 404.</li>
+  <li>Added the <code>repeat</code> position for image overlays.</li>
   <li>Removed the Restlet framework.</li>
 </ul>
 

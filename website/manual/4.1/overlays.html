@@ -38,9 +38,9 @@ title: Overlays
 
 <h2 id="Image Overlays">Image Overlays</h2>
 
-<p>An image overlay must be a 24-bit PNG image, either RGB or RGBA. It will be blended pixel-for-pixel into the output image.</p>
+<p>An image overlay must be a 24-bit RGB or RGBA PNG image. It will be blended pixel-for-pixel into the output image.</p>
 
-<p>Overlay images can be located on the filesystem, and also, since version 3.3, on a web server. Regardless, they are cached in memory after being loaded the first time, so there is no performance penalty for using web-hosted overlay images.</p>
+<p>Overlay images can be located on the filesystem or on a web server. Regardless, they are cached in memory after being loaded the first time, so there is no performance penalty for using web-hosted overlay images.</p>
 
 <p class="text-info">
   <i class="fa fa-info-circle"></i> When using multiple image overlays, their filenames must all be different, regardless of where they reside.
@@ -133,43 +133,9 @@ end
 
 <h2 id="Positioning">Positioning</h2>
 
-<p>Position and inset are configurable. Supported positions are:</p>
+<p>Position and inset are configurable. Supported positions are <code>top left</code>, <code>top center</code>, <code>top right</code>, <code>left center</code>, <code>center</code>, <code>right center</code>, <code>bottom left</code>, <code>bottom center</code>, <code>bottom right</code>, and <code>repeat</code>.</p>
 
-<table class="table text-center">
-  <tr>
-    <td>
-      <code>top left</code>
-    </td>
-    <td>
-      <code>top center</code>
-    </td>
-    <td>
-      <code>top right</code>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <code>left center</code>
-    </td>
-    <td>
-      <code>center</code>
-    </td>
-    <td>
-      <code>right center</code>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <code>bottom left</code>
-    </td>
-    <td>
-      <code>bottom center</code>
-    </td>
-    <td>
-      <code>bottom right</code>
-    </td>
-  </tr>
-</table>
+<p><code>repeat</code> works only with image overlays, drawing the overlay image in a grid pattern over the whole image. This position does not support an inset.</p>
 
 <hr>
 

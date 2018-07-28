@@ -304,58 +304,6 @@ public final class Java2DUtil {
                                      final int inset) {
         if (overlayImage != null) {
             final Stopwatch watch = new Stopwatch();
-            int overlayX, overlayY;
-            switch (position) {
-                case TOP_LEFT:
-                    overlayX = inset;
-                    overlayY = inset;
-                    break;
-                case TOP_RIGHT:
-                    overlayX = baseImage.getWidth() -
-                            overlayImage.getWidth() - inset;
-                    overlayY = inset;
-                    break;
-                case BOTTOM_LEFT:
-                    overlayX = inset;
-                    overlayY = baseImage.getHeight() -
-                            overlayImage.getHeight() - inset;
-                    break;
-                // case BOTTOM_RIGHT: will be handled in default:
-                case TOP_CENTER:
-                    overlayX = (baseImage.getWidth() -
-                            overlayImage.getWidth()) / 2;
-                    overlayY = inset;
-                    break;
-                case BOTTOM_CENTER:
-                    overlayX = (baseImage.getWidth() -
-                            overlayImage.getWidth()) / 2;
-                    overlayY = baseImage.getHeight() -
-                            overlayImage.getHeight() - inset;
-                    break;
-                case LEFT_CENTER:
-                    overlayX = inset;
-                    overlayY = (baseImage.getHeight() -
-                            overlayImage.getHeight()) / 2;
-                    break;
-                case RIGHT_CENTER:
-                    overlayX = baseImage.getWidth() -
-                            overlayImage.getWidth() - inset;
-                    overlayY = (baseImage.getHeight() -
-                            overlayImage.getHeight()) / 2;
-                    break;
-                case CENTER:
-                    overlayX = (baseImage.getWidth() -
-                            overlayImage.getWidth()) / 2;
-                    overlayY = (baseImage.getHeight() -
-                            overlayImage.getHeight()) / 2;
-                    break;
-                default: // bottom right
-                    overlayX = baseImage.getWidth() -
-                            overlayImage.getWidth() - inset;
-                    overlayY = baseImage.getHeight() -
-                            overlayImage.getHeight() - inset;
-                    break;
-            }
 
             final Graphics2D g2d = baseImage.createGraphics();
             g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
@@ -363,8 +311,78 @@ public final class Java2DUtil {
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
             g2d.drawImage(baseImage, 0, 0, null);
-            g2d.drawImage(overlayImage, overlayX, overlayY, null);
+
+            if (Position.REPEAT.equals(position)) {
+                int startX = Math.round(baseImage.getWidth() / 2f);
+                int startY = Math.round(baseImage.getHeight() / 2f);
+                while (startX >= 0) {
+                    startX -= overlayImage.getWidth();
+                }
+                while (startY >= 0) {
+                    startY -= overlayImage.getHeight();
+                }
+                for (int x = startX; x < baseImage.getWidth(); x += overlayImage.getWidth()) {
+                    for (int y = startY; y < baseImage.getHeight(); y += overlayImage.getHeight()) {
+                        g2d.drawImage(overlayImage, x, y, null);
+                    }
+                }
+            } else {
+                int overlayX, overlayY;
+                switch (position) {
+                    case TOP_LEFT:
+                        overlayX = inset;
+                        overlayY = inset;
+                        break;
+                    case TOP_RIGHT:
+                        overlayX = baseImage.getWidth() -
+                                overlayImage.getWidth() - inset;
+                        overlayY = inset;
+                        break;
+                    case BOTTOM_LEFT:
+                        overlayX = inset;
+                        overlayY = baseImage.getHeight() -
+                                overlayImage.getHeight() - inset;
+                        break;
+                    // case BOTTOM_RIGHT: will be handled in default:
+                    case TOP_CENTER:
+                        overlayX = (baseImage.getWidth() -
+                                overlayImage.getWidth()) / 2;
+                        overlayY = inset;
+                        break;
+                    case BOTTOM_CENTER:
+                        overlayX = (baseImage.getWidth() -
+                                overlayImage.getWidth()) / 2;
+                        overlayY = baseImage.getHeight() -
+                                overlayImage.getHeight() - inset;
+                        break;
+                    case LEFT_CENTER:
+                        overlayX = inset;
+                        overlayY = (baseImage.getHeight() -
+                                overlayImage.getHeight()) / 2;
+                        break;
+                    case RIGHT_CENTER:
+                        overlayX = baseImage.getWidth() -
+                                overlayImage.getWidth() - inset;
+                        overlayY = (baseImage.getHeight() -
+                                overlayImage.getHeight()) / 2;
+                        break;
+                    case CENTER:
+                        overlayX = (baseImage.getWidth() -
+                                overlayImage.getWidth()) / 2;
+                        overlayY = (baseImage.getHeight() -
+                                overlayImage.getHeight()) / 2;
+                        break;
+                    default: // bottom right
+                        overlayX = baseImage.getWidth() -
+                                overlayImage.getWidth() - inset;
+                        overlayY = baseImage.getHeight() -
+                                overlayImage.getHeight() - inset;
+                        break;
+                }
+                g2d.drawImage(overlayImage, overlayX, overlayY, null);
+            }
             g2d.dispose();
+
             LOGGER.debug("overlayImage() executed in {}", watch);
         }
     }

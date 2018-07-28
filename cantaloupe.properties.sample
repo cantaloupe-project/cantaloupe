@@ -615,10 +615,12 @@ overlays.BasicStrategy.string.stroke.width = 1
 overlays.BasicStrategy.string.background.color = rgba(0, 0, 0, 100)
 
 # Allowed values: `top left`, `top center`, `top right`, `left center`,
-# `center`, `right center`, `bottom left`, `bottom center`, `bottom right`.
+# `center`, `right center`, `bottom left`, `bottom center`, `bottom right`,
+# `repeat` (images only).
 overlays.BasicStrategy.position = bottom right
 
-# Pixel margin between the overlay and the image edge.
+# Pixel margin between the overlay and the image edge. Does not apply to
+# `repeat` position.
 overlays.BasicStrategy.inset = 10
 
 # Output images less than this many pixels wide will not receive an overlay.
