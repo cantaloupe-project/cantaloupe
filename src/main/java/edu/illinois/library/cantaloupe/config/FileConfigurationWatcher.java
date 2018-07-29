@@ -31,17 +31,25 @@ class FileConfigurationWatcher implements Runnable {
 
         private void handle(Path path) {
             final Configuration config = Configuration.getInstance();
-            // If the configuration is heritable, check whether any of its
-            // files changed.
-            if (config instanceof AbstractHeritableFileConfiguration) {
-                AbstractHeritableFileConfiguration hfc =
-                        (AbstractHeritableFileConfiguration) config;
-                if (hfc.getFiles().contains(path.toFile())) {
-                    reload(config);
-                }
-            } else if (config instanceof FileConfiguration &&
-                    path.toFile().equals(((FileConfiguration) config).getFile())) {
-                reload(config);
+            if (config instanceof ConfigurationProvider) {
+                // If the ConfigurationProvider wraps any FileConfigurations or
+                // AbstractHeritableFileConfigurations, check whether any of
+                // their files have changed.
+                ((ConfigurationProvider) config).getWrappedConfigurations()
+                        .stream()
+                        .filter(c -> c instanceof FileConfiguration)
+                        .forEach(c -> {
+                            if (c instanceof AbstractHeritableFileConfiguration) {
+                                if (((AbstractHeritableFileConfiguration) c).getFiles().contains(path.toFile())) {
+                                    reload(c);
+                                }
+                            } else if (path.toFile().equals(((FileConfiguration) c).getFile())) {
+                                reload(c);
+                            }
+                        });
+            } else {
+                System.err.println("Configuration is an unexpected type. " +
+                        "This is probably a bug.");
             }
         }
 
