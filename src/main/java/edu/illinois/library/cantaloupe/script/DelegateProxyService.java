@@ -80,8 +80,9 @@ public final class DelegateProxyService {
     }
 
     /**
-     * @return File representing the delegate script, regardless of whether the
-     *         delegate script system is enabled; or {@literal null }if {@link
+     * @return Absolute path representing the delegate script, regardless of
+     *         whether the delegate script system is {@link #isEnabled()
+     *         enabled}; or {@literal null} if {@link
      *         Key#DELEGATE_SCRIPT_PATHNAME} is not set.
      * @throws NoSuchFileException If the script specified in {@link
      *         Key#DELEGATE_SCRIPT_PATHNAME} does not exist.
@@ -122,6 +123,7 @@ public final class DelegateProxyService {
                     script = Paths.get(".", script.getFileName().toString());
                 }
             }
+            script = script.toAbsolutePath();
         }
         return script;
     }
