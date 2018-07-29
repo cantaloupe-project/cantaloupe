@@ -21,13 +21,18 @@ title: Overlays
 <p>The overlay feature overlays an image or text string on top of a derivative (output) image. This can be useful for description, branding, attribution, copyright notices, and so on.</p>
 
 <figure>
+  <img src="images/string-overlay-1600.jpg" class="img img-fluid" alt="Image with string overlay applied.">
+  <figcaption>String overlay.</figcaption>
+</figure>
+
+<figure>
   <img src="images/image-overlay-1600.jpg" class="img img-fluid" alt="Image with image overlay applied.">
   <figcaption>Image overlay.</figcaption>
 </figure>
 
 <figure>
-  <img src="images/string-overlay-1600.jpg" class="img img-fluid" alt="Image with string overlay applied.">
-  <figcaption>String overlay.</figcaption>
+  <img src="images/image-repeat-overlay-1600.jpg" class="img img-fluid" alt="Image with repeating image overlay applied.">
+  <figcaption>Repeating image overlay.</figcaption>
 </figure>
 
 <p>With both types of overlays, the position, inset, and output width/height threshold (below which the overlay won't be displayed) are configurable.</p>
@@ -81,7 +86,6 @@ title: Overlays
 
 {% highlight ruby %}
 class CustomDelegate
-
   # If the resulting image is less than this many pixels on a side, don't
   # apply an overlay.
   MIN_SIZE_CUTOFF = 300
