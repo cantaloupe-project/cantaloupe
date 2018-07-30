@@ -57,6 +57,31 @@ public class MediaTypeTest {
         assertEquals("image/jpeg", type.toString());
     }
 
+    /* detectMediaTypes(byte[]) */
+
+    @Test
+    public void testDetectMediaTypesWithByteArray() throws Exception {
+        for (Format format : files.keySet()) {
+            MediaType preferredMediaType = format.getPreferredMediaType();
+            Path file = files.get(format);
+
+            byte[] bytes = Files.readAllBytes(file);
+            boolean result = MediaType.detectMediaTypes(bytes).
+                    contains(preferredMediaType);
+            if (!result) {
+                System.err.println("detection failed:" +
+                        "\tformat: " + format +
+                        "\tfile: " + file.getFileName());
+            }
+
+            // detectMediaTypes() doesn't understand these.
+            if (!new HashSet<>(Arrays.asList("avi", "webm")).
+                    contains(file.getFileName().toString())) {
+                assertTrue(result);
+            }
+        }
+    }
+
     /* detectMediaTypes(Path) */
 
     @Test

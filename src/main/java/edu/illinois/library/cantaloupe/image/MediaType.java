@@ -59,6 +59,29 @@ public final class MediaType {
     private String subtype, type;
 
     /**
+     * Attempts to detect the media type(s) of the given magic bytes. The
+     * detection is fast but imperfect.
+     *
+     * @param bytes Bytes to probe.
+     * @return     Media types associated with the data in the given file, or
+     *             an empty list if none were detected.
+     */
+    public static List<MediaType> detectMediaTypes(byte[] bytes)
+            throws IOException {
+        final List<MediaType> types = new ArrayList<>();
+
+        // https://tika.apache.org/1.1/detection.html
+        try (TikaInputStream is = TikaInputStream.get(bytes)) {
+            AutoDetectParser parser = new AutoDetectParser();
+            Detector detector = parser.getDetector();
+            Metadata md = new Metadata();
+            org.apache.tika.mime.MediaType mediaType = detector.detect(is, md);
+            types.add(new MediaType(mediaType.toString()));
+        }
+        return types;
+    }
+
+    /**
      * Attempts to detect the media type(s) of the given file by reading its
      * magic bytes. The detection is fast but imperfect.
      *
