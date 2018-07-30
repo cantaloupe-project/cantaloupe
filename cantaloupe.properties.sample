@@ -259,24 +259,24 @@ processor.selection_strategy = AutomaticSelectionStrategy
 # `FfmpegProcessor`.
 
 # These extension-specific definitions are optional.
-processor.avi = FfmpegProcessor
-processor.bmp =
-processor.dcm = ImageMagickProcessor
-processor.flv = FfmpegProcessor
-processor.gif =
-processor.jp2 = KakaduNativeProcessor
-processor.jpg =
-processor.mov = FfmpegProcessor
-processor.mp4 = FfmpegProcessor
-processor.mpg = FfmpegProcessor
-processor.pdf = PdfBoxProcessor
-processor.png =
-processor.tif =
-processor.webm = FfmpegProcessor
-processor.webp = ImageMagickProcessor
+processor.ManualSelectionStrategy.avi = FfmpegProcessor
+processor.ManualSelectionStrategy.bmp =
+processor.ManualSelectionStrategy.dcm = ImageMagickProcessor
+processor.ManualSelectionStrategy.flv = FfmpegProcessor
+processor.ManualSelectionStrategy.gif =
+processor.ManualSelectionStrategy.jp2 = KakaduNativeProcessor
+processor.ManualSelectionStrategy.jpg =
+processor.ManualSelectionStrategy.mov = FfmpegProcessor
+processor.ManualSelectionStrategy.mp4 = FfmpegProcessor
+processor.ManualSelectionStrategy.mpg = FfmpegProcessor
+processor.ManualSelectionStrategy.pdf = PdfBoxProcessor
+processor.ManualSelectionStrategy.png =
+processor.ManualSelectionStrategy.tif =
+processor.ManualSelectionStrategy.webm = FfmpegProcessor
+processor.ManualSelectionStrategy.webp = ImageMagickProcessor
 
 # Fall back to this processor for any formats not assigned above.
-processor.fallback = Java2dProcessor
+processor.ManualSelectionStrategy.fallback = Java2dProcessor
 
 #----------------------------------------
 # Global Processor Configuration

@@ -10,6 +10,12 @@ title: Upgrading
 <h2>4.0 &rarr; 4.1</h2>
 
 <ol>
+  <li>Rename the following configuration keys:
+    <ul>
+      <li><code>processor.[format]</code> to <code>processor.ManualSelectionStrategy.[format]</code></li>
+      <li><code>processor.fallback</code> to <code>processor.ManualSelectionStrategy.fallback</code></li>
+    </ul>
+  </li>
   <li>Add the following keys from the sample configuration:
     <ul>
       <li><code>processor.selection_strategy</code></li>

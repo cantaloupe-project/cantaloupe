@@ -49,8 +49,9 @@ class ManualSelectionStrategy implements SelectionStrategy {
      *         null} if one is not set.
      */
     private String getAssignedProcessorName(Format format) {
-        final String value = Configuration.getInstance().
-                getString("processor." + format.getPreferredExtension());
+        final String value = Configuration.getInstance().getString(
+                "processor.ManualSelectionStrategy." +
+                        format.getPreferredExtension());
         return (value != null && !value.isEmpty()) ? value : null;
     }
 

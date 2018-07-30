@@ -26,7 +26,8 @@ public class ManualSelectionStrategyTest extends BaseTest {
     @Test
     public void getPreferredProcessorsWhenOnlyAssignedIsSet() {
         Configuration config = Configuration.getInstance();
-        config.setProperty("processor.pdf", PdfBoxProcessor.class.getSimpleName());
+        config.setProperty("processor.ManualSelectionStrategy.pdf",
+                PdfBoxProcessor.class.getSimpleName());
 
         List<Class<? extends Processor>> expected =
                 Collections.singletonList(PdfBoxProcessor.class);
@@ -46,7 +47,8 @@ public class ManualSelectionStrategyTest extends BaseTest {
     @Test
     public void getPreferredProcessorsWhenAssignedAndFallbackAreSet() {
         Configuration config = Configuration.getInstance();
-        config.setProperty("processor.jpg", GraphicsMagickProcessor.class.getSimpleName());
+        config.setProperty("processor.ManualSelectionStrategy.jpg",
+                GraphicsMagickProcessor.class.getSimpleName());
         config.setProperty(Key.PROCESSOR_FALLBACK, ImageMagickProcessor.class.getSimpleName());
 
         List<Class<? extends Processor>> expected =
@@ -57,7 +59,7 @@ public class ManualSelectionStrategyTest extends BaseTest {
     @Test(expected = IllegalArgumentException.class)
     public void getPreferredProcessorsWithIllegalAssignedName() {
         Configuration config = Configuration.getInstance();
-        config.setProperty("processor.jpg", "bogus");
+        config.setProperty("processor.ManualSelectionStrategy.jpg", "bogus");
         instance.getPreferredProcessors(Format.JPG);
     }
 
@@ -71,7 +73,8 @@ public class ManualSelectionStrategyTest extends BaseTest {
     @Test
     public void getPreferredProcessorsWithFullyQualifiedNames() {
         Configuration config = Configuration.getInstance();
-        config.setProperty("processor.jpg", GraphicsMagickProcessor.class.getName());
+        config.setProperty("processor.ManualSelectionStrategy.jpg",
+                GraphicsMagickProcessor.class.getName());
         config.setProperty(Key.PROCESSOR_FALLBACK, ImageMagickProcessor.class.getName());
 
         List<Class<? extends Processor>> expected =

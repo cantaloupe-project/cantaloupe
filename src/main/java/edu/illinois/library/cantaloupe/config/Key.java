@@ -154,7 +154,7 @@ public enum Key {
     PROCESSOR_BACKGROUND_COLOR("processor.background_color"),
     PROCESSOR_DOWNSCALE_FILTER("processor.downscale_filter"),
     PROCESSOR_DPI("processor.dpi"),
-    PROCESSOR_FALLBACK("processor.fallback"),
+    PROCESSOR_FALLBACK("processor.ManualSelectionStrategy.fallback"),
     PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY("processor.fallback_retrieval_strategy"),
     PROCESSOR_JPG_PROGRESSIVE("processor.jpg.progressive"),
     PROCESSOR_JPG_QUALITY("processor.jpg.quality"),
