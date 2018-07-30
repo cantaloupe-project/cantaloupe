@@ -12,11 +12,13 @@ import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpClientTransport;
 import org.eclipse.jetty.client.api.AuthenticationStore;
+import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
 import org.eclipse.jetty.client.util.BasicAuthentication;
 import org.eclipse.jetty.client.util.InputStreamResponseListener;
 import org.eclipse.jetty.http.HttpField;
+import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -24,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -157,13 +158,21 @@ class HttpSource extends AbstractSource implements StreamSource {
 
     private static HttpClient jettyClient;
 
-    private InputStreamResponseListener rangedGETResponseListener;
+    /**
+     * Cached HTTP {@literal GET} response status.
+     */
+    private int rangedGETResponseStatus;
 
     /**
-     * Cached HTTP {@literal GET} response with a maximum body length of {@link
-     * #FORMAT_INFERENCE_RANGE_LENGTH}.
+     * Cached HTTP {@literal GET} response headers.
      */
-    private Response rangedGETResponse;
+    private HttpFields rangedGETResponseHeaders;
+
+    /**
+     * Cached HTTP {@literal GET} response entity. Will have a maximum length
+     * of {@link #FORMAT_INFERENCE_RANGE_LENGTH}.
+     */
+    private byte[] rangedGETResponseEntity;
 
     /**
      * Lazy-loaded by {@link #getResourceInfo()}.
@@ -224,17 +233,16 @@ class HttpSource extends AbstractSource implements StreamSource {
 
     @Override
     public void checkAccess() throws IOException {
-        Response response = retrieveRangedGETResponse();
+        fetchRangedGETResponse();
 
-        if (response.getStatus() >= HttpStatus.BAD_REQUEST_400) {
-            final String statusLine = "HTTP " + rangedGETResponse.getStatus() +
-                    ": " + rangedGETResponse.getReason();
+        if (rangedGETResponseStatus >= HttpStatus.BAD_REQUEST_400) {
+            final String statusLine = "HTTP " + rangedGETResponseStatus;
 
-            if (response.getStatus() == HttpStatus.NOT_FOUND_404
-                    || response.getStatus() == HttpStatus.GONE_410) {
+            if (rangedGETResponseStatus == HttpStatus.NOT_FOUND_404
+                    || rangedGETResponseStatus == HttpStatus.GONE_410) {
                 throw new NoSuchFileException(statusLine);
-            } else if (response.getStatus() == HttpStatus.UNAUTHORIZED_401
-                    || response.getStatus() == HttpStatus.FORBIDDEN_403) {
+            } else if (rangedGETResponseStatus == HttpStatus.UNAUTHORIZED_401
+                    || rangedGETResponseStatus == HttpStatus.FORBIDDEN_403) {
                 throw new AccessDeniedException(statusLine);
             } else {
                 throw new IOException(statusLine);
@@ -301,10 +309,11 @@ class HttpSource extends AbstractSource implements StreamSource {
         Format format = Format.UNKNOWN;
         try {
             final ResourceInfo info = getResourceInfo();
-            final Response response = retrieveRangedGETResponse();
 
-            if (response.getStatus() >= 200 && response.getStatus() < 300) {
-                HttpField field = response.getHeaders().getField("Content-Type");
+            fetchRangedGETResponse();
+
+            if (rangedGETResponseStatus >= 200 && rangedGETResponseStatus < 300) {
+                HttpField field = rangedGETResponseHeaders.getField("Content-Type");
 
                 if (field != null && field.getValue() != null) {
                     format = mediaTypeFromContentType(field.getValue()).toFormat();
@@ -321,23 +330,20 @@ class HttpSource extends AbstractSource implements StreamSource {
                 if (Format.UNKNOWN.equals(format)) {
                     LOGGER.debug("Attempting to infer format from magic bytes for {}",
                             info.getURI());
-                    try (InputStream bodyStream =
-                                 new BufferedInputStream(rangedGETResponseListener.getInputStream())) {
-                        List<MediaType> types =
-                                MediaType.detectMediaTypes(bodyStream);
-                        if (!types.isEmpty()) {
-                            format = types.get(0).toFormat();
-                            LOGGER.debug("Inferred {} format from magic bytes for {}",
-                                    format, info.getURI());
-                        } else {
-                            LOGGER.debug("Unable to infer a format from magic bytes for GET {}",
-                                    info.getURI());
-                        }
+                    List<MediaType> types =
+                            MediaType.detectMediaTypes(rangedGETResponseEntity);
+                    if (!types.isEmpty()) {
+                        format = types.get(0).toFormat();
+                        LOGGER.debug("Inferred {} format from magic bytes for {}",
+                                format, info.getURI());
+                    } else {
+                        LOGGER.debug("Unable to infer a format from magic bytes for GET {}",
+                                info.getURI());
                     }
                 }
             } else {
                 LOGGER.warn("GET {} returned status {}",
-                        info.getURI(), response.getStatus());
+                        info.getURI(), rangedGETResponseStatus);
             }
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -379,11 +385,17 @@ class HttpSource extends AbstractSource implements StreamSource {
     }
 
     /**
-     * Issues a {@literal GET} request specifying a small range of data and
-     * caches the result in {@link #rangedGETResponse}.
+     * <p>Issues a {@literal GET} request specifying a small range of data and
+     * caches parts of the response in {@link #rangedGETResponseStatus},
+     * {@link #rangedGETResponseHeaders}, and {@link
+     * #rangedGETResponseEntity}.</p>
+     *
+     * <p>(N.B.: We used to cache the whole {@link Response}, but that resulted
+     * in a <a href="https://github.com/medusa-project/cantaloupe/issues/229">
+     * connection leak</a>. Probably Jetty didn't want to be used that way.)</p>
      */
-    private Response retrieveRangedGETResponse() throws IOException {
-        if (rangedGETResponse == null) {
+    private void fetchRangedGETResponse() throws IOException {
+        if (rangedGETResponseStatus == 0) {
             ResourceInfo info;
             try {
                 info = getResourceInfo();
@@ -391,23 +403,21 @@ class HttpSource extends AbstractSource implements StreamSource {
                 LOGGER.error(e.getMessage(), e);
                 throw new IOException(e);
             } catch (Exception e) {
-                LOGGER.error("retrieveRangedGETResponse(): {}", e.getMessage());
+                LOGGER.error("fetchRangedGETResponse(): {}", e.getMessage());
                 throw new IOException(e.getMessage(), e);
             }
 
             try {
                 final HttpClient client = getHTTPClient(info);
 
-                rangedGETResponseListener = new InputStreamResponseListener();
-
-                client.newRequest(info.getURI())
+                ContentResponse response = client.newRequest(info.getURI())
                         .timeout(getRequestTimeout(), TimeUnit.SECONDS)
                         .header("Range", "bytes=0-" + (FORMAT_INFERENCE_RANGE_LENGTH - 1))
                         .method(HttpMethod.GET)
-                        .send(rangedGETResponseListener);
-
-                rangedGETResponse = rangedGETResponseListener.get(
-                        getRequestTimeout(), TimeUnit.SECONDS);
+                        .send();
+                rangedGETResponseStatus = response.getStatus();
+                rangedGETResponseHeaders = response.getHeaders();
+                rangedGETResponseEntity = response.getContent();
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException("Malformed URI: " + info.getURI());
             } catch (ExecutionException e ) {
@@ -416,7 +426,6 @@ class HttpSource extends AbstractSource implements StreamSource {
                 throw new IOException(e);
             }
         }
-        return rangedGETResponse;
     }
 
     /**
@@ -480,8 +489,6 @@ class HttpSource extends AbstractSource implements StreamSource {
 
     @Override
     public void setIdentifier(Identifier identifier) {
-        rangedGETResponse = null;
-        rangedGETResponseListener = null;
         resourceInfo = null;
         format = null;
         this.identifier = identifier;
