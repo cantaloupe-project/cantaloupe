@@ -12,7 +12,7 @@ import edu.illinois.library.cantaloupe.operation.overlay.OverlayService;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.redaction.RedactionService;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
-import edu.illinois.library.cantaloupe.util.StringUtil;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -563,7 +563,7 @@ public final class OperationList implements Comparable<OperationList>,
             extension = "." + encode.getFormat().getPreferredExtension();
         }
 
-        return StringUtil.filesystemSafe(idStr) + "_" + opsString + extension;
+        return StringUtils.filesystemSafe(idStr) + "_" + opsString + extension;
     }
 
     /**

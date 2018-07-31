@@ -6,7 +6,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateMethod;
-import edu.illinois.library.cantaloupe.util.StringUtil;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -178,7 +178,7 @@ class FilesystemSource extends AbstractSource
      * @return Sanitized identifier.
      */
     private Identifier sanitizedIdentifier() {
-        final String sanitized = StringUtil.sanitize(
+        final String sanitized = StringUtils.sanitize(
                 identifier.toString(),
                 UNIX_PATH_SEPARATOR + "..",
                 ".." + UNIX_PATH_SEPARATOR,

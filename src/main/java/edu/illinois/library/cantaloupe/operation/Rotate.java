@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.operation;
 
-import edu.illinois.library.cantaloupe.util.StringUtil;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 
 import java.awt.Dimension;
 import java.util.Collections;
@@ -137,7 +137,7 @@ public class Rotate implements Operation {
      */
     @Override
     public String toString() {
-        return StringUtil.removeTrailingZeroes(getDegrees());
+        return StringUtils.removeTrailingZeroes(getDegrees());
     }
 
 }

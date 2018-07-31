@@ -13,7 +13,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.ConcurrentReaderWriter;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.DeletingFileVisitor;
-import edu.illinois.library.cantaloupe.util.StringUtil;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -148,7 +148,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
                 pathname,
                 "info",
                 FilesystemCache.hashedPathFragment(identifier.toString()),
-                StringUtil.filesystemSafe(identifier.toString()) + ".json");
+                StringUtils.filesystemSafe(identifier.toString()) + ".json");
         assertEquals(expected, infoFile(identifier));
     }
 
@@ -161,7 +161,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
                 pathname,
                 "info",
                 FilesystemCache.hashedPathFragment(identifier.toString()),
-                StringUtil.filesystemSafe(identifier.toString()) + ".json"
+                StringUtils.filesystemSafe(identifier.toString()) + ".json"
                         + FilesystemCache.tempFileSuffix());
         assertEquals(expected, infoTempFile(identifier));
     }
@@ -175,7 +175,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
                 pathname,
                 "source",
                 FilesystemCache.hashedPathFragment(identifier.toString()),
-                StringUtil.filesystemSafe(identifier.toString()));
+                StringUtils.filesystemSafe(identifier.toString()));
         assertEquals(expected, sourceImageFile(identifier));
     }
 
@@ -188,7 +188,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
                 pathname,
                 "source",
                 FilesystemCache.hashedPathFragment(identifier.toString()),
-                StringUtil.filesystemSafe(identifier.toString())
+                StringUtils.filesystemSafe(identifier.toString())
                         + FilesystemCache.tempFileSuffix());
         assertEquals(expected, sourceImageTempFile(identifier));
     }

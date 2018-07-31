@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
-import edu.illinois.library.cantaloupe.util.StringUtil;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 
 /**
  * Encapsulates the "rotation" component of a URI.
@@ -82,7 +82,7 @@ class Rotation implements Comparable<Object> {
      * @return Value compatible with the rotation component of a URI.
      */
     public String toString() {
-        return StringUtil.removeTrailingZeroes(getDegrees());
+        return StringUtils.removeTrailingZeroes(getDegrees());
     }
 
 }

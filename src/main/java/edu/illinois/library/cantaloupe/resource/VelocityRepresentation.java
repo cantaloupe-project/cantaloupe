@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import edu.illinois.library.cantaloupe.util.StringUtil;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Representation for Velocity templates.
@@ -52,7 +51,7 @@ public class VelocityRepresentation implements Representation {
     private Map<String,Object> escapeTemplateVars(Map<String,Object> templateVars) {
         for (Map.Entry<String,Object> entry : templateVars.entrySet()) {
             if (entry.getValue() instanceof String) {
-                entry.setValue(StringUtil.escapeHTML((String) entry.getValue()));
+                entry.setValue(StringUtils.escapeHTML((String) entry.getValue()));
             }
         }
         return templateVars;

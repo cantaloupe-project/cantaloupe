@@ -15,8 +15,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.script.DisabledException;
-import edu.illinois.library.cantaloupe.util.StringUtil;
-import org.apache.commons.lang3.StringUtils;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,7 +88,7 @@ public abstract class AbstractResource {
         final String substitute = Configuration.getInstance().
                 getString(Key.SLASH_SUBSTITUTE, "");
         if (!substitute.isEmpty()) {
-            return StringUtils.replace(uriPathComponent, substitute, "/");
+            return org.apache.commons.lang3.StringUtils.replace(uriPathComponent, substitute, "/");
         }
         return uriPathComponent;
     }
@@ -628,9 +627,9 @@ public abstract class AbstractResource {
                 String filename;
                 if (m.matches()) {
                     // Filter out filename-unsafe characters as well as ".."
-                    filename = StringUtil.sanitize(m.group(1),
+                    filename = StringUtils.sanitize(m.group(1),
                             Pattern.compile("\\.\\."),
-                            Pattern.compile(StringUtil.FILENAME_REGEX));
+                            Pattern.compile(StringUtils.FILENAME_REGEX));
                 } else {
                     filename = getContentDispositionFilename(identifier,
                             outputFormat);
@@ -655,7 +654,7 @@ public abstract class AbstractResource {
 
     private String getContentDispositionFilename(Identifier identifier,
                                                  Format outputFormat) {
-        return identifier.toString().replaceAll(StringUtil.FILENAME_REGEX, "_") +
+        return identifier.toString().replaceAll(StringUtils.FILENAME_REGEX, "_") +
                 "." + outputFormat.getPreferredExtension();
     }
 

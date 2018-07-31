@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
-import edu.illinois.library.cantaloupe.util.StringUtil;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 
 /**
  * Encapsulates the "rotation" component of a URI.
@@ -126,7 +126,7 @@ class Rotation implements Comparable<Object> {
         if (shouldMirror()) {
             str += "!";
         }
-        str += StringUtil.removeTrailingZeroes(getDegrees());
+        str += StringUtils.removeTrailingZeroes(getDegrees());
         return str;
     }
 

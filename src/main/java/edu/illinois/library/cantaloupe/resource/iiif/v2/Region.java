@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
-import edu.illinois.library.cantaloupe.util.StringUtil;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 
 /**
  * Encapsulates the "region" component of a URI.
@@ -201,16 +201,16 @@ class Region {
             default:
                 String x, y;
                 if (getType().equals(Type.PERCENT)) {
-                    x = StringUtil.removeTrailingZeroes(this.getX());
-                    y = StringUtil.removeTrailingZeroes(this.getY());
+                    x = StringUtils.removeTrailingZeroes(this.getX());
+                    y = StringUtils.removeTrailingZeroes(this.getY());
                     str += "pct:";
                 } else {
                     x = Integer.toString(Math.round(this.getX()));
                     y = Integer.toString(Math.round(this.getY()));
                 }
                 str += String.format("%s,%s,%s,%s", x, y,
-                        StringUtil.removeTrailingZeroes(this.getWidth()),
-                        StringUtil.removeTrailingZeroes(this.getHeight()));
+                        StringUtils.removeTrailingZeroes(this.getWidth()),
+                        StringUtils.removeTrailingZeroes(this.getHeight()));
                 break;
         }
         return str;

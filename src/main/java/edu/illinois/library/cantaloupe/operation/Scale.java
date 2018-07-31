@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.operation;
 
 import edu.illinois.library.cantaloupe.processor.resample.ResampleFilter;
 import edu.illinois.library.cantaloupe.processor.resample.ResampleFilters;
-import edu.illinois.library.cantaloupe.util.StringUtil;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 
 import java.awt.Dimension;
 import java.util.Collections;
@@ -477,7 +477,7 @@ public class Scale implements Operation {
         if (!hasEffect()) {
             return "none";
         } else if (this.getPercent() != null) {
-            str += StringUtil.removeTrailingZeroes(getPercent() * 100) + "%";
+            str += StringUtils.removeTrailingZeroes(getPercent() * 100) + "%";
         } else {
             if (this.getMode().equals(Mode.ASPECT_FIT_INSIDE)) {
                 str += "!";

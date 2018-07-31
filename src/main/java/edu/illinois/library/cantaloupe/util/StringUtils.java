@@ -10,10 +10,10 @@ import java.security.NoSuchAlgorithmException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public final class StringUtil {
+public final class StringUtils {
 
     private static final Logger LOGGER = LoggerFactory.
-            getLogger(StringUtil.class);
+            getLogger(StringUtils.class);
 
     public static final String FILENAME_REGEX = "[^A-Za-z0-9._-]";
 
@@ -112,6 +112,19 @@ public final class StringUtil {
         return str;
     }
 
-    private StringUtil() {}
+    /**
+     * Strips a string from the beginning of another string.
+     *
+     * @param str     String to search.
+     * @param toStrip String to strip off the beginning of the search string.
+     */
+    public static String stripStart(String str, String toStrip) {
+        if (str.indexOf(toStrip) == 0) {
+            return str.substring(toStrip.length());
+        }
+        return str;
+    }
+
+    private StringUtils() {}
 
 }

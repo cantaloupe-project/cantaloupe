@@ -17,8 +17,8 @@ public final class CommandLocator {
                     searchPath.length() > binaryName.length()) {
                 return binaryName;
             } else {
-                searchPath = StringUtil.stripEnd(searchPath, File.separator);
-                searchPath = StringUtil.stripEnd(searchPath, binaryName);
+                searchPath = StringUtils.stripEnd(searchPath, File.separator);
+                searchPath = StringUtils.stripEnd(searchPath, binaryName);
             }
             return searchPath + File.separator + binaryName;
         } else {

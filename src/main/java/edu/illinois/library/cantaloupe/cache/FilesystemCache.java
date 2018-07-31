@@ -1,14 +1,13 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.async.TaskQueue;
-import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.util.DeletingFileVisitor;
-import edu.illinois.library.cantaloupe.util.StringUtil;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang3.SystemUtils;
@@ -432,7 +431,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     static Path infoFile(final Identifier identifier) {
         return rootInfoPath()
                 .resolve(hashedPathFragment(identifier.toString()))
-                .resolve(StringUtil.filesystemSafe(identifier.toString())
+                .resolve(StringUtils.filesystemSafe(identifier.toString())
                         + INFO_EXTENSION);
     }
 
@@ -444,7 +443,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     static Path infoTempFile(final Identifier identifier) {
         return rootInfoPath()
                 .resolve(hashedPathFragment(identifier.toString()))
-                .resolve(StringUtil.filesystemSafe(identifier.toString())
+                .resolve(StringUtils.filesystemSafe(identifier.toString())
                         + INFO_EXTENSION + tempFileSuffix());
     }
 
@@ -455,7 +454,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     static Path sourceImageFile(Identifier identifier) {
         return rootSourceImagePath()
                 .resolve(hashedPathFragment(identifier.toString()))
-                .resolve(StringUtil.filesystemSafe(identifier.toString()));
+                .resolve(StringUtils.filesystemSafe(identifier.toString()));
     }
 
     /**
@@ -466,7 +465,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     static Path sourceImageTempFile(Identifier identifier) {
         return rootSourceImagePath()
                 .resolve(hashedPathFragment(identifier.toString()))
-                .resolve(StringUtil.filesystemSafe(identifier.toString())
+                .resolve(StringUtils.filesystemSafe(identifier.toString())
                         + tempFileSuffix());
     }
 
@@ -515,7 +514,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         final Path cachePath = rootDerivativeImagePath().resolve(
                 hashedPathFragment(identifier.toString()));
         final String expectedNamePrefix =
-                StringUtil.filesystemSafe(identifier.toString());
+                StringUtils.filesystemSafe(identifier.toString());
         try {
             return Files.list(cachePath)
                     .filter(p -> p.getFileName().toString().startsWith(expectedNamePrefix))

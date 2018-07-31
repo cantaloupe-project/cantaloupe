@@ -2,8 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
-import edu.illinois.library.cantaloupe.util.StringUtil;
-import org.apache.commons.lang3.StringUtils;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 
 /**
  * Encapsulates the "size" component of a URI.
@@ -196,7 +195,7 @@ class Size {
             // Use "full" because "max" is not available in Image API 2.0.
             str += "full";
         } else if (getPercent() != null) {
-            str += "pct:" + StringUtil.removeTrailingZeroes(getPercent());
+            str += "pct:" + StringUtils.removeTrailingZeroes(getPercent());
         } else {
             if (ScaleMode.ASPECT_FIT_INSIDE.equals(getScaleMode())) {
                 str += "!";
