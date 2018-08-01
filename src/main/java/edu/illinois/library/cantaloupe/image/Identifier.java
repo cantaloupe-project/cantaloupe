@@ -8,10 +8,8 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Reference;
-import org.apache.commons.lang3.StringUtils;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,31 +51,14 @@ public class Identifier implements Comparable<Identifier> {
     private String value;
 
     /**
-     * Some web servers have issues dealing with encoded slashes ({@literal
-     * %2F}) in URIs. This method enables the use of an alternate string to
-     * represent a slash via {@link Key#SLASH_SUBSTITUTE}.
-     *
-     * @param uriPathComponent Path component (a part of the path before,
-     *                         after, or between slashes).
-     * @return Path component with slashes decoded.
-     */
-    private static String decodeSlashes(final String uriPathComponent) {
-        final String substitute = Configuration.getInstance().
-                getString(Key.SLASH_SUBSTITUTE, "");
-        if (!substitute.isEmpty()) {
-            return StringUtils.replace(uriPathComponent, substitute, "/");
-        }
-        return uriPathComponent;
-    }
-
-    /**
      * @param pathComponent URI path component.
      */
     public static Identifier fromURIPathComponent(String pathComponent) {
         // Decode entities.
         final String decodedComponent = Reference.decode(pathComponent);
         // Decode slash substitutes.
-        final String deSlashedComponent = decodeSlashes(decodedComponent);
+        final String deSlashedComponent =
+                StringUtils.decodeSlashes(decodedComponent);
 
         LOGGER.debug("Raw path component: {} -> decoded: {} -> " +
                         "slashes substituted: {}",

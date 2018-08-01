@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.util;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +18,25 @@ public final class StringUtils {
             getLogger(StringUtils.class);
 
     public static final String FILENAME_REGEX = "[^A-Za-z0-9._-]";
+
+    /**
+     * Some web servers have issues dealing with encoded slashes ({@literal
+     * %2F}) in URIs. This method enables the use of an alternate string to
+     * represent a slash via {@link Key#SLASH_SUBSTITUTE}.
+     *
+     * @param uriPathComponent Path component (a part of the path before,
+     *                         after, or between slashes).
+     * @return                 Path component with slashes decoded.
+     */
+    public static String decodeSlashes(final String uriPathComponent) {
+        final String substitute = Configuration.getInstance().
+                getString(Key.SLASH_SUBSTITUTE, "");
+        if (!substitute.isEmpty()) {
+            return org.apache.commons.lang3.StringUtils.replace(
+                    uriPathComponent, substitute, "/");
+        }
+        return uriPathComponent;
+    }
 
     public static String escapeHTML(String html) {
         StringBuilder out = new StringBuilder(Math.max(16, html.length()));

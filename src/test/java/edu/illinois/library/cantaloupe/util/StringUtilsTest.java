@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.util;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
 
@@ -8,6 +10,13 @@ import java.util.regex.Pattern;
 import static org.junit.Assert.*;
 
 public class StringUtilsTest extends BaseTest {
+
+    @Test
+    public void testDecodeSlashes() {
+        Configuration.getInstance().setProperty(Key.SLASH_SUBSTITUTE, "$$");
+        assertEquals("cats", StringUtils.decodeSlashes("cats"));
+        assertEquals("ca/ts", StringUtils.decodeSlashes("ca$$ts"));
+    }
 
     @Test
     public void testEscapeHTML() {
