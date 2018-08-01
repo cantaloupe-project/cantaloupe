@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.image;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +34,16 @@ public class IdentifierTest extends BaseTest {
         Identifier identifier = new ObjectMapper().readValue("\"cats\"",
                 Identifier.class);
         assertEquals("cats", identifier.toString());
+    }
+
+    @Test
+    public void testFromURIPathComponent() {
+        Configuration.getInstance().setProperty(Key.SLASH_SUBSTITUTE, "BUG");
+
+        String pathComponent = "catsBUG%3Adogs";
+        Identifier actual = Identifier.fromURIPathComponent(pathComponent);
+        Identifier expected = new Identifier("cats/:dogs");
+        assertEquals(expected, actual);
     }
 
     @Test

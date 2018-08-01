@@ -76,24 +76,6 @@ public abstract class AbstractResource {
     private HttpServletResponse response;
 
     /**
-     * Some web servers have issues dealing with encoded slashes ({@literal
-     * %2F}) in URIs. This method enables the use of an alternate string to
-     * represent a slash via {@link Key#SLASH_SUBSTITUTE}.
-     *
-     * @param uriPathComponent Path component (a part of the path before,
-     *                         after, or between slashes)
-     * @return Path component with slashes decoded.
-     */
-    private static String decodeSlashes(final String uriPathComponent) {
-        final String substitute = Configuration.getInstance().
-                getString(Key.SLASH_SUBSTITUTE, "");
-        if (!substitute.isEmpty()) {
-            return org.apache.commons.lang3.StringUtils.replace(uriPathComponent, substitute, "/");
-        }
-        return uriPathComponent;
-    }
-
-    /**
      * <p>Initialization method, called after all necessary setters have been
      * called but before any request-handler method (like {@link #doGET()}
      * etc.)</p>
@@ -323,18 +305,9 @@ public abstract class AbstractResource {
      * @see #getPublicIdentifier()
      */
     protected Identifier getIdentifier() {
-        String uriIdentifier = getIdentifierPathComponent();
-        if (uriIdentifier != null) {
-            // Decode entities.
-            final String decodedIdentifier = Reference.decode(uriIdentifier);
-            // Decode slash substitutes.
-            final String identifier = decodeSlashes(decodedIdentifier);
-
-            LOGGER.debug("Identifier requested: {} -> decoded: {} -> " +
-                            "slashes substituted: {}",
-                    uriIdentifier, decodedIdentifier, identifier);
-
-            return new Identifier(identifier);
+        String pathComponent = getIdentifierPathComponent();
+        if (pathComponent != null) {
+            return Identifier.fromURIPathComponent(pathComponent);
         }
         return null;
     }
