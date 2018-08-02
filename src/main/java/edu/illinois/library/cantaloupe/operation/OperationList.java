@@ -151,8 +151,7 @@ public final class OperationList implements Comparable<OperationList>,
      * delegate method return values.</p>
      *
      * <p>This method must be called <strong>after</strong> all endpoint
-     * operations have been added, as it may modify them. It will have the
-     * side-effect of {@link #freeze() freezing the instance}.</p>
+     * operations have been added, as it may modify them.</p>
      *
      * <p>The instance's identifier must be {@link #setIdentifier(Identifier)
      * set}.</p>
@@ -316,10 +315,6 @@ public final class OperationList implements Comparable<OperationList>,
                 encode.setBackgroundColor(Color.fromString(bgColor));
             }
         }
-
-        // Now that mutations have been applied, we don't want any more
-        // changes to the instance down the pike.
-        freeze();
     }
 
     private void checkFrozen() {

@@ -161,6 +161,7 @@ public class ImageResource extends IIIF1Resource {
             }
 
             ops.applyNonEndpointMutations(info, getDelegateProxy());
+            ops.freeze();
 
             // Find out whether the processor supports the source format by
             // asking it whether it offers any output formats for it.

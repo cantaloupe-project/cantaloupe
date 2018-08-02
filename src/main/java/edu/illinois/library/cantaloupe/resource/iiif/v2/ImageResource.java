@@ -84,6 +84,7 @@ public class ImageResource extends IIIF2Resource {
             final Info info = cacheFacade.getInfo(identifier);
             if (info != null) {
                 ops.applyNonEndpointMutations(info, getDelegateProxy());
+                ops.freeze();
 
                 InputStream cacheStream = null;
                 try {
@@ -179,9 +180,9 @@ public class ImageResource extends IIIF2Resource {
 
             try {
                 ops.applyNonEndpointMutations(info, getDelegateProxy());
-            } catch (IllegalStateException e) {
-                // applyNonEndpointMutations() will freeze the instance, and it
-                // may have already been called. That's fine.
+                ops.freeze();
+            } catch (IllegalStateException ignore) {
+                // The instance may already be frozen; that's fine.
             }
 
             // Find out whether the processor supports the source format by asking
