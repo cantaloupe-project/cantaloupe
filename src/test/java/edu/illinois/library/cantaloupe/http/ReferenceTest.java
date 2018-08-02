@@ -164,6 +164,17 @@ public class ReferenceTest {
     }
 
     @Test
+    public void testSetPathComponent() {
+        instance.setPathComponent(0, "new");
+        assertEquals("/new/p2.jpg", instance.getPath());
+    }
+
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void testSetPathComponentWithIndexOutOfBounds() {
+        instance.setPathComponent(2, "new");
+    }
+
+    @Test
     public void testToURI() throws Exception {
         URI expected = new URI(instance.toString());
         URI actual = instance.toURI();

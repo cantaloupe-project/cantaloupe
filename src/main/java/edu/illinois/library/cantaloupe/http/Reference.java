@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>Mutable URI class modeled after the one in Restlet.</p>
@@ -172,6 +173,20 @@ public final class Reference {
 
     public void setHost(String host) {
         this.host = host;
+    }
+
+    /**
+     * Updates a component (token between slashes) of the path.
+     *
+     * @param componentIndex Zero-based path component index.
+     * @param pathComponent  Path component.
+     * @throws IndexOutOfBoundsException if the given index is greater than the
+     *                                   number of path components minus one.
+     */
+    public void setPathComponent(int componentIndex, String pathComponent) {
+        List<String> components = getPathComponents();
+        components.set(componentIndex, pathComponent);
+        setPath("/" + components.stream().collect(Collectors.joining("/")));
     }
 
     public void setPath(String path) {
