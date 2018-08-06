@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
@@ -246,8 +247,8 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     }
 
     @Override
-    public void validate(OperationList opList,
-                         Dimension fullSize) throws ProcessorException {
+    public void validate(OperationList opList, Dimension fullSize)
+            throws ValidationException, ProcessorException {
         StreamProcessor.super.validate(opList, fullSize);
 
         // The "page" argument, if present, was validated in the overridden
@@ -260,7 +261,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                 readDocument();
                 if (page > doc.getNumberOfPages()) {
                     close();
-                    throw new IllegalArgumentException(
+                    throw new ValidationException(
                             "Page number is out-of-bounds.");
                 }
             } catch (IOException e) {

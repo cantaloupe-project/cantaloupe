@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.output.NullOutputStream;
@@ -132,7 +133,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         instance.validate(ops, fullSize);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = ValidationException.class)
     public void testValidateWithZeroPageArgument() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
@@ -144,7 +145,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         instance.validate(ops, fullSize);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = ValidationException.class)
     public void testValidateWithNegativePageArgument() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
@@ -156,7 +157,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         instance.validate(ops, fullSize);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = ValidationException.class)
     public void testValidateWithExcessivePageArgument() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 

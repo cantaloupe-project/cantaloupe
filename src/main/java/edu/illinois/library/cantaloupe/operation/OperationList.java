@@ -627,18 +627,17 @@ public final class OperationList implements Comparable<OperationList>,
      *     present.</li>
      * </ol>
      *
-     * @param fullSize Full size of the source image on which the instance is
-     *                 being applied.
-     * @throws IllegalArgumentException if the instance is invalid.
+     * @param fullSize     Full size of the source image on which the instance
+     *                     is being applied.
      */
-    public void validate(Dimension fullSize) {
+    public void validate(Dimension fullSize) throws ValidationException {
         // Ensure that an identifier is set.
         if (getIdentifier() == null) {
-            throw new IllegalArgumentException("Identifier not set.");
+            throw new ValidationException("Identifier not set.");
         }
         // Ensure that an Encode operation is present.
         if (getFirst(Encode.class) == null) {
-            throw new IllegalArgumentException(
+            throw new ValidationException(
                     "Missing " + Encode.class.getSimpleName() + " operation");
         }
         // Validate each operation.
@@ -647,18 +646,19 @@ public final class OperationList implements Comparable<OperationList>,
         }
 
         // "page" is a special query argument used by some processors, namely
-        // ones that read PDFs, that tells them what page to read. We might
-        // as well validate it here to save them the trouble.
+        // ones that read PDFs, that tells them what page to read. Since it's
+        // a de facto standard within the application, we might as well
+        // validate it here to save them the trouble.
         final String pageStr = (String) getOptions().get("page");
         if (pageStr != null) {
             try {
                 final int page = Integer.parseInt(pageStr);
                 if (page < 1) {
-                    throw new IllegalArgumentException(
+                    throw new ValidationException(
                             "Page number is out-of-bounds.");
                 }
             } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Invalid page number.");
+                throw new ValidationException("Invalid page number.");
             }
         }
     }

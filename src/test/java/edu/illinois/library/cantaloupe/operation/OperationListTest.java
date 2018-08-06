@@ -724,61 +724,82 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void validateWithValidInstance() {
+    public void validateWithValidInstance() throws Exception {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(
                 new Identifier("cats"),
                 new Crop(0, 0, 100, 100),
                 new Encode(Format.JPG));
-        ops.validate(fullSize);
+        ops.validate(fullSize, Format.PNG);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void validateWithMissingIdentifier() {
+    @Test(expected = ValidationException.class)
+    public void validateWithMissingIdentifier() throws Exception {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(
                 new Crop(0, 0, 100, 100), new Encode(Format.JPG));
-        ops.validate(fullSize);
+        ops.validate(fullSize, Format.PNG);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void validateWithMissingEncodeOperation() {
+    @Test(expected = ValidationException.class)
+    public void validateWithMissingEncodeOperation() throws Exception {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(
                 new Identifier("cats"), new Crop(0, 0, 100, 100));
-        ops.validate(fullSize);
+        ops.validate(fullSize, Format.PNG);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void validateWithOutOfBoundsCrop() {
+    @Test(expected = ValidationException.class)
+    public void validateWithOutOfBoundsCrop() throws Exception {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(new Crop(1001, 1001, 100, 100),
                 new Encode(Format.JPG));
-        ops.validate(fullSize);
+        ops.validate(fullSize, Format.PNG);
     }
 
     @Test
-    public void validateWithValidPageArgument() {
+    public void validateWithValidPageArgument() throws Exception {
         OperationList ops = new OperationList(
                 new Identifier("cats"), new Encode(Format.JPG));
         ops.getOptions().put("page", "2");
-        ops.validate(new Dimension(100, 88));
+        ops.validate(new Dimension(100, 88), Format.PNG);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void validateWithZeroPageArgument() {
+    @Test(expected = ValidationException.class)
+    public void validateWithZeroPageArgument() throws Exception {
         OperationList ops = new OperationList(
                 new Identifier("cats"), new Encode(Format.JPG));
         ops.getOptions().put("page", "0");
-        ops.validate(new Dimension(100, 88));
+        ops.validate(new Dimension(100, 88), Format.PNG);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void validateWithNegativePageArgument() {
+    @Test(expected = ValidationException.class)
+    public void validateWithNegativePageArgument() throws Exception {
         OperationList ops = new OperationList(
                 new Identifier("cats"), new Encode(Format.JPG));
         ops.getOptions().put("page", "-1");
-        ops.validate(new Dimension(100, 88));
+        ops.validate(new Dimension(100, 88), Format.PNG);
+    }
+
+    @Test(expected = ValidationException.class)
+    public void validateWithZeroResultingArea() throws Exception {
+        Dimension fullSize = new Dimension(1000, 1000);
+        OperationList ops = new OperationList(
+                new Identifier("cats"),
+                new Crop(0, 0, 10, 10),
+                new Scale(0.0001),
+                new Encode(Format.JPG));
+        ops.validate(fullSize, Format.PNG);
+    }
+
+    @Test(expected = ExcessiveSizeException.class)
+    public void validateWithAreaGreaterThanMaxAllowed() throws Exception {
+        Configuration.getInstance().setProperty(Key.MAX_PIXELS, 100);
+        Dimension fullSize = new Dimension(1000, 1000);
+        OperationList ops = new OperationList(
+                new Identifier("cats"),
+                new Encode(Format.JPG));
+        ops.validate(fullSize, Format.PNG);
     }
 
 }

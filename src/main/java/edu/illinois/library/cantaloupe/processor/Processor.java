@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
@@ -191,12 +192,12 @@ public interface Processor extends AutoCloseable {
      *
      * @param opList Operation list to process. Will be equal to the one passed
      *               to {@link #process}.
-     * @throws IllegalArgumentException if validation fails.
-     * @throws ProcessorException       if there is an error in performing the
-     *                                  validation.
+     * @throws ValidationException if validation fails.
+     * @throws ProcessorException  if there is an error in performing the
+     *                             validation.
      */
-    default void validate(OperationList opList,
-                          Dimension fullSize) throws ProcessorException {
+    default void validate(OperationList opList, Dimension fullSize)
+            throws ValidationException, ProcessorException {
         opList.validate(fullSize);
     }
 

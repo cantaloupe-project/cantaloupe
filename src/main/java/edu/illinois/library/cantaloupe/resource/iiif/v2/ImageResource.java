@@ -167,13 +167,7 @@ public class ImageResource extends IIIF2Resource {
                 return;
             }
 
-            validateRequestedArea(ops, sourceFormat, fullSize);
-
-            try {
-                processor.validate(ops, fullSize);
-            } catch (IllegalArgumentException e) {
-                throw new IllegalClientArgumentException(e.getMessage(), e);
-            }
+            processor.validate(ops, fullSize);
 
             final Dimension resultingSize = ops.getResultingSize(info.getSize());
             validateSize(resultingSize, info.getOrientationSize(), processor);

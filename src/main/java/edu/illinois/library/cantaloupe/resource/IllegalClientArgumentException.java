@@ -1,5 +1,8 @@
 package edu.illinois.library.cantaloupe.resource;
 
+/**
+ * Distinguishes illegal arguments supplied by an end user from all the rest.
+ */
 public class IllegalClientArgumentException extends IllegalArgumentException {
 
     public IllegalClientArgumentException() {

@@ -152,13 +152,7 @@ public class ImageResource extends IIIF1Resource {
                 return;
             }
 
-            validateRequestedArea(ops, sourceFormat, fullSize);
-
-            try {
-                processor.validate(ops, fullSize);
-            } catch (IllegalArgumentException e) {
-                throw new IllegalClientArgumentException(e.getMessage(), e);
-            }
+            processor.validate(ops, fullSize);
 
             ops.applyNonEndpointMutations(info, getDelegateProxy());
             ops.freeze();

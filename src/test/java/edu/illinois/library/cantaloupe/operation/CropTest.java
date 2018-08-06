@@ -535,36 +535,36 @@ public class CropTest extends BaseTest {
     }
 
     @Test
-    public void validateWithValidInstance() {
+    public void validateWithValidInstance() throws Exception {
         Dimension fullSize = new Dimension(1000, 1000);
         instance.setWidth(100);
         instance.setHeight(100);
         instance.validate(fullSize);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void validateWithOutOfBoundsCropX() {
+    @Test(expected = ValidationException.class)
+    public void validateWithOutOfBoundsCropX() throws Exception {
         Dimension fullSize = new Dimension(1000, 1000);
         Crop crop = new Crop(1001, 0, 5, 5);
         crop.validate(fullSize);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void validateWithOutOfBoundsCropY() {
+    @Test(expected = ValidationException.class)
+    public void validateWithOutOfBoundsCropY() throws Exception {
         Dimension fullSize = new Dimension(1000, 1000);
         Crop crop = new Crop(0, 1001, 5, 5);
         crop.validate(fullSize);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void validateWithZeroDimensionCropX() {
+    @Test(expected = ValidationException.class)
+    public void validateWithZeroDimensionCropX() throws Exception {
         Dimension fullSize = new Dimension(1000, 1000);
         Crop crop = new Crop(1000, 0, 100, 100);
         crop.validate(fullSize);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void validateWithZeroDimensionCrop() {
+    @Test(expected = ValidationException.class)
+    public void validateWithZeroDimensionCrop() throws Exception {
         Dimension fullSize = new Dimension(1000, 1000);
         Crop crop = new Crop(0, 1000, 100, 100);
         crop.validate(fullSize);
