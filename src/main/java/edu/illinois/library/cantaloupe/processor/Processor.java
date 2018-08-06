@@ -198,7 +198,7 @@ public interface Processor extends AutoCloseable {
      */
     default void validate(OperationList opList, Dimension fullSize)
             throws ValidationException, ProcessorException {
-        opList.validate(fullSize);
+        opList.validate(fullSize, getSourceFormat());
     }
 
 }

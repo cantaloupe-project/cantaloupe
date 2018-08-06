@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Status;
+import edu.illinois.library.cantaloupe.operation.ExcessiveSizeException;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
@@ -98,7 +99,8 @@ class ErrorResource extends AbstractResource {
 
         if (t instanceof ResourceException) {
             status = ((ResourceException) t).getStatus();
-        } else if (t instanceof IllegalClientArgumentException ||
+        } else if (t instanceof ExcessiveSizeException) {
+            status = Status.FORBIDDEN;
         } else if (t instanceof ValidationException ||
                 t instanceof IllegalClientArgumentException ||
                 t instanceof UnsupportedEncodingException) {

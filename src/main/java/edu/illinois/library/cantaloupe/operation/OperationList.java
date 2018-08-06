@@ -625,12 +625,18 @@ public final class OperationList implements Comparable<OperationList>,
      *     Operation};</li>
      *     <li>Validates the {@literal page} {@link #getOptions() option}, if
      *     present.</li>
+     *     <li>Checks that the resulting pixel area is greater than zero and
+     *     less than or equal to {@link Key#MAX_PIXELS} (if set).</li>
      * </ol>
      *
      * @param fullSize     Full size of the source image on which the instance
      *                     is being applied.
+     * @param sourceFormat Source image format.
+     * @throws ValidationException or subclass if the instance is
+     *                             invalid.
      */
-    public void validate(Dimension fullSize) throws ValidationException {
+    public void validate(Dimension fullSize,
+                         Format sourceFormat) throws ValidationException {
         // Ensure that an identifier is set.
         if (getIdentifier() == null) {
             throw new ValidationException("Identifier not set.");
@@ -660,6 +666,22 @@ public final class OperationList implements Comparable<OperationList>,
             } catch (NumberFormatException e) {
                 throw new ValidationException("Invalid page number.");
             }
+        }
+
+        final Dimension resultingSize = getResultingSize(fullSize);
+
+        // Ensure that the resulting pixel area is positive.
+        if (resultingSize.width < 1 || resultingSize.height < 1) {
+            throw new ValidationException("Resulting pixel area is empty.");
+        }
+
+        // Ensure that the resulting pixel area is less than or equal to the
+        // max allowed area, unless the processing is a no-op.
+        final long maxAllowedSize =
+                Configuration.getInstance().getLong(Key.MAX_PIXELS, 0);
+        if (maxAllowedSize > 0 && hasEffect(fullSize, sourceFormat) &&
+                resultingSize.width * resultingSize.height > maxAllowedSize) {
+            throw new ExcessiveSizeException();
         }
     }
 

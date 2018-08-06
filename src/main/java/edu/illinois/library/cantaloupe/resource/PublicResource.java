@@ -3,15 +3,12 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -79,6 +76,8 @@ public abstract class PublicResource extends AbstractResource {
 
     @Override
     public void destroy() {
+        // If a temp file was created in the source of fulfilling the request,
+        // it will need to be deleted.
         if (tempFileFuture != null) {
             try {
                 Path tempFile = tempFileFuture.get();
@@ -138,34 +137,6 @@ public abstract class PublicResource extends AbstractResource {
     protected final boolean isBypassingCache() {
         return "false".equals(getRequest().getReference().getQuery()
                 .getFirstValue("cache"));
-    }
-
-    /**
-     * <p>Checks that the requested area is greater than zero and less than or
-     * equal to {@link Key#MAX_PIXELS}.</p>
-     *
-     * <p>This does not check that any requested crop lies entirely within the
-     * bounds of the source image.</p>
-     */
-    protected final void validateRequestedArea(final OperationList opList,
-                                               final Format sourceFormat,
-                                               final Dimension fullSize)
-            throws EmptyPayloadException, PayloadTooLargeException {
-        final Dimension resultingSize = opList.getResultingSize(fullSize);
-
-        if (resultingSize.width < 1 || resultingSize.height < 1) {
-            throw new EmptyPayloadException();
-        }
-
-        // Max allowed size is ignored when the processing is a no-op.
-        if (opList.hasEffect(fullSize, sourceFormat)) {
-            final long maxAllowedSize =
-                    Configuration.getInstance().getLong(Key.MAX_PIXELS, 0);
-            if (maxAllowedSize > 0 &&
-                    resultingSize.width * resultingSize.height > maxAllowedSize) {
-                throw new PayloadTooLargeException();
-            }
-        }
     }
 
 }
