@@ -27,6 +27,11 @@ public class MockFileProcessor implements FileProcessor {
     }
 
     @Override
+    public Format getSourceFormat() {
+        return sourceFormat;
+    }
+
+    @Override
     public Set<ProcessorFeature> getSupportedFeatures() {
         return new HashSet<>();
     }

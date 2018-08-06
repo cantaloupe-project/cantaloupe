@@ -89,7 +89,7 @@ class JaiProcessor extends AbstractImageIOProcessor
     @Override
     public Set<Format> getAvailableOutputFormats() {
         Set<Format> formats;
-        if (Format.GIF.equals(sourceFormat)) {
+        if (Format.GIF.equals(getSourceFormat())) {
             formats = Collections.emptySet();
         } else {
             formats = super.getAvailableOutputFormats();
@@ -202,9 +202,9 @@ class JaiProcessor extends AbstractImageIOProcessor
                            better than nothing.
                         2) otherwise, use the SubsampleAverage operation.
                         */
-                        if (sourceFormat.equals(Format.TIF) &&
-                                (!reader.getCompression(0).equals(Compression.UNCOMPRESSED) &&
-                                        !reader.getCompression(0).equals(Compression.UNDEFINED))) {
+                        if (Format.TIF.equals(getSourceFormat()) &&
+                                (!Compression.UNCOMPRESSED.equals(reader.getCompression(0)) &&
+                                        !Compression.UNDEFINED.equals(reader.getCompression(0)))) {
                             LOGGER.debug("process(): detected compressed TIFF; " +
                                     "using the Scale operation with nearest-" +
                                     "neighbor interpolation.");

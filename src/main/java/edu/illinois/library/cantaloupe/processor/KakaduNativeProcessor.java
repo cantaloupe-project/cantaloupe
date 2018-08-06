@@ -292,6 +292,11 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
     }
 
     @Override
+    public Format getSourceFormat() {
+        return sourceFormat;
+    }
+
+    @Override
     public StreamFactory getStreamFactory() {
         return streamFactory;
     }

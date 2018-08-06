@@ -247,7 +247,7 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
     @Override
     public Set<Format> getAvailableOutputFormats() {
         final Set<Format> outputFormats;
-        if (Format.JP2.equals(sourceFormat)) {
+        if (Format.JP2.equals(getSourceFormat())) {
             outputFormats = ImageWriterFactory.supportedFormats();
         } else {
             outputFormats = Collections.unmodifiableSet(Collections.emptySet());

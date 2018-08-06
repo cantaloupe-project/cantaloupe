@@ -295,7 +295,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
 
     @Override
     public Set<Format> getAvailableOutputFormats() {
-        Set<Format> formats = readFormats().get(sourceFormat);
+        Set<Format> formats = readFormats().get(getSourceFormat());
         if (formats == null) {
             formats = Collections.unmodifiableSet(Collections.emptySet());
         }
@@ -331,7 +331,8 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                 imageInfo.getSourceFormat());
 
         // :- = read from stdin
-        args.add(sourceFormat.getPreferredExtension() + ":-[" + pageIndex + "]");
+        args.add(getSourceFormat().getPreferredExtension() +
+                ":-[" + pageIndex + "]");
 
         Encode encode = (Encode) ops.getFirst(Encode.class);
 
@@ -720,7 +721,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             // suppresses an "unknown image property" warning when the source
             // image has no Orientation tag.
             args.add("%w\n%h\n%[EXIF:*Orientation]");
-            args.add(sourceFormat.getPreferredExtension() + ":-");
+            args.add(getSourceFormat().getPreferredExtension() + ":-");
 
             final ArrayListOutputConsumer consumer =
                     new ArrayListOutputConsumer();
@@ -741,7 +742,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                 final Info info = Info.builder()
                         .withSize(width, height)
                         .withTileSize(width, height)
-                        .withFormat(sourceFormat)
+                        .withFormat(getSourceFormat())
                         .build();
                 // Do we have an EXIF orientation to deal with?
                 if (output.size() > 2) {

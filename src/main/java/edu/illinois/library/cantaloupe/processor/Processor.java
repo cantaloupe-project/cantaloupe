@@ -55,6 +55,11 @@ public interface Processor extends AutoCloseable {
     }
 
     /**
+     * @return Format of the source image.
+     */
+    Format getSourceFormat();
+
+    /**
      * @return All features supported by the processor for the set source
      *         format.
      */
@@ -172,8 +177,8 @@ public interface Processor extends AutoCloseable {
      * invalid.</p>
      *
      * <p>This default implementation simply calls {@link
-     * OperationList#validate(Dimension)}. Implementations should read the
-     * documentation of that method to decide whether they need to perform
+     * OperationList#validate(Dimension, Format)}. Implementations should read
+     * the documentation of that method to decide whether they need to perform
      * any additional validation, and only override this method if so.</p>
      *
      * <p>Notes:</p>

@@ -12,9 +12,13 @@ import java.util.Set;
  */
 abstract class AbstractProcessor {
 
-    protected Format sourceFormat;
+    private Format sourceFormat;
 
     abstract public Set<Format> getAvailableOutputFormats();
+
+    public Format getSourceFormat() {
+        return sourceFormat;
+    }
 
     /**
      * Limited implementation that performs some preflight checks. Subclasses

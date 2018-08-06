@@ -101,7 +101,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
     @Override
     public Set<Format> getAvailableOutputFormats() {
         final Set<Format> outputFormats;
-        if (sourceFormat.isVideo()) {
+        if (getSourceFormat().isVideo()) {
             outputFormats = ImageWriterFactory.supportedFormats();
         } else {
             outputFormats = Collections.unmodifiableSet(Collections.emptySet());
@@ -155,7 +155,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
                 imageInfo = Info.builder()
                         .withSize(width, height)
                         .withTileSize(width, height)
-                        .withFormat(sourceFormat)
+                        .withFormat(getSourceFormat())
                         .build();
                 imageInfo.setNumResolutions(1);
             }

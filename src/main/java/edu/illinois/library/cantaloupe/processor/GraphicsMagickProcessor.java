@@ -184,7 +184,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
 
     @Override
     public Set<Format> getAvailableOutputFormats() {
-        Set<Format> formats = readFormats().get(sourceFormat);
+        Set<Format> formats = readFormats().get(getSourceFormat());
         if (formats == null) {
             formats = Collections.unmodifiableSet(Collections.emptySet());
         }
@@ -215,7 +215,8 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                 imageInfo.getSourceFormat());
 
         // :- = read from stdin
-        args.add(sourceFormat.getPreferredExtension() + ":-[" + pageIndex + "]");
+        args.add(getSourceFormat().getPreferredExtension() +
+                ":-[" + pageIndex + "]");
 
         Encode encode = (Encode) ops.getFirst(Encode.class);
 
@@ -476,7 +477,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             // We need to read this even when not respecting orientation,
             // because GM's crop operation is orientation-unaware.
             args.add("%w\n%h\n%[EXIF:Orientation]");
-            args.add(sourceFormat.getPreferredExtension() + ":-");
+            args.add(getSourceFormat().getPreferredExtension() + ":-");
 
             final ArrayListOutputConsumer consumer =
                     new ArrayListOutputConsumer();
@@ -497,7 +498,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                 final Info info = Info.builder()
                         .withSize(width, height)
                         .withTileSize(width, height)
-                        .withFormat(sourceFormat)
+                        .withFormat(getSourceFormat())
                         .build();
                 // Do we have an EXIF orientation to deal with?
                 if (output.size() > 2) {
