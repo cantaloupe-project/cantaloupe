@@ -20,6 +20,7 @@ title: Change Log
 
 <ul>
   <li>Fixed a regression introduced in 3.4.3 that could cause URIs to appear with the wrong scheme in information responses and <code>Link</code> headers. (Thanks to @mmatela and @jweisman)</li>
+  <li>Fixed a bug that caused the minimum tile size in IIIF Image API 2.x information responses to be 512 regardless of the setting of <code>endpoint.iiif.min_tile_size</code>.</li>
   <li>Fixed a connection leak in HttpSource.</li>
   <li>Improved the resiliency of the internal JPEG2000 parser used by KakaduDemoProcessor and OpenJpegProcessor.</li>
   <li>Removed an error message that would appear in the log when the delegate script file was not found but the delegate script was disabled.</li>

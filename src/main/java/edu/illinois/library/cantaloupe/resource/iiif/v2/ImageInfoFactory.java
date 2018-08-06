@@ -29,6 +29,11 @@ final class ImageInfoFactory {
             LoggerFactory.getLogger(ImageInfoFactory.class);
 
     /**
+     * Will be used if {@link Key#IIIF_MIN_SIZE} is not set.
+     */
+    private static final int DEFAULT_MIN_SIZE = 64;
+
+    /**
      * Will be used if {@link Key#IIIF_MIN_TILE_SIZE} is not set.
      */
     private static final int DEFAULT_MIN_TILE_SIZE = 512;
@@ -47,8 +52,7 @@ final class ImageInfoFactory {
     private Set<Quality> processorQualities;
     private Set<Format> processorOutputFormats;
     private DelegateProxy delegateProxy;
-    private int maxPixels, minSize;
-    private int minTileSize = DEFAULT_MIN_TILE_SIZE;
+    private int maxPixels, minSize, minTileSize;
 
     /**
      * @param processorFeatures      Return value of {@link
@@ -63,7 +67,8 @@ final class ImageInfoFactory {
                      final Set<Format> processorOutputFormats) {
         Configuration config = Configuration.getInstance();
         maxPixels = config.getInt(Key.MAX_PIXELS, 0);
-        minSize = config.getInt(Key.IIIF_MIN_SIZE, 64);
+        minSize = config.getInt(Key.IIIF_MIN_SIZE, DEFAULT_MIN_SIZE);
+        minTileSize = config.getInt(Key.IIIF_MIN_TILE_SIZE, DEFAULT_MIN_TILE_SIZE);
 
         this.processorFeatures = processorFeatures;
         this.processorQualities = processorQualities;

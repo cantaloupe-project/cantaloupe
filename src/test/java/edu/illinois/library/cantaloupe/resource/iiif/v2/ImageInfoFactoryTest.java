@@ -37,8 +37,6 @@ public class ImageInfoFactoryTest extends BaseTest {
 
         instance = new ImageInfoFactory(processorFeatures,
                 processorQualities, processorFormats);
-        instance.setMinSize(64);
-        instance.setMaxPixels(0);
     }
 
     private ImageInfo<String,Object> invokeNewImageInfo() {
@@ -220,6 +218,25 @@ public class ImageInfoFactoryTest extends BaseTest {
         assertEquals(4, (int) tiles.get(0).scaleFactors.get(2));
         assertEquals(8, (int) tiles.get(0).scaleFactors.get(3));
         assertEquals(16, (int) tiles.get(0).scaleFactors.get(4));
+    }
+
+
+    @Test
+    public void testNewImageInfoMinTileSize() {
+        final String imageURI = "http://example.org/bla";
+        Info info = Info.builder()
+                .withSize(2000, 2000)
+                .withTileSize(1000, 1000)
+                .build();
+        instance.setMinTileSize(1000);
+        ImageInfo<String, Object> imageInfo =
+                instance.newImageInfo(imageURI, info, 0);
+
+        @SuppressWarnings("unchecked")
+        List<ImageInfo.Tile> tiles =
+                (List<ImageInfo.Tile>) imageInfo.get("tiles");
+        assertEquals(1000, (int) tiles.get(0).width);
+        assertEquals(1000, (int) tiles.get(0).height);
     }
 
     @Test
