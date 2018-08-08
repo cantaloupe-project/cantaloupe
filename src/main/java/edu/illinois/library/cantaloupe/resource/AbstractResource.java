@@ -153,11 +153,18 @@ public abstract class AbstractResource extends ServerResource {
             // Try to use X-Forwarded-* headers.
             // N.B. Header values here may be comma-separated lists when
             // operating behind a chain of reverse proxies.
+
+            // This may or may not include a port number. If it does, it should
+            // be used if X-Forwarded-Port was not sent.
             final String hostHeader = requestHeaders.getFirstValue(
                     "X-Forwarded-Host", true, null);
             if (hostHeader != null) {
                 final String hostStr = hostHeader.split(",")[0].trim();
-                newRef.setHostDomain(hostStr);
+                String[] parts = hostStr.split(":");
+                newRef.setHostDomain(parts[0]);
+                if (parts.length > 1) {
+                    newRef.setHostPort(Integer.parseInt(parts[1]));
+                }
             }
             
             final String protocolHeader = requestHeaders.getFirstValue(
