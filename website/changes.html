@@ -24,6 +24,7 @@ title: Change Log
   <li>Fixed a connection leak in HttpSource.</li>
   <li>Improved the resiliency of the internal JPEG2000 parser used by KakaduDemoProcessor and OpenJpegProcessor.</li>
   <li>Removed an error message that would appear in the log when the delegate script file was not found but the delegate script was disabled.</li>
+  <li>The <code>X-Forwarded-Host</code> reverse proxy header may contain a port, which will be used if <code>X-Forwarded-Port</code> is not supplied.</li>
 </ul>
 
 <h2>4.0</h2>
@@ -87,7 +88,10 @@ title: Change Log
 
 <h2>3.4.4</h2>
 
-<p>Fixed a regression introduced in 3.4.3 that could cause URIs to appear with the wrong scheme in information responses and <code>Link</code> headers. (Thanks to @mmatela and @jweisman)</p>
+<ul>
+  <li>Fixed a regression introduced in 3.4.3 that could cause URIs to appear with the wrong scheme in information responses and <code>Link</code> headers. (Thanks to @mmatela and @jweisman)</li>
+  <li>The <code>X-Forwarded-Host</code> reverse proxy header may contain a port, which will be used if <code>X-Forwarded-Port</code> is not supplied.</li>
+</ul>
 
 <h2>3.4.3</h2>
 

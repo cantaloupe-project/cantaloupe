@@ -454,11 +454,18 @@ public abstract class AbstractResource {
             // Try to use X-Forwarded-* headers.
             // N.B.: Header values may be comma-separated lists when operating
             // behind a chain of reverse proxies.
+
+            // This may or may not include a port number. If it does, it should
+            // be used if X-Forwarded-Port was not sent.
             final String hostHeader = getRequest().getHeaders()
                     .getFirstValue("X-Forwarded-Host", "");
             if (!hostHeader.isEmpty()) {
                 String hostStr = hostHeader.split(",")[0].trim();
-                newRef.setHost(hostStr);
+                String[] parts = hostStr.split(":");
+                newRef.setHost(parts[0]);
+                if (parts.length > 1) {
+                    newRef.setPort(Integer.parseInt(parts[1]));
+                }
             }
 
             String protoHeader = getRequest().getHeaders()
@@ -525,11 +532,18 @@ public abstract class AbstractResource {
             // Try to use X-Forwarded-* headers.
             // N.B.: Header values may be comma-separated lists when operating
             // behind a chain of reverse proxies.
+
+            // This may or may not include a port number. If it does, it should
+            // be used if X-Forwarded-Port was not sent.
             final String hostHeader = getRequest().getHeaders()
                     .getFirstValue("X-Forwarded-Host", "");
             if (!hostHeader.isEmpty()) {
                 String hostStr = hostHeader.split(",")[0].trim();
-                ref.setHost(hostStr);
+                String[] parts = hostStr.split(":");
+                ref.setHost(parts[0]);
+                if (parts.length > 1) {
+                    ref.setPort(Integer.parseInt(parts[1]));
+                }
             }
 
             String protoHeader = getRequest().getHeaders()
