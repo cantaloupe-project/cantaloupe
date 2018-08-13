@@ -48,6 +48,9 @@ public class InformationResource extends IIIF2Resource {
      */
     @Override
     public void doGET() throws Exception {
+        if (redirectToNormalizedScaleConstraint()) {
+            return;
+        }
         // An authorization check is needed in the context of the IIIF
         // Authentication API.
         try {
@@ -173,7 +176,7 @@ public class InformationResource extends IIIF2Resource {
         factory.setDelegateProxy(getDelegateProxy());
 
         final ImageInfo<String, Object> imageInfo = factory.newImageInfo(
-                getImageURI(), info, getPageIndex());
+                getImageURI(), info, getPageIndex(), getScaleConstraint());
         return new JacksonRepresentation(imageInfo);
     }
 

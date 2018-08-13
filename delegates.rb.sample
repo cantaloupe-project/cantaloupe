@@ -27,11 +27,13 @@ class CustomDelegate
   #
   # The hash will contain the following keys in response to all requests:
   #
-  # * `client_ip`       [String] Client IP address.
-  # * `cookies`         [Hash<String,String>] Hash of cookie name-value pairs.
-  # * `identifier`      [String] Image identifier.
-  # * `request_headers` [Hash<String,String>] Hash of header name-value pairs.
-  # * `request_uri`     [String] Public request URI.
+  # * `client_ip`        [String] Client IP address.
+  # * `cookies`          [Hash<String,String>] Hash of cookie name-value pairs.
+  # * `identifier`       [String] Image identifier.
+  # * `request_headers`  [Hash<String,String>] Hash of header name-value pairs.
+  # * `request_uri`      [String] Public request URI.
+  # * `scale_constraint` [Hash<String,Integer>] Hash with 'numerator' and
+  #                      'denominator' keys.
   #
   # It will contain the following additional string keys in response to image
   # requests:
@@ -55,21 +57,28 @@ class CustomDelegate
   attr_accessor :context
 
   ##
-  # Tells the server whether the given request is authorized. Will be called
-  # upon all image requests to any endpoint.
+  # Returns authorization status for the current request. Will be called upon
+  # all requests to all public endpoints.
   #
   # Implementations should assume that the underlying resource is available,
   # and not try to check for it.
   #
-  # There are several possible return values:
+  # Possible return values:
   #
-  # 1. Boolean true/false, indicating whether the request is authorized. If
-  #    false, the response status will be 403 Forbidden.
+  # 1. Boolean true/false, indicating whether the request is fully authorized
+  #    or not. If false, the client will receive a 403 Forbidden response.
   # 2. Hash with a `status_code` key.
-  #     a. If it corresponds to an integer from 300-399, the request will
-  #        be redirected using that code to the URI corresponding to a
-  #        `location` key.
-  #     b. If it corresponds to 401, the hash must include a `challenge` key
+  #     a. If it corresponds to an integer from 200-299, the request is
+  #        authorized.
+  #     b. If it corresponds to an integer from 300-399:
+  #         i. If the hash also contains a `location` key corresponding to a
+  #            URI string, the request will be redirected to that URI using
+  #            that code.
+  #         ii. If the hash also contains `scale_numerator` and
+  #            `scale_denominator` keys, the request will be
+  #            redirected using that code to a virtual reduced-scale version of
+  #            the source image.
+  #     c. If it corresponds to 401, the hash must include a `challenge` key
   #        corresponding to a WWW-Authenticate header value.
   #
   # @param options [Hash] Empty hash.

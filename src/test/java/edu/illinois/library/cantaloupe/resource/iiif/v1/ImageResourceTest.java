@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.resource.Route;
@@ -52,6 +53,12 @@ public class ImageResourceTest extends ResourceTest {
     public void testGETAuthorizationWhenRedirecting() throws Exception {
         URI uri = getHTTPURI("/redirect.jpg/full/full/0/color.jpg");
         tester.testAuthorizationWhenRedirecting(uri);
+    }
+
+    @Test
+    public void testGETAuthorizationWhenScaleConstraining() throws Exception {
+        URI uri = getHTTPURI("/reduce.jpg/full/full/0/color.jpg");
+        tester.testAuthorizationWhenScaleConstraining(uri);
     }
 
     @Test
@@ -288,6 +295,47 @@ public class ImageResourceTest extends ResourceTest {
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.png");
         tester.testRecoveryFromDerivativeCacheNewDerivativeImageOutputStreamException(uri);
+    }
+
+    /**
+     * Tests that a scale constraint of {@literal -1:1} is redirected to no
+     * scale constraint.
+     */
+    @Test
+    public void testGETRedirectToNormalizedScaleConstraint1() {
+        URI fromURI = getHTTPURI("/" + IMAGE +
+                new ScaleConstraint(1, 1).toIdentifierSuffix() +
+                "/full/full/0/color.png");
+        URI toURI = getHTTPURI("/" + IMAGE + "/full/full/0/color.png");
+        assertRedirect(fromURI, toURI, 301);
+    }
+
+    /**
+     * Tests that a scale constraint of {@literal -2:2} is redirected to no
+     * scale constraint.
+     */
+    @Test
+    public void testGETRedirectToNormalizedScaleConstraint2() {
+        URI fromURI = getHTTPURI("/" + IMAGE +
+                new ScaleConstraint(2, 2).toIdentifierSuffix() +
+                "/full/full/0/color.png");
+        URI toURI = getHTTPURI("/" + IMAGE + "/full/full/0/color.png");
+        assertRedirect(fromURI, toURI, 301);
+    }
+
+    /**
+     * Tests that a scale constraint of {@literal -2:4} is redirected to
+     * {@literal -1:2}.
+     */
+    @Test
+    public void testGETRedirectToNormalizedScaleConstraint3() {
+        URI fromURI = getHTTPURI("/" + IMAGE +
+                new ScaleConstraint(2, 4).toIdentifierSuffix() +
+                "/full/full/0/color.png");
+        URI toURI = getHTTPURI("/" + IMAGE +
+                new ScaleConstraint(1, 2).toIdentifierSuffix() +
+                "/full/full/0/color.png");
+        assertRedirect(fromURI, toURI, 301);
     }
 
     @Test

@@ -54,6 +54,19 @@ public class ImageAPIResourceTester {
         assertStatus(403, uri);
     }
 
+    public void testAuthorizationWhenScaleConstraining(URI uri)
+            throws Exception {
+        Client client = newClient(uri);
+        try {
+            Response response = client.send();
+            assertEquals(302, response.getStatus());
+            assertEquals(uri.toString().replace("reduce.jpg", "reduce.jpg-1:2"),
+                    response.getHeaders().getFirstValue("Location"));
+        } finally {
+            client.stop();
+        }
+    }
+
     public void testCacheHeadersWhenClientCachingIsEnabledAndResponseIsCacheable(URI uri)
             throws Exception {
         enableCacheControlHeaders();

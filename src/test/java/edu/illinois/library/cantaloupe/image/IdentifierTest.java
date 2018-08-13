@@ -40,7 +40,8 @@ public class IdentifierTest extends BaseTest {
     public void testFromURIPathComponent() {
         Configuration.getInstance().setProperty(Key.SLASH_SUBSTITUTE, "BUG");
 
-        String pathComponent = "catsBUG%3Adogs";
+        String pathComponent = "catsBUG%3Adogs" +
+                new ScaleConstraint(3, 4).toIdentifierSuffix();
         Identifier actual = Identifier.fromURIPathComponent(pathComponent);
         Identifier expected = new Identifier("cats/:dogs");
         assertEquals(expected, actual);
@@ -49,13 +50,11 @@ public class IdentifierTest extends BaseTest {
     @Test
     public void testConstructor() {
         assertEquals("cats", instance.toString());
+    }
 
-        try {
-            new Identifier(null);
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorWithNullArgument() {
+        new Identifier(null);
     }
 
     @Test

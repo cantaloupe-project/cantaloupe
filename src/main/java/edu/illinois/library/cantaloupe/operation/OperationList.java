@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.overlay.OverlayService;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
@@ -32,25 +33,26 @@ import java.util.stream.Stream;
 
 /**
  * <p>Normalized list of {@link Operation image transform operations}
- * corresponding to an image identified by its {@link Identifier}.</p>
+ * associated with a source image identified by an {@link Identifier}.</p>
  *
  * <p>This class has dual purposes:</p>
  *
  * <ol>
- *     <li>To assemble and store a list of image transform operations;</li>
- *     <li>To uniquely identify a post-processed ("derivative") image that has
- *     undergone processing using the instance. For example, the return values
- *     of {@link #toString()} and {@link #toFilename()} may be used in cache
- *     keys.</li>
+ *     <li>To describe a list of image transform operations;</li>
+ *     <li>To uniquely identify a post-processed (&quot;derivative&quot;) image
+ *     created using the instance. For example, the return values of {@link
+ *     #toString()} and {@link #toFilename()} may be used in cache keys.</li>
  * </ol>
  *
- * <p>Endpoints translate request parameters into instances of this class, in
+ * <p>Endpoints translate request arguments into instances of this class, in
  * order to pass them off into {@link
- * edu.illinois.library.cantaloupe.processor.Processor processors} and
- * {@link edu.illinois.library.cantaloupe.cache.Cache caches}.</p>
+ * edu.illinois.library.cantaloupe.processor.Processor processors} and {@link
+ * edu.illinois.library.cantaloupe.cache.Cache caches}.</p>
  *
  * <p>Processors should iterate the operations in the list and apply them
- * (generally in order) as best they can.</p>
+ * (generally in order) as best they can. They must take the {@link
+ * #getScaleConstraint() scale constraint} into account when cropping and
+ * scaling.</p>
  */
 public final class OperationList implements Comparable<OperationList>,
         Iterable<Operation> {
@@ -62,6 +64,7 @@ public final class OperationList implements Comparable<OperationList>,
     private Identifier identifier;
     private final List<Operation> operations = new ArrayList<>();
     private final Map<String,Object> options = new HashMap<>();
+    private ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
     /**
      * Constructs a minimal valid instance.
@@ -70,13 +73,11 @@ public final class OperationList implements Comparable<OperationList>,
 
     public OperationList(Identifier identifier) {
         this();
-
         setIdentifier(identifier);
     }
 
     public OperationList(Operation... operations) {
         this();
-
         for (Operation op : operations) {
             add(op);
         }
@@ -84,7 +85,6 @@ public final class OperationList implements Comparable<OperationList>,
 
     public OperationList(Identifier identifier, Operation... operations) {
         this(operations);
-
         setIdentifier(identifier);
     }
 
@@ -426,11 +426,20 @@ public final class OperationList implements Comparable<OperationList>,
      *                 sequence to an image of the given full size.
      */
     public Dimension getResultingSize(Dimension fullSize) {
-        Dimension size = new Dimension(fullSize.width, fullSize.height);
+        // Reduce the full size to the scale-constrained size.
+        Dimension size = getScaleConstraint().getResultingSize(fullSize);
+
         for (Operation op : this) {
             size = op.getResultingSize(size);
         }
         return size;
+    }
+
+    /**
+     * @return Scale constraint. Never {@literal null}.
+     */
+    public ScaleConstraint getScaleConstraint() {
+        return scaleConstraint;
     }
 
     /**
@@ -443,6 +452,9 @@ public final class OperationList implements Comparable<OperationList>,
      *                 unmodified source image.
      */
     public boolean hasEffect(Dimension fullSize, Format format) {
+        if (getScaleConstraint().hasEffect()) {
+            return true;
+        }
         if (!format.equals(getOutputFormat())) {
             return true;
         }
@@ -505,11 +517,30 @@ public final class OperationList implements Comparable<OperationList>,
 
     /**
      * @param identifier
-     * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalStateException if the instance is frozen.
      */
     public void setIdentifier(Identifier identifier) {
         checkFrozen();
         this.identifier = identifier;
+    }
+
+    /**
+     * <p>Sets the effective base scale of the source image upon which the
+     * instance is to be applied.</p>
+     *
+     * <p>Should only be called <strong>after</strong> {@link
+     * #applyNonEndpointMutations(Info, DelegateProxy)}.</p>
+     *
+     * @param scaleConstraint Instance to set.
+     * @throws NullPointerException if the argument is {@literal null}.
+     * @throws IllegalStateException if the instance is frozen.
+     */
+    public void setScaleConstraint(ScaleConstraint scaleConstraint) {
+        checkFrozen();
+        if (scaleConstraint == null) {
+            throw new NullPointerException();
+        }
+        this.scaleConstraint = scaleConstraint;
     }
 
     public Stream<Operation> stream() {
@@ -520,10 +551,9 @@ public final class OperationList implements Comparable<OperationList>,
      * <p>Returns a filename-safe string guaranteed to uniquely represent the
      * instance. The filename is in the format:</p>
      *
-     * <pre>{hashed identifier}_{hashed operation list + options list}.{output format extension}</pre>
+     * <p>{@literal [hashed identifier]_[hashed scale constraint + operation list + options list].[output format extension]}</p>
      *
-     * @return Filename-safe string guaranteed to uniquely represent the
-     *         instance.
+     * @return Filename string.
      */
     public String toFilename() {
         // Compile operations
@@ -531,8 +561,11 @@ public final class OperationList implements Comparable<OperationList>,
                 filter(Operation::hasEffect).
                 map(Operation::toString).
                 collect(Collectors.toList());
+        if (getScaleConstraint() != null) {
+            opStrings.add(0, getScaleConstraint().toString());
+        }
         // Add options
-        for (String key : this.getOptions().keySet()) {
+        for (String key : getOptions().keySet()) {
             opStrings.add(key + ":" + this.getOptions().get(key));
         }
 
@@ -568,6 +601,7 @@ public final class OperationList implements Comparable<OperationList>,
      *
      * <pre>{
      *     "identifier": "result of {@link Identifier#toString()}",
+     *     "scale_constraint": result of {@link ScaleConstraint#toMap()}
      *     "operations": [
      *         result of {@link Operation#toMap(Dimension)}
      *     ],
@@ -584,6 +618,9 @@ public final class OperationList implements Comparable<OperationList>,
         final Map<String,Object> map = new HashMap<>();
         if (getIdentifier() != null) {
             map.put("identifier", getIdentifier().toString());
+        }
+        if (getScaleConstraint() != null) {
+            map.put("scale_constraint", getScaleConstraint().toMap());
         }
         map.put("operations", this.stream()
                 .filter(op -> op.hasEffect(fullSize, this))
@@ -604,6 +641,9 @@ public final class OperationList implements Comparable<OperationList>,
         if (getIdentifier() != null) {
             parts.add(getIdentifier().toString());
         }
+        if (getScaleConstraint() != null) {
+            parts.add(getScaleConstraint().toString());
+        }
         for (Operation op : this) {
             if (op.hasEffect()) {
                 final String opName = op.getClass().getSimpleName().toLowerCase();
@@ -619,27 +659,33 @@ public final class OperationList implements Comparable<OperationList>,
     /**
      * <ol>
      *     <li>Checks that an {@link #setIdentifier(Identifier) identifier is
-     *     set};</li>
-     *     <li>Checks that an {@link Encode} is present;</li>
+     *     set}</li>
+     *     <li>Checks that an {@link Encode} is present</li>
      *     <li>Calls {@link Operation#validate(Dimension)} on each {@link
-     *     Operation};</li>
+     *     Operation}</li>
      *     <li>Validates the {@literal page} {@link #getOptions() option}, if
-     *     present.</li>
+     *     present</li>
+     *     <li>Checks that the resulting scale is not larger than allowed by
+     *     the {@link #getScaleConstraint() scale constraint}</li>
      *     <li>Checks that the resulting pixel area is greater than zero and
-     *     less than or equal to {@link Key#MAX_PIXELS} (if set).</li>
+     *     less than or equal to {@link Key#MAX_PIXELS} (if set)</li>
      * </ol>
      *
      * @param fullSize     Full size of the source image on which the instance
      *                     is being applied.
      * @param sourceFormat Source image format.
-     * @throws ValidationException or subclass if the instance is
-     *                             invalid.
+     * @throws IllegalSizeException  if the resulting size exceeds {@link
+     *         Key#MAX_PIXELS}.
+     * @throws IllegalScaleException if the resulting scale exceeds that
+     *         allowed by the {@link #getScaleConstraint() scale constraint},
+     *         if set.
+     * @throws ValidationException if the instance is invalid in some other way.
      */
     public void validate(Dimension fullSize,
                          Format sourceFormat) throws ValidationException {
         // Ensure that an identifier is set.
         if (getIdentifier() == null) {
-            throw new ValidationException("Identifier not set.");
+            throw new ValidationException("Identifier is not set.");
         }
         // Ensure that an Encode operation is present.
         if (getFirst(Encode.class) == null) {
@@ -668,7 +714,19 @@ public final class OperationList implements Comparable<OperationList>,
             }
         }
 
-        final Dimension resultingSize = getResultingSize(fullSize);
+        Dimension resultingSize = getResultingSize(fullSize);
+
+        // If there is a scale constraint set, ensure that the resulting scale
+        // will not be greater than 100%.
+        final ScaleConstraint scaleConstraint = getScaleConstraint();
+        if (scaleConstraint != null) {
+            final Dimension constrainedFullSize =
+                    scaleConstraint.getConstrainedSize(fullSize);
+            if (resultingSize.width > constrainedFullSize.width ||
+                    resultingSize.height > constrainedFullSize.height) {
+                throw new IllegalScaleException();
+            }
+        }
 
         // Ensure that the resulting pixel area is positive.
         if (resultingSize.width < 1 || resultingSize.height < 1) {
@@ -681,7 +739,7 @@ public final class OperationList implements Comparable<OperationList>,
                 Configuration.getInstance().getLong(Key.MAX_PIXELS, 0);
         if (maxAllowedSize > 0 && hasEffect(fullSize, sourceFormat) &&
                 resultingSize.width * resultingSize.height > maxAllowedSize) {
-            throw new ExcessiveSizeException();
+            throw new IllegalSizeException();
         }
     }
 

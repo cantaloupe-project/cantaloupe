@@ -29,15 +29,22 @@ final class DelegateAuthorizer implements Authorizer {
         try {
             final Object result = delegateProxy.authorize();
             if (result instanceof Map) {
-                Map<?, ?> map = (Map<?, ?>) result;
+                final Map<?, ?> map = (Map<?, ?>) result;
                 Long status = (Long) map.get("status_code");
-                String uri = (String) map.get("location");
+                // Used when returning HTTP 401. Value will be inserted into a
+                // WWW-Authorization header.
                 String challenge = (String) map.get("challenge");
+                // Used when redirecting.
+                String uri = (String) map.get("location");
+                // Used when redirecting to a virtual scale-reduced version.
+                Long scaleNumerator = (Long) map.get("scale_numerator");
+                Long scaleDenominator = (Long) map.get("scale_denominator");
 
                 return new AuthInfo.RestrictiveBuilder()
                         .withResponseStatus(status.intValue())
                         .withChallengeValue(challenge)
                         .withRedirectURI(uri)
+                        .withRedirectScaleConstraint(scaleNumerator, scaleDenominator)
                         .build();
             } else if (result instanceof Boolean) {
                 return new AuthInfo.BooleanBuilder((Boolean) result).build();

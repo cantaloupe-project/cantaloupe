@@ -5,6 +5,8 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.http.Reference;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,6 +139,55 @@ public abstract class PublicResource extends AbstractResource {
     protected final boolean isBypassingCache() {
         return "false".equals(getRequest().getReference().getQuery()
                 .getFirstValue("cache"));
+    }
+
+    /**
+     * <p>If an identifier is present in the URI, and it contains a scale
+     * constraint suffix in a non-normalized form, this method will redirect to
+     * a normalized URI.</p>
+     *
+     * <p>Examples:</p>
+     *
+     * <dl>
+     *     <dt>1:2</dt>
+     *     <dd>no redirect</dd>
+     *     <dt>2:4</dt>
+     *     <dd>redirect to 1:2</dd>
+     *     <dt>1:1 and 5:5</dt>
+     *     <dd>redirect to no constraint</dd>
+     * </dl>
+     *
+     * @return {@literal true} if redirecting. Clients should stop processing
+     *         if this is the case.
+     */
+    protected final boolean redirectToNormalizedScaleConstraint()
+            throws IOException {
+        final ScaleConstraint scaleConstraint = getScaleConstraint();
+        // If an identifier is present in the URI, and it contains a scale
+        // constraint suffix...
+        if (scaleConstraint != null) {
+            Reference newRef = null;
+            // ...and the numerator and denominator are equal, redirect to the
+            // non-suffixed identifier.
+            if (scaleConstraint.getNumerator() == scaleConstraint.getDenominator()) {
+                newRef = getPublicReference(scaleConstraint);
+            } else {
+                ScaleConstraint reducedConstraint = scaleConstraint.getReduced();
+                // ...and the fraction is not reduced, redirect to the reduced
+                // version.
+                if (!reducedConstraint.equals(scaleConstraint)) {
+                    newRef = getPublicReference(reducedConstraint);
+                }
+            }
+            if (newRef != null) {
+                getResponse().setStatus(301);
+                getResponse().setHeader("Location", newRef.toString());
+                new StringRepresentation("Redirect: " + newRef + "\n")
+                        .write(getResponse().getOutputStream());
+                return true;
+            }
+        }
+        return false;
     }
 
 }

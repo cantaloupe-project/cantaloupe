@@ -48,6 +48,10 @@ public class InformationResource extends IIIF1Resource {
      */
     @Override
     public void doGET() throws Exception {
+        if (redirectToNormalizedScaleConstraint()) {
+            return;
+        }
+
         // An authorization check is needed in the context of the IIIF
         // Authentication API.
         try {
@@ -80,8 +84,11 @@ public class InformationResource extends IIIF1Resource {
                                 info.getImages().get(getPageIndex());
                         final ImageInfo imageInfo =
                                 new ImageInfoFactory().newImageInfo(
-                                        getImageURI(), processor, infoImage,
-                                        info.getNumResolutions());
+                                        getImageURI(),
+                                        processor,
+                                        infoImage,
+                                        info.getNumResolutions(),
+                                        getScaleConstraint());
                         addHeaders(imageInfo);
                         newRepresentation(imageInfo)
                                 .write(getResponse().getOutputStream());
@@ -136,8 +143,11 @@ public class InformationResource extends IIIF1Resource {
             final Info info = getOrReadInfo(identifier, processor);
             final Info.Image infoImage = info.getImages().get(getPageIndex());
             final ImageInfo imageInfo = new ImageInfoFactory().newImageInfo(
-                    getImageURI(), processor, infoImage,
-                    info.getNumResolutions());
+                    getImageURI(),
+                    processor,
+                    infoImage,
+                    info.getNumResolutions(),
+                    getScaleConstraint());
 
             addHeaders(imageInfo);
             newRepresentation(imageInfo).write(getResponse().getOutputStream());

@@ -15,8 +15,14 @@ title: Access Control
       <li><a href="#example-7">Allow only requests from clients that supply a valid token in a header</a></li>
       <li><a href="#example-8">Restrict a region of an image</a></li>
       <li><a href="#example-10">Restrict using HTTP Basic</a></li>
-      <li><a href="#example-11">Restrict using the IIIF Authentication API</a></li>
+      <li><a href="#example-11">Redirect to a reduced-quality version</a></li>
       <li><a href="#example-9">Redirect to another URL</a></li>
+    </ul>
+  </li>
+  <li><a href="#IIIF%20Authentication%20API">IIIF Authentication API</a>
+    <ul>
+      <li><a href="#All%20or%20Nothing%20Access">All or Nothing Access</a></li>
+      <li><a href="#Tiered%20Access">Tiered Access</a></li>
     </ul>
   </li>
 
@@ -154,36 +160,9 @@ class CustomDelegate
 end
 {% endhighlight %}
 
-<h3 id="example-11">Restrict using the IIIF Authentication API</h3>
+<h3 id="example-11">Redirect to a reduced-quality version</h3>
 
-<p>The <a href="https://iiif.io/api/auth/1.0/">IIIF Authentication API 1.0</a> describes general patterns of access-restricting IIIF resources, including images, in a standard way. Cantaloupe does not implement this API by itself&mdash;that would be way beyond its scope&mdash;but it can slot into a broader architecture that does.</p>
-
-<p>In order to accomplish this:</p>
-
-<ol>
-  <li><code>extra_iiif_2_information_response_keys()</code> must return the <a href="https://iiif.io/api/auth/1.0/#authentication-services">authentication services</a> used by the API.</li>
-  <li>The <code>authorize()</code> method must be implemented to accept bearer tokens from the client, and return a status of 200 (or <code>true</code>) for authorized requests; 302 for redirects; and 401 for unauthorized requests. Example:</li>
-</ol>
-
-{% highlight ruby %}
-class CustomDelegate
-  def authorize(options = {})
-    header = context['request_headers']
-                 .select{ |name, value| name.downcase == 'authorization' }
-                 .values.first
-    if header&.start_with?('Bearer ')
-      token = header[7..header.length - 1]
-      # Authenticate the token and return true if it's valid.
-    end
-    return {
-        'status_code' => 401,
-        'challenge' => 'Bearer charset="UTF-8"'
-    }
-  end
-end
-{% endhighlight %}
-
-<p class="text-info"><i class="fa fa-info-circle"></i> Currently, only <a href="https://iiif.io/api/auth/1.0/#all-or-nothing-access">All-or-Nothing Access</a> is supported. <a href="https://iiif.io/api/auth/1.0/#tiered-access">Tiered access</a> is not.</p>
+<p>See <a href="#Tiered%20Access">Tiered Access</a>.</p>
 
 <h3 id="example-9">Redirect to another URL</h3>
 
@@ -194,6 +173,103 @@ class CustomDelegate
       'status_code' => 303, # "See Other"
       'location' => 'http://example.org/some-other-url'
     }
+  end
+end
+{% endhighlight %}
+
+<h2 id="IIIF Authentication API">IIIF Authentication API</h2>
+
+<p>The <a href="https://iiif.io/api/auth/1.0/">IIIF Authentication API 1.0</a> describes general patterns of access-restricting IIIF resources, including images, in a standard way. The <code>authorize()</code> delegate method can be used in ways that conform to this API's notions of &quot;all or nothing&quot; and &quot;tiered&quot; access.</p>
+
+<p>For both of these:</p>
+
+<ol>
+  <li><code>extra_iiif_2_information_response_keys()</code> must return the <a href="https://iiif.io/api/auth/1.0/#authentication-services">authentication services</a> used by the API, which you must provide.</li>
+  <li>The <code>authorize()</code> method must accept bearer tokens from the client, and return a status of 200 (or <code>true</code>) for authorized requests; 302 for redirects; and 401 for unauthorized requests.</li>
+</ol>
+
+<h3 id="All or Nothing Access">All or Nothing Access</h3>
+
+<p><a href="https://iiif.io/api/auth/1.0/#all-or-nothing-access">All or Nothing Access</a> grants access to either the full-quality image, or nothing.</p>
+
+<h4>Example</h4>
+
+{% highlight ruby %}
+class CustomDelegate
+  def authorize(options = {})
+    header = context['request_headers']
+                 .select{ |name, value| name.downcase == 'authorization' }
+                 .values.first
+    if header&.start_with?('Bearer ')
+      token = header[7..header.length - 1]
+      # Authorize the token and return true if it's valid.
+    end
+    return {
+        'status_code' => 401,
+        'challenge' => 'Bearer charset="UTF-8"'
+    }
+  end
+end
+{% endhighlight %}
+
+<h3 id="Tiered Access">Tiered Access</h3>
+
+<p><a href="https://iiif.io/api/auth/1.0/#tiered-access">Tiered Access</a> can be used to redirect to any of a number of &quot;virtual&quot; reduced-quality versions (&quot;tiers&quot;) of an image based on authorization status.</p>
+
+<p>The IIIF Authorization API is agnostic about how a quality tier system should work; Cantaloupe uses a resolution-based system that limits the maximum available resolution by an arbitrary factor. For example, a fully-authorized user might be able to access the full resolution of an image, whereas an unauthorized user might be able to access only a half-resolution version.</p>
+
+<p>This works transparently with zooming viewer clients, limiting the maximum available zoom (and thus detail) level.</p>
+
+<p>URI identifiers of scale-constrained images have a suffix in the format <code>-[scale numerator]:[scale denominator]</code>. So, for example, if the client requests <code>image.tif/full/max/0/default.jpg</code>, but is only authorized to work with a half-resolution version, it is redirected to <code>image.tif-1:2/full/max/0/default.jpg</code>, from which it is allowed to retrieve the full size of a dynamically half-sized version of <code>image.tif</code>.</p>
+
+<p class="text-info"><i class="fa fa-info-circle"></i> This identifier suffix scheme is not guaranteed to remain stable across software versions.</p>
+
+<h4>Example</h4>
+
+{% highlight ruby %}
+class CustomDelegate
+  def authorize(options = {})
+    header = context['request_headers']
+                 .select{ |name, value| name.downcase == 'authorization' }
+                 .values.first
+    if header&.start_with?('Bearer ')
+      token = header[7..header.length - 1]
+      if valid?(token)
+        # Get the current scale constraint fraction, which ultimately comes
+        # from the identifier URI path component, which is conveniently
+        # made available for you in the delegate script context.
+        scale_constraint = context['scale_constraint']
+        scale_constraint_f = scale_constraint ?
+            scale_constraint['numerator'] / scale_constraint['denominator'].to_f : 1.0
+
+        # Define the authorized scale constraint. In this case, we want
+        # to allow access to a half-scale version only.
+        authorized_scale_numerator = 1
+        authorized_scale_denominator = 2
+        authorized_scale_f = authorized_scale_numerator /
+            authorized_scale_denominator.to_f
+
+        # If the current scale constraint does not match the authorized
+        # scale constraint, redirect to the authorized scale constraint.
+        if (scale_constraint_f - authorized_scale_f).abs > 0.000001
+          return {
+              'status_code' => 302,
+              'scale_numerator' => authorized_scale_numerator,
+              'scale_denominator' => authorized_scale_denominator
+          }
+        else
+          return true
+        end
+      end
+    end
+    return {
+        'status_code' => 401,
+        'challenge' => 'Bearer charset="UTF-8"'
+    }
+  end
+
+  def valid?(token)
+    # check whether the token is valid and return true or false
   end
 end
 {% endhighlight %}

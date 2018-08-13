@@ -15,7 +15,7 @@ public class AuthInfoRestrictiveBuilderTest extends BaseTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testBuildWithMissingRedirectURI() {
+    public void testBuildWithMissingRedirectURIAndScaleConstraint() {
         instance.withResponseStatus(301).build();
     }
 
@@ -55,6 +55,30 @@ public class AuthInfoRestrictiveBuilderTest extends BaseTest {
                 .build();
         assertEquals(301, info.getResponseStatus());
         assertEquals("http://example.org/", info.getRedirectURI());
+    }
+
+    @Test
+    public void testBuildWithScaleConstraint() {
+        AuthInfo info = instance.withResponseStatus(302)
+                .withRedirectScaleConstraint(1L, 2L)
+                .build();
+        assertEquals(302, info.getResponseStatus());
+        assertEquals(1, info.getScaleConstraint().getNumerator());
+        assertEquals(2, info.getScaleConstraint().getDenominator());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testBuildWithScaleConstraintAnd2xxStatus() {
+        instance.withRedirectScaleConstraint(1L, 2L)
+                .withResponseStatus(200)
+                .build();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testBuildWithScaleConstraintAnd4xxStatus() {
+        instance.withRedirectScaleConstraint(1L, 2L)
+                .withResponseStatus(401)
+                .build();
     }
 
     @Test

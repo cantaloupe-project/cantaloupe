@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.auth;
 
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
 
@@ -12,7 +13,8 @@ public class AuthInfoTest extends BaseTest {
     @Test
     public void testIsAuthorized() {
         AuthInfo info = new AuthInfo.RestrictiveBuilder()
-                .withResponseStatus(200).build();
+                .withResponseStatus(200)
+                .build();
         assertTrue(info.isAuthorized());
 
         info = new AuthInfo.RestrictiveBuilder()
@@ -20,6 +22,15 @@ public class AuthInfoTest extends BaseTest {
                 .withRedirectURI("http://example.org/")
                 .build();
         assertFalse(info.isAuthorized());
+    }
+
+    @Test
+    public void testGetScaleConstraint() {
+        AuthInfo info = new AuthInfo.RestrictiveBuilder()
+                .withResponseStatus(302)
+                .withRedirectScaleConstraint(2L, 3L)
+                .build();
+        assertEquals(new ScaleConstraint(2, 3), info.getScaleConstraint());
     }
 
 }

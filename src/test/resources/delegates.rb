@@ -18,8 +18,14 @@ class CustomDelegate
         }
       when 'redirect.jpg'
         return {
-            'location' => 'http://example.org/',
-            'status_code' => 303
+            'status_code' => 303,
+            'location' => 'http://example.org/'
+        }
+      when 'reduce.jpg'
+        return {
+            'status_code' => 302,
+            'scale_numerator' => 1,
+            'scale_denominator' => 2
         }
       else
         true

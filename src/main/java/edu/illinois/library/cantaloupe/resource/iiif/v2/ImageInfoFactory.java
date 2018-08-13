@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.resource.iiif.Feature;
 import edu.illinois.library.cantaloupe.resource.iiif.ImageInfoUtil;
@@ -76,17 +77,24 @@ final class ImageInfoFactory {
     }
 
     /**
-     * @param imageURI       May be {@literal null}.
-     * @param info           Info describing the image.
-     * @param infoImageIndex Index of the full/main image in the {@link Info}
-     *                       argument's {@link Info#getImages()} list.
+     * @param imageURI        May be {@literal null}.
+     * @param info            Info describing the image.
+     * @param infoImageIndex  Index of the full/main image in the {@link Info}
+     *                        argument's {@link Info#getImages()} list.
+     * @param scaleConstraint Scale constraint.
      */
     ImageInfo<String,Object> newImageInfo(final String imageURI,
                                           final Info info,
-                                          final int infoImageIndex) {
+                                          final int infoImageIndex,
+                                          ScaleConstraint scaleConstraint) {
+        if (scaleConstraint == null) {
+            scaleConstraint = new ScaleConstraint(1, 1);
+        }
         // We want to use the orientation-aware full size, which takes the
         // embedded orientation into account.
         final Dimension virtualSize = info.getOrientationSize(infoImageIndex);
+        virtualSize.width *= scaleConstraint.getScale();
+        virtualSize.height *= scaleConstraint.getScale();
 
         // Create a Map instance, which will eventually be serialized to JSON
         // and returned in the response body.
@@ -99,7 +107,7 @@ final class ImageInfoFactory {
 
         // sizes -- this will be a 2^n series that will work for both multi-
         // and monoresolution images.
-        final List<ImageInfo.Size> sizes = getSizes(info.getOrientationSize());
+        final List<ImageInfo.Size> sizes = getSizes(virtualSize);
         responseInfo.put("sizes", sizes);
 
         // The max reduction factor is the maximum number of times the full
@@ -176,6 +184,13 @@ final class ImageInfoFactory {
         // supports
         final Set<String> featureStrings = new HashSet<>();
         for (Feature feature : processorFeatures) {
+            // If the info is being used for a virtual scale-constrained
+            // version, sizeAboveFull should not be available.
+            if (ProcessorFeature.SIZE_ABOVE_FULL.equals(feature) &&
+                    (scaleConstraint.getNumerator() != 1 ||
+                            scaleConstraint.getDenominator() != 1)) {
+                continue;
+            }
             featureStrings.add(feature.getName());
         }
         for (Feature feature : SUPPORTED_SERVICE_FEATURES) {
@@ -198,8 +213,8 @@ final class ImageInfoFactory {
     }
 
     /**
-     * @param virtualSize Orientation-aware full size, which takes an embedded
-     *                    orientation flag into account.
+     * @param virtualSize Orientation-aware and {@link ScaleConstraint
+     *                    scale-constrained} full size.
      */
     List<ImageInfo.Size> getSizes(Dimension virtualSize) {
         // This will be a 2^n series that will work for both multi- and

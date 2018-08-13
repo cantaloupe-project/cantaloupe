@@ -12,6 +12,7 @@ import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.script.DisabledException;
@@ -92,6 +93,15 @@ public abstract class AbstractResource {
             requestContext.setClientIP(getCanonicalClientIPAddress());
             requestContext.setCookies(request.getCookies());
             requestContext.setIdentifier(getIdentifier());
+
+            ScaleConstraint scaleConstraint =
+                    ScaleConstraint.fromIdentifierPathComponent(getIdentifierPathComponent());
+            if (scaleConstraint == null) {
+                // Delegate script users will appreciate not having to check
+                // for null.
+                scaleConstraint = new ScaleConstraint(1, 1);
+            }
+            requestContext.setScaleConstraint(scaleConstraint);
         }
 
         // Log request info.
@@ -225,12 +235,21 @@ public abstract class AbstractResource {
         if (info != null) {
             final int code = info.getResponseStatus();
             final String location = info.getRedirectURI();
+            final ScaleConstraint scaleConstraint = info.getScaleConstraint();
 
             if (location != null) {
                 getResponse().setStatus(code);
                 getResponse().setHeader("Cache-Control", "no-cache");
                 getResponse().setHeader("Location", location);
                 new StringRepresentation("Redirect: " + location)
+                        .write(getResponse().getOutputStream());
+                return false;
+            } else if (scaleConstraint != null) {
+                Reference publicRef = getPublicReference(scaleConstraint);
+                getResponse().setStatus(code);
+                getResponse().setHeader("Cache-Control", "no-cache");
+                getResponse().setHeader("Location", publicRef.toString());
+                new StringRepresentation("Redirect: " + publicRef)
                         .write(getResponse().getOutputStream());
                 return false;
             } else if (code >= 400) {
@@ -317,12 +336,14 @@ public abstract class AbstractResource {
      * resources have an identifier as the first path argument, so this will
      * work for them, but if not, an override will be necessary.)</p>
      *
-     * <p>The result is not decoded.</p>
+     * <p>The result is not decoded and may include a {@link
+     * edu.illinois.library.cantaloupe.image.ScaleConstraint scale constraint
+     * suffix}. As such, it is not usable without additional processing.</p>
      *
      * @return Identifier, or {@literal null} if no path arguments are
      *         available.
      */
-    private String getIdentifierPathComponent() {
+    protected String getIdentifierPathComponent() {
         List<String> args = getPathArguments();
         return (!args.isEmpty()) ? args.get(0) : null;
     }
@@ -506,6 +527,49 @@ public abstract class AbstractResource {
     }
 
     /**
+     * Variant of {@link #getPublicReference()} that replaces the identifier
+     * path component's scale constraint suffix, if an identifier path
+     * component is available.
+     *
+     * @param newConstraint Scale constraint to suffix to the identifier.
+     *                      Supply {@literal 1,1} to remove the suffix.
+     */
+    protected Reference getPublicReference(ScaleConstraint newConstraint) {
+        newConstraint = newConstraint.getReduced();
+
+        final Reference publicRef = new Reference(getPublicReference());
+        final List<String> pathComponents = publicRef.getPathComponents();
+        final int identifierIndex =
+                pathComponents.indexOf(getIdentifierPathComponent());
+        String identifierComponent = pathComponents.get(identifierIndex);
+
+        // If the identifier already contains a scale constraint suffix...
+        Matcher matcher = ScaleConstraint.IDENTIFIER_SUFFIX_PATTERN
+                .matcher(identifierComponent);
+        if (matcher.find()) {
+            ScaleConstraint currentConstraint =
+                    ScaleConstraint.fromIdentifierPathComponent(identifierComponent);
+            // And it's either not equal to the one we want, or evaluates to 1,
+            // remove it.
+            if (!currentConstraint.equals(newConstraint) ||
+                    (currentConstraint.getNumerator() == currentConstraint.getDenominator())) {
+                identifierComponent = identifierComponent.substring(0,
+                        identifierComponent.length() -
+                                currentConstraint.toIdentifierSuffix().length());
+            }
+        }
+
+        // Append the new suffix if necessary.
+        String newIdentifier = identifierComponent;
+        if (newConstraint.getNumerator() != newConstraint.getDenominator()) {
+            newIdentifier += newConstraint.toIdentifierSuffix();
+        }
+
+        publicRef.setPathComponent(identifierIndex, newIdentifier);
+        return publicRef;
+    }
+
+    /**
      * <p>Returns the root reference, i.e. a reference to the base URI path of
      * the application.</p>
      *
@@ -664,6 +728,14 @@ public abstract class AbstractResource {
      */
     protected final HttpServletResponse getResponse() {
         return response;
+    }
+
+    /**
+     * @return Scale constraint from the {@link #getIdentifierPathComponent()
+     *         identifier path component}, or {@literal null} if not present.
+     */
+    protected final ScaleConstraint getScaleConstraint() {
+        return ScaleConstraint.fromIdentifierPathComponent(getIdentifierPathComponent());
     }
 
     /**

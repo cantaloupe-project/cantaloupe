@@ -63,6 +63,10 @@ public class ImageResource extends IIIF1Resource {
      */
     @Override
     public void doGET() throws Exception {
+        if (redirectToNormalizedScaleConstraint()) {
+            return;
+        }
+
         final Configuration config = Configuration.getInstance();
         final Identifier identifier = getIdentifier();
         final CacheFacade cacheFacade = new CacheFacade();
@@ -152,10 +156,11 @@ public class ImageResource extends IIIF1Resource {
                 return;
             }
 
-            processor.validate(ops, fullSize);
-
             ops.applyNonEndpointMutations(info, getDelegateProxy());
+            ops.setScaleConstraint(getScaleConstraint());
             ops.freeze();
+
+            processor.validate(ops, fullSize);
 
             // Find out whether the processor supports the source format by
             // asking it whether it offers any output formats for it.

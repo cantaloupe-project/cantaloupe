@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.overlay.BasicStringOverlayServiceTest;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
@@ -31,20 +32,6 @@ public class OperationListTest extends BaseTest {
 
     private OperationList instance;
 
-    private static OperationList newOperationList() {
-        OperationList ops = new OperationList();
-
-        Crop crop = new Crop();
-        crop.setFull(true);
-        ops.add(crop);
-
-        Scale scale = new Scale();
-        ops.add(scale);
-        ops.add(new Rotate(0));
-
-        return ops;
-    }
-
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -54,8 +41,9 @@ public class OperationListTest extends BaseTest {
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").toString());
 
-        instance = newOperationList();
+        instance = new OperationList();
         assertNotNull(instance.getOptions());
+        assertFalse(instance.getScaleConstraint().hasEffect());
     }
 
     @Test
@@ -482,13 +470,16 @@ public class OperationListTest extends BaseTest {
 
     @Test
     public void clear() {
+        instance.add(new Crop(10, 10, 10, 10));
+        instance.add(new Scale(0.5));
+
         int opCount = 0;
         Iterator<Operation> it = instance.iterator();
         while (it.hasNext()) {
             it.next();
             opCount++;
         }
-        assertEquals(3, opCount);
+        assertEquals(2, opCount);
         instance.clear();
 
         opCount = 0;
@@ -537,12 +528,15 @@ public class OperationListTest extends BaseTest {
 
     @Test(expected = IllegalStateException.class)
     public void freezeFreezesOperations() {
+        instance.add(new Crop(0, 0, 10, 10));
         instance.freeze();
         ((Crop) instance.getFirst(Crop.class)).setHeight(300);
     }
 
     @Test
     public void getFirst() {
+        instance.add(new Scale(0.5));
+
         assertNull(instance.getFirst(MetadataCopy.class));
         assertNotNull(instance.getFirst(Scale.class));
     }
@@ -592,6 +586,15 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
+    public void hasEffectWithScaleConstraint() {
+        instance = new OperationList(new Encode(Format.GIF));
+        Dimension fullSize = new Dimension(100, 100);
+        assertFalse(instance.hasEffect(fullSize, Format.GIF));
+        instance.setScaleConstraint(new ScaleConstraint(1, 2));
+        assertTrue(instance.hasEffect(fullSize, Format.GIF));
+    }
+
+    @Test
     public void hasEffectWithSameFormat() {
         instance = new OperationList(new Encode(Format.GIF));
         assertFalse(instance.hasEffect(new Dimension(100, 100), Format.GIF));
@@ -617,17 +620,21 @@ public class OperationListTest extends BaseTest {
 
     @Test
     public void iterator() {
+        instance.add(new Crop(10, 10, 10, 10));
+        instance.add(new Scale(0.5));
+
         int count = 0;
         Iterator<Operation> it = instance.iterator();
         while (it.hasNext()) {
             it.next();
             count++;
         }
-        assertEquals(3, count);
+        assertEquals(2, count);
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void iteratorCannotRemoveWhileFrozen() {
+        instance.add(new Scale(50.5));
         instance.freeze();
         Iterator<Operation> it = instance.iterator();
         it.next();
@@ -638,6 +645,17 @@ public class OperationListTest extends BaseTest {
     public void setIdentifierWhileFrozen() {
         instance.freeze();
         instance.setIdentifier(new Identifier("alpaca"));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void setScaleConstraintWithNullArgument() {
+        instance.setScaleConstraint(null);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setScaleConstraintWhileFrozen() {
+        instance.freeze();
+        instance.setScaleConstraint(new ScaleConstraint(1, 2));
     }
 
     @Test
@@ -655,22 +673,23 @@ public class OperationListTest extends BaseTest {
         instance.add(ColorTransform.BITONAL);
         instance.add(new Encode(Format.JPG));
         instance.getOptions().put("animal", "cat");
+        instance.setScaleConstraint(new ScaleConstraint(1, 2));
 
-        String expected = "50c63748527e634134449ae20b199cc0_caea6c57cfd6acccd67252c327666517.jpg";
+        String expected = "50c63748527e634134449ae20b199cc0_6c143a524f75a965058f126fa9a92f7f.jpg";
         assertEquals(expected, instance.toFilename());
 
         // Assert that changing an operation changes the filename
-        crop.setX(10f);
+        crop.setX(12f);
         assertNotEquals(expected, instance.toFilename());
 
         // Assert that changing an option changes the filename
-        crop.setX(5f);
-        assertEquals(expected, instance.toFilename());
+        crop.setX(10f);
         instance.getOptions().put("animal", "dog");
         assertNotEquals(expected, instance.toFilename());
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void toMap() {
         instance = new OperationList(new Identifier("identifier.jpg"));
         // crop
@@ -688,12 +707,15 @@ public class OperationListTest extends BaseTest {
         instance.add(Transpose.HORIZONTAL);
         // encode
         instance.add(new Encode(Format.JPG));
+        instance.setScaleConstraint(new ScaleConstraint(1, 2));
 
         final Dimension fullSize = new Dimension(100, 100);
         Map<String,Object> map = instance.toMap(fullSize);
         assertEquals("identifier.jpg", map.get("identifier"));
         assertEquals(3, ((List<?>) map.get("operations")).size());
         assertEquals(0, ((Map<?, ?>) map.get("options")).size());
+        assertEquals(1, (long) ((Map<String,Long>) map.get("scale_constraint")).get("numerator"));
+        assertEquals(2, (long) ((Map<String,Long>) map.get("scale_constraint")).get("denominator"));
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -718,8 +740,9 @@ public class OperationListTest extends BaseTest {
         instance.add(ColorTransform.BITONAL);
         instance.add(new Encode(Format.JPG));
         instance.getOptions().put("animal", "cat");
+        instance.setScaleConstraint(new ScaleConstraint(1, 2));
 
-        String expected = "identifier.jpg_crop:5,6,20,22_scale:40%_rotate:15_colortransform:bitonal_encode:jpg_UNDEFINED_8_animal:cat";
+        String expected = "identifier.jpg_1:2_crop:5,6,20,22_scale:40%_rotate:15_colortransform:bitonal_encode:jpg_UNDEFINED_8_animal:cat";
         assertEquals(expected, instance.toString());
     }
 
@@ -792,7 +815,18 @@ public class OperationListTest extends BaseTest {
         ops.validate(fullSize, Format.PNG);
     }
 
-    @Test(expected = ExcessiveSizeException.class)
+    @Test(expected = IllegalScaleException.class)
+    public void validateWithScaleGreaterThanMaxAllowed() throws Exception {
+        Dimension fullSize = new Dimension(1000, 1000);
+        OperationList ops = new OperationList(
+                new Identifier("cats"),
+                new Scale(4),
+                new Encode(Format.JPG));
+        ops.setScaleConstraint(new ScaleConstraint(1, 8));
+        ops.validate(fullSize, Format.PNG);
+    }
+
+    @Test(expected = IllegalSizeException.class)
     public void validateWithAreaGreaterThanMaxAllowed() throws Exception {
         Configuration.getInstance().setProperty(Key.MAX_PIXELS, 100);
         Dimension fullSize = new Dimension(1000, 1000);

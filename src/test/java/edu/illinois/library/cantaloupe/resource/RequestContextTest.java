@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import org.junit.Before;
@@ -22,6 +23,7 @@ import static edu.illinois.library.cantaloupe.resource.RequestContext.OUTPUT_FOR
 import static edu.illinois.library.cantaloupe.resource.RequestContext.REQUEST_HEADERS_KEY;
 import static edu.illinois.library.cantaloupe.resource.RequestContext.REQUEST_URI_KEY;
 import static edu.illinois.library.cantaloupe.resource.RequestContext.RESULTING_SIZE_KEY;
+import static edu.illinois.library.cantaloupe.resource.RequestContext.SCALE_CONSTRAINT_KEY;
 import static org.junit.Assert.*;
 
 public class RequestContextTest {
@@ -113,6 +115,14 @@ public class RequestContextTest {
         assertNotNull(instance.toMap().get(REQUEST_URI_KEY));
         instance.setRequestURI(null);
         assertNull(instance.toMap().get(REQUEST_URI_KEY));
+    }
+
+    @Test
+    public void testSetScaleConstraint() {
+        instance.setScaleConstraint(new ScaleConstraint(1, 2));
+        assertNotNull(instance.toMap().get(SCALE_CONSTRAINT_KEY));
+        instance.setScaleConstraint(null);
+        assertNull(instance.toMap().get(SCALE_CONSTRAINT_KEY));
     }
 
     @Test

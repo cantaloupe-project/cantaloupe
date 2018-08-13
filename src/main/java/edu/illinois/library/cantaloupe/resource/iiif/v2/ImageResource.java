@@ -56,6 +56,9 @@ public class ImageResource extends IIIF2Resource {
      */
     @Override
     public void doGET() throws Exception {
+        if (redirectToNormalizedScaleConstraint()) {
+            return;
+        }
         final Configuration config = Configuration.getInstance();
         final List<String> args = getPathArguments();
         final Identifier identifier = getIdentifier();
@@ -84,7 +87,7 @@ public class ImageResource extends IIIF2Resource {
             final Info info = cacheFacade.getInfo(identifier);
             if (info != null) {
                 ops.applyNonEndpointMutations(info, getDelegateProxy());
-                ops.freeze();
+                ops.setScaleConstraint(getScaleConstraint());
 
                 InputStream cacheStream = null;
                 try {
@@ -167,17 +170,14 @@ public class ImageResource extends IIIF2Resource {
                 return;
             }
 
+            ops.applyNonEndpointMutations(info, getDelegateProxy());
+            ops.setScaleConstraint(getScaleConstraint());
+            ops.freeze();
+
             processor.validate(ops, fullSize);
 
             final Dimension resultingSize = ops.getResultingSize(info.getSize());
             validateSize(resultingSize, info.getOrientationSize(), processor);
-
-            try {
-                ops.applyNonEndpointMutations(info, getDelegateProxy());
-                ops.freeze();
-            } catch (IllegalStateException ignore) {
-                // The instance may already be frozen; that's fine.
-            }
 
             // Find out whether the processor supports the source format by asking
             // it whether it offers any output formats for it.

@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
@@ -42,7 +43,8 @@ public class ImageInfoFactoryTest extends BaseTest {
     private ImageInfo<String,Object> invokeNewImageInfo() {
         final String imageURI = "http://example.org/bla";
         final Info info = Info.builder().withSize(1500, 1200).build();
-        return instance.newImageInfo(imageURI, info, 0);
+        return instance.newImageInfo(imageURI, info, 0,
+                new ScaleConstraint(1, 1));
     }
 
     @Test
@@ -77,10 +79,22 @@ public class ImageInfoFactoryTest extends BaseTest {
                 .withSize(1500, 1200)
                 .withOrientation(Orientation.ROTATE_90)
                 .build();
-        ImageInfo<String, Object> imageInfo =
-                instance.newImageInfo(imageURI, info, 0);
+        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
+                imageURI, info, 0, new ScaleConstraint(1, 1));
 
         assertEquals(1200, imageInfo.get("width"));
+    }
+
+    @Test
+    public void testNewImageInfoWidthWithScaleConstrainedImage() {
+        final String imageURI = "http://example.org/bla";
+        final Info info = Info.builder()
+                .withSize(1500, 1200)
+                .build();
+        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
+                imageURI, info, 0, new ScaleConstraint(1, 2));
+
+        assertEquals(750, imageInfo.get("width"));
     }
 
     @Test
@@ -96,10 +110,22 @@ public class ImageInfoFactoryTest extends BaseTest {
                 .withSize(1500, 1200)
                 .withOrientation(Orientation.ROTATE_90)
                 .build();
-        ImageInfo<String, Object> imageInfo =
-                instance.newImageInfo(imageURI, info, 0);
+        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
+                imageURI, info, 0, new ScaleConstraint(1, 1));
 
         assertEquals(1500, imageInfo.get("height"));
+    }
+
+    @Test
+    public void testNewImageInfoHeightWithScaleConstrainedImage() {
+        final String imageURI = "http://example.org/bla";
+        final Info info = Info.builder()
+                .withSize(1500, 1200)
+                .build();
+        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
+                imageURI, info, 0, new ScaleConstraint(1, 2));
+
+        assertEquals(600, imageInfo.get("height"));
     }
 
     @Test
@@ -157,8 +183,8 @@ public class ImageInfoFactoryTest extends BaseTest {
                 .withSize(1500, 1200)
                 .withOrientation(Orientation.ROTATE_90)
                 .build();
-        ImageInfo<String, Object> imageInfo =
-                instance.newImageInfo(imageURI, info, 0);
+        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
+                imageURI, info, 0, new ScaleConstraint(1, 1));
 
         @SuppressWarnings("unchecked")
         List<ImageInfo.Size> sizes =
@@ -174,6 +200,29 @@ public class ImageInfoFactoryTest extends BaseTest {
         assertEquals(750, (int) sizes.get(3).height);
         assertEquals(1200, (int) sizes.get(4).width);
         assertEquals(1500, (int) sizes.get(4).height);
+    }
+
+    @Test
+    public void testNewImageInfoSizesWithScaleConstrainedImage() {
+        final String imageURI = "http://example.org/bla";
+        final Info info = Info.builder()
+                .withSize(1500, 1200)
+                .build();
+        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
+                imageURI, info, 0, new ScaleConstraint(1, 2));
+
+        @SuppressWarnings("unchecked")
+        List<ImageInfo.Size> sizes =
+                (List<ImageInfo.Size>) imageInfo.get("sizes");
+        assertEquals(4, sizes.size());
+        assertEquals(94, (int) sizes.get(0).width);
+        assertEquals(75, (int) sizes.get(0).height);
+        assertEquals(188, (int) sizes.get(1).width);
+        assertEquals(150, (int) sizes.get(1).height);
+        assertEquals(375, (int) sizes.get(2).width);
+        assertEquals(300, (int) sizes.get(2).height);
+        assertEquals(750, (int) sizes.get(3).width);
+        assertEquals(600, (int) sizes.get(3).height);
     }
 
     @Test
@@ -202,8 +251,8 @@ public class ImageInfoFactoryTest extends BaseTest {
                 .withSize(3000, 2000)
                 .withNumResolutions(3)
                 .build();
-        ImageInfo<String, Object> imageInfo =
-                instance.newImageInfo(imageURI, info, 0);
+        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
+                imageURI, info, 0, new ScaleConstraint(1, 1));
 
         @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =
@@ -229,8 +278,8 @@ public class ImageInfoFactoryTest extends BaseTest {
                 .withTileSize(1000, 1000)
                 .build();
         instance.setMinTileSize(1000);
-        ImageInfo<String, Object> imageInfo =
-                instance.newImageInfo(imageURI, info, 0);
+        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
+                imageURI, info, 0, new ScaleConstraint(1, 1));
 
         @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =
@@ -247,8 +296,8 @@ public class ImageInfoFactoryTest extends BaseTest {
                 .withOrientation(Orientation.ROTATE_90)
                 .withTileSize(64, 56)
                 .build();
-        ImageInfo<String, Object> imageInfo =
-                instance.newImageInfo(imageURI, info, 0);
+        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
+                imageURI, info, 0, new ScaleConstraint(1, 1));
 
         @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =
@@ -258,14 +307,31 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
+    public void testNewImageInfoTilesWithScaleConstrainedImage() {
+        final String imageURI = "http://example.org/bla";
+        Info info = Info.builder()
+                .withSize(64, 56)
+                .withTileSize(64, 56)
+                .build();
+        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
+                imageURI, info, 0, new ScaleConstraint(1, 2));
+
+        @SuppressWarnings("unchecked")
+        List<ImageInfo.Tile> tiles =
+                (List<ImageInfo.Tile>) imageInfo.get("tiles");
+        assertEquals(32, (int) tiles.get(0).width);
+        assertEquals(28, (int) tiles.get(0).height);
+    }
+
+    @Test
     public void testNewImageInfoTilesWithTiledImage() {
         final String imageURI = "http://example.org/bla";
         Info info = Info.builder()
                 .withSize(64, 56)
                 .withTileSize(64, 56)
                 .build();
-        ImageInfo<String, Object> imageInfo =
-                instance.newImageInfo(imageURI, info, 0);
+        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
+                imageURI, info, 0, new ScaleConstraint(1, 1));
 
         @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =
@@ -334,8 +400,21 @@ public class ImageInfoFactoryTest extends BaseTest {
         assertTrue(supportsSet.contains("cors"));
         assertTrue(supportsSet.contains("jsonldMediaType"));
         assertTrue(supportsSet.contains("profileLinkHeader"));
+        assertTrue(supportsSet.contains("sizeAboveFull"));
         assertTrue(supportsSet.contains("sizeByConfinedWh"));
         assertTrue(supportsSet.contains("sizeByWhListed"));
+    }
+
+    @Test
+    public void testNewImageInfoSupportsWithScaleConstraint() {
+        final String imageURI = "http://example.org/bla";
+        final Info info = Info.builder().withSize(1500, 1200).build();
+        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
+                imageURI, info, 0, new ScaleConstraint(1, 4));
+
+        List<?> profile = (List<?>) imageInfo.get("profile");
+        final Set<?> supportsSet = (Set<?>) ((Map<?, ?>) profile.get(1)).get("supports");
+        assertFalse(supportsSet.contains("sizeAboveFull"));
     }
 
     @Test

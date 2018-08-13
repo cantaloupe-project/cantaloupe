@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 
 import java.awt.Dimension;
@@ -16,15 +17,16 @@ import java.util.concurrent.ConcurrentMap;
  */
 public final class RequestContext {
 
-    static final String CLIENT_IP_KEY       = "client_ip";
-    static final String COOKIES_KEY         = "cookies";
-    static final String FULL_SIZE_KEY       = "full_size";
-    static final String IDENTIFIER_KEY      = "identifier";
-    static final String OPERATIONS_KEY      = "operations";
-    static final String OUTPUT_FORMAT_KEY   = "output_format";
-    static final String REQUEST_HEADERS_KEY = "request_headers";
-    static final String REQUEST_URI_KEY     = "request_uri";
-    static final String RESULTING_SIZE_KEY  = "resulting_size";
+    static final String CLIENT_IP_KEY        = "client_ip";
+    static final String COOKIES_KEY          = "cookies";
+    static final String FULL_SIZE_KEY        = "full_size";
+    static final String IDENTIFIER_KEY       = "identifier";
+    static final String OPERATIONS_KEY       = "operations";
+    static final String OUTPUT_FORMAT_KEY    = "output_format";
+    static final String REQUEST_HEADERS_KEY  = "request_headers";
+    static final String REQUEST_URI_KEY      = "request_uri";
+    static final String RESULTING_SIZE_KEY   = "resulting_size";
+    static final String SCALE_CONSTRAINT_KEY = "scale_constraint";
 
     private final ConcurrentMap<String,Object> backingMap =
             new ConcurrentHashMap<>();
@@ -123,21 +125,24 @@ public final class RequestContext {
     }
 
     /**
-     * <p>Returns a "live view" map representation of the instance. Keys
-     * correspond to non-{@literal null} properties. Any of the keys
-     * represented by the class key constants may be present.</p>
+     * Sets {@link #SCALE_CONSTRAINT_KEY}.
      *
-     * <ul>
-     *     <li>{@link #CLIENT_IP_KEY}</li>
-     *     <li>{@link #COOKIES_KEY}</li>
-     *     <li>{@link #FULL_SIZE_KEY}</li>
-     *     <li>{@link #IDENTIFIER_KEY}</li>
-     *     <li>{@link #OPERATIONS_KEY}</li>
-     *     <li>{@link #OUTPUT_FORMAT_KEY}</li>
-     *     <li>{@link #REQUEST_HEADERS_KEY}</li>
-     *     <li>{@link #REQUEST_URI_KEY}</li>
-     *     <li>{@link #RESULTING_SIZE_KEY}</li>
-     * </ul>
+     * @param scaleConstraint May be {@literal null}.
+     */
+    public void setScaleConstraint(ScaleConstraint scaleConstraint) {
+        if (scaleConstraint != null) {
+            backingMap.put(SCALE_CONSTRAINT_KEY,
+                    Collections.unmodifiableMap(scaleConstraint.toMap()));
+        } else {
+            backingMap.remove(SCALE_CONSTRAINT_KEY);
+        }
+    }
+
+    /**
+     * <p>Returns a &quot;live view&quot; map representation of the instance.
+     * Keys correspond to non-{@literal null} properties. Any of the keys
+     * represented by the class key constants may be present, like {@link
+     * #CLIENT_IP_KEY}, etc.</p>
      *
      * @return Map representation of the instance.
      */
