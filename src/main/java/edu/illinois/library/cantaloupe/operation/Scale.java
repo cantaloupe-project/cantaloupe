@@ -386,7 +386,7 @@ public class Scale implements Operation {
     }
 
     /**
-     * @param height Integer greater than 0
+     * @param height Integer greater than 0.
      * @throws IllegalArgumentException If the given height is invalid.
      * @throws IllegalStateException If the instance is frozen.
      */
@@ -440,9 +440,9 @@ public class Scale implements Operation {
     /**
      * @param fullSize Full size of the source image on which the operation
      *                 is being applied.
-     * @return Map with <code>width</code> and <code>height</code> keys
-     *         and integer values corresponding to the resulting pixel size of
-     *         the operation.
+     * @return         Map with {@literal width} and {@literal height} keys and
+     *                 integer values corresponding to the resulting pixel size
+     *                 of the operation.
      */
     @Override
     public Map<String,Object> toMap(Dimension fullSize) {
@@ -473,27 +473,29 @@ public class Scale implements Operation {
      */
     @Override
     public String toString() {
-        String str = "";
+        final StringBuilder builder = new StringBuilder();
         if (!hasEffect()) {
-            return "none";
-        } else if (this.getPercent() != null) {
-            str += StringUtils.removeTrailingZeroes(getPercent() * 100) + "%";
+            builder.append("none");
+        } else if (getPercent() != null) {
+            builder.append(StringUtils.removeTrailingZeroes(getPercent() * 100));
+            builder.append("%");
         } else {
-            if (this.getMode().equals(Mode.ASPECT_FIT_INSIDE)) {
-                str += "!";
+            if (Mode.ASPECT_FIT_INSIDE.equals(getMode())) {
+                builder.append("!");
             }
-            if (this.getWidth() != null && this.getWidth() > 0) {
-                str += this.getWidth();
+            if (getWidth() != null && getWidth() > 0) {
+                builder.append(getWidth());
             }
-            str += ",";
-            if (this.getHeight() != null && this.getHeight() > 0) {
-                str += this.getHeight();
+            builder.append(",");
+            if (getHeight() != null && getHeight() > 0) {
+                builder.append(getHeight());
             }
         }
         if (getFilter() != null) {
-            str += "," + getFilter().name().toLowerCase();
+            builder.append(",");
+            builder.append(getFilter().name().toLowerCase());
         }
-        return str;
+        return builder.toString();
     }
 
 }
