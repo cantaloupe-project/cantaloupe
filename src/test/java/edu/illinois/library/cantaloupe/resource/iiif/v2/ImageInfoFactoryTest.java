@@ -89,7 +89,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     public void testNewImageInfoWidthWithScaleConstrainedImage() {
         final String imageURI = "http://example.org/bla";
         final Info info = Info.builder()
-                .withSize(1500, 1200)
+                .withSize(1499, 1199) // test rounding
                 .build();
         ImageInfo<String, Object> imageInfo = instance.newImageInfo(
                 imageURI, info, 0, new ScaleConstraint(1, 2));
@@ -120,7 +120,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     public void testNewImageInfoHeightWithScaleConstrainedImage() {
         final String imageURI = "http://example.org/bla";
         final Info info = Info.builder()
-                .withSize(1500, 1200)
+                .withSize(1499, 1199) // test rounding
                 .build();
         ImageInfo<String, Object> imageInfo = instance.newImageInfo(
                 imageURI, info, 0, new ScaleConstraint(1, 2));

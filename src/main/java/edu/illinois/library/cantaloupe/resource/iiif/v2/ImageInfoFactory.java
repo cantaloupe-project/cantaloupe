@@ -93,8 +93,10 @@ final class ImageInfoFactory {
         // We want to use the orientation-aware full size, which takes the
         // embedded orientation into account.
         final Dimension virtualSize = info.getOrientationSize(infoImageIndex);
-        virtualSize.width *= scaleConstraint.getScale();
-        virtualSize.height *= scaleConstraint.getScale();
+        virtualSize.width = (int) Math.round(
+                virtualSize.width * scaleConstraint.getScale());
+        virtualSize.height = (int) Math.round(
+                virtualSize.height * scaleConstraint.getScale());
 
         // Create a Map instance, which will eventually be serialized to JSON
         // and returned in the response body.

@@ -40,11 +40,15 @@ final class ImageInfoFactory {
         // Otherwise, use the smallest multiple of the tile size above
         // MIN_TILE_SIZE_CONFIG_KEY of image resolution 0.
         final Dimension virtualSize = infoImage.getOrientationSize();
-        virtualSize.width *= scaleConstraint.getScale();
-        virtualSize.height *= scaleConstraint.getScale();
+        virtualSize.width = (int) Math.round(
+                virtualSize.width * scaleConstraint.getScale());
+        virtualSize.height = (int) Math.round(
+                virtualSize.height * scaleConstraint.getScale());
         Dimension virtualTileSize = infoImage.getOrientationTileSize();
-        virtualTileSize.width *= scaleConstraint.getScale();
-        virtualTileSize.height *= scaleConstraint.getScale();
+        virtualTileSize.width = (int) Math.round(
+                virtualTileSize.width * scaleConstraint.getScale());
+        virtualTileSize.height = (int) Math.round(
+                virtualTileSize.height * scaleConstraint.getScale());
 
         if (numResolutions > 0) {
             if (!virtualTileSize.equals(virtualSize)) {
