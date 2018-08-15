@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
@@ -588,25 +589,30 @@ public class Java2DUtilTest extends BaseTest {
         assertEquals(BufferedImage.TYPE_CUSTOM, outImage.getType());
     }
 
-    /* scale(BufferedImage, Scale) */
+    /* scale */
 
     @Test
     public void testScaleWithFull() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 
         Scale scale = new Scale();
-        BufferedImage outImage = Java2DUtil.scale(inImage, scale);
+        scale.setMode(Scale.Mode.FULL);
+        ScaleConstraint sc = new ScaleConstraint(1, 1);
+        ReductionFactor rf = new ReductionFactor(0);
+
+        BufferedImage outImage = Java2DUtil.scale(inImage, scale, sc, rf);
         assertSame(inImage, outImage);
     }
 
     @Test
-    public void testScaleWithAspectFitWidth() {
+    public void testScaleWithWithAspectFitWidth() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
-        scale.setWidth(50);
-        BufferedImage outImage = Java2DUtil.scale(inImage, scale);
+        Scale scale = new Scale(50, null, Scale.Mode.ASPECT_FIT_WIDTH);
+        ScaleConstraint sc = new ScaleConstraint(1, 1);
+        ReductionFactor rf = new ReductionFactor(1);
+
+        BufferedImage outImage = Java2DUtil.scale(inImage, scale, sc, rf);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
     }
@@ -615,10 +621,11 @@ public class Java2DUtilTest extends BaseTest {
     public void testScaleWithAspectFitHeight() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
-        scale.setHeight(50);
-        BufferedImage outImage = Java2DUtil.scale(inImage, scale);
+        Scale scale = new Scale(null, 50, Scale.Mode.ASPECT_FIT_HEIGHT);
+        ScaleConstraint sc = new ScaleConstraint(1, 1);
+        ReductionFactor rf = new ReductionFactor(1);
+
+        BufferedImage outImage = Java2DUtil.scale(inImage, scale, sc, rf);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
     }
@@ -627,11 +634,11 @@ public class Java2DUtilTest extends BaseTest {
     public void testScaleWithAspectFitInside() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        scale.setWidth(50);
-        scale.setHeight(50);
-        BufferedImage outImage = Java2DUtil.scale(inImage, scale);
+        Scale scale = new Scale(50, 50, Scale.Mode.ASPECT_FIT_INSIDE);
+        ScaleConstraint sc = new ScaleConstraint(1, 1);
+        ReductionFactor rf = new ReductionFactor(1);
+
+        BufferedImage outImage = Java2DUtil.scale(inImage, scale, sc, rf);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
     }
@@ -644,19 +651,25 @@ public class Java2DUtilTest extends BaseTest {
         scale.setMode(Scale.Mode.NON_ASPECT_FILL);
         scale.setWidth(80);
         scale.setHeight(50);
-        BufferedImage outImage = Java2DUtil.scale(inImage, scale);
+        ScaleConstraint sc = new ScaleConstraint(1, 1);
+        ReductionFactor rf = new ReductionFactor(1);
+
+        BufferedImage outImage = Java2DUtil.scale(inImage, scale, sc, rf);
         assertEquals(80, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
     }
 
     @Test
-    public void testScaleWithScaleByPercent() {
+    public void testScaleWithWithScaleByPercent() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 
         Scale scale = new Scale(0.25f);
-        BufferedImage outImage = Java2DUtil.scale(inImage, scale);
-        assertEquals(25, outImage.getWidth());
-        assertEquals(25, outImage.getHeight());
+        ScaleConstraint sc = new ScaleConstraint(1, 1);
+        ReductionFactor rf = new ReductionFactor(2);
+
+        BufferedImage outImage = Java2DUtil.scale(inImage, scale, sc, rf);
+        assertEquals(100, outImage.getWidth());
+        assertEquals(100, outImage.getHeight());
     }
 
     @Test
@@ -664,55 +677,12 @@ public class Java2DUtilTest extends BaseTest {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 
         Scale scale = new Scale(2, 1, Scale.Mode.NON_ASPECT_FILL);
-        BufferedImage outImage = Java2DUtil.scale(inImage, scale);
+        ScaleConstraint sc = new ScaleConstraint(1, 1);
+        ReductionFactor rf = new ReductionFactor(1);
+
+        BufferedImage outImage = Java2DUtil.scale(inImage, scale, sc, rf);
         assertEquals(2, outImage.getWidth());
         assertEquals(1, outImage.getHeight());
-    }
-
-    /* scale(BufferedImage, Scale, ReductionFactor) */
-
-    @Test
-    public void testScaleWithReductionFactorWithAspectFitWidth() {
-        BufferedImage inImage = newColorImage(100, 100, 8, false);
-
-        Scale scale = new Scale(50, null, Scale.Mode.ASPECT_FIT_WIDTH);
-        ReductionFactor rf = new ReductionFactor(1);
-        BufferedImage outImage = Java2DUtil.scale(inImage, scale, rf);
-        assertEquals(50, outImage.getWidth());
-        assertEquals(50, outImage.getHeight());
-    }
-
-    @Test
-    public void testScaleWithReductionFactorWithAspectFitHeight() {
-        BufferedImage inImage = newColorImage(100, 100, 8, false);
-
-        Scale scale = new Scale(null, 50, Scale.Mode.ASPECT_FIT_HEIGHT);
-        ReductionFactor rf = new ReductionFactor(1);
-        BufferedImage outImage = Java2DUtil.scale(inImage, scale, rf);
-        assertEquals(50, outImage.getWidth());
-        assertEquals(50, outImage.getHeight());
-    }
-
-    @Test
-    public void testScaleWithReductionFactorWithAspectFitInside() {
-        BufferedImage inImage = newColorImage(100, 100, 8, false);
-
-        Scale scale = new Scale(50, 50, Scale.Mode.ASPECT_FIT_INSIDE);
-        ReductionFactor rf = new ReductionFactor(1);
-        BufferedImage outImage = Java2DUtil.scale(inImage, scale, rf);
-        assertEquals(50, outImage.getWidth());
-        assertEquals(50, outImage.getHeight());
-    }
-
-    @Test
-    public void testScaleWithReductionFactorWithScaleByPercent() {
-        BufferedImage inImage = newColorImage(100, 100, 8, false);
-
-        Scale scale = new Scale(0.25f);
-        ReductionFactor rf = new ReductionFactor(2);
-        BufferedImage outImage = Java2DUtil.scale(inImage, scale, rf);
-        assertEquals(100, outImage.getWidth());
-        assertEquals(100, outImage.getHeight());
     }
 
     /* sharpen() */

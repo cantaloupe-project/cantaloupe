@@ -86,8 +86,8 @@ public class ImageResource extends IIIF2Resource {
         if (!isResolvingFirst()) {
             final Info info = cacheFacade.getInfo(identifier);
             if (info != null) {
-                ops.applyNonEndpointMutations(info, getDelegateProxy());
                 ops.setScaleConstraint(getScaleConstraint());
+                ops.applyNonEndpointMutations(info, getDelegateProxy());
 
                 InputStream cacheStream = null;
                 try {
@@ -170,8 +170,8 @@ public class ImageResource extends IIIF2Resource {
                 return;
             }
 
-            ops.applyNonEndpointMutations(info, getDelegateProxy());
             ops.setScaleConstraint(getScaleConstraint());
+            ops.applyNonEndpointMutations(info, getDelegateProxy());
             ops.freeze();
 
             processor.validate(ops, fullSize);

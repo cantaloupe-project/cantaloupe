@@ -165,8 +165,8 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
             image = processFrame(image, opList, info);
             sequence.set(0, image);
         } else {
-            final int numThreads =
-                    Math.min(numFrames, Runtime.getRuntime().availableProcessors());
+            final int numThreads = Math.min(
+                    numFrames, Runtime.getRuntime().availableProcessors());
             final int framesPerThread =
                     (int) Math.ceil(numFrames / (float) numThreads);
             final CountDownLatch latch = new CountDownLatch(numFrames);
@@ -299,7 +299,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
             if (op.hasEffect(fullSize, opList)) {
                 if (op instanceof Scale) {
                     image = Java2DUtil.scale(image, (Scale) op,
-                            reductionFactor);
+                            opList.getScaleConstraint(), reductionFactor);
                 } else if (op instanceof Transpose) {
                     image = Java2DUtil.transpose(image, (Transpose) op);
                 } else if (op instanceof Rotate) {

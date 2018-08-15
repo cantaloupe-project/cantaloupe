@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.processor.resample.ResampleFilters;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
@@ -36,7 +37,7 @@ public class ScaleTest extends BaseTest {
 
     }
 
-    private static final double DELTA = 0.00000001f;
+    private static final double DELTA = 0.00000001;
 
     private Scale instance;
 
@@ -47,7 +48,7 @@ public class ScaleTest extends BaseTest {
     }
 
     @Test
-    public void constructor1() {
+    public void noOpConstructor() {
         assertEquals(Scale.Mode.FULL, instance.getMode());
         assertNull(instance.getPercent());
         assertNull(instance.getHeight());
@@ -55,14 +56,14 @@ public class ScaleTest extends BaseTest {
     }
 
     @Test
-    public void constructor2() {
-        this.instance = new Scale(0.3f);
+    public void percentageConstructor() {
+        this.instance = new Scale(0.3);
         assertEquals(Scale.Mode.ASPECT_FIT_INSIDE, instance.getMode());
-        assertEquals(0.3f, instance.getPercent(), 0.00001f);
+        assertEquals(0.3, instance.getPercent(), DELTA);
     }
 
     @Test
-    public void constructor3() {
+    public void pixelConstructor() {
         this.instance = new Scale(300, 200, Scale.Mode.ASPECT_FIT_HEIGHT);
         assertEquals(Scale.Mode.ASPECT_FIT_HEIGHT, instance.getMode());
         assertEquals(300, (long) instance.getWidth());
@@ -70,174 +71,233 @@ public class ScaleTest extends BaseTest {
     }
 
     @Test
+    public void equalsWithEqualInstances() {
+        Scale scale1 = new Scale();
+        Scale scale2 = new Scale();
+        assertEquals(scale1, scale2);
+
+        scale1 = new Scale(0.4);
+        scale2 = new Scale(0.4);
+        assertEquals(scale1, scale2);
+
+        scale1 = new Scale(40, 40, Scale.Mode.ASPECT_FIT_HEIGHT);
+        scale2 = new Scale(40, 40, Scale.Mode.ASPECT_FIT_HEIGHT);
+        assertEquals(scale1, scale2);
+    }
+
+    @Test
+    public void equalsWithUnequalInstances() {
+        Scale scale1 = new Scale(0.4);
+        Scale scale2 = new Scale(0.6);
+        assertNotEquals(scale1, scale2);
+
+        scale1 = new Scale(40, 42, Scale.Mode.ASPECT_FIT_HEIGHT);
+        scale2 = new Scale(40, 40, Scale.Mode.ASPECT_FIT_HEIGHT);
+        assertNotEquals(scale1, scale2);
+    }
+
+    @Test
     public void getDifferentialScaleWithFull() {
         final Dimension fullSize = new Dimension(300, 200);
-        final ReductionFactor factor = new ReductionFactor(1);
+        final ReductionFactor rf = new ReductionFactor(2);
+        final ScaleConstraint sc = new ScaleConstraint(1, 4);
 
         instance.setMode(Scale.Mode.FULL);
-        assertEquals(1f, instance.getDifferentialScale(fullSize, factor), DELTA);
+        assertEquals(1, instance.getDifferentialScale(fullSize, rf, sc), DELTA);
     }
 
     @Test
     public void getDifferentialScaleWithAspectFitWidth() {
-        final Dimension fullSize = new Dimension(300, 200);
-        final ReductionFactor factor = new ReductionFactor(1);
+        final Dimension fullSize = new Dimension(1000, 800);
+        final ScaleConstraint sc = new ScaleConstraint(1, 4); // client sees 250x200
+        final ReductionFactor rf = new ReductionFactor(2); // reader returns 250x200
 
         instance.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
-        instance.setWidth(150);
-        instance.setHeight(100);
-
-        assertEquals(1f, instance.getDifferentialScale(fullSize, factor), DELTA);
-        instance.setWidth(75);
-        instance.setHeight(50);
-        assertEquals(0.5f, instance.getDifferentialScale(fullSize, factor), DELTA);
+        instance.setWidth(200);
+        assertEquals(0.8, instance.getDifferentialScale(fullSize, rf, sc), DELTA);
     }
 
     @Test
     public void getDifferentialScaleWithAspectFitHeight() {
-        final Dimension fullSize = new Dimension(300, 200);
-        final ReductionFactor factor = new ReductionFactor(1);
+        final Dimension fullSize = new Dimension(1000, 800);
+        final ScaleConstraint sc = new ScaleConstraint(1, 4); // client sees 250x200
+        final ReductionFactor rf = new ReductionFactor(2); // reader returns 250x200
 
         instance.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
-        instance.setWidth(150);
-        instance.setHeight(100);
-        assertEquals(1f, instance.getDifferentialScale(fullSize, factor), DELTA);
-
-        instance.setWidth(75);
-        instance.setHeight(50);
-        assertEquals(0.5f, instance.getDifferentialScale(fullSize, factor), DELTA);
+        instance.setHeight(150);
+        assertEquals(0.75, instance.getDifferentialScale(fullSize, rf, sc), DELTA);
     }
 
     @Test
     public void getDifferentialScaleWithAspectFitInside() {
-        final Dimension fullSize = new Dimension(300, 200);
-        final ReductionFactor factor = new ReductionFactor(1);
-
-        instance.setMode(Scale.Mode.FULL);
-        assertEquals(1f, instance.getDifferentialScale(fullSize, factor), DELTA);
+        final Dimension fullSize = new Dimension(1000, 800);
+        final ScaleConstraint sc = new ScaleConstraint(1, 4); // client sees 250x200
+        final ReductionFactor rf = new ReductionFactor(2); // reader returns 250x200
 
         instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         instance.setWidth(200);
-        instance.setHeight(100);
-        assertEquals(1f, instance.getDifferentialScale(fullSize, factor), DELTA);
-
-        instance.setWidth(100);
-        instance.setHeight(50);
-        assertEquals(0.5f, instance.getDifferentialScale(fullSize, factor), DELTA);
+        instance.setHeight(150);
+        assertEquals(0.75, instance.getDifferentialScale(fullSize, rf, sc), DELTA);
     }
 
     @Test
     public void getDifferentialScaleWithNonAspectFill() {
-        final Dimension fullSize = new Dimension(300, 200);
-        final ReductionFactor factor = new ReductionFactor(1);
+        final Dimension fullSize = new Dimension(1000, 800);
+        final ScaleConstraint sc = new ScaleConstraint(1, 4); // client sees 250x200
+        final ReductionFactor rf = new ReductionFactor(2); // reader returns 250x200
 
         instance.setMode(Scale.Mode.NON_ASPECT_FILL);
         instance.setWidth(200);
-        instance.setHeight(100);
-        assertNull(instance.getDifferentialScale(fullSize, factor));
+        instance.setHeight(150);
+        assertNull(instance.getDifferentialScale(fullSize, rf, sc));
     }
 
     @Test
     public void getDifferentialScaleWithPercent() {
         final Dimension fullSize = new Dimension(300, 200);
-        ReductionFactor factor = new ReductionFactor(1);
+        ReductionFactor rf = new ReductionFactor(1);
+        ScaleConstraint sc =  new ScaleConstraint(1, 4);
 
-        instance = new Scale();
-        instance.setPercent(0.5);
-        assertEquals(1f, instance.getDifferentialScale(fullSize, factor), DELTA);
+        instance = new Scale(0.5);
+        assertEquals(0.25, instance.getDifferentialScale(fullSize, rf, sc), DELTA);
 
         instance.setPercent(0.25);
-        assertEquals(0.5f, instance.getDifferentialScale(fullSize, factor), DELTA);
+        assertEquals(0.125, instance.getDifferentialScale(fullSize, rf, sc), DELTA);
 
         instance.setPercent(1.5);
-        factor = new ReductionFactor(0);
-        assertEquals(1.5f, instance.getDifferentialScale(fullSize, factor), DELTA);
+        rf = new ReductionFactor();
+        assertEquals(0.375, instance.getDifferentialScale(fullSize, rf, sc), DELTA);
     }
 
     @Test
-    public void getReductionFactor() {
+    public void getReductionFactorWithFull() {
         Dimension size = new Dimension(300, 300);
+        ScaleConstraint sc = new ScaleConstraint(1, 1);
+        assertEquals(0, instance.getReductionFactor(size, sc, 999).factor);
+    }
 
-        // FULL
-        assertEquals(0, instance.getReductionFactor(size, 999).factor);
+    @Test
+    public void getReductionFactorWithAspectFitWidth() {
+        Dimension size = new Dimension(300, 300);
+        ScaleConstraint sc = new ScaleConstraint(1, 1);
 
-        // ASPECT_FIT_WIDTH
         instance.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         instance.setWidth(145);
         instance.setHeight(145);
-        assertEquals(1, instance.getReductionFactor(size, 999).factor);
+        assertEquals(1, instance.getReductionFactor(size, sc, 999).factor);
+    }
 
-        // ASPECT_FIT_HEIGHT
+    @Test
+    public void getReductionFactorWithAspectFitHeight() {
+        Dimension size = new Dimension(300, 300);
+        ScaleConstraint sc = new ScaleConstraint(1, 1);
+
         instance.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
         instance.setWidth(145);
         instance.setHeight(145);
-        assertEquals(1, instance.getReductionFactor(size, 999).factor);
+        assertEquals(1, instance.getReductionFactor(size, sc, 999).factor);
+    }
 
-        // ASPECT_FIT_INSIDE
+    @Test
+    public void getReductionFactorWithAspectFitInside() {
+        Dimension size = new Dimension(300, 300);
+        ScaleConstraint sc = new ScaleConstraint(1, 1);
+
         instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         instance.setWidth(145);
         instance.setHeight(145);
-        assertEquals(1, instance.getReductionFactor(size, 999).factor);
+        assertEquals(1, instance.getReductionFactor(size, sc, 999).factor);
+    }
 
-        // NON_ASPECT_FILL
+    @Test
+    public void getReductionFactorWithNonAspectFill() {
+        Dimension size = new Dimension(300, 300);
+        ScaleConstraint sc = new ScaleConstraint(1, 1);
+
         instance.setMode(Scale.Mode.NON_ASPECT_FILL);
         instance.setWidth(145);
         instance.setHeight(145);
-        assertEquals(0, instance.getReductionFactor(size, 999).factor);
+        assertEquals(0, instance.getReductionFactor(size, sc, 999).factor);
+    }
 
-        // percent
+    @Test
+    public void getReductionFactorWithPercent() {
+        Dimension size = new Dimension(300, 300);
+        ScaleConstraint sc = new ScaleConstraint(1, 1);
         instance = new Scale();
         instance.setPercent(0.45);
-        assertEquals(1, instance.getReductionFactor(size, 999).factor);
+        assertEquals(1, instance.getReductionFactor(size, sc, 999).factor);
         instance.setPercent(0.2);
-        assertEquals(2, instance.getReductionFactor(size, 999).factor);
-        assertEquals(1, instance.getReductionFactor(size, 1).factor);
+        assertEquals(2, instance.getReductionFactor(size, sc, 999).factor);
+        assertEquals(1, instance.getReductionFactor(size, sc, 1).factor);
     }
 
     @Test
-    public void getResultingScale1() {
+    public void getResultingScaleWithFull() {
         final Dimension fullSize = new Dimension(300, 200);
-
+        final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 3);
         instance.setMode(Scale.Mode.FULL);
-        assertEquals(1, instance.getResultingScale(fullSize), DELTA);
+        assertEquals(scaleConstraint.getScale(),
+                instance.getResultingScale(fullSize, scaleConstraint), DELTA);
+    }
 
-        // ASPECT_FIT_WIDTH
+    @Test
+    public void getResultingScaleWithPercent() {
+        final Dimension fullSize = new Dimension(300, 200);
+        final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 3);
+        instance = new Scale();
+        instance.setPercent(0.5);
+        assertEquals(0.5 * scaleConstraint.getScale(),
+                instance.getResultingScale(fullSize, scaleConstraint), DELTA);
+    }
+
+    @Test
+    public void getResultingScaleWithAspectFitWidth() {
+        final Dimension fullSize = new Dimension(900, 600);
+        final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 3); // 300x200
         instance.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         instance.setWidth(200);
         instance.setHeight(100);
-        assertEquals(0.66666666, instance.getResultingScale(fullSize), DELTA);
-
-        // ASPECT_FIT_HEIGHT
-        instance.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
-        instance.setWidth(200);
-        instance.setHeight(100);
-        assertEquals(0.5, instance.getResultingScale(fullSize), DELTA);
-
-        // ASPECT_FIT_INSIDE
-        instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        instance.setWidth(200);
-        instance.setHeight(100);
-        assertEquals(0.5, instance.getResultingScale(fullSize), DELTA);
-
-        // NON_ASPECT_FILL
-        instance.setMode(Scale.Mode.NON_ASPECT_FILL);
-        instance.setWidth(200);
-        instance.setHeight(100);
-        assertNull(instance.getResultingScale(fullSize));
-
-        // percent
-        instance = new Scale();
-        instance.setPercent(0.5);
-        assertEquals(0.5, instance.getResultingScale(fullSize), DELTA);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void getResultingSizeWithNullArgument() {
-        instance.getResultingSize(null);
+        assertEquals(instance.getWidth() / (double) fullSize.width,
+                instance.getResultingScale(fullSize, scaleConstraint), DELTA);
     }
 
     @Test
-    public void getResultingSize() {
+    public void getResultingScaleWithAspectFitHeight() {
+        final Dimension fullSize = new Dimension(900, 600);
+        final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 3);
+        instance.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        instance.setWidth(200);
+        instance.setHeight(100);
+        assertEquals(instance.getHeight() / (double) fullSize.height,
+                instance.getResultingScale(fullSize, scaleConstraint), DELTA);
+    }
+
+    @Test
+    public void getResultingScaleWithAspectFitInside() {
+        final Dimension fullSize = new Dimension(900, 600);
+        final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 3);
+        instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        instance.setWidth(200);
+        instance.setHeight(100);
+        assertEquals(Math.min(
+                instance.getWidth() / (double) fullSize.width,
+                instance.getHeight() / (double) fullSize.height),
+                instance.getResultingScale(fullSize, scaleConstraint), DELTA);
+    }
+
+    @Test
+    public void getResultingScaleWithAspectFitWithNonAspectFill() {
+        final Dimension fullSize = new Dimension(300, 200);
+        final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 3);
+        instance.setMode(Scale.Mode.NON_ASPECT_FILL);
+        instance.setWidth(200);
+        instance.setHeight(100);
+        assertNull(instance.getResultingScale(fullSize, scaleConstraint));
+    }
+
+    @Test
+    public void getResultingSize1() {
         final Dimension fullSize = new Dimension(600, 400);
 
         instance.setMode(Scale.Mode.FULL);
@@ -298,6 +358,179 @@ public class ScaleTest extends BaseTest {
     }
 
     @Test
+    public void getResultingSize1WithFull() {
+        final Dimension fullSize = new Dimension(600, 400);
+        instance.setMode(Scale.Mode.FULL);
+        assertEquals(fullSize, instance.getResultingSize(fullSize));
+    }
+
+    @Test
+    public void getResultingSize1WithAspectFitWidth() {
+        final Dimension fullSize = new Dimension(600, 400);
+        instance.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        // down
+        instance.setWidth(400);
+        instance.setHeight(200);
+        assertEquals(new Dimension(400, 267), instance.getResultingSize(fullSize));
+        // up
+        instance.setWidth(1200);
+        instance.setHeight(600);
+        assertEquals(new Dimension(1200, 800), instance.getResultingSize(fullSize));
+    }
+
+    @Test
+    public void getResultingSize1WithAspectFitHeight() {
+        final Dimension fullSize = new Dimension(600, 400);
+        instance.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        // down
+        instance.setWidth(400);
+        instance.setHeight(200);
+        assertEquals(new Dimension(300, 200), instance.getResultingSize(fullSize));
+        // up
+        instance.setWidth(1200);
+        instance.setHeight(600);
+        assertEquals(new Dimension(900, 600), instance.getResultingSize(fullSize));
+    }
+
+    @Test
+    public void getResultingSize1WithAspectFitInside() {
+        final Dimension fullSize = new Dimension(600, 400);
+        instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        // down
+        instance.setWidth(400);
+        instance.setHeight(200);
+        assertEquals(new Dimension(300, 200), instance.getResultingSize(fullSize));
+        // up
+        instance.setWidth(1200);
+        instance.setHeight(600);
+        assertEquals(new Dimension(900, 600), instance.getResultingSize(fullSize));
+    }
+
+    @Test
+    public void getResultingSize1WithNonAspectFill() {
+        final Dimension fullSize = new Dimension(600, 400);
+        instance.setMode(Scale.Mode.NON_ASPECT_FILL);
+        // down
+        instance.setWidth(400);
+        instance.setHeight(200);
+        assertEquals(new Dimension(400, 200), instance.getResultingSize(fullSize));
+        // up
+        instance.setWidth(1200);
+        instance.setHeight(600);
+        assertEquals(new Dimension(1200, 600), instance.getResultingSize(fullSize));
+    }
+
+    @Test
+    public void getResultingSize1WithPercent() {
+        final Dimension fullSize = new Dimension(600, 400);
+        instance = new Scale();
+        // down
+        instance.setPercent(0.5);
+        assertEquals(new Dimension(300, 200), instance.getResultingSize(fullSize));
+        // up
+        instance.setPercent(1.5);
+        assertEquals(new Dimension(900, 600), instance.getResultingSize(fullSize));
+    }
+
+    @Test
+    public void getResultingSize2WithFull() {
+        final Dimension fullSize = new Dimension(600, 400);
+        final ReductionFactor rf = new ReductionFactor();
+        final ScaleConstraint sc = new ScaleConstraint(1, 2);
+        instance.setMode(Scale.Mode.FULL);
+        assertEquals(new Dimension(300, 200),
+                instance.getResultingSize(fullSize, rf, sc));
+    }
+
+    @Test
+    public void getResultingSize2WithAspectFitWidth() {
+        final Dimension fullSize = new Dimension(600, 400);
+        final ReductionFactor rf = new ReductionFactor(1);
+        final ScaleConstraint sc = new ScaleConstraint(1, 2);
+        instance.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        // down
+        instance.setWidth(400);
+        instance.setHeight(200);
+        assertEquals(new Dimension(400, 267),
+                instance.getResultingSize(fullSize, rf, sc));
+        // up
+        instance.setWidth(1200);
+        instance.setHeight(600);
+        assertEquals(new Dimension(1200, 800),
+                instance.getResultingSize(fullSize, rf, sc));
+    }
+
+    @Test
+    public void getResultingSize2WithAspectFitHeight() {
+        final Dimension fullSize = new Dimension(600, 400);
+        final ReductionFactor rf = new ReductionFactor(1);
+        final ScaleConstraint sc = new ScaleConstraint(1, 2);
+        instance.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        // down
+        instance.setWidth(400);
+        instance.setHeight(200);
+        assertEquals(new Dimension(300, 200),
+                instance.getResultingSize(fullSize, rf, sc));
+        // up
+        instance.setWidth(1200);
+        instance.setHeight(600);
+        assertEquals(new Dimension(900, 600),
+                instance.getResultingSize(fullSize, rf, sc));
+    }
+
+    @Test
+    public void getResultingSize2WithAspectFitInside() {
+        final Dimension fullSize = new Dimension(600, 400);
+        final ReductionFactor rf = new ReductionFactor(1);
+        final ScaleConstraint sc = new ScaleConstraint(1, 2);
+        instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        // down
+        instance.setWidth(400);
+        instance.setHeight(200);
+        assertEquals(new Dimension(300, 200),
+                instance.getResultingSize(fullSize, rf, sc));
+        // up
+        instance.setWidth(1200);
+        instance.setHeight(600);
+        assertEquals(new Dimension(900, 600),
+                instance.getResultingSize(fullSize, rf, sc));
+    }
+
+    @Test
+    public void getResultingSize2WithNonAspectFill() {
+        final Dimension fullSize = new Dimension(600, 400);
+        final ReductionFactor rf = new ReductionFactor(1);
+        final ScaleConstraint sc = new ScaleConstraint(1, 2);
+        instance.setMode(Scale.Mode.NON_ASPECT_FILL);
+        // down
+        instance.setWidth(400);
+        instance.setHeight(200);
+        assertEquals(new Dimension(400, 200),
+                instance.getResultingSize(fullSize, rf, sc));
+        // up
+        instance.setWidth(1200);
+        instance.setHeight(600);
+        assertEquals(new Dimension(1200, 600),
+                instance.getResultingSize(fullSize, rf, sc));
+    }
+
+    @Test
+    public void getResultingSize2WithPercent() {
+        final Dimension fullSize = new Dimension(600, 400);
+        final ReductionFactor rf = new ReductionFactor(1);
+        final ScaleConstraint sc = new ScaleConstraint(1, 2);
+        instance = new Scale();
+        // down
+        instance.setPercent(0.5);
+        assertEquals(new Dimension(300, 200),
+                instance.getResultingSize(fullSize, rf, sc));
+        // up
+        instance.setPercent(1.5);
+        assertEquals(new Dimension(900, 600),
+                instance.getResultingSize(fullSize, rf, sc));
+    }
+
+    @Test
     public void hasEffect() {
         instance.setMode(Scale.Mode.FULL);
         assertFalse(instance.hasEffect());
@@ -342,6 +575,15 @@ public class ScaleTest extends BaseTest {
         instance.setWidth(300);
         instance.setHeight(200);
         assertFalse(instance.hasEffect(fullSize, opList));
+    }
+
+    @Test
+    public void hasEffectWithScaleConstraint() {
+        final Dimension fullSize = new Dimension(600, 400);
+        final OperationList opList = new OperationList();
+        opList.setScaleConstraint(new ScaleConstraint(1, 2));
+
+        assertTrue(instance.hasEffect(fullSize, opList));
     }
 
     @Test

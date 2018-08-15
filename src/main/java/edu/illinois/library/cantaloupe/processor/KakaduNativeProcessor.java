@@ -399,15 +399,15 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
 
         // Find the best resolution level to read.
         if (scaleOp != null) {
-            final double resultingScale = scaleOp.getResultingScale(roi.getSize());
+            final double resultingScale = scaleOp.getResultingScale(
+                    roi.getSize(), opList.getScaleConstraint());
             reductionFactor.factor =
                     ReductionFactor.forScale(resultingScale, 0.001).factor;
 
             // Clamp the reduction factor to the range of 0-numLevels.
             if (reductionFactor.factor < 0) {
                 reductionFactor.factor = 0;
-            }
-            if (reductionFactor.factor > numLevels) {
+            } else if (reductionFactor.factor > numLevels) {
                 reductionFactor.factor = numLevels;
             }
         }
@@ -481,8 +481,10 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                         referenceComponent, channels, codestream);
                 final Dimension regionArea = new Dimension(
                         regionSize.Get_x(), regionSize.Get_y());
-                double diffScale = (scaleOp != null) ?
-                        scaleOp.getDifferentialScale(regionArea, reductionFactor) : 1.0;
+                double diffScale = (scaleOp != null)
+                        ? scaleOp.getDifferentialScale(
+                                regionArea, reductionFactor, opList.getScaleConstraint())
+                        : 1.0;
                 expandNumerator.Set_x((int) Math.round(
                         expandNumerator.Get_x() * diffScale * EXPAND_DENOMINATOR));
                 expandNumerator.Set_y((int) Math.round(
@@ -628,7 +630,8 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
         Rectangle regionRect = new Rectangle(0, 0, fullSize.width, fullSize.height);
         Crop crop = (Crop) opList.getFirst(Crop.class);
         if (crop != null && crop.hasEffect(fullSize, opList)) {
-            regionRect = crop.getRectangle(fullSize);
+            regionRect = crop.getRectangle(
+                    fullSize, opList.getScaleConstraint());
         }
         return regionRect;
     }

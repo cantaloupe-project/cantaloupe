@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.processor.resample.ResampleFilter;
 import edu.illinois.library.cantaloupe.processor.resample.ResampleFilters;
 import edu.illinois.library.cantaloupe.util.StringUtils;
@@ -10,25 +11,32 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <p>Encapsulates an absolute or relative scale operation.</p>
+ * <p>Encapsulates an absolute (pixel-based) or relative (percentage-based)
+ * scale operation.</p>
  *
  * <p>Absolute instances will have a non-null width and/or height. Relative
  * instances will have a non-null percent and a null width and height.</p>
+ *
+ * <p>N.B.: The accessors ({@link #getWidth()}, {@link #setWidth(Integer)},
+ * etc.) define the scale operation, but they should not be used when figuring
+ * out how to apply an instance to an image. For that, {@link
+ * #getResultingSize} and {@link #getResultingScale} should be used
+ * instead.</p>
  */
 public class Scale implements Operation {
 
     /**
      * <p>Represents a resample algorithm.</p>
      *
-     * <p>N.B. Lowercase enum values should match configuration values.</p>
+     * <p>N.B.: Lowercase enum values match configuration values.</p>
      */
     public enum Filter implements Operation {
 
-        BELL("Bell", ResampleFilters.getBellFilter()),
-        BICUBIC("Bicubic", ResampleFilters.getBiCubicFilter()),
-        BOX("Box", ResampleFilters.getBoxFilter()),
-        BSPLINE("B-Spline", ResampleFilters.getBSplineFilter()),
-        HERMITE("Hermite", ResampleFilters.getHermiteFilter()),
+        BELL("Bell",         ResampleFilters.getBellFilter()),
+        BICUBIC("Bicubic",   ResampleFilters.getBiCubicFilter()),
+        BOX("Box",           ResampleFilters.getBoxFilter()),
+        BSPLINE("B-Spline",  ResampleFilters.getBSplineFilter()),
+        HERMITE("Hermite",   ResampleFilters.getHermiteFilter()),
         LANCZOS3("Lanczos3", ResampleFilters.getLanczos3Filter()),
         MITCHELL("Mitchell", ResampleFilters.getMitchellFilter()),
         TRIANGLE("Triangle", ResampleFilters.getTriangleFilter());
@@ -56,7 +64,7 @@ public class Scale implements Operation {
         /**
          * @param fullSize Full size of the source image on which the operation
          *                 is being applied.
-         * @return The same dimension.
+         * @return         The argument.
          */
         @Override
         public Dimension getResultingSize(Dimension fullSize) {
@@ -73,8 +81,8 @@ public class Scale implements Operation {
 
         /**
          * @param fullSize Ignored.
-         * @param opList Ignored.
-         * @return True.
+         * @param opList   Ignored.
+         * @return         True.
          */
         @Override
         public boolean hasEffect(Dimension fullSize, OperationList opList) {
@@ -113,32 +121,77 @@ public class Scale implements Operation {
     }
 
     public enum Mode {
-        ASPECT_FIT_HEIGHT, ASPECT_FIT_WIDTH, ASPECT_FIT_INSIDE,
-        NON_ASPECT_FILL, FULL
+
+        /**
+         * Scale to fit the X axis inside a rectangle's X axis, maintaining
+         * aspect ratio.
+         */
+        ASPECT_FIT_WIDTH,
+
+        /**
+         * Scale to fit the Y axis inside a rectangle's Y axis, maintaining
+         * aspect ratio.
+         */
+        ASPECT_FIT_HEIGHT,
+
+        /**
+         * Scale to fit entirely inside a rectangle, maintaining aspect ratio.
+         */
+        ASPECT_FIT_INSIDE,
+
+        /**
+         * Fill an arbitrary rectangle without necessarily maintaining aspect
+         * ratio.
+         */
+        NON_ASPECT_FILL,
+
+        /**
+         * Full scale.
+         */
+        FULL
     }
 
+    private static final double DELTA = 0.00000001;
+
     private Filter filter;
-    private Integer height;
     private boolean isFrozen = false;
     private Mode scaleMode = Mode.FULL;
+
+    /**
+     * Stores percentages. If set, {@link #width} and {@link #height} must be
+     * {@literal null}.
+     */
     private Double percent;
-    private Integer width;
+
+    /**
+     * Stores pixel sizes. If either are set, {@link #percent} must be
+     * {@literal null}.
+     */
+    private Integer width, height;
 
     /**
      * No-op constructor.
      */
     public Scale() {}
 
+    /**
+     * Percent-based constructor.
+     *
+     * @param percent Value between {@literal 0} and {@literal 1} to represent
+     *                a downscale, or above {@literal 1} to represent an
+     *                upscale.
+     */
     public Scale(double percent) {
         setPercent(percent);
-        setMode(Mode.ASPECT_FIT_INSIDE);
     }
 
     /**
-     * @param width  May be <code>null</code> if <code>mode</code> is
-     *               {@link Mode#ASPECT_FIT_HEIGHT}.
-     * @param height May be <code>null</code> if <code>mode</code> is
-     *               {@link Mode#ASPECT_FIT_WIDTH}.
+     * Pixel-based constructor.
+     *
+     * @param width  May be {@literal null} if {@literal mode} is {@link
+     *               Mode#ASPECT_FIT_HEIGHT}.
+     * @param height May be {@literal null} if {@literal mode} is {@link
+     *               Mode#ASPECT_FIT_WIDTH}.
      * @param mode   Scale mode.
      */
     public Scale(Integer width, Integer height, Mode mode) {
@@ -151,6 +204,17 @@ public class Scale implements Operation {
         if (isFrozen) {
             throw new IllegalStateException("Instance is frozen.");
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        } else if (obj instanceof Scale) {
+            Scale other = (Scale) obj;
+            return other.toString().equals(toString());
+        }
+        return super.equals(obj);
     }
 
     @Override
@@ -184,61 +248,79 @@ public class Scale implements Operation {
     }
 
     /**
-     * This method is useful for calculating additional required differential
-     * scaling of images at reduced resolution levels.
+     * <p>Finds the required additional differential scaling of an image at a
+     * reduced resolution level.</p>
      *
-     * @param fullSize        Full source image dimensions.
-     * @param reductionFactor Reduction factor of an intermediate (e.g.
-     *                        downsampled) version of the full image whose
-     *                        dimensions have been halved {@link
+     * <p>For example, the client has requested a scale of 45%, and the reader
+     * has returned an image with a {@link ReductionFactor#factor} of
+     * {@literal 1} (50%). The amount that that intermediate image must be
+     * further downscaled will be returned.</p>
+     *
+     * @param reducedSize     Image dimensions, which have been reduced {@link
      *                        ReductionFactor#factor} times.
+     * @param reductionFactor Reduction factor that has reduced a source image
+     *                        to {@literal reducedSize}.
+     * @param scaleConstraint Scale constraint relative to the full source
+     *                        image dimensions.
      * @return                Scale yet to be applied to an intermediate image
-     *                        of the given size with the given reduction
+     *                        of the given reduced size with the given reduction
      *                        factor, or {@literal null} if the scale mode is
-     *                        {@link Mode#NON_ASPECT_FILL}.
+     *                        {@link Mode#NON_ASPECT_FILL}. {@literal 1}
+     *                        indicates no scaling needed.
      */
-    public Double getDifferentialScale(Dimension fullSize,
-                                       ReductionFactor reductionFactor) {
+    public Double getDifferentialScale(final Dimension reducedSize,
+                                       final ReductionFactor reductionFactor,
+                                       final ScaleConstraint scaleConstraint) {
         if (Mode.FULL.equals(getMode())) {
             return 1.0;
         } else if (Mode.NON_ASPECT_FILL.equals(getMode())) {
             return null;
         }
 
-        final double scale = getResultingScale(fullSize);
+        final double scale = getResultingScale(reducedSize, scaleConstraint);
         final double rfScale = reductionFactor.getScale();
 
         return scale / rfScale;
     }
 
     /**
-     * @param reducedSize Size of an image that has been halved {@literal n}
-     *                    times.
-     * @param maxFactor Maximum factor to return.
-     * @return Reduction factor appropriate for the instance.
+     * @param reducedSize     Size of an image that has been halved {@literal
+     *                        n} times.
+     * @param scaleConstraint Scale constraint relative to the full source
+     *                        image dimensions.
+     * @param maxFactor       Maximum factor to return.
+     * @return                Reduction factor appropriate for the instance.
      */
     public ReductionFactor getReductionFactor(final Dimension reducedSize,
+                                              final ScaleConstraint scaleConstraint,
                                               final int maxFactor) {
+        final double scScale = scaleConstraint.getScale();
         ReductionFactor rf = new ReductionFactor();
-        if (hasEffect()) {
-            if (getPercent() != null) {
-                rf = ReductionFactor.forScale(getPercent());
-            } else {
-                switch (getMode()) {
-                    case ASPECT_FIT_WIDTH:
-                        double hvScale = getWidth() / (double) reducedSize.width;
-                        rf = ReductionFactor.forScale(hvScale);
-                        break;
-                    case ASPECT_FIT_HEIGHT:
-                        hvScale = getHeight() / (double) reducedSize.height;
-                        rf = ReductionFactor.forScale(hvScale);
-                        break;
-                    case ASPECT_FIT_INSIDE:
-                        double hScale = getWidth() / (double) reducedSize.width;
-                        double vScale = getHeight() / (double) reducedSize.height;
-                        rf = ReductionFactor.forScale(Math.min(hScale, vScale));
-                        break;
-                }
+
+        if (getPercent() != null) {
+            rf = ReductionFactor.forScale(getPercent() * scScale);
+        } else {
+            switch (getMode()) {
+                case FULL:
+                    rf = ReductionFactor.forScale(scScale);
+                    break;
+                case ASPECT_FIT_WIDTH:
+                    double hvScale = getWidth() /
+                            (double) reducedSize.width * scScale;
+                    rf = ReductionFactor.forScale(hvScale);
+                    break;
+                case ASPECT_FIT_HEIGHT:
+                    hvScale = getHeight() /
+                            (double) reducedSize.height * scScale;
+                    rf = ReductionFactor.forScale(hvScale);
+                    break;
+                case ASPECT_FIT_INSIDE:
+                    double hScale = getWidth() /
+                            (double) reducedSize.width * scScale;
+                    double vScale = getHeight() /
+                            (double) reducedSize.height * scScale;
+                    rf = ReductionFactor.forScale(Math.min(hScale, vScale));
+                    break;
             }
         }
         if (rf.factor > maxFactor) {
@@ -248,76 +330,96 @@ public class Scale implements Operation {
     }
 
     /**
-     * @param fullSize Full source image dimensions.
-     * @return         Resulting scale when the instance is applied to the
-     *                 given full size; or {@literal null} if the scale mode
-     *                 is {@link Mode#NON_ASPECT_FILL}.
+     * @param fullSize        Full source image dimensions.
+     * @param scaleConstraint Scale constraint relative to the full source
+     *                        image dimensions. The instance is expressed
+     *                        relative to the constrained {@literal fullSize}.
+     * @return                Resulting scale when the instance is applied to
+     *                        the given full size; or {@literal null} if the
+     *                        scale mode is {@link Mode#NON_ASPECT_FILL}.
      */
-    public Double getResultingScale(Dimension fullSize) {
-        Double scale = null;
+    public Double getResultingScale(Dimension fullSize,
+                                    ScaleConstraint scaleConstraint) {
         if (getPercent() != null) {
-            scale = getPercent();
-        } else {
-            switch (getMode()) {
-                case FULL:
-                    scale = 1.0;
-                    break;
-                case ASPECT_FIT_HEIGHT:
-                    scale = getHeight() / (double) fullSize.height;
-                    break;
-                case ASPECT_FIT_WIDTH:
-                    scale = getWidth() / (double) fullSize.width;
-                    break;
-                case ASPECT_FIT_INSIDE:
-                    scale = Math.min(
-                            getWidth() / (double) fullSize.width,
-                            getHeight() / (double) fullSize.height);
-                    break;
-                case NON_ASPECT_FILL:
-                    break;
-            }
+            return getPercent() * scaleConstraint.getScale();
         }
-        return scale;
+        switch (getMode()) {
+            case FULL:
+                return scaleConstraint.getScale();
+            case ASPECT_FIT_HEIGHT:
+                return getHeight() / (double) fullSize.height;
+            case ASPECT_FIT_WIDTH:
+                return getWidth() / (double) fullSize.width;
+            case ASPECT_FIT_INSIDE:
+                return Math.min(
+                        getWidth() / (double) fullSize.width,
+                        getHeight() / (double) fullSize.height);
+            default:
+                return null;
+        }
     }
 
     /**
-     * @param fullSize
-     * @return Resulting dimensions when the scale is applied to the given full
-     *         size.
-     * @throws IllegalArgumentException if {@literal fullSize} is {@literal
-     *         null}.
+     * @param fullSize Full source image size.
+     * @return         Resulting dimensions when the scale is applied to the
+     *                 given full size.
      */
     @Override
     public Dimension getResultingSize(Dimension fullSize) {
-        if (fullSize == null) {
-            throw new IllegalArgumentException("fullSize is null");
-        }
-        Dimension size = new Dimension(fullSize.width, fullSize.height);
-        if (this.getPercent() != null) {
-            size.width *= this.getPercent();
-            size.height *= this.getPercent();
+        return getResultingSize(fullSize, new ReductionFactor(0),
+                new ScaleConstraint(1, 1));
+    }
+
+    /**
+     * @param imageSize       Image whose dimensions have been halved {@link
+     *                        ReductionFactor#factor} times.
+     * @param reductionFactor Number of times the given dimensions have been
+     *                        halved.
+     * @param scaleConstraint Scale constraint relative to the full source
+     *                        image dimensions.
+     * @return                Resulting dimensions when the scale is applied to
+     *                        the constrained view of the given full size.
+     */
+    public Dimension getResultingSize(Dimension imageSize,
+                                      ReductionFactor reductionFactor,
+                                      ScaleConstraint scaleConstraint) {
+        final Dimension size = new Dimension(imageSize.width, imageSize.height);
+        final double rfScale = reductionFactor.getScale();
+        final double scScale = scaleConstraint.getScale();
+
+        if (getPercent() != null) {
+            size.width = (int) Math.round(
+                    size.width * getPercent() * (scScale / rfScale));
+            size.height = (int) Math.round(
+                    size.height * getPercent() * (scScale / rfScale));
         } else {
-            switch (this.getMode()) {
+            switch (getMode()) {
+                case FULL:
+                    size.width = (int) Math.round(
+                            size.width * (scScale / rfScale));
+                    size.height = (int) Math.round(
+                            size.height * (scScale / rfScale));
+                    break;
                 case ASPECT_FIT_HEIGHT:
-                    double scalePct = this.getHeight() / (double) size.height;
+                    double scalePct = getHeight() / (double) size.height;
                     size.width = (int) Math.round(size.width * scalePct);
                     size.height = (int) Math.round(size.height * scalePct);
                     break;
                 case ASPECT_FIT_WIDTH:
-                    scalePct = this.getWidth() / (double) size.width;
+                    scalePct = getWidth() / (double) size.width;
                     size.width = (int) Math.round(size.width * scalePct);
                     size.height = (int) Math.round(size.height * scalePct);
                     break;
                 case ASPECT_FIT_INSIDE:
                     scalePct = Math.min(
-                            this.getWidth() / (double) size.width,
-                            this.getHeight() / (double) size.height);
+                            getWidth() / (double) size.width,
+                            getHeight() / (double) size.height);
                     size.width = (int) Math.round(size.width * scalePct);
                     size.height = (int) Math.round(size.height * scalePct);
                     break;
                 case NON_ASPECT_FILL:
-                    size.width = this.getWidth();
-                    size.height = this.getHeight();
+                    size.width = getWidth();
+                    size.height = getHeight();
                     break;
             }
         }
@@ -334,14 +436,14 @@ public class Scale implements Operation {
     @Override
     public boolean hasEffect() {
         return (!Mode.FULL.equals(getMode())) &&
-                ((getPercent() != null && Math.abs(getPercent() - 1f) > 0.000001f) ||
+                ((getPercent() != null && Math.abs(getPercent() - 1) > DELTA) ||
                         (getPercent() == null && (getHeight() != null || getWidth() != null)));
     }
 
     @Override
     public boolean hasEffect(Dimension fullSize, OperationList opList) {
-        if (!hasEffect()) {
-            return false;
+        if (opList.getScaleConstraint().hasEffect()) {
+            return true;
         }
 
         Dimension cropSize = fullSize;
@@ -358,10 +460,15 @@ public class Scale implements Operation {
                 return getHeight() != cropSize.height;
             default:
                 if (getPercent() != null) {
-                    return Math.abs(this.getPercent() - 1f) > 0.000001f;
+                    return Math.abs(this.getPercent() - 1) > DELTA;
                 }
                 return getWidth() != cropSize.width || getHeight() != cropSize.height;
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
     }
 
     /**
@@ -378,7 +485,7 @@ public class Scale implements Operation {
 
     /**
      * @param filter Resample filter to prefer.
-     * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalStateException if the instance is frozen.
      */
     public void setFilter(Filter filter) {
         checkFrozen();
@@ -387,8 +494,8 @@ public class Scale implements Operation {
 
     /**
      * @param height Integer greater than 0.
-     * @throws IllegalArgumentException If the given height is invalid.
-     * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalArgumentException if the given height is invalid.
+     * @throws IllegalStateException if the instance is frozen.
      */
     public void setHeight(Integer height) {
         checkFrozen();
@@ -399,7 +506,7 @@ public class Scale implements Operation {
     }
 
     /**
-     * N.B. Invoking this method also sets the instance's mode to
+     * N.B.: Invoking this method also sets the instance's mode to
      * {@link Mode#ASPECT_FIT_INSIDE}.
      *
      * @param percent Double &gt; 0 and &le; 1.
@@ -460,13 +567,13 @@ public class Scale implements Operation {
      *
      * <dl>
      *     <dt>No-op</dt>
-     *     <dd><code>none</code></dd>
+     *     <dd>{@literal none}</dd>
      *     <dt>Percent</dt>
-     *     <dd><code>nnn%(,filter)</code></dd>
+     *     <dd>{@literal nnn%(,filter)}</dd>
      *     <dt>Aspect-fit-inside</dt>
-     *     <dd><code>!w,h(,filter)</code></dd>
+     *     <dd>{@literal !w,h(,filter)}</dd>
      *     <dt>Other</dt>
-     *     <dd><code>w,h(,filter)</code></dd>
+     *     <dd>{@literal w,h(,filter)}</dd>
      * </dl>
      *
      * @return String representation of the instance.

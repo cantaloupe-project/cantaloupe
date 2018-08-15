@@ -148,7 +148,8 @@ final class TIFFImageReader extends AbstractIIOImageReader
         if (hints != null && hints.contains(ReaderHint.IGNORE_CROP)) {
             image = read();
         } else {
-            image = readSmallestUsableSubimage(crop, scale, reductionFactor,
+            image = readSmallestUsableSubimage(
+                    crop, scale, ops.getScaleConstraint(), reductionFactor,
                     hints);
         }
         if (image == null) {

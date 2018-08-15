@@ -7,7 +7,6 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -318,22 +317,6 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         return outputFormats;
     }
 
-    /**
-     * Computes the effective size of an image after all crop operations are
-     * applied but excluding any scale operations, in order to use
-     * {@literal opj_decompress}' {@literal -r} (reduce) argument.
-     */
-    private static Dimension getCroppedSize(OperationList opList,
-                                            Dimension fullSize) {
-        Dimension tileSize = (Dimension) fullSize.clone();
-        for (Operation op : opList) {
-            if (op instanceof Crop) {
-                tileSize = ((Crop) op).getRectangle(tileSize).getSize();
-            }
-        }
-        return tileSize;
-    }
-
     @Override
     public InitializationException getInitializationException() {
         if (!initializationAttempted.get()) {
@@ -442,8 +425,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                     new ImageReaderFactory().newImageReader(is, Format.BMP);
             try {
                 final BufferedImage image = reader.read();
-                Set<ReaderHint> hints =
-                        EnumSet.noneOf(ReaderHint.class);
+                Set<ReaderHint> hints = EnumSet.noneOf(ReaderHint.class);
                 if (!normalize) {
                     hints.add(ReaderHint.ALREADY_CROPPED);
                 }
@@ -521,17 +503,20 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
      * Returns an instance corresponding to the given arguments.
      *
      * @param opList
-     * @param imageSize  Full size of the source image.
-     * @param reduction  The {@link ReductionFactor#factor} property will be
-     *                   modified.
-     * @param ignoreCrop Ignore any cropping directives provided in {@literal
-     *                   opList}.
-     * @param outputFile Symlink (Unix) or intermediate file (Windows) to write
-     *                   to.
-     * @return           {@literal opj_decompress} command invocation string.
+     * @param fullSize      Full size of the source image.
+     * @param numResolutions Number of resolutions (DWT levels + 1) available
+     *                       in the source image.
+     * @param reduction      The {@link ReductionFactor#factor} property will
+     *                       be modified.
+     * @param ignoreCrop     Ignore any cropping directives provided in
+     *                       {@literal opList}.
+     * @param outputFile     File to write to.
+     * @return               {@link ProcessBuilder} for invoking {@literal
+     *                       opj_decompress} with arguments corresponding to
+     *                       the given arguments.
      */
     private ProcessBuilder getProcessBuilder(final OperationList opList,
-                                             final Dimension imageSize,
+                                             final Dimension fullSize,
                                              final int numResolutions,
                                              final ReductionFactor reduction,
                                              final boolean ignoreCrop,
@@ -547,15 +532,17 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         command.add(sourceFile.toString());
 
         for (Operation op : opList) {
+            if (!op.hasEffect(fullSize, opList)) {
+                continue;
+            }
             if (op instanceof Crop && !ignoreCrop) {
                 final Crop crop = (Crop) op;
-                if (crop.hasEffect()) {
-                    Rectangle rect = crop.getRectangle(imageSize);
-                    command.add("-d");
-                    command.add(String.format("%d,%d,%d,%d",
-                            rect.x, rect.y, rect.x + rect.width,
-                            rect.y + rect.height));
-                }
+                final Rectangle region = crop.getRectangle(
+                        fullSize, opList.getScaleConstraint());
+                command.add("-d");
+                command.add(String.format("%d,%d,%d,%d",
+                        region.x, region.y, region.x + region.width,
+                        region.y + region.height));
             } else if (op instanceof Scale) {
                 // opj_decompress is not capable of arbitrary scaling, but it
                 // does offer a -r (reduce) argument to select a
@@ -564,14 +551,15 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                 // the percent is <=50, or the height/width are <=50% of full
                 // size.
                 final Scale scale = (Scale) op;
-                final Dimension tileSize = getCroppedSize(opList, imageSize);
+                final Dimension tileSize = getROISize(opList, fullSize);
                 if (!ignoreCrop) {
                     int numDWTLevels = numResolutions - 1;
                     if (numDWTLevels < 0) {
                         numDWTLevels = FALLBACK_NUM_DWT_LEVELS;
                     }
                     reduction.factor = scale.getReductionFactor(
-                            tileSize, numDWTLevels).factor;
+                            tileSize, opList.getScaleConstraint(),
+                            numDWTLevels).factor;
 
                     if (reduction.factor > 0) {
                         command.add("-r");
@@ -585,6 +573,21 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         command.add(outputFile.toString());
 
         return new ProcessBuilder(command);
+    }
+
+    /**
+     * @return Size of the region of interest.
+     */
+    private static Dimension getROISize(OperationList opList,
+                                        Dimension fullSize) {
+        Dimension size = (Dimension) fullSize.clone();
+        for (Operation op : opList) {
+            if (op instanceof Crop) {
+                size = ((Crop) op).getRectangle(
+                        size, opList.getScaleConstraint()).getSize();
+            }
+        }
+        return size;
     }
 
 }

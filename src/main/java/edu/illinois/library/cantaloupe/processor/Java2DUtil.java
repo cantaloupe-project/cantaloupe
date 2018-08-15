@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
@@ -120,15 +121,15 @@ public final class Java2DUtil {
             LoggerFactory.getLogger(Java2DUtil.class);
 
     /**
-     * See the inline documentation in {@link #scale(BufferedImage, Scale,
-     * ReductionFactor)} for a rationale for choosing this.
+     * See the inline documentation in {@link #scale} for a rationale for
+     * choosing this.
      */
     private static final Scale.Filter DEFAULT_DOWNSCALE_FILTER =
             Scale.Filter.BOX;
 
     /**
-     * See the inline documentation in {@link #scale(BufferedImage, Scale,
-     * ReductionFactor)} for a rationale for choosing this.
+     * See the inline documentation in {@link #scale} for a rationale for
+     * choosing this.
      */
     private static final Scale.Filter DEFAULT_UPSCALE_FILTER =
             Scale.Filter.BICUBIC;
@@ -807,46 +808,33 @@ public final class Java2DUtil {
     }
 
     /**
-     * Scales an image.
-     *
-     * @param inImage Image to scale.
-     * @param scale   Scale operation. Clients should call
-     *                {@link Operation#hasEffect(Dimension, OperationList)}
-     *                before invoking.
-     * @return        Downscaled image, or the input image if the given scale
-     *                is a no-op.
-     */
-    static BufferedImage scale(final BufferedImage inImage,
-                               final Scale scale) {
-        return scale(inImage, scale, new ReductionFactor(0));
-    }
-
-    /**
      * <p>Scales an image, taking an already-applied reduction factor into
      * account. In other words, the dimensions of the input image have already
-     * been halved {@literal rf} times but the given size is relative to the
-     * full-sized image.</p>
+     * been halved {@link ReductionFactor#factor} times but the given scale is
+     * relative to the full-sized image.</p>
      *
      * <p>If one or both target dimensions would end up being less than three
      * pixels, an empty image (with the correct dimensions) will be
      * returned.</p>
      *
-     * @param inImage Image to scale.
-     * @param scale   Requested size ignoring any reduction factor. If no
-     *                resample filter is set, a reasonable default will be used.
-     *                Clients should call
-     *                {@link Operation#hasEffect(Dimension, OperationList)}
-     *                before invoking.
-     * @param rf      Reduction factor that has already been applied to
-     *                {@literal inImage}.
-     * @return        Downscaled image, or the input image if the given scale
-     *                is a no-op.
+     * @param inImage         Image to scale.
+     * @param scale           Requested size ignoring any reduction factor. If
+     *                        no resample filter is set, a default will be
+     *                        used. {@link
+     *                        Operation#hasEffect(Dimension, OperationList)}
+     *                        should be called before invoking.
+     * @param scaleConstraint Scale constraint.
+     * @param reductionFactor Reduction factor that has already been applied to
+     *                        {@literal inImage}.
+     * @return                Scaled image, or the input image if the given
+     *                        arguments would result in a no-op.
      */
     static BufferedImage scale(final BufferedImage inImage,
                                final Scale scale,
-                               final ReductionFactor rf) {
+                               final ScaleConstraint scaleConstraint,
+                               final ReductionFactor reductionFactor) {
         /*
-        This method uses unnamed resampling code derived from
+        This method uses resampling code derived from
         com.mortennobel.imagescaling (see
         https://blog.nobel-joergensen.com/2008/12/20/downscaling-images-in-java/)
         as an alternative to the resampling available in Graphics2D.
@@ -856,7 +844,6 @@ public final class Java2DUtil {
         very slow.
 
         Subjective quality of downscale from 2288x1520 to 200x200:
-
         Lanczos3 > Box > Bicubic > Mitchell > Triangle > Bell > Hermite >
             BSpline > Graphics2D
 
@@ -889,32 +876,20 @@ public final class Java2DUtil {
 
         final Dimension sourceSize = new Dimension(
                 inImage.getWidth(), inImage.getHeight());
-
-        // Calculate the size that the image will need to be scaled to based
-        // on the source image size, scale, and already-applied reduction
-        // factor.
-        Dimension targetSize;
-        if (scale.getPercent() != null) {
-            targetSize = new Dimension();
-            targetSize.width = (int) Math.round(sourceSize.width *
-                    (scale.getPercent() / rf.getScale()));
-            targetSize.height = (int) Math.round(sourceSize.height *
-                    (scale.getPercent() / rf.getScale()));
-        } else {
-            targetSize = scale.getResultingSize(sourceSize);
-        }
+        final Dimension targetSize = scale.getResultingSize(
+                sourceSize, reductionFactor, scaleConstraint);
 
         // ResampleFilter requires both target dimensions to be at least 3
         // pixels. (OpenSeadragon has been known to request smaller.)
-        // If one or both are less than that, then given that the picture is
+        // If one or both are less than that, then given that the result is
         // virtually guaranteed to end up unrecognizable anyway, we will skip
         // the scaling step and return a fake image with the target dimensions.
-        // Alternatives would be to use a different resampler, set a 3x3 floor,
-        // or error out.
+        // The only alternatives would be to use a different resampler, set a
+        // 3x3 floor, or error out.
         BufferedImage scaledImage = inImage;
         if (targetSize.width >= 3 && targetSize.height >= 3) {
-            if (scale.hasEffect() && (targetSize.width != sourceSize.width ||
-                    targetSize.height != sourceSize.height)) {
+            if (targetSize.width != sourceSize.width ||
+                    targetSize.height != sourceSize.height) {
                 final Stopwatch watch = new Stopwatch();
 
                 final ResampleOp resampleOp = new ResampleOp(

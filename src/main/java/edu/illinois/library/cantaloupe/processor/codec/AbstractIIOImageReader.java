@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Orientation;
@@ -347,23 +348,28 @@ abstract class AbstractIIOImageReader {
      * Reads the smallest image that can fulfill the given crop and scale from
      * a multi-resolution image.
      *
-     * @param crop  Requested crop
-     * @param scale Requested scale
-     * @param rf    Will be set to the reduction factor of the returned image.
-     * @param hints Will be populated by information returned by the reader.
-     * @return      Smallest image fitting the requested crop and scale
-     *              operations.
+     * @param crop            Requested crop.
+     * @param scale           Requested scale.
+     * @param scaleConstraint Virtual scale constraint applied to the image.
+     * @param reductionFactor Will be set to the reduction factor of the
+     *                        returned image.
+     * @param hints           Will be populated by information returned by the
+     *                        reader.
+     * @return                Smallest image fitting the requested operations.
      */
     BufferedImage readSmallestUsableSubimage(
             final Crop crop,
             final Scale scale,
-            final ReductionFactor rf,
+            final ScaleConstraint scaleConstraint,
+            final ReductionFactor reductionFactor,
             final Set<ReaderHint> hints) throws IOException {
         final Dimension fullSize = new Dimension(
                 iioReader.getWidth(0), iioReader.getHeight(0));
-        final Rectangle regionRect = crop.getRectangle(fullSize);
+        final Rectangle regionRect = crop.getRectangle(
+                fullSize, new ReductionFactor(), scaleConstraint);
         BufferedImage bestImage = null;
-        if (!scale.hasEffect()) {
+
+        if (!scale.hasEffect() && !scaleConstraint.hasEffect()) {
             bestImage = tileAwareRead(0, regionRect, hints);
             getLogger().debug("readSmallestUsableSubimage(): using a {}x{} source " +
                             "image (0x reduction factor)",
@@ -376,11 +382,11 @@ abstract class AbstractIIOImageReader {
             // false, and getNumImages() can't find anything, it will return -1.
             int numImages = iioReader.getNumImages(false);
             if (numImages > 1) {
-                getLogger().debug("Detected {} subimage(s)", numImages);
+                getLogger().trace("Detected {} subimage(s)", numImages);
             } else if (numImages == -1) {
                 numImages = iioReader.getNumImages(true);
                 if (numImages > 1) {
-                    getLogger().debug("Scan revealed {} subimage(s)", numImages);
+                    getLogger().trace("Scan revealed {} subimage(s)", numImages);
                 }
             }
             // At this point, we know how many images are available.
@@ -398,12 +404,13 @@ abstract class AbstractIIOImageReader {
 
                     final double reducedScale = (double) subimageWidth /
                             (double) fullSize.width;
-                    if (fits(regionRect, scale, reducedScale)) {
-                        rf.factor = ReductionFactor.forScale(reducedScale).factor;
-                        getLogger().debug("Subimage {}: {}x{} - fits! " +
+                    if (fits(regionRect.getSize(), scale, scaleConstraint,
+                            reducedScale)) {
+                        reductionFactor.factor = ReductionFactor.forScale(reducedScale).factor;
+                        getLogger().trace("Subimage {}: {}x{} - fits! " +
                                         "({}x reduction factor)",
                                 i + 1, subimageWidth, subimageHeight,
-                                rf.factor);
+                                reductionFactor.factor);
                         final Rectangle reducedRect = new Rectangle(
                                 (int) Math.round(regionRect.x * reducedScale),
                                 (int) Math.round(regionRect.y * reducedScale),
@@ -412,7 +419,7 @@ abstract class AbstractIIOImageReader {
                         bestImage = tileAwareRead(i, reducedRect, hints);
                         break;
                     } else {
-                        getLogger().debug("Subimage {}: {}x{} - too small",
+                        getLogger().trace("Subimage {}: {}x{} - too small",
                                 i + 1, subimageWidth, subimageHeight);
                     }
                 }
@@ -520,7 +527,8 @@ abstract class AbstractIIOImageReader {
         if (hints != null && hints.contains(ReaderHint.IGNORE_CROP)) {
             image = readRendered();
         } else {
-            image = readSmallestUsableSubimage(crop, scale, reductionFactor);
+            image = readSmallestUsableSubimage(
+                    crop, scale, ops.getScaleConstraint(), reductionFactor);
         }
         if (image == null) {
             throw new UnsupportedSourceFormatException(iioReader.getFormatName());
@@ -544,13 +552,15 @@ abstract class AbstractIIOImageReader {
     private RenderedImage readSmallestUsableSubimage(
             final Crop crop,
             final Scale scale,
+            final ScaleConstraint scaleConstraint,
             final ReductionFactor rf) throws IOException {
         final Dimension fullSize = new Dimension(
                 iioReader.getWidth(0), iioReader.getHeight(0));
         final Rectangle regionRect = crop.getRectangle(fullSize);
         final ImageReadParam param = iioReader.getDefaultReadParam();
+
         RenderedImage bestImage = null;
-        if (!scale.hasEffect()) {
+        if (!scale.hasEffect() && !scaleConstraint.hasEffect()) {
             bestImage = iioReader.readAsRenderedImage(0, param);
             getLogger().debug("Using a {}x{} source image (0x reduction factor)",
                     bestImage.getWidth(), bestImage.getHeight());
@@ -561,11 +571,11 @@ abstract class AbstractIIOImageReader {
             // files, but is slower.
             int numImages = iioReader.getNumImages(false);
             if (numImages > 1) {
-                getLogger().debug("Detected {} subimage(s)", numImages - 1);
+                getLogger().trace("Detected {} subimage(s)", numImages - 1);
             } else if (numImages == -1) {
                 numImages = iioReader.getNumImages(true);
                 if (numImages > 1) {
-                    getLogger().debug("Scan revealed {} subimage(s)",
+                    getLogger().trace("Scan revealed {} subimage(s)",
                             numImages - 1);
                 }
             }
@@ -583,16 +593,17 @@ abstract class AbstractIIOImageReader {
 
                     final double reducedScale = (double) subimageWidth /
                             (double) fullSize.width;
-                    if (fits(regionRect, scale, reducedScale)) {
+                    if (fits(regionRect.getSize(), scale, scaleConstraint,
+                            reducedScale)) {
                         rf.factor = ReductionFactor.forScale(reducedScale).factor;
-                        getLogger().debug("Subimage {}: {}x{} - fits! " +
+                        getLogger().trace("Subimage {}: {}x{} - fits! " +
                                         "({}x reduction factor)",
                                 i + 1, subimageWidth, subimageHeight,
                                 rf.factor);
                         bestImage = iioReader.readAsRenderedImage(i, param);
                         break;
                     } else {
-                        getLogger().debug("Subimage {}: {}x{} - too small",
+                        getLogger().trace("Subimage {}: {}x{} - too small",
                                 i + 1, subimageWidth, subimageHeight);
                     }
                 }
@@ -602,40 +613,50 @@ abstract class AbstractIIOImageReader {
     }
 
     /**
-     * @param regionRect   Cropped source image region, in source image
-     *                     coordinates.
-     * @param scale        Requested scale.
-     * @param reducedScale Reduced scale of a pyramid level.
-     * @return             Whether the given source image region can be
-     *                     satisfied by the given reduced scale at the
-     *                     requested scale.
+     * @param regionSize      Size of a cropped source image region.
+     * @param scale           Requested scale.
+     * @param scaleConstraint Scale constraint to be applied to the requested
+     *                        scale.
+     * @param reducedScale    Reduced scale of a pyramid level.
+     * @return                Whether the given source image region can be
+     *                        satisfied by the given reduced scale at the
+     *                        requested scale.
      */
-    private boolean fits(Rectangle regionRect,
-                         Scale scale,
-                         double reducedScale) {
-        boolean fits = false;
+    private boolean fits(final Dimension regionSize,
+                         final Scale scale,
+                         final ScaleConstraint scaleConstraint,
+                         final double reducedScale) {
+        final double scScale = scaleConstraint.getScale();
+
         if (scale.getPercent() != null) {
             double cappedScale = (scale.getPercent() > 1) ?
                     1 : scale.getPercent();
-            fits = (cappedScale <= reducedScale);
-        } else if (Scale.Mode.ASPECT_FIT_WIDTH.equals(scale.getMode())) {
-            int cappedWidth = (scale.getWidth() > regionRect.width) ?
-                    regionRect.width : scale.getWidth();
-            fits = (cappedWidth / (double) regionRect.width <= reducedScale);
-        } else if (Scale.Mode.ASPECT_FIT_HEIGHT.equals(scale.getMode())) {
-            int cappedHeight = (scale.getHeight() > regionRect.height) ?
-                    regionRect.height : scale.getHeight();
-            fits = (cappedHeight / (double) regionRect.height <= reducedScale);
-        } else if (Scale.Mode.ASPECT_FIT_INSIDE.equals(scale.getMode()) ||
-                Scale.Mode.NON_ASPECT_FILL.equals(scale.getMode())) {
-            int cappedWidth = (scale.getWidth() > regionRect.width) ?
-                    regionRect.width : scale.getWidth();
-            int cappedHeight = (scale.getHeight() > regionRect.height) ?
-                    regionRect.height : scale.getHeight();
-            fits = (cappedWidth / (double) regionRect.width <= reducedScale &&
-                    cappedHeight / (double) regionRect.height <= reducedScale);
+            return (cappedScale * scScale <= reducedScale);
+        } else {
+            switch (scale.getMode()) {
+                case FULL:
+                    return scaleConstraint.getScale() <= reducedScale;
+                case ASPECT_FIT_WIDTH:
+                    int cappedWidth = (scale.getWidth() > regionSize.width) ?
+                        regionSize.width : scale.getWidth();
+                    cappedWidth = (int) Math.round(cappedWidth * scScale);
+                    return (cappedWidth / (double) regionSize.width <= reducedScale);
+                case ASPECT_FIT_HEIGHT:
+                    int cappedHeight = (scale.getHeight() > regionSize.height) ?
+                            regionSize.height : scale.getHeight();
+                    cappedHeight = (int) Math.round(cappedHeight * scScale);
+                    return (cappedHeight / (double) regionSize.height <= reducedScale);
+                default:
+                    cappedWidth = (scale.getWidth() > regionSize.width) ?
+                            regionSize.width : scale.getWidth();
+                    cappedHeight = (scale.getHeight() > regionSize.height) ?
+                            regionSize.height : scale.getHeight();
+                    cappedWidth = (int) Math.round(cappedWidth * scScale);
+                    cappedHeight = (int) Math.round(cappedHeight * scScale);
+                    return (cappedWidth / (double) regionSize.width <= reducedScale &&
+                            cappedHeight / (double) regionSize.height <= reducedScale);
+            }
         }
-        return fits;
     }
 
 }

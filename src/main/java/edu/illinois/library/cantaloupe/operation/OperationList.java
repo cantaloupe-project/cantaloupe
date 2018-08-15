@@ -158,23 +158,23 @@ public final class OperationList implements Comparable<OperationList>,
      *
      * @param info          Source image info.
      * @param delegateProxy Delegate proxy for the current request.
-     * @throws IllegalArgumentException if the instance's output format has not
-     *                                  been set.
      */
     public void applyNonEndpointMutations(final Info info,
                                           final DelegateProxy delegateProxy) {
         checkFrozen();
 
-        final Identifier identifier = getIdentifier();
-        if (identifier == null) {
-            throw new IllegalStateException("Identifier not set.");
-        }
-
-        final Encode encode = (Encode) getFirst(Encode.class);
-
-        if (encode == null) {
-            throw new IllegalStateException("No " +
-                    Encode.class.getSimpleName() + " operation present.");
+        // If there is a scale constraint set, but no Scale operation, add one.
+        if (getScaleConstraint().hasEffect()) {
+            Scale scale = (Scale) getFirst(Scale.class);
+            if (scale == null) {
+                scale = new Scale();
+                int index = firstIndexOf(Crop.class);
+                if (index == -1) {
+                    operations.add(0, scale);
+                } else {
+                    addAfter(scale, Crop.class);
+                }
+            }
         }
 
         final Configuration config = Configuration.getInstance();
@@ -240,7 +240,8 @@ public final class OperationList implements Comparable<OperationList>,
         // Scale filter
         final Scale scale = (Scale) getFirst(Scale.class);
         if (scale != null) {
-            final Double scalePct = scale.getResultingScale(sourceImageSize);
+            final Double scalePct = scale.getResultingScale(
+                    sourceImageSize, getScaleConstraint());
             if (scalePct != null) {
                 final Key filterKey = (scalePct > 1) ?
                         Key.PROCESSOR_UPSCALE_FILTER :
@@ -285,6 +286,7 @@ public final class OperationList implements Comparable<OperationList>,
         }
 
         // Encode customization
+        final Encode encode = (Encode) getFirst(Encode.class);
         switch (encode.getFormat()) {
             case JPG:
                 // Compression
@@ -528,17 +530,13 @@ public final class OperationList implements Comparable<OperationList>,
      * <p>Sets the effective base scale of the source image upon which the
      * instance is to be applied.</p>
      *
-     * <p>Should only be called <strong>after</strong> {@link
-     * #applyNonEndpointMutations(Info, DelegateProxy)}.</p>
-     *
      * @param scaleConstraint Instance to set.
-     * @throws NullPointerException if the argument is {@literal null}.
      * @throws IllegalStateException if the instance is frozen.
      */
     public void setScaleConstraint(ScaleConstraint scaleConstraint) {
         checkFrozen();
         if (scaleConstraint == null) {
-            throw new NullPointerException();
+            scaleConstraint = new ScaleConstraint(1, 1);
         }
         this.scaleConstraint = scaleConstraint;
     }
@@ -719,7 +717,7 @@ public final class OperationList implements Comparable<OperationList>,
         // If there is a scale constraint set, ensure that the resulting scale
         // will not be greater than 100%.
         final ScaleConstraint scaleConstraint = getScaleConstraint();
-        if (scaleConstraint != null) {
+        if (scaleConstraint.hasEffect()) {
             final Dimension constrainedFullSize =
                     scaleConstraint.getConstrainedSize(fullSize);
             if (resultingSize.width > constrainedFullSize.width ||

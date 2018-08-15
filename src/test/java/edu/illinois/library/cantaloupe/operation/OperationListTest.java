@@ -139,6 +139,31 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
+    public void applyNonEndpointMutationsWithScaleConstraintAndNoScaleOperationAddsOne()
+            throws Exception {
+        final Dimension fullSize = new Dimension(2000, 1000);
+        final Info info = Info.builder()
+                .withSize(fullSize)
+                .build();
+        final OperationList opList = new OperationList(
+                new Identifier("cats"),
+                new Crop(0, 0, 70, 30),
+                new Encode(Format.JPG));
+        opList.setScaleConstraint(new ScaleConstraint(1, 2));
+
+        final RequestContext context = new RequestContext();
+        context.setOperationList(opList, fullSize);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+
+        opList.applyNonEndpointMutations(info, proxy);
+
+        Scale expectedScale = new Scale();
+        Scale actualScale = (Scale) opList.getFirst(Scale.class);
+        assertEquals(expectedScale, actualScale);
+    }
+
+    @Test
     public void applyNonEndpointMutationsWithOrientationMutatesCrop()
             throws Exception {
         final Dimension fullSize = new Dimension(2000, 1000);
@@ -647,9 +672,15 @@ public class OperationListTest extends BaseTest {
         instance.setIdentifier(new Identifier("alpaca"));
     }
 
-    @Test(expected = NullPointerException.class)
-    public void setScaleConstraintWithNullArgument() {
+    @Test
+    public void setScaleConstraint() {
+        instance.setScaleConstraint(new ScaleConstraint(1, 3));
+        assertEquals(1, instance.getScaleConstraint().getNumerator());
+        assertEquals(3, instance.getScaleConstraint().getDenominator());
+
         instance.setScaleConstraint(null);
+        assertEquals(1, instance.getScaleConstraint().getNumerator());
+        assertEquals(1, instance.getScaleConstraint().getDenominator());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -702,6 +733,7 @@ public class OperationListTest extends BaseTest {
         // no-op scale
         Scale scale = new Scale();
         instance.add(scale);
+        // rotate
         instance.add(new Rotate(0));
         // transpose
         instance.add(Transpose.HORIZONTAL);
@@ -712,7 +744,7 @@ public class OperationListTest extends BaseTest {
         final Dimension fullSize = new Dimension(100, 100);
         Map<String,Object> map = instance.toMap(fullSize);
         assertEquals("identifier.jpg", map.get("identifier"));
-        assertEquals(3, ((List<?>) map.get("operations")).size());
+        assertEquals(4, ((List<?>) map.get("operations")).size());
         assertEquals(0, ((Map<?, ?>) map.get("options")).size());
         assertEquals(1, (long) ((Map<String,Long>) map.get("scale_constraint")).get("numerator"));
         assertEquals(2, (long) ((Map<String,Long>) map.get("scale_constraint")).get("denominator"));

@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -255,21 +256,6 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
         return outputFormats;
     }
 
-    /**
-     * Computes the effective size of an image after all crop operations are
-     * applied but excluding any scale operations, in order to use
-     * {@literal kdu_expand}'s {@literal -reduce} argument.
-     */
-    private Dimension getCroppedSize(OperationList opList, Dimension fullSize) {
-        Dimension tileSize = (Dimension) fullSize.clone();
-        for (Operation op : opList) {
-            if (op instanceof Crop) {
-                tileSize = ((Crop) op).getRectangle(tileSize).getSize();
-            }
-        }
-        return tileSize;
-    }
-
     @Override
     public InitializationException getInitializationException() {
         if (!initializationAttempted.get()) {
@@ -279,10 +265,8 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
     }
 
     /**
-     * <p>Reads image information using ImageIO.</p>
-     *
-     * <p>This override disposes the reader since it won't be used for anything
-     * else.</p>
+     * Override that disposes the reader since it won't be needed for anything
+     * else.
      */
     @Override
     public Info readImageInfo() throws IOException {
@@ -370,8 +354,7 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
                     new ImageReaderFactory().newImageReader(is, Format.TIF);
             try {
                 final BufferedImage image = reader.read();
-                Set<ReaderHint> hints =
-                        EnumSet.noneOf(ReaderHint.class);
+                final Set<ReaderHint> hints = EnumSet.noneOf(ReaderHint.class);
                 if (!normalize) {
                     hints.add(ReaderHint.ALREADY_CROPPED);
                 }
@@ -415,8 +398,7 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
                     processInputStream, Format.TIF);
             try {
                 final BufferedImage image = reader.read();
-                Set<ReaderHint> hints =
-                        EnumSet.noneOf(ReaderHint.class);
+                final Set<ReaderHint> hints = EnumSet.noneOf(ReaderHint.class);
                 if (!normalize) {
                     hints.add(ReaderHint.ALREADY_CROPPED);
                 }
@@ -441,18 +423,20 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
 
     /**
      * @param opList
-     * @param imageSize  The full size of the source image.
-     * @param reduction  The {@link ReductionFactor#factor} property will be
-     *                   modified.
-     * @param ignoreCrop Ignore any cropping directives provided in
-     *                   {@literal opList}.
-     * @param outputFile File to write to.
-     * @return           {@link ProcessBuilder} for invoking {@literal
-     *                   kdu_expand} with arguments corresponding to the given
-     *                   arguments.
+     * @param fullSize       Full size of the source image.
+     * @param numResolutions Number of resolutions (DWT levels + 1) available
+     *                       in the source image.
+     * @param reduction      The {@link ReductionFactor#factor} property will
+     *                       be modified.
+     * @param ignoreCrop     Ignore any cropping directives provided in
+     *                       {@literal opList}.
+     * @param outputFile     File to write to.
+     * @return               {@link ProcessBuilder} for invoking {@literal
+     *                       kdu_expand} with arguments corresponding to the
+     *                       given arguments.
      */
     private ProcessBuilder getProcessBuilder(final OperationList opList,
-                                             final Dimension imageSize,
+                                             final Dimension fullSize,
                                              final int numResolutions,
                                              final ReductionFactor reduction,
                                              final boolean ignoreCrop,
@@ -466,57 +450,44 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
         command.add(sourceFile.toString());
 
         for (Operation op : opList) {
+            if (!op.hasEffect(fullSize, opList)) {
+                continue;
+            }
             if (op instanceof Crop && !ignoreCrop) {
-                final Crop crop = (Crop) op;
-                if (!crop.isFull()) {
-                    // Truncate coordinates to (num digits) + 1 decimal places
-                    // to prevent kdu_expand from returning an extra pixel of
-                    // width/height.
-                    // N.B.: this broke sometime between KDU v7.6 and v7.10.4,
-                    // and kdu_expand now unpredictably returns an extra pixel.
-                    // Too bad, but Java2DUtil.crop() will take care of it.
-                    final int xDecimalPlaces =
-                            Integer.toString(imageSize.width).length() + 1;
-                    final int yDecimalPlaces =
-                            Integer.toString(imageSize.height).length() + 1;
-                    final String xFormat = "#." + StringUtils.repeat("#",
-                            xDecimalPlaces);
-                    final String yFormat = "#." + StringUtils.repeat("#",
-                            yDecimalPlaces);
-                    final DecimalFormat xDecFormat = new DecimalFormat(xFormat);
-                    xDecFormat.setRoundingMode(RoundingMode.DOWN);
-                    final DecimalFormat yDecFormat = new DecimalFormat(yFormat);
-                    yDecFormat.setRoundingMode(RoundingMode.DOWN);
+                // Truncate coordinates to (num digits) + 1 decimal places
+                // to prevent kdu_expand from returning an extra pixel of
+                // width/height.
+                // N.B.: this broke sometime between KDU v7.6 and v7.10.4,
+                // and kdu_expand now unpredictably returns an extra pixel.
+                // Too bad, but Java2DUtil.crop() will take care of it.
+                final int xDecimalPlaces =
+                        Integer.toString(fullSize.width).length() + 1;
+                final int yDecimalPlaces =
+                        Integer.toString(fullSize.height).length() + 1;
+                final String xFormat = "#." + StringUtils.repeat("#",
+                        xDecimalPlaces);
+                final String yFormat = "#." + StringUtils.repeat("#",
+                        yDecimalPlaces);
+                final DecimalFormat xDecFormat = new DecimalFormat(xFormat);
+                xDecFormat.setRoundingMode(RoundingMode.DOWN);
+                final DecimalFormat yDecFormat = new DecimalFormat(yFormat);
+                yDecFormat.setRoundingMode(RoundingMode.DOWN);
 
-                    double x, y, width, height; // 0-1
-                    if (Crop.Shape.SQUARE.equals(crop.getShape())) {
-                        final int shortestSide =
-                                Math.min(imageSize.width, imageSize.height);
-                        x = (imageSize.width - shortestSide) /
-                                (double) imageSize.width / 2f;
-                        y = (imageSize.height - shortestSide) /
-                                (double) imageSize.height / 2f;
-                        width = shortestSide / (double) imageSize.width;
-                        height = shortestSide / (double) imageSize.height;
-                    } else {
-                        x = crop.getX();
-                        y = crop.getY();
-                        width = crop.getWidth();
-                        height = crop.getHeight();
-                        if (Crop.Unit.PIXELS.equals(crop.getUnit())) {
-                            x /= imageSize.width;
-                            y /= imageSize.height;
-                            width /= imageSize.width;
-                            height /= imageSize.height;
-                        }
-                    }
-                    command.add("-region");
-                    command.add(String.format("{%s,%s},{%s,%s}",
-                            yDecFormat.format(y),
-                            xDecFormat.format(x),
-                            yDecFormat.format(height),
-                            xDecFormat.format(width)));
-                }
+                final Crop crop = (Crop) op;
+                final Rectangle region = crop.getRectangle(
+                        fullSize, opList.getScaleConstraint());
+
+                final double x = region.x / (double) fullSize.width / 2.0;
+                final double y = region.y / (double) fullSize.height / 2.0;
+                final double width = region.width / (double) fullSize.width;
+                final double height = region.height / (double) fullSize.height;
+
+                command.add("-region");
+                command.add(String.format("{%s,%s},{%s,%s}",
+                        yDecFormat.format(y),
+                        xDecFormat.format(x),
+                        yDecFormat.format(height),
+                        xDecFormat.format(width)));
             } else if (op instanceof Scale) {
                 // kdu_expand is not capable of arbitrary scaling, but it does
                 // offer a -reduce argument to select a decomposition level,
@@ -524,14 +495,15 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
                 // scale mode is ASPECT_FIT_* and either the percent is <=50,
                 // or the height/width are <=50% of full size.
                 final Scale scale = (Scale) op;
-                final Dimension tileSize = getCroppedSize(opList, imageSize);
+                final Dimension tileSize = getROISize(opList, fullSize);
                 if (!ignoreCrop) {
                     int numDWTLevels = numResolutions - 1;
                     if (numDWTLevels < 0) {
                         numDWTLevels = FALLBACK_NUM_DWT_LEVELS;
                     }
                     reduction.factor = scale.getReductionFactor(
-                            tileSize, numDWTLevels).factor;
+                            tileSize, opList.getScaleConstraint(),
+                            numDWTLevels).factor;
 
                     if (reduction.factor > 0) {
                         command.add("-reduce");
@@ -545,6 +517,21 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
         command.add(outputFile.toString());
 
         return new ProcessBuilder(command);
+    }
+
+    /**
+     * @return Size of the region of interest.
+     */
+    private static Dimension getROISize(OperationList opList,
+                                        Dimension fullSize) {
+        Dimension size = (Dimension) fullSize.clone();
+        for (Operation op : opList) {
+            if (op instanceof Crop) {
+                size = ((Crop) op).getRectangle(
+                        size, opList.getScaleConstraint()).getSize();
+            }
+        }
+        return size;
     }
 
 }

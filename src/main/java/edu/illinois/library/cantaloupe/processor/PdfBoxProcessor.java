@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Scale;
@@ -97,7 +98,8 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
             scale = new Scale();
         }
         ReductionFactor reductionFactor = new ReductionFactor();
-        Double pct = scale.getResultingScale(imageInfo.getSize());
+        Double pct = scale.getResultingScale(
+                imageInfo.getSize(), opList.getScaleConstraint());
         if (pct != null) {
             reductionFactor = ReductionFactor.forScale(pct);
         }
@@ -107,7 +109,8 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
 
         try {
             BufferedImage image = readImage(
-                    page - 1, scale, imageInfo.getSize());
+                    page - 1, scale, imageInfo.getSize(),
+                    opList.getScaleConstraint());
             postProcess(image, hints, opList, imageInfo, reductionFactor,
                     outputStream);
         } catch (IOException | IndexOutOfBoundsException e) {
@@ -167,8 +170,10 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
      */
     private BufferedImage readImage(int pageIndex,
                                     Scale scale,
-                                    Dimension fullSize) throws IOException {
-        double dpi = new RasterizationHelper().getDPI(scale, fullSize);
+                                    Dimension fullSize,
+                                    ScaleConstraint scaleConstraint) throws IOException {
+        double dpi = new RasterizationHelper().getDPI(
+                scale, fullSize, scaleConstraint);
         return readImage(pageIndex, dpi);
     }
 

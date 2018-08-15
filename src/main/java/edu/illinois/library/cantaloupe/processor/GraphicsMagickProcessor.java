@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -206,8 +207,8 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                 scale = new Scale();
             }
             args.add("-density");
-            args.add("" + new RasterizationHelper().getDPI(scale,
-                    imageInfo.getSize()));
+            args.add("" + new RasterizationHelper().getDPI(
+                    scale, imageInfo.getSize(), ops.getScaleConstraint()));
         }
 
         int pageIndex = getGMImageIndex(
@@ -243,37 +244,17 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             } else if (op instanceof Crop) {
                 Crop crop = (Crop) op;
                 if (crop.hasEffect(fullSize, ops)) {
+                    final Rectangle cropArea = crop.getRectangle(
+                            fullSize, ops.getScaleConstraint());
                     args.add("-crop");
-                    if (crop.getShape().equals(Crop.Shape.SQUARE)) {
-                        final int shortestSide =
-                                Math.min(fullSize.width, fullSize.height);
-                        final int x = (fullSize.width - shortestSide) / 2;
-                        final int y = (fullSize.height - shortestSide) / 2;
-                        final String string = String.format("%dx%d+%d+%d",
-                                shortestSide, shortestSide, x, y);
-                        args.add(string);
-                    } else if (crop.getUnit().equals(Crop.Unit.PERCENT)) {
-                        // GM doesn't support cropping x/y by percentage
-                        // (only width/height), so we have to calculate them.
-                        final long x = Math.round(crop.getX() * fullSize.width);
-                        final long y = Math.round(crop.getY() * fullSize.height);
-                        final long width = Math.round(crop.getWidth() * 100);
-                        final long height = Math.round(crop.getHeight() * 100);
-                        final String string = String.format("%dx%d+%d+%d%%",
-                                width, height, x, y);
-                        args.add(string);
-                    } else {
-                        final String string = String.format("%dx%d+%d+%d",
-                                Math.round(crop.getWidth()),
-                                Math.round(crop.getHeight()),
-                                Math.round(crop.getX()),
-                                Math.round(crop.getY()));
-                        args.add(string);
-                    }
+                    args.add(String.format("%dx%d+%d+%d",
+                            cropArea.width, cropArea.height,
+                            cropArea.x, cropArea.y));
                 }
             } else if (op instanceof Scale) {
                 Scale scale = (Scale) op;
-                if (scale.hasEffect(fullSize, ops)) {
+                if (scale.hasEffect(fullSize, ops) ||
+                        ops.getScaleConstraint().hasEffect()) {
                     final Scale.Filter scaleFilter = scale.getFilter();
                     if (scaleFilter != null) {
                         final String gmFilter = getGMFilter(scaleFilter);
@@ -283,26 +264,30 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                         }
                     }
 
+                    final double scScale = ops.getScaleConstraint().getScale();
                     args.add("-resize");
                     if (scale.getPercent() != null) {
-                        args.add((scale.getPercent() * 100) + "%");
+                        args.add(scale.getPercent() * scScale * 100 + "%");
                     } else {
                         switch (scale.getMode()) {
+                            case FULL:
+                                args.add(String.format("%dx%d",
+                                        Math.round(fullSize.width * scScale),
+                                        Math.round(fullSize.height * scScale)));
+                                break;
                             case ASPECT_FIT_WIDTH:
-                                args.add(scale.getWidth().toString() + "x");
+                                args.add(scale.getWidth() + "x");
                                 break;
                             case ASPECT_FIT_HEIGHT:
-                                args.add("x" + scale.getHeight().toString());
+                                args.add("x" + scale.getHeight());
                                 break;
                             case NON_ASPECT_FILL:
-                                String arg = String.format("%dx%d!",
-                                        scale.getWidth(), scale.getHeight());
-                                args.add(arg);
+                                args.add(String.format("%dx%d!",
+                                        scale.getWidth(), scale.getHeight()));
                                 break;
                             case ASPECT_FIT_INSIDE:
-                                arg = String.format("%dx%d",
-                                        scale.getWidth(), scale.getHeight());
-                                args.add(arg);
+                                args.add(String.format("%dx%d",
+                                        scale.getWidth(), scale.getHeight()));
                                 break;
                         }
                     }

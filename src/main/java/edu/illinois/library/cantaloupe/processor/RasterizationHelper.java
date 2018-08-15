@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Scale;
 
 import java.awt.Dimension;
@@ -27,27 +28,12 @@ class RasterizationHelper {
         return baseDPI;
     }
 
-    /**
-     * @param reductionFactor May be positive, zero, or negative.
-     * @return DPI appropriate for the given reduction factor.
-     */
-    double getDPI(int reductionFactor) {
-        float dpi = baseDPI;
-        // Decrease the DPI if the reduction factor is positive.
-        for (int i = 0; i < reductionFactor; i++) {
-            dpi /= 2f;
-        }
-        // Increase the DPI if the reduction factor is negative.
-        for (int i = 0; i > reductionFactor; i--) {
-            dpi *= 2f;
-        }
-        return dpi;
-    }
-
-    double getDPI(Scale scale, Dimension fullSize) {
-        Double pct = scale.getResultingScale(fullSize);
+    double getDPI(final Scale scale,
+                  final Dimension fullSize,
+                  final ScaleConstraint scaleConstraint) {
+        Double pct = scale.getResultingScale(fullSize, scaleConstraint);
         if (pct != null) {
-            return baseDPI * scale.getResultingScale(fullSize);
+            return baseDPI * pct;
         }
         return baseDPI;
     }

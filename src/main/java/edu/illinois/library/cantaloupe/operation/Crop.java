@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.operation;
 
 import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
 import java.awt.Dimension;
@@ -10,7 +11,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <p>Encapsulates a cropping operation.</p>
+ * <p>Encapsulates a cropping operation, which can be expressed in {@link
+ * Unit#PIXELS pixels} or {@link Unit#PERCENT} terms. Pixel-based operations
+ * must be translated to &quot;effective&quot; coordinates for use, using one
+ * of the {@link #getRectangle} variants.</p>
  *
  * <p>Note that {@link #isFull()} should be assumed to take precedence over all
  * other properties.</p>
@@ -25,47 +29,23 @@ public class Crop implements Operation {
         PERCENT, PIXELS
     }
 
-    private static final double DELTA = 0.000001f;
+    private static final double DELTA = 0.00000001;
 
-    private double height = 0.0f;
-    private boolean isFrozen = false;
-    private boolean isFull = false;
+    private boolean isFrozen, isFull;
     private Shape shape = Shape.ARBITRARY;
     private Unit unit = Unit.PIXELS;
-    private double width = 0.0f;
-    private double x = 0.0f;
-    private double y = 0.0f;
-
-    private void checkFrozen() {
-        if (isFrozen) {
-            throw new IllegalStateException("Instance is frozen.");
-        }
-    }
-
-    @Override
-    public void freeze() {
-        isFrozen = true;
-    }
-
-    /**
-     * @param rect Rectangle to imitate.
-     * @return Crop instance analogous to the given rectangle.
-     */
-    public static Crop fromRectangle(Rectangle rect) {
-        Crop crop = new Crop();
-        crop.setX(rect.x);
-        crop.setY(rect.y);
-        crop.setWidth(rect.width);
-        crop.setHeight(rect.height);
-        return crop;
-    }
+    private double x, y, width, height;
 
     /**
      * No-op constructor.
      */
     public Crop() {}
 
+    /**
+     * Constructor for {@link Unit#PIXELS}-based instances.
+     */
     public Crop(int x, int y, int width, int height) {
+        setUnit(Unit.PIXELS);
         setX(x);
         setY(y);
         setWidth(width);
@@ -81,7 +61,11 @@ public class Crop implements Operation {
         applyOrientation(orientation, fullSize);
     }
 
+    /**
+     * Constructor for {@link Unit#PERCENT}-based instances.
+     */
     public Crop(double x, double y, double width, double height) {
+        setUnit(Unit.PERCENT);
         setX(x);
         setY(y);
         setWidth(width);
@@ -93,10 +77,10 @@ public class Crop implements Operation {
      * to be treated as rotated. (As in e.g. the case of an EXIF Orientation
      * tag describing the rotation of un-rotated image data.)
      *
-     * @param orientation Orientation of the image. If <code>null</code>, the
+     * @param orientation Orientation of the image. If {@literal null}, the
      *                    invocation will be a no-op.
      * @param fullSize    Dimensions of the un-rotated image.
-     * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalStateException if the instance is frozen.
      */
     public void applyOrientation(Orientation orientation, Dimension fullSize) {
         checkFrozen();
@@ -135,15 +119,25 @@ public class Crop implements Operation {
         }
     }
 
+    private void checkFrozen() {
+        if (isFrozen) {
+            throw new IllegalStateException("Instance is frozen.");
+        }
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
-        }
-        if (obj instanceof Crop) {
+        } else if (obj instanceof Crop) {
             return obj.toString().equals(toString());
         }
         return super.equals(obj);
+    }
+
+    @Override
+    public void freeze() {
+        isFrozen = true;
     }
 
     /**
@@ -157,49 +151,82 @@ public class Crop implements Operation {
 
     /**
      * @param fullSize Full-sized image dimensions.
-     * @return Crop coordinates relative to the given full-sized image
-     *         dimensions.
+     * @return         Rectangle relative to the given full dimensions.
      */
     public Rectangle getRectangle(Dimension fullSize) {
         return getRectangle(fullSize, new ReductionFactor());
     }
 
     /**
-     * @param imageSize Size of the input image, which may have been reduced.
-     * @param rf Factor by which the image has been reduced.
-     * @return Crop coordinates relative to the given full-sized image
-     *         dimensions.
-     * @throws IllegalArgumentException if {@literal imageSize} is {@literal
-     *         null}.
+     * @param fullSize        Full-sized image dimensions.
+     * @param scaleConstraint Scale constraint yet to be applied to the input
+     *                        image. The instance is expressed relative to this
+     *                        constraint rather than to {@literal fullSize}.
+     * @return                Rectangle relative to the given full dimensions.
      */
-    public Rectangle getRectangle(Dimension imageSize, ReductionFactor rf) {
-        if (imageSize == null) {
-            throw new IllegalArgumentException("imageSize is null");
-        }
-        final double scale = rf.getScale();
+    public Rectangle getRectangle(Dimension fullSize,
+                                  ScaleConstraint scaleConstraint) {
+        return getRectangle(fullSize, new ReductionFactor(), scaleConstraint);
+    }
+
+    /**
+     * @param reducedSize     Size of the input image, which has been reduced
+     *                        by {@literal reductionFactor}.
+     * @param reductionFactor Factor by which the full-sized image has been
+     *                        reduced to become {@literal reducedSize}.
+     * @return                Rectangle relative to the given reduced
+     *                        dimensions.
+     */
+    public Rectangle getRectangle(Dimension reducedSize,
+                                  ReductionFactor reductionFactor) {
+        return getRectangle(reducedSize, reductionFactor,
+                new ScaleConstraint(1, 1));
+    }
+
+    /**
+     * @param reducedSize     Size of the input image, which has been reduced
+     *                        by {@literal reductionFactor}.
+     * @param reductionFactor Factor by which the full-sized image has been
+     *                        reduced to become {@literal reducedSize}.
+     * @param scaleConstraint Scale constraint yet to be applied to the input
+     *                        image. The instance is expressed relative to this
+     *                        constraint rather than to {@literal reducedSize}
+     *                        or the full image size.
+     * @return                Rectangle relative to the given reduced
+     *                        dimensions.
+     */
+    public Rectangle getRectangle(Dimension reducedSize,
+                                  ReductionFactor reductionFactor,
+                                  ScaleConstraint scaleConstraint) {
+        final double rfScale = reductionFactor.getScale();
+        final double scScale = scaleConstraint.getScale();
+
+        final double scale = rfScale / scScale;
         final double regionX = getX() * scale;
         final double regionY = getY() * scale;
         final double regionWidth = getWidth() * scale;
         final double regionHeight = getHeight() * scale;
 
-        int x, y, requestedWidth, requestedHeight, croppedWidth,
-                croppedHeight;
-        if (this.isFull()) {
+        int x, y, requestedWidth, requestedHeight,
+                croppedWidth, croppedHeight;
+        if (isFull()) {
             x = 0;
             y = 0;
-            requestedWidth = imageSize.width;
-            requestedHeight = imageSize.height;
-        } else if (this.getShape().equals(Crop.Shape.SQUARE)) {
+            requestedWidth = reducedSize.width;
+            requestedHeight = reducedSize.height;
+        } else if (Shape.SQUARE.equals(getShape())) {
             final int shortestSide =
-                    Math.min(imageSize.width, imageSize.height);
-            x = (imageSize.width - shortestSide) / 2;
-            y = (imageSize.height - shortestSide) / 2;
+                    Math.min(reducedSize.width, reducedSize.height);
+            x = (int) Math.round((reducedSize.width - shortestSide) / 2.0);
+            y = (int) Math.round((reducedSize.height - shortestSide) / 2.0);
             requestedWidth = requestedHeight = shortestSide;
-        } else if (this.getUnit().equals(Crop.Unit.PERCENT)) {
-            x = (int) Math.round(regionX * imageSize.width);
-            y = (int) Math.round(regionY * imageSize.height);
-            requestedWidth = (int) Math.round(regionWidth  * imageSize.width);
-            requestedHeight = (int) Math.round(regionHeight * imageSize.height);
+        } else if (Unit.PERCENT.equals(getUnit())) {
+            x = (int) Math.round(regionX * reducedSize.width * scScale);
+            y = (int) Math.round(regionY * reducedSize.height * scScale);
+            requestedWidth = (int) Math.round(
+                    regionWidth * reducedSize.width * scScale);
+            requestedHeight = (int) Math.round(
+                    regionHeight * reducedSize.height * scScale);
         } else {
             x = (int) Math.round(regionX);
             y = (int) Math.round(regionY);
@@ -207,10 +234,10 @@ public class Crop implements Operation {
             requestedHeight = (int) Math.round(regionHeight);
         }
         // Confine width and height to the image bounds.
-        croppedWidth = (x + requestedWidth > imageSize.width) ?
-                imageSize.width - x : requestedWidth;
-        croppedHeight = (y + requestedHeight > imageSize.height) ?
-                imageSize.height - y : requestedHeight;
+        croppedWidth = (x + requestedWidth > reducedSize.width) ?
+                reducedSize.width - x : requestedWidth;
+        croppedHeight = (y + requestedHeight > reducedSize.height) ?
+                reducedSize.height - y : requestedHeight;
         return new Rectangle(x, y, croppedWidth, croppedHeight);
     }
 
@@ -252,14 +279,6 @@ public class Crop implements Operation {
      */
     public double getY() {
         return y;
-    }
-
-    /**
-     * @return Whether the crop specifies the full source area, i.e. whether it
-     *         is effectively a no-op.
-     */
-    public boolean isFull() {
-        return isFull;
     }
 
     /**
@@ -312,6 +331,14 @@ public class Crop implements Operation {
     @Override
     public int hashCode() {
         return toString().hashCode();
+    }
+
+    /**
+     * @return Whether the crop specifies the full source area, i.e. whether it
+     *         is effectively a no-op.
+     */
+    public boolean isFull() {
+        return isFull;
     }
 
     public void setFull(boolean isFull) {
@@ -441,10 +468,10 @@ public class Crop implements Operation {
         String str = "";
         if (hasEffect()) {
             String x, y, width, height;
-            if (this.getShape().equals(Shape.SQUARE)) {
-                str+= "square";
+            if (Shape.SQUARE.equals(getShape())) {
+                str += "square";
             } else {
-                if (this.getUnit().equals(Unit.PERCENT)) {
+                if (Unit.PERCENT.equals(getUnit())) {
                     x = StringUtils.removeTrailingZeroes(getX() * 100) + "%";
                     y = StringUtils.removeTrailingZeroes(getY() * 100) + "%";
                     width = StringUtils.removeTrailingZeroes(getWidth() * 100) + "%";

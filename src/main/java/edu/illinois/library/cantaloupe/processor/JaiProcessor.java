@@ -36,9 +36,9 @@ import java.util.EnumSet;
 import java.util.Set;
 
 /**
- * <p>Processor using the Java Advanced Imaging (JAI) framework.</p>
+ * <p>Processor using the Java Advanced Imaging (JAI) library.</p>
  *
- * <p>Because they both use ImageIO, this processor has a lot in common with
+ * <p>Because they both use Image I/O, this processor has a lot in common with
  * {@link Java2dProcessor} and so common functionality has been extracted into
  * a base class.</p>
  *
@@ -142,12 +142,11 @@ class JaiProcessor extends AbstractImageIOProcessor
         ImageReader reader = null;
         try {
             reader = getReader();
-            final Format outputFormat = opList.getOutputFormat();
+            final Format outputFormat     = opList.getOutputFormat();
             final Orientation orientation = getEffectiveOrientation();
-            final Dimension fullSize = imageInfo.getSize();
-            final ReductionFactor rf = new ReductionFactor();
-            final Set<ReaderHint> hints =
-                    EnumSet.noneOf(ReaderHint.class);
+            final Dimension fullSize      = imageInfo.getSize();
+            final ReductionFactor rf      = new ReductionFactor();
+            final Set<ReaderHint> hints   = EnumSet.noneOf(ReaderHint.class);
 
             final boolean normalize = (opList.getFirst(Normalize.class) != null);
             if (normalize) {
@@ -180,10 +179,13 @@ class JaiProcessor extends AbstractImageIOProcessor
                 renderedOp = JAIUtil.reduceTo8Bits(renderedOp);
             }
 
+            // Apply remaining operations, except Overlay.
             for (Operation op : opList) {
                 if (op.hasEffect(fullSize, opList)) {
                     if (op instanceof Crop) {
-                        renderedOp = JAIUtil.cropImage(renderedOp, (Crop) op, rf);
+                        renderedOp = JAIUtil.cropImage(
+                                renderedOp, opList.getScaleConstraint(),
+                                (Crop) op, rf);
                     } else if (op instanceof Scale) {
                         /*
                         JAI has a bug that causes it to fail on certain right-
@@ -208,7 +210,9 @@ class JaiProcessor extends AbstractImageIOProcessor
                             LOGGER.debug("process(): detected compressed TIFF; " +
                                     "using the Scale operation with nearest-" +
                                     "neighbor interpolation.");
-                            renderedOp = JAIUtil.scaleImage(renderedOp, (Scale) op,
+                            renderedOp = JAIUtil.scaleImage(
+                                    renderedOp, (Scale) op,
+                                    opList.getScaleConstraint(),
                                     Interpolation.getInstance(Interpolation.INTERP_NEAREST),
                                     rf);
                         } else if (renderedOp.getWidth() < 3 ||
@@ -217,13 +221,16 @@ class JaiProcessor extends AbstractImageIOProcessor
                             // pixels on a side. So, again use the Scale operation,
                             // with a better (but still bad [but it doesn't matter
                             // because of the tiny dimension(s)]) filter.
-                            renderedOp = JAIUtil.scaleImage(renderedOp, (Scale) op,
+                            renderedOp = JAIUtil.scaleImage(
+                                    renderedOp, (Scale) op,
+                                    opList.getScaleConstraint(),
                                     Interpolation.getInstance(Interpolation.INTERP_BILINEAR),
                                     rf);
                         } else {
                             // All clear to use SubsampleAverage.
                             renderedOp = JAIUtil.scaleImageUsingSubsampleAverage(
-                                    renderedOp, (Scale) op, rf);
+                                    renderedOp, (Scale) op,
+                                    opList.getScaleConstraint(), rf);
                         }
                     } else if (op instanceof Transpose) {
                         renderedOp = JAIUtil.
@@ -240,14 +247,12 @@ class JaiProcessor extends AbstractImageIOProcessor
                 }
             }
 
-            // Apply remaining operations.
+            // Apply the Overlay operation, if present. This will be done using
+            // Java 2D because it's harder with JAI, or impossible in the case
+            // of drawing text.
             BufferedImage image = null;
             for (Operation op : opList) {
                 if (op instanceof Overlay && op.hasEffect(fullSize, opList)) {
-                    // Let's cheat and apply the overlay using Java 2D.
-                    // There seems to be minimal performance penalty in doing
-                    // this, and doing it in JAI is harder (or impossible in
-                    // the case of drawing text).
                     image = renderedOp.getAsBufferedImage();
                     Java2DUtil.applyOverlay(image, (Overlay) op);
                 }

@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Operation;
@@ -38,38 +39,42 @@ final class JAIUtil {
 
     /**
      * @param inImage Image to crop.
-     * @param crop    Crop operation. Clients should call
-     *                {@link Operation#hasEffect(Dimension, OperationList)}
-     *                before invoking.
-     * @return Cropped image, or the input image if the given operation is a
-     *         no-op.
+     * @param crop    Crop operation. {@link
+     *                Operation#hasEffect(Dimension, OperationList)} should be
+     *                called before invoking.
+     * @return        Cropped image, or the input image if the given operation
+     *                is a no-op.
      */
     static RenderedOp cropImage(RenderedOp inImage, Crop crop) {
-        return cropImage(inImage, crop, new ReductionFactor(0));
+        return cropImage(inImage, new ScaleConstraint(1, 1),
+                crop, new ReductionFactor(0));
     }
 
     /**
      * Crops the given image taking into account a reduction factor. In other
      * words, the dimensions of the input image have already been halved
-     * <code>reductionFactor</code> times but the given crop region is relative
-     * to the full-sized image.
+     * <code>rf</code> times but the given crop region is relative to the
+     * full-sized image.
      *
-     * @param inImage Image to crop.
-     * @param crop    Crop operation. Clients should call
-     *                {@link Operation#hasEffect(Dimension, OperationList)}
-     *                before invoking.
-     * @param rf      Number of times the dimensions of
-     *                <code>inImage</code> have already been halved relative to
-     *                the full-sized version.
-     * @return Cropped image, or the input image if the given operation is a
-     *         no-op.
+     * @param inImage         Image to crop.
+     * @param scaleConstraint Scale constraint.
+     * @param crop            Crop operation. {@link
+     *                        Operation#hasEffect(Dimension, OperationList)}
+     *                        should be called before invoking.
+     * @param rf              Number of times the dimensions of {@literal
+     *                        inImage} have already been halved relative to the
+     *                        full-sized version.
+     * @return                Cropped image, or the input image if the given
+     *                        operation is a no-op.
      */
     static RenderedOp cropImage(RenderedOp inImage,
+                                ScaleConstraint scaleConstraint,
                                 Crop crop,
                                 ReductionFactor rf) {
         if (crop.hasEffect()) {
             final Rectangle cropRegion = crop.getRectangle(
-                    new Dimension(inImage.getWidth(), inImage.getHeight()), rf);
+                    new Dimension(inImage.getWidth(), inImage.getHeight()),
+                    rf, scaleConstraint);
             LOGGER.debug("cropImage(): x: {}; y: {}; width: {}; height: {}",
                     cropRegion.x, cropRegion.y,
                     cropRegion.width, cropRegion.height);
@@ -172,42 +177,39 @@ final class JAIUtil {
     }
 
     /**
-     * <p>Scales an image using the JAI <code>Scale</code> operator, taking an
+     * <p>Scales an image using the JAI {@literal Scale} operator, taking an
      * already-applied reduction factor into account. (In other words, the
-     * dimensions of the input image have already been halved
-     * <code>reductionFactor</code> times but the given size is relative to the
-     * full-sized image.)</p>
+     * dimensions of the input image have already been halved {@literal rf}
+     * times but the given size is relative to the full-sized image.)</p>
      *
-     * <p>N.B. The image quality of the <code>Scale</code> operator is quite
-     * poor and so {@link #scaleImageUsingSubsampleAverage(RenderedOp, Scale,
-     * ReductionFactor)} should be used instead, if possible.</p>
+     * <p>N.B.: The output quality of the {@literal Scale} operator is very
+     * poor and so {@link #scaleImageUsingSubsampleAverage} should be used
+     * instead, if possible.</p>
      *
-     * @param inImage       Image to scale.
-     * @param scale         Requested size ignoring any reduction factor.
-     *                      Clients should call
-     *                      {@link Operation#hasEffect(Dimension, OperationList)}
-     *                      before invoking.
-     * @param interpolation Interpolation.
-     * @param rf            Reduction factor that has already been applied to
-     *                      <code>inImage</code>.
+     * @param inImage         Image to scale.
+     * @param scale           Requested size ignoring any reduction factor.
+     *                        {@link Operation#hasEffect(Dimension, OperationList)}
+     *                        should be called before invoking.
+     * @param scaleConstraint Scale constraint.
+     * @param interpolation   Interpolation.
+     * @param rf              Reduction factor that has already been applied to
+     *                        {@literal inImage}.
      * @return Scaled image, or the input image if the given scale is a no-op.
      */
     static RenderedOp scaleImage(RenderedOp inImage,
                                  Scale scale,
+                                 ScaleConstraint scaleConstraint,
                                  Interpolation interpolation,
                                  ReductionFactor rf) {
-        if (scale.hasEffect()) {
+        if (scale.hasEffect() || scaleConstraint.hasEffect()) {
             final int sourceWidth = inImage.getWidth();
             final int sourceHeight = inImage.getHeight();
             final Dimension scaledSize = scale.getResultingSize(
-                    new Dimension(sourceWidth, sourceHeight));
+                    new Dimension(sourceWidth, sourceHeight),
+                    rf, scaleConstraint);
 
             double xScale = scaledSize.width / (double) sourceWidth;
             double yScale = scaledSize.height / (double) sourceHeight;
-            if (scale.getPercent() != null) {
-                xScale = scale.getPercent() / rf.getScale();
-                yScale = scale.getPercent() / rf.getScale();
-            }
 
             LOGGER.debug("scaleImage(): width: {}%; height: {}%",
                     xScale * 100, yScale * 100);
@@ -224,40 +226,40 @@ final class JAIUtil {
     }
 
     /**
-     * <p>Better-quality alternative to {@link #scaleImage(RenderedOp, Scale,
-     * Interpolation, ReductionFactor)} using JAI's
-     * <code>SubsampleAverage</code> operator.</p>
+     * <p>Better-quality alternative to {@link #scaleImage} using JAI's
+     * {@literal SubsampleAverage} operator.</p>
      *
-     * <p>N.B. The <code>SubsampleAverage</code> operator is not capable of
+     * <p>N.B. The {@literal SubsampleAverage} operator is not capable of
      * upscaling. If asked to upscale, this method will use the inferior-quality
-     * <code>Scale</code> operator instead.</p>
+     * {@literal Scale} operator instead.</p>
      *
-     * @param inImage Image to scale. Must be at least 3 pixels on the
-     *                smallest side.
-     * @param scale   Requested size ignoring any reduction factor. Clients
-     *                should call
-     *                {@link Operation#hasEffect(Dimension, OperationList)}
-     *                before invoking.
-     * @param rf      Reduction factor that has already been applied to
-     *                <code>inImage</code>.
-     * @return Scaled image, or the input image if the given scale is a no-op.
+     * @param inImage         Image to scale.
+     * @param scale           Requested size ignoring any reduction factor.
+     *                        {@link Operation#hasEffect(Dimension, OperationList)}
+     *                        should be called before invoking.
+     * @param scaleConstraint Scale constraint.
+     * @param rf              Reduction factor that has already been applied to
+     *                        {@literal inImage}.
+     * @return                Scaled image, or the input image if the given
+     *                        scale is a no-op.
      */
     static RenderedOp scaleImageUsingSubsampleAverage(RenderedOp inImage,
                                                       Scale scale,
+                                                      ScaleConstraint scaleConstraint,
                                                       ReductionFactor rf) {
         final int sourceWidth = inImage.getWidth();
         final int sourceHeight = inImage.getHeight();
         final Dimension fullSize = new Dimension(sourceWidth, sourceHeight);
 
         if (scale.isUp(fullSize)) {
-            LOGGER.debug("scaleImageUsingSubsampleAverage(): can't upscale; " +
+            LOGGER.trace("scaleImageUsingSubsampleAverage(): can't upscale; " +
                     "invoking scaleImage() instead");
-            return scaleImage(inImage, scale,
+            return scaleImage(inImage, scale, scaleConstraint,
                     Interpolation.getInstance(Interpolation.INTERP_BILINEAR),
                     rf);
         } else if (scale.hasEffect()) {
             final Dimension scaledSize = scale.getResultingSize(
-                    new Dimension(sourceWidth, sourceHeight));
+                    new Dimension(sourceWidth, sourceHeight), rf, scaleConstraint);
 
             double xScale = scaledSize.width / (double) sourceWidth;
             double yScale = scaledSize.height / (double) sourceHeight;
@@ -266,7 +268,7 @@ final class JAIUtil {
                 yScale = scale.getPercent() / rf.getScale();
             }
 
-            LOGGER.debug("scaleImageUsingSubsampleAverage(): " +
+            LOGGER.trace("scaleImageUsingSubsampleAverage(): " +
                             "width: {}%; height: {}%",
                     xScale * 100, yScale * 100);
             final ParameterBlock pb = new ParameterBlock();

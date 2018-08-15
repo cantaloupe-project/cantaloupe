@@ -156,8 +156,8 @@ public class ImageResource extends IIIF1Resource {
                 return;
             }
 
-            ops.applyNonEndpointMutations(info, getDelegateProxy());
             ops.setScaleConstraint(getScaleConstraint());
+            ops.applyNonEndpointMutations(info, getDelegateProxy());
             ops.freeze();
 
             processor.validate(ops, fullSize);
