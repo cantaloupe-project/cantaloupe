@@ -454,6 +454,8 @@ public class Scale implements Operation {
         }
 
         switch (getMode()) {
+            case FULL:
+                return false;
             case ASPECT_FIT_WIDTH:
                 return getWidth() != cropSize.width;
             case ASPECT_FIT_HEIGHT:

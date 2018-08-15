@@ -272,7 +272,8 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
                 crop = (Crop) op;
                 if (crop.hasEffect(fullSize, opList) &&
                         !readerHints.contains(ReaderHint.ALREADY_CROPPED)) {
-                    image = Java2DUtil.crop(image, crop, reductionFactor);
+                    image = Java2DUtil.crop(image, crop, reductionFactor,
+                            opList.getScaleConstraint());
                 }
             }
         }
@@ -286,7 +287,8 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
                 }
             }
         }
-        Java2DUtil.applyRedactions(image, crop, reductionFactor, redactions);
+        Java2DUtil.applyRedactions(image, crop, reductionFactor,
+                opList.getScaleConstraint(), redactions);
 
         if (!Orientation.ROTATE_0.equals(orientation) &&
                 opList.getFirst(Crop.class) != null &&

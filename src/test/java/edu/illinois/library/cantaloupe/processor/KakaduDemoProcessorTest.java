@@ -75,8 +75,8 @@ public class KakaduDemoProcessorTest extends AbstractProcessorTest {
                 if (this.sourceSize != null) {
                     int expectedSize = (this.sourceSize.width > this.sourceSize.height) ?
                             this.sourceSize.height : this.sourceSize.width;
-                    assertTrue(Math.abs(expectedSize - this.image.getWidth()) < 2);
-                    assertTrue(Math.abs(expectedSize - this.image.getHeight()) < 2);
+                    assertTrue(Math.abs(expectedSize - this.resultingImage.getWidth()) < 2);
+                    assertTrue(Math.abs(expectedSize - this.resultingImage.getHeight()) < 2);
                 }
             }
         });
@@ -97,8 +97,8 @@ public class KakaduDemoProcessorTest extends AbstractProcessorTest {
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
             public void run() {
-                assertTrue(Math.abs(this.image.getWidth() - 35) < 3);
-                assertTrue(Math.abs(this.image.getHeight() - 30) < 3);
+                assertTrue(Math.abs(this.resultingImage.getWidth() - 35) < 3);
+                assertTrue(Math.abs(this.resultingImage.getHeight() - 30) < 3);
             }
         });
     }

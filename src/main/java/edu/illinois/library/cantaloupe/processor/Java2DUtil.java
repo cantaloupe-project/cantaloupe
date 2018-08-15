@@ -141,11 +141,13 @@ public final class Java2DUtil {
      * @param appliedCrop     Crop already applied to {@literal image}.
      * @param reductionFactor Reduction factor already applied to
      *                        {@literal image}.
+     * @param scaleConstraint Scale constraint.
      * @param redactions      Regions of the image to redact.
      */
     static void applyRedactions(final BufferedImage image,
                                 final Crop appliedCrop,
                                 final ReductionFactor reductionFactor,
+                                final ScaleConstraint scaleConstraint,
                                 final Set<Redaction> redactions) {
         if (image != null && !redactions.isEmpty()) {
             final Stopwatch watch = new Stopwatch();
@@ -158,8 +160,8 @@ public final class Java2DUtil {
             g2d.setColor(java.awt.Color.BLACK);
 
             for (final Redaction redaction : redactions) {
-                final Rectangle redactionRegion =
-                        redaction.getResultingRegion(imageSize, appliedCrop);
+                final Rectangle redactionRegion = redaction.getResultingRegion(
+                        imageSize, scaleConstraint, appliedCrop);
                 redactionRegion.x *= reductionFactor.getScale();
                 redactionRegion.y *= reductionFactor.getScale();
                 redactionRegion.width *= reductionFactor.getScale();
@@ -222,48 +224,38 @@ public final class Java2DUtil {
     }
 
     /**
-     * N.B.: This method should only be invoked if {@link
-     * Crop#hasEffect(Dimension, OperationList)} returns {@literal true}.
-     *
-     * @param inImage Image to crop.
-     * @param crop    Crop operation.
-     * @return        Cropped image, or the input image if the given operation
-     *                is a no-op.
-     */
-    static BufferedImage crop(final BufferedImage inImage,
-                              final Crop crop) {
-        return crop(inImage, crop, new ReductionFactor());
-    }
-
-    /**
-     * Crops the given image taking into account a reduction factor
+     * <p>Crops the given image taking into account a reduction factor
      * ({@literal reductionFactor}). In other words, the dimensions of the
      * input image have already been halved {@literal reductionFactor} times
-     * but the given region is relative to the full-sized image.
+     * but the given region is relative to the full-sized image.</p>
      *
-     * @param inImage Image to crop.
-     * @param crop    Crop operation. Clients should call
-     *                {@link Operation#hasEffect(Dimension, OperationList)}
-     *                before invoking.
-     * @param rf      Number of times the dimensions of {@literal inImage} have
-     *                already been halved relative to the full-sized version.
-     * @return        Cropped image, or the input image if the given operation
-     *                is a no-op.
+     * <p>N.B.: This method should only be invoked if {@link
+     * Crop#hasEffect(Dimension, OperationList)} returns {@literal true}.</p>
+     *
+     * @param inImage         Image to crop.
+     * @param crop            Crop operation. Clients should call {@link
+     *                        Operation#hasEffect(Dimension, OperationList)}
+     *                        before invoking.
+     * @param rf              Number of times the dimensions of {@literal
+     *                        inImage} have already been halved relative to the
+     *                        full-sized version.
+     * @param scaleConstraint Scale constraint.
+     * @return                Cropped image, or the input image if the given
+     *                        operation is a no-op.
      */
-    static BufferedImage crop(BufferedImage inImage,
+    static BufferedImage crop(final BufferedImage inImage,
                               final Crop crop,
-                              final ReductionFactor rf) {
+                              final ReductionFactor rf,
+                              final ScaleConstraint scaleConstraint) {
         BufferedImage outImage = inImage;
 
-        final Dimension croppedSize = crop.getResultingSize(
-                new Dimension(inImage.getWidth(), inImage.getHeight()));
+        final Rectangle cropRegion = crop.getRectangle(
+                new Dimension(outImage.getWidth(), outImage.getHeight()),
+                rf, scaleConstraint);
 
-        if (crop.hasEffect() && (croppedSize.width != inImage.getWidth() ||
-                croppedSize.height != inImage.getHeight())) {
+        if (cropRegion.width != inImage.getWidth() ||
+                cropRegion.height != inImage.getHeight()) {
             final Stopwatch watch = new Stopwatch();
-
-            final Rectangle cropRegion = crop.getRectangle(
-                    new Dimension(outImage.getWidth(), outImage.getHeight()), rf);
 
             outImage = inImage.getSubimage(cropRegion.x, cropRegion.y,
                     cropRegion.width, cropRegion.height);

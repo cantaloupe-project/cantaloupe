@@ -718,10 +718,12 @@ public final class OperationList implements Comparable<OperationList>,
         // will not be greater than 100%.
         final ScaleConstraint scaleConstraint = getScaleConstraint();
         if (scaleConstraint.hasEffect()) {
-            final Dimension constrainedFullSize =
-                    scaleConstraint.getConstrainedSize(fullSize);
-            if (resultingSize.width > constrainedFullSize.width ||
-                    resultingSize.height > constrainedFullSize.height) {
+            Scale scale = (Scale) getFirst(Scale.class);
+            if (scale == null) {
+                scale = new Scale(1.0);
+            }
+            if (scale.getResultingScale(fullSize, scaleConstraint) >
+                    scaleConstraint.getScale()) {
                 throw new IllegalScaleException();
             }
         }

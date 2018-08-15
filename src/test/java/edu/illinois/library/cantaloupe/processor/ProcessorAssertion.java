@@ -21,7 +21,7 @@ abstract class ProcessorAssertion implements Runnable {
     /**
      * Resulting image.
      */
-    BufferedImage image;
+    BufferedImage resultingImage;
 
     /**
      * Operation list used to process the image.

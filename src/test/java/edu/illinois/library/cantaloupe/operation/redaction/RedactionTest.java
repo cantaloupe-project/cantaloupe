@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation.redaction;
 
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -37,20 +38,24 @@ public class RedactionTest extends BaseTest {
     @Test
     public void getResultingRegion() {
         Dimension sourceSize = new Dimension(500, 500);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
         // redaction within source image bounds
         Crop crop = new Crop(0, 0, 300, 300);
-        Rectangle resultingRegion = instance.getResultingRegion(sourceSize, crop);
+        Rectangle resultingRegion = instance.getResultingRegion(
+                sourceSize, scaleConstraint, crop);
         assertEquals(new Rectangle(50, 60, 200, 100), resultingRegion);
 
         // redaction partially within source image bounds
         crop = new Crop(0, 0, 100, 100);
-        resultingRegion = instance.getResultingRegion(sourceSize, crop);
+        resultingRegion = instance.getResultingRegion(
+                sourceSize, scaleConstraint, crop);
         assertEquals(new Rectangle(50, 60, 200, 100), resultingRegion);
 
         // redaction outside source image bounds
         crop = new Crop(300, 300, 100, 100);
-        resultingRegion = instance.getResultingRegion(sourceSize, crop);
+        resultingRegion = instance.getResultingRegion(
+                sourceSize, scaleConstraint, crop);
         assertEquals(new Rectangle(0, 0, 0, 0), resultingRegion);
     }
 

@@ -626,35 +626,38 @@ abstract class AbstractIIOImageReader {
                          final Scale scale,
                          final ScaleConstraint scaleConstraint,
                          final double reducedScale) {
+        // Instead of directly comparing floats, we use a delta to allow for
+        // some lenience to choose a subimage that may be just a tiny bit too
+        // small. This is mainly needed because of the imprecision of using
+        // java.awt.Dimension integers throughout the processing pipeline. A
+        // better solution would be to replace that class with a custom
+        // float-based Dimension class.
+        final double maxDelta = 0.0001;
         final double scScale = scaleConstraint.getScale();
 
         if (scale.getPercent() != null) {
             double cappedScale = (scale.getPercent() > 1) ?
                     1 : scale.getPercent();
-            return (cappedScale * scScale <= reducedScale);
+            return (cappedScale * scScale - reducedScale < maxDelta);
         } else {
             switch (scale.getMode()) {
                 case FULL:
-                    return scaleConstraint.getScale() <= reducedScale;
+                    return (scaleConstraint.getScale() - reducedScale < maxDelta);
                 case ASPECT_FIT_WIDTH:
                     int cappedWidth = (scale.getWidth() > regionSize.width) ?
                         regionSize.width : scale.getWidth();
-                    cappedWidth = (int) Math.round(cappedWidth * scScale);
-                    return (cappedWidth / (double) regionSize.width <= reducedScale);
+                    return (cappedWidth / (double) regionSize.width - reducedScale < maxDelta);
                 case ASPECT_FIT_HEIGHT:
                     int cappedHeight = (scale.getHeight() > regionSize.height) ?
                             regionSize.height : scale.getHeight();
-                    cappedHeight = (int) Math.round(cappedHeight * scScale);
-                    return (cappedHeight / (double) regionSize.height <= reducedScale);
+                    return (cappedHeight / (double) regionSize.height - reducedScale < maxDelta);
                 default:
                     cappedWidth = (scale.getWidth() > regionSize.width) ?
                             regionSize.width : scale.getWidth();
                     cappedHeight = (scale.getHeight() > regionSize.height) ?
                             regionSize.height : scale.getHeight();
-                    cappedWidth = (int) Math.round(cappedWidth * scScale);
-                    cappedHeight = (int) Math.round(cappedHeight * scScale);
-                    return (cappedWidth / (double) regionSize.width <= reducedScale &&
-                            cappedHeight / (double) regionSize.height <= reducedScale);
+                    return (cappedWidth / (double) regionSize.width - reducedScale < maxDelta &&
+                            cappedHeight / (double) regionSize.height - reducedScale < maxDelta);
             }
         }
     }

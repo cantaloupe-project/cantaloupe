@@ -154,7 +154,8 @@ public class Crop implements Operation {
      * @return         Rectangle relative to the given full dimensions.
      */
     public Rectangle getRectangle(Dimension fullSize) {
-        return getRectangle(fullSize, new ReductionFactor());
+        return getRectangle(fullSize, new ReductionFactor(),
+                new ScaleConstraint(1, 1));
     }
 
     /**
@@ -167,20 +168,6 @@ public class Crop implements Operation {
     public Rectangle getRectangle(Dimension fullSize,
                                   ScaleConstraint scaleConstraint) {
         return getRectangle(fullSize, new ReductionFactor(), scaleConstraint);
-    }
-
-    /**
-     * @param reducedSize     Size of the input image, which has been reduced
-     *                        by {@literal reductionFactor}.
-     * @param reductionFactor Factor by which the full-sized image has been
-     *                        reduced to become {@literal reducedSize}.
-     * @return                Rectangle relative to the given reduced
-     *                        dimensions.
-     */
-    public Rectangle getRectangle(Dimension reducedSize,
-                                  ReductionFactor reductionFactor) {
-        return getRectangle(reducedSize, reductionFactor,
-                new ScaleConstraint(1, 1));
     }
 
     /**

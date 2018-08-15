@@ -477,8 +477,8 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
                 final Rectangle region = crop.getRectangle(
                         fullSize, opList.getScaleConstraint());
 
-                final double x = region.x / (double) fullSize.width / 2.0;
-                final double y = region.y / (double) fullSize.height / 2.0;
+                final double x = region.x / (double) fullSize.width;
+                final double y = region.y / (double) fullSize.height;
                 final double width = region.width / (double) fullSize.width;
                 final double height = region.height / (double) fullSize.height;
 

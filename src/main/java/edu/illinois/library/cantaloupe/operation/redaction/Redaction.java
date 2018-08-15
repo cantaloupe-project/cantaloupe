@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation.redaction;
 
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -54,19 +55,28 @@ public class Redaction implements Operation {
     }
 
     /**
-     * @param sourceSize Size of the source image.
-     * @param appliedCrop Crop that has been applied to the source image.
-     * @return Region of the cropped image to be redacted, or an empty
-     *         rectangle if none.
+     * @param sourceSize      Size of the source image.
+     * @param scaleConstraint Scale constraint.
+     * @param appliedCrop     Crop that has been applied to the source image.
+     * @return                Region of the cropped image to be redacted, or an
+     *                        empty rectangle if none.
      */
     public Rectangle getResultingRegion(final Dimension sourceSize,
+                                        final ScaleConstraint scaleConstraint,
                                         final Crop appliedCrop) {
+        final double scScale = scaleConstraint.getScale();
         final Rectangle cropRegion = appliedCrop.getRectangle(sourceSize);
-        if (this.getRegion().intersects(cropRegion)) {
-            final Rectangle offsetRect = (Rectangle) this.getRegion().clone();
-            offsetRect.x -= cropRegion.x;
-            offsetRect.y -= cropRegion.y;
-            return offsetRect;
+
+        final Rectangle thisRegion = new Rectangle(
+                (int) Math.round(getRegion().x / scScale),
+                (int) Math.round(getRegion().y / scScale),
+                (int) Math.round(getRegion().width / scScale),
+                (int) Math.round(getRegion().height / scScale));
+
+        if (thisRegion.intersects(cropRegion)) {
+            thisRegion.x -= cropRegion.x;
+            thisRegion.y -= cropRegion.y;
+            return thisRegion;
         }
         return new Rectangle(0, 0, 0, 0);
     }

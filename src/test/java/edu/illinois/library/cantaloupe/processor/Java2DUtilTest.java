@@ -118,7 +118,7 @@ public class Java2DUtilTest extends BaseTest {
 
         // apply them
         Java2DUtil.applyRedactions(image, crop, new ReductionFactor(0),
-                redactions);
+                new ScaleConstraint(1, 1), redactions);
 
         // test for the first one
         assertRGBA(image.getRGB(0, 0), 0, 0, 0, 255);
@@ -231,96 +231,95 @@ public class Java2DUtilTest extends BaseTest {
 
     @Test
     public void testCropWithFullCrop() {
+        Crop crop = new Crop();
+        crop.setFull(true);
+
         BufferedImage inImage = newColorImage(20, 20, 8, false);
         BufferedImage outImage;
 
-        Crop crop = new Crop();
-        crop.setFull(true);
-        outImage = Java2DUtil.crop(inImage, crop);
+        ReductionFactor rf = new ReductionFactor();
+        ScaleConstraint sc = new ScaleConstraint(1, 1);
+        outImage = Java2DUtil.crop(inImage, crop, rf, sc);
         assertSame(inImage, outImage);
     }
 
     @Test
     public void testCropWithSquareCrop() {
+        Crop crop = new Crop();
+        crop.setShape(Crop.Shape.SQUARE);
+        crop.setWidth(50);
+        crop.setHeight(50);
+
         final int width = 200, height = 100;
         BufferedImage inImage = newColorImage(width, height, 8, false);
         BufferedImage outImage;
 
-        Crop crop = new Crop();
-        crop.setShape(Crop.Shape.SQUARE);
-        crop.setWidth(50f);
-        crop.setHeight(50f);
-        outImage = Java2DUtil.crop(inImage, crop);
+        // no reduction factor or scale constraint
+        ReductionFactor rf = new ReductionFactor();
+        ScaleConstraint sc = new ScaleConstraint(1, 1);
+        outImage = Java2DUtil.crop(inImage, crop, rf, sc);
         assertEquals(height, outImage.getWidth());
         assertEquals(height, outImage.getHeight());
+
+        // reduction factor 1
+        rf = new ReductionFactor();
+        sc = new ScaleConstraint(1, 1);
+        outImage = Java2DUtil.crop(inImage, crop, rf, sc);
+        assertEquals(height / 2.0, outImage.getWidth(), DELTA);
+        assertEquals(height / 2.0, outImage.getHeight(), DELTA);
     }
 
     @Test
     public void testCropWithPixelCrop() {
+        Crop crop = new Crop();
+        crop.setWidth(50);
+        crop.setHeight(50);
+
         final int width = 200, height = 100;
         BufferedImage inImage = newColorImage(width, height, 8, false);
         BufferedImage outImage;
 
-        Crop crop = new Crop();
-        crop.setWidth(50f);
-        crop.setHeight(50f);
-        outImage = Java2DUtil.crop(inImage, crop);
+        // no reduction factor or scale constraint
+        ReductionFactor rf = new ReductionFactor();
+        ScaleConstraint sc = new ScaleConstraint(1, 1);
+        outImage = Java2DUtil.crop(inImage, crop, rf, sc);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
+
+        // reduction factor 1
+        rf = new ReductionFactor(1);
+        sc = new ScaleConstraint(1, 1);
+        outImage = Java2DUtil.crop(inImage, crop, rf, sc);
+        assertEquals(100, outImage.getWidth());
+        assertEquals(100, outImage.getHeight());
     }
 
     @Test
     public void testCropWithPercentageCrop() {
+        Crop crop = new Crop();
+        crop.setUnit(Crop.Unit.PERCENT);
+        crop.setX(0.5);
+        crop.setY(0.5);
+        crop.setWidth(0.5);
+        crop.setHeight(0.5);
+
         final int width = 200, height = 100;
         BufferedImage inImage = newColorImage(width, height, 8, false);
         BufferedImage outImage;
 
-        Crop crop = new Crop();
-        crop.setUnit(Crop.Unit.PERCENT);
-        crop.setX(0.5f);
-        crop.setY(0.5f);
-        crop.setWidth(0.5f);
-        crop.setHeight(0.5f);
-        outImage = Java2DUtil.crop(inImage, crop);
-        assertEquals(width * 0.5f, outImage.getWidth(), DELTA);
-        assertEquals(height * 0.5f, outImage.getHeight(), DELTA);
-    }
+        // no reduction factor or scale constraint
+        ReductionFactor rf = new ReductionFactor();
+        ScaleConstraint sc = new ScaleConstraint(1, 1);
+        outImage = Java2DUtil.crop(inImage, crop, rf, sc);
+        assertEquals(width / 2.0, outImage.getWidth(), DELTA);
+        assertEquals(height / 2.0, outImage.getHeight(), DELTA);
 
-    /* crop(BufferedImage, Crop, ReductionFactor) */
-
-    @Test
-    public void testCropWithReductionFactor() {
-        final int width = 100, height = 100;
-        BufferedImage inImage = newColorImage(width, height, 8, false);
-        BufferedImage outImage;
-
-        // full crop
-        Crop crop = new Crop();
-        crop.setFull(true);
-        ReductionFactor rf = new ReductionFactor(1);
-        outImage = Java2DUtil.crop(inImage, crop, rf);
-        assertSame(inImage, outImage);
-
-        // pixel crop
-        crop = new Crop();
-        crop.setWidth(width / 2f);
-        crop.setHeight(height / 2f);
+        // reduction factor 1
         rf = new ReductionFactor(1);
-        outImage = Java2DUtil.crop(inImage, crop, rf);
-        assertEquals(width / 4f, outImage.getWidth(), DELTA);
-        assertEquals(height / 4f, outImage.getHeight(), DELTA);
-
-        // percentage crop
-        crop = new Crop();
-        crop.setUnit(Crop.Unit.PERCENT);
-        crop.setX(0.5f);
-        crop.setY(0.5f);
-        crop.setWidth(0.5f);
-        crop.setHeight(0.5f);
-        rf = new ReductionFactor(1);
-        outImage = Java2DUtil.crop(inImage, crop, rf);
-        assertEquals(width / 4f, outImage.getWidth(), DELTA);
-        assertEquals(height / 4f, outImage.getHeight(), DELTA);
+        sc = new ScaleConstraint(1, 1);
+        outImage = Java2DUtil.crop(inImage, crop, rf, sc);
+        assertEquals(width / 4.0, outImage.getWidth(), DELTA);
+        assertEquals(height / 4.0, outImage.getHeight(), DELTA);
     }
 
     /* getOverlayImage() */

@@ -282,110 +282,28 @@ public class CropTest extends BaseTest {
 
     @Test
     public void getRectangle3WithFull() {
+        final ReductionFactor rf = new ReductionFactor(2);
         final Dimension reducedSize = new Dimension(300, 200);
-        final Crop crop = new Crop();
+        final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 2);
+        Crop crop = new Crop();
         crop.setFull(true);
-
-        // reduction factor 0
-        ReductionFactor rf = new ReductionFactor(2);
         assertEquals(new Rectangle(0, 0, 300, 200),
-                crop.getRectangle(reducedSize, rf));
-
-        // reduction factor 2
-        rf = new ReductionFactor(2);
-        assertEquals(new Rectangle(0, 0, 300, 200),
-                crop.getRectangle(reducedSize, rf));
+                crop.getRectangle(reducedSize, rf, scaleConstraint));
     }
 
     @Test
     public void getRectangle3WithSquare() {
+        final ReductionFactor rf = new ReductionFactor(2);
         final Dimension reducedSize = new Dimension(300, 200);
-        final Crop crop = new Crop();
+        final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 2);
+        Crop crop = new Crop();
         crop.setShape(Crop.Shape.SQUARE);
-
-        // reduction factor 0
-        ReductionFactor rf = new ReductionFactor(0);
         assertEquals(new Rectangle(50, 0, 200, 200),
-                crop.getRectangle(reducedSize, rf));
-
-        // reduction factor 2
-        rf = new ReductionFactor(2);
-        assertEquals(new Rectangle(50, 0, 200, 200),
-                crop.getRectangle(reducedSize, rf));
+                crop.getRectangle(reducedSize, rf, scaleConstraint));
     }
 
     @Test
     public void getRectangle3WithPixels() {
-        final Dimension reducedSize = new Dimension(300, 200);
-        final Crop crop = new Crop(20, 20, 50, 50);
-
-        // reduction factor 0
-        ReductionFactor rf = new ReductionFactor(0);
-        assertEquals(new Rectangle(20, 20, 50, 50),
-                crop.getRectangle(reducedSize, rf));
-
-        // reduction factor 2
-        rf = new ReductionFactor(2);
-        assertEquals(new Rectangle(5, 5, 13, 13),
-                crop.getRectangle(reducedSize, rf));
-    }
-
-    @Test
-    public void getRectangle3WithPercentage() {
-        final Dimension reducedSize = new Dimension(300, 200);
-        final Crop crop = new Crop(0.2, 0.2, 0.5, 0.5);
-
-        // reduction factor 0
-        ReductionFactor rf = new ReductionFactor(0);
-        assertEquals(new Rectangle(60, 40, 150, 100),
-                crop.getRectangle(reducedSize, rf));
-
-        // reduction factor 2
-        rf = new ReductionFactor(2);
-        assertEquals(new Rectangle(15, 10, 38, 25),
-                crop.getRectangle(reducedSize, rf));
-    }
-
-    @Test
-    public void getRectangle3DoesNotExceedFullSizeBounds() {
-        final Dimension reducedSize = new Dimension(300, 200);
-        final Crop crop = new Crop(200, 150, 100, 100);
-
-        // reduction factor 0
-        ReductionFactor rf = new ReductionFactor(0);
-        assertEquals(new Rectangle(200, 150, 100, 50),
-                crop.getRectangle(reducedSize, rf));
-
-        // reduction factor 2
-        rf = new ReductionFactor(2);
-        assertEquals(new Rectangle(50, 38, 25, 25),
-                crop.getRectangle(reducedSize, rf));
-    }
-
-    @Test
-    public void getRectangle4WithFull() {
-        final ReductionFactor rf = new ReductionFactor(2);
-        final Dimension reducedSize = new Dimension(300, 200);
-        final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 2);
-        Crop crop = new Crop();
-        crop.setFull(true);
-        assertEquals(new Rectangle(0, 0, 300, 200),
-                crop.getRectangle(reducedSize, rf, scaleConstraint));
-    }
-
-    @Test
-    public void getRectangle4WithSquare() {
-        final ReductionFactor rf = new ReductionFactor(2);
-        final Dimension reducedSize = new Dimension(300, 200);
-        final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 2);
-        Crop crop = new Crop();
-        crop.setShape(Crop.Shape.SQUARE);
-        assertEquals(new Rectangle(50, 0, 200, 200),
-                crop.getRectangle(reducedSize, rf, scaleConstraint));
-    }
-
-    @Test
-    public void getRectangle4WithPixels() {
         final ReductionFactor rf = new ReductionFactor(2);
         final Dimension reducedSize = new Dimension(500, 500);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 4);
@@ -395,7 +313,7 @@ public class CropTest extends BaseTest {
     }
 
     @Test
-    public void getRectangle4WithPixels2() {
+    public void getRectangle3WithPixels2() {
         final ReductionFactor rf = new ReductionFactor();
         final Dimension reducedSize = new Dimension(2000, 2000);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 4);
@@ -405,7 +323,7 @@ public class CropTest extends BaseTest {
     }
 
     @Test
-    public void getRectangle4WithPercentage() {
+    public void getRectangle3WithPercentage() {
         final ReductionFactor rf = new ReductionFactor(2);
         final Dimension reducedSize = new Dimension(300, 200);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 2);
@@ -416,7 +334,7 @@ public class CropTest extends BaseTest {
     }
 
     @Test
-    public void getRectangle4DoesNotExceedFullSizeBounds() {
+    public void getRectangle3DoesNotExceedFullSizeBounds() {
         final ReductionFactor rf = new ReductionFactor(2); // full: 1200x800
         final Dimension reducedSize = new Dimension(300, 200);
         final ScaleConstraint sc = new ScaleConstraint(1, 4); // 300x200

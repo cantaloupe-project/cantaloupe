@@ -247,9 +247,8 @@ final class JAIUtil {
                                                       Scale scale,
                                                       ScaleConstraint scaleConstraint,
                                                       ReductionFactor rf) {
-        final int sourceWidth = inImage.getWidth();
-        final int sourceHeight = inImage.getHeight();
-        final Dimension fullSize = new Dimension(sourceWidth, sourceHeight);
+        final Dimension fullSize = new Dimension(
+                inImage.getWidth(), inImage.getHeight());
 
         if (scale.isUp(fullSize)) {
             LOGGER.trace("scaleImageUsingSubsampleAverage(): can't upscale; " +
@@ -257,16 +256,11 @@ final class JAIUtil {
             return scaleImage(inImage, scale, scaleConstraint,
                     Interpolation.getInstance(Interpolation.INTERP_BILINEAR),
                     rf);
-        } else if (scale.hasEffect()) {
+        } else if (scale.hasEffect() || scaleConstraint.hasEffect()) {
             final Dimension scaledSize = scale.getResultingSize(
-                    new Dimension(sourceWidth, sourceHeight), rf, scaleConstraint);
-
-            double xScale = scaledSize.width / (double) sourceWidth;
-            double yScale = scaledSize.height / (double) sourceHeight;
-            if (scale.getPercent() != null) {
-                xScale = scale.getPercent() / rf.getScale();
-                yScale = scale.getPercent() / rf.getScale();
-            }
+                    fullSize, rf, scaleConstraint);
+            final double xScale = scaledSize.width / (double) fullSize.width;
+            final double yScale = scaledSize.height / (double) fullSize.height;
 
             LOGGER.trace("scaleImageUsingSubsampleAverage(): " +
                             "width: {}%; height: {}%",

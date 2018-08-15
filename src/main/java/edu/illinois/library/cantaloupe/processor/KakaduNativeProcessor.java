@@ -733,7 +733,8 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
         if (!redactions.isEmpty()) {
             Crop crop = new Crop(0, 0, image.getWidth(), image.getHeight(),
                     imageInfo.getOrientation(), imageInfo.getSize());
-            Java2DUtil.applyRedactions(image, crop, reductionFactor, redactions);
+            Java2DUtil.applyRedactions(image, crop, reductionFactor,
+                    opList.getScaleConstraint(), redactions);
         }
 
         // Apply remaining operations.

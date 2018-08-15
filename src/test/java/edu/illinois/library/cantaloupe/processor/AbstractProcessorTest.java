@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -51,7 +52,7 @@ import static org.junit.Assert.*;
  */
 abstract class AbstractProcessorTest extends BaseTest {
 
-    private static final double DELTA = 0.00000001f;
+    private static final double DELTA = 0.00000001;
 
     protected abstract Processor newInstance();
 
@@ -137,8 +138,8 @@ abstract class AbstractProcessorTest extends BaseTest {
             @Override
             public void run() {
                 if (this.sourceSize != null) {
-                    assertEquals(this.sourceSize.width, this.image.getWidth());
-                    assertEquals(this.sourceSize.height, this.image.getHeight());
+                    assertEquals(this.sourceSize.width, this.resultingImage.getWidth());
+                    assertEquals(this.sourceSize.height, this.resultingImage.getHeight());
                 }
             }
         });
@@ -157,8 +158,28 @@ abstract class AbstractProcessorTest extends BaseTest {
             @Override
             public void run() {
                 if (this.sourceSize != null) {
-                    assertEquals(this.sourceSize.width, this.image.getWidth());
-                    assertEquals(this.sourceSize.height, this.image.getHeight());
+                    assertEquals(this.sourceSize.width, this.resultingImage.getWidth());
+                    assertEquals(this.sourceSize.height, this.resultingImage.getHeight());
+                }
+            }
+        });
+    }
+
+    @Test
+    public void testProcessWithScaleConstraint() throws Exception {
+        OperationList ops = new OperationList(
+                new Scale(),
+                new Encode(Format.JPG));
+        ops.setScaleConstraint(new ScaleConstraint(1, 2));
+
+        forEachFixture(ops, new ProcessorAssertion() {
+            @Override
+            public void run() {
+                if (this.sourceSize != null) {
+                    assertEquals(this.sourceSize.width * 0.5,
+                            this.resultingImage.getWidth(), DELTA);
+                    assertEquals(this.sourceSize.height * 0.5,
+                            this.resultingImage.getHeight(), DELTA);
                 }
             }
         });
@@ -174,8 +195,8 @@ abstract class AbstractProcessorTest extends BaseTest {
             @Override
             public void run() {
                 if (this.sourceSize != null) {
-                    assertEquals(this.sourceSize.width, this.image.getWidth());
-                    assertEquals(this.sourceSize.height, this.image.getHeight());
+                    assertEquals(this.sourceSize.width, this.resultingImage.getWidth());
+                    assertEquals(this.sourceSize.height, this.resultingImage.getHeight());
                 }
             }
         });
@@ -193,8 +214,8 @@ abstract class AbstractProcessorTest extends BaseTest {
                 if (this.sourceSize != null) {
                     int expectedSize = (this.sourceSize.width > this.sourceSize.height) ?
                             this.sourceSize.height : this.sourceSize.width;
-                    assertEquals(expectedSize, this.image.getWidth());
-                    assertEquals(expectedSize, this.image.getHeight());
+                    assertEquals(expectedSize, this.resultingImage.getWidth());
+                    assertEquals(expectedSize, this.resultingImage.getHeight());
                 }
             }
         });
@@ -209,17 +230,17 @@ abstract class AbstractProcessorTest extends BaseTest {
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
             public void run() {
-                assertEquals(35, this.image.getWidth());
-                assertEquals(30, this.image.getHeight());
+                assertEquals(35, this.resultingImage.getWidth());
+                assertEquals(30, this.resultingImage.getHeight());
             }
         });
     }
 
     @Test
     public void testProcessWithCropByPercentOperation() throws Exception {
-        final float width = 0.2f;
-        final float height = 0.2f;
-        Crop crop = new Crop(0.2f, 0.2f, width, height);
+        final double width = 0.2;
+        final double height = 0.2;
+        Crop crop = new Crop(0.2, 0.2, width, height);
         crop.setUnit(Crop.Unit.PERCENT);
         OperationList ops = new OperationList(crop, new Encode(Format.JPG));
 
@@ -228,10 +249,10 @@ abstract class AbstractProcessorTest extends BaseTest {
             public void run() {
                 if (this.sourceSize != null) {
                     // Be a little lenient.
-                    int expectedW = Math.round(this.sourceSize.width * width);
-                    int expectedH = Math.round(this.sourceSize.height * height);
-                    assertTrue(Math.abs(expectedW - this.image.getWidth()) < 2);
-                    assertTrue(Math.abs(expectedH - this.image.getHeight()) < 2);
+                    long expectedW = Math.round(this.sourceSize.width * width);
+                    long expectedH = Math.round(this.sourceSize.height * height);
+                    assertTrue(Math.abs(expectedW - this.resultingImage.getWidth()) < 2);
+                    assertTrue(Math.abs(expectedH - this.resultingImage.getHeight()) < 2);
                 }
             }
         });
@@ -251,8 +272,8 @@ abstract class AbstractProcessorTest extends BaseTest {
             @Override
             public void run() {
                 if (this.sourceSize != null) {
-                    assertEquals(this.sourceSize.width, this.image.getWidth());
-                    assertEquals(this.sourceSize.height, this.image.getHeight());
+                    assertEquals(this.sourceSize.width, this.resultingImage.getWidth());
+                    assertEquals(this.sourceSize.height, this.resultingImage.getHeight());
                 }
             }
         });
@@ -270,8 +291,8 @@ abstract class AbstractProcessorTest extends BaseTest {
                 if (this.sourceSize != null) {
                     double expectedHeight = 20 /
                             (double) this.sourceSize.width * this.sourceSize.height;
-                    assertEquals(20, this.image.getWidth());
-                    assertTrue(Math.abs(expectedHeight - this.image.getHeight()) < 1);
+                    assertEquals(20, this.resultingImage.getWidth());
+                    assertTrue(Math.abs(expectedHeight - this.resultingImage.getHeight()) < 1);
                 }
             }
         });
@@ -289,8 +310,8 @@ abstract class AbstractProcessorTest extends BaseTest {
                 if (this.sourceSize != null) {
                     double expectedWidth = 20 /
                             (double) this.sourceSize.height * this.sourceSize.width;
-                    assertTrue(Math.abs(expectedWidth - this.image.getWidth()) < 1);
-                    assertEquals(20, this.image.getHeight());
+                    assertTrue(Math.abs(expectedWidth - this.resultingImage.getWidth()) < 1);
+                    assertEquals(20, this.resultingImage.getHeight());
                 }
             }
         });
@@ -299,17 +320,17 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithDownscaleByPercentageOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Scale(0.5f),
+                new Scale(0.5),
                 new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
             public void run() {
                 if (this.sourceSize != null) {
-                    assertEquals(this.sourceSize.width * 0.5f,
-                            this.image.getWidth(), DELTA);
-                    assertEquals(this.sourceSize.height * 0.5f,
-                            this.image.getHeight(), DELTA);
+                    assertEquals(this.sourceSize.width * 0.5,
+                            this.resultingImage.getWidth(), DELTA);
+                    assertEquals(this.sourceSize.height * 0.5,
+                            this.resultingImage.getHeight(), DELTA);
                 }
             }
         });
@@ -318,17 +339,17 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithUpscaleByPercentageOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Scale(1.5f),
+                new Scale(1.5),
                 new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
             public void run() {
                 if (this.sourceSize != null) {
-                    assertEquals(this.sourceSize.width * 1.5f,
-                            this.image.getWidth(), DELTA);
-                    assertEquals(this.sourceSize.height * 1.5f,
-                            this.image.getHeight(), DELTA);
+                    assertEquals(this.sourceSize.width * 1.5,
+                            this.resultingImage.getWidth(), DELTA);
+                    assertEquals(this.sourceSize.height * 1.5,
+                            this.resultingImage.getHeight(), DELTA);
                 }
             }
         });
@@ -350,8 +371,8 @@ abstract class AbstractProcessorTest extends BaseTest {
                     } else if (this.sourceSize.width < this.sourceSize.height) {
                         expectedW = (this.sourceSize.width / (double) this.sourceSize.height) * 20;
                     }
-                    assertTrue(Math.abs(expectedW - this.image.getWidth()) < 1);
-                    assertTrue(Math.abs(expectedH - this.image.getHeight()) < 1);
+                    assertTrue(Math.abs(expectedW - this.resultingImage.getWidth()) < 1);
+                    assertTrue(Math.abs(expectedH - this.resultingImage.getHeight()) < 1);
                 }
             }
         });
@@ -366,8 +387,8 @@ abstract class AbstractProcessorTest extends BaseTest {
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
             public void run() {
-                assertEquals(20, this.image.getWidth());
-                assertEquals(20, this.image.getHeight());
+                assertEquals(20, this.resultingImage.getWidth());
+                assertEquals(20, this.resultingImage.getHeight());
             }
         });
     }
@@ -382,8 +403,8 @@ abstract class AbstractProcessorTest extends BaseTest {
             @Override
             public void run() {
                 if (this.sourceSize != null) {
-                    assertEquals(this.sourceSize.width, this.image.getWidth());
-                    assertEquals(this.sourceSize.height, this.image.getHeight());
+                    assertEquals(this.sourceSize.width, this.resultingImage.getWidth());
+                    assertEquals(this.sourceSize.height, this.resultingImage.getHeight());
                 }
             }
         });
@@ -398,8 +419,8 @@ abstract class AbstractProcessorTest extends BaseTest {
             @Override
             public void run() {
                 if (this.sourceSize != null) {
-                    assertEquals(this.sourceSize.width, this.image.getWidth());
-                    assertEquals(this.sourceSize.height, this.image.getHeight());
+                    assertEquals(this.sourceSize.width, this.resultingImage.getWidth());
+                    assertEquals(this.sourceSize.height, this.resultingImage.getHeight());
                 }
             }
         });
@@ -425,8 +446,8 @@ abstract class AbstractProcessorTest extends BaseTest {
                     // Be a little lenient. Different processors will use
                     // different antialiasing methods and have different ideas
                     // on how much to pad the edges.
-                    assertTrue(Math.abs(expectedW - this.image.getWidth()) < 4);
-                    assertTrue(Math.abs(expectedH - this.image.getHeight()) < 4);
+                    assertTrue(Math.abs(expectedW - this.resultingImage.getWidth()) < 4);
+                    assertTrue(Math.abs(expectedH - this.resultingImage.getHeight()) < 4);
                 }
             }
         });
@@ -453,7 +474,7 @@ abstract class AbstractProcessorTest extends BaseTest {
             }
             @Override
             public void run() {
-                assertBitonal(this.image);
+                assertBitonal(this.resultingImage);
             }
         });
     }
@@ -479,7 +500,7 @@ abstract class AbstractProcessorTest extends BaseTest {
             }
             @Override
             public void run() {
-                assertGray(this.image);
+                assertGray(this.resultingImage);
             }
         });
     }
@@ -504,7 +525,7 @@ abstract class AbstractProcessorTest extends BaseTest {
                 @Override
                 public void run() {
                     if (this.sourceSize != null) {
-                        assertEquals(this.sourceSize.width, this.image.getWidth());
+                        assertEquals(this.sourceSize.width, this.resultingImage.getWidth());
                     }
                 }
             });
@@ -703,7 +724,7 @@ abstract class AbstractProcessorTest extends BaseTest {
             BufferedImage image = ImageIO.read(is);
 
             assertion.opList = opList;
-            assertion.image = image;
+            assertion.resultingImage = image;
             assertion.run();
         } catch (Exception | AssertionError e) {
             System.err.println("Errored fixture: " + fixture);
