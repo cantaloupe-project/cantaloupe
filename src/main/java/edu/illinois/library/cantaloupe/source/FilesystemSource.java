@@ -84,7 +84,7 @@ class FilesystemSource extends AbstractSource
                     path = getPathWithBasicStrategy();
                     break;
             }
-            LOGGER.info("Resolved {} to {}", identifier, path);
+            LOGGER.debug("Resolved {} to {}", identifier, path);
         }
         return path;
     }

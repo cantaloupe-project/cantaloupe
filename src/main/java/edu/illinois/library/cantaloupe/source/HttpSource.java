@@ -378,7 +378,7 @@ class HttpSource extends AbstractSource implements StreamSource {
         }
 
         if (info != null) {
-            LOGGER.info("Resolved {} to {}", identifier, info.getURI());
+            LOGGER.debug("Resolved {} to {}", identifier, info.getURI());
             return new HTTPStreamFactory(getHTTPClient(info), info.getURI());
         }
         return null;

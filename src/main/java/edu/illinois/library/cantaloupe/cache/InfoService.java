@@ -166,7 +166,7 @@ public final class InfoService {
                     infoCache.size() + 1);
             infoCache.put(identifier, info);
         } else {
-            LOGGER.debug("putInObjectCache(): {} is disabled; doing nothing",
+            LOGGER.trace("putInObjectCache(): {} is disabled; doing nothing",
                     infoCache.getClass().getSimpleName());
         }
     }

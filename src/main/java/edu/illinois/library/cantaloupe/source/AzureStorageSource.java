@@ -138,24 +138,24 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
                 final Configuration config = Configuration.getInstance();
                 final String containerName =
                         config.getString(Key.AZURESTORAGESOURCE_CONTAINER_NAME);
-                LOGGER.info("Using container: {}", containerName);
+                LOGGER.debug("Using container: {}", containerName);
 
                 try {
                     final CloudBlockBlob blob;
                     final String objectKey = getObjectKey();
-                    //Add support for direct URI references.  See: https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#resource-uri-syntax
-                    //Add support for SAS Token Authentication.  See: https://docs.microsoft.com/en-us/azure/storage/common/storage-dotnet-shared-access-signature-part-1#how-a-shared-access-signature-works
-                    if(StringUtils.isEmpty(containerName)) {  //use URI with sas token + container + path directly
+                    // Supports direct URI references: https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#resource-uri-syntax
+                    // Supports SAS Token Authentication: https://docs.microsoft.com/en-us/azure/storage/common/storage-dotnet-shared-access-signature-part-1#how-a-shared-access-signature-works
+                    if (containerName.isEmpty()) { // use URI with sas token + container + path directly
                         final URI uri = URI.create(objectKey);
-                        LOGGER.info("Using full uri: {}", uri);
-                        LOGGER.info("Requesting {}", objectKey);
+                        LOGGER.debug("Using full URI: {}", uri);
+                        LOGGER.debug("Requesting {}", objectKey);
                         blob = new CloudBlockBlob(uri);
-                    } else {  //use a fixed storage account with fixed container.
+                    } else { // use a fixed storage account with fixed container.
                         final CloudBlobClient client = getClientInstance();
                         final CloudBlobContainer container;
-                        LOGGER.info("Using account with fixed container: {}", containerName);
+                        LOGGER.debug("Using account with fixed container: {}", containerName);
                         container = client.getContainerReference(containerName);
-                        LOGGER.info("Requesting {}", objectKey);
+                        LOGGER.debug("Requesting {}", objectKey);
                         blob = container.getBlockBlobReference(objectKey);
                     }
 

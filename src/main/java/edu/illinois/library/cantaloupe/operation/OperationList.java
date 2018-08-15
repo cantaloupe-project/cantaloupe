@@ -230,7 +230,7 @@ public final class OperationList implements Comparable<OperationList>,
                     addBefore(redaction, Encode.class);
                 }
             } else {
-                LOGGER.debug("applyNonEndpointMutations(): redactions are " +
+                LOGGER.trace("applyNonEndpointMutations(): redactions are " +
                         "disabled; skipping.");
             }
         } catch (Exception e) {
@@ -271,7 +271,7 @@ public final class OperationList implements Comparable<OperationList>,
                 final Overlay overlay = service.newOverlay(delegateProxy);
                 addBefore(overlay, Encode.class);
             } else {
-                LOGGER.debug("applyNonEndpointMutations(): overlays are " +
+                LOGGER.trace("applyNonEndpointMutations(): overlays are " +
                         "disabled; skipping.");
             }
         } catch (Exception e) {

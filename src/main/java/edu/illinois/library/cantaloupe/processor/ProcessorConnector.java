@@ -129,7 +129,7 @@ public final class ProcessorConnector {
 
         if (source instanceof FileSource) {
             if (processor instanceof FileProcessor) {
-                LOGGER.info("{} -> {} connection between {} and {}",
+                LOGGER.debug("{} -> {} connection between {} and {}",
                         FileSource.class.getSimpleName(),
                         FileProcessor.class.getSimpleName(),
                         sourceName,
@@ -138,7 +138,7 @@ public final class ProcessorConnector {
                         ((FileSource) source).getPath());
             } else {
                 // All FileSources are also StreamSources.
-                LOGGER.info("{} -> {} connection between {} and {}",
+                LOGGER.debug("{} -> {} connection between {} and {}",
                         FileSource.class.getSimpleName(),
                         StreamProcessor.class.getSimpleName(),
                         sourceName,
@@ -198,7 +198,7 @@ public final class ProcessorConnector {
             } else {
                 switch (getStreamProcessorRetrievalStrategy()) {
                     case DOWNLOAD:
-                        LOGGER.info("Using {} with {} as a {}",
+                        LOGGER.debug("Using {} with {} as a {}",
                                 RetrievalStrategy.DOWNLOAD,
                                 processorName,
                                 StreamProcessor.class.getSimpleName());
@@ -212,7 +212,7 @@ public final class ProcessorConnector {
                         ((StreamProcessor) processor).setStreamFactory(tempStreamFactory);
                         return dl;
                     case CACHE:
-                        LOGGER.info("Using {} with {} as a {}",
+                        LOGGER.debug("Using {} with {} as a {}",
                                 RetrievalStrategy.CACHE,
                                 processorName,
                                 StreamProcessor.class.getSimpleName());
@@ -228,7 +228,7 @@ public final class ProcessorConnector {
                         break;
                     default: // stream
                         // All FileSources are also StreamSources.
-                        LOGGER.info("{} -> {} connection between {} and {}",
+                        LOGGER.debug("{} -> {} connection between {} and {}",
                                 StreamSource.class.getSimpleName(),
                                 StreamProcessor.class.getSimpleName(),
                                 sourceName,
@@ -280,7 +280,7 @@ public final class ProcessorConnector {
     private void connect(SourceCache sourceCache,
                          Path sourceCacheFile,
                          Processor processor) {
-        LOGGER.info("{} -> {} connection between {} and {}",
+        LOGGER.debug("{} -> {} connection between {} and {}",
                 SourceCache.class.getSimpleName(),
                 FileProcessor.class.getSimpleName(),
                 sourceCache.getClass().getSimpleName(),
