@@ -138,8 +138,8 @@ public final class ScaleConstraint {
 
     public Dimension getResultingSize(Dimension fullSize) {
         Dimension size = new Dimension(fullSize.width, fullSize.height);
-        size.width *= getScale();
-        size.height *= getScale();
+        size.width = (int) Math.round(size.width * getScale());
+        size.height = (int) Math.round(size.height * getScale());
         return size;
     }
 
