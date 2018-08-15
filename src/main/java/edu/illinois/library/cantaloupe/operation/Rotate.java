@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
 import java.awt.Dimension;
@@ -12,8 +13,10 @@ import java.util.Map;
  */
 public class Rotate implements Operation {
 
-    private float degrees = 0f;
-    private boolean isFrozen = false;
+    private static final double DELTA = 0.00000001;
+
+    private double degrees;
+    private boolean isFrozen;
 
     /**
      * No-op constructor.
@@ -21,18 +24,18 @@ public class Rotate implements Operation {
     public Rotate() {}
 
     /**
-     * @param degrees Degrees of rotation between 0 and 360
+     * @param degrees Degrees of rotation between 0 and 360.
      */
-    public Rotate(float degrees) {
+    public Rotate(double degrees) {
         this();
         setDegrees(degrees);
     }
 
     /**
      * @param degrees Degrees to add.
-     * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalStateException if the instance is frozen.
      */
-    public void addDegrees(float degrees) {
+    public void addDegrees(double degrees) {
         if (isFrozen) {
             throw new IllegalStateException("Instance is frozen.");
         }
@@ -44,7 +47,8 @@ public class Rotate implements Operation {
         if (obj == this) {
             return true;
         } else if (obj instanceof Rotate) {
-            return toString().equals(obj.toString());
+            Rotate other = (Rotate) obj;
+            return (Math.abs(getDegrees() - other.getDegrees()) < DELTA);
         }
         return super.equals(obj);
     }
@@ -60,7 +64,7 @@ public class Rotate implements Operation {
     /**
      * @return Degrees.
      */
-    public float getDegrees() {
+    public double getDegrees() {
         return degrees;
     }
 
@@ -70,7 +74,8 @@ public class Rotate implements Operation {
      *         size.
      */
     @Override
-    public Dimension getResultingSize(Dimension fullSize) {
+    public Dimension getResultingSize(Dimension fullSize,
+                                      ScaleConstraint scaleConstraint) {
         final double radians = Math.toRadians(getDegrees());
         final double sin = Math.sin(radians);
         final double cos = Math.cos(radians);
@@ -94,7 +99,7 @@ public class Rotate implements Operation {
 
     @Override
     public int hashCode() {
-        return toString().hashCode();
+        return Double.hashCode(degrees);
     }
 
     /**
@@ -102,11 +107,11 @@ public class Rotate implements Operation {
      * @throws IllegalArgumentException If the given degrees are invalid.
      * @throws IllegalStateException if the instance is frozen.
      */
-    public void setDegrees(float degrees) {
+    public void setDegrees(double degrees) {
         if (isFrozen) {
             throw new IllegalStateException("Instance is frozen.");
         }
-        if (degrees < 0 || degrees > 360) {
+        if (degrees < 0 || degrees >= 360) {
             throw new IllegalArgumentException("Degrees must be between 0 and 360");
         }
         this.degrees = degrees;
@@ -117,14 +122,14 @@ public class Rotate implements Operation {
      *
      * <pre>{
      *     class: "Rotate",
-     *     degrees: Float
+     *     degrees: double
      * }</pre>
      *
-     * @param fullSize Ignored.
-     * @return Map representation of the instance.
+     * @return See above.
      */
     @Override
-    public Map<String,Object> toMap(Dimension fullSize) {
+    public Map<String,Object> toMap(Dimension fullSize,
+                                    ScaleConstraint scaleConstraint) {
         final Map<String,Object> map = new HashMap<>();
         map.put("class", getClass().getSimpleName());
         map.put("degrees", getDegrees());

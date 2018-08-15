@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.overlay.Position;
 
@@ -14,7 +15,8 @@ public class MockOverlay extends Overlay {
     }
 
     @Override
-    public Map<String, Object> toMap(Dimension fullSize) {
+    public Map<String, Object> toMap(Dimension fullSize,
+                                     ScaleConstraint scaleConstraint) {
         return new HashMap<>();
     }
 

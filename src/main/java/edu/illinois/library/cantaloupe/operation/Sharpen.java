@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
+
 import java.awt.Dimension;
 import java.util.Collections;
 import java.util.HashMap;
@@ -7,8 +9,10 @@ import java.util.Map;
 
 public class Sharpen implements Operation {
 
-    private float amount = 0;
-    private boolean isFrozen = false;
+    private static final double DELTA = 0.00000001;
+
+    private double amount;
+    private boolean isFrozen;
 
     /**
      * No-op constructor.
@@ -18,7 +22,7 @@ public class Sharpen implements Operation {
     /**
      * @param amount Amount to sharpen.
      */
-    public Sharpen(float amount) {
+    public Sharpen(double amount) {
         setAmount(amount);
     }
 
@@ -28,13 +32,8 @@ public class Sharpen implements Operation {
     }
 
     @Override
-    public Dimension getResultingSize(Dimension fullSize) {
-        return fullSize;
-    }
-
-    @Override
     public boolean hasEffect() {
-        return (getAmount() > 0.000001f);
+        return (getAmount() > DELTA);
     }
 
     @Override
@@ -42,17 +41,17 @@ public class Sharpen implements Operation {
         return hasEffect();
     }
 
-    public float getAmount() {
+    public double getAmount() {
         return amount;
     }
 
     /**
      * @param amount Amount to sharpen.
-     * @throws IllegalArgumentException If the supplied amount is less than
+     * @throws IllegalArgumentException if the supplied amount is less than
      *                                  zero.
-     * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalStateException if the instance is frozen.
      */
-    public void setAmount(float amount) throws IllegalArgumentException {
+    public void setAmount(double amount) throws IllegalArgumentException {
         if (isFrozen) {
             throw new IllegalStateException("Instance is frozen.");
         }
@@ -63,14 +62,14 @@ public class Sharpen implements Operation {
     }
 
     /**
-     * @param fullSize Ignored.
-     * @return Map with an <code>amount</code> key corresponding to the amount.
+     * @return Map with an {@literal amount} key corresponding to the amount.
      */
     @Override
-    public Map<String,Object> toMap(Dimension fullSize) {
+    public Map<String,Object> toMap(Dimension fullSize,
+                                    ScaleConstraint scaleConstraint) {
         final Map<String,Object> map = new HashMap<>();
         map.put("class", getClass().getSimpleName());
-        map.put("amount", this.getAmount());
+        map.put("amount", getAmount());
         return Collections.unmodifiableMap(map);
     }
 

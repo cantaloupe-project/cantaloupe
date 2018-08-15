@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
+
 import java.awt.Dimension;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,11 +23,6 @@ public class Normalize implements Operation {
     }
 
     @Override
-    public Dimension getResultingSize(Dimension fullSize) {
-        return fullSize;
-    }
-
-    @Override
     public boolean hasEffect() {
         return true;
     }
@@ -36,14 +33,15 @@ public class Normalize implements Operation {
     }
 
     @Override
-    public Map<String,Object> toMap(Dimension fullSize) {
+    public Map<String,Object> toMap(Dimension fullSize,
+                                    ScaleConstraint scaleConstraint) {
         final Map<String,Object> map = new HashMap<>();
         map.put("class", getClass().getSimpleName());
         return Collections.unmodifiableMap(map);
     }
 
     /**
-     * @return The string <code>normalize</code>.
+     * @return The string {@literal normalize}.
      */
     @Override
     public String toString() {

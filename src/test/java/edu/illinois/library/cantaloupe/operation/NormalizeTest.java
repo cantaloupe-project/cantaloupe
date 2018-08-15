@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.operation;
 
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +23,9 @@ public class NormalizeTest extends BaseTest {
     @Test
     public void getResultingSize() {
         Dimension fullSize = new Dimension(500, 500);
-        assertEquals(fullSize, instance.getResultingSize(fullSize));
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        assertEquals(fullSize,
+                instance.getResultingSize(fullSize, scaleConstraint));
     }
 
     @Test
@@ -35,27 +36,24 @@ public class NormalizeTest extends BaseTest {
     @Test
     public void hasEffectWithArguments() {
         Dimension fullSize = new Dimension(600, 400);
-        OperationList opList = new OperationList(new Crop(0, 0, 300, 200));
+        OperationList opList = new OperationList();
         assertTrue(instance.hasEffect(fullSize, opList));
     }
 
     @Test
-    public void toMap() throws Exception {
+    public void toMap() {
         Dimension fullSize = new Dimension(500, 500);
-        Map<String,Object> map = instance.toMap(fullSize);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        Map<String,Object> map = instance.toMap(fullSize, scaleConstraint);
         assertEquals(instance.getClass().getSimpleName(), map.get("class"));
     }
 
-    @Test
+    @Test(expected = UnsupportedOperationException.class)
     public void toMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
-        Map<String,Object> map = instance.toMap(fullSize);
-        try {
-            map.put("test", "test");
-            fail("Expected exception");
-        } catch (UnsupportedOperationException e) {
-            // pass
-        }
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        Map<String,Object> map = instance.toMap(fullSize, scaleConstraint);
+        map.put("test", "test");
     }
 
     @Test

@@ -60,9 +60,42 @@ public class RedactionTest extends BaseTest {
     }
 
     @Test
+    public void getResultingRegionWithScaleConstraint() {
+        Dimension sourceSize = new Dimension(1000, 1000);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 2);
+
+        // redaction within source image bounds
+        Crop crop = new Crop(0, 0, 300, 300);
+        Rectangle resultingRegion = instance.getResultingRegion(
+                sourceSize, scaleConstraint, crop);
+        assertEquals(new Rectangle(100, 120, 400, 200), resultingRegion);
+
+        // redaction partially within source image bounds
+        crop = new Crop(0, 0, 200, 200);
+        resultingRegion = instance.getResultingRegion(
+                sourceSize, scaleConstraint, crop);
+        assertEquals(new Rectangle(100, 120, 400, 200), resultingRegion);
+
+        // redaction outside source image bounds
+        crop = new Crop(300, 300, 100, 100);
+        resultingRegion = instance.getResultingRegion(
+                sourceSize, scaleConstraint, crop);
+        assertEquals(new Rectangle(0, 0, 0, 0), resultingRegion);
+    }
+
+    @Test
     public void getResultingSize() {
         Dimension fullSize = new Dimension(500, 500);
-        assertEquals(fullSize, instance.getResultingSize(fullSize));
+
+        // scale constraint 1:1
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        assertEquals(fullSize,
+                instance.getResultingSize(fullSize, scaleConstraint));
+
+        // scale constraint 1:2
+        scaleConstraint = new ScaleConstraint(1, 2);
+        assertEquals(new Dimension(500, 500),
+                instance.getResultingSize(fullSize, scaleConstraint));
     }
 
     @Test
@@ -105,8 +138,9 @@ public class RedactionTest extends BaseTest {
     @Test
     public void toMap() {
         Dimension fullSize = new Dimension(500, 500);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
-        Map<String,Object> map = instance.toMap(fullSize);
+        Map<String,Object> map = instance.toMap(fullSize, scaleConstraint);
         assertEquals(instance.getClass().getSimpleName(), map.get("class"));
         assertEquals(50, map.get("x"));
         assertEquals(60, map.get("y"));
@@ -117,7 +151,8 @@ public class RedactionTest extends BaseTest {
     @Test(expected = UnsupportedOperationException.class)
     public void toMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
-        Map<String,Object> map = instance.toMap(fullSize);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        Map<String,Object> map = instance.toMap(fullSize, scaleConstraint);
         map.put("test", "test");
     }
 

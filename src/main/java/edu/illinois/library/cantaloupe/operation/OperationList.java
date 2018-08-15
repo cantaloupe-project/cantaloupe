@@ -210,7 +210,7 @@ public final class OperationList implements Comparable<OperationList>,
             } else {
                 Scale scale = (Scale) getFirst(Scale.class);
                 if (scale != null) {
-                    if (scale.isUp(sourceImageSize)) {
+                    if (scale.isUp(sourceImageSize, getScaleConstraint())) {
                         addBefore(normalizeOp, Scale.class);
                     } else {
                         addAfter(normalizeOp, Scale.class);
@@ -428,13 +428,10 @@ public final class OperationList implements Comparable<OperationList>,
      *                 sequence to an image of the given full size.
      */
     public Dimension getResultingSize(Dimension fullSize) {
-        // Reduce the full size to the scale-constrained size.
-        Dimension size = getScaleConstraint().getResultingSize(fullSize);
-
         for (Operation op : this) {
-            size = op.getResultingSize(size);
+            fullSize = op.getResultingSize(fullSize, getScaleConstraint());
         }
-        return size;
+        return fullSize;
     }
 
     /**
@@ -601,7 +598,7 @@ public final class OperationList implements Comparable<OperationList>,
      *     "identifier": "result of {@link Identifier#toString()}",
      *     "scale_constraint": result of {@link ScaleConstraint#toMap()}
      *     "operations": [
-     *         result of {@link Operation#toMap(Dimension)}
+     *         result of {@link Operation#toMap}
      *     ],
      *     "options": {
      *         "key": value
@@ -622,7 +619,7 @@ public final class OperationList implements Comparable<OperationList>,
         }
         map.put("operations", this.stream()
                 .filter(op -> op.hasEffect(fullSize, this))
-                .map(op -> op.toMap(fullSize))
+                .map(op -> op.toMap(fullSize, getScaleConstraint()))
                 .collect(Collectors.toList()));
         map.put("options", getOptions());
         return Collections.unmodifiableMap(map);
@@ -659,8 +656,7 @@ public final class OperationList implements Comparable<OperationList>,
      *     <li>Checks that an {@link #setIdentifier(Identifier) identifier is
      *     set}</li>
      *     <li>Checks that an {@link Encode} is present</li>
-     *     <li>Calls {@link Operation#validate(Dimension)} on each {@link
-     *     Operation}</li>
+     *     <li>Calls {@link Operation#validate} on each {@link Operation}</li>
      *     <li>Validates the {@literal page} {@link #getOptions() option}, if
      *     present</li>
      *     <li>Checks that the resulting scale is not larger than allowed by
@@ -692,7 +688,7 @@ public final class OperationList implements Comparable<OperationList>,
         }
         // Validate each operation.
         for (Operation op : this) {
-            op.validate(fullSize);
+            op.validate(fullSize, getScaleConstraint());
         }
 
         // "page" is a special query argument used by some processors, namely

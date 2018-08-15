@@ -250,7 +250,7 @@ final class JAIUtil {
         final Dimension fullSize = new Dimension(
                 inImage.getWidth(), inImage.getHeight());
 
-        if (scale.isUp(fullSize)) {
+        if (scale.isUp(fullSize, scaleConstraint)) {
             LOGGER.trace("scaleImageUsingSubsampleAverage(): can't upscale; " +
                     "invoking scaleImage() instead");
             return scaleImage(inImage, scale, scaleConstraint,

@@ -229,8 +229,9 @@ public class Crop implements Operation {
     }
 
     @Override
-    public Dimension getResultingSize(Dimension fullSize) {
-        return getRectangle(fullSize).getSize();
+    public Dimension getResultingSize(Dimension fullSize,
+                                      ScaleConstraint scaleConstraint) {
+        return getRectangle(fullSize, scaleConstraint).getSize();
     }
 
     public Shape getShape() {
@@ -417,13 +418,14 @@ public class Crop implements Operation {
     /**
      * @param fullSize Full size of the source image on which the operation
      *                 is being applied.
-     * @return Map with <code>operation</code>, <code>x</code>, <code>y</code>,
-     *         <code>width</code>, and <code>height</code> keys and integer
-     *         values corresponding to the absolute crop coordinates.
+     * @return         Map with {@literal class}, {@literal x}, {@literal y},
+     *                 {@literal width}, and {@literal height} keys and integer
+     *                 values corresponding to the absolute crop coordinates.
      */
     @Override
-    public Map<String,Object> toMap(Dimension fullSize) {
-        final Rectangle rect = getRectangle(fullSize);
+    public Map<String,Object> toMap(Dimension fullSize,
+                                    ScaleConstraint scaleConstraint) {
+        final Rectangle rect = getRectangle(fullSize, scaleConstraint);
         final Map<String,Object> map = new HashMap<>();
         map.put("class", getClass().getSimpleName());
         map.put("x", rect.x);
@@ -483,9 +485,11 @@ public class Crop implements Operation {
      * {@inheritDoc}
      */
     @Override
-    public void validate(Dimension fullSize) throws ValidationException {
+    public void validate(Dimension fullSize,
+                         ScaleConstraint scaleConstraint) throws ValidationException {
         if (!isFull()) {
-            Dimension resultingSize = getResultingSize(fullSize);
+            Dimension resultingSize =
+                    getResultingSize(fullSize, scaleConstraint);
             if (resultingSize.width < 1 || resultingSize.height < 1) {
                 throw new ValidationException(
                         "Crop area is outside the bounds of the source image.");

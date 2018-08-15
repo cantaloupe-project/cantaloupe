@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,8 +23,11 @@ public class TransposeTest extends BaseTest {
     @Test
     public void getEffectiveSize() {
         Dimension fullSize = new Dimension(200, 200);
-        assertEquals(fullSize, Transpose.VERTICAL.getResultingSize(fullSize));
-        assertEquals(fullSize, Transpose.HORIZONTAL.getResultingSize(fullSize));
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        assertEquals(fullSize,
+                Transpose.VERTICAL.getResultingSize(fullSize, scaleConstraint));
+        assertEquals(fullSize,
+                Transpose.HORIZONTAL.getResultingSize(fullSize, scaleConstraint));
     }
 
     @Test
@@ -40,21 +44,19 @@ public class TransposeTest extends BaseTest {
 
     @Test
     public void toMap() {
-        Map<String,Object> map = instance.toMap(new Dimension(0, 0));
+        Dimension size = new Dimension(0, 0);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        Map<String,Object> map = instance.toMap(size, scaleConstraint);
         assertEquals(instance.getClass().getSimpleName(), map.get("class"));
         assertEquals("horizontal", map.get("axis"));
     }
 
-    @Test
+    @Test(expected = UnsupportedOperationException.class)
     public void toMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
-        Map<String,Object> map = instance.toMap(fullSize);
-        try {
-            map.put("test", "test");
-            fail("Expected exception");
-        } catch (UnsupportedOperationException e) {
-            // pass
-        }
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        Map<String,Object> map = instance.toMap(fullSize, scaleConstraint);
+        map.put("test", "test");
     }
 
     @Test

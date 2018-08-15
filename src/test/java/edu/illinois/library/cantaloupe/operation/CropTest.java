@@ -344,19 +344,55 @@ public class CropTest extends BaseTest {
     }
 
     @Test
-    public void getResultingSize() {
-        Dimension fullSize = new Dimension(200, 200);
-        // full
+    public void getResultingSizeWithFull() {
         Crop crop = new Crop();
         crop.setFull(true);
-        assertEquals(new Dimension(200, 200), crop.getResultingSize(fullSize));
-        // pixels
-        crop = new Crop(20, 20, 50, 50);
-        assertEquals(new Dimension(50, 50), crop.getResultingSize(fullSize));
-        // percentage
-        crop = new Crop(0.2, 0.2, 0.5, 0.5);
-        crop.setUnit(Crop.Unit.PERCENT);
-        assertEquals(new Dimension(100, 100), crop.getResultingSize(fullSize));
+
+        Dimension fullSize = new Dimension(200, 200);
+
+        // scale constraint 1:1
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        assertEquals(new Dimension(200, 200),
+                crop.getResultingSize(fullSize, scaleConstraint));
+
+        // scale constraint 1:2
+        scaleConstraint = new ScaleConstraint(1, 2);
+        assertEquals(new Dimension(200, 200),
+                crop.getResultingSize(fullSize, scaleConstraint));
+    }
+
+    @Test
+    public void getResultingSizeWithPixels() {
+        Crop crop = new Crop(20, 20, 50, 50);
+
+        Dimension fullSize = new Dimension(200, 200);
+
+        // scale constraint 1:1
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        assertEquals(new Dimension(50, 50),
+                crop.getResultingSize(fullSize, scaleConstraint));
+
+        // scale constraint 1:2
+        scaleConstraint = new ScaleConstraint(1, 2);
+        assertEquals(new Dimension(100, 100),
+                crop.getResultingSize(fullSize, scaleConstraint));
+    }
+
+    @Test
+    public void getResultingSizeWithPercentage() {
+        Crop crop = new Crop(0.2, 0.2, 0.5, 0.5);
+
+        Dimension fullSize = new Dimension(200, 200);
+
+        // scale constraint 1:1
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        assertEquals(new Dimension(100, 100),
+                crop.getResultingSize(fullSize, scaleConstraint));
+
+        // scale constraint 1:2
+        scaleConstraint = new ScaleConstraint(1, 2);
+        assertEquals(new Dimension(100, 100),
+                crop.getResultingSize(fullSize, scaleConstraint));
     }
 
     @Test
@@ -452,6 +488,11 @@ public class CropTest extends BaseTest {
         instance.setWidth(1f);
         instance.setHeight(1f);
         assertTrue(instance.hasEffect(fullSize, opList));
+    }
+
+    @Test
+    public void testHashCode() {
+        assertEquals(instance.toString().hashCode(), instance.hashCode());
     }
 
     @Test
@@ -628,9 +669,10 @@ public class CropTest extends BaseTest {
         crop.setUnit(Crop.Unit.PIXELS);
         crop.setFull(false);
 
-        final Dimension fullSize = new Dimension(100, 100);
+        Dimension fullSize = new Dimension(100, 100);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
-        Map<String,Object> map = crop.toMap(fullSize);
+        Map<String,Object> map = crop.toMap(fullSize, scaleConstraint);
         assertEquals(crop.getClass().getSimpleName(), map.get("class"));
         assertEquals(25, map.get("x"));
         assertEquals(25, map.get("y"));
@@ -641,7 +683,8 @@ public class CropTest extends BaseTest {
     @Test(expected = UnsupportedOperationException.class)
     public void toMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
-        Map<String,Object> map = instance.toMap(fullSize);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        Map<String,Object> map = instance.toMap(fullSize, scaleConstraint);
         map.put("test", "test");
     }
 
@@ -674,37 +717,42 @@ public class CropTest extends BaseTest {
     @Test
     public void validateWithValidInstance() throws Exception {
         Dimension fullSize = new Dimension(1000, 1000);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         instance.setWidth(100);
         instance.setHeight(100);
-        instance.validate(fullSize);
+        instance.validate(fullSize, scaleConstraint);
     }
 
     @Test(expected = ValidationException.class)
     public void validateWithOutOfBoundsCropX() throws Exception {
         Dimension fullSize = new Dimension(1000, 1000);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         Crop crop = new Crop(1001, 0, 5, 5);
-        crop.validate(fullSize);
+        crop.validate(fullSize, scaleConstraint);
     }
 
     @Test(expected = ValidationException.class)
     public void validateWithOutOfBoundsCropY() throws Exception {
         Dimension fullSize = new Dimension(1000, 1000);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         Crop crop = new Crop(0, 1001, 5, 5);
-        crop.validate(fullSize);
+        crop.validate(fullSize, scaleConstraint);
     }
 
     @Test(expected = ValidationException.class)
     public void validateWithZeroDimensionCropX() throws Exception {
         Dimension fullSize = new Dimension(1000, 1000);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         Crop crop = new Crop(1000, 0, 100, 100);
-        crop.validate(fullSize);
+        crop.validate(fullSize, scaleConstraint);
     }
 
     @Test(expected = ValidationException.class)
     public void validateWithZeroDimensionCrop() throws Exception {
         Dimension fullSize = new Dimension(1000, 1000);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         Crop crop = new Crop(0, 1000, 100, 100);
-        crop.validate(fullSize);
+        crop.validate(fullSize, scaleConstraint);
     }
 
 }

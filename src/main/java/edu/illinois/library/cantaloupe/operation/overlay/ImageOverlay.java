@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Operation;
 
 import java.awt.Dimension;
@@ -24,7 +25,8 @@ public class ImageOverlay extends Overlay implements Operation {
     static final Set<String> SUPPORTED_URI_SCHEMES = Collections.unmodifiableSet(
             new HashSet<>(Arrays.asList("file", "http", "https")));
 
-    private static ImageOverlayCache overlayCache = new ImageOverlayCache();
+    private static final ImageOverlayCache OVERLAY_CACHE =
+            new ImageOverlayCache();
 
     private URI uri;
 
@@ -53,7 +55,7 @@ public class ImageOverlay extends Overlay implements Operation {
      * @return Stream from which the image can be read.
      */
     public InputStream openStream() throws IOException {
-        byte[] bytes = overlayCache.putAndGet(getURI());
+        byte[] bytes = OVERLAY_CACHE.putAndGet(getURI());
         return new ByteArrayInputStream(bytes);
     }
 
@@ -69,11 +71,12 @@ public class ImageOverlay extends Overlay implements Operation {
     /**
      * @param fullSize Full size of the source image on which the operation
      *                 is being applied.
-     * @return Map with <code>identifier</code>, <code>position</code>, and
-     *         <code>inset</code> keys.
+     * @return Map with {@literal identifier}, {@literal position}, and
+     *         {@literal inset} keys.
      */
     @Override
-    public Map<String, Object> toMap(Dimension fullSize) {
+    public Map<String, Object> toMap(Dimension fullSize,
+                                     ScaleConstraint scaleConstraint) {
         final HashMap<String,Object> map = new HashMap<>();
         map.put("class", getClass().getSimpleName());
         map.put("uri", getURI().toString());
@@ -84,7 +87,7 @@ public class ImageOverlay extends Overlay implements Operation {
 
     /**
      * @return String representation of the instance, in the format
-     *         "{URI}_{position}_{inset}".
+     *         {@literal [URI]_[position]_[inset]}.
      */
     @Override
     public String toString() {

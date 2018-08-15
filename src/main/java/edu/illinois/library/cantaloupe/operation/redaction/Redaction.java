@@ -55,17 +55,18 @@ public class Redaction implements Operation {
     }
 
     /**
-     * @param sourceSize      Size of the source image.
+     * @param fullSize        Size of the source image.
      * @param scaleConstraint Scale constraint.
      * @param appliedCrop     Crop that has been applied to the source image.
      * @return                Region of the cropped image to be redacted, or an
      *                        empty rectangle if none.
      */
-    public Rectangle getResultingRegion(final Dimension sourceSize,
+    public Rectangle getResultingRegion(final Dimension fullSize,
                                         final ScaleConstraint scaleConstraint,
                                         final Crop appliedCrop) {
         final double scScale = scaleConstraint.getScale();
-        final Rectangle cropRegion = appliedCrop.getRectangle(sourceSize);
+        final Rectangle cropRegion = appliedCrop.getRectangle(
+                fullSize, scaleConstraint);
 
         final Rectangle thisRegion = new Rectangle(
                 (int) Math.round(getRegion().x / scScale),
@@ -79,11 +80,6 @@ public class Redaction implements Operation {
             return thisRegion;
         }
         return new Rectangle(0, 0, 0, 0);
-    }
-
-    @Override
-    public Dimension getResultingSize(Dimension fullSize) {
-        return fullSize;
     }
 
     @Override
@@ -122,11 +118,12 @@ public class Redaction implements Operation {
     /**
      * @param fullSize Full size of the source image on which the operation
      *                 is being applied.
-     * @return Map with <code>x</code>, <code>y</code>, <code>width</code>,
-     *         and <code>height</code> keys.
+     * @return Map with {@literal x}, {@literal y}, {@literal width},
+     *         and {@literal height} keys.
      */
     @Override
-    public Map<String, Object> toMap(Dimension fullSize) {
+    public Map<String, Object> toMap(Dimension fullSize,
+                                     ScaleConstraint scaleConstraint) {
         final HashMap<String,Object> map = new HashMap<>();
         map.put("class", getClass().getSimpleName());
         map.put("x", getRegion().x);

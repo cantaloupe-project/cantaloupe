@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.operation;
 
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +25,8 @@ public class EncodeTest extends BaseTest {
     @Test
     public void getResultingSize() {
         Dimension size = new Dimension(500, 500);
-        assertEquals(size, instance.getResultingSize(size));
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        assertEquals(size, instance.getResultingSize(size, scaleConstraint));
     }
 
     @Test
@@ -110,7 +112,9 @@ public class EncodeTest extends BaseTest {
         instance.setBackgroundColor(Color.BLUE);
         instance.setMaxComponentSize(10);
 
-        final Map<String,Object> map = instance.toMap(new Dimension(500, 500));
+        Dimension size = new Dimension(500, 500);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        final Map<String,Object> map = instance.toMap(size, scaleConstraint);
         assertEquals("Encode", map.get("class"));
         assertEquals("#0000FF", map.get("background_color"));
         assertEquals(Compression.JPEG.toString(), map.get("compression"));
@@ -123,7 +127,8 @@ public class EncodeTest extends BaseTest {
     @Test(expected = UnsupportedOperationException.class)
     public void toMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
-        Map<String, Object> map = instance.toMap(fullSize);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        Map<String, Object> map = instance.toMap(fullSize, scaleConstraint);
         map.put("test", "test");
     }
 

@@ -62,16 +62,6 @@ public class Scale implements Operation {
         }
 
         /**
-         * @param fullSize Full size of the source image on which the operation
-         *                 is being applied.
-         * @return         The argument.
-         */
-        @Override
-        public Dimension getResultingSize(Dimension fullSize) {
-            return fullSize;
-        }
-
-        /**
          * @return True.
          */
         @Override
@@ -90,13 +80,12 @@ public class Scale implements Operation {
         }
 
         /**
-         * @param fullSize Full size of the source image on which the operation
-         *                 is being applied.
-         * @return         Map with a {@literal name} key and string value
-         *                 corresponding to the filter name.
+         * @return Map with a {@literal name} key and string value
+         *         corresponding to the filter name.
          */
         @Override
-        public Map<String, Object> toMap(Dimension fullSize) {
+        public Map<String, Object> toMap(Dimension fullSize,
+                                         ScaleConstraint scaleConstraint) {
             final Map<String,Object> map = new HashMap<>();
             map.put("class", Filter.class.getSimpleName());
             map.put("name", getName());
@@ -154,7 +143,7 @@ public class Scale implements Operation {
     private static final double DELTA = 0.00000001;
 
     private Filter filter;
-    private boolean isFrozen = false;
+    private boolean isFrozen;
     private Mode scaleMode = Mode.FULL;
 
     /**
@@ -365,9 +354,10 @@ public class Scale implements Operation {
      *                 given full size.
      */
     @Override
-    public Dimension getResultingSize(Dimension fullSize) {
-        return getResultingSize(fullSize, new ReductionFactor(0),
-                new ScaleConstraint(1, 1));
+    public Dimension getResultingSize(Dimension fullSize,
+                                      ScaleConstraint scaleConstraint) {
+        return getResultingSize(
+                fullSize, new ReductionFactor(0), scaleConstraint);
     }
 
     /**
@@ -449,7 +439,8 @@ public class Scale implements Operation {
         Dimension cropSize = fullSize;
         for (Operation op : opList) {
             if (op instanceof Crop) {
-                cropSize = op.getResultingSize(cropSize);
+                cropSize = op.getResultingSize(
+                        cropSize, opList.getScaleConstraint());
             }
         }
 
@@ -475,12 +466,15 @@ public class Scale implements Operation {
 
     /**
      * @param comparedToSize
+     * @param comparedToScaleConstraint
      * @return Whether the instance would effectively upscale the image it is
      *         applied to, i.e. whether the resulting image would have more
      *         pixels.
      */
-    public boolean isUp(Dimension comparedToSize) {
-        Dimension resultingSize = getResultingSize(comparedToSize);
+    public boolean isUp(Dimension comparedToSize,
+                        ScaleConstraint comparedToScaleConstraint) {
+        Dimension resultingSize = getResultingSize(
+                comparedToSize, comparedToScaleConstraint);
         return resultingSize.width * resultingSize.height >
                 comparedToSize.width * comparedToSize.height;
     }
@@ -547,15 +541,18 @@ public class Scale implements Operation {
     }
 
     /**
-     * @param fullSize Full size of the source image on which the operation
-     *                 is being applied.
-     * @return         Map with {@literal width} and {@literal height} keys and
-     *                 integer values corresponding to the resulting pixel size
-     *                 of the operation.
+     * @param fullSize        Full size of the source image on which the
+     *                        operation is being applied.
+     * @param scaleConstraint Scale constraint.
+     * @return                Map with {@literal width} and {@literal height}
+     *                        keys and integer values corresponding to the
+     *                        resulting pixel size of the operation.
      */
     @Override
-    public Map<String,Object> toMap(Dimension fullSize) {
-        final Dimension resultingSize = getResultingSize(fullSize);
+    public Map<String,Object> toMap(Dimension fullSize,
+                                    ScaleConstraint scaleConstraint) {
+        final Dimension resultingSize =
+                getResultingSize(fullSize, scaleConstraint);
         final Map<String,Object> map = new HashMap<>();
         map.put("class", Scale.class.getSimpleName());
         map.put("width", resultingSize.width);

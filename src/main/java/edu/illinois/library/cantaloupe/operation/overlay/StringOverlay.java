@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import org.apache.commons.codec.binary.Hex;
@@ -151,14 +152,15 @@ public class StringOverlay extends Overlay implements Operation {
     /**
      * @param fullSize Full size of the source image on which the operation
      *                 is being applied.
-     * @return Map with <var>background_color</var>, <var>class</var>,
-     *         <var>color</var>, <var>font</var>, <var>font_size</var>,
-     *         <var>font_weight</var>, <var>glyph_spacing</var>,
-     *         <var>inset</var>, <var>position</var>, <var>string</var>,
-     *         <var>stroke_color</var>, and <var>stroke_width</var> keys.
+     * @return Map with {@literal background_color}, {@literal class},
+     *         {@literal color}, {@literal font}, {@literal font_size},
+     *         {@literal font_weight}, {@literal glyph_spacing},
+     *         {@literal inset}, {@literal position}, {@literal string},
+     *         {@literal stroke_color}, and {@literal stroke_width} keys.
      */
     @Override
-    public Map<String, Object> toMap(Dimension fullSize) {
+    public Map<String, Object> toMap(Dimension fullSize,
+                                     ScaleConstraint scaleConstraint) {
         final HashMap<String,Object> map = new HashMap<>();
         map.put("background_color", getBackgroundColor().toRGBAHex());
         map.put("class", getClass().getSimpleName());
@@ -179,8 +181,7 @@ public class StringOverlay extends Overlay implements Operation {
 
     /**
      * @return String representation of the instance, guaranteed to uniquely
-     *         represent the instance, but not guaranteed to be in any
-     *         particular format.
+     *         represent it, but not guaranteed to be in any particular format.
      */
     @Override
     public String toString() {

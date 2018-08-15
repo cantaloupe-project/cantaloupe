@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.operation;
 
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
 
@@ -14,16 +13,19 @@ public class ColorTransformTest extends BaseTest {
 
     @Test
     public void testValues() {
-        assertNotNull(ColorTransform.valueOf("BITONAL"));
-        assertNotNull(ColorTransform.valueOf("GRAY"));
         assertEquals(2, ColorTransform.values().length);
+        assertNotNull(ColorTransform.BITONAL);
+        assertNotNull(ColorTransform.GRAY);
     }
 
     @Test
     public void testGetEffectiveSize() {
         Dimension fullSize = new Dimension(200, 200);
-        assertEquals(fullSize, ColorTransform.BITONAL.getResultingSize(fullSize));
-        assertEquals(fullSize, ColorTransform.GRAY.getResultingSize(fullSize));
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 2);
+        assertSame(fullSize,
+                ColorTransform.BITONAL.getResultingSize(fullSize, scaleConstraint));
+        assertSame(fullSize,
+                ColorTransform.GRAY.getResultingSize(fullSize, scaleConstraint));
     }
 
     @Test
@@ -43,21 +45,20 @@ public class ColorTransformTest extends BaseTest {
 
     @Test
     public void testToMap() {
-        Map<String,Object> map = ColorTransform.BITONAL.toMap(new Dimension(0, 0));
+        Dimension size = new Dimension(0, 0);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        Map<String,Object> map = ColorTransform.BITONAL.toMap(size, scaleConstraint);
+
         assertEquals(ColorTransform.class.getSimpleName(), map.get("class"));
         assertEquals("bitonal", map.get("type"));
     }
 
-    @Test
+    @Test(expected = UnsupportedOperationException.class)
     public void toMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
-        Map<String,Object> map = ColorTransform.GRAY.toMap(fullSize);
-        try {
-            map.put("test", "test");
-            fail("Expected exception");
-        } catch (UnsupportedOperationException e) {
-            // pass
-        }
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        Map<String,Object> map = ColorTransform.GRAY.toMap(fullSize, scaleConstraint);
+        map.put("test", "test");
     }
 
     @Test

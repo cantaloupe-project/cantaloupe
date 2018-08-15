@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.operation;
 
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 
 import java.awt.Dimension;
 import java.util.ArrayList;
@@ -22,8 +23,8 @@ public class Encode implements Operation {
     private Color backgroundColor;
     private Compression compression = Compression.UNDEFINED;
     private Format format = Format.UNKNOWN;
-    private boolean interlace = false;
-    private boolean isFrozen = false;
+    private boolean interlace;
+    private boolean isFrozen;
     private int maxComponentSize = 8;
     private int quality = MAX_QUALITY;
 
@@ -77,17 +78,7 @@ public class Encode implements Operation {
     }
 
     /**
-     * @param fullSize Full size of the source image on which the operation
-     *                 is being applied.
-     * @return The input size.
-     */
-    @Override
-    public Dimension getResultingSize(Dimension fullSize) {
-        return fullSize;
-    }
-
-    /**
-     * @return <code>true</code>.
+     * @return {@literal true}.
      */
     @Override
     public boolean hasEffect() {
@@ -97,9 +88,9 @@ public class Encode implements Operation {
     /**
      *
      * @param fullSize Full size of the source image.
-     * @param opList Operation list of which the operation may or may not be a
-     *               member.
-     * @return <code>true</code>.
+     * @param opList   Operation list of which the operation may or may not be
+     *                 a member.
+     * @return         {@literal true}.
      */
     @Override
     public boolean hasEffect(Dimension fullSize, OperationList opList) {
@@ -112,7 +103,7 @@ public class Encode implements Operation {
 
     /**
      * @param color Background color.
-     * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalStateException if the instance is frozen.
      */
     public void setBackgroundColor(Color color) {
         if (isFrozen) {
@@ -123,7 +114,7 @@ public class Encode implements Operation {
 
     /**
      * @param compression Compression to set.
-     * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalStateException if the instance is frozen.
      */
     public void setCompression(Compression compression) {
         if (isFrozen) {
@@ -134,7 +125,7 @@ public class Encode implements Operation {
 
     /**
      * @param format Format to set.
-     * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalStateException if the instance is frozen.
      */
     public void setFormat(Format format) {
         if (isFrozen) {
@@ -148,7 +139,7 @@ public class Encode implements Operation {
 
     /**
      * @param interlace Interlacing to set.
-     * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalStateException if the instance is frozen.
      */
     public void setInterlacing(boolean interlace) {
         if (isFrozen) {
@@ -160,7 +151,7 @@ public class Encode implements Operation {
     /**
      * @param depth Maximum sample size to encode. Supply {@literal 0} to
      *              indicate no max.
-     * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalStateException if the instance is frozen.
      */
     public void setMaxComponentSize(int depth) {
         if (isFrozen) {
@@ -171,9 +162,9 @@ public class Encode implements Operation {
 
     /**
      * @param quality
-     * @throws IllegalArgumentException If the given quality is outside the
+     * @throws IllegalArgumentException if the given quality is outside the
      *         range of 1-{@link #MAX_QUALITY}.
-     * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalStateException if the instance is frozen.
      */
     public void setQuality(int quality) {
         if (isFrozen) {
@@ -199,11 +190,11 @@ public class Encode implements Operation {
      *     max_sample_size: Integer
      * }</pre>
      *
-     * @param fullSize Ignored.
      * @return Map representation of the instance.
      */
     @Override
-    public Map<String,Object> toMap(Dimension fullSize) {
+    public Map<String,Object> toMap(Dimension fullSize,
+                                    ScaleConstraint scaleConstraint) {
         final Map<String,Object> map = new HashMap<>();
         map.put("class", getClass().getSimpleName());
         if (getBackgroundColor() != null) {

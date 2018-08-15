@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
+
 import java.awt.Dimension;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,16 +26,6 @@ public class MetadataCopy implements Operation {
     }
 
     /**
-     * @param fullSize Full size of the source image on which the operation
-     *                 is being applied.
-     * @return fullSize
-     */
-    @Override
-    public Dimension getResultingSize(Dimension fullSize) {
-        return fullSize;
-    }
-
-    /**
      * @return True.
      */
     @Override
@@ -52,20 +44,18 @@ public class MetadataCopy implements Operation {
     }
 
     /**
-     * @param fullSize Full size of the source image on which the operation
-     *                 is being applied.
-     * @return Single-entry map with key of <var>operation</var> pointing to
-     *         <code>metadata_copy</code>.
+     * @return Single-entry map with a {@literal class} key.
      */
     @Override
-    public Map<String, Object> toMap(Dimension fullSize) {
+    public Map<String, Object> toMap(Dimension fullSize,
+                                     ScaleConstraint scaleConstraint) {
         final HashMap<String,Object> map = new HashMap<>();
         map.put("class", getClass().getSimpleName());
         return Collections.unmodifiableMap(map);
     }
 
     /**
-     * @return The string <code>mdcopy</code>.
+     * @return The string {@literal mdcopy}.
      */
     @Override
     public String toString() {

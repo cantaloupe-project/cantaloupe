@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
@@ -8,7 +9,6 @@ import org.junit.Test;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.font.TextAttribute;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -87,8 +87,8 @@ public class StringOverlayTest extends BaseTest {
     @Test
     public void toMap() {
         Dimension fullSize = new Dimension(100, 100);
-
-        Map<String,Object> map = instance.toMap(fullSize);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        Map<String,Object> map = instance.toMap(fullSize, scaleConstraint);
         assertEquals(instance.getClass().getSimpleName(), map.get("class"));
         assertEquals(instance.getBackgroundColor().toRGBAHex(),
                 map.get("background_color"));
@@ -110,12 +110,13 @@ public class StringOverlayTest extends BaseTest {
     @Test(expected = UnsupportedOperationException.class)
     public void toMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
-        Map<String,Object> map = instance.toMap(fullSize);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        Map<String,Object> map = instance.toMap(fullSize, scaleConstraint);
         map.put("test", "test");
     }
 
     @Test
-    public void testToString() throws IOException {
+    public void testToString() {
         instance.setString("DOGSdogs123!@#$%\n%^&*()");
         assertEquals("801774c691b35cbd89e3bd8cb6803681_SE_5_SansSerif_12_2.0_0.1_#0000FFFF_#FFA500FF_#FF0000FF_5.0",
                 instance.toString());

@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
+
 import java.awt.Dimension;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,11 +26,6 @@ public enum Transpose implements Operation {
     }
 
     @Override
-    public Dimension getResultingSize(Dimension fullSize) {
-        return fullSize;
-    }
-
-    @Override
     public boolean hasEffect() {
         return true;
     }
@@ -39,15 +36,15 @@ public enum Transpose implements Operation {
     }
 
     /**
-     * @param fullSize Ignored.
-     * @return Map with an <code>axis</code> key corresponding to the
-     *         lowercase enum name.
+     * @return Map with an {@literal axis} key corresponding to the lowercase
+     *         enum name.
      */
     @Override
-    public Map<String,Object> toMap(Dimension fullSize) {
+    public Map<String,Object> toMap(Dimension fullSize,
+                                    ScaleConstraint scaleConstraint) {
         final Map<String,Object> map = new HashMap<>();
         map.put("class", getClass().getSimpleName());
-        map.put("axis", this.name().toLowerCase());
+        map.put("axis", name().toLowerCase());
         return Collections.unmodifiableMap(map);
     }
 

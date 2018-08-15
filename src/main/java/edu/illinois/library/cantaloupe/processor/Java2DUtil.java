@@ -932,7 +932,7 @@ public final class Java2DUtil {
 
                 final ResampleOp resampleOp = new ResampleOp(
                         inImage.getWidth(), inImage.getHeight());
-                resampleOp.setUnsharpenMask(sharpen.getAmount());
+                resampleOp.setUnsharpenMask((float) sharpen.getAmount());
                 sharpenedImage = resampleOp.filter(inImage, null);
 
                 LOGGER.debug("sharpen(): sharpened by {} in {}",
