@@ -189,13 +189,22 @@ abstract class AbstractIIOImageReader {
     }
 
     /**
-     * @return Tile or strip size of the image at the given index, or the full
-     *         image dimensions if the image is not tiled or striped (or is
-     *         mono-tiled or mono-striped).
+     * @return Tile size of the image at the given index, or the full image
+     *         dimensions if the image is not tiled (or is mono-tiled).
      */
     public Dimension getTileSize(int imageIndex) throws IOException {
         final int width = iioReader.getTileWidth(imageIndex);
-        final int height = iioReader.getTileHeight(imageIndex);
+        int height;
+
+        // If the tile width == the full image width, the image is almost
+        // certainly not tiled, and getTileHeight() may return 1 to indicate
+        // a strip height, or some other wonky value. In that case, set the
+        // tile height to the full image height.
+        if (width == iioReader.getWidth(imageIndex)) {
+            height = iioReader.getHeight(imageIndex);
+        } else {
+            height = iioReader.getTileHeight(imageIndex);
+        }
         return new Dimension(width, height);
     }
 
