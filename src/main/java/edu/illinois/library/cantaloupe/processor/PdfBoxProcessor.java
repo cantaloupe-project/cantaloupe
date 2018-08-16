@@ -91,19 +91,11 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                         OutputStream outputStream) throws ProcessorException {
         super.process(opList, imageInfo, outputStream);
 
-        final Set<ReaderHint> hints =
-                EnumSet.noneOf(ReaderHint.class);
+        final Set<ReaderHint> hints = EnumSet.noneOf(ReaderHint.class);
         Scale scale = (Scale) opList.getFirst(Scale.class);
         if (scale == null) {
             scale = new Scale();
         }
-        // If the op list contains a scale operation that is not
-        // NON_ASPECT_FILL, we can use a scale-appropriate rasterization DPI
-        // and omit the scale step.
-        if (!Scale.Mode.NON_ASPECT_FILL.equals(scale.getMode())) {
-            hints.add(ReaderHint.IGNORE_SCALE);
-        }
-
         ReductionFactor reductionFactor = new ReductionFactor();
         Double pct = scale.getResultingScale(imageInfo.getSize());
         if (pct != null) {
@@ -114,9 +106,8 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
         int page = getPageNumber(opList.getOptions());
 
         try {
-            BufferedImage image =
-                    readImage(page - 1, scale, imageInfo.getSize());
-
+            BufferedImage image = readImage(
+                    page - 1, scale, imageInfo.getSize());
             postProcess(image, hints, opList, imageInfo, reductionFactor,
                     outputStream);
         } catch (IOException | IndexOutOfBoundsException e) {

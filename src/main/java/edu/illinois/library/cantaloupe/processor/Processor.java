@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
+import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
@@ -177,15 +178,20 @@ public interface Processor extends AutoCloseable {
      * <p>Validates the given operation list, throwing an exception if
      * invalid.</p>
      *
-     * <p>This default implementation simply calls {@link
-     * OperationList#validate(Dimension, Format)}. Implementations should read
-     * the documentation of that method to decide whether they need to perform
-     * any additional validation, and only override this method if so.</p>
+     * <p>This default implementation does the following:</p>
+     *
+     * <ol>
+     *     <li>Calls {@link OperationList#validate}</li>
+     *     <li>Ensures that the scale mode is not {@link
+     *     Scale.Mode#NON_ASPECT_FILL} if {@link
+     *     ProcessorFeature#SIZE_BY_DISTORTED_WIDTH_HEIGHT} is not {@link
+     *     #getSupportedFeatures() supported}</li>
+     * </ol>
      *
      * <p>Notes:</p>
      *
      * <ul>
-     *     <li>Implementations should call {@literal super}.</li>
+     *     <li>Overrides should call super.</li>
      *     <li>It is guaranteed that this method, if called, will always be
      *     called before {@link #process}.</li>
      * </ul>
@@ -199,6 +205,23 @@ public interface Processor extends AutoCloseable {
     default void validate(OperationList opList, Dimension fullSize)
             throws ValidationException, ProcessorException {
         opList.validate(fullSize, getSourceFormat());
+
+        // Fail if there is a Scale operation with mode NON_ASPECT_FILL but
+        // ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT is not supported.
+        Set<ProcessorFeature> features = getSupportedFeatures();
+        if (!features.contains(ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT)) {
+            Scale scale = (Scale) opList.getFirst(Scale.class);
+            if (scale != null && Scale.Mode.NON_ASPECT_FILL.equals(scale.getMode())) {
+                throw new ValidationException("This processor does not support " +
+                        ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
+            }
+        }
+
+        // There are additional validations we could do similar to the above,
+        // but currently all processors support all other scale modes.
+        // TODO: bind Scale.Mode to ProcessorFeature and rewrite the above,
+        // to avoid having to code a separate validation for every feature/mode
+        // combo
     }
 
 }
