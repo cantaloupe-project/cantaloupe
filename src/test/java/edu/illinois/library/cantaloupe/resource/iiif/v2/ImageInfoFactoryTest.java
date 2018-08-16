@@ -233,8 +233,8 @@ public class ImageInfoFactoryTest extends BaseTest {
         List<ImageInfo.Tile> tiles =
                 (List<ImageInfo.Tile>) imageInfo.get("tiles");
         assertEquals(1, tiles.size());
-        assertEquals(750, (int) tiles.get(0).width);
-        assertEquals(600, (int) tiles.get(0).height);
+        assertEquals(512, (int) tiles.get(0).width);
+        assertEquals(512, (int) tiles.get(0).height);
 
         assertEquals(5, tiles.get(0).scaleFactors.size());
         assertEquals(1, (int) tiles.get(0).scaleFactors.get(0));
@@ -258,8 +258,8 @@ public class ImageInfoFactoryTest extends BaseTest {
         List<ImageInfo.Tile> tiles =
                 (List<ImageInfo.Tile>) imageInfo.get("tiles");
         assertEquals(1, tiles.size());
-        assertEquals(1500, (int) tiles.get(0).width);
-        assertEquals(1000, (int) tiles.get(0).height);
+        assertEquals(512, (int) tiles.get(0).width);
+        assertEquals(512, (int) tiles.get(0).height);
 
         assertEquals(5, tiles.get(0).scaleFactors.size());
         assertEquals(1, (int) tiles.get(0).scaleFactors.get(0));
@@ -342,23 +342,6 @@ public class ImageInfoFactoryTest extends BaseTest {
 
         assertEquals(1, tiles.get(0).scaleFactors.size());
         assertEquals(1, (int) tiles.get(0).scaleFactors.get(0));
-    }
-
-    @Test
-    public void testNewImageInfoTileSizesAreRoundedUp() {
-        final String imageURI = "http://example.org/bla";
-        final Info info = Info.builder()
-                .withSize(3001, 2001)
-                .withNumResolutions(3)
-                .build();
-        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                imageURI, info, 0, new ScaleConstraint(1, 1));
-
-        @SuppressWarnings("unchecked")
-        List<ImageInfo.Tile> tiles =
-                (List<ImageInfo.Tile>) imageInfo.get("tiles");
-        assertEquals(1501, (int) tiles.get(0).width);
-        assertEquals(1001, (int) tiles.get(0).height);
     }
 
     @Test

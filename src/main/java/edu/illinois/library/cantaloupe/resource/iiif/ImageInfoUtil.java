@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif;
 
 import edu.illinois.library.cantaloupe.image.Dimension;
 
-public class ImageInfoUtil {
+public final class ImageInfoUtil {
 
     /**
      * @param fullSize     Full size of the source image.
@@ -28,10 +28,10 @@ public class ImageInfoUtil {
     }
 
     /**
-     * @param fullSize Full size of the source image.
+     * @param fullSize  Full size of the source image.
      * @param maxPixels Maximum allowed number of pixels.
-     * @return Minimum reduction factor to be able to fit below the maximum
-     *         allowed number of pixels.
+     * @return          Minimum reduction factor to be able to fit below the
+     *                  maximum allowed number of pixels.
      */
     public static int minReductionFactor(final Dimension fullSize,
                                          final int maxPixels) {
@@ -42,66 +42,49 @@ public class ImageInfoUtil {
         Dimension nextSize = new Dimension(fullSize);
 
         while (nextSize.width() * nextSize.height() > maxPixels) {
-            nextSize.setWidth(nextSize.width() / 2.0);
-            nextSize.setHeight(nextSize.height() / 2.0);
+            nextSize.scaleBy(0.5);
             factor++;
         }
         return factor;
     }
 
     /**
-     * <p>Given full-size image dimensions, calculates the smallest tile size
-     * above the given minimum dimension based on the series {@literal
-     * 1/(2^n)}.</p>
+     * Calculates an optimal information tile size based on a given physical
+     * image tile size.
      *
-     * <p>N.B.: Dimensions should be rounded up for display, to prevent clients
-     * from requesting narrow edge tiles.</p>
-     *
-     * @param fullSize     Full size of the source image.
-     * @param minDimension Minimum allowed dimension.
-     * @return             Tile size.
+     * @param fullSize         Size of the full source image.
+     * @param physicalTileSize Size of the source image's tiles. If the source
+     *                         image is not natively tiled, this should be
+     *                         equal to {@literal fullSize}.
+     * @param minSize          Minimum allowed dimension.
+     * @return                 Information tile size.
      */
-    public static Dimension smallestTileSize(final Dimension fullSize,
-                                             final int minDimension) {
-        Dimension size = new Dimension(fullSize);
-        Dimension nextSize = new Dimension(size);
-        while (nextSize.width() >= minDimension &&
-                nextSize.height() >= minDimension) {
-            size = new Dimension(nextSize);
-            nextSize.setWidth(nextSize.width() / 2.0);
-            nextSize.setHeight(nextSize.height() / 2.0);
+    public static Dimension getTileSize(final Dimension fullSize,
+                                        final Dimension physicalTileSize,
+                                        final int minSize) {
+        final double minW = Math.min(minSize, fullSize.width());
+        final double minH = Math.min(minSize, fullSize.height());
+
+        final Dimension infoTileSize = new Dimension(physicalTileSize);
+
+        // If true, the image is not natively tiled. Use minSize as the tile
+        // size.
+        if (physicalTileSize.intWidth() == fullSize.intWidth()) {
+            infoTileSize.setWidth(minW);
+            infoTileSize.setHeight(minH);
+            return infoTileSize;
         }
-        return size;
+
+        while (infoTileSize.width() < minW || infoTileSize.height() < minH) {
+            infoTileSize.scaleBy(2);
+        }
+
+        // Limit tile dimensions to the full image size.
+        infoTileSize.setWidth(Math.min(fullSize.width(), infoTileSize.width()));
+        infoTileSize.setHeight(Math.min(fullSize.height(), infoTileSize.height()));
+        return infoTileSize;
     }
 
-    /**
-     * <p>Given a native tile size, calculates the smallest multiple above the
-     * given minimum dimension.</p>
-     *
-     * <p>If the minimum dimension is greater than the full size dimension, the
-     * full size dimensions will be used as the minimum dimensions.</p>
-     *
-     * @param fullSize       Size of the full source image.
-     * @param nativeTileSize Size of the source image's tiles.
-     * @param minDimension   Minimum allowed dimension.
-     * @return Tile size.
-     */
-    public static Dimension smallestTileSize(final Dimension fullSize,
-                                             Dimension nativeTileSize,
-                                             final int minDimension) {
-        final double minWidth = Math.min(minDimension, fullSize.width());
-        final double minHeight = Math.min(minDimension, fullSize.height());
-        if (nativeTileSize == null) {
-            nativeTileSize = new Dimension(fullSize);
-        }
-        final Dimension tileSize = new Dimension(nativeTileSize);
-        while (tileSize.width() < minWidth || tileSize.height() < minHeight) {
-            tileSize.setWidth(tileSize.width() * 2);
-            tileSize.setHeight(tileSize.height() * 2);
-        }
-        tileSize.setWidth(Math.min(fullSize.width(), tileSize.width()));
-        tileSize.setHeight(Math.min(fullSize.height(), tileSize.height()));
-        return tileSize;
-    }
+    private ImageInfoUtil() {}
 
 }

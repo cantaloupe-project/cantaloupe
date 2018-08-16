@@ -81,7 +81,7 @@ final class ImageInfoFactory {
      * @param info            Info describing the image.
      * @param infoImageIndex  Index of the full/main image in the {@link Info}
      *                        argument's {@link Info#getImages()} list.
-     * @param scaleConstraint Scale constraint.
+     * @param scaleConstraint May be {@literal null}.
      */
     ImageInfo<String,Object> newImageInfo(final String imageURI,
                                           final Info info,
@@ -126,18 +126,11 @@ final class ImageInfoFactory {
         final List<ImageInfo.Tile> tiles = new ArrayList<>();
         responseInfo.put("tiles", tiles);
 
-        if (info.getImages().size() > 1) {
-            // This branch is used for images that have multiple physical
-            // embedded subimages, such as pyramidal tiled TIFF.
-            for (Info.Image image : info.getImages()) {
-                uniqueTileSizes.add(
-                        ImageInfoUtil.smallestTileSize(virtualSize,
-                                image.getOrientationTileSize(), minTileSize));
-            }
-        } else {
-            uniqueTileSizes.add(ImageInfoUtil.smallestTileSize(
-                    virtualSize, minTileSize));
-        }
+        info.getImages().forEach(image ->
+                uniqueTileSizes.add(ImageInfoUtil.getTileSize(
+                        virtualSize, image.getOrientationTileSize(),
+                        minTileSize)));
+
         for (Dimension uniqueTileSize : uniqueTileSizes) {
             final ImageInfo.Tile tile = new ImageInfo.Tile();
             tile.width = (int) Math.ceil(uniqueTileSize.width());

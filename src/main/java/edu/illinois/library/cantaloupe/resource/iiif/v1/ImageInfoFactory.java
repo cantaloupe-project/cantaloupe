@@ -45,7 +45,7 @@ final class ImageInfoFactory {
 
         if (numResolutions > 0) {
             if (!virtualTileSize.equals(virtualSize)) {
-                virtualTileSize = ImageInfoUtil.smallestTileSize(
+                virtualTileSize = ImageInfoUtil.getTileSize(
                         virtualSize, virtualTileSize, minTileSize);
             }
         }
