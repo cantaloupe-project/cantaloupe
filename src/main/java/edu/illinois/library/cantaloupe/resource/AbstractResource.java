@@ -481,7 +481,13 @@ public abstract class AbstractResource {
             final String hostHeader = getRequest().getHeaders()
                     .getFirstValue("X-Forwarded-Host", "");
             if (!hostHeader.isEmpty()) {
-                String hostStr = hostHeader.split(",")[0].trim();
+                String hostStr = hostHeader;
+                if (hostStr.startsWith("http://")) {
+                    hostStr = hostStr.substring(7, hostHeader.length());
+                } else if (hostHeader.startsWith("https://")) {
+                    hostStr = hostStr.substring(8, hostHeader.length());
+                }
+                hostStr = hostStr.split(",")[0].trim();
                 String[] parts = hostStr.split(":");
                 newRef.setHost(parts[0]);
                 if (parts.length > 1) {
@@ -602,7 +608,13 @@ public abstract class AbstractResource {
             final String hostHeader = getRequest().getHeaders()
                     .getFirstValue("X-Forwarded-Host", "");
             if (!hostHeader.isEmpty()) {
-                String hostStr = hostHeader.split(",")[0].trim();
+                String hostStr = hostHeader;
+                if (hostStr.startsWith("http://")) {
+                    hostStr = hostStr.substring(7, hostHeader.length());
+                } else if (hostHeader.startsWith("https://")) {
+                    hostStr = hostStr.substring(8, hostHeader.length());
+                }
+                hostStr = hostStr.split(",")[0].trim();
                 String[] parts = hostStr.split(":");
                 ref.setHost(parts[0]);
                 if (parts.length > 1) {
