@@ -138,7 +138,13 @@ public abstract class AbstractResource extends ServerResource {
             final String hostHeader = requestHeaders.getFirstValue(
                     "X-Forwarded-Host", true, null);
             if (hostHeader != null) {
-                final String hostStr = hostHeader.split(",")[0].trim();
+                String hostStr = hostHeader;
+                if (hostStr.startsWith("http://")) {
+                    hostStr = hostStr.substring(7, hostHeader.length());
+                } else if (hostHeader.startsWith("https://")) {
+                    hostStr = hostStr.substring(8, hostHeader.length());
+                }
+                hostStr = hostStr.split(",")[0].trim();
                 String[] parts = hostStr.split(":");
                 newRef.setHostDomain(parts[0]);
                 if (parts.length > 1) {
