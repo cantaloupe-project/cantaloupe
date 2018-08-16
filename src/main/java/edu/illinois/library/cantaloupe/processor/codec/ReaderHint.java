@@ -12,8 +12,6 @@ public enum ReaderHint {
      * Provided to a reader, telling it to read the entire image ignoring
      * {@link edu.illinois.library.cantaloupe.operation.Crop} operations.
      */
-    IGNORE_CROP,
-
-    IGNORE_SCALE
+    IGNORE_CROP
 
 }

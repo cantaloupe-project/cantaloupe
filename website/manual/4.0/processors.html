@@ -777,7 +777,7 @@ title: Processors
 
 <p>PdfBoxProcessor uses the <a href="https://pdfbox.apache.org">Apache PDFBox</a> library to read and rasterize PDF files. This is a pure-Java library that is bundled in and has no dependencies.</p>
 
-<p>As PDF is a vector format, PdfBoxProcessor will convert to a raster (pixel) image and use a Java 2D pipeline to transform it according to the request arguments. The size of the base raster image, corresponding to a scale of 1, is configurable with the <code>processor.dpi</code> configuration option. Then, rather than scaling a fixed-DPI raster, the vectorization DPI will be auto-scaled based on the requested scale.</p>
+<p>As PDF is a vector format, PdfBoxProcessor will convert to a raster (pixel) image and use a Java 2D pipeline to transform it according to the request arguments. The size of the base raster image, corresponding to a scale of 1, is configurable with the <code>processor.dpi</code> configuration option. When a request asks for a scale of &le; 50% or &ge; 200%, a fraction or multiple of this will be used, respectively, in order to improve efficiency at small scales, and detail at large scales.</p>
 
 <h4>Optional Arguments</h4>
 

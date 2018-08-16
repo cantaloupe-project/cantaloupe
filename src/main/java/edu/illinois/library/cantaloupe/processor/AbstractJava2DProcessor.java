@@ -297,8 +297,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
         // Apply remaining operations.
         for (Operation op : opList) {
             if (op.hasEffect(fullSize, opList)) {
-                if (op instanceof Scale &&
-                        !readerHints.contains(ReaderHint.IGNORE_SCALE)) {
+                if (op instanceof Scale) {
                     image = Java2DUtil.scale(image, (Scale) op,
                             reductionFactor);
                 } else if (op instanceof Transpose) {
