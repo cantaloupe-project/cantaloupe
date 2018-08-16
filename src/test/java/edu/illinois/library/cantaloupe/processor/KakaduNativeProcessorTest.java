@@ -2,11 +2,15 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.Encode;
+import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.awt.Dimension;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -89,6 +93,14 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
                 ProcessorFeature.SIZE_BY_WIDTH,
                 ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
         assertEquals(expectedFeatures, instance.getSupportedFeatures());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testValidateWithNonAspectFillScale() throws Exception {
+        OperationList ops = new OperationList(
+                new Scale(20, 20, Scale.Mode.NON_ASPECT_FILL),
+                new Encode(Format.JPG));
+        instance.validate(ops, new Dimension(200, 200));
     }
 
 }
