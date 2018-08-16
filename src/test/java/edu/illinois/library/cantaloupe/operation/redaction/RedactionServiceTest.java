@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.operation.redaction;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.DelegateProxyService;
@@ -60,10 +61,8 @@ public class RedactionServiceTest extends BaseTest {
         List<Redaction> redactions = instance.redactionsFor(proxy);
 
         assertEquals(1, redactions.size());
-        assertEquals(0, redactions.get(0).getRegion().x);
-        assertEquals(10, redactions.get(0).getRegion().y);
-        assertEquals(50, redactions.get(0).getRegion().width);
-        assertEquals(70, redactions.get(0).getRegion().height);
+        assertEquals(new Rectangle(0, 10, 50, 70),
+                redactions.get(0).getRegion());
     }
 
     @Test

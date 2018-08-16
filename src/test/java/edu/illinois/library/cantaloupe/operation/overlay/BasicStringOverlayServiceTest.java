@@ -2,12 +2,12 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.Dimension;
 import java.awt.font.TextAttribute;
 
 import static org.junit.Assert.*;
@@ -45,7 +45,7 @@ public class BasicStringOverlayServiceTest extends BaseTest {
     }
 
     @Test
-    public void testGetOverlay() throws Exception {
+    public void testGetOverlay() {
         final StringOverlay overlay = instance.getOverlay();
         assertEquals("cats", overlay.getString());
         assertEquals(new Color(12, 23, 34, 45), overlay.getBackgroundColor());
@@ -62,7 +62,7 @@ public class BasicStringOverlayServiceTest extends BaseTest {
     }
 
     @Test
-    public void testShouldApplyToImage() throws Exception {
+    public void testShouldApplyToImage() {
         Configuration config = Configuration.getInstance();
         config.clear();
 

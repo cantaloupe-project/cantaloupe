@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
@@ -17,7 +18,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -36,6 +36,8 @@ import static org.junit.Assert.*;
  * For this to work, the ImageMagick binaries must be on the PATH.
  */
 public class ImageMagickProcessorTest extends MagickProcessorTest {
+
+    private static final double DELTA = 0.00000001;
 
     private static HashMap<Format, Set<Format>> supportedFormats;
 
@@ -322,8 +324,8 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
                         // is to assert that they are nonzero.
                         final Info actualInfo = proc.readImageInfo();
                         assertEquals(format, actualInfo.getSourceFormat());
-                        assertTrue(actualInfo.getSize().getWidth() > 0);
-                        assertTrue(actualInfo.getSize().getHeight() > 0);
+                        assertTrue(actualInfo.getSize().width() > DELTA);
+                        assertTrue(actualInfo.getSize().height() > DELTA);
 
                         assertEquals(-1, actualInfo.getNumResolutions());
                     } catch (Exception e) {

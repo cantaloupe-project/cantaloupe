@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.image;
 
 import edu.illinois.library.cantaloupe.http.Reference;
 
-import java.awt.Dimension;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -101,8 +100,8 @@ public final class ScaleConstraint {
     public Dimension getConstrainedSize(Dimension fullSize) {
         final double factor = getScale();
         return new Dimension(
-                (int) Math.round(fullSize.width * factor),
-                (int) Math.round(fullSize.height * factor));
+                fullSize.width() * factor,
+                fullSize.height() * factor);
     }
 
     public long getDenominator() {
@@ -137,9 +136,8 @@ public final class ScaleConstraint {
     }
 
     public Dimension getResultingSize(Dimension fullSize) {
-        Dimension size = new Dimension(fullSize.width, fullSize.height);
-        size.width = (int) Math.round(size.width * getScale());
-        size.height = (int) Math.round(size.height * getScale());
+        Dimension size = new Dimension(fullSize);
+        size.scaleBy(getScale());
         return size;
     }
 

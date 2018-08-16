@@ -4,7 +4,9 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Compression;
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
@@ -29,8 +31,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -364,8 +364,8 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                             fullSize, ops.getScaleConstraint());
                     args.add("-crop");
                     args.add(String.format("%dx%d+%d+%d",
-                            cropArea.width, cropArea.height,
-                            cropArea.x, cropArea.y));
+                            cropArea.intWidth(), cropArea.intHeight(),
+                            cropArea.intX(), cropArea.intY()));
                 }
             } else if (op instanceof Scale) {
                 Scale scale = (Scale) op;
@@ -388,8 +388,8 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                         switch (scale.getMode()) {
                             case FULL:
                                 args.add(String.format("%dx%d",
-                                        Math.round(fullSize.width * scScale),
-                                        Math.round(fullSize.height * scScale)));
+                                        Math.round(fullSize.width() * scScale),
+                                        Math.round(fullSize.height() * scScale)));
                                 break;
                             case ASPECT_FIT_WIDTH:
                                 args.add(scale.getWidth() + "x");

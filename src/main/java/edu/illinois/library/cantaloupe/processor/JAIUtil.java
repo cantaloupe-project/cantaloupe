@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
+import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
@@ -22,8 +24,6 @@ import javax.media.jai.PlanarImage;
 import javax.media.jai.ROIShape;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.TransposeDescriptor;
-import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.renderable.ParameterBlock;
 
@@ -76,14 +76,14 @@ final class JAIUtil {
                     new Dimension(inImage.getWidth(), inImage.getHeight()),
                     rf, scaleConstraint);
             LOGGER.debug("cropImage(): x: {}; y: {}; width: {}; height: {}",
-                    cropRegion.x, cropRegion.y,
-                    cropRegion.width, cropRegion.height);
+                    cropRegion.intX(), cropRegion.intY(),
+                    cropRegion.intWidth(), cropRegion.intHeight());
             final ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
-            pb.add((float) cropRegion.x);
-            pb.add((float) cropRegion.y);
-            pb.add((float) cropRegion.width);
-            pb.add((float) cropRegion.height);
+            pb.add((float) cropRegion.x());
+            pb.add((float) cropRegion.y());
+            pb.add((float) cropRegion.width());
+            pb.add((float) cropRegion.height());
             inImage = JAI.create("crop", pb);
         }
         return inImage;
@@ -208,8 +208,8 @@ final class JAIUtil {
                     new Dimension(sourceWidth, sourceHeight),
                     rf, scaleConstraint);
 
-            double xScale = scaledSize.width / (double) sourceWidth;
-            double yScale = scaledSize.height / (double) sourceHeight;
+            double xScale = scaledSize.width() / (double) sourceWidth;
+            double yScale = scaledSize.height() / (double) sourceHeight;
 
             LOGGER.debug("scaleImage(): width: {}%; height: {}%",
                     xScale * 100, yScale * 100);
@@ -259,8 +259,8 @@ final class JAIUtil {
         } else if (scale.hasEffect() || scaleConstraint.hasEffect()) {
             final Dimension scaledSize = scale.getResultingSize(
                     fullSize, rf, scaleConstraint);
-            final double xScale = scaledSize.width / (double) fullSize.width;
-            final double yScale = scaledSize.height / (double) fullSize.height;
+            final double xScale = scaledSize.width() / fullSize.width();
+            final double yScale = scaledSize.height() / fullSize.height();
 
             LOGGER.trace("scaleImageUsingSubsampleAverage(): " +
                             "width: {}%; height: {}%",
@@ -291,7 +291,7 @@ final class JAIUtil {
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
             pb.add(null);
-            pb.add(sharpen.getAmount());
+            pb.add((float) sharpen.getAmount());
             inImage = JAI.create("UnsharpMask", pb);
         }
         return inImage;
@@ -317,11 +317,11 @@ final class JAIUtil {
         final Dimension fullSize = new Dimension(inImage.getWidth(),
                 inImage.getHeight());
         final Rectangle sampleArea = new Rectangle(0, 0,
-                fullSize.width, fullSize.height);
+                fullSize.width(), fullSize.height());
 
         ParameterBlock pb = new ParameterBlock();
         pb.addSource(inImage);
-        pb.add(new ROIShape(sampleArea));
+        pb.add(new ROIShape(sampleArea.toAWTRectangle()));
         pb.add(1); // Horizontal sampling rate
         pb.add(1); // Vertical sampling rate
         RenderedOp op = JAI.create("extrema", pb);

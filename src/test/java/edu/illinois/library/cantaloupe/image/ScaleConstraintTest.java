@@ -4,12 +4,13 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.Dimension;
 import java.util.Map;
 
 import static org.junit.Assert.*;
 
 public class ScaleConstraintTest extends BaseTest {
+
+    private static final double DELTA = 0.00000001;
 
     private ScaleConstraint instance;
 
@@ -70,8 +71,8 @@ public class ScaleConstraintTest extends BaseTest {
     public void testGetConstrainedSize() {
         Dimension fullSize = new Dimension(900, 600);
         Dimension actual = instance.getConstrainedSize(fullSize);
-        assertEquals(600, actual.width);
-        assertEquals(400, actual.height);
+        assertEquals(600, actual.width(), DELTA);
+        assertEquals(400, actual.height(), DELTA);
     }
 
     @Test

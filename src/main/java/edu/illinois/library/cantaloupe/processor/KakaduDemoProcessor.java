@@ -5,8 +5,10 @@ import edu.illinois.library.cantaloupe.async.TaskQueue;
 import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -23,8 +25,6 @@ import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -461,9 +461,9 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
                 // and kdu_expand now unpredictably returns an extra pixel.
                 // Too bad, but Java2DUtil.crop() will take care of it.
                 final int xDecimalPlaces =
-                        Integer.toString(fullSize.width).length() + 1;
+                        Integer.toString(fullSize.intWidth()).length() + 1;
                 final int yDecimalPlaces =
-                        Integer.toString(fullSize.height).length() + 1;
+                        Integer.toString(fullSize.intHeight()).length() + 1;
                 final String xFormat = "#." + StringUtils.repeat("#",
                         xDecimalPlaces);
                 final String yFormat = "#." + StringUtils.repeat("#",
@@ -477,10 +477,10 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
                 final Rectangle region = crop.getRectangle(
                         fullSize, opList.getScaleConstraint());
 
-                final double x = region.x / (double) fullSize.width;
-                final double y = region.y / (double) fullSize.height;
-                final double width = region.width / (double) fullSize.width;
-                final double height = region.height / (double) fullSize.height;
+                final double x = region.x() / fullSize.width();
+                final double y = region.y() / fullSize.height();
+                final double width = region.width() / fullSize.width();
+                final double height = region.height() / fullSize.height();
 
                 command.add("-region");
                 command.add(String.format("{%s,%s},{%s,%s}",
@@ -524,11 +524,11 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
      */
     private static Dimension getROISize(OperationList opList,
                                         Dimension fullSize) {
-        Dimension size = (Dimension) fullSize.clone();
+        Dimension size = new Dimension(fullSize);
         for (Operation op : opList) {
             if (op instanceof Crop) {
                 size = ((Crop) op).getRectangle(
-                        size, opList.getScaleConstraint()).getSize();
+                        size, opList.getScaleConstraint()).size();
             }
         }
         return size;

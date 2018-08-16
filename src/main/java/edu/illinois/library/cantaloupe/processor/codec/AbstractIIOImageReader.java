@@ -2,6 +2,8 @@ package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Dimension;
+import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -17,8 +19,6 @@ import org.slf4j.Logger;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.stream.ImageInputStream;
-import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
@@ -402,20 +402,21 @@ abstract class AbstractIIOImageReader {
                     final int subimageWidth = iioReader.getWidth(i);
                     final int subimageHeight = iioReader.getHeight(i);
 
-                    final double reducedScale = (double) subimageWidth /
-                            (double) fullSize.width;
-                    if (fits(regionRect.getSize(), scale, scaleConstraint,
+                    final double reducedScale =
+                            (double) subimageWidth / fullSize.width();
+                    if (fits(regionRect.size(), scale, scaleConstraint,
                             reducedScale)) {
-                        reductionFactor.factor = ReductionFactor.forScale(reducedScale).factor;
+                        reductionFactor.factor =
+                                ReductionFactor.forScale(reducedScale).factor;
                         getLogger().trace("Subimage {}: {}x{} - fits! " +
                                         "({}x reduction factor)",
                                 i + 1, subimageWidth, subimageHeight,
                                 reductionFactor.factor);
                         final Rectangle reducedRect = new Rectangle(
-                                (int) Math.round(regionRect.x * reducedScale),
-                                (int) Math.round(regionRect.y * reducedScale),
-                                (int) Math.round(regionRect.width * reducedScale),
-                                (int) Math.round(regionRect.height * reducedScale));
+                                regionRect.x() * reducedScale,
+                                regionRect.y() * reducedScale,
+                                regionRect.width() * reducedScale,
+                                regionRect.height() * reducedScale);
                         bestImage = tileAwareRead(i, reducedRect, hints);
                         break;
                     } else {
@@ -455,23 +456,26 @@ abstract class AbstractIIOImageReader {
 
         if (tileSize.equals(imageSize)) {
             getLogger().debug("Acquiring region {},{}/{}x{} from {}x{} mono-tiled/mono-striped image",
-                    region.x, region.y, region.width, region.height,
-                    imageSize.width, imageSize.height);
-        } else if (tileSize.width == imageSize.width) {
+                    region.intX(), region.intY(),
+                    region.intWidth(), region.intHeight(),
+                    imageSize.intWidth(), imageSize.intHeight());
+        } else if (tileSize.intWidth() == imageSize.intWidth()) {
             getLogger().debug("Acquiring region {},{}/{}x{} from {}x{} image ({}x{} strip size)",
-                    region.x, region.y, region.width, region.height,
-                    imageSize.width, imageSize.height,
-                    tileSize.width, tileSize.height);
+                    region.intX(), region.intY(),
+                    region.intWidth(), region.intHeight(),
+                    imageSize.intWidth(), imageSize.intHeight(),
+                    tileSize.intWidth(), tileSize.intHeight());
         } else {
             getLogger().debug("Acquiring region {},{}/{}x{} from {}x{} image ({}x{} tile size)",
-                    region.x, region.y, region.width, region.height,
-                    imageSize.width, imageSize.height,
-                    tileSize.width, tileSize.height);
+                    region.intX(), region.intY(),
+                    region.intWidth(), region.intHeight(),
+                    imageSize.intWidth(), imageSize.intHeight(),
+                    tileSize.intWidth(), tileSize.intHeight());
         }
 
         hints.add(ReaderHint.ALREADY_CROPPED);
         final ImageReadParam param = iioReader.getDefaultReadParam();
-        param.setSourceRegion(region);
+        param.setSourceRegion(region.toAWTRectangle());
 
         return iioReader.read(imageIndex, param);
     }
@@ -591,9 +595,9 @@ abstract class AbstractIIOImageReader {
                     final int subimageWidth = iioReader.getWidth(i);
                     final int subimageHeight = iioReader.getHeight(i);
 
-                    final double reducedScale = (double) subimageWidth /
-                            (double) fullSize.width;
-                    if (fits(regionRect.getSize(), scale, scaleConstraint,
+                    final double reducedScale =
+                            (double) subimageWidth / fullSize.width();
+                    if (fits(regionRect.size(), scale, scaleConstraint,
                             reducedScale)) {
                         rf.factor = ReductionFactor.forScale(reducedScale).factor;
                         getLogger().trace("Subimage {}: {}x{} - fits! " +
@@ -626,38 +630,31 @@ abstract class AbstractIIOImageReader {
                          final Scale scale,
                          final ScaleConstraint scaleConstraint,
                          final double reducedScale) {
-        // Instead of directly comparing floats, we use a delta to allow for
-        // some lenience to choose a subimage that may be just a tiny bit too
-        // small. This is mainly needed because of the imprecision of using
-        // java.awt.Dimension integers throughout the processing pipeline. A
-        // better solution would be to replace that class with a custom
-        // float-based Dimension class.
-        final double maxDelta = 0.0001;
         final double scScale = scaleConstraint.getScale();
 
         if (scale.getPercent() != null) {
             double cappedScale = (scale.getPercent() > 1) ?
                     1 : scale.getPercent();
-            return (cappedScale * scScale - reducedScale < maxDelta);
+            return (cappedScale * scScale <= reducedScale);
         } else {
             switch (scale.getMode()) {
                 case FULL:
-                    return (scaleConstraint.getScale() - reducedScale < maxDelta);
+                    return (scaleConstraint.getScale() <= reducedScale);
                 case ASPECT_FIT_WIDTH:
-                    int cappedWidth = (scale.getWidth() > regionSize.width) ?
-                        regionSize.width : scale.getWidth();
-                    return (cappedWidth / (double) regionSize.width - reducedScale < maxDelta);
+                    double cappedWidth = (scale.getWidth() > regionSize.width()) ?
+                        regionSize.width() : scale.getWidth();
+                    return (cappedWidth / regionSize.width() <= reducedScale);
                 case ASPECT_FIT_HEIGHT:
-                    int cappedHeight = (scale.getHeight() > regionSize.height) ?
-                            regionSize.height : scale.getHeight();
-                    return (cappedHeight / (double) regionSize.height - reducedScale < maxDelta);
+                    double cappedHeight = (scale.getHeight() > regionSize.height()) ?
+                            regionSize.height() : scale.getHeight();
+                    return (cappedHeight / regionSize.height() <= reducedScale);
                 default:
-                    cappedWidth = (scale.getWidth() > regionSize.width) ?
-                            regionSize.width : scale.getWidth();
-                    cappedHeight = (scale.getHeight() > regionSize.height) ?
-                            regionSize.height : scale.getHeight();
-                    return (cappedWidth / (double) regionSize.width - reducedScale < maxDelta &&
-                            cappedHeight / (double) regionSize.height - reducedScale < maxDelta);
+                    cappedWidth = (scale.getWidth() > regionSize.width()) ?
+                            regionSize.width() : scale.getWidth();
+                    cappedHeight = (scale.getHeight() > regionSize.height()) ?
+                            regionSize.height() : scale.getHeight();
+                    return (cappedWidth / regionSize.width() <= reducedScale &&
+                            cappedHeight / regionSize.height() <= reducedScale);
             }
         }
     }

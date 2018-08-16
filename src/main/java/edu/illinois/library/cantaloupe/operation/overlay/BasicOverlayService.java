@@ -3,8 +3,7 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
-
-import java.awt.Dimension;
+import edu.illinois.library.cantaloupe.image.Dimension;
 
 abstract class BasicOverlayService {
 
@@ -22,8 +21,8 @@ abstract class BasicOverlayService {
                 config.getInt(Key.OVERLAY_OUTPUT_WIDTH_THRESHOLD, 0);
         final int minOutputHeight =
                 config.getInt(Key.OVERLAY_OUTPUT_HEIGHT_THRESHOLD, 0);
-        return (outputImageSize.width >= minOutputWidth &&
-                outputImageSize.height >= minOutputHeight);
+        return (outputImageSize.width() >= minOutputWidth &&
+                outputImageSize.height() >= minOutputHeight);
     }
 
     BasicOverlayService() throws ConfigurationException {
@@ -54,7 +53,7 @@ abstract class BasicOverlayService {
     private void readPosition() throws ConfigurationException {
         final Configuration config = Configuration.getInstance();
         final String configValue = config.getString(Key.OVERLAY_POSITION, "");
-        if (configValue.length() > 0) {
+        if (!configValue.isEmpty()) {
             try {
                 position = Position.fromString(configValue);
             } catch (IllegalArgumentException e) {

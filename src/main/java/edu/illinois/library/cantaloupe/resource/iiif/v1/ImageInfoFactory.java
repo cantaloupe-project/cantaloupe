@@ -2,13 +2,12 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.resource.iiif.ImageInfoUtil;
-
-import java.awt.Dimension;
 
 final class ImageInfoFactory {
 
@@ -40,15 +39,9 @@ final class ImageInfoFactory {
         // Otherwise, use the smallest multiple of the tile size above
         // MIN_TILE_SIZE_CONFIG_KEY of image resolution 0.
         final Dimension virtualSize = infoImage.getOrientationSize();
-        virtualSize.width = (int) Math.round(
-                virtualSize.width * scaleConstraint.getScale());
-        virtualSize.height = (int) Math.round(
-                virtualSize.height * scaleConstraint.getScale());
+        virtualSize.scaleBy(scaleConstraint.getScale());
         Dimension virtualTileSize = infoImage.getOrientationTileSize();
-        virtualTileSize.width = (int) Math.round(
-                virtualTileSize.width * scaleConstraint.getScale());
-        virtualTileSize.height = (int) Math.round(
-                virtualTileSize.height * scaleConstraint.getScale());
+        virtualTileSize.scaleBy(scaleConstraint.getScale());
 
         if (numResolutions > 0) {
             if (!virtualTileSize.equals(virtualSize)) {
@@ -61,11 +54,12 @@ final class ImageInfoFactory {
         // to JSON and sent as the response body.
         final ImageInfo imageInfo = new ImageInfo();
         imageInfo.id = imageURI;
-        imageInfo.width = virtualSize.width;
-        imageInfo.height = virtualSize.height;
+        imageInfo.width = virtualSize.intWidth();
+        imageInfo.height = virtualSize.intHeight();
         imageInfo.profile = complianceLevel.getUri();
-        imageInfo.tileWidth = virtualTileSize.width;
-        imageInfo.tileHeight = virtualTileSize.height;
+        // Round up to prevent clients from requesting narrow edge tiles.
+        imageInfo.tileWidth = (int) Math.ceil(virtualTileSize.width());
+        imageInfo.tileHeight = (int) Math.ceil(virtualTileSize.height());
 
         // scale factors
         int maxReductionFactor =

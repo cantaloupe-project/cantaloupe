@@ -73,8 +73,8 @@ public class KakaduDemoProcessorTest extends AbstractProcessorTest {
             @Override
             public void run() {
                 if (this.sourceSize != null) {
-                    int expectedSize = (this.sourceSize.width > this.sourceSize.height) ?
-                            this.sourceSize.height : this.sourceSize.width;
+                    double expectedSize = (this.sourceSize.width() > this.sourceSize.height()) ?
+                            this.sourceSize.height() : this.sourceSize.width();
                     assertTrue(Math.abs(expectedSize - this.resultingImage.getWidth()) < 2);
                     assertTrue(Math.abs(expectedSize - this.resultingImage.getHeight()) < 2);
                 }

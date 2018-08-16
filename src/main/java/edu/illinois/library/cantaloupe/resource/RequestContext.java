@@ -1,10 +1,10 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 
-import java.awt.Dimension;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
@@ -152,8 +152,8 @@ public final class RequestContext {
 
     private Map<String,Integer> toMap(Dimension size) {
         Map<String,Integer> map = new HashMap<>();
-        map.put("width", size.width);
-        map.put("height", size.height);
+        map.put("width", size.intWidth());
+        map.put("height", size.intHeight());
         return Collections.unmodifiableMap(map);
     }
 

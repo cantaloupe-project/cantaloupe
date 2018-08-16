@@ -344,7 +344,7 @@ public class JAIUtilTest extends BaseTest {
                 image, scale, scaleConstraint, rf);
         assertEquals(width, scaledImage.getWidth(), DELTA);
         assertEquals(
-                Math.round((width / (float) image.getWidth()) * image.getHeight()),
+                Math.floor(width / (double) image.getWidth() * image.getHeight()),
                 scaledImage.getHeight(), DELTA);
         // up
         width = 80;
@@ -353,7 +353,7 @@ public class JAIUtilTest extends BaseTest {
                 image, scale, scaleConstraint, rf);
         assertEquals(width, scaledImage.getWidth(), DELTA);
         assertEquals(
-                Math.round((width / (float) image.getWidth()) * image.getHeight()),
+                width / (double) image.getWidth() * image.getHeight(),
                 scaledImage.getHeight(), DELTA);
 
         // Mode.ASPECT_FIT_HEIGHT
@@ -365,7 +365,7 @@ public class JAIUtilTest extends BaseTest {
         scaledImage = JAIUtil.scaleImageUsingSubsampleAverage(
                 image, scale, scaleConstraint, rf);
         assertEquals(
-                Math.round((height / (float) image.getHeight()) * image.getWidth()),
+                Math.floor(height / (double) image.getHeight() * image.getWidth()),
                 scaledImage.getWidth(), DELTA);
         assertEquals(height, scaledImage.getHeight(), DELTA);
         // up
@@ -374,7 +374,7 @@ public class JAIUtilTest extends BaseTest {
         scaledImage = JAIUtil.scaleImageUsingSubsampleAverage(
                 image, scale, scaleConstraint, rf);
         assertEquals(
-                Math.round((height / (float) image.getHeight()) * image.getWidth()),
+                Math.floor(height / (double) image.getHeight() * image.getWidth()),
                 scaledImage.getWidth(), DELTA);
         assertEquals(height, scaledImage.getHeight(), DELTA);
 
@@ -390,7 +390,7 @@ public class JAIUtilTest extends BaseTest {
                 image, scale, scaleConstraint, rf);
         assertEquals(width, scaledImage.getWidth(), DELTA);
         assertEquals(
-                Math.round((height / (float) image.getWidth()) * image.getHeight()),
+                height / (double) image.getWidth() * image.getHeight(),
                 scaledImage.getHeight(), DELTA);
         // up
         width = 90;
@@ -401,7 +401,7 @@ public class JAIUtilTest extends BaseTest {
                 image, scale, scaleConstraint, rf);
         assertEquals(width, scaledImage.getWidth(), DELTA);
         assertEquals(
-                Math.round((width / (float) image.getWidth()) * image.getHeight()),
+                Math.ceil(width / (double) image.getWidth() * image.getHeight()),
                 scaledImage.getHeight(), DELTA);
 
         // Mode.NON_ASPECT_FILL

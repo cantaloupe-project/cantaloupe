@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 
-import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.util.HashSet;
 import java.util.Set;

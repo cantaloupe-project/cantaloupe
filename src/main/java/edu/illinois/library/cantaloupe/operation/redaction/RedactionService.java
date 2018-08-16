@@ -2,10 +2,10 @@ package edu.illinois.library.cantaloupe.operation.redaction;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
 
 import javax.script.ScriptException;
-import java.awt.Rectangle;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,10 +34,10 @@ public final class RedactionService {
             throws ScriptException {
         return proxy.getRedactions().stream()
                 .map(def -> new Redaction(
-                        new Rectangle(def.get("x").intValue(),
-                                def.get("y").intValue(),
-                                def.get("width").intValue(),
-                                def.get("height").intValue())))
+                        new Rectangle(def.get("x").doubleValue(),
+                                def.get("y").doubleValue(),
+                                def.get("width").doubleValue(),
+                                def.get("height").doubleValue())))
                 .collect(Collectors.toList());
     }
 

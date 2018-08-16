@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
@@ -8,7 +9,6 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.Dimension;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;

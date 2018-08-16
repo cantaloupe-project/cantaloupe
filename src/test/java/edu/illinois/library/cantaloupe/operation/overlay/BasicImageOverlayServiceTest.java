@@ -2,11 +2,11 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.Dimension;
 import java.net.URI;
 
 import static org.junit.Assert.*;
@@ -39,7 +39,7 @@ public class BasicImageOverlayServiceTest extends BaseTest {
     }
 
     @Test
-    public void testShouldApplyToImage() throws Exception {
+    public void testShouldApplyToImage() {
         Configuration config = Configuration.getInstance();
         config.clear();
 

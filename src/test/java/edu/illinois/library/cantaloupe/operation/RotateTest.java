@@ -1,11 +1,11 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.Dimension;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -61,10 +61,11 @@ public class RotateTest extends BaseTest {
         final int degrees = 30;
         instance.setDegrees(degrees);
 
-        Dimension expectedSize = new Dimension(360, 323);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
-        assertEquals(expectedSize,
-                instance.getResultingSize(fullSize, scaleConstraint));
+        Dimension actualSize = instance.getResultingSize(fullSize, scaleConstraint);
+
+        assertEquals(360, actualSize.intWidth());
+        assertEquals(323, actualSize.intHeight());
     }
 
     @Test
@@ -73,10 +74,11 @@ public class RotateTest extends BaseTest {
         final int degrees = 30;
         instance.setDegrees(degrees);
 
-        Dimension expectedSize = new Dimension(360, 323);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 2);
-        assertEquals(expectedSize,
-                instance.getResultingSize(fullSize, scaleConstraint));
+        Dimension actual = instance.getResultingSize(fullSize, scaleConstraint);
+
+        assertEquals(360, actual.intWidth());
+        assertEquals(323, actual.intHeight());
     }
 
     @Test

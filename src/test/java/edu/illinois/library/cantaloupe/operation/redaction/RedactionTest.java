@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.operation.redaction;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
+import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -7,8 +9,6 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.util.Map;
 
 import static org.junit.Assert.*;

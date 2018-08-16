@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.Compression;
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.image.Orientation;
@@ -11,7 +12,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
@@ -22,6 +22,7 @@ import static org.junit.Assert.*;
 
 abstract class AbstractImageReaderTest extends BaseTest {
 
+    private static final double DELTA = 0.00000001;
     private static final Dimension FIXTURE_SIZE = new Dimension(64, 56);
 
     ImageReader instance;
@@ -82,8 +83,8 @@ abstract class AbstractImageReaderTest extends BaseTest {
     @Test
     public void testRead() throws Exception {
         BufferedImage result = instance.read();
-        assertEquals(FIXTURE_SIZE.width, result.getWidth());
-        assertEquals(FIXTURE_SIZE.height, result.getHeight());
+        assertEquals(FIXTURE_SIZE.width(), result.getWidth(), DELTA);
+        assertEquals(FIXTURE_SIZE.height(), result.getHeight(), DELTA);
     }
 
     @Test
@@ -117,8 +118,8 @@ abstract class AbstractImageReaderTest extends BaseTest {
     @Test
     public void testReadRendered() throws Exception {
         RenderedImage result = instance.read();
-        assertEquals(FIXTURE_SIZE.width, result.getWidth());
-        assertEquals(FIXTURE_SIZE.height, result.getHeight());
+        assertEquals(FIXTURE_SIZE.width(), result.getWidth(), DELTA);
+        assertEquals(FIXTURE_SIZE.height(), result.getHeight(), DELTA);
     }
 
     @Test

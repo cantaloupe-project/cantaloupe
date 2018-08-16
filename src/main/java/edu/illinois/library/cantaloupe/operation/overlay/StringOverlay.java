@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Operation;
@@ -7,7 +8,6 @@ import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.font.TextAttribute;
 import java.nio.charset.Charset;
@@ -36,9 +36,14 @@ public class StringOverlay extends Overlay implements Operation {
     private Color strokeColor;
     private float strokeWidth;
 
-    public StringOverlay(String string, Position position, int inset,
-                         Font font, int minSize, Color color,
-                         Color backgroundColor, Color strokeColor,
+    public StringOverlay(String string,
+                         Position position,
+                         int inset,
+                         Font font,
+                         int minSize,
+                         Color color,
+                         Color backgroundColor,
+                         Color strokeColor,
                          float strokeWidth) {
         super(position, inset);
         this.setString(string);

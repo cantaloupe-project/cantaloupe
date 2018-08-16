@@ -5,8 +5,10 @@ import edu.illinois.library.cantaloupe.async.TaskQueue;
 import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -24,8 +26,6 @@ import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -541,8 +541,9 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                         fullSize, opList.getScaleConstraint());
                 command.add("-d");
                 command.add(String.format("%d,%d,%d,%d",
-                        region.x, region.y, region.x + region.width,
-                        region.y + region.height));
+                        region.intX(), region.intY(),
+                        region.intX() + region.intWidth(),
+                        region.intY() + region.intHeight()));
             } else if (op instanceof Scale) {
                 // opj_decompress is not capable of arbitrary scaling, but it
                 // does offer a -r (reduce) argument to select a
@@ -580,11 +581,11 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
      */
     private static Dimension getROISize(OperationList opList,
                                         Dimension fullSize) {
-        Dimension size = (Dimension) fullSize.clone();
+        Dimension size = new Dimension(fullSize);
         for (Operation op : opList) {
             if (op instanceof Crop) {
                 size = ((Crop) op).getRectangle(
-                        size, opList.getScaleConstraint()).getSize();
+                        size, opList.getScaleConstraint()).size();
             }
         }
         return size;

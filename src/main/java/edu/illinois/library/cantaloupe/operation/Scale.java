@@ -1,11 +1,11 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.processor.resample.ResampleFilter;
 import edu.illinois.library.cantaloupe.processor.resample.ResampleFilters;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
-import java.awt.Dimension;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -294,20 +294,16 @@ public class Scale implements Operation {
                     rf = ReductionFactor.forScale(scScale);
                     break;
                 case ASPECT_FIT_WIDTH:
-                    double hvScale = getWidth() /
-                            (double) reducedSize.width * scScale;
+                    double hvScale = getWidth() / reducedSize.width() * scScale;
                     rf = ReductionFactor.forScale(hvScale);
                     break;
                 case ASPECT_FIT_HEIGHT:
-                    hvScale = getHeight() /
-                            (double) reducedSize.height * scScale;
+                    hvScale = getHeight() / reducedSize.height() * scScale;
                     rf = ReductionFactor.forScale(hvScale);
                     break;
                 case ASPECT_FIT_INSIDE:
-                    double hScale = getWidth() /
-                            (double) reducedSize.width * scScale;
-                    double vScale = getHeight() /
-                            (double) reducedSize.height * scScale;
+                    double hScale = getWidth() / reducedSize.width() * scScale;
+                    double vScale = getHeight() / reducedSize.height() * scScale;
                     rf = ReductionFactor.forScale(Math.min(hScale, vScale));
                     break;
             }
@@ -336,13 +332,13 @@ public class Scale implements Operation {
             case FULL:
                 return scaleConstraint.getScale();
             case ASPECT_FIT_HEIGHT:
-                return getHeight() / (double) fullSize.height;
+                return getHeight() / fullSize.height();
             case ASPECT_FIT_WIDTH:
-                return getWidth() / (double) fullSize.width;
+                return getWidth() / fullSize.width();
             case ASPECT_FIT_INSIDE:
                 return Math.min(
-                        getWidth() / (double) fullSize.width,
-                        getHeight() / (double) fullSize.height);
+                        getWidth() / fullSize.width(),
+                        getHeight() / fullSize.height());
             default:
                 return null;
         }
@@ -373,43 +369,41 @@ public class Scale implements Operation {
     public Dimension getResultingSize(Dimension imageSize,
                                       ReductionFactor reductionFactor,
                                       ScaleConstraint scaleConstraint) {
-        final Dimension size = new Dimension(imageSize.width, imageSize.height);
+        final Dimension size = new Dimension(imageSize);
         final double rfScale = reductionFactor.getScale();
         final double scScale = scaleConstraint.getScale();
 
         if (getPercent() != null) {
-            size.width = (int) Math.round(
-                    size.width * getPercent() * (scScale / rfScale));
-            size.height = (int) Math.round(
-                    size.height * getPercent() * (scScale / rfScale));
+            final double scalePct = getPercent() * (scScale / rfScale);
+            size.setWidth(size.width() * scalePct);
+            size.setHeight(size.height() * scalePct);
         } else {
             switch (getMode()) {
                 case FULL:
-                    size.width = (int) Math.round(
-                            size.width * (scScale / rfScale));
-                    size.height = (int) Math.round(
-                            size.height * (scScale / rfScale));
+                    double scalePct = scScale / rfScale;
+                    size.setWidth(size.width() * scalePct);
+                    size.setHeight(size.height() * scalePct);
                     break;
                 case ASPECT_FIT_HEIGHT:
-                    double scalePct = getHeight() / (double) size.height;
-                    size.width = (int) Math.round(size.width * scalePct);
-                    size.height = (int) Math.round(size.height * scalePct);
+                    scalePct = getHeight() / size.height();
+                    size.setWidth(size.width() * scalePct);
+                    size.setHeight(size.height() * scalePct);
                     break;
                 case ASPECT_FIT_WIDTH:
-                    scalePct = getWidth() / (double) size.width;
-                    size.width = (int) Math.round(size.width * scalePct);
-                    size.height = (int) Math.round(size.height * scalePct);
+                    scalePct = getWidth() / size.width();
+                    size.setWidth(size.width() * scalePct);
+                    size.setHeight(size.height() * scalePct);
                     break;
                 case ASPECT_FIT_INSIDE:
                     scalePct = Math.min(
-                            getWidth() / (double) size.width,
-                            getHeight() / (double) size.height);
-                    size.width = (int) Math.round(size.width * scalePct);
-                    size.height = (int) Math.round(size.height * scalePct);
+                            getWidth() / size.width(),
+                            getHeight() / size.height());
+                    size.setWidth(size.width() * scalePct);
+                    size.setHeight(size.height() * scalePct);
                     break;
                 case NON_ASPECT_FILL:
-                    size.width = getWidth();
-                    size.height = getHeight();
+                    size.setWidth(getWidth());
+                    size.setHeight(getHeight());
                     break;
             }
         }
@@ -448,14 +442,15 @@ public class Scale implements Operation {
             case FULL:
                 return false;
             case ASPECT_FIT_WIDTH:
-                return getWidth() != cropSize.width;
+                return (Math.abs(getWidth() - cropSize.width()) > DELTA);
             case ASPECT_FIT_HEIGHT:
-                return getHeight() != cropSize.height;
+                return (Math.abs(getHeight() - cropSize.height()) > DELTA);
             default:
                 if (getPercent() != null) {
-                    return Math.abs(this.getPercent() - 1) > DELTA;
+                    return Math.abs(getPercent() - 1) > DELTA;
                 }
-                return getWidth() != cropSize.width || getHeight() != cropSize.height;
+                return (Math.abs(getWidth() - cropSize.width()) > DELTA ||
+                        Math.abs(getHeight() - cropSize.height()) > DELTA);
         }
     }
 
@@ -475,8 +470,8 @@ public class Scale implements Operation {
                         ScaleConstraint comparedToScaleConstraint) {
         Dimension resultingSize = getResultingSize(
                 comparedToSize, comparedToScaleConstraint);
-        return resultingSize.width * resultingSize.height >
-                comparedToSize.width * comparedToSize.height;
+        return ((resultingSize.width() * resultingSize.height()) -
+                (comparedToSize.width() * comparedToSize.height()) > DELTA);
     }
 
     /**
@@ -555,8 +550,8 @@ public class Scale implements Operation {
                 getResultingSize(fullSize, scaleConstraint);
         final Map<String,Object> map = new HashMap<>();
         map.put("class", Scale.class.getSimpleName());
-        map.put("width", resultingSize.width);
-        map.put("height", resultingSize.height);
+        map.put("width", resultingSize.intWidth());
+        map.put("height", resultingSize.intHeight());
         return Collections.unmodifiableMap(map);
     }
 

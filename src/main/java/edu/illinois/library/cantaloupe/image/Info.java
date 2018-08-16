@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.processor.Processor;
 
-import java.awt.Dimension;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -160,9 +159,7 @@ public final class Info {
             Dimension size = getSize();
             if (getOrientation().equals(Orientation.ROTATE_90) ||
                     getOrientation().equals(Orientation.ROTATE_270)) {
-                final int tmp = size.width;
-                size.width = size.height;
-                size.height = tmp;
+                size.invert();
             }
             return size;
         }
@@ -175,9 +172,7 @@ public final class Info {
             Dimension tileSize = getTileSize();
             if (getOrientation().equals(Orientation.ROTATE_90) ||
                     getOrientation().equals(Orientation.ROTATE_270)) {
-                final int tmp = tileSize.width;
-                tileSize.width = tileSize.height;
-                tileSize.height = tmp;
+                tileSize.invert();
             }
             return tileSize;
         }
@@ -215,16 +210,16 @@ public final class Info {
          * @param size Physical image size, disregarding orientation.
          */
         public void setSize(Dimension size) {
-            width = size.width;
-            height = size.height;
+            width = size.intWidth();
+            height = size.intHeight();
         }
 
         /**
          * @param tileSize Physical image tile size, disregarding orientation.
          */
         public void setTileSize(Dimension tileSize) {
-            tileWidth = tileSize.width;
-            tileHeight = tileSize.height;
+            tileWidth = tileSize.intWidth();
+            tileHeight = tileSize.intHeight();
         }
 
     }

@@ -2,11 +2,11 @@ package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Compression;
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.junit.Test;
 
-import java.awt.Dimension;
 import java.io.IOException;
 
 import static org.junit.Assert.*;

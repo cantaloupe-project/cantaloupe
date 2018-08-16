@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
@@ -14,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
-import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -93,10 +93,7 @@ final class ImageInfoFactory {
         // We want to use the orientation-aware full size, which takes the
         // embedded orientation into account.
         final Dimension virtualSize = info.getOrientationSize(infoImageIndex);
-        virtualSize.width = (int) Math.round(
-                virtualSize.width * scaleConstraint.getScale());
-        virtualSize.height = (int) Math.round(
-                virtualSize.height * scaleConstraint.getScale());
+        virtualSize.scaleBy(scaleConstraint.getScale());
 
         // Create a Map instance, which will eventually be serialized to JSON
         // and returned in the response body.
@@ -104,8 +101,8 @@ final class ImageInfoFactory {
         responseInfo.put("@context", "http://iiif.io/api/image/2/context.json");
         responseInfo.put("@id", imageURI);
         responseInfo.put("protocol", "http://iiif.io/api/image");
-        responseInfo.put("width", virtualSize.width);
-        responseInfo.put("height", virtualSize.height);
+        responseInfo.put("width", virtualSize.intWidth());
+        responseInfo.put("height", virtualSize.intHeight());
 
         // sizes -- this will be a 2^n series that will work for both multi-
         // and monoresolution images.
@@ -143,8 +140,8 @@ final class ImageInfoFactory {
         }
         for (Dimension uniqueTileSize : uniqueTileSizes) {
             final ImageInfo.Tile tile = new ImageInfo.Tile();
-            tile.width = uniqueTileSize.width;
-            tile.height = uniqueTileSize.height;
+            tile.width = (int) Math.ceil(uniqueTileSize.width());
+            tile.height = (int) Math.ceil(uniqueTileSize.height());
             // Add every scale factor up to 2^RFmax.
             for (int i = 0; i <= maxReductionFactor; i++) {
                 tile.scaleFactors.add((int) Math.pow(2, i));
@@ -235,8 +232,8 @@ final class ImageInfoFactory {
         for (double i = Math.pow(2, minReductionFactor);
              i <= Math.pow(2, maxReductionFactor);
              i *= 2) {
-            final int width = (int) Math.round(virtualSize.width / i);
-            final int height = (int) Math.round(virtualSize.height / i);
+            final int width = (int) Math.round(virtualSize.width() / i);
+            final int height = (int) Math.round(virtualSize.height() / i);
             sizes.add(0, new ImageInfo.Size(width, height));
         }
         return sizes;

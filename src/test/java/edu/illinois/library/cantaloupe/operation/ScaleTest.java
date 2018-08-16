@@ -1,12 +1,12 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.processor.resample.ResampleFilters;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.Dimension;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -258,7 +258,7 @@ public class ScaleTest extends BaseTest {
         instance.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
         instance.setWidth(200);
         instance.setHeight(100);
-        assertEquals(instance.getWidth() / (double) fullSize.width,
+        assertEquals(instance.getWidth() / fullSize.width(),
                 instance.getResultingScale(fullSize, scaleConstraint), DELTA);
     }
 
@@ -269,7 +269,7 @@ public class ScaleTest extends BaseTest {
         instance.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
         instance.setWidth(200);
         instance.setHeight(100);
-        assertEquals(instance.getHeight() / (double) fullSize.height,
+        assertEquals(instance.getHeight() / fullSize.height(),
                 instance.getResultingScale(fullSize, scaleConstraint), DELTA);
     }
 
@@ -281,8 +281,8 @@ public class ScaleTest extends BaseTest {
         instance.setWidth(200);
         instance.setHeight(100);
         assertEquals(Math.min(
-                instance.getWidth() / (double) fullSize.width,
-                instance.getHeight() / (double) fullSize.height),
+                instance.getWidth() / fullSize.width(),
+                instance.getHeight() / fullSize.height()),
                 instance.getResultingScale(fullSize, scaleConstraint), DELTA);
     }
 
@@ -313,13 +313,15 @@ public class ScaleTest extends BaseTest {
         // down
         instance.setWidth(400);
         instance.setHeight(200);
-        assertEquals(new Dimension(400, 267),
-                instance.getResultingSize(fullSize, scaleConstraint));
+        Dimension actual = instance.getResultingSize(fullSize, scaleConstraint);
+        assertEquals(400, actual.intWidth());
+        assertEquals(267, actual.intHeight());
         // up
         instance.setWidth(1200);
         instance.setHeight(600);
-        assertEquals(new Dimension(1200, 800),
-                instance.getResultingSize(fullSize, scaleConstraint));
+        actual = instance.getResultingSize(fullSize, scaleConstraint);
+        assertEquals(1200, actual.intWidth());
+        assertEquals(800, actual.intHeight());
     }
 
     @Test
@@ -407,13 +409,15 @@ public class ScaleTest extends BaseTest {
         // down
         instance.setWidth(400);
         instance.setHeight(200);
-        assertEquals(new Dimension(400, 267),
-                instance.getResultingSize(fullSize, rf, sc));
+        Dimension actual = instance.getResultingSize(fullSize, rf, sc);
+        assertEquals(400, actual.intWidth());
+        assertEquals(267, actual.intHeight());
         // up
         instance.setWidth(1200);
         instance.setHeight(600);
-        assertEquals(new Dimension(1200, 800),
-                instance.getResultingSize(fullSize, rf, sc));
+        actual = instance.getResultingSize(fullSize, rf, sc);
+        assertEquals(1200, actual.intWidth());
+        assertEquals(800, actual.intHeight());
     }
 
     @Test
@@ -781,8 +785,8 @@ public class ScaleTest extends BaseTest {
 
         Map<String,Object> map = instance.toMap(fullSize, scaleConstraint);
         assertEquals(instance.getClass().getSimpleName(), map.get("class"));
-        assertEquals(resultingSize.width, map.get("width"));
-        assertEquals(resultingSize.height, map.get("height"));
+        assertEquals(resultingSize.intWidth(), map.get("width"));
+        assertEquals(resultingSize.intHeight(), map.get("height"));
     }
 
     @Test(expected = UnsupportedOperationException.class)

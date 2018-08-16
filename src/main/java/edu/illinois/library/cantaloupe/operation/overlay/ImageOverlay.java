@@ -1,9 +1,9 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Operation;
 
-import java.awt.Dimension;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,8 +69,6 @@ public class ImageOverlay extends Overlay implements Operation {
     }
 
     /**
-     * @param fullSize Full size of the source image on which the operation
-     *                 is being applied.
      * @return Map with {@literal identifier}, {@literal position}, and
      *         {@literal inset} keys.
      */

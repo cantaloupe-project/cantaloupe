@@ -1,11 +1,11 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
-import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +53,8 @@ public class Crop implements Operation {
     }
 
     public Crop(int x, int y, int width, int height,
-                Orientation orientation, Dimension fullSize) {
+                Orientation orientation,
+                Dimension fullSize) {
         setX(x);
         setY(y);
         setWidth(width);
@@ -94,26 +95,26 @@ public class Crop implements Operation {
             case ROTATE_90:
                 double originalX = getX();
                 setX(getY());
-                double y = fullSize.height - originalX - getWidth();
+                double y = fullSize.height() - originalX - getWidth();
                 setY(y >= 0 ? y : 0);
                 // Swap width and height
                 double originalW = getWidth();
                 setWidth(getHeight());
-                setHeight(Math.min(fullSize.height - originalX, originalW));
+                setHeight(Math.min(fullSize.height() - originalX, originalW));
                 break;
             case ROTATE_180:
-                setX(fullSize.width - getX() - getWidth());
-                setY(fullSize.height - getY() - getHeight());
+                setX(fullSize.width() - getX() - getWidth());
+                setY(fullSize.height() - getY() - getHeight());
                 break;
             case ROTATE_270:
                 double originalY = getY();
                 setY(getX());
-                setX(fullSize.width - originalY - getHeight());
+                setX(fullSize.width() - originalY - getHeight());
                 // Swap width and height
                 originalW = getWidth();
                 setWidth(getHeight());
-                double height = (originalW <= fullSize.height - getY()) ?
-                        originalW : fullSize.height - getY();
+                double height = (originalW <= fullSize.height() - getY()) ?
+                        originalW : fullSize.height() - getY();
                 setHeight(height);
                 break;
         }
@@ -194,44 +195,44 @@ public class Crop implements Operation {
         final double regionWidth = getWidth() * scale;
         final double regionHeight = getHeight() * scale;
 
-        int x, y, requestedWidth, requestedHeight,
+        double x, y, requestedWidth, requestedHeight,
                 croppedWidth, croppedHeight;
         if (isFull()) {
             x = 0;
             y = 0;
-            requestedWidth = reducedSize.width;
-            requestedHeight = reducedSize.height;
+            requestedWidth = reducedSize.width();
+            requestedHeight = reducedSize.height();
         } else if (Shape.SQUARE.equals(getShape())) {
-            final int shortestSide =
-                    Math.min(reducedSize.width, reducedSize.height);
-            x = (int) Math.round((reducedSize.width - shortestSide) / 2.0);
-            y = (int) Math.round((reducedSize.height - shortestSide) / 2.0);
+            final double shortestSide =
+                    Math.min(reducedSize.width(), reducedSize.height());
+            x = (reducedSize.width() - shortestSide) / 2.0;
+            y = (reducedSize.height() - shortestSide) / 2.0;
             requestedWidth = requestedHeight = shortestSide;
         } else if (Unit.PERCENT.equals(getUnit())) {
-            x = (int) Math.round(regionX * reducedSize.width * scScale);
-            y = (int) Math.round(regionY * reducedSize.height * scScale);
-            requestedWidth = (int) Math.round(
-                    regionWidth * reducedSize.width * scScale);
-            requestedHeight = (int) Math.round(
-                    regionHeight * reducedSize.height * scScale);
+            x = regionX * reducedSize.width() * scScale;
+            y = regionY * reducedSize.height() * scScale;
+            requestedWidth = regionWidth * reducedSize.width() * scScale;
+            requestedHeight = regionHeight * reducedSize.height() * scScale;
         } else {
-            x = (int) Math.round(regionX);
-            y = (int) Math.round(regionY);
-            requestedWidth = (int) Math.round(regionWidth);
-            requestedHeight = (int) Math.round(regionHeight);
+            x = regionX;
+            y = regionY;
+            requestedWidth = regionWidth;
+            requestedHeight = regionHeight;
         }
         // Confine width and height to the image bounds.
-        croppedWidth = (x + requestedWidth > reducedSize.width) ?
-                reducedSize.width - x : requestedWidth;
-        croppedHeight = (y + requestedHeight > reducedSize.height) ?
-                reducedSize.height - y : requestedHeight;
+        croppedWidth = (x + requestedWidth > reducedSize.width()) ?
+                reducedSize.width() - x : requestedWidth;
+        croppedWidth = Math.max(croppedWidth, 0);
+        croppedHeight = (y + requestedHeight > reducedSize.height()) ?
+                reducedSize.height() - y : requestedHeight;
+        croppedHeight = Math.max(croppedHeight, 0);
         return new Rectangle(x, y, croppedWidth, croppedHeight);
     }
 
     @Override
     public Dimension getResultingSize(Dimension fullSize,
                                       ScaleConstraint scaleConstraint) {
-        return getRectangle(fullSize, scaleConstraint).getSize();
+        return getRectangle(fullSize, scaleConstraint).size();
     }
 
     public Shape getShape() {
@@ -280,8 +281,8 @@ public class Crop implements Operation {
         if (isFull()) {
             return false;
         } else if (Unit.PERCENT.equals(getUnit()) &&
-                Math.abs(getWidth() - 1f) < DELTA &&
-                Math.abs(getHeight() - 1f) < DELTA) {
+                Math.abs(getWidth() - 1) < DELTA &&
+                Math.abs(getHeight() - 1) < DELTA) {
             return false;
         }
         return true;
@@ -297,21 +298,21 @@ public class Crop implements Operation {
         if (!hasEffect() && !Unit.PERCENT.equals(getUnit())) {
             return false;
         } else if (Shape.SQUARE.equals(getShape()) &&
-                fullSize.width != fullSize.height) {
+                fullSize.width() != fullSize.height()) {
             return true;
         } else if (Unit.PIXELS.equals(getUnit())) {
             if (getX() > 0 || getY() > 0) {
                 return true;
-            } else if ((Math.abs(fullSize.width - getWidth()) > DELTA || Math.abs(fullSize.height - getHeight()) > DELTA) &&
-                    (getWidth() < fullSize.width || getHeight() < fullSize.height)) {
+            } else if ((Math.abs(fullSize.width() - getWidth()) > DELTA || Math.abs(fullSize.height() - getHeight()) > DELTA) &&
+                    (getWidth() < fullSize.width() || getHeight() < fullSize.height())) {
                 return true;
             }
         } else if (Unit.PERCENT.equals(getUnit())) {
             return getX() > DELTA || getY() > DELTA ||
-                    Math.abs((getWidth() * fullSize.width) -
-                            (getX() * fullSize.width) - fullSize.width) > DELTA ||
-                    Math.abs((getHeight() * fullSize.height) -
-                            (getY() * fullSize.height) - fullSize.height) > DELTA;
+                    Math.abs((getWidth() * fullSize.width()) -
+                            (getX() * fullSize.width()) - fullSize.width()) > DELTA ||
+                    Math.abs((getHeight() * fullSize.height()) -
+                            (getY() * fullSize.height()) - fullSize.height()) > DELTA;
         }
         return false;
     }
@@ -428,10 +429,10 @@ public class Crop implements Operation {
         final Rectangle rect = getRectangle(fullSize, scaleConstraint);
         final Map<String,Object> map = new HashMap<>();
         map.put("class", getClass().getSimpleName());
-        map.put("x", rect.x);
-        map.put("y", rect.y);
-        map.put("width", rect.width);
-        map.put("height", rect.height);
+        map.put("x", rect.intX());
+        map.put("y", rect.intY());
+        map.put("width", rect.intWidth());
+        map.put("height", rect.intHeight());
         return Collections.unmodifiableMap(map);
     }
 
@@ -488,9 +489,13 @@ public class Crop implements Operation {
     public void validate(Dimension fullSize,
                          ScaleConstraint scaleConstraint) throws ValidationException {
         if (!isFull()) {
-            Dimension resultingSize =
-                    getResultingSize(fullSize, scaleConstraint);
-            if (resultingSize.width < 1 || resultingSize.height < 1) {
+            try {
+                Dimension resultingSize =
+                        getResultingSize(fullSize, scaleConstraint);
+                if (resultingSize.isEmpty()) {
+                    throw new IllegalArgumentException();
+                }
+            } catch (IllegalArgumentException e) {
                 throw new ValidationException(
                         "Crop area is outside the bounds of the source image.");
             }

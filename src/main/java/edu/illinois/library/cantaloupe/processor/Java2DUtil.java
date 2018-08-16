@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
@@ -29,11 +31,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
@@ -162,16 +162,20 @@ public final class Java2DUtil {
             for (final Redaction redaction : redactions) {
                 final Rectangle redactionRegion = redaction.getResultingRegion(
                         imageSize, scaleConstraint, appliedCrop);
-                redactionRegion.x *= reductionFactor.getScale();
-                redactionRegion.y *= reductionFactor.getScale();
-                redactionRegion.width *= reductionFactor.getScale();
-                redactionRegion.height *= reductionFactor.getScale();
+                final double rfScale = reductionFactor.getScale();
+                redactionRegion.setX(redactionRegion.x() * rfScale);
+                redactionRegion.setY(redactionRegion.y() * rfScale);
+                redactionRegion.setWidth(redactionRegion.width() * rfScale);
+                redactionRegion.setHeight(redactionRegion.height() * rfScale);
 
                 if (!redactionRegion.isEmpty()) {
                     LOGGER.debug("applyRedactions(): applying {} at {},{}/{}x{}",
-                            redaction, redactionRegion.x, redactionRegion.y,
-                            redactionRegion.width, redactionRegion.height);
-                    g2d.fill(redactionRegion);
+                            redaction,
+                            redactionRegion.intX(),
+                            redactionRegion.intY(),
+                            redactionRegion.intWidth(),
+                            redactionRegion.intHeight());
+                    g2d.fill(redactionRegion.toAWTRectangle());
                 } else {
                     LOGGER.debug("applyRedactions(): {} is outside crop area; skipping",
                             redaction);
@@ -249,16 +253,17 @@ public final class Java2DUtil {
                               final ScaleConstraint scaleConstraint) {
         BufferedImage outImage = inImage;
 
+        final Dimension inSize = new Dimension(
+                inImage.getWidth(), inImage.getHeight());
         final Rectangle cropRegion = crop.getRectangle(
-                new Dimension(outImage.getWidth(), outImage.getHeight()),
-                rf, scaleConstraint);
+                inSize, rf, scaleConstraint);
 
-        if (cropRegion.width != inImage.getWidth() ||
-                cropRegion.height != inImage.getHeight()) {
+        if (!inSize.equals(cropRegion.size())) {
             final Stopwatch watch = new Stopwatch();
 
-            outImage = inImage.getSubimage(cropRegion.x, cropRegion.y,
-                    cropRegion.width, cropRegion.height);
+            outImage = inImage.getSubimage(
+                    cropRegion.intX(), cropRegion.intY(),
+                    cropRegion.intWidth(), cropRegion.intHeight());
 
             outImage = convertIndexedTo8BitARGB(outImage);
 
@@ -463,50 +468,50 @@ public final class Java2DUtil {
                 // Draw the background, if it is not transparent.
                 if (overlay.getBackgroundColor().getAlpha() > 0) {
                     g2d.setPaint(overlay.getBackgroundColor().toColor());
-                    g2d.fillRect(bgBox.x, bgBox.y, bgBox.width,
-                            bgBox.height);
+                    g2d.fillRect(bgBox.intX(), bgBox.intY(),
+                            bgBox.intWidth(), bgBox.intHeight());
                 }
 
                 // Draw each line individually.
                 for (int i = 0; i < lines.length; i++) {
-                    int x, y;
+                    double x, y;
                     switch (overlay.getPosition()) {
                         case TOP_LEFT:
-                            x = bgBox.x + padding;
-                            y = bgBox.y + lineHeight * i + padding;
+                            x = bgBox.x() + padding;
+                            y = bgBox.y() + lineHeight * i + padding;
                             break;
                         case TOP_RIGHT:
-                            x = bgBox.x + maxLineWidth - lineWidths[i] + padding;
-                            y = bgBox.y + lineHeight * i + padding;
+                            x = bgBox.x() + maxLineWidth - lineWidths[i] + padding;
+                            y = bgBox.y() + lineHeight * i + padding;
                             break;
                         case BOTTOM_LEFT:
-                            x = bgBox.x + padding;
-                            y = bgBox.y + lineHeight * i + padding;
+                            x = bgBox.x() + padding;
+                            y = bgBox.y() + lineHeight * i + padding;
                             break;
                         // case BOTTOM_RIGHT: will be handled in default:
                         case TOP_CENTER:
-                            x = bgBox.x + Math.round((bgBox.width - lineWidths[i]) / 2f);
-                            y = bgBox.y + lineHeight * i + padding;
+                            x = bgBox.x() + (bgBox.width() - lineWidths[i]) / 2.0;
+                            y = bgBox.y() + lineHeight * i + padding;
                             break;
                         case BOTTOM_CENTER:
-                            x = bgBox.x + Math.round((bgBox.width - lineWidths[i]) / 2f);
-                            y = bgBox.y + lineHeight * i + padding;
+                            x = bgBox.x() + (bgBox.width() - lineWidths[i]) / 2.0;
+                            y = bgBox.y() + lineHeight * i + padding;
                             break;
                         case LEFT_CENTER:
-                            x = bgBox.x + padding;
-                            y = bgBox.y + lineHeight * i + padding;
+                            x = bgBox.x() + padding;
+                            y = bgBox.y() + lineHeight * i + padding;
                             break;
                         case RIGHT_CENTER:
-                            x = bgBox.x + maxLineWidth - lineWidths[i] + padding;
-                            y = bgBox.y + lineHeight * i + padding;
+                            x = bgBox.x() + maxLineWidth - lineWidths[i] + padding;
+                            y = bgBox.y() + lineHeight * i + padding;
                             break;
                         case CENTER:
-                            x = bgBox.x + Math.round((bgBox.width - lineWidths[i]) / 2f);
-                            y = bgBox.y + lineHeight * i + padding;
+                            x = bgBox.x() + (bgBox.width() - lineWidths[i]) / 2.0;
+                            y = bgBox.y() + lineHeight * i + padding;
                             break;
                         default: // bottom right
-                            x = bgBox.x + maxLineWidth - lineWidths[i] + padding;
-                            y = bgBox.y + lineHeight * i + padding;
+                            x = bgBox.x() + maxLineWidth - lineWidths[i] + padding;
+                            y = bgBox.y() + lineHeight * i + padding;
                             break;
                     }
 
@@ -514,10 +519,10 @@ public final class Java2DUtil {
                     y += lineHeight * 0.73;
 
                     // Draw the text outline.
-                    if (overlay.getStrokeWidth() > 0.001f) {
+                    if (overlay.getStrokeWidth() > 0.001) {
                         final FontRenderContext frc = g2d.getFontRenderContext();
                         final GlyphVector gv = font.createGlyphVector(frc, lines[i]);
-                        final Shape shape = gv.getOutline(x, y);
+                        final Shape shape = gv.getOutline(Math.round(x), Math.round(y));
                         g2d.setStroke(new BasicStroke(overlay.getStrokeWidth()));
                         g2d.setPaint(overlay.getStrokeColor().toColor());
                         g2d.draw(shape);
@@ -525,7 +530,7 @@ public final class Java2DUtil {
 
                     // Draw the string.
                     g2d.setPaint(overlay.getColor().toColor());
-                    g2d.drawString(lines[i], x, y);
+                    g2d.drawString(lines[i], Math.round(x), Math.round(y));
                 }
                 LOGGER.debug("overlayString() executed in {}", watch);
             } else {
@@ -548,46 +553,46 @@ public final class Java2DUtil {
         // If the overlay background is visible, add some padding between the
         // text and the margin.
         final int padding = getBoxPadding(overlay);
-        final int boxWidth = NumberUtils.max(lineWidths) + padding * 2;
-        final int boxHeight = lineHeight * lineWidths.length + padding * 2;
-        int boxX, boxY;
+        final double boxWidth = NumberUtils.max(lineWidths) + padding * 2;
+        final double boxHeight = lineHeight * lineWidths.length + padding * 2;
+        double boxX, boxY;
         switch (overlay.getPosition()) {
             case TOP_LEFT:
                 boxX = inset;
                 boxY = inset;
                 break;
             case TOP_CENTER:
-                boxX = Math.round((imageSize.width - boxWidth) / 2f);
+                boxX = (imageSize.width() - boxWidth) / 2.0;
                 boxY = inset;
                 break;
             case TOP_RIGHT:
-                boxX = imageSize.width - boxWidth - inset - padding;
+                boxX = imageSize.width() - boxWidth - inset - padding;
                 boxY = inset;
                 break;
             case LEFT_CENTER:
                 boxX = inset;
-                boxY = Math.round((imageSize.height - boxHeight) / 2f);
+                boxY = (imageSize.height() - boxHeight) / 2.0;
                 break;
             case RIGHT_CENTER:
-                boxX = imageSize.width - boxWidth - inset - padding;
-                boxY = Math.round((imageSize.height - boxHeight) / 2f);
+                boxX = imageSize.width() - boxWidth - inset - padding;
+                boxY = (imageSize.height() - boxHeight) / 2.0;
                 break;
             case CENTER:
-                boxX = Math.round((imageSize.width - boxWidth) / 2f);
-                boxY = Math.round((imageSize.height - boxHeight) / 2f);
+                boxX = (imageSize.width() - boxWidth) / 2.0;
+                boxY = (imageSize.height() - boxHeight) / 2.0;
                 break;
             case BOTTOM_LEFT:
                 boxX = inset;
-                boxY = imageSize.height - boxHeight - inset - padding;
+                boxY = imageSize.height() - boxHeight - inset - padding;
                 break;
             // case BOTTOM_RIGHT: will be handled in default:
             case BOTTOM_CENTER:
-                boxX = Math.round((imageSize.width - boxWidth) / 2f);
-                boxY = imageSize.height - boxHeight - inset - padding;
+                boxX = (imageSize.width() - boxWidth) / 2.0;
+                boxY = imageSize.height() - boxHeight - inset - padding;
                 break;
             default: // bottom right
-                boxX = imageSize.width - boxWidth - inset - padding;
-                boxY = imageSize.height - boxHeight - inset - padding;
+                boxX = imageSize.width() - boxWidth - inset - padding;
+                boxY = imageSize.height() - boxHeight - inset - padding;
                 break;
         }
         return new Rectangle(boxX, boxY, boxWidth, boxHeight);
@@ -879,13 +884,12 @@ public final class Java2DUtil {
         // The only alternatives would be to use a different resampler, set a
         // 3x3 floor, or error out.
         BufferedImage scaledImage = inImage;
-        if (targetSize.width >= 3 && targetSize.height >= 3) {
-            if (targetSize.width != sourceSize.width ||
-                    targetSize.height != sourceSize.height) {
+        if (targetSize.intWidth() >= 3 && targetSize.intHeight() >= 3) {
+            if (!targetSize.equals(sourceSize)) {
                 final Stopwatch watch = new Stopwatch();
 
                 final ResampleOp resampleOp = new ResampleOp(
-                        targetSize.width, targetSize.height);
+                        targetSize.intWidth(), targetSize.intHeight());
 
                 // Try to use the requested resample filter.
                 ResampleFilter filter = null;
@@ -894,8 +898,8 @@ public final class Java2DUtil {
                 }
                 // No particular filter requested, so select a default.
                 if (filter == null) {
-                    if (targetSize.width < sourceSize.width ||
-                            targetSize.height < sourceSize.height) {
+                    if (targetSize.width() < sourceSize.width() ||
+                            targetSize.height() < sourceSize.height()) {
                         filter = DEFAULT_DOWNSCALE_FILTER.toResampleFilter();
                     } else {
                         filter = DEFAULT_UPSCALE_FILTER.toResampleFilter();
@@ -907,12 +911,14 @@ public final class Java2DUtil {
 
                 LOGGER.debug("scale(): scaled {}x{} image to {}x{} using " +
                                 "a {} filter in {}",
-                        sourceSize.width, sourceSize.height,
-                        targetSize.width, targetSize.height,
+                        sourceSize.intWidth(), sourceSize.intHeight(),
+                        targetSize.intWidth(), targetSize.intHeight(),
                         filter.getName(), watch);
             }
         } else {
-            scaledImage = new BufferedImage(targetSize.width, targetSize.height,
+            scaledImage = new BufferedImage(
+                    targetSize.intWidth(),
+                    targetSize.intHeight(),
                     inImage.getType());
         }
         return scaledImage;

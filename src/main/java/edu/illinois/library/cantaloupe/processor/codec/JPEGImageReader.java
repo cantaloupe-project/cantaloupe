@@ -2,8 +2,10 @@ package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Compression;
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -16,8 +18,6 @@ import javax.imageio.ImageReadParam;
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageInputStream;
-import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.color.ColorSpace;
 import java.awt.color.ICC_ColorSpace;
@@ -152,12 +152,13 @@ final class JPEGImageReader extends AbstractIIOImageReader
         final Dimension imageSize = getSize(0);
 
         getLogger().debug("Acquiring region {},{}/{}x{} from {}x{} image",
-                region.x, region.y, region.width, region.height,
-                imageSize.width, imageSize.height);
+                region.intX(), region.intY(),
+                region.intWidth(), region.intHeight(),
+                imageSize.intWidth(), imageSize.intHeight());
 
         hints.add(ReaderHint.ALREADY_CROPPED);
         final ImageReadParam param = iioReader.getDefaultReadParam();
-        param.setSourceRegion(region);
+        param.setSourceRegion(region.toAWTRectangle());
 
         BufferedImage image;
 
@@ -348,10 +349,10 @@ final class JPEGImageReader extends AbstractIIOImageReader
     }
 
     private void intToBigEndian(int value, byte[] array, int index) {
-        array[index]   = (byte) (value >> 24);
-        array[index+1] = (byte) (value >> 16);
-        array[index+2] = (byte) (value >>  8);
-        array[index+3] = (byte) (value);
+        array[index]     = (byte) (value >> 24);
+        array[index + 1] = (byte) (value >> 16);
+        array[index + 2] = (byte) (value >> 8);
+        array[index + 3] = (byte) (value);
     }
 
 }

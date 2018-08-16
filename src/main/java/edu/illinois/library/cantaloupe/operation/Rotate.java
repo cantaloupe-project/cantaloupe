@@ -1,9 +1,9 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
-import java.awt.Dimension;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -80,10 +80,10 @@ public class Rotate implements Operation {
         final double sin = Math.sin(radians);
         final double cos = Math.cos(radians);
 
-        final int width = (int) Math.round(
-                Math.abs(fullSize.width * cos) + Math.abs(fullSize.height * sin));
-        final int height = (int) Math.round(
-                Math.abs(fullSize.height * cos) + Math.abs(fullSize.width * sin));
+        final double width = Math.abs(fullSize.width() * cos) +
+                Math.abs(fullSize.height() * sin);
+        final double height = Math.abs(fullSize.height() * cos) +
+                Math.abs(fullSize.width() * sin);
         return new Dimension(width, height);
     }
 

@@ -3,10 +3,10 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
 
 import javax.script.ScriptException;
-import java.awt.Dimension;
 
 /**
  * Provides information about overlays, including whether they are enabled,

@@ -1,9 +1,8 @@
 package edu.illinois.library.cantaloupe.resource.iiif;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
-
-import java.awt.Dimension;
 
 import static org.junit.Assert.*;
 
@@ -68,18 +67,6 @@ public class ImageInfoUtilTest extends BaseTest {
         fullSize = new Dimension(60, 50);
         minTileSize = 100;
         assertEquals(new Dimension(60, 50),
-                ImageInfoUtil.smallestTileSize(fullSize, minTileSize));
-
-        // Test rounding up with odd dimensions
-        fullSize = new Dimension(2001, 2001);
-        minTileSize = 1000;
-        assertEquals(new Dimension(1001, 1001),
-                ImageInfoUtil.smallestTileSize(fullSize, minTileSize));
-
-        // Test rounding up with odd dimensions
-        fullSize = new Dimension(2001, 2001);
-        minTileSize = 100;
-        assertEquals(new Dimension(126, 126),
                 ImageInfoUtil.smallestTileSize(fullSize, minTileSize));
     }
 

@@ -1,8 +1,10 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Normalize;
@@ -38,8 +40,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.stream.ImageInputStream;
-import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -400,7 +400,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
         // Find the best resolution level to read.
         if (scaleOp != null) {
             final double resultingScale = scaleOp.getResultingScale(
-                    roi.getSize(), opList.getScaleConstraint());
+                    roi.size(), opList.getScaleConstraint());
             reductionFactor.factor =
                     ReductionFactor.forScale(resultingScale, 0.001).factor;
 
@@ -627,7 +627,8 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
      */
     private static Rectangle getRegion(OperationList opList,
                                        Dimension fullSize) {
-        Rectangle regionRect = new Rectangle(0, 0, fullSize.width, fullSize.height);
+        Rectangle regionRect = new Rectangle(0, 0,
+                fullSize.width(), fullSize.height());
         Crop crop = (Crop) opList.getFirst(Crop.class);
         if (crop != null && crop.hasEffect(fullSize, opList)) {
             regionRect = crop.getRectangle(
@@ -641,7 +642,8 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
      */
     private static Kdu_dims toKduDims(Rectangle rect) throws KduException {
         Kdu_dims regionDims = new Kdu_dims();
-        regionDims.From_u32(rect.x, rect.y, rect.width, rect.height);
+        regionDims.From_u32(rect.intX(), rect.intY(),
+                rect.intWidth(), rect.intHeight());
         return regionDims;
     }
 

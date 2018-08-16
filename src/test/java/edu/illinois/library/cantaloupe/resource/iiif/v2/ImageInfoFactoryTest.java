@@ -345,6 +345,23 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
+    public void testNewImageInfoTileSizesAreRoundedUp() {
+        final String imageURI = "http://example.org/bla";
+        final Info info = Info.builder()
+                .withSize(3001, 2001)
+                .withNumResolutions(3)
+                .build();
+        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
+                imageURI, info, 0, new ScaleConstraint(1, 1));
+
+        @SuppressWarnings("unchecked")
+        List<ImageInfo.Tile> tiles =
+                (List<ImageInfo.Tile>) imageInfo.get("tiles");
+        assertEquals(1501, (int) tiles.get(0).width);
+        assertEquals(1001, (int) tiles.get(0).height);
+    }
+
+    @Test
     public void testNewImageInfoProfile() {
         ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
         List<?> profile = (List<?>) imageInfo.get("profile");

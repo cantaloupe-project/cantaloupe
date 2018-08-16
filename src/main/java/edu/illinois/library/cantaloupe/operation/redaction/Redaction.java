@@ -1,12 +1,12 @@
 package edu.illinois.library.cantaloupe.operation.redaction;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
+import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 
-import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +19,7 @@ import java.util.Objects;
  */
 public class Redaction implements Operation {
 
-    private boolean isFrozen = false;
+    private boolean isFrozen;
     private Rectangle region;
 
     /**
@@ -69,14 +69,14 @@ public class Redaction implements Operation {
                 fullSize, scaleConstraint);
 
         final Rectangle thisRegion = new Rectangle(
-                (int) Math.round(getRegion().x / scScale),
-                (int) Math.round(getRegion().y / scScale),
-                (int) Math.round(getRegion().width / scScale),
-                (int) Math.round(getRegion().height / scScale));
+                (int) Math.round(getRegion().x() / scScale),
+                (int) Math.round(getRegion().y() / scScale),
+                (int) Math.round(getRegion().width() / scScale),
+                (int) Math.round(getRegion().height() / scScale));
 
         if (thisRegion.intersects(cropRegion)) {
-            thisRegion.x -= cropRegion.x;
-            thisRegion.y -= cropRegion.y;
+            thisRegion.setX(thisRegion.x() - cropRegion.x());
+            thisRegion.setY(thisRegion.y() - cropRegion.y());
             return thisRegion;
         }
         return new Rectangle(0, 0, 0, 0);
@@ -84,8 +84,7 @@ public class Redaction implements Operation {
 
     @Override
     public boolean hasEffect() {
-        return (region != null && region.getWidth() > 0 &&
-                region.getHeight() > 0);
+        return (region != null && region.width() > 0 && region.height() > 0);
     }
 
     @Override
@@ -95,7 +94,7 @@ public class Redaction implements Operation {
         }
         final Dimension resultingSize = opList.getResultingSize(fullSize);
         final Rectangle resultingImage = new Rectangle(0, 0,
-                resultingSize.width, resultingSize.height);
+                resultingSize.width(), resultingSize.height());
         return getRegion().intersects(resultingImage);
     }
 
@@ -126,10 +125,10 @@ public class Redaction implements Operation {
                                      ScaleConstraint scaleConstraint) {
         final HashMap<String,Object> map = new HashMap<>();
         map.put("class", getClass().getSimpleName());
-        map.put("x", getRegion().x);
-        map.put("y", getRegion().y);
-        map.put("width", getRegion().width);
-        map.put("height", getRegion().height);
+        map.put("x", getRegion().intX());
+        map.put("y", getRegion().intY());
+        map.put("width", getRegion().intWidth());
+        map.put("height", getRegion().intHeight());
         return Collections.unmodifiableMap(map);
     }
 
@@ -140,8 +139,10 @@ public class Redaction implements Operation {
     @Override
     public String toString() {
         return String.format("%d,%d/%dx%d",
-                getRegion().x, getRegion().y, getRegion().width,
-                getRegion().height);
+                getRegion().intX(),
+                getRegion().intY(),
+                getRegion().intWidth(),
+                getRegion().intHeight());
     }
 
 }

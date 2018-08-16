@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
@@ -22,7 +23,6 @@ import org.junit.Test;
 import javax.imageio.ImageIO;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
@@ -265,8 +265,8 @@ public class Java2DUtilTest extends BaseTest {
         rf = new ReductionFactor();
         sc = new ScaleConstraint(1, 1);
         outImage = Java2DUtil.crop(inImage, crop, rf, sc);
-        assertEquals(height / 2.0, outImage.getWidth(), DELTA);
-        assertEquals(height / 2.0, outImage.getHeight(), DELTA);
+        assertEquals(height, outImage.getWidth());
+        assertEquals(height, outImage.getHeight());
     }
 
     @Test
@@ -290,8 +290,8 @@ public class Java2DUtilTest extends BaseTest {
         rf = new ReductionFactor(1);
         sc = new ScaleConstraint(1, 1);
         outImage = Java2DUtil.crop(inImage, crop, rf, sc);
-        assertEquals(100, outImage.getWidth());
-        assertEquals(100, outImage.getHeight());
+        assertEquals(25, outImage.getWidth());
+        assertEquals(25, outImage.getHeight());
     }
 
     @Test
@@ -706,9 +706,9 @@ public class Java2DUtilTest extends BaseTest {
 
         final Graphics2D g2d = image.createGraphics();
         g2d.setColor(java.awt.Color.DARK_GRAY);
-        g2d.fill(leftHalf);
+        g2d.fill(leftHalf.toAWTRectangle());
         g2d.setColor(java.awt.Color.LIGHT_GRAY);
-        g2d.fill(rightHalf);
+        g2d.fill(rightHalf.toAWTRectangle());
 
         Java2DUtil.stretchContrast(image);
 
@@ -726,7 +726,7 @@ public class Java2DUtilTest extends BaseTest {
         // Create a cyan image.
         Graphics2D g2d = inImage.createGraphics();
         g2d.setColor(java.awt.Color.CYAN);
-        g2d.fill(new Rectangle(0, 0, 100, 100));
+        g2d.fill(new Rectangle(0, 0, 100, 100).toAWTRectangle());
         g2d.dispose();
 
         // Transform to bitonal.
@@ -739,7 +739,7 @@ public class Java2DUtilTest extends BaseTest {
         // Create a red image.
         g2d = inImage.createGraphics();
         g2d.setColor(java.awt.Color.RED);
-        g2d.fill(new Rectangle(0, 0, 100, 100));
+        g2d.fill(new Rectangle(0, 0, 100, 100).toAWTRectangle());
         g2d.dispose();
 
         // Transform to bitonal.
@@ -757,7 +757,7 @@ public class Java2DUtilTest extends BaseTest {
         // Create a cyan image.
         Graphics2D g2d = inImage.createGraphics();
         g2d.setColor(java.awt.Color.CYAN);
-        g2d.fill(new Rectangle(0, 0, 100, 100));
+        g2d.fill(new Rectangle(0, 0, 100, 100).toAWTRectangle());
         g2d.dispose();
 
         // Transform to bitonal.
@@ -771,7 +771,7 @@ public class Java2DUtilTest extends BaseTest {
         // Create a red image.
         g2d = inImage.createGraphics();
         g2d.setColor(java.awt.Color.RED);
-        g2d.fill(new Rectangle(0, 0, 100, 100));
+        g2d.fill(new Rectangle(0, 0, 100, 100).toAWTRectangle());
         g2d.dispose();
 
         // Transform to bitonal.
@@ -789,7 +789,7 @@ public class Java2DUtilTest extends BaseTest {
         // Start with a red image.
         Graphics2D g2d = inImage.createGraphics();
         g2d.setColor(java.awt.Color.RED);
-        g2d.fill(new Rectangle(0, 0, 100, 100));
+        g2d.fill(new Rectangle(0, 0, 100, 100).toAWTRectangle());
         g2d.dispose();
 
         // Transform to grayscale.
@@ -807,7 +807,7 @@ public class Java2DUtilTest extends BaseTest {
         // Start with a red image.
         Graphics2D g2d = inImage.createGraphics();
         g2d.setColor(java.awt.Color.RED);
-        g2d.fill(new Rectangle(0, 0, 100, 100));
+        g2d.fill(new Rectangle(0, 0, 100, 100).toAWTRectangle());
         g2d.dispose();
 
         // Transform to grayscale.

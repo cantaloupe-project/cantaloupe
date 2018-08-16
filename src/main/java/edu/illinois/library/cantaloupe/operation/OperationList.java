@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.operation;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Compression;
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
@@ -18,7 +19,6 @@ import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -259,8 +259,8 @@ public final class OperationList implements Comparable<OperationList>,
         }
 
         // Sharpening
-        float sharpen = config.getFloat(Key.PROCESSOR_SHARPEN, 0f);
-        if (sharpen > 0.001f) {
+        double sharpen = config.getDouble(Key.PROCESSOR_SHARPEN, 0);
+        if (sharpen > 0.001) {
             addBefore(new Sharpen(sharpen), Encode.class);
         }
 
@@ -725,7 +725,7 @@ public final class OperationList implements Comparable<OperationList>,
         }
 
         // Ensure that the resulting pixel area is positive.
-        if (resultingSize.width < 1 || resultingSize.height < 1) {
+        if (resultingSize.isEmpty()) {
             throw new ValidationException("Resulting pixel area is empty.");
         }
 
@@ -734,7 +734,7 @@ public final class OperationList implements Comparable<OperationList>,
         final long maxAllowedSize =
                 Configuration.getInstance().getLong(Key.MAX_PIXELS, 0);
         if (maxAllowedSize > 0 && hasEffect(fullSize, sourceFormat) &&
-                resultingSize.width * resultingSize.height > maxAllowedSize) {
+                resultingSize.width() * resultingSize.height() > maxAllowedSize) {
             throw new IllegalSizeException();
         }
     }

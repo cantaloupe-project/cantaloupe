@@ -1,15 +1,13 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 
-import java.awt.Dimension;
-
 public abstract class Overlay implements Operation {
 
-    boolean isFrozen = false;
-
-    private int inset = 0;
+    boolean isFrozen;
+    private int inset;
     private Position position;
 
     public Overlay(Position position, int inset) {
@@ -51,7 +49,7 @@ public abstract class Overlay implements Operation {
 
     /**
      * @param inset Inset to set.
-     * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalStateException if the instance is frozen.
      */
     public void setInset(int inset) {
         checkFrozen();
@@ -60,7 +58,7 @@ public abstract class Overlay implements Operation {
 
     /**
      * @param position Position to set.
-     * @throws IllegalStateException If the instance is frozen.
+     * @throws IllegalStateException if the instance is frozen.
      */
     public void setPosition(Position position) {
         checkFrozen();

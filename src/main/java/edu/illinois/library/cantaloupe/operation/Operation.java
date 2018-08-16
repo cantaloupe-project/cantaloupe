@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 
-import java.awt.Dimension;
 import java.util.Map;
 
 /**
@@ -35,8 +35,8 @@ public interface Operation {
     }
 
     /**
-     * Simpler but less-accurate counterpart of
-     * {@link #hasEffect(Dimension, OperationList)}.
+     * Simpler but less-accurate counterpart of {@link
+     * #hasEffect(Dimension, OperationList)}.
      *
      * @return Whether applying the operation on its own would result in a
      *         changed image.

@@ -7,7 +7,6 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.MockFileProcessor;
-import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -20,6 +19,8 @@ import java.nio.file.Files;
 import static org.junit.Assert.*;
 
 public class InfoServiceTest extends BaseTest {
+
+    private static final double DELTA = 0.00000001;
 
     private InfoService instance;
 
@@ -131,7 +132,7 @@ public class InfoServiceTest extends BaseTest {
 
         Info info = instance.getOrReadInfo(identifier, newFileProcessor());
         assertEquals(identifier, info.getIdentifier());
-        assertEquals(64, info.getSize(0).width);
+        assertEquals(64, info.getSize(0).width(), DELTA);
     }
 
     /* isObjectCacheEnabled() */
