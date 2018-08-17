@@ -140,7 +140,7 @@ public class ImageRepresentation extends CustomOutputRepresentation {
             // like OutOfMemoryError, or when the connection has been closed
             // prematurely, as in the case of e.g. the client hitting the stop
             // button.
-            if (e.getMessage().contains("heap space")) {
+            if (e.getMessage() != null && e.getMessage().contains("heap space")) {
                 LOGGER.error("write(): out of heap space! " +
                         "Consider adjusting your -Xmx JVM argument.");
             } else {
