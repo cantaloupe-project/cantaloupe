@@ -94,7 +94,7 @@ final class SourceCacheDownload implements Future<Path> {
                     // few times, and only rethrow it on the last try.
                     Path sourceFile = sourceCache.getSourceImageFile(identifier);
                     if (sourceFile == null) {
-                        downloadToSourceCache(streamFactory, sourceCache, identifier);
+                        downloadToSourceCache();
                     }
                     succeeded = true;
                 } catch (IOException e) {
@@ -115,15 +115,8 @@ final class SourceCacheDownload implements Future<Path> {
     /**
      * Downloads the source image with the given identifier from the given
      * source to the given source cache.
-     *
-     * @param streamFactory Source of streams to read from.
-     * @param sourceCache  Source cache to write to.
-     * @param identifier   Identifier of the source image.
-     * @throws IOException if anything goes wrong.
      */
-    private void downloadToSourceCache(StreamFactory streamFactory,
-                                       SourceCache sourceCache,
-                                       Identifier identifier) throws IOException {
+    private void downloadToSourceCache() throws IOException {
         synchronized (DOWNLOADING_IMAGES) {
             while (DOWNLOADING_IMAGES.contains(identifier)) {
                 try {
