@@ -159,10 +159,10 @@ release branch for that release, and merged back into `develop`.
 1. Merge into `release/vX.X`
 2. Update the version in `pom.xml` and commit this change
 3. Merge into `master`
-4. Create the release `.zip` archive with `mvn clean package -DskipTests`
-5. Verify that the `.zip` archive is as expected
-6. Push the code: `git push origin master; git push origin release/x.x`
-7. Wait for CI tests to pass
+4. Push the code: `git push origin master; git push origin release/x.x`
+5. Wait for CI tests to pass
+6. Create the release `.zip` archive with `mvn clean package -DskipTests`
+7. Verify that the `.zip` archive is as expected
 8. Tag the release: `git tag -a v{version} -m 'Tag v{version}'`
 9. git push --tags
 10. Add the `.zip` archive and change log info to the release tag on GitHub
