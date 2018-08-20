@@ -47,12 +47,6 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
         assertNull(instance.getInitializationException());
     }
 
-    @Override
-    @Test
-    public void testProcessWithNonAspectFillScaleOperation() {
-        // This processor doesn't support this scale mode.
-    }
-
     @Test
     public void testReadImageInfoWithUntiledImage() throws Exception {
         instance.setSourceFile(TestUtil.getImage("jp2-5res-rgb-64x56x8-monotiled-lossy.jp2"));
@@ -90,20 +84,12 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
                 ProcessorFeature.ROTATION_BY_90S,
                 ProcessorFeature.SIZE_ABOVE_FULL,
                 ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
+                ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
                 ProcessorFeature.SIZE_BY_HEIGHT,
                 ProcessorFeature.SIZE_BY_PERCENT,
                 ProcessorFeature.SIZE_BY_WIDTH,
                 ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
         assertEquals(expectedFeatures, instance.getSupportedFeatures());
-    }
-
-    @Test(expected = ValidationException.class)
-    public void testValidateWithNonAspectFillScale() throws Exception {
-        OperationList ops = new OperationList(
-                new Identifier("cats"),
-                new Scale(20, 20, Scale.Mode.NON_ASPECT_FILL),
-                new Encode(Format.JPG));
-        instance.validate(ops, new Dimension(200, 200));
     }
 
 }

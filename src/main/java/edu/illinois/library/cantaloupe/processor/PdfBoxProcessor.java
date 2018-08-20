@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
@@ -90,27 +91,27 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     public void process(OperationList opList,
                         Info imageInfo,
                         OutputStream outputStream) throws ProcessorException {
-        super.process(opList, imageInfo, outputStream);
-
-        final Set<ReaderHint> hints = EnumSet.noneOf(ReaderHint.class);
-        Scale scale = (Scale) opList.getFirst(Scale.class);
-        if (scale == null) {
-            scale = new Scale();
-        }
-        ReductionFactor reductionFactor = new ReductionFactor();
-        Double pct = scale.getResultingScale(
-                imageInfo.getSize(), opList.getScaleConstraint());
-        if (pct != null) {
-            reductionFactor = ReductionFactor.forScale(pct);
-        }
-
-        // This processor supports a "page" URI query argument.
-        int page = getPageNumber(opList.getOptions());
-
         try {
+            super.process(opList, imageInfo, outputStream);
+
+            final Dimension fullSize = imageInfo.getSize();
+            final ScaleConstraint scaleConstraint = opList.getScaleConstraint();
+
+            final Set<ReaderHint> hints = EnumSet.noneOf(ReaderHint.class);
+            Scale scale = (Scale) opList.getFirst(Scale.class);
+            if (scale == null) {
+                scale = new Scale();
+            }
+
+            double[] scales = scale.getResultingScales(fullSize, scaleConstraint);
+            double minScale = Arrays.stream(scales).min().orElse(1);
+            ReductionFactor reductionFactor = ReductionFactor.forScale(minScale);
+
+            // This processor supports a "page" URI query argument.
+            int page = getPageNumber(opList.getOptions());
+
             BufferedImage image = readImage(
-                    page - 1, scale, imageInfo.getSize(),
-                    opList.getScaleConstraint());
+                    page - 1, scale, fullSize, scaleConstraint);
             postProcess(image, hints, opList, imageInfo, reductionFactor,
                     outputStream);
         } catch (IOException | IndexOutOfBoundsException e) {

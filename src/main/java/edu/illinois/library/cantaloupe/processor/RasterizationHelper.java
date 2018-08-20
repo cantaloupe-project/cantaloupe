@@ -6,6 +6,8 @@ import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Scale;
 
+import java.util.Arrays;
+
 /**
  * Assists in rasterization of vector source images.
  */
@@ -30,11 +32,9 @@ class RasterizationHelper {
     double getDPI(final Scale scale,
                   final Dimension fullSize,
                   final ScaleConstraint scaleConstraint) {
-        Double pct = scale.getResultingScale(fullSize, scaleConstraint);
-        if (pct != null) {
-            return baseDPI * pct;
-        }
-        return baseDPI;
+        double[] scales = scale.getResultingScales(fullSize, scaleConstraint);
+        double minScale = Arrays.stream(scales).min().orElse(1);
+        return baseDPI * minScale;
     }
 
     /**

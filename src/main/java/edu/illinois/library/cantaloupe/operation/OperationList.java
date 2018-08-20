@@ -23,6 +23,7 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -240,21 +241,21 @@ public final class OperationList implements Comparable<OperationList>,
         // Scale filter
         final Scale scale = (Scale) getFirst(Scale.class);
         if (scale != null) {
-            final Double scalePct = scale.getResultingScale(
+            double[] scales = scale.getResultingScales(
                     sourceImageSize, getScaleConstraint());
-            if (scalePct != null) {
-                final Key filterKey = (scalePct > 1) ?
-                        Key.PROCESSOR_UPSCALE_FILTER :
-                        Key.PROCESSOR_DOWNSCALE_FILTER;
-                try {
-                    final String filterStr = config.getString(filterKey);
-                    final Scale.Filter filter =
-                            Scale.Filter.valueOf(filterStr.toUpperCase());
-                    scale.setFilter(filter);
-                } catch (Exception e) {
-                    LOGGER.warn("applyNonEndpointMutations(): invalid value for {}",
-                            filterKey);
-                }
+            double smallestScale = Arrays.stream(scales).min().orElse(1);
+
+            final Key filterKey = (smallestScale > 1) ?
+                    Key.PROCESSOR_UPSCALE_FILTER :
+                    Key.PROCESSOR_DOWNSCALE_FILTER;
+            try {
+                final String filterStr = config.getString(filterKey);
+                final Scale.Filter filter =
+                        Scale.Filter.valueOf(filterStr.toUpperCase());
+                scale.setFilter(filter);
+            } catch (Exception e) {
+                LOGGER.warn("applyNonEndpointMutations(): invalid value for {}",
+                        filterKey);
             }
         }
 
@@ -718,8 +719,12 @@ public final class OperationList implements Comparable<OperationList>,
             if (scale == null) {
                 scale = new Scale(1.0);
             }
-            if (scale.getResultingScale(fullSize, scaleConstraint) >
-                    scaleConstraint.getScale()) {
+
+            double[] scales = scale.getResultingScales(fullSize, scaleConstraint);
+            if (Arrays.stream(scales)
+                    .filter(s -> s > scaleConstraint.getScale())
+                    .findAny()
+                    .isPresent()) {
                 throw new IllegalScaleException();
             }
         }

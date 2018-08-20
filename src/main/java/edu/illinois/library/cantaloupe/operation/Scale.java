@@ -20,7 +20,7 @@ import java.util.Map;
  * <p>N.B.: The accessors ({@link #getWidth()}, {@link #setWidth(Integer)},
  * etc.) define the scale operation, but they should not be used when figuring
  * out how to apply an instance to an image. For that, {@link
- * #getResultingSize} and {@link #getResultingScale} should be used
+ * #getResultingSize} and {@link #getResultingScales} should be used
  * instead.</p>
  */
 public class Scale implements Operation {
@@ -251,25 +251,26 @@ public class Scale implements Operation {
      *                        to {@literal reducedSize}.
      * @param scaleConstraint Scale constraint relative to the full source
      *                        image dimensions.
-     * @return                Scale yet to be applied to an intermediate image
-     *                        of the given reduced size with the given reduction
-     *                        factor, or {@literal null} if the scale mode is
-     *                        {@link Mode#NON_ASPECT_FILL}. {@literal 1}
-     *                        indicates no scaling needed.
+     * @return                Two-element array containing the X and Y scales
+     *                        yet to be applied to an intermediate image of the
+     *                        given reduced size with the given reduction
+     *                        factor. {@literal 1} indicates no scaling needed.
      */
-    public Double getDifferentialScale(final Dimension reducedSize,
-                                       final ReductionFactor reductionFactor,
-                                       final ScaleConstraint scaleConstraint) {
+    public double[] getDifferentialScales(final Dimension reducedSize,
+                                          final ReductionFactor reductionFactor,
+                                          final ScaleConstraint scaleConstraint) {
+        final double[] result = new double[2];
+
         if (Mode.FULL.equals(getMode())) {
-            return 1.0;
-        } else if (Mode.NON_ASPECT_FILL.equals(getMode())) {
-            return null;
+            result[0] = result[1] = 1.0;
+        } else {
+            final double[] scales = getResultingScales(
+                    reducedSize, scaleConstraint);
+            final double rfScale = reductionFactor.getScale();
+            result[0] = scales[0] / rfScale;
+            result[1] = scales[1] / rfScale;
         }
-
-        final double scale = getResultingScale(reducedSize, scaleConstraint);
-        final double rfScale = reductionFactor.getScale();
-
-        return scale / rfScale;
+        return result;
     }
 
     /**
@@ -319,29 +320,39 @@ public class Scale implements Operation {
      * @param scaleConstraint Scale constraint relative to the full source
      *                        image dimensions. The instance is expressed
      *                        relative to the constrained {@literal fullSize}.
-     * @return                Resulting scale when the instance is applied to
-     *                        the given full size; or {@literal null} if the
-     *                        scale mode is {@link Mode#NON_ASPECT_FILL}.
+     * @return                Two-element array containing the resulting X and
+     *                        Y scales when the instance is applied to the
+     *                        given full size.
      */
-    public Double getResultingScale(Dimension fullSize,
-                                    ScaleConstraint scaleConstraint) {
+    public double[] getResultingScales(Dimension fullSize,
+                                       ScaleConstraint scaleConstraint) {
+        final double[] result = new double[2];
+
         if (getPercent() != null) {
-            return getPercent() * scaleConstraint.getScale();
+            result[0] = result[1] = getPercent() * scaleConstraint.getScale();
+        } else {
+            switch (getMode()) {
+                case FULL:
+                    result[0] = result[1] = scaleConstraint.getScale();
+                    break;
+                case ASPECT_FIT_HEIGHT:
+                    result[0] = result[1] = getHeight() / fullSize.height();
+                    break;
+                case ASPECT_FIT_WIDTH:
+                    result[0] = result[1] = getWidth() / fullSize.width();
+                    break;
+                case ASPECT_FIT_INSIDE:
+                    result[0] = result[1] = Math.min(
+                            getWidth() / fullSize.width(),
+                            getHeight() / fullSize.height());
+                    break;
+                default:
+                    result[0] = getWidth() / fullSize.width();
+                    result[1] = getHeight() / fullSize.height();
+                    break;
+            }
         }
-        switch (getMode()) {
-            case FULL:
-                return scaleConstraint.getScale();
-            case ASPECT_FIT_HEIGHT:
-                return getHeight() / fullSize.height();
-            case ASPECT_FIT_WIDTH:
-                return getWidth() / fullSize.width();
-            case ASPECT_FIT_INSIDE:
-                return Math.min(
-                        getWidth() / fullSize.width(),
-                        getHeight() / fullSize.height());
-            default:
-                return null;
-        }
+        return result;
     }
 
     /**

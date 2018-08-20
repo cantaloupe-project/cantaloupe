@@ -44,6 +44,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -224,7 +225,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             ProcessorFeature.ROTATION_ARBITRARY,
             ProcessorFeature.ROTATION_BY_90S,
             ProcessorFeature.SIZE_ABOVE_FULL,
-            //ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
+            ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
             ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
             ProcessorFeature.SIZE_BY_HEIGHT,
             ProcessorFeature.SIZE_BY_PERCENT,
@@ -399,10 +400,13 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
 
         // Find the best resolution level to read.
         if (scaleOp != null) {
-            final double resultingScale = scaleOp.getResultingScale(
+            final double scales[] = scaleOp.getResultingScales(
                     roi.size(), opList.getScaleConstraint());
+            // If x & y scales are different, base the reduction factor on the
+            // largest scale.
+            final double maxScale = Arrays.stream(scales).max().orElse(1);
             reductionFactor.factor =
-                    ReductionFactor.forScale(resultingScale, 0.001).factor;
+                    ReductionFactor.forScale(maxScale, 0.001).factor;
 
             // Clamp the reduction factor to the range of 0-numLevels.
             if (reductionFactor.factor < 0) {
@@ -481,14 +485,14 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                         referenceComponent, channels, codestream);
                 final Dimension regionArea = new Dimension(
                         regionSize.Get_x(), regionSize.Get_y());
-                double diffScale = (scaleOp != null)
-                        ? scaleOp.getDifferentialScale(
+                final double[] diffScales = (scaleOp != null)
+                        ? scaleOp.getDifferentialScales(
                                 regionArea, reductionFactor, opList.getScaleConstraint())
-                        : 1.0;
+                        : new double[] {1.0, 1.0};
                 expandNumerator.Set_x((int) Math.round(
-                        expandNumerator.Get_x() * diffScale * EXPAND_DENOMINATOR));
+                        expandNumerator.Get_x() * diffScales[0] * EXPAND_DENOMINATOR));
                 expandNumerator.Set_y((int) Math.round(
-                        expandNumerator.Get_y() * diffScale * EXPAND_DENOMINATOR));
+                        expandNumerator.Get_y() * diffScales[1] * EXPAND_DENOMINATOR));
                 final Kdu_coords expandDenominator =
                         new Kdu_coords(EXPAND_DENOMINATOR, EXPAND_DENOMINATOR);
 
@@ -504,11 +508,11 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                 // in which case the ROI origin must be shifted to match.
                 final double reducedScale = reductionFactor.getScale();
                 regionPos.Set_x(sourcePos.Get_x() +
-                        (int) Math.floor(regionPos.Get_x() * diffScale * reducedScale));
+                        (int) Math.floor(regionPos.Get_x() * diffScales[0] * reducedScale));
                 regionPos.Set_y(sourcePos.Get_y() +
-                        (int) Math.floor(regionPos.Get_y() * diffScale * reducedScale));
-                regionSize.Set_x((int) Math.floor(regionSize.Get_x() * diffScale * reducedScale));
-                regionSize.Set_y((int) Math.floor(regionSize.Get_y() * diffScale * reducedScale));
+                        (int) Math.floor(regionPos.Get_y() * diffScales[1] * reducedScale));
+                regionSize.Set_x((int) Math.floor(regionSize.Get_x() * diffScales[0] * reducedScale));
+                regionSize.Set_y((int) Math.floor(regionSize.Get_y() * diffScales[1] * reducedScale));
 
                 // N.B.: if the region is not entirely within the source image
                 // coordinates, either kdu_region_decompressor::start() or
