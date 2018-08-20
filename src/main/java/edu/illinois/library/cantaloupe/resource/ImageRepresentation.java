@@ -2,6 +2,8 @@ package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
+import edu.illinois.library.cantaloupe.image.Dimension;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
@@ -40,8 +42,7 @@ public class ImageRepresentation implements Representation {
      * @param processor   Processor configured for writing the image.
      * @param opList      Instance describing the image.
      * @param bypassCache If {@literal true}, the cache will not be written to
-     *                    nor read from, regardless of whether caching is
-     *                    enabled in the application configuration.
+     *                    nor read from.
      */
     public ImageRepresentation(final Info imageInfo,
                                final Processor processor,
@@ -59,11 +60,11 @@ public class ImageRepresentation implements Representation {
      * from a processor (and caching it if so configured) as appropriate.
      */
     @Override
-    public void write(OutputStream responseOutputStream) throws IOException {
+    public void write(OutputStream responseOS) throws IOException {
         // If we are bypassing the cache, write directly to the response.
         if (bypassCache) {
             LOGGER.debug("Bypassing the cache and writing directly to the response");
-            doWrite(responseOutputStream);
+            copyOrProcess(responseOS);
             return;
         }
 
@@ -72,18 +73,18 @@ public class ImageRepresentation implements Representation {
         if (!cacheFacade.isDerivativeCacheAvailable()) {
             LOGGER.debug("Derivative cache not available; writing directly " +
                     "to the response");
-            doWrite(responseOutputStream);
+            copyOrProcess(responseOS);
             return;
         }
 
         // A derivative cache is available, so try to copy the image from the
         // cache to the response.
         final DerivativeCache cache = cacheFacade.getDerivativeCache();
-        try (InputStream cacheInputStream = cache.newDerivativeImageInputStream(opList)) {
-            if (cacheInputStream != null) {
+        try (InputStream cacheIS = cache.newDerivativeImageInputStream(opList)) {
+            if (cacheIS != null) {
                 // The image is available, so write it to the response.
                 final Stopwatch watch = new Stopwatch();
-                IOUtils.copy(cacheInputStream, responseOutputStream);
+                IOUtils.copy(cacheIS, responseOS);
 
                 LOGGER.debug("Streamed from {} in {}: {}",
                         cache.getClass().getSimpleName(), watch, opList);
@@ -92,7 +93,8 @@ public class ImageRepresentation implements Representation {
         } catch (IOException e) {
             LOGGER.error("Failed to read from {}: {}",
                     cache.getClass().getSimpleName(), e.getMessage(), e);
-            doWrite(responseOutputStream);
+            // It may still be possible to fulfill the request.
+            copyOrProcess(responseOS);
             return;
         }
 
@@ -108,65 +110,69 @@ public class ImageRepresentation implements Representation {
         // closed, its wrapped streams' close() methods will have been called
         // twice, so it's important that these two streams' close() methods can
         // deal with being called twice.
-        try (OutputStream cacheOutputStream =
+        try (OutputStream cacheOS =
                      cacheFacade.newDerivativeImageOutputStream(opList)) {
-            OutputStream teeOutputStream = new TeeOutputStream(
-                    responseOutputStream, cacheOutputStream);
+            OutputStream teeOS = new TeeOutputStream(responseOS, cacheOS);
             LOGGER.debug("Writing to the response & derivative " +
                     "cache simultaneously");
-            doWrite(teeOutputStream);
-        } catch (Throwable e) {
+            copyOrProcess(teeOS);
+        } catch (Throwable t) {
             // The cached image has been incompletely written and is corrupt,
-            // so it must be purged. This may happen in response to a VM error
-            // like OutOfMemoryError, or when the connection has been closed
-            // prematurely, as in the case of e.g. the client hitting the stop
-            // button.
-            if (e.getMessage() != null && e.getMessage().contains("heap space")) {
-                LOGGER.error("write(): out of heap space! " +
-                        "Consider adjusting your -Xmx JVM argument.");
-            } else {
-                LOGGER.debug("write(): {}", e.getMessage());
-            }
+            // so it must be purged.
             cacheFacade.purge(opList);
-
-            doWrite(responseOutputStream);
+            // It may still be possible to fulfill the request.
+            copyOrProcess(responseOS);
+            return;
         }
     }
 
     /**
-     * @param outputStream Either the response output stream, or a tee stream
-     *                     for writing to the response and the cache
-     *                     pseudo-simultaneously. Will not be closed.
+     * If {@link #opList} {@link OperationList#hasEffect(Dimension, Format) has
+     * no effect}, streams the image from its source. Otherwise, invokes
+     * {@link Processor#process}. The output is either the response output
+     * stream, or a tee stream that writes to the response and cache
+     * pseudo-simultaneously.
+     *
+     * @param responseOS Will not be closed.
      */
-    private void doWrite(OutputStream outputStream) throws IOException {
-        final Stopwatch watch = new Stopwatch();
+    private void copyOrProcess(OutputStream responseOS) throws IOException {
         // If the operations are effectively a no-op, the source image can be
         // streamed through with no processing.
         if (!opList.hasEffect(imageInfo.getSize(), imageInfo.getSourceFormat())) {
-            if (processor instanceof FileProcessor) {
-                Path sourceFile = ((FileProcessor) processor).getSourceFile();
-                if (sourceFile != null) {
-                    Files.copy(sourceFile, outputStream);
-                }
-            } else {
-                StreamFactory streamFactory =
-                        ((StreamProcessor) processor).getStreamFactory();
-                try (InputStream inputStream = streamFactory.newInputStream()) {
-                    IOUtils.copy(inputStream, outputStream);
-                }
-            }
-            LOGGER.debug("Streamed with no processing in {}: {}",
-                    watch, opList);
+            copyFromSource(responseOS);
         } else {
             try {
-                processor.process(opList, imageInfo, outputStream);
-
-                LOGGER.debug("{} processed in {}: {}",
-                        processor.getClass().getSimpleName(), watch, opList);
+                process(responseOS);
             } catch (ProcessorException e) {
                 throw new IOException(e.getMessage(), e);
             }
         }
+    }
+
+    private void copyFromSource(OutputStream responseOS) throws IOException {
+        final Stopwatch watch = new Stopwatch();
+        if (processor instanceof FileProcessor) {
+            Path sourceFile = ((FileProcessor) processor).getSourceFile();
+            if (sourceFile != null) {
+                Files.copy(sourceFile, responseOS);
+            }
+        } else {
+            StreamFactory streamFactory =
+                    ((StreamProcessor) processor).getStreamFactory();
+            try (InputStream sourceIS = streamFactory.newInputStream()) {
+                IOUtils.copy(sourceIS, responseOS);
+            }
+        }
+        LOGGER.debug("Streamed with no processing in {}: {}", watch, opList);
+    }
+
+    private void process(OutputStream responseOS) throws ProcessorException {
+        final Stopwatch watch = new Stopwatch();
+
+        processor.process(opList, imageInfo, responseOS);
+
+        LOGGER.debug("{} processed in {}: {}",
+                processor.getClass().getSimpleName(), watch, opList);
     }
 
 }
