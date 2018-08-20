@@ -206,22 +206,10 @@ public interface Processor extends AutoCloseable {
             throws ValidationException, ProcessorException {
         opList.validate(fullSize, getSourceFormat());
 
-        // Fail if there is a Scale operation with mode NON_ASPECT_FILL but
-        // ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT is not supported.
-        Set<ProcessorFeature> features = getSupportedFeatures();
-        if (!features.contains(ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT)) {
-            Scale scale = (Scale) opList.getFirst(Scale.class);
-            if (scale != null && Scale.Mode.NON_ASPECT_FILL.equals(scale.getMode())) {
-                throw new ValidationException("This processor does not support " +
-                        ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
-            }
-        }
-
-        // There are additional validations we could do similar to the above,
-        // but currently all processors support all other scale modes.
-        // TODO: bind Scale.Mode to ProcessorFeature and rewrite the above,
-        // to avoid having to code a separate validation for every feature/mode
-        // combo
+        // TODO: bind Scale.Mode to ProcessorFeature and validate whether the
+        // processor supports all of the requested operations.
+        // This isn't needed as of 4.1 because all processors support all
+        // operations.
     }
 
 }
