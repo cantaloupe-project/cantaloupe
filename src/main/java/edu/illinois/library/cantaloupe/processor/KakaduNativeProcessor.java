@@ -462,6 +462,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                 }
 
                 codestream.Create(inputBox, threadEnv);
+                codestream.Set_resilient();
 
                 channels.Configure(codestream);
 
@@ -796,6 +797,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                 Jpx_input_box inputBox = codestreamSrc.Open_stream();
 
                 codestream.Create(inputBox);
+                codestream.Set_resilient();
 
                 channels.Configure(codestream);
 
