@@ -233,29 +233,30 @@ class CustomDelegate
                  .select{ |name, value| name.downcase == 'authorization' }
                  .values.first
     if header&.start_with?('Bearer ')
-      token = header[7..header.length - 1]
+      token = header[7..header.length]
       if valid?(token)
         # Get the current scale constraint fraction, which ultimately comes
         # from the identifier URI path component, which is conveniently
         # made available for you in the delegate script context.
-        scale_constraint = context['scale_constraint']
-        scale_constraint_f = scale_constraint ?
-            scale_constraint['numerator'] / scale_constraint['denominator'].to_f : 1.0
+        # This is a hash with 'numerator' and 'denominator' keys.
+        scale_constraint_h = context['scale_constraint']
+
+        # If it exists, convert it to a Rational (Ruby fraction).
+        # Otherwise, use a fraction of 1/1.
+        scale_constraint_r = scale_constraint_h ?
+            Rational(*scale_constraint_h.values) : Rational(1)
 
         # Define the authorized scale constraint. In this case, we want
-        # to allow access to a half-scale version only.
-        authorized_scale_numerator = 1
-        authorized_scale_denominator = 2
-        authorized_scale_f = authorized_scale_numerator /
-            authorized_scale_denominator.to_f
+        # to allow access to a half-scale version or smaller.
+        authorized_r = Rational(1, 2)
 
-        # If the current scale constraint does not match the authorized
-        # scale constraint, redirect to the authorized scale constraint.
-        if (scale_constraint_f - authorized_scale_f).abs > 0.000001
+        # If the requested scale constraint is larger than authorized,
+        # redirect to the authorized scale constraint.
+        if scale_constraint_r > authorized_r
           return {
               'status_code' => 302,
-              'scale_numerator' => authorized_scale_numerator,
-              'scale_denominator' => authorized_scale_denominator
+              'scale_numerator' => authorized_r.numerator,
+              'scale_denominator' => authorized_r.denominator
           }
         else
           return true
