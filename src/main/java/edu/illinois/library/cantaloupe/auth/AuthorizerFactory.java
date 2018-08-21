@@ -8,7 +8,7 @@ public class AuthorizerFactory {
      *             will be maximally permissive.
      */
     public Authorizer newAuthorizer(Object... args) {
-        if (args.length > 0) {
+        if (args.length > 0 && args[0] != null) {
             return new DelegateAuthorizer(args);
         }
         return new PermissiveAuthorizer();

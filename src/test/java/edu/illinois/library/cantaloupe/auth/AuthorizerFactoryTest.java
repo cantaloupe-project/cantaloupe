@@ -28,6 +28,11 @@ public class AuthorizerFactoryTest extends BaseTest {
     }
 
     @Test
+    public void testNewAuthorizerWithNullArguments() {
+        assertTrue(instance.newAuthorizer(null, null) instanceof PermissiveAuthorizer);
+    }
+
+    @Test
     public void testNewAuthorizerWithArgument() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
