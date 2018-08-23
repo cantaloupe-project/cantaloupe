@@ -32,8 +32,9 @@ class CustomDelegate
   # * `identifier`       [String] Image identifier.
   # * `request_headers`  [Hash<String,String>] Hash of header name-value pairs.
   # * `request_uri`      [String] Public request URI.
-  # * `scale_constraint` [Hash<String,Integer>] Hash with 'numerator' and
-  #                      'denominator' keys.
+  # * `scale_constraint` [Array<Integer>] Two-element array with scale
+  #                      constraint numerator at position 0 and denominator at
+  #                      position 1.
   #
   # It will contain the following additional string keys in response to image
   # requests:

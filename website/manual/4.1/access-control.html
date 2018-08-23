@@ -238,13 +238,13 @@ class CustomDelegate
         # Get the current scale constraint fraction, which ultimately comes
         # from the identifier URI path component, which is conveniently
         # made available for you in the delegate script context.
-        # This is a hash with 'numerator' and 'denominator' keys.
-        scale_constraint_h = context['scale_constraint']
+        # This is an array of numerator and denominator integers.
+        scale_constraint = context['scale_constraint']
 
         # If it exists, convert it to a Rational (Ruby fraction).
-        # Otherwise, use a fraction of 1/1.
-        scale_constraint_r = scale_constraint_h ?
-            Rational(*scale_constraint_h.values) : Rational(1)
+        # Otherwise, use 1/1.
+        scale_constraint_r = scale_constraint ?
+            Rational(*scale_constraint) : Rational(1)
 
         # Define the authorized scale constraint. In this case, we want
         # to allow access to a half-scale version or smaller.
