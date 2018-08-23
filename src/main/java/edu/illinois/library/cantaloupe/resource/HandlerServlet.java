@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Status;
+import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +60,8 @@ public class HandlerServlet extends HttpServlet {
 
     private void handle(HttpServletRequest request,
                         HttpServletResponse response) {
+        final Stopwatch requestClock = new Stopwatch();
+
         final String path = getContextRelativePath(
                 request.getRequestURI(), request.getContextPath());
 
@@ -116,6 +119,8 @@ public class HandlerServlet extends HttpServlet {
             if (resource != null) {
                 resource.destroy();
             }
+            LOGGER.debug("{} total for {} {}",
+                    requestClock, request.getMethod(), request.getPathInfo());
         }
     }
 
