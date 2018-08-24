@@ -418,9 +418,7 @@ class HttpSource extends AbstractSource implements StreamSource {
                 rangedGETResponseStatus = response.getStatus();
                 rangedGETResponseHeaders = response.getHeaders();
                 rangedGETResponseEntity = response.getContent();
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Malformed URI: " + info.getURI());
-            } catch (ExecutionException e ) {
+            } catch (ExecutionException e) {
                 throw new AccessDeniedException(info.getURI().toString());
             } catch (InterruptedException | TimeoutException e) {
                 throw new IOException(e);
