@@ -18,9 +18,10 @@ import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import kdu_jni.Jp2_locator;
-import kdu_jni.Jp2_source;
 import kdu_jni.Jp2_threadsafe_family_src;
+import kdu_jni.Jpx_codestream_source;
+import kdu_jni.Jpx_input_box;
+import kdu_jni.Jpx_source;
 import kdu_jni.KduException;
 import kdu_jni.Kdu_channel_mapping;
 import kdu_jni.Kdu_codestream;
@@ -424,8 +425,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             // N.B.: see the end notes in the KduRender.java file in the Kakadu
             // SDK for explanation of how these need to be destroyed.
             // N.B. 2: see KduRender2.java for use of the Kdu_thread_env.
-            final Jp2_locator locator = new Jp2_locator();
-            final Jp2_source inputSource = new Jp2_source();
+            final Jpx_source jpxSrc = new Jpx_source();
             final Jp2_threadsafe_family_src familySrc = new Jp2_threadsafe_family_src();
             Kdu_compressed_source compSrc = null;
             final Kdu_codestream codestream = new Kdu_codestream();
@@ -442,23 +442,19 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                     compSrc = new KduImageInputStreamSource(inputStream);
                     familySrc.Open(compSrc);
                 }
+                jpxSrc.Open(familySrc, false);
 
-                inputSource.Open(familySrc, locator);
-                inputSource.Read_header();
-                compSrc = inputSource;
+                Jpx_codestream_source codestreamSrc = jpxSrc.Access_codestream(0);
+                Jpx_input_box inputBox = codestreamSrc.Open_stream();
 
                 threadEnv.Create();
                 for (int t = 0; t < NUM_THREADS; t++) {
                     threadEnv.Add_thread();
                 }
 
-                codestream.Create(compSrc, threadEnv);
+                codestream.Create(inputBox, threadEnv);
 
-                if (inputSource.Exists()) {
-                    channels.Configure(inputSource, false);
-                } else {
-                    channels.Configure(codestream);
-                }
+                channels.Configure(codestream);
 
                 final int referenceComponent = channels.Get_source_component(0);
                 final int accessMode = Kdu_global.KDU_WANT_OUTPUT_COMPONENTS;
@@ -598,9 +594,8 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                 if (compSrc != null) {
                     compSrc.Native_destroy();
                 }
-                inputSource.Native_destroy();
+                jpxSrc.Native_destroy();
                 familySrc.Native_destroy();
-                locator.Native_destroy();
 
                 IOUtils.closeQuietly(inputStream);
             }
@@ -766,33 +761,28 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             // N.B.: see the end notes in the KduRender.java file in the Kakadu
             // SDK for explanation of how these need to be destroyed.
             ImageInputStream inputStream = null;
-            final Jp2_source jp2Src = new Jp2_source();
+            final Jpx_source jpxSrc = new Jpx_source();
             Kdu_compressed_source compSrc = null;
             final Jp2_threadsafe_family_src familySrc = new Jp2_threadsafe_family_src();
-            final Jp2_locator loc = new Jp2_locator();
-            Kdu_codestream codestream = null;
-            Kdu_channel_mapping channels = null;
+            final Kdu_codestream codestream = new Kdu_codestream();
+            final Kdu_channel_mapping channels = new Kdu_channel_mapping();
 
             try {
                 if (sourceFile != null) {
                     familySrc.Open(sourceFile.toString(), true);
                 } else {
                     inputStream = streamFactory.newImageInputStream();
-                    familySrc.Open(new KduImageInputStreamSource(inputStream));
+                    compSrc = new KduImageInputStreamSource(inputStream);
+                    familySrc.Open(compSrc);
                 }
-                jp2Src.Open(familySrc, loc);
-                jp2Src.Read_header();
-                compSrc = jp2Src;
+                jpxSrc.Open(familySrc, false);
 
-                codestream = new Kdu_codestream();
-                codestream.Create(compSrc);
+                Jpx_codestream_source codestreamSrc = jpxSrc.Access_codestream(0);
+                Jpx_input_box inputBox = codestreamSrc.Open_stream();
 
-                channels = new Kdu_channel_mapping();
-                if (jp2Src.Exists()) {
-                    channels.Configure(jp2Src, false);
-                } else {
-                    channels.Configure(codestream);
-                }
+                codestream.Create(inputBox);
+
+                channels.Configure(codestream);
 
                 final int referenceComponent = channels.Get_source_component(0);
 
@@ -834,21 +824,21 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                 if (channels != null) {
                     channels.Native_destroy();
                 }
-                if (codestream != null) {
-                    try {
-                        if (codestream.Exists()) {
-                            codestream.Destroy();
-                        }
-                    } catch (KduException e) {
-                        LOGGER.error("readImageInfo(): {} (code: {})",
-                                e.getMessage(),
-                                Integer.toHexString(e.Get_kdu_exception_code()));
+
+                try {
+                    if (codestream.Exists()) {
+                        codestream.Destroy();
                     }
+                } catch (KduException e) {
+                    LOGGER.error("readImageInfo(): {} (code: {})",
+                            e.getMessage(),
+                            Integer.toHexString(e.Get_kdu_exception_code()));
                 }
+
                 if (compSrc != null) {
                     compSrc.Native_destroy();
                 }
-                jp2Src.Native_destroy();
+                jpxSrc.Native_destroy();
                 familySrc.Native_destroy();
 
                 if (inputStream != null) {
