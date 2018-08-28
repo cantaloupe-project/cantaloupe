@@ -27,7 +27,7 @@ before_install:
   #- sudo apt-add-repository 'deb https://notesalexp.org/debian/trusty trusty main'
   # update and install all packages
   - sudo apt-get -qq update
-  - sudo apt-get install -y libav-tools graphicsmagick imagemagick ffmpeg libopenjp2-tools
+  - sudo apt-get install -y libav-tools graphicsmagick imagemagick ffmpeg libopenjpeg2 openjpeg-tools
 
 script:
   - mvn clean verify -Pfreedeps
