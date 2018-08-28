@@ -9,7 +9,7 @@ public class UnsupportedSourceFormatException extends IOException {
     private static String getMessage(Processor proc, Format format) {
         String msg;
         if (Format.UNKNOWN.equals(format)) {
-            msg = "Unknown source format";
+            msg = "Unknown source format (" + format + ")";
         } else {
             msg = proc.getClass().getSimpleName() + " does not support the " +
                     format.getName() + " source format";
