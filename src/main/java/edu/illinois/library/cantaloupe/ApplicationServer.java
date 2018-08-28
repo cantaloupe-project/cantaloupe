@@ -16,6 +16,12 @@ import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
+
 /**
  * <p>Provides the embedded Servlet container in standalone mode.</p>
  *
@@ -112,7 +118,25 @@ public class ApplicationServer {
 
         // We also set it to NOT persist to avoid accumulating a bunch of
         // stale exploded apps.
-        context.setPersistTempDirectory(false);
+        // N.B.: WebAppContext.setPersistTempDirectory() is supposed to be the
+        // way to accomplish this, but testing indicates that it does not work
+        // reliably as of Jetty 9.4.9.v20180320. Not sure what the problem is,
+        // but the temp directory remains in both macOS and RHEL after killing
+        // the app with ctrl+c or sending it SIGTERM. So, instead, we will
+        // clean it out from shutdown hook.
+        // See: http://www.eclipse.org/jetty/documentation/current/ref-temporary-directories.html#_setting_a_specific_temp_directory
+        //context.setPersistTempDirectory(false);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("Cleaning " + context.getTempDirectory());
+            try {
+                Files.walk(context.getTempDirectory().toPath())
+                        .sorted(Comparator.reverseOrder())
+                        .map(Path::toFile)
+                        .forEach(File::delete);
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
+            }
+        }));
 
         // Give the WebAppContext a different "WAR" to use depending on
         // whether we are running from a WAR file or an IDE.

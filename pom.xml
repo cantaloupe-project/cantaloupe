@@ -647,6 +647,8 @@
               <reuseForks>false</reuseForks>
               <excludes>
                 <exclude>Azure*Test</exclude>
+                <!-- openjpeg is free but there is no package containing opj_decompress in trusty -->
+                <exclude>OpenJpeg*Test</exclude>
               </excludes>
             </configuration>
           </plugin>
