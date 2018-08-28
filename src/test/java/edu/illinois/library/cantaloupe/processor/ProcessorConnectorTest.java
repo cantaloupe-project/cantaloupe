@@ -171,7 +171,8 @@ public class ProcessorConnectorTest extends BaseTest {
                     "BasicLookupStrategy");
             config.setProperty(Key.HTTPSOURCE_URL_PREFIX,
                     server.getHTTPURI() + "/");
-            config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
+            config.setProperty(Key.PROCESSOR_FALLBACK,
+                    MockFileProcessor.class.getName());
             config.setProperty(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY,
                     RetrievalStrategy.DOWNLOAD.getConfigValue());
 
@@ -204,7 +205,8 @@ public class ProcessorConnectorTest extends BaseTest {
                     "BasicLookupStrategy");
             config.setProperty(Key.HTTPSOURCE_URL_PREFIX,
                     server.getHTTPURI() + "/");
-            config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
+            config.setProperty(Key.PROCESSOR_FALLBACK,
+                    MockFileProcessor.class.getName());
             config.setProperty(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY,
                     RetrievalStrategy.CACHE.getConfigValue());
 
@@ -228,7 +230,8 @@ public class ProcessorConnectorTest extends BaseTest {
         final Identifier identifier = new Identifier("jp2");
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_STATIC, "HttpSource");
-        config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
+        config.setProperty(Key.PROCESSOR_FALLBACK,
+                MockFileProcessor.class.getName());
         config.setProperty(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY,
                 RetrievalStrategy.CACHE.getConfigValue());
 
@@ -244,7 +247,8 @@ public class ProcessorConnectorTest extends BaseTest {
         final Identifier identifier = new Identifier("jp2");
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_STATIC, "HttpSource");
-        config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
+        config.setProperty(Key.PROCESSOR_FALLBACK,
+                MockFileProcessor.class.getName());
         config.setProperty(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY,
                 RetrievalStrategy.ABORT.getConfigValue());
 
@@ -267,7 +271,8 @@ public class ProcessorConnectorTest extends BaseTest {
                     "BasicLookupStrategy");
             config.setProperty(Key.HTTPSOURCE_URL_PREFIX,
                     server.getHTTPURI() + "/");
-            config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
+            config.setProperty(Key.PROCESSOR_FALLBACK,
+                    MockFileProcessor.class.getName());
 
             final Source source = new SourceFactory().newSource(identifier, null);
             final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
