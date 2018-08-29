@@ -124,16 +124,18 @@ public class ApplicationServer {
         // or SIGTERM. So, instead, we will use a shutdown hook.
         // See: http://www.eclipse.org/jetty/documentation/current/ref-temporary-directories.html#_setting_a_specific_temp_directory
         //context.setPersistTempDirectory(false);
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                Files.walk(context.getTempDirectory().toPath())
-                        .sorted(Comparator.reverseOrder())
-                        .map(Path::toFile)
-                        .forEach(File::delete);
-            } catch (IOException e) {
-                System.err.println(e.getMessage());
-            }
-        }));
+        if (!"true".equals(System.getProperty(Application.TEST_VM_ARGUMENT))) {
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    Files.walk(context.getTempDirectory().toPath())
+                            .sorted(Comparator.reverseOrder())
+                            .map(Path::toFile)
+                            .forEach(File::delete);
+                } catch (IOException e) {
+                    System.err.println(e.getMessage());
+                }
+            }));
+        }
 
         // Give the WebAppContext a different "WAR" to use depending on
         // whether we are running from a WAR file or an IDE.
