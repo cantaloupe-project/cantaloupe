@@ -38,10 +38,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -454,24 +456,37 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
                 continue;
             }
             if (op instanceof Crop && !ignoreCrop) {
-                // Truncate coordinates to (num digits) + 1 decimal places
-                // to prevent kdu_expand from returning an extra pixel of
-                // width/height.
-                // N.B.: this broke sometime between KDU v7.6 and v7.10.4,
-                // and kdu_expand now unpredictably returns an extra pixel.
-                // Too bad, but Java2DUtil.crop() will take care of it.
-                final int xDecimalPlaces =
-                        Integer.toString(fullSize.intWidth()).length() + 1;
-                final int yDecimalPlaces =
-                        Integer.toString(fullSize.intHeight()).length() + 1;
-                final String xFormat = "#." + StringUtils.repeat("#",
-                        xDecimalPlaces);
-                final String yFormat = "#." + StringUtils.repeat("#",
-                        yDecimalPlaces);
-                final DecimalFormat xDecFormat = new DecimalFormat(xFormat);
-                xDecFormat.setRoundingMode(RoundingMode.DOWN);
-                final DecimalFormat yDecFormat = new DecimalFormat(yFormat);
-                yDecFormat.setRoundingMode(RoundingMode.DOWN);
+                final NumberFormat xFormat =
+                        NumberFormat.getInstance(Locale.US);
+                xFormat.setRoundingMode(RoundingMode.DOWN);
+                // This will always be true for Locale.US. No need to check
+                // if it isn't since the kdu_expand invocation will make
+                // that obvious.
+                if (xFormat instanceof DecimalFormat) {
+                    // Truncate coordinates to (num digits) + 1 decimal
+                    // places to prevent kdu_expand from returning an extra
+                    // pixel of width/height.
+                    // N.B.: this broke sometime between KDU v7.6 and
+                    // v7.10.4, and kdu_expand now unpredictably returns an
+                    // extra pixel. Too bad, but Java2DUtil.crop() will
+                    // take care of it.
+                    final int xDecimalPlaces =
+                            Integer.toString(fullSize.intWidth()).length() + 1;
+                    String xPattern =
+                            "#." + StringUtils.repeat("#", xDecimalPlaces);
+                    ((DecimalFormat) xFormat).applyPattern(xPattern);
+                }
+
+                final NumberFormat yFormat =
+                        NumberFormat.getInstance(Locale.US);
+                yFormat.setRoundingMode(RoundingMode.DOWN);
+                if (yFormat instanceof DecimalFormat) {
+                    final int yDecimalPlaces =
+                            Integer.toString(fullSize.intHeight()).length() + 1;
+                    String yPattern =
+                            "#." + StringUtils.repeat("#", yDecimalPlaces);
+                    ((DecimalFormat) yFormat).applyPattern(yPattern);
+                }
 
                 final Crop crop = (Crop) op;
                 final Rectangle region = crop.getRectangle(
@@ -484,10 +499,10 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
 
                 command.add("-region");
                 command.add(String.format("{%s,%s},{%s,%s}",
-                        yDecFormat.format(y),
-                        xDecFormat.format(x),
-                        yDecFormat.format(height),
-                        xDecFormat.format(width)));
+                        yFormat.format(y),
+                        xFormat.format(x),
+                        yFormat.format(height),
+                        xFormat.format(width)));
             } else if (op instanceof Scale) {
                 // kdu_expand is not capable of arbitrary scaling, but it does
                 // offer a -reduce argument to select a decomposition level,
