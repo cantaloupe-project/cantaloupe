@@ -16,7 +16,6 @@ import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
 import org.eclipse.jetty.client.util.BasicAuthentication;
-import org.eclipse.jetty.client.util.InputStreamResponseListener;
 import org.eclipse.jetty.http.HttpField;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpMethod;
@@ -27,7 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
@@ -75,41 +73,6 @@ import java.util.concurrent.TimeoutException;
  *     Jetty HTTP Client</a>
  */
 class HttpSource extends AbstractSource implements StreamSource {
-
-    private static class HTTPStreamFactory implements StreamFactory {
-
-        private final HttpClient client;
-        private final URI uri;
-
-        HTTPStreamFactory(HttpClient client, URI uri) {
-            this.client = client;
-            this.uri = uri;
-        }
-
-        @Override
-        public InputStream newInputStream() {
-            try {
-                InputStreamResponseListener listener =
-                        new InputStreamResponseListener();
-                client.newRequest(uri).
-                        timeout(getRequestTimeout(), TimeUnit.SECONDS).
-                        method(HttpMethod.GET).
-                        send(listener);
-
-                // Wait for the response headers to arrive.
-                Response response = listener.get(getRequestTimeout(),
-                        TimeUnit.SECONDS);
-
-                if (response.getStatus() == HttpStatus.OK_200) {
-                    return listener.getInputStream();
-                }
-            } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
-            }
-            return null;
-        }
-
-    }
 
     static class RequestInfo {
 
@@ -179,7 +142,7 @@ class HttpSource extends AbstractSource implements StreamSource {
      */
     private RequestInfo resourceInfo;
 
-    private static synchronized HttpClient getHTTPClient(RequestInfo info) {
+    static synchronized HttpClient getHTTPClient(RequestInfo info) {
         if (jettyClient == null) {
             HttpClientTransport transport = new HttpClientTransportOverHTTP();
 
@@ -214,7 +177,7 @@ class HttpSource extends AbstractSource implements StreamSource {
      * @return Request timeout from the application configuration, or a
      *         reasonable default if not set.
      */
-    private static int getRequestTimeout() {
+    static int getRequestTimeout() {
         return Configuration.getInstance().getInt(
                 Key.HTTPSOURCE_REQUEST_TIMEOUT,
                 DEFAULT_REQUEST_TIMEOUT);
