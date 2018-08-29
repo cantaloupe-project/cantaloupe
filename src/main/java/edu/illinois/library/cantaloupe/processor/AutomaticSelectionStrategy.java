@@ -11,8 +11,6 @@ import java.util.List;
  */
 class AutomaticSelectionStrategy implements SelectionStrategy {
 
-    static final String CONFIGURATION_VALUE = "AutomaticSelectionStrategy";
-
     @Override
     public List<Class<? extends Processor>> getPreferredProcessors(Format sourceFormat) {
         final List<Class<? extends Processor>> candidates = new ArrayList<>();
@@ -27,8 +25,8 @@ class AutomaticSelectionStrategy implements SelectionStrategy {
             candidates.add(KakaduNativeProcessor.class);
             candidates.add(KakaduDemoProcessor.class);
             candidates.add(OpenJpegProcessor.class);
-            candidates.add(GraphicsMagickProcessor.class);
             candidates.add(ImageMagickProcessor.class);
+            candidates.add(GraphicsMagickProcessor.class);
         } else {
             candidates.add(Java2dProcessor.class);
             candidates.add(GraphicsMagickProcessor.class);
