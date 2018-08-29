@@ -471,7 +471,7 @@ class HttpSource extends AbstractSource implements StreamSource {
             throws URISyntaxException, NoSuchFileException, ScriptException {
         final DelegateProxy proxy = getDelegateProxy();
 
-        final Map<String, String> infoProps = proxy.getHttpSourceResourceInfo();
+        final Map<String, ?> infoProps = proxy.getHttpSourceResourceInfo();
 
         if (infoProps.isEmpty()) {
             throw new NoSuchFileException(
@@ -479,9 +479,9 @@ class HttpSource extends AbstractSource implements StreamSource {
                     " returned nil for " + identifier);
         }
 
-        final String uri = infoProps.get("uri");
-        final String username = infoProps.get("username");
-        final String secret = infoProps.get("secret");
+        final String uri      = (String) infoProps.get("uri");
+        final String username = (String) infoProps.get("username");
+        final String secret   = (String) infoProps.get("secret");
         return new ResourceInfo(new URI(uri), username, secret);
     }
 

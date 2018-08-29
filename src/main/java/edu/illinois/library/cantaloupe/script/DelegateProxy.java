@@ -215,7 +215,7 @@ public final class DelegateProxy {
      *         it returned {@literal nil}.
      */
     @SuppressWarnings("unchecked")
-    public Map<String,String> getHttpSourceResourceInfo()
+    public Map<String,?> getHttpSourceResourceInfo()
             throws ScriptException {
         Object result = invoke(DelegateMethod.HTTPSOURCE_RESOURCE_INFO);
         if (result instanceof String) {
@@ -223,7 +223,7 @@ public final class DelegateProxy {
             map.put("uri", (String) result);
             return map;
         } else if (result instanceof Map) {
-            return (Map<String,String>) result;
+            return (Map<String,Object>) result;
         }
         return Collections.emptyMap();
     }

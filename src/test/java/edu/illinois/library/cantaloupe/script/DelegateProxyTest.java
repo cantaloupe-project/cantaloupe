@@ -144,7 +144,7 @@ public class DelegateProxyTest extends BaseTest {
         context.setIdentifier(new Identifier("DelegateProxyTest-String"));
         instance.setRequestContext(context);
 
-        Map<String,String> result = instance.getHttpSourceResourceInfo();
+        Map<String,?> result = instance.getHttpSourceResourceInfo();
         assertEquals(1, result.size());
         assertEquals("http://example.org/foxes", result.get("uri"));
     }
@@ -156,14 +156,14 @@ public class DelegateProxyTest extends BaseTest {
         context.setIdentifier(new Identifier("DelegateProxyTest-Hash"));
         instance.setRequestContext(context);
 
-        Map<String,String> result = instance.getHttpSourceResourceInfo();
+        Map<String,?> result = instance.getHttpSourceResourceInfo();
         assertEquals(1, result.size());
         assertEquals("http://example.org/birds", result.get("uri"));
     }
 
     @Test
     public void testGetHttpSourceResourceInfoReturningNil() throws Exception {
-        Map<String,String> result = instance.getHttpSourceResourceInfo();
+        Map<String,?> result = instance.getHttpSourceResourceInfo();
         assertTrue(result.isEmpty());
     }
 
