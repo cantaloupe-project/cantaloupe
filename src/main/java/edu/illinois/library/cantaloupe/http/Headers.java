@@ -115,4 +115,12 @@ public final class Headers implements Iterable<Header> {
         return map;
     }
 
+    @Override
+    public String toString() {
+        if (headers.isEmpty()) {
+            return "(none)";
+        }
+        return stream().map(Header::toString).collect(Collectors.joining(" | "));
+    }
+
 }

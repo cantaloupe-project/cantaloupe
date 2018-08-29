@@ -174,4 +174,22 @@ public class HeadersTest {
         assertEquals(2, map.size());
     }
 
+    @Test
+    public void testToStringWithNoHeaders() {
+        assertEquals("(none)", instance.toString());
+    }
+
+    @Test
+    public void testToStringWithOneHeader() {
+        instance.add("X-Cats", "yes");
+        assertEquals("X-Cats: yes", instance.toString());
+    }
+
+    @Test
+    public void testToStringWithMultipleHeaders() {
+        instance.add("X-Cats", "yes");
+        instance.add("X-Dogs", "yes");
+        assertEquals("X-Cats: yes | X-Dogs: yes", instance.toString());
+    }
+
 }
