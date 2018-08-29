@@ -1,12 +1,11 @@
 ##
 # Sample Ruby delegate script containing stubs and documentation for all
-# available delegate methods. See the "Delegate Script" section of the user
-# manual for more information.
+# available delegate methods. See the user manual for more information.
 #
 # The application will create an instance of this class early in the request
 # cycle and dispose of it at the end of the request cycle. Instances don't need
 # to be thread-safe, but sharing information across instances (requests)
-# **does** need to be thread-safe.
+# **does** need to be done thread-safely.
 #
 # This version of the script works with Cantaloupe version 4, and not earlier
 # versions. Likewise, earlier versions of the script are not compatible with
@@ -142,9 +141,18 @@ class CustomDelegate
   end
 
   ##
+  # Returns one of the following:
+  #
+  # 1. String URI
+  # 2. Hash with the following keys:
+  #     * `uri` [String] (required)
+  #     * `username` [String] For HTTP Basic authentication (optional).
+  #     * `secret` [String] For HTTP Basic authentication (optional).
+  #     * `headers` [Hash<String,String>] Hash of request headers (optional).
+  # 3. nil if not found.
+  #
   # @param options [Hash] Empty hash.
-  # @return [String,Hash<String,String>,nil] String URI; Hash with `uri` key,
-  #         and optionally `username` and `secret` keys; or nil if not found.
+  # @return See above.
   #
   def httpsource_resource_info(options = {})
   end

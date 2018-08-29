@@ -3,12 +3,18 @@ package edu.illinois.library.cantaloupe.source;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.WebServer;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.imageio.stream.ImageInputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -27,12 +33,14 @@ public class HTTPStreamFactoryTest extends BaseTest {
         server = new WebServer();
         server.setHTTP1Enabled(true);
 
+        Map<String,String> headers = new HashMap<>();
+        headers.put("X-Custom", "yes");
         HttpSource.RequestInfo requestInfo = new HttpSource.RequestInfo(
-                server.getHTTPURI().resolve("/" + PRESENT_READABLE_IDENTIFIER));
+                server.getHTTPURI().resolve("/" + PRESENT_READABLE_IDENTIFIER), null, null, headers);
 
         this.instance = new HTTPStreamFactory(
                 HttpSource.getHTTPClient(requestInfo),
-                requestInfo.getURI());
+                requestInfo);
     }
 
     @After
@@ -42,7 +50,24 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewInputStream() throws Exception {
+    public void testNewInputStreamSendsCustomHeaders() throws Exception {
+        server.setHandler(new DefaultHandler() {
+            @Override
+            public void handle(String target,
+                               Request baseRequest,
+                               HttpServletRequest request,
+                               HttpServletResponse response) {
+                assertEquals("yes", request.getHeader("X-Custom"));
+                baseRequest.setHandled(true);
+            }
+        });
+        server.start();
+
+        try (InputStream is = instance.newInputStream()) {}
+    }
+
+    @Test
+    public void testNewInputStreamReturnsContent() throws Exception {
         server.start();
 
         int length = 0;
@@ -55,7 +80,24 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInputStream() throws Exception {
+    public void testNewImageInputStreamSendsCustomHeaders() throws Exception {
+        server.setHandler(new DefaultHandler() {
+            @Override
+            public void handle(String target,
+                               Request baseRequest,
+                               HttpServletRequest request,
+                               HttpServletResponse response) {
+                assertEquals("yes", request.getHeader("X-Custom"));
+                baseRequest.setHandled(true);
+            }
+        });
+        server.start();
+
+        try (ImageInputStream is = instance.newImageInputStream()) {}
+    }
+
+    @Test
+    public void testNewImageInputStreamReturnsContent() throws Exception {
         server.start();
 
         int length = 0;

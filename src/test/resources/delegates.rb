@@ -101,14 +101,19 @@ class CustomDelegate
     # Supply a localhost URL to return the same URL.
     if identifier.start_with?('http://localhost') or
         identifier.start_with?('https://localhost')
-      return { 'uri' => identifier }
+      return {
+          'uri' => identifier,
+          'headers' => {
+              'X-Custom' => 'yes'
+          }
+      }
     # Supply a valid URL prefixed with "valid-auth-" to return a valid URL
     # with valid auth info.
     elsif identifier.start_with?('valid-auth-')
       return {
           'uri' => identifier.gsub('valid-auth-', ''),
           'username' => 'user',
-          'secret' => 'secret'
+          'secret' => 'secret',
       }
     # Supply a valid URL prefixed with "invalid-auth-" to return a valid URL
     # with invalid auth info.
@@ -133,23 +138,35 @@ class CustomDelegate
     case identifier
       when 'http-jpg-rgb-64x56x8-baseline.jpg'
         return {
-            'uri' => 'http://example.org/bla/' + URI.escape(identifier)
+            'uri' => 'http://example.org/bla/' + URI.escape(identifier),
+            'headers' => {
+                'X-Custom' => 'yes'
+            }
         }
       when 'https-jpg-rgb-64x56x8-baseline.jpg'
         return {
-            'uri' => 'https://example.org/bla/' + URI.escape(identifier)
+            'uri' => 'https://example.org/bla/' + URI.escape(identifier),
+            'headers' => {
+                'X-Custom' => 'yes'
+            }
         }
       when 'http-jpg-rgb-64x56x8-plane.jpg'
         return {
             'uri' => 'http://example.org/bla/' + URI.escape(identifier),
             'username' => 'username',
-            'secret' => 'secret'
+            'secret' => 'secret',
+            'headers' => {
+                'X-Custom' => 'yes'
+            }
         }
       when 'https-jpg-rgb-64x56x8-plane.jpg'
         return {
             'uri' => 'https://example.org/bla/' + URI.escape(identifier),
             'username' => 'username',
-            'secret' => 'secret'
+            'secret' => 'secret',
+            'headers' => {
+                'X-Custom' => 'yes'
+            }
         }
     end
     nil

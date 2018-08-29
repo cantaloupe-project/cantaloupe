@@ -302,6 +302,59 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         }
     }
 
+    @Test
+    public void testCheckAccessSendsUserAgentHeader() throws Exception {
+        server.setHandler(new DefaultHandler() {
+            @Override
+            public void handle(String target,
+                               Request baseRequest,
+                               HttpServletRequest request,
+                               HttpServletResponse response) {
+                String expected = String.format("%s/%s (%s/%s; java/%s; %s/%s)",
+                        HttpSource.class.getSimpleName(),
+                        Application.getVersion(),
+                        Application.getName(),
+                        Application.getVersion(),
+                        System.getProperty("java.version"),
+                        System.getProperty("os.name"),
+                        System.getProperty("os.version"));
+                assertEquals(expected, baseRequest.getHeader("User-Agent"));
+                baseRequest.setHandled(true);
+            }
+        });
+        server.start();
+
+        instance.checkAccess();
+    }
+
+    @Test
+    public void testCheckAccessSendsCustomHeaders() throws Exception {
+        useScriptLookupStrategy();
+
+        server.setHandler(new DefaultHandler() {
+            @Override
+            public void handle(String target,
+                               Request baseRequest,
+                               HttpServletRequest request,
+                               HttpServletResponse response) {
+                assertEquals("yes", request.getHeader("X-Custom"));
+                baseRequest.setHandled(true);
+            }
+        });
+        server.start();
+
+        Identifier identifier = new Identifier(
+                getServerURI() + "/" + PRESENT_READABLE_IDENTIFIER);
+        RequestContext context = new RequestContext();
+        context.setIdentifier(identifier);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
+        instance.setIdentifier(identifier);
+
+        instance.checkAccess();
+    }
+
     /* getFormat() */
 
     @Test
@@ -507,6 +560,8 @@ abstract class HttpSourceTest extends AbstractSourceTest {
                 actual.getURI());
         assertEquals("username", actual.getUsername());
         assertEquals("secret", actual.getSecret());
+        Map<String,?> headers = actual.getHeaders();
+        assertEquals("yes", headers.get("X-Custom"));
     }
 
     @Test(expected = NoSuchFileException.class)
@@ -624,32 +679,6 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         }
 
         assertEquals(2, numGETRequests.get());
-    }
-
-    @Test
-    public void testUserAgent() throws Exception {
-        server.setHandler(new DefaultHandler() {
-            @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response) {
-                String expected = String.format("%s/%s (%s/%s; java/%s; %s/%s)",
-                        HttpSource.class.getSimpleName(),
-                        Application.getVersion(),
-                        Application.getName(),
-                        Application.getVersion(),
-                        System.getProperty("java.version"),
-                        System.getProperty("os.name"),
-                        System.getProperty("os.version"));
-                assertEquals(expected, baseRequest.getHeader("User-Agent"));
-
-                baseRequest.setHandled(true);
-            }
-        });
-        server.start();
-
-        instance.checkAccess();
     }
 
 }

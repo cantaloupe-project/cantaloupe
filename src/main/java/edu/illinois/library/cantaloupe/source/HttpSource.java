@@ -4,6 +4,8 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Header;
+import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MediaType;
@@ -13,6 +15,7 @@ import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpClientTransport;
 import org.eclipse.jetty.client.api.AuthenticationStore;
 import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
 import org.eclipse.jetty.client.util.BasicAuthentication;
@@ -30,6 +33,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -79,15 +84,26 @@ class HttpSource extends AbstractSource implements StreamSource {
         private URI uri;
         private String username;
         private String secret;
-
-        RequestInfo(URI uri) {
-            this.uri = uri;
-        }
+        private Map<String,?> headers = Collections.emptyMap();
 
         RequestInfo(URI uri, String username, String secret) {
-            this(uri);
+            this.uri = uri;
             this.username = username;
             this.secret = secret;
+        }
+
+        RequestInfo(URI uri,
+                    String username,
+                    String secret,
+                    Map<String,?> headers) {
+            this(uri, username, secret);
+            if (headers != null) {
+                this.headers = headers;
+            }
+        }
+
+        Map<String,?> getHeaders() {
+            return headers;
         }
 
         String getSecret() {
@@ -342,7 +358,7 @@ class HttpSource extends AbstractSource implements StreamSource {
 
         if (info != null) {
             LOGGER.debug("Resolved {} to {}", identifier, info.getURI());
-            return new HTTPStreamFactory(getHTTPClient(info), info.getURI());
+            return new HTTPStreamFactory(getHTTPClient(info), info);
         }
         return null;
     }
@@ -373,11 +389,25 @@ class HttpSource extends AbstractSource implements StreamSource {
             try {
                 final HttpClient client = getHTTPClient(info);
 
-                ContentResponse response = client.newRequest(info.getURI())
+                final HttpMethod method = HttpMethod.GET;
+                final Headers headers = new Headers();
+                headers.add("Range", "bytes=0-" + (FORMAT_INFERENCE_RANGE_LENGTH - 1));
+                // Add any additional headers returned from the delegate method.
+                for (String name : info.getHeaders().keySet()) {
+                    headers.add(name, info.getHeaders().get(name).toString());
+                }
+
+                Request request = client.newRequest(info.getURI())
                         .timeout(getRequestTimeout(), TimeUnit.SECONDS)
-                        .header("Range", "bytes=0-" + (FORMAT_INFERENCE_RANGE_LENGTH - 1))
-                        .method(HttpMethod.GET)
-                        .send();
+                        .method(method);
+                for (Header header : headers) {
+                    request.header(header.getName(), header.getValue());
+                }
+
+                LOGGER.debug("Requesting {} {} (extra headers: {})",
+                        method, info.getURI(), headers);
+
+                ContentResponse response = request.send();
                 rangedGETResponseStatus = response.getStatus();
                 rangedGETResponseHeaders = response.getHeaders();
                 rangedGETResponseEntity = response.getContent();
@@ -433,20 +463,21 @@ class HttpSource extends AbstractSource implements StreamSource {
     private RequestInfo getRequestInfoUsingScriptStrategy()
             throws URISyntaxException, NoSuchFileException, ScriptException {
         final DelegateProxy proxy = getDelegateProxy();
+        final Map<String, ?> result = proxy.getHttpSourceResourceInfo();
 
-        final Map<String, ?> infoProps = proxy.getHttpSourceResourceInfo();
-
-        if (infoProps.isEmpty()) {
+        if (result.isEmpty()) {
             throw new NoSuchFileException(
                     DelegateMethod.HTTPSOURCE_RESOURCE_INFO +
                     " returned nil for " + identifier);
         }
 
-        final String uri            = (String) infoProps.get("uri");
-        final String username       = (String) infoProps.get("username");
-        final String secret         = (String) infoProps.get("secret");
+        final String uri            = (String) result.get("uri");
+        final String username       = (String) result.get("username");
+        final String secret         = (String) result.get("secret");
+        @SuppressWarnings("unchecked")
+        final Map<String,?> headers = (Map<String,?>) result.get("headers");
 
-        return new RequestInfo(new URI(uri), username, secret);
+        return new RequestInfo(new URI(uri), username, secret, headers);
     }
 
     @Override
