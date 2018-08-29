@@ -130,6 +130,22 @@ public final class MediaType {
     }
 
     /**
+     * @param contentType {@literal Content-Type} header value.
+     * @return            Media type corresponding to the given header value.
+     * @throws IllegalArgumentException if the format of the argument is
+     *                    illegal.
+     * @see <a href="https://tools.ietf.org/html/rfc7231#section-3.1.1.5">RFC
+     *      7231</a>
+     */
+    public static MediaType fromContentType(String contentType) {
+        String[] parts = contentType.split(";");
+        if (parts.length > 0) {
+            return new MediaType(parts[0].trim());
+        }
+        throw new IllegalArgumentException("Unrecognized Content-Type");
+    }
+
+    /**
      * @param mediaType
      * @throws IllegalArgumentException if the given string is not a media
      *                                  type.

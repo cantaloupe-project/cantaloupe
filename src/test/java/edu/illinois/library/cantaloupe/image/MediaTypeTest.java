@@ -132,6 +132,14 @@ public class MediaTypeTest {
         }
     }
 
+    @Test
+    public void testFromContentType() {
+        assertEquals(new MediaType("image/jp2"),
+                MediaType.fromContentType("image/jp2"));
+        assertEquals(new MediaType("image/jp2"),
+                MediaType.fromContentType("image/jp2; charset=UTF-8"));
+    }
+
     /* MediaType(String) */
 
     @Test
