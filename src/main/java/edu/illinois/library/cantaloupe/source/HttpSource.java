@@ -111,17 +111,17 @@ class HttpSource extends AbstractSource implements StreamSource {
 
     }
 
-    static class ResourceInfo {
+    static class RequestInfo {
 
         private URI uri;
         private String username;
         private String secret;
 
-        ResourceInfo(URI uri) {
+        RequestInfo(URI uri) {
             this.uri = uri;
         }
 
-        ResourceInfo(URI uri, String username, String secret) {
+        RequestInfo(URI uri, String username, String secret) {
             this(uri);
             this.username = username;
             this.secret = secret;
@@ -175,11 +175,11 @@ class HttpSource extends AbstractSource implements StreamSource {
     private byte[] rangedGETResponseEntity;
 
     /**
-     * Lazy-loaded by {@link #getResourceInfo()}.
+     * Lazy-loaded by {@link #getRequestInfo()}.
      */
-    private ResourceInfo resourceInfo;
+    private RequestInfo resourceInfo;
 
-    private static synchronized HttpClient getHTTPClient(ResourceInfo info) {
+    private static synchronized HttpClient getHTTPClient(RequestInfo info) {
         if (jettyClient == null) {
             HttpClientTransport transport = new HttpClientTransportOverHTTP();
 
@@ -278,7 +278,7 @@ class HttpSource extends AbstractSource implements StreamSource {
             // Try to infer a format from the path component of the URI.
             try {
                 format = Format.inferFormat(
-                        getResourceInfo().getURI().getPath());
+                        getRequestInfo().getURI().getPath());
             } catch (Exception ignore) {
                 // This is better caught and handled elsewhere.
             }
@@ -308,7 +308,7 @@ class HttpSource extends AbstractSource implements StreamSource {
     private Format inferSourceFormatFromResponse() {
         Format format = Format.UNKNOWN;
         try {
-            final ResourceInfo info = getResourceInfo();
+            final RequestInfo info = getRequestInfo();
 
             fetchRangedGETResponse();
 
@@ -367,9 +367,9 @@ class HttpSource extends AbstractSource implements StreamSource {
 
     @Override
     public StreamFactory newStreamFactory() throws IOException {
-        ResourceInfo info;
+        RequestInfo info;
         try {
-            info = getResourceInfo();
+            info = getRequestInfo();
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {
@@ -396,9 +396,9 @@ class HttpSource extends AbstractSource implements StreamSource {
      */
     private void fetchRangedGETResponse() throws IOException {
         if (rangedGETResponseStatus == 0) {
-            ResourceInfo info;
+            RequestInfo info;
             try {
-                info = getResourceInfo();
+                info = getRequestInfo();
             } catch (InterruptedException | TimeoutException e) {
                 LOGGER.error(e.getMessage(), e);
                 throw new IOException(e);
@@ -429,29 +429,29 @@ class HttpSource extends AbstractSource implements StreamSource {
     /**
      * @return Info corresponding to {@link #identifier}. The result is cached.
      */
-    ResourceInfo getResourceInfo() throws Exception {
+    RequestInfo getRequestInfo() throws Exception {
         if (resourceInfo == null) {
             final LookupStrategy strategy =
                     LookupStrategy.from(Key.HTTPSOURCE_LOOKUP_STRATEGY);
             switch (strategy) {
                 case DELEGATE_SCRIPT:
-                    resourceInfo = getResourceInfoUsingScriptStrategy();
+                    resourceInfo = getRequestInfoUsingScriptStrategy();
                     break;
                 default:
-                    resourceInfo = getResourceInfoUsingBasicStrategy();
+                    resourceInfo = getRequestInfoUsingBasicStrategy();
                     break;
             }
         }
         return resourceInfo;
     }
 
-    private ResourceInfo getResourceInfoUsingBasicStrategy()
+    private RequestInfo getRequestInfoUsingBasicStrategy()
             throws ConfigurationException {
         final Configuration config = Configuration.getInstance();
         final String prefix = config.getString(Key.HTTPSOURCE_URL_PREFIX, "");
         final String suffix = config.getString(Key.HTTPSOURCE_URL_SUFFIX, "");
         try {
-            return new ResourceInfo(
+            return new RequestInfo(
                     new URI(prefix + identifier.toString() + suffix),
                     config.getString(Key.HTTPSOURCE_BASIC_AUTH_USERNAME),
                     config.getString(Key.HTTPSOURCE_BASIC_AUTH_SECRET));
@@ -467,7 +467,7 @@ class HttpSource extends AbstractSource implements StreamSource {
      *                             returns an invalid URI.
      * @throws ScriptException     if the delegate method throws an exception.
      */
-    private ResourceInfo getResourceInfoUsingScriptStrategy()
+    private RequestInfo getRequestInfoUsingScriptStrategy()
             throws URISyntaxException, NoSuchFileException, ScriptException {
         final DelegateProxy proxy = getDelegateProxy();
 
@@ -479,10 +479,11 @@ class HttpSource extends AbstractSource implements StreamSource {
                     " returned nil for " + identifier);
         }
 
-        final String uri      = (String) infoProps.get("uri");
-        final String username = (String) infoProps.get("username");
-        final String secret   = (String) infoProps.get("secret");
-        return new ResourceInfo(new URI(uri), username, secret);
+        final String uri            = (String) infoProps.get("uri");
+        final String username       = (String) infoProps.get("username");
+        final String secret         = (String) infoProps.get("secret");
+
+        return new RequestInfo(new URI(uri), username, secret);
     }
 
     @Override

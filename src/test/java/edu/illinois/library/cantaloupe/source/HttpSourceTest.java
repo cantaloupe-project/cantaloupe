@@ -399,10 +399,10 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         }
     }
 
-    /* getResourceInfo() */
+    /* getRequestInfo() */
 
     @Test
-    public void testGetResourceInfoUsingBasicLookupStrategyWithPrefix()
+    public void testGetRequestInfoUsingBasicLookupStrategyWithPrefix()
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPSOURCE_URL_PREFIX,
@@ -412,11 +412,11 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
         instance.setIdentifier(new Identifier("id"));
         assertEquals(getScheme() + "://example.org/prefix/id",
-                instance.getResourceInfo().getURI().toString());
+                instance.getRequestInfo().getURI().toString());
     }
 
     @Test
-    public void testGetResourceInfoUsingBasicLookupStrategyWithPrefixAndSuffix()
+    public void testGetRequestInfoUsingBasicLookupStrategyWithPrefixAndSuffix()
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPSOURCE_URL_PREFIX,
@@ -427,11 +427,11 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
         instance.setIdentifier(new Identifier("id"));
         assertEquals(getScheme() + "://example.org/prefix/id/suffix",
-                instance.getResourceInfo().toString());
+                instance.getRequestInfo().toString());
     }
 
     @Test
-    public void testGetResourceInfoUsingBasicLookupStrategyWithoutPrefixOrSuffix()
+    public void testGetRequestInfoUsingBasicLookupStrategyWithoutPrefixOrSuffix()
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPSOURCE_URL_PREFIX, "");
@@ -441,11 +441,11 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
         instance.setIdentifier(new Identifier(getScheme() + "://example.org/images/image.jpg"));
         assertEquals(getScheme() + "://example.org/images/image.jpg",
-                instance.getResourceInfo().toString());
+                instance.getRequestInfo().toString());
     }
 
     @Test
-    public void testGetResourceInfoUsingScriptLookupStrategyReturningString()
+    public void testGetRequestInfoUsingScriptLookupStrategyReturningString()
             throws Exception {
         useScriptLookupStrategy();
 
@@ -461,11 +461,11 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
         instance.setIdentifier(identifier);
         assertEquals(new URI(getScheme() + "://example.org/bla/" + identifier),
-                instance.getResourceInfo().getURI());
+                instance.getRequestInfo().getURI());
     }
 
     @Test
-    public void testGetResourceInfoUsingScriptLookupStrategyWithContextReturningString()
+    public void testGetRequestInfoUsingScriptLookupStrategyWithContextReturningString()
             throws Exception {
         useScriptLookupStrategy();
 
@@ -484,11 +484,11 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         server.start();
 
         assertEquals(new URI(getScheme() + "://other-example.org/bleh/" + PRESENT_READABLE_IDENTIFIER),
-                instance.getResourceInfo().getURI());
+                instance.getRequestInfo().getURI());
     }
 
     @Test
-    public void testGetResourceInfoUsingScriptLookupStrategyReturningHash()
+    public void testGetRequestInfoUsingScriptLookupStrategyReturningHash()
             throws Exception {
         useScriptLookupStrategy();
 
@@ -502,7 +502,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
         server.start();
 
-        HttpSource.ResourceInfo actual = instance.getResourceInfo();
+        HttpSource.RequestInfo actual = instance.getRequestInfo();
         assertEquals(new URI(getScheme() + "://example.org/bla/" + identifier),
                 actual.getURI());
         assertEquals("username", actual.getUsername());
@@ -510,7 +510,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     }
 
     @Test(expected = NoSuchFileException.class)
-    public void testGetResourceInfoUsingScriptLookupStrategyReturningNil()
+    public void testGetRequestInfoUsingScriptLookupStrategyReturningNil()
             throws Exception {
         useScriptLookupStrategy();
         server.start();
@@ -523,7 +523,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
-        instance.getResourceInfo();
+        instance.getRequestInfo();
     }
 
     /* newStreamFactory() */
