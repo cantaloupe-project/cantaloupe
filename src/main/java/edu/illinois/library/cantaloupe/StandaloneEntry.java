@@ -32,12 +32,6 @@ public class StandaloneEntry {
      */
     static final String LIST_FONTS_VM_ARGUMENT = "cantaloupe.list_fonts";
 
-    /**
-     * When set to "true", calls to {@link System#exit} will be disabled,
-     * in order to test output-to-console-followed-by-exit.
-     */
-    static final String TEST_VM_ARGUMENT = "cantaloupe.test";
-
     private static ApplicationServer appServer;
 
     static {
@@ -46,23 +40,15 @@ public class StandaloneEntry {
     }
 
     /**
-     * Calls {@link System#exit(int)} unless {@link #isTesting()} returns
-     * {@literal true}.
+     * Calls {@link System#exit(int)} unless {@link Application#isTesting()}
+     * returns {@literal true}.
      *
      * @param status Process return status.
      */
     static void exitUnlessTesting(int status) {
-        if (!isTesting()) {
+        if (!Application.isTesting()) {
             System.exit(status);
         }
-    }
-
-    /**
-     * @return Whether the value of the {@link #TEST_VM_ARGUMENT} VM option is
-     *         {@literal true}.
-     */
-    private static boolean isTesting() {
-        return "true".equals(System.getProperty(TEST_VM_ARGUMENT));
     }
 
     /**

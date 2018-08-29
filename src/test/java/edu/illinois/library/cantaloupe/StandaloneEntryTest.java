@@ -79,7 +79,6 @@ public class StandaloneEntryTest extends BaseTest {
 
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT,
                 TestUtil.getFixture("config.properties").toString());
-        System.setProperty(StandaloneEntry.TEST_VM_ARGUMENT, "true");
 
         ConfigurationFactory.clearInstance();
 
@@ -117,7 +116,7 @@ public class StandaloneEntryTest extends BaseTest {
     @Test
     public void mainWithListFontsOptionExits() throws Exception {
         exit.expectSystemExitWithStatus(0);
-        System.clearProperty(StandaloneEntry.TEST_VM_ARGUMENT);
+        System.clearProperty(Application.TEST_VM_ARGUMENT);
 
         System.setProperty(StandaloneEntry.LIST_FONTS_VM_ARGUMENT, "");
         StandaloneEntry.main("");
@@ -136,7 +135,7 @@ public class StandaloneEntryTest extends BaseTest {
 
     @Test
     public void mainWithMissingConfigOptionExits() throws Exception {
-        System.clearProperty(StandaloneEntry.TEST_VM_ARGUMENT);
+        System.clearProperty(Application.TEST_VM_ARGUMENT);
         exit.expectSystemExitWithStatus(-1);
         System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
         StandaloneEntry.main("");
@@ -153,7 +152,7 @@ public class StandaloneEntryTest extends BaseTest {
 
     @Test
     public void mainWithEmptyConfigOptionExits() throws Exception {
-        System.clearProperty(StandaloneEntry.TEST_VM_ARGUMENT);
+        System.clearProperty(Application.TEST_VM_ARGUMENT);
         exit.expectSystemExitWithStatus(-1);
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "");
         StandaloneEntry.main("");
@@ -173,7 +172,7 @@ public class StandaloneEntryTest extends BaseTest {
 
     @Test
     public void mainWithInvalidConfigFileArgumentExits() throws Exception {
-        System.clearProperty(StandaloneEntry.TEST_VM_ARGUMENT);
+        System.clearProperty(Application.TEST_VM_ARGUMENT);
         exit.expectSystemExitWithStatus(-1);
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "/bla/bla/bla");
         StandaloneEntry.main("");
@@ -193,7 +192,7 @@ public class StandaloneEntryTest extends BaseTest {
 
     @Test
     public void mainWithDirectoryConfigFileArgumentExits() throws Exception {
-        System.clearProperty(StandaloneEntry.TEST_VM_ARGUMENT);
+        System.clearProperty(Application.TEST_VM_ARGUMENT);
         exit.expectSystemExitWithStatus(-1);
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT,
                 TestUtil.getFixture("bla").getParent().toString());

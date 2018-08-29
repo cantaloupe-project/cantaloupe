@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.test;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import org.junit.After;
@@ -33,6 +34,7 @@ public abstract class BaseTest {
     public void setUp() throws Exception {
         ConfigurationFactory.clearInstance();
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        System.setProperty(Application.TEST_VM_ARGUMENT, "true");
 
         // Purge the in-memory info cache. Do this AFTER the configuration has
         // been reset so that the derivative and source caches (which may not

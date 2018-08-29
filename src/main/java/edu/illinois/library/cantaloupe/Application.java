@@ -68,6 +68,13 @@ public final class Application {
     }
 
     /**
+     * Set to {@literal true} during testing.
+     *
+     * @see #isTesting()
+     */
+    public static final String TEST_VM_ARGUMENT = "cantaloupe.test";
+
+    /**
      * @return The application title from {@literal MANIFEST.MF}, or some other
      *         string if not running from a JAR/WAR.
      */
@@ -105,6 +112,14 @@ public final class Application {
             }
         }
         return Paths.get(System.getProperty("java.io.tmpdir"));
+    }
+
+    /**
+     * @return Whether the application is running in test mode.
+     * @see #TEST_VM_ARGUMENT
+     */
+    public static boolean isTesting() {
+        return "true".equals(System.getProperty(TEST_VM_ARGUMENT));
     }
 
     private Application() {}
