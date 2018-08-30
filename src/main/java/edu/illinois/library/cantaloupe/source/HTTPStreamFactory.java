@@ -38,20 +38,16 @@ final class HTTPStreamFactory implements StreamFactory {
             InputStreamResponseListener listener =
                     new InputStreamResponseListener();
 
-            final Headers headers = new Headers();
-            for (String name : requestInfo.getHeaders().keySet()) {
-                headers.add(name, requestInfo.getHeaders().get(name).toString());
-            }
+            final Headers extraHheaders = requestInfo.getHeaders();
 
-            Request request = client.newRequest(requestInfo.getURI()).
-                    timeout(HttpSource.getRequestTimeout(), TimeUnit.SECONDS).
-                    method(HTTP_METHOD);
-            for (Header header : headers) {
-                request.header(header.getName(), header.getValue());
-            }
+            Request request = client
+                    .newRequest(requestInfo.getURI())
+                    .timeout(HttpSource.getRequestTimeout(), TimeUnit.SECONDS)
+                    .method(HTTP_METHOD);
+            extraHheaders.forEach(h -> request.header(h.getName(), h.getValue()));
 
             LOGGER.debug("Requesting {} {} (extra headers: {})",
-                    HTTP_METHOD, requestInfo.getURI(), headers);
+                    HTTP_METHOD, requestInfo.getURI(), extraHheaders);
 
             request.send(listener);
 

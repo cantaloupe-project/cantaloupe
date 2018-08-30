@@ -3,9 +3,9 @@ package edu.illinois.library.cantaloupe.source;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.DelegateProxyService;
@@ -105,20 +105,6 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         } catch (IOException e) {
             fail(e.getMessage());
         }
-    }
-
-    /* mediaTypeFromContentType() */
-
-    @Test
-    public void testMediaTypeFromContentTypeWithoutSemicolon() {
-        assertEquals(MediaType.APPLICATION_JSON,
-                HttpSource.mediaTypeFromContentType("application/json"));
-    }
-
-    @Test
-    public void testMediaTypeFromContentTypeWithSemicolon() {
-        assertEquals(MediaType.APPLICATION_JSON,
-                HttpSource.mediaTypeFromContentType("application/json; charset=utf-8"));
     }
 
     /* checkAccess() */
@@ -357,13 +343,20 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
     /* getFormat() */
 
+    /**
+     * Tests {@link HttpSource#getFormat()} when the URI contains an extension.
+     */
     @Test
-    public void testGetFormatWithURIExtension() {
+    public void testGetFormat1() {
         assertEquals(Format.JPG, instance.getFormat());
     }
 
+    /**
+     * Tests {@link HttpSource#getFormat()} when the identifier contains an
+     * extension.
+     */
     @Test
-    public void testGetFormatWithIdentifierExtension() throws Exception {
+    public void testGetFormat2() throws Exception {
         useScriptLookupStrategy();
 
         Identifier identifier = new Identifier("HttpSourceTest-" +
@@ -378,14 +371,12 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         assertEquals(Format.JPG, instance.getFormat());
     }
 
+    /**
+     * Tests {@link HttpSource#getFormat()} when neither the URI nor identifier
+     * contain an extension, but there is a recognized Content-Type header.
+     */
     @Test
-    public void testGetFormatByDetectionWithPresentReadableImage() {
-        Identifier identifier = new Identifier("jpg");
-        doTestGetFormatWithPresentReadableImage(identifier);
-    }
-
-    @Test
-    public void testGetFormatWithContentType() throws Exception {
+    public void testGetFormat3() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
             public void handle(String target,
@@ -402,25 +393,65 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         assertEquals(Format.JPG, instance.getFormat());
     }
 
+    /**
+     * Tests {@link HttpSource#getFormat()} when neither the URI nor identifier
+     * contain an extension, there is an unrecognized Content-Type header, and
+     * the server does not support ranges.
+     */
     @Test
-    public void testGetFormatWithNoIdentifierExtensionAndNoContentType()
-            throws Exception {
+    public void testGetFormat4() throws Exception {
+        server.setHandler(new DefaultHandler() {
+            @Override
+            public void handle(String target,
+                               Request baseRequest,
+                               HttpServletRequest request,
+                               HttpServletResponse response) {
+                response.setHeader("Content-Type", "application/octet-stream");
+                baseRequest.setHandled(true);
+            }
+        });
         server.start();
 
         instance.setIdentifier(new Identifier("jpg"));
-        assertEquals(Format.JPG, instance.getFormat());
+        assertEquals(Format.UNKNOWN, instance.getFormat());
     }
 
+    /**
+     * Tests {@link HttpSource#getFormat()} when neither the URI nor identifier
+     * contain an extension, there is no Content-Type header, and the server
+     * does not support ranges.
+     */
     @Test
-    public void testGetFormatWithNoIdentifierExtensionAndUnrecognizedContentType()
-            throws Exception {
+    public void testGetFormat5() throws Exception {
+        server.setHandler(new DefaultHandler() {
+            @Override
+            public void handle(String target,
+                               Request baseRequest,
+                               HttpServletRequest request,
+                               HttpServletResponse response) {
+                baseRequest.setHandled(true);
+            }
+        });
+        server.start();
+
+        instance.setIdentifier(new Identifier("jpg"));
+        assertEquals(Format.UNKNOWN, instance.getFormat());
+    }
+
+    /**
+     * Tests {@link HttpSource#getFormat()} when neither the URI nor identifier
+     * contain an extension, there is no Content-Type header, and the server
+     * supports ranges.
+     */
+    @Test
+    public void testGetFormat6() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
             public void handle(String target,
                                Request baseRequest,
                                HttpServletRequest request,
                                HttpServletResponse response) throws IOException {
-                response.setHeader("Content-Type", "application/octet-stream");
+                response.setHeader("Accept-Ranges", "bytes");
                 try (OutputStream os = response.getOutputStream()) {
                     Files.copy(TestUtil.getImage("jpg"), os);
                 }
@@ -428,28 +459,22 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         });
         server.start();
 
+        // N.B.: Neither identifier nor URI can contain an extension.
         instance.setIdentifier(new Identifier("jpg"));
         assertEquals(Format.JPG, instance.getFormat());
     }
 
+    /**
+     * Tests {@link HttpSource#getFormat()} when neither the URI nor identifier
+     * contain an extension, there is no Content-Type header, and the server
+     * supports ranges, but the ranged GET response returns unknown magic bytes.
+     */
     @Test
-    public void testGetFormatWithNoIdentifierExtensionAndNoContentTypeAndUnrecognizedMagicBytes()
-            throws Exception {
+    public void testGetFormat7() throws Exception {
         server.start();
 
         instance.setIdentifier(new Identifier("txt"));
         assertEquals(Format.UNKNOWN, instance.getFormat());
-    }
-
-    private void doTestGetFormatWithPresentReadableImage(Identifier identifier) {
-        try {
-            server.start();
-
-            instance.setIdentifier(identifier);
-            assertEquals(Format.JPG, instance.getFormat());
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
     }
 
     /* getRequestInfo() */
@@ -560,8 +585,8 @@ abstract class HttpSourceTest extends AbstractSourceTest {
                 actual.getURI());
         assertEquals("username", actual.getUsername());
         assertEquals("secret", actual.getSecret());
-        Map<String,?> headers = actual.getHeaders();
-        assertEquals("yes", headers.get("X-Custom"));
+        Headers headers = actual.getHeaders();
+        assertEquals("yes", headers.getFirstValue("X-Custom"));
     }
 
     @Test(expected = NoSuchFileException.class)
@@ -650,6 +675,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
     @Test
     public void testNoUnnecessaryRequests() throws Exception {
+        final AtomicInteger numHEADRequests = new AtomicInteger(0);
         final AtomicInteger numGETRequests = new AtomicInteger(0);
 
         server.setHandler(new DefaultHandler() {
@@ -659,11 +685,15 @@ abstract class HttpSourceTest extends AbstractSourceTest {
                                HttpServletRequest request,
                                HttpServletResponse response) {
                 switch (request.getMethod().toUpperCase()) {
+                    case "HEAD":
+                        numHEADRequests.incrementAndGet();
+                        break;
                     case "GET":
                         numGETRequests.incrementAndGet();
                         break;
                     default:
-                        throw new IllegalArgumentException("WTF");
+                        throw new IllegalArgumentException(
+                                "Unexpected method: " + request.getMethod());
                 }
                 baseRequest.setHandled(true);
             }
@@ -678,7 +708,8 @@ abstract class HttpSourceTest extends AbstractSourceTest {
             is.read();
         }
 
-        assertEquals(2, numGETRequests.get());
+        assertEquals(1, numHEADRequests.get());
+        assertEquals(1, numGETRequests.get());
     }
 
 }

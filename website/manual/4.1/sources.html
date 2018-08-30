@@ -223,7 +223,7 @@ end
 
 <h3 id="HttpSource">HttpSource</h3>
 
-<p>HttpSource maps a URL identifier to an HTTP or HTTPS resource, for retrieving images from a web server. It uses a <a href="http://www.eclipse.org/jetty/documentation/current/http-client.html">Jetty HTTP client</a> internally.</p>
+<p>HttpSource maps a URL identifier to an HTTP or HTTPS resource, for retrieving images from a remote web server. It uses a <a href="http://www.eclipse.org/jetty/documentation/current/http-client.html">Jetty HTTP client</a> internally.</p>
 
 <h4>Lookup Strategies</h4>
 
@@ -242,7 +242,7 @@ HttpSource.BasicLookupStrategy.url_suffix =
 <p>An identifier of <span class="filename">image.jpg</span> in the URL will resolve to
 <span class="filename">http://example.org/images/image.jpg</span>.</p>
 
-<p>It's possible to include a partial path in the identifier using URL-encoded slashes (<code>%2F</code>) as path separators. <span class="filename">subpath%2Fimage.jpg</span> in the URL would then resolve to <span class="filename">http://example.org/images/subpath/image.jpg</span>.</p>
+<p>A partial path can be included in the identifier by URL-encoding the path separator slashes (<code>%2F</code>). <span class="filename">subpath%2Fimage.jpg</span> in the URL would then resolve to <span class="filename">http://example.org/images/subpath/image.jpg</span>.</p>
 
 <p>It's also possible to use a full URL as an identifier by leaving both of the above keys blank. In that case, an identifier of <span class="filename">http%3A%2F%2Fexample.org%2Fimages%2Fimage.jpg</span> in the URL will resolve to
 <span class="filename">http://example.org/images/image.jpg</span>.</p>
@@ -266,19 +266,20 @@ HttpSource.BasicLookupStrategy.url_suffix =
   <li>When using <a href="#HttpSourceScriptLookupStrategy">ScriptLookupStrategy</a>, auth info can be returned from the delegate method.</li>
 </ul>
 
+<h4>HTTP Requests</h4>
+
+<p>HttpSource tries to minimize the number of HTTP request-response round trips needed, as each one is costly. A <code>HEAD</code>-<code>GET</code> request pair is used for most images, except when all but the last format inference options (see below) have failed, in which case an additional ranged <code>GET</code> request must be sent after the <code>HEAD</code>.</p>
+
 <h4>Format Inference</h4>
 
-<p>Like all sources, HttpSource needs to be able to figure out the format of a source image before it can be served. It uses the following strategy to do this:</p>
+<p>Like all sources, HttpSource needs to be able to figure out the format of a source image before it can be served. It uses the strategy below to do this.</p>
 
 <ol>
-  <li>If the path component of the URI contains an extension, the format is inferred from that.</li>
+  <li>If the path component of the URI that HttpSource is trying to access contains an extension, the format is inferred from that.</li>
   <li>If unsuccessful, and the identifier has a filename extension, the format is inferred from that.</li>
-  <li>If unsuccessful, a <code>GET</code> request is sent containing a <code>Range</code> header specifying a small range of data from the beginning of the resource.
-    <ol>
-      <li>If the response includes a <code>Content-Type</code> header, and its value is specific enough (i.e. not <code>application/octet-stream</code>), a format will be inferred from that.</li>
-      <li>Otherwise, a format will be inferred from the magic bytes in the response body.</li>
-    </ol>
-  </li>
+  <li>If unsuccessful, and if the <code>HEAD</code> response contains a <code>Content-Type</code> header with a recognized value that is specific enough (not <code>application/octet-stream</code>, for example), a format will be inferred from that.</li>
+  <li>If unsuccessful, and if the <code>HEAD</code> response contains an <code>Accept-Ranges: bytes</code> header, a <code>GET</code> request is sent containing a <code>Range</code> header specifying a small range of data from the beginning of the resource, and a format is inferred from the magic bytes in the response entity. <span class="text-warning">This extra request is inefficient and should be avoided if possible.</span></li>
+  <li>If still unsuccessful, the request fails.</li>
 </ol>
 
 <hr>

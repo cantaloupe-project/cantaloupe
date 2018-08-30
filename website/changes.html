@@ -7,16 +7,30 @@ title: Change Log
 
 <h2>4.1</h2>
 
+<h3>Configuration</h3>
 <ul>
   <li>Configuration values can be obtained from the environment. See the user manual for more information.</li>
-  <li>Added configurable processor selection strategies, one of which uses the existing <code>processor.*</code> configuration keys, and the other of which uses an automatic strategy which attempts to choose a &quot;best&quot; processor on a per-request basis.</li>
+</ul>
+
+<h3>Endpoints</h3>
+<ul>
   <li>The <code>redirect()</code> and <code>authorized?()</code> delegate methods have been merged into a new <code>authorize()</code> method, which enables a superset of their functionality, including challenge responses and redirects to &quot;virtual&quot; quality-limited versions. Authorization can also be set up to conform to the IIIF Authentication API version 1.0's &quot;All or Nothing Access&quot; or &quot;Tiered Access&quot; schemes.</li>
   <li>The <code>endpoint.public.auth.*</code> keys that controlled global HTTP Basic protection have also been replaced by the <code>authorize()</code> delegate method.</li>
-  <li>The hash returned from the <code>httpsource_resource_info()</code> delegate method may include custom request headers.</li>
-  <li>KakaduNativeProcessor supports <code>sizeByDistortedWidthHeight</code>.</li>
   <li>The <code>/iiif</code> URI path no longer redirects to a specific Image API version, and now returns HTTP 404.</li>
-  <li>Added the <code>repeat</code> position for image overlays.</li>
   <li>Removed the Restlet framework.</li>
+</ul>
+
+<h3>Sources</h3>
+<ul>
+  <li>HttpSource uses <code>HEAD</code> requests instead of ranged <code>GET</code> requests.</li>
+  <li>The hash returned from the <code>httpsource_resource_info()</code> delegate method may include custom request headers.</li>
+</ul>
+
+<h3>Processors</h3>
+<ul>
+  <li>Added configurable processor selection strategies, one of which uses the existing <code>processor.*</code> configuration keys, and the other of which uses an automatic strategy which attempts to choose a &quot;best&quot; processor on a per-request basis.</li>
+  <li>KakaduNativeProcessor supports <code>sizeByDistortedWidthHeight</code>.</li>
+  <li>Added the <code>repeat</code> position for image overlays.</li>
 </ul>
 
 <h2>4.0.2</h2>
