@@ -570,13 +570,15 @@ class HttpSource extends AbstractSource implements StreamSource {
      * Stops the shared Jetty client.
      */
     @Override
-    public synchronized void shutdown() {
-        if (jettyClient != null) {
-            try {
-                jettyClient.stop();
-                jettyClient = null;
-            } catch (Exception e) {
-                LOGGER.error("shutdown(): {}", e.getMessage());
+    public void shutdown() {
+        synchronized (HttpSource.class) {
+            if (jettyClient != null) {
+                try {
+                    jettyClient.stop();
+                    jettyClient = null;
+                } catch (Exception e) {
+                    LOGGER.error("shutdown(): {}", e.getMessage());
+                }
             }
         }
     }
