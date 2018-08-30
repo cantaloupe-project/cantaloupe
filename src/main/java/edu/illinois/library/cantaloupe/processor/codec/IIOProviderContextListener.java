@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.resource.iiif.v2.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,6 +63,7 @@ public final class IIOProviderContextListener implements ServletContextListener 
         ImageIO.setUseCache(false);
 
         logImageIOReaders();
+        logImageIOWriters();
     }
 
     public void contextDestroyed(final ServletContextEvent event) {
@@ -108,10 +110,33 @@ public final class IIOProviderContextListener implements ServletContextListener 
                 readerClasses.add(reader.getClass().getName());
             }
 
-            LOGGER.info("ImageIO readers for {}.{}: {}",
+            LOGGER.debug("Image I/O readers for {}.{}: {}",
                     Format.class.getSimpleName(),
                     format.getName(),
                     readerClasses.stream().collect(Collectors.joining(", ")));
+        }
+    }
+
+    private static void logImageIOWriters() {
+        final List<Format> iiifOutputFormats = Arrays
+                .stream(OutputFormat.values())
+                .map(OutputFormat::toFormat)
+                .collect(Collectors.toList());
+
+        for (Format format : iiifOutputFormats) {
+            Iterator<javax.imageio.ImageWriter> it =
+                    ImageIO.getImageWritersByMIMEType(format.getPreferredMediaType().toString());
+            List<String> writerClasses = new ArrayList<>();
+
+            while (it.hasNext()) {
+                javax.imageio.ImageWriter writer = it.next();
+                writerClasses.add(writer.getClass().getName());
+            }
+
+            LOGGER.debug("Image I/O writers for {}.{}: {}",
+                    Format.class.getSimpleName(),
+                    format.getName(),
+                    writerClasses.stream().collect(Collectors.joining(", ")));
         }
     }
 
