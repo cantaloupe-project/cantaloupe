@@ -158,8 +158,13 @@ public final class Client {
         // Set Basic auth info
         if (username != null && secret != null) {
             AuthenticationStore auth = client.getAuthenticationStore();
-            auth.addAuthentication(new BasicAuthentication(
-                    getURI(), realm, username, secret));
+            // This worked in Jetty 9.4.9.v20180320 but is broken in 9.4.12.RC2.
+            // The alternative sends credentials preemptively which is arguably
+            // preferable anyway.
+            //auth.addAuthentication(new BasicAuthentication(
+            //        getURI(), realm, username, secret));
+            auth.addAuthenticationResult(new BasicAuthentication.BasicResult(
+                    getURI(), username, secret));
         }
 
         Request request = client.newRequest(getURI());
