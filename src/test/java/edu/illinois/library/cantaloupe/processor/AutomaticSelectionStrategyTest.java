@@ -37,7 +37,7 @@ public class AutomaticSelectionStrategyTest extends BaseTest {
     public void getPreferredProcessorsWithJP2() {
         List<?> expected = Arrays.asList(KakaduNativeProcessor.class,
                 KakaduDemoProcessor.class, OpenJpegProcessor.class,
-                GraphicsMagickProcessor.class, ImageMagickProcessor.class);
+                ImageMagickProcessor.class, GraphicsMagickProcessor.class);
         assertEquals(expected, instance.getPreferredProcessors(Format.JP2));
     }
 
