@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -91,17 +90,16 @@ class HttpSource extends AbstractSource implements StreamSource {
 
     static class RequestInfo {
 
-        private URI uri;
         private Headers headers = new Headers();
-        private String username, secret;
+        private String uri, username, secret;
 
-        RequestInfo(URI uri, String username, String secret) {
+        RequestInfo(String uri, String username, String secret) {
             this.uri = uri;
             this.username = username;
             this.secret = secret;
         }
 
-        RequestInfo(URI uri,
+        RequestInfo(String uri,
                     String username,
                     String secret,
                     Map<String,?> headers) {
@@ -120,7 +118,7 @@ class HttpSource extends AbstractSource implements StreamSource {
             return secret;
         }
 
-        URI getURI() {
+        String getURI() {
             return uri;
         }
 
@@ -238,8 +236,12 @@ class HttpSource extends AbstractSource implements StreamSource {
         // https://www.eclipse.org/jetty/documentation/9.4.x/http-client-authentication.html
         if (info.getUsername() != null && info.getSecret() != null) {
             AuthenticationStore auth = jettyClient.getAuthenticationStore();
-            auth.addAuthenticationResult(new BasicAuthentication.BasicResult(
-                    info.getURI(), info.getUsername(), info.getSecret()));
+            try {
+                auth.addAuthenticationResult(new BasicAuthentication.BasicResult(
+                        new URI(info.getURI()), info.getUsername(), info.getSecret()));
+            } catch (URISyntaxException e) {
+                LOGGER.warn("getHTTPClient(): {}", e.getMessage());
+            }
         }
         return jettyClient;
     }
@@ -312,7 +314,9 @@ class HttpSource extends AbstractSource implements StreamSource {
             // Try to infer a format from the path component of the URI.
             try {
                 format = Format.inferFormat(
-                        getRequestInfo().getURI().getPath());
+                        new URI(getRequestInfo().getURI()).getPath());
+            } catch (URISyntaxException e) {
+                LOGGER.warn("getFormat(): {}", e.getMessage());
             } catch (Exception ignore) {
                 // This is better caught and handled elsewhere.
             }
@@ -490,7 +494,7 @@ class HttpSource extends AbstractSource implements StreamSource {
         try {
             return request.send();
         } catch (ExecutionException e) {
-            throw new AccessDeniedException(requestInfo.getURI().toString());
+            throw new AccessDeniedException(requestInfo.getURI());
         } catch (InterruptedException | TimeoutException e) {
             throw new IOException(e);
         }
@@ -516,30 +520,22 @@ class HttpSource extends AbstractSource implements StreamSource {
         return requestInfo;
     }
 
-    private RequestInfo getRequestInfoUsingBasicStrategy()
-            throws ConfigurationException {
+    private RequestInfo getRequestInfoUsingBasicStrategy() {
         final Configuration config = Configuration.getInstance();
         final String prefix = config.getString(Key.HTTPSOURCE_URL_PREFIX, "");
         final String suffix = config.getString(Key.HTTPSOURCE_URL_SUFFIX, "");
-        try {
-            return new RequestInfo(
-                    new URI(prefix + identifier.toString() + suffix),
-                    config.getString(Key.HTTPSOURCE_BASIC_AUTH_USERNAME),
-                    config.getString(Key.HTTPSOURCE_BASIC_AUTH_SECRET));
-        } catch (URISyntaxException e) {
-            throw new ConfigurationException(e.getMessage());
-        }
+        return new RequestInfo(
+                prefix + identifier.toString() + suffix,
+                config.getString(Key.HTTPSOURCE_BASIC_AUTH_USERNAME),
+                config.getString(Key.HTTPSOURCE_BASIC_AUTH_SECRET));
     }
 
     /**
      * @throws NoSuchFileException if the remote resource was not found.
-     * @throws URISyntaxException  if {@link
-     *                             DelegateMethod#HTTPSOURCE_RESOURCE_INFO}
-     *                             returns an invalid URI.
      * @throws ScriptException     if the delegate method throws an exception.
      */
     private RequestInfo getRequestInfoUsingScriptStrategy()
-            throws URISyntaxException, NoSuchFileException, ScriptException {
+            throws NoSuchFileException, ScriptException {
         final DelegateProxy proxy   = getDelegateProxy();
         final Map<String, ?> result = proxy.getHttpSourceResourceInfo();
 
@@ -555,7 +551,7 @@ class HttpSource extends AbstractSource implements StreamSource {
         @SuppressWarnings("unchecked")
         final Map<String,?> headers = (Map<String,?>) result.get("headers");
 
-        return new RequestInfo(new URI(uri), username, secret, headers);
+        return new RequestInfo(uri, username, secret, headers);
     }
 
     @Override

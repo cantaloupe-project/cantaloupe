@@ -341,6 +341,25 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         instance.checkAccess();
     }
 
+    @Test
+    public void testCheckAccessWithMalformedURI() throws Exception {
+        server.start();
+
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.HTTPSOURCE_URL_PREFIX, "");
+
+        Identifier identifier = new Identifier(
+                getServerURI().toString().replace("://", "//") + "/" + PRESENT_READABLE_IDENTIFIER);
+        instance.setIdentifier(identifier);
+
+        try {
+            instance.checkAccess();
+            fail("Expected exception");
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+    }
+
     /* getFormat() */
 
     /**
@@ -538,7 +557,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         server.start();
 
         instance.setIdentifier(identifier);
-        assertEquals(new URI(getScheme() + "://example.org/bla/" + identifier),
+        assertEquals(getScheme() + "://example.org/bla/" + identifier,
                 instance.getRequestInfo().getURI());
     }
 
@@ -561,7 +580,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
         server.start();
 
-        assertEquals(new URI(getScheme() + "://other-example.org/bleh/" + PRESENT_READABLE_IDENTIFIER),
+        assertEquals(getScheme() + "://other-example.org/bleh/" + PRESENT_READABLE_IDENTIFIER,
                 instance.getRequestInfo().getURI());
     }
 
@@ -581,7 +600,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         server.start();
 
         HttpSource.RequestInfo actual = instance.getRequestInfo();
-        assertEquals(new URI(getScheme() + "://example.org/bla/" + identifier),
+        assertEquals(getScheme() + "://example.org/bla/" + identifier,
                 actual.getURI());
         assertEquals("username", actual.getUsername());
         assertEquals("secret", actual.getSecret());

@@ -36,7 +36,8 @@ public class HTTPStreamFactoryTest extends BaseTest {
         Map<String,String> headers = new HashMap<>();
         headers.put("X-Custom", "yes");
         HttpSource.RequestInfo requestInfo = new HttpSource.RequestInfo(
-                server.getHTTPURI().resolve("/" + PRESENT_READABLE_IDENTIFIER), null, null, headers);
+                server.getHTTPURI().resolve("/" + PRESENT_READABLE_IDENTIFIER).toString(),
+                null, null, headers);
 
         this.instance = new HTTPStreamFactory(
                 HttpSource.getHTTPClient(requestInfo),
