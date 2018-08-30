@@ -77,6 +77,11 @@ public abstract class AbstractResource {
     private HttpServletResponse response;
 
     /**
+     * Cached by {@link #getIdentifier()}.
+     */
+    private Identifier identifier;
+
+    /**
      * <p>Initialization method, called after all necessary setters have been
      * called but before any request-handler method (like {@link #doGET()}
      * etc.)</p>
@@ -324,11 +329,13 @@ public abstract class AbstractResource {
      * @see #getPublicIdentifier()
      */
     protected Identifier getIdentifier() {
-        String pathComponent = getIdentifierPathComponent();
-        if (pathComponent != null) {
-            return Identifier.fromURIPathComponent(pathComponent);
+        if (identifier == null) {
+            String pathComponent = getIdentifierPathComponent();
+            if (pathComponent != null) {
+                identifier = Identifier.fromURIPathComponent(pathComponent);
+            }
         }
-        return null;
+        return identifier;
     }
 
     /**
