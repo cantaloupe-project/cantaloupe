@@ -19,10 +19,30 @@ public class HeadersTest {
     }
 
     @Test
+    public void testAddWithHeader() {
+        assertEquals(0, instance.size());
+        instance.add(new Header("name", "value"));
+        assertEquals(1, instance.size());
+    }
+
+    @Test
     public void testAddWithStrings() {
         assertEquals(0, instance.size());
         instance.add("name", "value");
         assertEquals(1, instance.size());
+    }
+
+    @Test
+    public void testAddAll() {
+        instance.add("name", "value");
+        assertEquals(1, instance.size());
+
+        Headers other = new Headers();
+        other.add("name2", "value2");
+        other.add("name3", "value3");
+
+        instance.addAll(other);
+        assertEquals(3, instance.size());
     }
 
     @Test

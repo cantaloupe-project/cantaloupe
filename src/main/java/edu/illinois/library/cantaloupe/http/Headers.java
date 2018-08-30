@@ -18,7 +18,15 @@ public final class Headers implements Iterable<Header> {
     private final List<Header> headers = new ArrayList<>();
 
     public void add(String name, String value) {
-        headers.add(new Header(name, value));
+        add(new Header(name, value));
+    }
+
+    public void add(Header header) {
+        headers.add(header);
+    }
+
+    public void addAll(Headers headers) {
+        headers.forEach(this::add);
     }
 
     public void clear() {
