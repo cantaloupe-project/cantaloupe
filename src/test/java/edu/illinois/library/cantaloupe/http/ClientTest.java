@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.util.SocketUtils;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.net.ConnectException;
@@ -90,6 +91,7 @@ public class ClientTest extends BaseTest {
         assertEquals(200, response.getStatus());
     }
 
+    @Ignore // this test used to be used, but we're now sending credentials preemptively so the realm doesn't matter
     @Test
     public void testSendWithValidBasicAuthCredentialsAndIncorrectRealm()
             throws Exception {
