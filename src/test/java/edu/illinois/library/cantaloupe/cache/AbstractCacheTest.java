@@ -26,12 +26,12 @@ import static org.junit.Assert.*;
 abstract class AbstractCacheTest extends BaseTest {
 
     private static final int ASYNC_WAIT = 3000;
-    private static final String IMAGE = "jpg";
+    static final String IMAGE = "jpg";
 
     abstract DerivativeCache newInstance();
 
-    private static void assertExists(DerivativeCache cache,
-                                     OperationList opList) {
+    static void assertExists(DerivativeCache cache,
+                             OperationList opList) {
         try (InputStream is = cache.newDerivativeImageInputStream(opList)) {
             assertNotNull(is);
         } catch (IOException e) {
@@ -39,8 +39,8 @@ abstract class AbstractCacheTest extends BaseTest {
         }
     }
 
-    private static void assertNotExists(DerivativeCache cache,
-                                        OperationList opList) {
+    static void assertNotExists(DerivativeCache cache,
+                                OperationList opList) {
         try (InputStream is = cache.newDerivativeImageInputStream(opList)) {
             assertNull(is);
         } catch (IOException e) {

@@ -277,6 +277,8 @@ CREATE INDEX identifier_idx ON {JdbcCache.info_table} (identifier);
 
 <p>S3Cache caches derivative images and metadata in an Amazon Simple Storage Service (S3) bucket. It supports both AWS and non-AWS endpoints.</p>
 
+<p>Although S3 doesn't natively support the concept of a last-accessed time, S3Cache asynchronously makes copies of the objects it accesses, which enables last-modified times (which are set by S3 at object creation and immutable) to serve as last-accessed times.</p>
+
 <h5>Configuration</h5>
 
 <p>S3Cache is configured (excepting credentials) using the following configuration keys:</p>
@@ -300,10 +302,6 @@ CREATE INDEX identifier_idx ON {JdbcCache.info_table} (identifier);
   <dt><code>S3Cache.secret_key</code></dt>
   <dd>A secret key associated with your AWS account. (See <a href="http://aws.amazon.com/security-credentials">AWS Security Credentials</a>.)</dd>
 </dl>
-
-<p class="text-info">
-  <i class="fa fa-info-circle"></i> S3 does not provide a last-accessed time in object metadata, so the time-to-live is on the basis of last-modified time instead.
-</p>
 
 <hr>
 

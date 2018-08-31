@@ -5,7 +5,10 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.CreateBucketRequest;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -19,8 +22,11 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.Assert.*;
 
@@ -161,6 +167,27 @@ public class S3CacheTest extends AbstractCacheTest {
     @Override
     public void testGetImageInfoWithExistingInvalidImage() {}
 
+    @Test
+    public void testGetImageInfoUpdatesLastModifiedTime() throws Exception {
+        Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 2);
+
+        final DerivativeCache instance = newInstance();
+
+        Identifier identifier = new Identifier("cats");
+        Info info = new Info();
+        instance.put(identifier, info);
+
+        Thread.sleep(1000);
+
+        Info actual = instance.getImageInfo(identifier);
+        assertEquals(actual, info);
+
+        Thread.sleep(1050);
+
+        actual = instance.getImageInfo(identifier);
+        assertEquals(actual, info);
+    }
+
     /* getObjectKey(Identifier) */
 
     @Test
@@ -202,5 +229,37 @@ public class S3CacheTest extends AbstractCacheTest {
     @Test
     @Override
     public void testNewDerivativeImageInputStreamWithNonzeroTTL() {}
+
+    @Test
+    public void testNewDerivativeImageInputStreamUpdatesLastModifiedTime()
+            throws Exception {
+        final DerivativeCache instance = newInstance();
+        Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 2);
+
+        OperationList ops = new OperationList(
+                new Identifier("cats"), new Encode(Format.JPG));
+        Path fixture = TestUtil.getImage(IMAGE);
+
+        // Add an image.
+        // N.B.: This method may return before data is fully (or even
+        // partially) written to the cache.
+        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+            Files.copy(fixture, os);
+        }
+
+        // Wait for it to finish, hopefully.
+        Thread.sleep(2000);
+
+        // Assert that it has been added.
+        assertExists(instance, ops);
+
+        Thread.sleep(1000);
+
+        assertExists(instance, ops);
+
+        Thread.sleep(1000);
+
+        assertExists(instance, ops);
+    }
 
 }

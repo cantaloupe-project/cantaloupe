@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.cache;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -280,6 +281,8 @@ class S3Cache implements DerivativeCache {
                     final Info info = Info.fromJSON(is);
                     LOGGER.info("getImageInfo(): read {} from bucket {} in {}",
                             objectKey, bucketName, watch);
+
+                    touchAsync(objectKey);
                     return info;
                 }
             } else {
@@ -309,6 +312,7 @@ class S3Cache implements DerivativeCache {
             S3Object object = s3.getObject(request);
 
             if (object != null) {
+                touchAsync(objectKey);
                 return object.getObjectContent();
             } else {
                 LOGGER.debug("{} in bucket {} is invalid; purging asynchronously",
@@ -499,6 +503,33 @@ class S3Cache implements DerivativeCache {
             new S3Upload(s3, os.toByteArray(), bucketName, objectKey,
                     metadata).run();
         }
+    }
+
+    /**
+     * Updates an object's "last-accessed time." Since S3 doesn't support
+     * last-accessed time and S3 objects are immutable, this method copies the
+     * object with the given key to a new object with the same key. The new
+     * object has a new last-modified time which can also serve as a
+     * last-accessed time.
+     */
+    private void touchAsync(String objectKey) {
+        ThreadPool.getInstance().submit(() -> {
+            final AmazonS3 s3 = getClientInstance();
+            final String bucketName = getBucketName();
+
+            CopyObjectRequest request = new CopyObjectRequest(
+                    bucketName, objectKey, bucketName, objectKey);
+            ObjectMetadata metadata = new ObjectMetadata();
+            // We aren't using this, but S3 requires some kind of change to
+            // the object before it can be copied over itself.
+            // See: https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
+            metadata.getUserMetadata().put("x-amz-meta-last-accessed",
+                    String.valueOf(Instant.now().toEpochMilli()));
+            request.setNewObjectMetadata(metadata);
+
+            LOGGER.debug("touchAsync(): {}", objectKey);
+            s3.copyObject(request);
+        }, ThreadPool.Priority.LOW);
     }
 
 }
