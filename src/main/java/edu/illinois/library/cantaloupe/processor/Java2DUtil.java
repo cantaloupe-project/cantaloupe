@@ -137,19 +137,19 @@ public final class Java2DUtil {
      * Redacts regions from the given image.
      *
      * @param image           Image to redact.
+     * @param fullSize        Full pre-crop image size.
      * @param appliedCrop     Crop already applied to {@literal image}.
      * @param reductionFactor Reduction factor already applied to
      *                        {@literal image}.
      * @param redactions      Regions of the image to redact.
      */
     static void applyRedactions(final BufferedImage image,
+                                final Dimension fullSize,
                                 final Crop appliedCrop,
                                 final ReductionFactor reductionFactor,
                                 final Set<Redaction> redactions) {
         if (image != null && !redactions.isEmpty()) {
             final Stopwatch watch = new Stopwatch();
-            final Dimension imageSize = new Dimension(
-                    image.getWidth(), image.getHeight());
 
             final Graphics2D g2d = image.createGraphics();
             g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
@@ -158,7 +158,7 @@ public final class Java2DUtil {
 
             for (final Redaction redaction : redactions) {
                 final Rectangle redactionRegion =
-                        redaction.getResultingRegion(imageSize, appliedCrop);
+                        redaction.getResultingRegion(fullSize, appliedCrop);
                 redactionRegion.x *= reductionFactor.getScale();
                 redactionRegion.y *= reductionFactor.getScale();
                 redactionRegion.width *= reductionFactor.getScale();

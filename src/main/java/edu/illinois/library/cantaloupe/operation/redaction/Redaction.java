@@ -87,9 +87,15 @@ public class Redaction implements Operation {
         if (!hasEffect()) {
             return false;
         }
-        final Dimension resultingSize = opList.getResultingSize(fullSize);
-        final Rectangle resultingImage = new Rectangle(0, 0,
-                resultingSize.width, resultingSize.height);
+
+        Rectangle resultingImage;
+        Crop crop = (Crop) opList.getFirst(Crop.class);
+        if (crop != null) {
+            resultingImage = crop.getRectangle(fullSize);
+        } else {
+            resultingImage = new Rectangle(
+                    0, 0, fullSize.width, fullSize.height);
+        }
         return getRegion().intersects(resultingImage);
     }
 

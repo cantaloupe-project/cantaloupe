@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.operation.redaction;
 
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -78,15 +79,25 @@ public class RedactionTest extends BaseTest {
     }
 
     @Test
-    public void isNoOpWithArguments() {
+    public void hasEffectWithArguments() {
         final Dimension fullSize = new Dimension(600, 400);
-        final OperationList opList = new OperationList();
-        opList.add(new Crop(0, 0, 400, 300));
+
+        // N.B.: hasEffect() shouldn't be looking at the Scales. They are
+        // added to ensure that it doesn't.
 
         // in bounds
+        OperationList opList = new OperationList(
+                new Crop(0, 0, 400, 300), new Scale(0.25));
+        assertTrue(instance.hasEffect(fullSize, opList));
+
+        // partially in bounds
+        opList = new OperationList(
+                new Crop(100, 100, 100, 100), new Scale(0.25));
         assertTrue(instance.hasEffect(fullSize, opList));
 
         // out of bounds
+        opList = new OperationList(
+                new Crop(0, 0, 400, 300), new Scale(0.25));
         instance = new Redaction(new Rectangle(420, 305, 20, 20));
         assertFalse(instance.hasEffect(fullSize, opList));
     }
