@@ -138,21 +138,24 @@ public final class Java2DUtil {
      * Redacts regions from the given image.
      *
      * @param image           Image to redact.
+     * @param fullSize        Full pre-crop image size.
      * @param appliedCrop     Crop already applied to {@literal image}.
+     * @param preScale        Two-element array of scale factors already
+     *                        applied to {@literal image}.
      * @param reductionFactor Reduction factor already applied to
      *                        {@literal image}.
      * @param scaleConstraint Scale constraint.
      * @param redactions      Regions of the image to redact.
      */
     static void applyRedactions(final BufferedImage image,
+                                final Dimension fullSize,
                                 final Crop appliedCrop,
+                                final double[] preScale,
                                 final ReductionFactor reductionFactor,
                                 final ScaleConstraint scaleConstraint,
-                                final Set<Redaction> redactions) {
+                                final Set<Redaction> redactions) { // TODO: could this method signature get any worse?
         if (image != null && !redactions.isEmpty()) {
             final Stopwatch watch = new Stopwatch();
-            final Dimension imageSize = new Dimension(
-                    image.getWidth(), image.getHeight());
 
             final Graphics2D g2d = image.createGraphics();
             g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
@@ -161,12 +164,14 @@ public final class Java2DUtil {
 
             for (final Redaction redaction : redactions) {
                 final Rectangle redactionRegion = redaction.getResultingRegion(
-                        imageSize, scaleConstraint, appliedCrop);
+                        fullSize, scaleConstraint, appliedCrop);
                 final double rfScale = reductionFactor.getScale();
                 redactionRegion.setX(redactionRegion.x() * rfScale);
                 redactionRegion.setY(redactionRegion.y() * rfScale);
                 redactionRegion.setWidth(redactionRegion.width() * rfScale);
                 redactionRegion.setHeight(redactionRegion.height() * rfScale);
+                redactionRegion.scaleX(preScale[0]);
+                redactionRegion.scaleY(preScale[1]);
 
                 if (!redactionRegion.isEmpty()) {
                     LOGGER.debug("applyRedactions(): applying {} at {},{}/{}x{}",

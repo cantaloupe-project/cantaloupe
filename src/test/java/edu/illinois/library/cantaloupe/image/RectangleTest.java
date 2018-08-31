@@ -145,6 +145,44 @@ public class RectangleTest {
     }
 
     @Test
+    public void testScaleX() {
+        instance.scaleX(0.8);
+        assertEquals(8, instance.x(), DELTA);
+        assertEquals(5, instance.y(), DELTA);
+        assertEquals(800, instance.width(), DELTA);
+        assertEquals(800, instance.height(), DELTA);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testScaleXWithZeroArgument() {
+        instance.scaleX(0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testScaleXWithNegativeArgument() {
+        instance.scaleX(-0.5);
+    }
+
+    @Test
+    public void testScaleY() {
+        instance.scaleY(0.8);
+        assertEquals(10, instance.x(), DELTA);
+        assertEquals(4, instance.y(), DELTA);
+        assertEquals(1000, instance.width(), DELTA);
+        assertEquals(640, instance.height(), DELTA);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testScaleYWithZeroArgument() {
+        instance.scaleY(0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testScaleYWithNegativeArgument() {
+        instance.scaleY(-0.5);
+    }
+
+    @Test
     public void testSize() {
         assertEquals(new Dimension(1000, 800), instance.size());
     }

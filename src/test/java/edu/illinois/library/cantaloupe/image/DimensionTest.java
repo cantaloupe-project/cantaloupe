@@ -125,6 +125,40 @@ public class DimensionTest {
     }
 
     @Test
+    public void testScaleX() {
+        instance.scaleX(0.8);
+        assertEquals(800, instance.width(), DELTA);
+        assertEquals(800, instance.height(), DELTA);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testScaleXWithZeroArgument() {
+        instance.scaleX(0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testScaleXWithNegativeArgument() {
+        instance.scaleX(-0.5);
+    }
+
+    @Test
+    public void testScaleY() {
+        instance.scaleY(0.8);
+        assertEquals(1000, instance.width(), DELTA);
+        assertEquals(640, instance.height(), DELTA);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testScaleYWithZeroArgument() {
+        instance.scaleY(0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testScaleYWithNegativeArgument() {
+        instance.scaleY(-0.5);
+    }
+
+    @Test
     public void testSetWidthWithDouble() {
         instance.setWidth(2.0);
     }

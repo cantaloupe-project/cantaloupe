@@ -97,11 +97,22 @@ public final class Dimension {
      * Rescales both dimensions by the given amount.
      */
     public void scaleBy(double scale) {
-        if (scale < DELTA) {
+        scaleX(scale);
+        scaleY(scale);
+    }
+
+    public void scaleX(double amount) {
+        if (amount < DELTA) {
             throw new IllegalArgumentException("Scale must be positive.");
         }
-        width *= scale;
-        height *= scale;
+        width *= amount;
+    }
+
+    public void scaleY(double amount) {
+        if (amount < DELTA) {
+            throw new IllegalArgumentException("Scale must be positive.");
+        }
+        height *= amount;
     }
 
     public void setWidth(double width) {

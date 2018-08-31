@@ -370,12 +370,15 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                         final OutputStream outputStream) throws ProcessorException {
         try {
             final ReductionFactor reductionFactor = new ReductionFactor();
+            final double[] diffScales = new double[] { 1.0, 1.0 };
             final BufferedImage image = readRegion(
                     opList,
                     info.getSize(),
                     info.getNumResolutions() - 1,
-                    reductionFactor);
-            postProcess(image, opList, info, reductionFactor, outputStream);
+                    reductionFactor,
+                    diffScales);
+            postProcess(image, opList, diffScales, info, reductionFactor,
+                    outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
@@ -391,11 +394,14 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
      *                        according to the given {@link Scale}.
      * @param opList          List of operations to apply. Only some will be
      *                        used.
+     * @param diffScales      Will be populated with the X and Y axis
+     *                        differential scales used during reading.
      */
     private BufferedImage readRegion(final OperationList opList,
                                      final Dimension fullSize,
                                      final int numLevels,
-                                     final ReductionFactor reductionFactor) throws IOException {
+                                     final ReductionFactor reductionFactor,
+                                     final double[] diffScales) throws IOException {
         final Rectangle roi = getRegion(opList, fullSize);
         final Scale scaleOp = (Scale) opList.getFirst(Scale.class);
 
@@ -482,10 +488,12 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                         referenceComponent, channels, codestream);
                 final Dimension regionArea = new Dimension(
                         regionSize.Get_x(), regionSize.Get_y());
-                final double[] diffScales = (scaleOp != null)
-                        ? scaleOp.getDifferentialScales(
-                                regionArea, reductionFactor, opList.getScaleConstraint())
-                        : new double[] {1.0, 1.0};
+                if (scaleOp != null) {
+                    double[] tmp = scaleOp.getDifferentialScales(
+                            regionArea, reductionFactor, opList.getScaleConstraint());
+                    diffScales[0] = tmp[0];
+                    diffScales[1] = tmp[1];
+                }
                 expandNumerator.Set_x((int) Math.round(
                         expandNumerator.Get_x() * diffScales[0] * EXPAND_DENOMINATOR));
                 expandNumerator.Set_y((int) Math.round(
@@ -710,12 +718,15 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
     /**
      * @param image           Image to process.
      * @param opList          Operations to apply to the image.
+     * @param diffScales      Differential X and Y scales that have already
+     *                        been applied to {@literal image}.
      * @param imageInfo       Information about the source image.
      * @param reductionFactor May be {@literal null}.
      * @param outputStream    Output stream to write the resulting image to.
      */
     private void postProcess(BufferedImage image,
                              final OperationList opList,
+                             final double[] diffScales,
                              final Info imageInfo,
                              ReductionFactor reductionFactor,
                              final OutputStream outputStream) throws IOException {
@@ -733,9 +744,13 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             }
         }
         if (!redactions.isEmpty()) {
-            Crop crop = new Crop(0, 0, image.getWidth(), image.getHeight(),
-                    imageInfo.getOrientation(), imageInfo.getSize());
-            Java2DUtil.applyRedactions(image, crop, reductionFactor,
+            Crop crop = (Crop) opList.getFirst(Crop.class);
+            if (crop == null) {
+                crop = new Crop(0, 0, fullSize.intWidth(), fullSize.intHeight(),
+                        imageInfo.getOrientation(), imageInfo.getSize());
+            }
+            Java2DUtil.applyRedactions(
+                    image, fullSize, crop, diffScales, reductionFactor,
                     opList.getScaleConstraint(), redactions);
         }
 

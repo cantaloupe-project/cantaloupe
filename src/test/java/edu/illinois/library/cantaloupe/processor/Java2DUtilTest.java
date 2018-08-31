@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
@@ -101,7 +102,9 @@ public class Java2DUtilTest extends BaseTest {
 
     @Test
     public void testApplyRedactions() {
-        final BufferedImage image = newColorImage(64, 56, 8, false);
+        final Dimension fullSize = new Dimension(64, 56);
+        final BufferedImage image = newColorImage(
+                fullSize.intWidth(), fullSize.intHeight(), 8, false);
 
         // fill it with white
         Graphics2D g2d = image.createGraphics();
@@ -117,8 +120,14 @@ public class Java2DUtilTest extends BaseTest {
                 image.getWidth(), image.getTileHeight());
 
         // apply them
-        Java2DUtil.applyRedactions(image, crop, new ReductionFactor(0),
-                new ScaleConstraint(1, 1), redactions);
+        Java2DUtil.applyRedactions(
+                image,
+                fullSize,
+                crop,
+                new double[] { 1.0, 1.0 },
+                new ReductionFactor(0),
+                new ScaleConstraint(1, 1),
+                redactions);
 
         // test for the first one
         assertRGBA(image.getRGB(0, 0), 0, 0, 0, 255);

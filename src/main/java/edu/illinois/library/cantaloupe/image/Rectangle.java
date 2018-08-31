@@ -102,6 +102,32 @@ public final class Rectangle {
         return dimension.isEmpty();
     }
 
+    /**
+     * Scales the X-axis origin and height by the given amount.
+     *
+     * @param amount Positive value.
+     */
+    public void scaleX(double amount) {
+        if (amount < DELTA) {
+            throw new IllegalArgumentException("Scale must be positive.");
+        }
+        this.x *= amount;
+        this.dimension.scaleX(amount);
+    }
+
+    /**
+     * Scales the Y-axis origin and height by the given amount.
+     *
+     * @param amount Positive value.
+     */
+    public void scaleY(double amount) {
+        if (amount < DELTA) {
+            throw new IllegalArgumentException("Scale must be positive.");
+        }
+        this.y *= amount;
+        this.dimension.scaleY(amount);
+    }
+
     public Dimension size() {
         return dimension;
     }

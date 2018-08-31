@@ -279,15 +279,14 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
         }
 
         // Redactions happen immediately after cropping.
-        Set<Redaction> redactions = new HashSet<>();
+        final Set<Redaction> redactions = new HashSet<>();
         for (Operation op : opList) {
-            if (op instanceof Redaction) {
-                if (op.hasEffect(fullSize, opList)) {
-                    redactions.add((Redaction) op);
-                }
+            if (op instanceof Redaction && op.hasEffect(fullSize, opList)) {
+                redactions.add((Redaction) op);
             }
         }
-        Java2DUtil.applyRedactions(image, crop, reductionFactor,
+        Java2DUtil.applyRedactions(image, fullSize, crop,
+                new double[] { 1.0, 1.0 }, reductionFactor,
                 opList.getScaleConstraint(), redactions);
 
         if (!Orientation.ROTATE_0.equals(orientation) &&
