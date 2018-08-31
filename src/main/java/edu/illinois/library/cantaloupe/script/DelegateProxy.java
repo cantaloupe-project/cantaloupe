@@ -355,7 +355,7 @@ public final class DelegateProxy {
                 Arrays.stream(args)
                         .map(Object::toString)
                         .collect(Collectors.joining(", ")) : "none";
-        LOGGER.debug("invokeUncached(): invoking {} with args: ({})",
+        LOGGER.trace("invokeUncached(): invoking {}() with args: ({})",
                 methodName, argsList);
 
         final Stopwatch watch = new Stopwatch();
@@ -364,7 +364,7 @@ public final class DelegateProxy {
                     delegate, methodName, args);
 
             if (!RUBY_REQUEST_CONTEXT_SETTER.equals(methodName)) {
-                LOGGER.debug("invokeUncached(): {} returned {} for args: ({}) in {}",
+                LOGGER.debug("invokeUncached(): {}() returned {} for args: ({}) in {}",
                         methodName, retval, argsList, watch);
             }
             return retval;

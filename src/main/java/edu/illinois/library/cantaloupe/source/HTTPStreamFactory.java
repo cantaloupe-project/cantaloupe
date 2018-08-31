@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.source;
 
-import edu.illinois.library.cantaloupe.http.Header;
 import edu.illinois.library.cantaloupe.http.Headers;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
@@ -8,19 +7,16 @@ import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.util.InputStreamResponseListener;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
+
+import static edu.illinois.library.cantaloupe.source.HttpSource.LOGGER;
 
 /**
  * Returned from {@link HttpSource#newStreamFactory()}.
  */
 final class HTTPStreamFactory implements StreamFactory {
-
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(HTTPStreamFactory.class);
 
     private static final HttpMethod HTTP_METHOD = HttpMethod.GET;
 

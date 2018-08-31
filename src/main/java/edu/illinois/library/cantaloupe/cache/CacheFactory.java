@@ -170,13 +170,13 @@ public final class CacheFactory {
      */
     private static synchronized void setDerivativeCache(DerivativeCache cache) {
         if (derivativeCache != null) {
-            LOGGER.debug("setDerivativeCache(): shutting down the current instance");
+            LOGGER.trace("setDerivativeCache(): shutting down the current instance");
             derivativeCache.shutdown();
         }
 
         derivativeCache = cache;
 
-        LOGGER.debug("setDerivativeCache(): initializing the new instance");
+        LOGGER.trace("setDerivativeCache(): initializing the new instance");
         derivativeCache.initialize();
     }
 
@@ -188,13 +188,13 @@ public final class CacheFactory {
      */
     private static synchronized void setSourceCache(SourceCache cache) {
         if (sourceCache != null) {
-            LOGGER.debug("setSourceCache(): shutting down the current instance");
+            LOGGER.trace("setSourceCache(): shutting down the current instance");
             sourceCache.shutdown();
         }
 
         sourceCache = cache;
 
-        LOGGER.debug("setSourceCache(): initializing the new instance");
+        LOGGER.trace("setSourceCache(): initializing the new instance");
         sourceCache.initialize();
     }
 
@@ -204,7 +204,7 @@ public final class CacheFactory {
     }
 
     private static synchronized void shutdownDerivativeCache() {
-        LOGGER.debug("Shutting down the derivative cache");
+        LOGGER.trace("Shutting down the derivative cache");
         if (derivativeCache != null) {
             derivativeCache.shutdown();
             derivativeCache = null;
@@ -212,7 +212,7 @@ public final class CacheFactory {
     }
 
     private static synchronized  void shutdownSourceCache() {
-        LOGGER.debug("Shutting down the source cache");
+        LOGGER.trace("Shutting down the source cache");
         if (sourceCache != null) {
             sourceCache.shutdown();
             sourceCache = null;

@@ -60,7 +60,7 @@ public final class ProcessorFactory {
             if (e == null) {
                 try {
                     candidate.setSourceFormat(sourceFormat);
-                    LOGGER.info("{} selected for format {} ({} offered {})",
+                    LOGGER.debug("{} selected for format {} ({} offered {})",
                             candidate.getClass().getSimpleName(),
                             sourceFormat.name(),
                             getSelectionStrategy(),

@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.async.TaskQueue;
-import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -22,8 +21,8 @@ import java.io.IOException;
  */
 public final class InfoService {
 
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(InfoService.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(InfoService.class);
 
     private static InfoService instance;
 
@@ -71,8 +70,8 @@ public final class InfoService {
         Info info = infoCache.get(identifier);
 
         if (info != null) {
-            LOGGER.debug("getInfo(): retrieved info of {} from {}",
-                    identifier, infoCache.getClass().getSimpleName());
+            LOGGER.debug("getInfo(): retrieved from {}: {}",
+                    infoCache.getClass().getSimpleName(), identifier);
         } else {
             // Check the derivative cache.
             final DerivativeCache derivCache = CacheFactory.getDerivativeCache();

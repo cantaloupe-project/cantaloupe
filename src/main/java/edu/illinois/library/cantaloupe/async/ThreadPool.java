@@ -18,14 +18,14 @@ public final class ThreadPool {
 
     private static abstract class AbstractThreadFactory {
 
-        private static final int maxID = 99999999;
+        private static final int maxID = 9999999;
         private static final Random rng = new Random();
 
         private String getThreadID() {
             // Get a random number
             final int id = rng.nextInt(maxID + 1);
             // Left-pad it with zeroes
-            return String.format("%010d", id);
+            return String.format("%06d", id);
         }
 
         abstract String getThreadNamePrefix();
@@ -42,7 +42,7 @@ public final class ThreadPool {
             extends AbstractThreadFactory implements ThreadFactory {
         @Override
         String getThreadNamePrefix() {
-            return "cl-lp";
+            return "work-lo";
         }
     }
 
@@ -50,7 +50,7 @@ public final class ThreadPool {
             extends AbstractThreadFactory implements ThreadFactory {
         @Override
         String getThreadNamePrefix() {
-            return "cl-np";
+            return "work-nm";
         }
     }
 
@@ -58,7 +58,7 @@ public final class ThreadPool {
             extends AbstractThreadFactory implements ThreadFactory {
         @Override
         String getThreadNamePrefix() {
-            return "cl-hp";
+            return "work-hi";
         }
     }
 
@@ -73,7 +73,7 @@ public final class ThreadPool {
             Executors.newCachedThreadPool(new HighPriorityThreadFactory());
 
     /**
-     * @return Shared {@link ThreadPool} instance.
+     * @return Shared instance.
      */
     public static synchronized ThreadPool getInstance() {
         if (instance == null || instance.isShutdown()) {

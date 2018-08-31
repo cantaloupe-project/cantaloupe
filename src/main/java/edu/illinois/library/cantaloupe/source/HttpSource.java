@@ -190,8 +190,7 @@ class HttpSource extends AbstractSource implements StreamSource {
 
     }
 
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(HttpSource.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(HttpSource.class);
 
     private static final int DEFAULT_REQUEST_TIMEOUT = 30;
 
