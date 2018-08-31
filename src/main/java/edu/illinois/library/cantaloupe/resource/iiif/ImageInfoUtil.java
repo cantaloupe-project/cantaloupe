@@ -42,7 +42,7 @@ public final class ImageInfoUtil {
         Dimension nextSize = new Dimension(fullSize);
 
         while (nextSize.width() * nextSize.height() > maxPixels) {
-            nextSize.scaleBy(0.5);
+            nextSize.scale(0.5);
             factor++;
         }
         return factor;
@@ -76,7 +76,7 @@ public final class ImageInfoUtil {
         }
 
         while (infoTileSize.width() < minW || infoTileSize.height() < minH) {
-            infoTileSize.scaleBy(2);
+            infoTileSize.scale(2);
         }
 
         // Limit tile dimensions to the full image size.

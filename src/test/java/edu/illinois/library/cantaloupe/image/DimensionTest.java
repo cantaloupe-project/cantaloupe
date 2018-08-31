@@ -118,8 +118,8 @@ public class DimensionTest {
     }
 
     @Test
-    public void testScaleBy() {
-        instance.scaleBy(1.5);
+    public void testScale() {
+        instance.scale(1.5);
         assertEquals(1500, instance.width(), DELTA);
         assertEquals(1200, instance.height(), DELTA);
     }

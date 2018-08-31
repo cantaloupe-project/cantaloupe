@@ -95,12 +95,19 @@ public final class Dimension {
 
     /**
      * Rescales both dimensions by the given amount.
+     *
+     * @param amount Positive number with {@literal 1} indicating no scale.
      */
-    public void scaleBy(double scale) {
-        scaleX(scale);
-        scaleY(scale);
+    public void scale(double amount) {
+        scaleX(amount);
+        scaleY(amount);
     }
 
+    /**
+     * Rescales the X dimension by the given amount.
+     *
+     * @param amount Positive number with {@literal 1} indicating no scale.
+     */
     public void scaleX(double amount) {
         if (amount < DELTA) {
             throw new IllegalArgumentException("Scale must be positive.");
@@ -108,6 +115,11 @@ public final class Dimension {
         width *= amount;
     }
 
+    /**
+     * Rescales the Y dimension by the given amount.
+     *
+     * @param amount Positive number with {@literal 1} indicating no scale.
+     */
     public void scaleY(double amount) {
         if (amount < DELTA) {
             throw new IllegalArgumentException("Scale must be positive.");
