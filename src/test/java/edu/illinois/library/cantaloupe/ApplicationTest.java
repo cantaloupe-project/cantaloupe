@@ -43,12 +43,27 @@ public class ApplicationTest extends BaseTest {
     }
 
     /**
-     * getVersion() is not fully testable as it will return a different value
-     * when the app is running from a .war.
+     * {@link Application#getVersion()} is not fully testable as it returns a
+     * different value when the app is running from a .war.
      */
     @Test
     public void testGetVersion() {
         assertEquals("Unknown", Application.getVersion());
+    }
+
+    @Test
+    public void testIsUsingSystemTempPath() {
+        System.setProperty("java.io.tmpdir", "/default");
+        final Configuration config = Configuration.getInstance();
+
+        config.clearProperty(Key.TEMP_PATHNAME);
+        assertTrue(Application.isUsingSystemTempPath());
+
+        config.setProperty(Key.TEMP_PATHNAME, "/default");
+        assertTrue(Application.isUsingSystemTempPath());
+
+        config.setProperty(Key.TEMP_PATHNAME, System.getProperty("user.dir"));
+        assertFalse(Application.isUsingSystemTempPath());
     }
 
 }

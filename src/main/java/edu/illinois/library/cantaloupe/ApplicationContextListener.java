@@ -112,6 +112,15 @@ public class ApplicationContextListener implements ServletContextListener {
                 runtime.maxMemory() / mb);
         LOGGER.info("Effective temp directory: {}",
                 Application.getTempPath());
+
+        if (Application.isUsingSystemTempPath()) {
+            LOGGER.warn("The effective temp directory is the system temp " +
+                    "directory. If the application is left running for " +
+                    "several days, the OS may clean up important files that " +
+                    "are still in use. Consider setting `" +
+                    Key.TEMP_PATHNAME + "` for long-running servers.");
+        }
+
         LOGGER.info("\uD83C\uDF48 Starting Cantaloupe {}",
                 Application.getVersion());
     }
