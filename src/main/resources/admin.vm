@@ -1917,28 +1917,6 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>
-                                        <a tabindex="0" class="btn btn-sm cl-help"
-                                           role="button" data-toggle="popover"
-                                           data-trigger="focus"
-                                           data-content="Expands contrast to utilize
-                                               available dynamic range. This forces the entire
-                                               source image to be read into memory, so can
-                                               be slow with large images.">?</a>
-                                    </td>
-                                    <td>
-                                        <div class="checkbox">
-                                            <label>
-                                                <input type="checkbox"
-                                                       name="processor.normalize"
-                                                       value="true"
-                                                       data-requires-restart="false">
-                                                Normalize
-                                            </label>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
                                     <td>Background color
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"

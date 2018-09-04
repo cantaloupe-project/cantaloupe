@@ -24,6 +24,7 @@ title: Upgrading
   <li>Remove the following configuration keys:
     <ul>
       <li><code>endpoint.public.auth.*</code></li>
+      <li><code>processor.normalize</code></li>
     </ul>
   </li>
   <li>If you have implemented the <code>redirect()</code> or <code>authorized?()</code> delegate methods, migrate their logic into <code>authorize()</code> and remove them.</li>

@@ -7,7 +7,6 @@ import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
-import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -359,11 +358,6 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
         this.streamFactory = streamFactory;
     }
 
-    /**
-     * N.B.: This method does not support {@link Normalize}.
-     *
-     * {@inheritDoc}
-     */
     @Override
     public void process(final OperationList opList,
                         final Info info,
@@ -853,9 +847,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                 throw new IOException(e.getMessage() + " (code: " +
                         Integer.toHexString(e.Get_kdu_exception_code()) + ")", e);
             } finally {
-                if (channels != null) {
-                    channels.Native_destroy();
-                }
+                channels.Native_destroy();
 
                 try {
                     if (codestream.Exists()) {

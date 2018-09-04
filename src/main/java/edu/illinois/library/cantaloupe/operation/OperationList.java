@@ -196,32 +196,6 @@ public final class OperationList implements Comparable<OperationList>,
             }
         }
 
-        // Normalization
-        final boolean normalize = config.getBoolean(Key.PROCESSOR_NORMALIZE, false);
-        if (normalize) {
-            // 1. If a Crop is present, normalization has to happen before it,
-            //    in order to sample the entire image.
-            // 2. Otherwise, if a Scale is present, normalization should happen
-            //    before an upscale, or after a downscale.
-            // 3. Otherwise, it should be added before a Rotate, as this could
-            //    introduce edge color that would throw it off.
-            Normalize normalizeOp = new Normalize();
-            if (getFirst(Crop.class) != null) {
-                addBefore(normalizeOp, Crop.class);
-            } else {
-                Scale scale = (Scale) getFirst(Scale.class);
-                if (scale != null) {
-                    if (scale.isUp(sourceImageSize, getScaleConstraint())) {
-                        addBefore(normalizeOp, Scale.class);
-                    } else {
-                        addAfter(normalizeOp, Scale.class);
-                    }
-                } else {
-                    addBefore(normalizeOp, Rotate.class);
-                }
-            }
-        }
-
         // Redactions
         try {
             final RedactionService service = new RedactionService();

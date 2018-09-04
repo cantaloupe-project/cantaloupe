@@ -13,7 +13,6 @@ import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.Encode;
-import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
@@ -355,9 +354,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         final Dimension fullSize = imageInfo.getSize();
 
         for (Operation op : ops) {
-            if (op instanceof Normalize) {
-                args.add("-normalize");
-            } else if (op instanceof Crop) {
+            if (op instanceof Crop) {
                 Crop crop = (Crop) op;
                 if (crop.hasEffect(fullSize, ops)) {
                     final Rectangle cropArea = crop.getRectangle(

@@ -705,26 +705,6 @@ public class Java2DUtilTest extends BaseTest {
         assertEquals(20, outImage.getHeight());
     }
 
-    /* stretchContrast() */
-
-    @Test
-    public void testStretchContrast() {
-        BufferedImage image = newColorImage(100, 100, 8, false);
-        final Rectangle leftHalf = new Rectangle(0, 0, 50, 100);
-        final Rectangle rightHalf = new Rectangle(50, 0, 50, 100);
-
-        final Graphics2D g2d = image.createGraphics();
-        g2d.setColor(java.awt.Color.DARK_GRAY);
-        g2d.fill(leftHalf.toAWTRectangle());
-        g2d.setColor(java.awt.Color.LIGHT_GRAY);
-        g2d.fill(rightHalf.toAWTRectangle());
-
-        Java2DUtil.stretchContrast(image);
-
-        assertEquals(-16777216, image.getRGB(10, 10));
-        assertEquals(-1, image.getRGB(90, 90));
-    }
-
     /* transformColor() */
 
     @Test

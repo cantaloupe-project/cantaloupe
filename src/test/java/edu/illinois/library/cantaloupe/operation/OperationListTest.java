@@ -290,63 +290,6 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void applyNonEndpointMutationsWithNormalization() throws Exception {
-        final Configuration config = Configuration.getInstance();
-        config.setProperty(Key.PROCESSOR_NORMALIZE, true);
-
-        // Assert that Normalizations are inserted before Crops.
-        final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = Info.builder().withSize(fullSize).build();
-        OperationList opList = new OperationList(
-                new Identifier("cats"),
-                new Crop(),
-                new Encode(Format.JPG));
-        RequestContext context = new RequestContext();
-        context.setOperationList(opList, fullSize);
-
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
-
-        opList.applyNonEndpointMutations(info, proxy);
-
-        Iterator<Operation> it = opList.iterator();
-        assertTrue(it.next() instanceof Normalize);
-
-        // Assert that Normalizations are inserted before upscales when no
-        // Crop is present.
-        opList = new OperationList(
-                new Identifier("cats"),
-                new Scale(1.5f),
-                new Encode(Format.JPG));
-        context = new RequestContext();
-        context.setOperationList(opList, fullSize);
-        proxy = service.newDelegateProxy(context);
-
-        opList.applyNonEndpointMutations(
-                Info.builder().withSize(2000, 1000).build(),
-                proxy);
-
-        it = opList.iterator();
-        assertTrue(it.next() instanceof Normalize);
-
-        // Assert that Normalizations are inserted after downscales when no
-        // Crop is present.
-        opList = new OperationList(
-                new Identifier("cats"),
-                new Scale(0.5f),
-                new Encode(Format.JPG));
-        context = new RequestContext();
-        context.setOperationList(opList, fullSize);
-        proxy = service.newDelegateProxy(context);
-
-        opList.applyNonEndpointMutations(info, proxy);
-
-        it = opList.iterator();
-        assertTrue(it.next() instanceof Scale);
-        assertTrue(it.next() instanceof Normalize);
-    }
-
-    @Test
     public void applyNonEndpointMutationsWithOverlay() throws Exception {
         BasicStringOverlayServiceTest.setUpConfiguration();
 

@@ -440,7 +440,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         selectNamed(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY).
                 selectByValue("CacheStrategy");
         inputNamed(Key.PROCESSOR_DPI).sendKeys("300");
-        inputNamed(Key.PROCESSOR_NORMALIZE).click();
         selectNamed(Key.PROCESSOR_BACKGROUND_COLOR).selectByValue("white");
         selectNamed(Key.PROCESSOR_UPSCALE_FILTER).
                 selectByVisibleText("Triangle");
@@ -487,7 +486,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertEquals("CacheStrategy",
                 config.getString(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY));
         assertEquals(300, config.getInt(Key.PROCESSOR_DPI));
-        assertTrue(config.getBoolean(Key.PROCESSOR_NORMALIZE));
         assertEquals("white", config.getString(Key.PROCESSOR_BACKGROUND_COLOR));
         assertEquals("triangle",
                 config.getString(Key.PROCESSOR_UPSCALE_FILTER));

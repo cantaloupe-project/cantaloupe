@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
-import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -243,9 +242,6 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
         }
         if (readerHints == null) {
             readerHints = EnumSet.noneOf(ReaderHint.class);
-        }
-        if (opList.getFirst(Normalize.class) != null) {
-            Java2DUtil.stretchContrast(image);
         }
 
         image = Java2DUtil.reduceTo8Bits(image);

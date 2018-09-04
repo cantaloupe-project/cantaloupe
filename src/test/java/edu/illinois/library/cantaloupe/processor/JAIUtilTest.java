@@ -465,32 +465,6 @@ public class JAIUtilTest extends BaseTest {
         assertNotSame(image, sharpenedImage);
     }
 
-    /* stretchContrast() */
-
-    @Test
-    public void stretchContrast() throws IOException {
-        BufferedImage image = new BufferedImage(100, 100,
-                BufferedImage.TYPE_INT_RGB);
-        final Rectangle leftHalf = new Rectangle(0, 0, 50, 100);
-        final Rectangle rightHalf = new Rectangle(50, 0, 50, 100);
-
-        final Graphics2D g2d = image.createGraphics();
-        g2d.setColor(java.awt.Color.DARK_GRAY);
-        g2d.fill(leftHalf);
-        g2d.setColor(java.awt.Color.LIGHT_GRAY);
-        g2d.fill(rightHalf);
-
-        RenderedOp renderedOp = JAIUtil.getAsRenderedOp(RenderedOp.wrapRenderedImage(image));
-        renderedOp = JAIUtil.stretchContrast(renderedOp);
-
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ImageIO.write(renderedOp, "JPEG", os);
-        image = ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
-
-        assertEquals(-16777216, image.getRGB(10, 10));
-        assertEquals(-1, image.getRGB(90, 90));
-    }
-
     /* transformColor() */
 
     @Test

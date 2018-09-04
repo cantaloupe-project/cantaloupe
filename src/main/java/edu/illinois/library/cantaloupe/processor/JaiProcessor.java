@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.Encode;
-import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -148,23 +147,10 @@ class JaiProcessor extends AbstractImageIOProcessor
             final ReductionFactor rf      = new ReductionFactor();
             final Set<ReaderHint> hints   = EnumSet.noneOf(ReaderHint.class);
 
-            final boolean normalize = (opList.getFirst(Normalize.class) != null);
-            if (normalize) {
-                // When normalizing, the reader needs to read the entire image
-                // so that its histogram can be sampled accurately. This will
-                // preserve the luminance across tiles.
-                hints.add(ReaderHint.IGNORE_CROP);
-            }
-
             final RenderedImage renderedImage = reader.readRendered(opList,
                     orientation, rf, hints);
             RenderedOp renderedOp = JAIUtil.getAsRenderedOp(
                     RenderedOp.wrapRenderedImage(renderedImage));
-
-            // Normalize the image, if specified in the configuration.
-            if (normalize) {
-                renderedOp = JAIUtil.stretchContrast(renderedOp);
-            }
 
             // If the Encode specifies a max sample size of 8 bits, or if the
             // output format's max sample size is 8 bits, we will need to

@@ -301,10 +301,6 @@ processor.fallback_retrieval_strategy = DownloadStrategy
 # Resolution of vector rasterization (of e.g. PDFs) at a scale of 1.
 processor.dpi = 150
 
-# Expands contrast to utilize available dynamic range. This usually requires
-# the whole source image to be read into memory, so it can be inefficient.
-processor.normalize = false
-
 # Color of the background when an image is rotated or alpha-flattened, for
 # output formats that don't support transparency.
 # This may not be respected for indexed color derivative images.

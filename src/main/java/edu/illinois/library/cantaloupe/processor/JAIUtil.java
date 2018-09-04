@@ -18,10 +18,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
-import javax.media.jai.LookupTableJAI;
 import javax.media.jai.OpImage;
 import javax.media.jai.PlanarImage;
-import javax.media.jai.ROIShape;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.TransposeDescriptor;
 import java.awt.RenderingHints;
@@ -295,66 +293,6 @@ final class JAIUtil {
             inImage = JAI.create("UnsharpMask", pb);
         }
         return inImage;
-    }
-
-    /**
-     * <p>Linearly stretches the contrast of an image to occupy the full range
-     * of intensities. Histogram gaps will result.</p>
-     *
-     * <p>Does not work with indexed images.</p>
-     *
-     * @param inImage Image to stretch.
-     * @return Stretched image.
-     */
-    static RenderedOp stretchContrast(RenderedOp inImage) {
-        final int numLevels =
-                (int) Math.pow(2, inImage.getColorModel().getComponentSize(0));
-        final byte[] blut = new byte[numLevels];
-        for (int i = 0; i < numLevels; i++) {
-            blut[i] = (byte) (i >> 4);
-        }
-
-        final Dimension fullSize = new Dimension(inImage.getWidth(),
-                inImage.getHeight());
-        final Rectangle sampleArea = new Rectangle(0, 0,
-                fullSize.width(), fullSize.height());
-
-        ParameterBlock pb = new ParameterBlock();
-        pb.addSource(inImage);
-        pb.add(new ROIShape(sampleArea.toAWTRectangle()));
-        pb.add(1); // Horizontal sampling rate
-        pb.add(1); // Vertical sampling rate
-        RenderedOp op = JAI.create("extrema", pb);
-
-        // Retrieve both the maximum and minimum pixel value.
-        final double[][] extrema = (double[][]) op.getProperty("extrema");
-        int min = numLevels, max = 0;
-        for (int i = 0; i < inImage.getNumBands(); i++) {
-            if (extrema[0][i] < min) {
-                min = (int) extrema[0][i];
-            }
-            if (extrema[1][i] > max) {
-                max = (int) extrema[1][i];
-            }
-        }
-
-        double scale = 255f / (float) (max - min);
-        for (int i = min; i <= max; i++) {
-            blut[i] = (byte) ((i - min) * scale);
-        }
-
-        // Clamp any input values outside min/max range.
-        for (int i = 0; i < min; i++) {
-            blut[i] = 0;
-        }
-        for (int i = max; i < numLevels; i++) {
-            blut[i] = (byte) 255;
-        }
-
-        pb = new ParameterBlock();
-        pb.addSource(inImage);
-        pb.add(new LookupTableJAI(blut));
-        return JAI.create("lookup", pb);
     }
 
     /**

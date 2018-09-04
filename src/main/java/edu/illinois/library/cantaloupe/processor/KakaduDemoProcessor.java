@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Rectangle;
-import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -32,8 +31,8 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -233,12 +232,7 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
     }
 
     private static String toString(ByteArrayOutputStream os) {
-        try {
-            return new String(os.toByteArray(), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            LOGGER.error(e.getMessage(), e);
-            return "";
-        }
+        return new String(os.toByteArray(), StandardCharsets.UTF_8);
     }
 
     KakaduDemoProcessor() {
@@ -325,12 +319,9 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
         final ReductionFactor reductionFactor = new ReductionFactor();
         final ThreadPool pool = ThreadPool.getInstance();
 
-        // If we are normalizing, we need to read the entire image region.
-        final boolean normalize = (opList.getFirst(Normalize.class) != null);
-
         final ProcessBuilder pb = getProcessBuilder(
                 opList, info.getSize(), info.getNumResolutions(),
-                reductionFactor, normalize, intermediateFile);
+                reductionFactor, intermediateFile);
         LOGGER.debug("Invoking {}", String.join(" ", pb.command()));
         final Process process = pb.start();
 
@@ -356,10 +347,8 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
                     new ImageReaderFactory().newImageReader(is, Format.TIF);
             try {
                 final BufferedImage image = reader.read();
-                final Set<ReaderHint> hints = EnumSet.noneOf(ReaderHint.class);
-                if (!normalize) {
-                    hints.add(ReaderHint.ALREADY_CROPPED);
-                }
+                final Set<ReaderHint> hints =
+                        EnumSet.of(ReaderHint.ALREADY_CROPPED);
                 postProcess(image, hints, opList, info,
                         reductionFactor, outputStream);
             } finally {
@@ -381,12 +370,9 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
             throws IOException, InterruptedException {
         final ReductionFactor reductionFactor = new ReductionFactor();
 
-        // If we are normalizing, we need to read the entire image region.
-        final boolean normalize = (opList.getFirst(Normalize.class) != null);
-
         final ProcessBuilder pb = getProcessBuilder(
                 opList, info.getSize(), info.getNumResolutions(),
-                reductionFactor, normalize, stdoutSymlink);
+                reductionFactor, stdoutSymlink);
         LOGGER.debug("Invoking {}", String.join(" ", pb.command()));
         final Process process = pb.start();
 
@@ -400,10 +386,8 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
                     processInputStream, Format.TIF);
             try {
                 final BufferedImage image = reader.read();
-                final Set<ReaderHint> hints = EnumSet.noneOf(ReaderHint.class);
-                if (!normalize) {
-                    hints.add(ReaderHint.ALREADY_CROPPED);
-                }
+                final Set<ReaderHint> hints =
+                        EnumSet.of(ReaderHint.ALREADY_CROPPED);
                 postProcess(image, hints, opList, info,
                         reductionFactor, outputStream);
 
@@ -430,8 +414,6 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
      *                       in the source image.
      * @param reduction      The {@link ReductionFactor#factor} property will
      *                       be modified.
-     * @param ignoreCrop     Ignore any cropping directives provided in
-     *                       {@literal opList}.
      * @param outputFile     File to write to.
      * @return               {@link ProcessBuilder} for invoking {@literal
      *                       kdu_expand} with arguments corresponding to the
@@ -441,7 +423,6 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
                                              final Dimension fullSize,
                                              final int numResolutions,
                                              final ReductionFactor reduction,
-                                             final boolean ignoreCrop,
                                              final Path outputFile) {
         final List<String> command = new ArrayList<>(30);
         command.add(getPath());
@@ -455,7 +436,7 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
             if (!op.hasEffect(fullSize, opList)) {
                 continue;
             }
-            if (op instanceof Crop && !ignoreCrop) {
+            if (op instanceof Crop) {
                 final NumberFormat xFormat =
                         NumberFormat.getInstance(Locale.US);
                 xFormat.setRoundingMode(RoundingMode.DOWN);
@@ -511,19 +492,18 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
                 // or the height/width are <=50% of full size.
                 final Scale scale = (Scale) op;
                 final Dimension tileSize = getROISize(opList, fullSize);
-                if (!ignoreCrop) {
-                    int numDWTLevels = numResolutions - 1;
-                    if (numDWTLevels < 0) {
-                        numDWTLevels = FALLBACK_NUM_DWT_LEVELS;
-                    }
-                    reduction.factor = scale.getReductionFactor(
-                            tileSize, opList.getScaleConstraint(),
-                            numDWTLevels).factor;
 
-                    if (reduction.factor > 0) {
-                        command.add("-reduce");
-                        command.add(reduction.factor + "");
-                    }
+                int numDWTLevels = numResolutions - 1;
+                if (numDWTLevels < 0) {
+                    numDWTLevels = FALLBACK_NUM_DWT_LEVELS;
+                }
+                reduction.factor = scale.getReductionFactor(
+                        tileSize, opList.getScaleConstraint(),
+                        numDWTLevels).factor;
+
+                if (reduction.factor > 0) {
+                    command.add("-reduce");
+                    command.add(reduction.factor + "");
                 }
             }
         }

@@ -158,7 +158,6 @@ public enum Key {
     PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY("processor.fallback_retrieval_strategy"),
     PROCESSOR_JPG_PROGRESSIVE("processor.jpg.progressive"),
     PROCESSOR_JPG_QUALITY("processor.jpg.quality"),
-    PROCESSOR_NORMALIZE("processor.normalize"),
     PROCESSOR_PRESERVE_METADATA("processor.metadata.preserve"),
     PROCESSOR_RESPECT_ORIENTATION("processor.metadata.respect_orientation"),
     PROCESSOR_SELECTION_STRATEGY("processor.selection_strategy"),
