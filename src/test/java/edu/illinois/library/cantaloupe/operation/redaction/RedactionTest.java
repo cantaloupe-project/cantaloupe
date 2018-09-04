@@ -69,13 +69,13 @@ public class RedactionTest extends BaseTest {
         Crop crop = new Crop(0, 0, 300, 300);
         Rectangle resultingRegion = instance.getResultingRegion(
                 sourceSize, scaleConstraint, crop);
-        assertEquals(new Rectangle(100, 120, 400, 200), resultingRegion);
+        assertEquals(new Rectangle(50, 60, 200, 100), resultingRegion);
 
         // redaction partially within source image bounds
         crop = new Crop(0, 0, 200, 200);
         resultingRegion = instance.getResultingRegion(
                 sourceSize, scaleConstraint, crop);
-        assertEquals(new Rectangle(100, 120, 400, 200), resultingRegion);
+        assertEquals(new Rectangle(50, 60, 200, 100), resultingRegion);
 
         // redaction outside source image bounds
         crop = new Crop(300, 300, 100, 100);

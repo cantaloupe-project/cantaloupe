@@ -64,15 +64,10 @@ public class Redaction implements Operation {
     public Rectangle getResultingRegion(final Dimension fullSize,
                                         final ScaleConstraint scaleConstraint,
                                         final Crop appliedCrop) {
-        final double scScale = scaleConstraint.getScale();
         final Rectangle cropRegion = appliedCrop.getRectangle(
                 fullSize, scaleConstraint);
 
-        final Rectangle thisRegion = new Rectangle(
-                (int) Math.round(getRegion().x() / scScale),
-                (int) Math.round(getRegion().y() / scScale),
-                (int) Math.round(getRegion().width() / scScale),
-                (int) Math.round(getRegion().height() / scScale));
+        final Rectangle thisRegion = new Rectangle(getRegion());
 
         if (thisRegion.intersects(cropRegion)) {
             thisRegion.setX(thisRegion.x() - cropRegion.x());
@@ -96,7 +91,8 @@ public class Redaction implements Operation {
         Rectangle resultingImage;
         Crop crop = (Crop) opList.getFirst(Crop.class);
         if (crop != null) {
-            resultingImage = crop.getRectangle(fullSize);
+            resultingImage = crop.getRectangle(
+                    fullSize, opList.getScaleConstraint());
         } else {
             resultingImage = new Rectangle(
                     0, 0, fullSize.width(), fullSize.height());
