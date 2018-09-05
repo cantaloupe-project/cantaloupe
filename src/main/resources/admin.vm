@@ -199,11 +199,6 @@
                         <h2>VM Arguments</h2>
                         <pre>#foreach ($arg in $vmArguments)$arg<br>#end</pre>
                     </section>
-
-                    <section>
-                        <h2>Configuration File</h2>
-                        <pre>$configFilePath</pre>
-                    </section>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="cl-application">
