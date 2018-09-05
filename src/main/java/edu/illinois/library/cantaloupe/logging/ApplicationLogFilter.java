@@ -23,6 +23,11 @@ public class ApplicationLogFilter extends Filter<ILoggingEvent> {
                 Level.DEBUG.isGreaterOrEqual(event.getLevel())) {
             return FilterReply.DENY;
         }
+        // Jetty wants to log static content accesses at info level. We don't.
+        if (event.getLoggerName().equals(org.eclipse.jetty.server.ResourceService.class.getName()) &&
+                Level.INFO.isGreaterOrEqual(event.getLevel())) {
+            return FilterReply.DENY;
+        }
         // Reject Jetty access log messages.
         if (event.getLoggerName().equals("LogService")) {
             return FilterReply.DENY;
