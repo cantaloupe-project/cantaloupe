@@ -66,6 +66,9 @@ public class ImageResource extends IIIF1Resource {
         if (redirectToNormalizedScaleConstraint()) {
             return;
         }
+        if (!authorize()) {
+            return;
+        }
 
         final Configuration config = Configuration.getInstance();
         final Identifier identifier = getIdentifier();
@@ -151,10 +154,6 @@ public class ImageResource extends IIIF1Resource {
             }
 
             getRequestContext().setOperationList(ops, fullSize);
-
-            if (!authorize()) {
-                return;
-            }
 
             ops.setScaleConstraint(getScaleConstraint());
             ops.applyNonEndpointMutations(info, getDelegateProxy());
