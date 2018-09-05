@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.cache.InfoCache;
 import edu.illinois.library.cantaloupe.cache.InfoService;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
+import edu.illinois.library.cantaloupe.resource.api.TaskMonitor;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.InvocationCache;
 import edu.illinois.library.cantaloupe.util.TimeUtils;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -25,6 +27,7 @@ public class StatusResource extends AbstractAdminResource {
 
         public final Map<String,Object> delegateMethodInvocationCache = new HashMap<>();
         public final Map<String,Object> infoCache = new HashMap<>();
+        public List<?> tasks;
         public final Map<String,Object> vm = new HashMap<>();
 
         public Info() {
@@ -40,6 +43,9 @@ public class StatusResource extends AbstractAdminResource {
             InfoCache infoCache = InfoService.getInstance().getInfoCache();
             this.infoCache.put("size", infoCache.size());
             this.infoCache.put("maxSize", infoCache.maxSize());
+
+            TaskMonitor monitor = TaskMonitor.getInstance();
+            this.tasks = monitor.getAll();
 
             Runtime runtime = Runtime.getRuntime();
             RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();

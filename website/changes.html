@@ -17,6 +17,7 @@ title: Change Log
   <li>The <code>redirect()</code> and <code>authorized?()</code> delegate methods have been merged into a new <code>authorize()</code> method, which enables a superset of their functionality, including challenge responses and redirects to &quot;virtual&quot; quality-limited versions. Authorization can also be set up to conform to the IIIF Authentication API 1.0's &quot;all or nothing access&quot; or &quot;tiered access&quot; schemes.</li>
   <li>The <code>endpoint.public.auth.*</code> keys that controlled global HTTP Basic protection have also been replaced by the <code>authorize()</code> delegate method.</li>
   <li>During image requests, <code>authorize()</code> is called before most other setup, for better efficiency.</li>
+  <li>Running tasks are displayed in the Control Panel.</li>
   <li>The <code>/iiif</code> URI path no longer redirects to a specific Image API version, and now returns HTTP 404.</li>
   <li>Removed the Restlet framework.</li>
 </ul>

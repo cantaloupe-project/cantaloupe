@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -9,7 +10,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * edu.illinois.library.cantaloupe.resource.api.TasksResource} for observation
  * by {@link edu.illinois.library.cantaloupe.resource.api.TaskResource}.
  */
-final class TaskMonitor {
+public final class TaskMonitor {
 
     private static TaskMonitor instance;
 
@@ -35,13 +36,18 @@ final class TaskMonitor {
         tasks.add(task);
     }
 
-    APITask<?> get(final UUID uuid) {
+    public APITask<?> get(final UUID uuid) {
         return tasks.stream()
                 .filter(t -> t.getUUID().equals(uuid))
                 .findFirst()
                 .orElse(null);
     }
 
-
+    /**
+     * @return Immutable list of all tasks.
+     */
+    public List<APITask<?>> getAll() {
+        return Collections.unmodifiableList(tasks);
+    }
 
 }

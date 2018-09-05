@@ -182,6 +182,19 @@
                         </div>
                     </div>
 
+                    <section id="cl-tasks">
+                        <h2>Tasks</h2>
+                        <table class="table table-striped">
+                            <thead>
+                                <th></th>
+                                <th>Queued</th>
+                                <th>Started</th>
+                                <th>Stopped</th>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </section>
+
                     <section>
                         <h2>VM Arguments</h2>
                         <pre>#foreach ($arg in $vmArguments)$arg<br>#end</pre>

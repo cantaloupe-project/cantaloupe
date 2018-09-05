@@ -45,4 +45,14 @@ public class TaskMonitorTest extends BaseTest {
         assertNotNull(instance.get(message.getUUID()));
     }
 
+    /* getAll() */
+
+    @Test
+    public void testGetAll() {
+        Callable<?> callable = new PurgeDelegateMethodInvocationCacheCommand();
+        APITask<?> message = new APITask<>(callable);
+        instance.add(message);
+        assertEquals(1, instance.getAll().size());
+    }
+
 }
