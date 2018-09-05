@@ -11,7 +11,25 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 final class TaskMonitor {
 
+    private static TaskMonitor instance;
+
     private final List<APITask<?>> tasks = new CopyOnWriteArrayList<>();
+
+    /**
+     * @return Shared instance.
+     */
+    public static synchronized TaskMonitor getInstance() {
+        if (instance == null) {
+            instance = new TaskMonitor();
+        }
+        return instance;
+    }
+
+    static synchronized void clearInstance() {
+        instance = null;
+    }
+
+    private TaskMonitor() {}
 
     void add(APITask<?> task) {
         tasks.add(task);

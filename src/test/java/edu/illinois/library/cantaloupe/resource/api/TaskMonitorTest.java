@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,7 +15,13 @@ public class TaskMonitorTest extends BaseTest {
 
     @Before
     public void setUp() {
-        instance = new TaskMonitor();
+        instance = TaskMonitor.getInstance();
+    }
+
+    @After
+    public void tearDown() {
+        instance = null;
+        TaskMonitor.clearInstance();
     }
 
     /* add() */

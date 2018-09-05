@@ -20,15 +20,9 @@ public class TasksResource extends AbstractAPIResource {
     private static final Method[] SUPPORTED_METHODS =
             new Method[] { Method.OPTIONS, Method.POST };
 
-    private static final TaskMonitor TASK_MONITOR = new TaskMonitor();
-
     @Override
     public Method[] getSupportedMethods() {
         return SUPPORTED_METHODS;
-    }
-
-    static TaskMonitor getTaskMonitor() {
-        return TASK_MONITOR;
     }
 
     /**
@@ -56,7 +50,7 @@ public class TasksResource extends AbstractAPIResource {
 
             // TaskQueue will discard it when it's complete, so we also submit
             // it to TaskMnnitor which will hold onto it for status reporting.
-            getTaskMonitor().add(task);
+            TaskMonitor.getInstance().add(task);
 
             // Return 202 Accepted and a Location header pointing to the task
             // URI.

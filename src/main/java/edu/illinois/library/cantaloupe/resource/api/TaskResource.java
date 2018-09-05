@@ -26,7 +26,7 @@ public class TaskResource extends AbstractAPIResource {
         final String uuidStr = getPathArguments().get(0);
         try {
             final UUID uuid = UUID.fromString(uuidStr);
-            APITask<?> task = TasksResource.getTaskMonitor().get(uuid);
+            APITask<?> task = TaskMonitor.getInstance().get(uuid);
 
             if (task != null) {
                 getResponse().setHeader("Content-Type",
