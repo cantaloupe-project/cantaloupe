@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 /**
  * Abstract RPC command superclass.
  * {@link com.fasterxml.jackson.databind.ObjectMapper} will deserialize JSON
- * objects into subclass instances based on their <code>verb</code> property.
+ * objects into subclass instances based on their {@literal verb} property.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(
@@ -15,6 +15,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         include = JsonTypeInfo.As.PROPERTY,
         property = "verb")
 @JsonSubTypes({
+        @JsonSubTypes.Type(
+                name = "DoNothing",
+                value = DoNothingCommand.class),
         @JsonSubTypes.Type(
                 name = "PurgeCache",
                 value = PurgeCacheCommand.class),
