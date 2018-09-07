@@ -86,17 +86,18 @@ public final class Application {
     /**
      * @return Path to the temp directory used by the application. If it does
      *         not exist, it will be created.
+     * @see #isUsingSystemTempPath()
      */
     public static Path getTempPath() {
         final Configuration config = Configuration.getInstance();
-        final String pathStr = config.getString(Key.TEMP_PATHNAME);
+        final String pathStr = config.getString(Key.TEMP_PATHNAME, "");
 
-        if (pathStr != null && !pathStr.isEmpty()) {
+        if (!pathStr.isEmpty()) {
             Path dir = Paths.get(pathStr);
             try {
                 Files.createDirectories(dir);
                 return dir;
-            } catch (FileAlreadyExistsException e) {
+            } catch (FileAlreadyExistsException ignore) {
                 // This is fine.
             } catch (IOException e) {
                 System.err.println("Application.getTempPath(): " + e.getMessage());
@@ -105,6 +106,13 @@ public final class Application {
             }
         }
         return Paths.get(System.getProperty("java.io.tmpdir"));
+    }
+
+    /**
+     * @see #getTempPath()
+     */
+    public static boolean isUsingSystemTempPath() {
+        return Paths.get(System.getProperty("java.io.tmpdir")).equals(getTempPath());
     }
 
     private Application() {}
