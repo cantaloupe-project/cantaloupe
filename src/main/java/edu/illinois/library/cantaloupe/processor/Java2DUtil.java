@@ -187,12 +187,13 @@ public final class Java2DUtil {
      * @param overlay   Overlay to apply to the base image.
      */
     static void applyOverlay(final BufferedImage baseImage,
-                             final Overlay overlay) throws IOException {
+                             final Overlay overlay) {
         if (overlay instanceof ImageOverlay) {
-            overlayImage(baseImage,
-                    getOverlayImage((ImageOverlay) overlay),
-                    overlay.getPosition(),
-                    overlay.getInset());
+            BufferedImage overlayImage = getOverlayImage((ImageOverlay) overlay);
+            if (overlayImage != null) {
+                overlayImage(baseImage, overlayImage,
+                        overlay.getPosition(), overlay.getInset());
+            }
         } else if (overlay instanceof StringOverlay) {
             overlayString(baseImage, (StringOverlay) overlay);
         }
@@ -279,17 +280,19 @@ public final class Java2DUtil {
      * @param overlay
      * @return Overlay image.
      */
-    static BufferedImage getOverlayImage(ImageOverlay overlay)
-            throws IOException {
+    static BufferedImage getOverlayImage(ImageOverlay overlay) {
         ImageReader reader = null;
         try (InputStream is = overlay.openStream()) {
             reader = new ImageReaderFactory().newImageReader(is, Format.PNG);
             return reader.read();
+        } catch (IOException e) {
+            LOGGER.warn("{} (skipping overlay)", e.getMessage());
         } finally {
             if (reader != null) {
                 reader.dispose();
             }
         }
+        return null;
     }
 
     /**
