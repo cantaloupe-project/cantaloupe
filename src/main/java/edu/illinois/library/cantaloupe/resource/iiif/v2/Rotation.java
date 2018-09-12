@@ -48,14 +48,13 @@ class Rotation implements Comparable<Object> {
             }
         } else if (object instanceof Transpose) {
             Transpose t = (Transpose) object;
-            if (this.shouldMirror() && t == Transpose.HORIZONTAL) {
+            if (shouldMirror() && t == Transpose.HORIZONTAL) {
                 return 0;
             }
         } else if (object instanceof Rotation) {
             Rotation rotation = (Rotation) object;
             if (rotation.shouldMirror() == shouldMirror()) {
-                return Float.valueOf(getDegrees()).
-                        compareTo(rotation.getDegrees());
+                return Float.compare(getDegrees(), rotation.getDegrees());
             }
         }
         return -1;

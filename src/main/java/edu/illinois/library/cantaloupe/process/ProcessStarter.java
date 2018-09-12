@@ -81,17 +81,24 @@ public final class ProcessStarter {
     }
 
     /**
-     * Sets the InputProvider for the ProcessStarter (if used as a pipe).
+     * Sets the InputProvider (if used as a pipe).
      */
     public void setInputProvider(InputProvider inputProvider) {
         this.inputProvider = inputProvider;
     }
 
     /**
-     * Sets the OutputConsumer for the ProcessStarter (if used as a pipe).
+     * Sets the OutputConsumer (if used as a pipe).
      */
     public void setOutputConsumer(OutputConsumer outputConsumer) {
         this.outputConsumer = outputConsumer;
+    }
+
+    /**
+     * Sets the ErrorConsumer (if used as a pipe).
+     */
+    public void setErrorConsumer(ErrorConsumer errorConsumer) {
+        this.errorConsumer = errorConsumer;
     }
 
     /**

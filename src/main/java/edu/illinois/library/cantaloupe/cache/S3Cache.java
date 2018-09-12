@@ -245,10 +245,6 @@ class S3Cache implements DerivativeCache {
                 Instant.EPOCH;
     }
 
-    private static boolean isValid(ObjectMetadata metadata) {
-        return isValid(metadata.getLastModified());
-    }
-
     private static boolean isValid(S3ObjectSummary summary) {
         return isValid(summary.getLastModified());
     }

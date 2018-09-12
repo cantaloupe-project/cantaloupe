@@ -44,9 +44,8 @@ public class ConfigurationResource extends AbstractAPIResource {
 
         // Copy configuration keys and values from the request JSON payload to
         // the application configuration.
-        for (final Object key : submittedConfig.keySet()) {
-            config.setProperty((String) key, submittedConfig.get(key));
-        }
+        submittedConfig.forEach((key, value) ->
+                config.setProperty((String) key, value));
 
         config.save();
 

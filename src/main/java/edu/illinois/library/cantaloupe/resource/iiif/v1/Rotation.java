@@ -35,12 +35,10 @@ class Rotation implements Comparable<Object> {
     public int compareTo(Object object) {
         if (object instanceof Rotate) {
             Rotate rotate = (Rotate) object;
-            return Float.valueOf(this.getDegrees()).
-                    compareTo(rotate.getDegrees());
+            return Float.compare(this.getDegrees(), rotate.getDegrees());
         } else if (object instanceof Rotation) {
             Rotation rotation = (Rotation) object;
-            return Float.valueOf(this.getDegrees()).
-                    compareTo(rotation.getDegrees());
+            return Float.compare(this.getDegrees(), rotation.getDegrees());
         }
         return -1;
     }

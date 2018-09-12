@@ -105,8 +105,10 @@ final class TempFileDownload implements Future<Path> {
     @Override
     public Path get(long timeout,
                     TimeUnit unit) throws InterruptedException {
-        downloadLatch.await(timeout, unit);
-        return tempFile;
+        if (downloadLatch.await(timeout, unit)) {
+            return tempFile;
+        }
+        return null;
     }
 
     @Override

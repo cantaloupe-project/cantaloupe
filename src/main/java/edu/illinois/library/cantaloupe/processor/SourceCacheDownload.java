@@ -193,11 +193,12 @@ final class SourceCacheDownload implements Future<Path> {
     @Override
     public Path get(long timeout,
                     TimeUnit unit) throws InterruptedException {
-        downloadLatch.await(timeout, unit);
-        try {
-            return sourceCache.getSourceImageFile(identifier);
-        } catch (IOException e) {
-            LOGGER.error("get(): {}", e.getMessage());
+        if (downloadLatch.await(timeout, unit)) {
+            try {
+                return sourceCache.getSourceImageFile(identifier);
+            } catch (IOException e) {
+                LOGGER.error("get(): {}", e.getMessage());
+            }
         }
         return null;
     }
