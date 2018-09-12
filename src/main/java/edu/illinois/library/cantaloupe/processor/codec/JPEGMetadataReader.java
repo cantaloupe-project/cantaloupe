@@ -1,8 +1,9 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
+import edu.illinois.library.cantaloupe.util.ArrayUtils;
+
 import javax.imageio.stream.ImageInputStream;
 import java.awt.color.ICC_Profile;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -117,16 +118,7 @@ final class JPEGMetadataReader {
     private static byte[] mergeICCProfileChunks(List<byte[]> chunks) {
         final int numChunks = chunks.size();
         if (numChunks > 1) {
-            // Merge the chunks.
-            try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-                for (byte[] chunk : chunks) {
-                    os.write(chunk);
-                }
-                os.flush();
-                return os.toByteArray();
-            } catch (IOException ignore) {
-                // ByteArrayOutputStream is not really going to throw this.
-            }
+            return ArrayUtils.merge(chunks);
         } else if (numChunks == 1) {
             return chunks.get(0);
         }
