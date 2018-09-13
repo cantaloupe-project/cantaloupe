@@ -32,6 +32,7 @@ import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
@@ -183,6 +184,28 @@ public class Java2DUtilTest extends BaseTest {
                 baseImage.getWidth() - inset - 1,
                 baseImage.getHeight() - inset - 1);
         assertRGBA(pixel, 0, 0, 0, 255);
+    }
+
+    @Test
+    public void testApplyOverlayWithMissingImageOverlay() throws Exception {
+        final BufferedImage baseImage = newColorImage(8, false);
+
+        // fill it with white
+        Graphics2D g2d = baseImage.createGraphics();
+        g2d.setColor(Color.WHITE.toColor());
+        g2d.fillRect(0, 0, baseImage.getWidth(), baseImage.getHeight());
+        g2d.dispose();
+
+        // create an Overlay
+        final ImageOverlay overlay = new ImageOverlay(
+                new URI("file:///bla/bla/bogus"),
+                Position.TOP_LEFT, 0);
+
+        // apply it
+        Java2DUtil.applyOverlay(baseImage, overlay);
+
+        // assert that it wasn't applied
+        assertRGBA(baseImage.getRGB(0, 0), 255, 255, 255, 255);
     }
 
     @Test
