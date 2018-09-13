@@ -8,8 +8,11 @@ import org.eclipse.jetty.client.util.InputStreamResponseListener;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpStatus;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static edu.illinois.library.cantaloupe.source.HttpSource.LOGGER;
 
@@ -29,21 +32,21 @@ final class HTTPStreamFactory implements StreamFactory {
     }
 
     @Override
-    public InputStream newInputStream() {
+    public InputStream newInputStream() throws IOException {
         try {
             InputStreamResponseListener listener =
                     new InputStreamResponseListener();
 
-            final Headers extraHheaders = requestInfo.getHeaders();
+            final Headers extraHeaders = requestInfo.getHeaders();
 
             Request request = client
                     .newRequest(requestInfo.getURI())
                     .timeout(HttpSource.getRequestTimeout(), TimeUnit.SECONDS)
                     .method(HTTP_METHOD);
-            extraHheaders.forEach(h -> request.header(h.getName(), h.getValue()));
+            extraHeaders.forEach(h -> request.header(h.getName(), h.getValue()));
 
             LOGGER.debug("Requesting {} {} (extra headers: {})",
-                    HTTP_METHOD, requestInfo.getURI(), extraHheaders);
+                    HTTP_METHOD, requestInfo.getURI(), extraHeaders);
 
             request.send(listener);
 
@@ -54,8 +57,8 @@ final class HTTPStreamFactory implements StreamFactory {
             if (response.getStatus() == HttpStatus.OK_200) {
                 return listener.getInputStream();
             }
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+        } catch (InterruptedException | TimeoutException | ExecutionException e) {
+            throw new IOException(e);
         }
         return null;
     }
