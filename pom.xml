@@ -15,7 +15,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <aws-sdk.version>1.11.291</aws-sdk.version>
     <jackson.version>2.9.5</jackson.version>
-    <jetty.version>9.4.9.v20180320</jetty.version>
+    <jetty.version>9.4.7.v20170914</jetty.version>
     <jruby.version>9.1.17.0</jruby.version>
     <restlet.version>2.3.11</restlet.version>
     <surefire.version>2.21.0</surefire.version>
