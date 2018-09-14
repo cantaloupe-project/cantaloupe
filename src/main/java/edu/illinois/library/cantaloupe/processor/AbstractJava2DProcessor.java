@@ -6,6 +6,8 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.Encode;
+import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -18,7 +20,6 @@ import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.processor.codec.BufferedImageSequence;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
-import edu.illinois.library.cantaloupe.processor.codec.Metadata;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.slf4j.Logger;
@@ -224,14 +225,16 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
 
         ImageWriter writer = new ImageWriterFactory()
                 .newImageWriter(opList.getOutputFormat());
-        writer.setOperationList(opList);
-        writer.setMetadata(getReader().getMetadata(0));
+        writer.setEncode((Encode) opList.getFirst(Encode.class));
+        if (opList.getFirst(MetadataCopy.class) != null) {
+            writer.setMetadata(getReader().getMetadata(0));
+        }
         writer.write(sequence, outputStream);
     }
 
     private BufferedImage processFrame(BufferedImage image,
                                        OperationList opList,
-                                       Info imageInfo) throws IOException {
+                                       Info imageInfo) {
         return doPostProcess(image, null, opList, imageInfo, null);
     }
 
@@ -239,7 +242,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
                                         Set<ReaderHint> readerHints,
                                         final OperationList opList,
                                         final Info imageInfo,
-                                        ReductionFactor reductionFactor) throws IOException {
+                                        ReductionFactor reductionFactor) {
         if (reductionFactor == null) {
             reductionFactor = new ReductionFactor();
         }

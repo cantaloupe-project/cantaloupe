@@ -4,8 +4,6 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.Encode;
-import edu.illinois.library.cantaloupe.operation.MetadataCopy;
-import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -37,15 +35,8 @@ public class JPEGImageWriterTest extends AbstractImageWriterTest {
 
     @Override
     JPEGImageWriter newInstance() {
-        OperationList opList = new OperationList();
-        if (Configuration.getInstance().
-                getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
-            opList.add(new MetadataCopy());
-        }
-        opList.add(new Encode(Format.JPG));
-
         JPEGImageWriter writer = new JPEGImageWriter();
-        writer.setOperationList(opList);
+        writer.setEncode(new Encode(Format.JPG));
         return writer;
     }
 

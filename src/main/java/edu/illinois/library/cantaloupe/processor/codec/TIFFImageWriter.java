@@ -2,9 +2,6 @@ package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Compression;
-import edu.illinois.library.cantaloupe.operation.Encode;
-import edu.illinois.library.cantaloupe.operation.MetadataCopy;
-import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFField;
@@ -47,7 +44,7 @@ final class TIFFImageWriter extends AbstractIIOImageWriter
      * @see #addMetadata(Metadata, IIOMetadata)
      */
     @Override
-    protected void addMetadata(final IIOMetadataNode baseNode) {}
+    void addMetadata(final IIOMetadataNode baseNode) {}
 
     /**
      * @param sourceMetadata
@@ -106,7 +103,7 @@ final class TIFFImageWriter extends AbstractIIOImageWriter
 
     /**
      * @return Compression type in the javax.codec vernacular. May return
-     *         <code>null</code> to indicate no equivalent or no compression.
+     *         {@literal null} to indicate no equivalent or no compression.
      */
     private String getImageIOType(Compression compression) {
         switch (compression) {
@@ -132,22 +129,18 @@ final class TIFFImageWriter extends AbstractIIOImageWriter
 
     /**
      * @param writeParam Write parameters on which to base the metadata.
-     * @param image Image to apply the metadata to.
-     * @return Image metadata with added metadata corresponding to any
-     *         writer-specific operations applied.
+     * @param image      Image to apply the metadata to.
+     * @return           Image metadata with added metadata corresponding to any
+     *                   writer-specific operations applied.
      */
     @Override
-    protected IIOMetadata getMetadata(final ImageWriteParam writeParam,
-                                      final RenderedImage image)
-            throws IOException {
+    IIOMetadata getMetadata(final ImageWriteParam writeParam,
+                            final RenderedImage image) throws IOException {
         IIOMetadata derivativeMetadata = iioWriter.getDefaultImageMetadata(
                 ImageTypeSpecifier.createFromRenderedImage(image),
                 writeParam);
-        for (final Operation op : opList) {
-            if (op instanceof MetadataCopy && sourceMetadata != null) {
-                derivativeMetadata = addMetadata(
-                        sourceMetadata, derivativeMetadata);
-            }
+        if (sourceMetadata != null) {
+            derivativeMetadata = addMetadata(sourceMetadata, derivativeMetadata);
         }
         return derivativeMetadata;
     }
@@ -163,17 +156,13 @@ final class TIFFImageWriter extends AbstractIIOImageWriter
      */
     private ImageWriteParam getWriteParam() {
         final ImageWriteParam writeParam = iioWriter.getDefaultWriteParam();
-
-        Encode encode = (Encode) opList.getFirst(Encode.class);
-        if (encode != null) {
-            final Compression compression = encode.getCompression();
-            if (compression != null) {
-                final String type = getImageIOType(compression);
-                if (type != null) {
-                    writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                    writeParam.setCompressionType(type);
-                    LOGGER.debug("Compression type: {}", type);
-                }
+        final Compression compression = encode.getCompression();
+        if (compression != null) {
+            final String type = getImageIOType(compression);
+            if (type != null) {
+                writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                writeParam.setCompressionType(type);
+                LOGGER.debug("Compression type: {}", type);
             }
         }
         return writeParam;

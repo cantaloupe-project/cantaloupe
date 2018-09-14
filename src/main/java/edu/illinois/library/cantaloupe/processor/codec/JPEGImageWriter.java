@@ -102,19 +102,17 @@ final class JPEGImageWriter extends AbstractIIOImageWriter
         writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
         writeParam.setCompressionType("JPEG");
 
-        final Encode encode = (Encode) opList.getFirst(Encode.class);
-        if (encode != null) {
-            // Quality
-            final int quality = encode.getQuality();
-            writeParam.setCompressionQuality(quality * 0.01f);
+        // Quality
+        final int quality = encode.getQuality();
+        writeParam.setCompressionQuality(quality * 0.01f);
 
-            // Interlacing
-            final boolean interlace = encode.isInterlacing();
-            writeParam.setProgressiveMode(interlace ?
-                    ImageWriteParam.MODE_DEFAULT : ImageWriteParam.MODE_DISABLED);
+        // Interlacing
+        final boolean interlace = encode.isInterlacing();
+        writeParam.setProgressiveMode(interlace ?
+                ImageWriteParam.MODE_DEFAULT : ImageWriteParam.MODE_DISABLED);
 
-            LOGGER.debug("Quality: {}; progressive: {}", quality, interlace);
-        }
+        LOGGER.debug("Quality: {}; progressive: {}", quality, interlace);
+
         return writeParam;
     }
 
@@ -128,14 +126,13 @@ final class JPEGImageWriter extends AbstractIIOImageWriter
      */
     private BufferedImage removeAlpha(BufferedImage image) {
         boolean haveBGColor = false;
-        Encode encode = (Encode) opList.getFirst(Encode.class);
-        if (encode != null) {
-            Color bgColor = encode.getBackgroundColor();
-            if (bgColor != null) {
-                haveBGColor = true;
-                image = Java2DUtil.removeAlpha(image, bgColor);
-            }
+
+        Color bgColor = encode.getBackgroundColor();
+        if (bgColor != null) {
+            haveBGColor = true;
+            image = Java2DUtil.removeAlpha(image, bgColor);
         }
+
         if (!haveBGColor) {
             image = Java2DUtil.removeAlpha(image);
         }

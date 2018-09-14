@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.Encode;
+import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -245,8 +246,10 @@ class JaiProcessor extends AbstractImageIOProcessor
             }
             final ImageWriter writer = new ImageWriterFactory()
                     .newImageWriter(outputFormat);
-            writer.setOperationList(opList);
-            writer.setMetadata(reader.getMetadata(0));
+            writer.setEncode((Encode) opList.getFirst(Encode.class));
+            if (opList.getFirst(MetadataCopy.class) != null) {
+                writer.setMetadata(getReader().getMetadata(0));
+            }
 
             if (image != null) {
                 writer.write(image, outputStream);

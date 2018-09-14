@@ -4,8 +4,6 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.Encode;
-import edu.illinois.library.cantaloupe.operation.MetadataCopy;
-import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -75,13 +73,8 @@ public class GIFImageWriterTest extends AbstractImageWriterTest {
 
     @Override
     GIFImageWriter newInstance() {
-        OperationList opList = new OperationList(new Encode(Format.GIF));
-        if (Configuration.getInstance().
-                getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
-            opList.add(new MetadataCopy());
-        }
         GIFImageWriter writer = new GIFImageWriter();
-        writer.setOperationList(opList);
+        writer.setEncode(new Encode(Format.GIF));
         writer.setMetadata(metadata);
         return writer;
     }

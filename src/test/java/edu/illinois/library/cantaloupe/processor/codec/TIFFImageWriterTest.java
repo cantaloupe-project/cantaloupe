@@ -4,8 +4,6 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.Encode;
-import edu.illinois.library.cantaloupe.operation.MetadataCopy;
-import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.EXIFParentTIFFTagSet;
@@ -29,13 +27,8 @@ public class TIFFImageWriterTest extends AbstractImageWriterTest {
 
     @Override
     TIFFImageWriter newInstance() {
-        OperationList opList = new OperationList(new Encode(Format.TIF));
-        if (Configuration.getInstance().
-                getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
-            opList.add(new MetadataCopy());
-        }
         TIFFImageWriter writer = new TIFFImageWriter();
-        writer.setOperationList(opList);
+        writer.setEncode(new Encode(Format.TIF));
         return writer;
     }
 
@@ -82,15 +75,18 @@ public class TIFFImageWriterTest extends AbstractImageWriterTest {
     @Test
     public void testWriteWithBufferedImage() throws Exception {
         final TIFFImageReader reader = new TIFFImageReader();
-        reader.setSource(TestUtil.getImage("tif-xmp.tif"));
-        final Metadata metadata = reader.getMetadata(0);
-        final BufferedImage image = reader.read();
-        reader.dispose();
+        try {
+            reader.setSource(TestUtil.getImage("tif-xmp.tif"));
+            final Metadata metadata = reader.getMetadata(0);
+            final BufferedImage image = reader.read();
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        instance.setMetadata(metadata);
-        instance.write(image, os);
-        ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            instance.setMetadata(metadata);
+            instance.write(image, os);
+            ImageIO.read(new ByteArrayInputStream(os.toByteArray()));
+        } finally {
+            reader.dispose();
+        }
     }
 
     @Test
@@ -99,15 +95,18 @@ public class TIFFImageWriterTest extends AbstractImageWriterTest {
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
 
         final TIFFImageReader reader = new TIFFImageReader();
-        reader.setSource(TestUtil.getImage("tif-exif.tif"));
-        final Metadata metadata = reader.getMetadata(0);
-        final BufferedImage image = reader.read();
-        reader.dispose();
+        try {
+            reader.setSource(TestUtil.getImage("tif-exif.tif"));
+            final Metadata metadata = reader.getMetadata(0);
+            final BufferedImage image = reader.read();
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        instance.setMetadata(metadata);
-        instance.write(image, os);
-        checkForEXIFMetadata(os.toByteArray());
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            instance.setMetadata(metadata);
+            instance.write(image, os);
+            checkForEXIFMetadata(os.toByteArray());
+        } finally {
+            reader.dispose();
+        }
     }
 
     @Test
@@ -116,19 +115,19 @@ public class TIFFImageWriterTest extends AbstractImageWriterTest {
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
 
         final TIFFImageReader reader = new TIFFImageReader();
-        reader.setSource(TestUtil.getImage("tif-iptc.tif"));
-        final Metadata metadata = reader.getMetadata(0);
-        final BufferedImage image = reader.read();
-        reader.dispose();
+        try {
+            reader.setSource(TestUtil.getImage("tif-iptc.tif"));
+            final Metadata metadata = reader.getMetadata(0);
+            final BufferedImage image = reader.read();
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        if (instance != null) {
-            instance.dispose();
-            instance = newInstance();
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
             instance.setMetadata(metadata);
             instance.write(image, os);
+
+            checkForIPTCMetadata(os.toByteArray());
+        } finally {
+            reader.dispose();
         }
-        checkForIPTCMetadata(os.toByteArray());
     }
 
     @Test
@@ -137,19 +136,19 @@ public class TIFFImageWriterTest extends AbstractImageWriterTest {
         config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
 
         final TIFFImageReader reader = new TIFFImageReader();
-        reader.setSource(TestUtil.getImage("tif-xmp.tif"));
-        final Metadata metadata = reader.getMetadata(0);
-        final BufferedImage image = reader.read();
-        reader.dispose();
+        try {
+            reader.setSource(TestUtil.getImage("tif-xmp.tif"));
+            final Metadata metadata = reader.getMetadata(0);
+            final BufferedImage image = reader.read();
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        if (instance != null) {
-            instance.dispose();
-            instance = newInstance();
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
             instance.setMetadata(metadata);
             instance.write(image, os);
+
+            checkForXMPMetadata(os.toByteArray());
+        } finally {
+            reader.dispose();
         }
-        checkForXMPMetadata(os.toByteArray());
     }
 
     @Test

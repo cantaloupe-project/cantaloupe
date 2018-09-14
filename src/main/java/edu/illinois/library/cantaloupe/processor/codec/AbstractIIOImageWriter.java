@@ -1,8 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
-import edu.illinois.library.cantaloupe.operation.MetadataCopy;
-import edu.illinois.library.cantaloupe.operation.Operation;
-import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import org.slf4j.Logger;
 
 import javax.imageio.ImageIO;
@@ -21,7 +19,7 @@ import java.util.List;
 abstract class AbstractIIOImageWriter {
 
     javax.imageio.ImageWriter iioWriter;
-    OperationList opList;
+    Encode encode;
     Metadata sourceMetadata;
 
     /**
@@ -37,7 +35,7 @@ abstract class AbstractIIOImageWriter {
     private List<javax.imageio.ImageWriter> availableIIOWriters() {
         final Iterator<javax.imageio.ImageWriter> it =
                 ImageIO.getImageWritersByMIMEType(
-                    opList.getOutputFormat().getPreferredMediaType().toString());
+                    encode.getFormat().getPreferredMediaType().toString());
 
         final List<javax.imageio.ImageWriter> iioWriters = new ArrayList<>();
         while (it.hasNext()) {
@@ -88,10 +86,8 @@ abstract class AbstractIIOImageWriter {
                 derivativeMetadata.getNativeMetadataFormatName();
         final IIOMetadataNode baseTree =
                 (IIOMetadataNode) derivativeMetadata.getAsTree(formatName);
-        for (final Operation op : opList) {
-            if (op instanceof MetadataCopy && sourceMetadata != null) {
-                addMetadata(baseTree);
-            }
+        if (sourceMetadata != null) {
+            addMetadata(baseTree);
         }
         derivativeMetadata.mergeTree(formatName, baseTree);
         return derivativeMetadata;
@@ -159,13 +155,13 @@ abstract class AbstractIIOImageWriter {
         return negotiatedWriter;
     }
 
-    public void setMetadata(Metadata sourceMetadata) {
-        this.sourceMetadata = sourceMetadata;
+    public void setEncode(Encode encode) {
+        this.encode = encode;
+        createWriter();
     }
 
-    public void setOperationList(OperationList opList) {
-        this.opList = opList;
-        createWriter();
+    public void setMetadata(Metadata sourceMetadata) {
+        this.sourceMetadata = sourceMetadata;
     }
 
     /**

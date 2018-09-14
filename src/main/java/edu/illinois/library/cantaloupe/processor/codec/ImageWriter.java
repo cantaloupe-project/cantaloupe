@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
-import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.Encode;
 
 import java.awt.image.RenderedImage;
 import java.io.IOException;
@@ -14,14 +14,14 @@ public interface ImageWriter {
     void dispose();
 
     /**
+     * @param encode Operation defining encoding parameters.
+     */
+    void setEncode(Encode encode);
+
+    /**
      * @param metadata Source metadata.
      */
     void setMetadata(Metadata metadata);
-
-    /**
-     * @param opList Operation list describing the derivative image.
-     */
-    void setOperationList(OperationList opList);
 
     /**
      * Writes the given image to the given output stream.
