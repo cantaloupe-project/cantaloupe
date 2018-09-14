@@ -19,7 +19,7 @@ import javax.imageio.stream.MemoryCacheImageInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
 abstract class AbstractMetadata {
@@ -48,18 +48,13 @@ abstract class AbstractMetadata {
 
     abstract byte[] getXMP();
 
-    public String getXMPRDF() {
+    String getXMPRDF() {
         final byte[] xmpData = getXMP();
         if (xmpData != null) {
-            try {
-                final String xmp = new String(xmpData, "UTF-8");
-                // Trim off the junk
-                final int start = xmp.indexOf("<rdf:RDF");
-                final int end = xmp.indexOf("</rdf:RDF");
-                return xmp.substring(start, end + 10);
-            } catch (UnsupportedEncodingException e) {
-                getLogger().error("getXMPRDF(): {}", e.getMessage());
-            }
+            final String xmp = new String(xmpData, StandardCharsets.UTF_8);
+            final int start = xmp.indexOf("<rdf:RDF");
+            final int end = xmp.indexOf("</rdf:RDF");
+            return (start >= 0) ? xmp.substring(start, end + 10) : xmp;
         }
         return null;
     }
