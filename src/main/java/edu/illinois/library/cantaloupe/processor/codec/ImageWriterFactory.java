@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.operation.OperationList;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -20,21 +19,7 @@ public final class ImageWriterFactory {
         return SUPPORTED_FORMATS;
     }
 
-    public ImageWriter newImageWriter(OperationList opList) {
-        ImageWriter writer = newImageWriter(opList.getOutputFormat());
-        writer.setOperationList(opList);
-        return writer;
-    }
-
-    public ImageWriter newImageWriter(OperationList opList,
-                                      Metadata sourceMetadata) {
-        ImageWriter writer = newImageWriter(opList.getOutputFormat());
-        writer.setOperationList(opList);
-        writer.setMetadata(sourceMetadata);
-        return writer;
-    }
-
-    private ImageWriter newImageWriter(Format format) {
+    public ImageWriter newImageWriter(Format format) {
         switch (format) {
             case GIF:
                 return new GIFImageWriter();

@@ -243,8 +243,10 @@ class JaiProcessor extends AbstractImageIOProcessor
                     Java2DUtil.applyOverlay(image, (Overlay) op);
                 }
             }
-            final ImageWriter writer = new ImageWriterFactory().newImageWriter(
-                    opList, reader.getMetadata(0));
+            final ImageWriter writer = new ImageWriterFactory()
+                    .newImageWriter(outputFormat);
+            writer.setOperationList(opList);
+            writer.setMetadata(reader.getMetadata(0));
 
             if (image != null) {
                 writer.write(image, outputStream);

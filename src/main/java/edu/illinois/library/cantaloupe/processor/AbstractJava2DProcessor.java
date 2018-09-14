@@ -16,6 +16,7 @@ import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.processor.codec.BufferedImageSequence;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.Metadata;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
@@ -130,8 +131,9 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
                      final OutputStream outputStream) throws IOException {
         image = doPostProcess(image, readerHints, opList, imageInfo,
                 reductionFactor);
-        new ImageWriterFactory().newImageWriter(opList).
-                write(image, outputStream);
+        new ImageWriterFactory()
+                .newImageWriter(opList.getOutputFormat())
+                .write(image, outputStream);
     }
 
     /**
@@ -220,10 +222,11 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
             }
         }
 
-        Metadata metadata = getReader().getMetadata(0);
-        new ImageWriterFactory()
-                .newImageWriter(opList, metadata)
-                .write(sequence, outputStream);
+        ImageWriter writer = new ImageWriterFactory()
+                .newImageWriter(opList.getOutputFormat());
+        writer.setOperationList(opList);
+        writer.setMetadata(getReader().getMetadata(0));
+        writer.write(sequence, outputStream);
     }
 
     private BufferedImage processFrame(BufferedImage image,

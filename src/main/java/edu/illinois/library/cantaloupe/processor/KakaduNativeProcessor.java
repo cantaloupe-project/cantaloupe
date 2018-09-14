@@ -765,8 +765,9 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             }
         }
 
-        new ImageWriterFactory().newImageWriter(opList).
-                write(image, outputStream);
+        new ImageWriterFactory()
+                .newImageWriter(opList.getOutputFormat())
+                .write(image, outputStream);
     }
 
     @Override

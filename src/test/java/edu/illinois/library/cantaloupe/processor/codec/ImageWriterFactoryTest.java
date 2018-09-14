@@ -1,8 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.operation.Encode;
-import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,27 +28,13 @@ public class ImageWriterFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageWriter1() {
-        OperationList ops = new OperationList(new Encode(Format.JPG));
-        assertNotNull(instance.newImageWriter(ops));
+    public void testNewImageWriter() {
+        assertNotNull(instance.newImageWriter(Format.JPG));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testNewImageWriter1WithUnsupportedFormat() {
-        OperationList ops = new OperationList(new Encode(Format.UNKNOWN));
-        instance.newImageWriter(ops);
-    }
-
-    @Test
-    public void testNewImageWriter2() {
-        OperationList ops = new OperationList(new Encode(Format.JPG));
-        assertNotNull(instance.newImageWriter(ops, new NullMetadata(null, "")));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testNewImageWriter2WithUnsupportedFormat() {
-        OperationList ops = new OperationList(new Encode(Format.UNKNOWN));
-        instance.newImageWriter(ops, new NullMetadata(null, ""));
+    public void testNewImageWriterWithUnsupportedFormat() {
+        instance.newImageWriter(Format.UNKNOWN);
     }
 
 }
