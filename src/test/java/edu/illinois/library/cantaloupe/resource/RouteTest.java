@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
-import edu.illinois.library.cantaloupe.resource.admin.StatusResource;
 import edu.illinois.library.cantaloupe.resource.api.TaskResource;
 import edu.illinois.library.cantaloupe.resource.api.TasksResource;
 import org.junit.Before;
@@ -34,10 +33,15 @@ public class RouteTest {
         assertEquals(AdminResource.class, route.getResource());
 
         route = Route.forPath(Route.ADMIN_STATUS_PATH);
-        assertEquals(StatusResource.class, route.getResource());
+        assertEquals(edu.illinois.library.cantaloupe.resource.admin.StatusResource.class,
+                route.getResource());
 
         route = Route.forPath(Route.CONFIGURATION_PATH);
         assertEquals(edu.illinois.library.cantaloupe.resource.api.ConfigurationResource.class,
+                route.getResource());
+
+        route = Route.forPath(Route.STATUS_PATH);
+        assertEquals(edu.illinois.library.cantaloupe.resource.api.StatusResource.class,
                 route.getResource());
 
         route = Route.forPath(Route.TASKS_PATH);

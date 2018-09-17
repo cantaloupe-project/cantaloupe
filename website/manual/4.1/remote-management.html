@@ -30,6 +30,33 @@ title: Remote Management
   <i class="fa fa-info-circle"></i> Methods that call <code>POST /tasks</code> will create an asynchronous task identified by a UUID and submit it to a processing queue. Its status can be checked via <code>GET /tasks/:uuid</code>. Task objects are retained in memory, but are not persisted, so checking a task after a restart will result in a <code>404 Not Found</code> response.
 </p>
 
+<h3>Status</h3>
+
+<ul>
+  <li><a href="#check-status">Check the application status</a></li>
+</ul>
+
+<h4 id="check-status">Check the application status <small>since 4.1</small></h4>
+
+<table class="table table-bordered">
+  <tr>
+    <td>Request Method</td>
+    <td><code>GET</code></td>
+  </tr>
+  <tr>
+    <td>URI</td>
+    <td><span class="filename">/status</span></td>
+  </tr>
+  <tr>
+    <td>Expected Response Status</td>
+    <td><code>200 OK</code></td>
+  </tr>
+  <tr>
+    <td>Expected Response Content Type</td>
+    <td><code>application/json</code></td>
+  </tr>
+</table>
+
 <h3>Configuration</h3>
 
 <ul>

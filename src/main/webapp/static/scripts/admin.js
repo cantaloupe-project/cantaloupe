@@ -240,7 +240,7 @@ var Form = function(config) {
 
 var StatusUpdater = function() {
 
-    var STATUS_ENDPOINT = $('input[name=cl-admin-uri]').val() + '/../status';
+    var STATUS_ENDPOINT = $('input[name=cl-admin-uri]').val() + '/status';
 
     this.update = function() {
         var memoryStatusSection = $('#cl-status-memory');

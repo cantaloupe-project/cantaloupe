@@ -2,11 +2,17 @@ package edu.illinois.library.cantaloupe.resource;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
+/**
+ * Representation for serializing objects to JSON strings.
+ */
 public class JacksonRepresentation implements Representation {
 
     private Object toWrite;
@@ -17,14 +23,22 @@ public class JacksonRepresentation implements Representation {
 
     @Override
     public void write(OutputStream outputStream) throws IOException {
+        // Serialize dates as ISO-8601 strings rather than timestamps.
+        Map<SerializationFeature,Boolean> features = new HashMap<>();
+        features.put(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+
+        write(outputStream, features);
+    }
+
+    public void write(OutputStream outputStream,
+                      Map<SerializationFeature,Boolean> serializationFeatures) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         // Make ObjectMapper aware of JDK8 date/time objects
         // See: https://github.com/FasterXML/jackson-modules-java8
         mapper.registerModule(new JavaTimeModule());
-        // And tell it to serialize dates as ISO-8601 strings rather than
-        // timestamps.
-        mapper.configure(com.fasterxml.jackson.databind.SerializationFeature.
-                WRITE_DATES_AS_TIMESTAMPS, false);
+
+        serializationFeatures.forEach(mapper::configure);
+
         // Add a config override to omit keys with empty or null values.
         //
         // (It would be better not to do this, and to instead use @JsonInclude

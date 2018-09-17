@@ -15,11 +15,11 @@ public final class Route {
 
     public static final String ADMIN_PATH = "/admin";
     public static final String ADMIN_CONFIG_PATH = "/admin/configuration";
-    public static final String ADMIN_STATUS_PATH = "/status";
+    public static final String ADMIN_STATUS_PATH = "/admin/status";
     public static final String CONFIGURATION_PATH = "/configuration";
-    public static final String IIIF_PATH = "/iiif";
     public static final String IIIF_1_PATH = "/iiif/1";
     public static final String IIIF_2_PATH = "/iiif/2";
+    public static final String STATUS_PATH = "/status";
     public static final String TASKS_PATH = "/tasks";
 
     /**
@@ -53,6 +53,8 @@ public final class Route {
         // API routes
         MAPPINGS.put(Pattern.compile("^" + CONFIGURATION_PATH + "$"),
                 edu.illinois.library.cantaloupe.resource.api.ConfigurationResource.class);
+        MAPPINGS.put(Pattern.compile("^" + STATUS_PATH + "$"),
+                edu.illinois.library.cantaloupe.resource.api.StatusResource.class);
         MAPPINGS.put(Pattern.compile("^" + TASKS_PATH + "$"),
                 edu.illinois.library.cantaloupe.resource.api.TasksResource.class);
         MAPPINGS.put(Pattern.compile("^" + TASKS_PATH + "/([^/]+)$"),
@@ -92,7 +94,7 @@ public final class Route {
             route.setResource(MAPPINGS.get(pattern));
 
             final Matcher matcher = pattern.matcher(path);
-            while (matcher.find()) {
+            if (matcher.find()) {
                 for (int i = 1; i <= matcher.groupCount(); i++) {
                     route.getPathArguments().add(matcher.group(i));
                 }
