@@ -257,15 +257,15 @@ var StatusUpdater = function() {
 
                 // Status section
                 memoryStatusSection.find('tr:nth-child(1) > td:last-child')
-                    .text(data.vm.usedHeap + ' MB');
+                    .text(data.vm.usedHeapBytes + ' MB');
                 memoryStatusSection.find('tr:nth-child(2) > td:last-child')
-                    .text(data.vm.freeHeap + ' MB');
+                    .text(data.vm.freeHeapBytes + ' MB');
                 memoryStatusSection.find('tr:nth-child(3) > td:last-child')
-                    .text(data.vm.totalHeap + ' MB');
+                    .text(data.vm.totalHeapBytes + ' MB');
                 memoryStatusSection.find('tr:nth-child(4) > td:last-child')
-                    .text(data.vm.maxHeap + ' MB');
+                    .text(data.vm.maxHeapBytes + ' MB');
 
-                var usedPercent = data.vm.usedPercent * 100;
+                var usedPercent = data.vm.usedHeapPercent * 100;
                 var memoryBarClass = 'progress-bar-success';
                 if (usedPercent > 80) {
                     memoryBarClass = "progress-bar-danger";
@@ -292,31 +292,35 @@ var StatusUpdater = function() {
                     .text(data.delegateMethodInvocationCache.maxSize);
 
                 // Tasks section
-                var tasks = data.tasks // display the last 10
-                    .slice(data.tasks.length - 10, data.tasks.length)
-                    .reverse();
-                if (tasks.length > 0) {
-                    var tbody = tasksSection.find('tbody');
-                    tbody.empty();
+                if (data.tasks) {
+                    var tasks = data.tasks // display the last 10
+                        .slice(data.tasks.length - 10, data.tasks.length)
+                        .reverse();
+                    if (tasks.length > 0) {
+                        var tbody = tasksSection.find('tbody');
+                        tbody.empty();
 
-                    tasks.forEach(function (t) {
-                        var queued_at = t.queued_at ?
-                            new Date(Date.parse(t.queued_at)) : null;
-                        var started_at = t.started_at ?
-                            new Date(Date.parse(t.started_at)) : null;
-                        var stopped_at = t.stopped_at ?
-                            new Date(Date.parse(t.stopped_at)) : null;
-                        tbody.append('<tr>' +
-                            '<td>' + t.verb + '</td>' +
-                            '<td>' + (queued_at ? '<time datetime="' + t.queued_at + '">' +
-                                queued_at.toLocaleString() + '</time>' : '') + '</td>' +
-                            '<td>' + (started_at ? '<time datetime="' + t.started_at + '">' +
-                                started_at.toLocaleString() + '</time>' : '') + '</td>' +
-                            '<td>' + (stopped_at ? '<time datetime="' + t.stopped_at + '">' +
-                                stopped_at.toLocaleString() + '</time>' : '') + '</td>' +
-                            '</tr>');
-                    });
-                    tasksSection.show();
+                        tasks.forEach(function (t) {
+                            var queued_at = t.queued_at ?
+                                new Date(Date.parse(t.queued_at)) : null;
+                            var started_at = t.started_at ?
+                                new Date(Date.parse(t.started_at)) : null;
+                            var stopped_at = t.stopped_at ?
+                                new Date(Date.parse(t.stopped_at)) : null;
+                            tbody.append('<tr>' +
+                                '<td>' + t.verb + '</td>' +
+                                '<td>' + (queued_at ? '<time datetime="' + t.queued_at + '">' +
+                                    queued_at.toLocaleString() + '</time>' : '') + '</td>' +
+                                '<td>' + (started_at ? '<time datetime="' + t.started_at + '">' +
+                                    started_at.toLocaleString() + '</time>' : '') + '</td>' +
+                                '<td>' + (stopped_at ? '<time datetime="' + t.stopped_at + '">' +
+                                    stopped_at.toLocaleString() + '</time>' : '') + '</td>' +
+                                '</tr>');
+                        });
+                        tasksSection.show();
+                    } else {
+                        tasksSection.hide();
+                    }
                 } else {
                     tasksSection.hide();
                 }

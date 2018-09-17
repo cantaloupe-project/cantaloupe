@@ -1,19 +1,13 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
-import edu.illinois.library.cantaloupe.cache.InfoCache;
-import edu.illinois.library.cantaloupe.cache.InfoService;
+import edu.illinois.library.cantaloupe.ApplicationStatus;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
 import edu.illinois.library.cantaloupe.resource.api.TaskMonitor;
-import edu.illinois.library.cantaloupe.script.DelegateProxy;
-import edu.illinois.library.cantaloupe.script.InvocationCache;
 import edu.illinois.library.cantaloupe.util.TimeUtils;
 
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,44 +15,7 @@ import java.util.Map;
  */
 public class StatusResource extends AbstractAdminResource {
 
-    static class Info {
-
-        private static final long MEGABYTE = 1024 * 1024;
-
-        public final Map<String,Object> delegateMethodInvocationCache = new HashMap<>();
-        public final Map<String,Object> infoCache = new HashMap<>();
-        public List<?> tasks;
-        public final Map<String,Object> vm = new HashMap<>();
-
-        public Info() {
-            try {
-                InvocationCache cache = DelegateProxy.getInvocationCache();
-                delegateMethodInvocationCache.put("size", cache.size());
-                delegateMethodInvocationCache.put("maxSize", cache.maxSize());
-            } catch (Exception e) {
-                // If this is significant it will be noticed & handled
-                // elsewhere.
-            }
-
-            InfoCache infoCache = InfoService.getInstance().getInfoCache();
-            this.infoCache.put("size", infoCache.size());
-            this.infoCache.put("maxSize", infoCache.maxSize());
-
-            TaskMonitor monitor = TaskMonitor.getInstance();
-            this.tasks = monitor.getAll();
-
-            Runtime runtime = Runtime.getRuntime();
-            RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
-            this.vm.put("usedHeap", (runtime.totalMemory() - runtime.freeMemory()) / MEGABYTE);
-            this.vm.put("freeHeap", runtime.freeMemory() / MEGABYTE);
-            this.vm.put("totalHeap", runtime.totalMemory() / MEGABYTE);
-            this.vm.put("maxHeap", runtime.maxMemory() / MEGABYTE);
-            this.vm.put("usedPercent", (runtime.totalMemory() - runtime.freeMemory()) /
-                    (double) runtime.maxMemory());
-            this.vm.put("uptime",
-                    TimeUtils.millisecondsToHumanTime(runtimeMxBean.getUptime()));
-        }
-    }
+    private static final long MEGABYTE = 1024 * 1024;
 
     private static final Method[] SUPPORTED_METHODS =
             new Method[] { Method.GET, Method.OPTIONS };
@@ -72,9 +29,27 @@ public class StatusResource extends AbstractAdminResource {
     public void doGET() throws IOException {
         getResponse().setHeader("Content-Type",
                 "application/json;charset=UTF-8");
-
-        new JacksonRepresentation(new Info())
+        new JacksonRepresentation(getStatus())
                 .write(getResponse().getOutputStream());
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String,Object> getStatus() {
+        final ApplicationStatus status = new ApplicationStatus();
+        final Map<String,Object> map = new HashMap<>(status.toMap());
+
+        // Reformat various values for human consumption
+        Map<String,Object> vmSection = (Map<String, Object>) map.get("vm");
+        vmSection.put("uptime", TimeUtils.millisecondsToHumanTime(status.getVMUptime()));
+        vmSection.put("usedHeapBytes", Math.round(status.getVMUsedHeap() / (double) MEGABYTE));
+        vmSection.put("freeHeapBytes", Math.round(status.getVMFreeHeap() / (double) MEGABYTE));
+        vmSection.put("totalHeapBytes", Math.round(status.getVMTotalHeap() / (double) MEGABYTE));
+        vmSection.put("maxHeapBytes", Math.round(status.getVMMaxHeap() / (double) MEGABYTE));
+
+        // Add tasks section
+        map.put("tasks", TaskMonitor.getInstance().getAll());
+
+        return map;
     }
 
 }
