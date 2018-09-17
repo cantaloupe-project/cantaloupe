@@ -132,9 +132,11 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
                      final OutputStream outputStream) throws IOException {
         image = doPostProcess(image, readerHints, opList, imageInfo,
                 reductionFactor);
-        new ImageWriterFactory()
-                .newImageWriter(opList.getOutputFormat())
-                .write(image, outputStream);
+
+        ImageWriterFactory factory = new ImageWriterFactory();
+        ImageWriter writer = factory.newImageWriter(opList.getOutputFormat());
+        writer.setEncode((Encode) opList.getFirst(Encode.class));
+        writer.write(image, outputStream);
     }
 
     /**
