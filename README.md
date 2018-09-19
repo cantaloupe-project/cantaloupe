@@ -45,7 +45,7 @@ The tests are structured into four profiles:
 ### 1. Tests with no dependencies
 
 `mvn clean test -Pnodeps` will run only the tests that have no dependencies
-on third-party services and do not require any exteral tools or libraries.
+on third-party services and do not require any external tools or libraries.
 
 ### 2. Tests with free dependencies
 
