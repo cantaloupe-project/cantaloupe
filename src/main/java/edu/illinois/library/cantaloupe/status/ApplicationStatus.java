@@ -1,5 +1,6 @@
-package edu.illinois.library.cantaloupe;
+package edu.illinois.library.cantaloupe.status;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.InfoCache;
 import edu.illinois.library.cantaloupe.cache.InfoService;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;

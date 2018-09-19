@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe;
+package edu.illinois.library.cantaloupe.status;
 
 import org.junit.Before;
 import org.junit.Test;
