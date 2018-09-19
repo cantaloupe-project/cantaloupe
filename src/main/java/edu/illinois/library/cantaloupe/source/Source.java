@@ -46,7 +46,13 @@ public interface Source {
     Format getFormat() throws IOException;
 
     /**
-     * @param identifier Identifier of a source image.
+     * @return Identifier of the source image to read.
+     * @since 4.1
+     */
+    Identifier getIdentifier();
+
+    /**
+     * @param identifier Identifier of the source image to read.
      */
     void setIdentifier(Identifier identifier);
 

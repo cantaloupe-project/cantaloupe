@@ -18,6 +18,10 @@ abstract class AbstractSource {
         return delegateProxy;
     }
 
+    public Identifier getIdentifier() {
+        return identifier;
+    }
+
     public void setDelegateProxy(DelegateProxy proxy) {
         this.delegateProxy = proxy;
     }

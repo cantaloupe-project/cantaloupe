@@ -243,6 +243,11 @@ public class ImageAPIResourceTester {
         }
 
         @Override
+        public Identifier getIdentifier() {
+            return null;
+        }
+
+        @Override
         public StreamFactory newStreamFactory() throws IOException {
             return new PathStreamFactory(TestUtil.getImage("jpg"));
         }
@@ -298,6 +303,11 @@ public class ImageAPIResourceTester {
         @Override
         public Format getFormat() throws IOException {
             throw new IOException("getFormat() called!");
+        }
+
+        @Override
+        public Identifier getIdentifier() {
+            return null;
         }
 
         @Override
