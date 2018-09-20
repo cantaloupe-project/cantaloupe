@@ -34,6 +34,7 @@ title: Remote Management
 
 <ul>
   <li><a href="#check-status">Check the application status</a></li>
+  <li><a href="#check-health">Check the application health</a></li>
 </ul>
 
 <h4 id="check-status">Check the application status <small>since 4.1</small></h4>
@@ -54,6 +55,45 @@ title: Remote Management
   <tr>
     <td>Expected Response Content Type</td>
     <td><code>application/json</code></td>
+  </tr>
+</table>
+
+<h4 id="check-health">Check the application health <small>since 4.1</small></h4>
+
+<table class="table table-bordered">
+  <tr>
+    <td>Request Method</td>
+    <td><code>GET</code></td>
+  </tr>
+  <tr>
+    <td>URI</td>
+    <td><span class="filename">/health</span></td>
+  </tr>
+  <tr>
+    <td>Expected Response Status</td>
+    <td><code>200 OK</code></td>
+  </tr>
+  <tr>
+    <td>Expected Response Content Type</td>
+    <td><code>application/json</code></td>
+  </tr>
+  <tr>
+    <td>Notes</td>
+    <td>
+      <p>This method performs several high-level functionality checks:</p>
+      <ol>
+        <li>Heap memory usage is checked.</li>
+        <li>The processing pipeline is exercised using all known-working <a href="sources.html">sources</a> and <a href="processors.html">processors</a>. This also checks that the underlying storage is online and readable.</li>
+        <li>The read/write functionality of the current <a href="caching.html#Source%20Cache">source cache</a> and/or <a href="caching.html#Derivative%20Cache">derivative cache</a> is checked.</li>
+      </ol>
+
+      <p>The JSON response contains one of three color codes:</p>
+      <ul>
+        <li><code>GREEN</code> indicates normal functionality.</li>
+        <li><code>YELLOW</code> indicates a warning condition. This should be accompanied by a message.</li>
+        <li><code>RED</code> indicates a failure condition. This should be accompanied by a message.</li>
+      </ul>
+    </td>
   </tr>
 </table>
 

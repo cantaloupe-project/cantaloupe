@@ -15,7 +15,7 @@ import java.util.Set;
  * Currently there are no StreamProcessors that have no dependencies. This is
  * used in tests to mock one.
  */
-class MockStreamProcessor implements StreamProcessor {
+public class MockStreamProcessor implements StreamProcessor {
 
     private Format sourceFormat;
     private StreamFactory streamFactory;

@@ -49,7 +49,7 @@ public class MockFileProcessor implements FileProcessor {
 
     @Override
     public void process(OperationList opList, Info sourceInfo,
-                        OutputStream outputStream) {
+                        OutputStream outputStream) throws ProcessorException {
         // no-op
     }
 

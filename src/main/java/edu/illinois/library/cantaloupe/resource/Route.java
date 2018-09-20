@@ -17,6 +17,7 @@ public final class Route {
     public static final String ADMIN_CONFIG_PATH = "/admin/configuration";
     public static final String ADMIN_STATUS_PATH = "/admin/status";
     public static final String CONFIGURATION_PATH = "/configuration";
+    public static final String HEALTH_PATH = "/health";
     public static final String IIIF_1_PATH = "/iiif/1";
     public static final String IIIF_2_PATH = "/iiif/2";
     public static final String STATUS_PATH = "/status";
@@ -53,6 +54,8 @@ public final class Route {
         // API routes
         MAPPINGS.put(Pattern.compile("^" + CONFIGURATION_PATH + "$"),
                 edu.illinois.library.cantaloupe.resource.api.ConfigurationResource.class);
+        MAPPINGS.put(Pattern.compile("^" + HEALTH_PATH + "$"),
+                edu.illinois.library.cantaloupe.resource.api.HealthResource.class);
         MAPPINGS.put(Pattern.compile("^" + STATUS_PATH + "$"),
                 edu.illinois.library.cantaloupe.resource.api.StatusResource.class);
         MAPPINGS.put(Pattern.compile("^" + TASKS_PATH + "$"),

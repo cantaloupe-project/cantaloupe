@@ -14,6 +14,7 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
+import edu.illinois.library.cantaloupe.status.HealthChecker;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
@@ -180,6 +181,10 @@ public class ImageResource extends IIIF1Resource {
 
             new ImageRepresentation(info, processor, ops, isBypassingCache())
                     .write(getResponse().getOutputStream());
+
+            // Notify the health checker of a successful response -- after the
+            // response has been written successfully, obviously.
+            HealthChecker.addSourceProcessorPair(source, processor);
         }
     }
 

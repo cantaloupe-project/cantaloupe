@@ -19,6 +19,7 @@ import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.status.HealthChecker;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
@@ -200,6 +201,10 @@ public class ImageResource extends IIIF2Resource {
 
             new ImageRepresentation(info, processor, ops, isBypassingCache())
                     .write(getResponse().getOutputStream());
+
+            // Notify the health checker of a successful response -- after the
+            // response has been written successfully, obviously.
+            HealthChecker.addSourceProcessorPair(source, processor);
         }
     }
 

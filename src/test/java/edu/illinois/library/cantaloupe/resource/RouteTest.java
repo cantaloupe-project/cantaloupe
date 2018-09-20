@@ -40,6 +40,10 @@ public class RouteTest {
         assertEquals(edu.illinois.library.cantaloupe.resource.api.ConfigurationResource.class,
                 route.getResource());
 
+        route = Route.forPath(Route.HEALTH_PATH);
+        assertEquals(edu.illinois.library.cantaloupe.resource.api.HealthResource.class,
+                route.getResource());
+
         route = Route.forPath(Route.STATUS_PATH);
         assertEquals(edu.illinois.library.cantaloupe.resource.api.StatusResource.class,
                 route.getResource());
