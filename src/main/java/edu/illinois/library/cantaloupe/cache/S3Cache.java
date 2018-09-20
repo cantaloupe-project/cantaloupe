@@ -183,14 +183,14 @@ class S3Cache implements DerivativeCache {
                         bucketName, objectKey, is, metadata);
                 final Stopwatch watch = new Stopwatch();
 
-                UPLOAD_LOGGER.info("Uploading {} bytes to {} in bucket {}",
+                UPLOAD_LOGGER.debug("Uploading {} bytes to {} in bucket {}",
                         data.length, request.getKey(), request.getBucketName());
 
                 s3.putObject(request);
 
-                UPLOAD_LOGGER.info("Wrote {} bytes to {} in bucket {} in {} msec",
+                UPLOAD_LOGGER.debug("Wrote {} bytes to {} in bucket {} in {}",
                         data.length, request.getKey(), request.getBucketName(),
-                        watch.timeElapsed());
+                        watch);
             } else {
                 UPLOAD_LOGGER.debug("No data to upload; returning");
             }
@@ -275,7 +275,7 @@ class S3Cache implements DerivativeCache {
                 try (InputStream is =
                              new BufferedInputStream(object.getObjectContent())) {
                     final Info info = Info.fromJSON(is);
-                    LOGGER.info("getImageInfo(): read {} from bucket {} in {}",
+                    LOGGER.debug("getImageInfo(): read {} from bucket {} in {}",
                             objectKey, bucketName, watch);
 
                     touchAsync(objectKey);
@@ -300,7 +300,7 @@ class S3Cache implements DerivativeCache {
         final AmazonS3 s3 = getClientInstance();
         final String bucketName = getBucketName();
         final String objectKey = getObjectKey(opList);
-        LOGGER.info("newDerivativeImageInputStream(): bucket: {}; key: {}",
+        LOGGER.debug("newDerivativeImageInputStream(): bucket: {}; key: {}",
                 bucketName, objectKey);
         try {
             GetObjectRequest request = new GetObjectRequest(bucketName, objectKey);
@@ -391,7 +391,7 @@ class S3Cache implements DerivativeCache {
             }
         }
 
-        LOGGER.info("purge(): deleted {} items", count);
+        LOGGER.debug("purge(): deleted {} items", count);
     }
 
     @Override
@@ -442,7 +442,7 @@ class S3Cache implements DerivativeCache {
             }
         }
 
-        LOGGER.info("purgeInvalid(): deleted {} of {} items",
+        LOGGER.debug("purgeInvalid(): deleted {} of {} items",
                 deletedCount, count);
     }
 
@@ -473,7 +473,7 @@ class S3Cache implements DerivativeCache {
                 break;
             }
         }
-        LOGGER.info("purge(Identifier): deleted {} items", count);
+        LOGGER.debug("purge(Identifier): deleted {} items", count);
     }
 
     /**

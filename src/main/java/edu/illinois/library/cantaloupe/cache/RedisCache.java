@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 /**
  * <p>Cache using Redis via the <a href="http://redis.paluch.biz">Lettuce</a>
@@ -229,7 +230,7 @@ class RedisCache implements DerivativeCache {
         byte[] json = getConnection().sync().hget(INFO_HASH_KEY,
                 infoKey(identifier));
         if (json != null) {
-            String jsonStr = new String(json, "UTF-8");
+            String jsonStr = new String(json, StandardCharsets.UTF_8);
             return Info.fromJSON(jsonStr);
         }
         return null;
@@ -254,11 +255,11 @@ class RedisCache implements DerivativeCache {
     @Override
     public void purge() {
         // Purge infos
-        LOGGER.info("purge(): purging {}...", INFO_HASH_KEY);
+        LOGGER.debug("purge(): purging {}...", INFO_HASH_KEY);
         getConnection().sync().del(INFO_HASH_KEY);
 
         // Purge images
-        LOGGER.info("purge(): purging {}...", IMAGE_HASH_KEY);
+        LOGGER.debug("purge(): purging {}...", IMAGE_HASH_KEY);
         getConnection().sync().del(IMAGE_HASH_KEY);
     }
 
@@ -266,12 +267,12 @@ class RedisCache implements DerivativeCache {
     public void purge(Identifier identifier) {
         // Purge info
         String infoKey = infoKey(identifier);
-        LOGGER.info("purge(Identifier): purging {}...", infoKey);
+        LOGGER.debug("purge(Identifier): purging {}...", infoKey);
         getConnection().sync().hdel(INFO_HASH_KEY, infoKey);
 
         // Purge images
         ScanArgs imagePattern = ScanArgs.Builder.matches(identifier + "*");
-        LOGGER.info("purge(Identifier): purging {}...", imagePattern);
+        LOGGER.debug("purge(Identifier): purging {}...", imagePattern);
 
         MapScanCursor<String, byte[]> cursor = getConnection().sync().
                 hscan(IMAGE_HASH_KEY, imagePattern);
@@ -285,20 +286,20 @@ class RedisCache implements DerivativeCache {
      */
     @Override
     public void purgeInvalid() {
-        LOGGER.info("purgeInvalid(): " +
+        LOGGER.debug("purgeInvalid(): " +
                 "nothing to do (expiration must be configured in Redis)");
     }
 
     @Override
     public void purge(OperationList opList) {
         String imageKey = imageKey(opList);
-        LOGGER.info("purge(OperationList): purging {}...", imageKey);
+        LOGGER.debug("purge(OperationList): purging {}...", imageKey);
         getConnection().sync().hdel(IMAGE_HASH_KEY, imageKey);
     }
 
     @Override
     public void put(Identifier identifier, Info imageInfo) throws IOException {
-        LOGGER.info("put(): caching info for {}", identifier);
+        LOGGER.debug("put(): caching info for {}", identifier);
         try {
             getConnection().async().hset(INFO_HASH_KEY, infoKey(identifier),
                     imageInfo.toJSON().getBytes("UTF-8"));

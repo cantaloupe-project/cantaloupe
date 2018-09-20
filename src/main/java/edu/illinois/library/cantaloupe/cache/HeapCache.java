@@ -16,6 +16,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -275,7 +276,7 @@ class HeapCache implements DerivativeCache {
                 // Create any necessary directories up to the parent.
                 Files.createDirectories(path.getParent());
                 // Write out the contents.
-                LOGGER.info("Dumping to {}...", path);
+                LOGGER.debug("Dumping to {}...", path);
 
                 final long size = size();
                 final long byteSize = getByteSize();
@@ -315,7 +316,7 @@ class HeapCache implements DerivativeCache {
                     cacheBuilder.build().writeTo(fos);
                 }
 
-                LOGGER.info("Dumped {} items ({} bytes)", size, byteSize);
+                LOGGER.debug("Dumped {} items ({} bytes)", size, byteSize);
             } else {
                 throw new IOException("dumpToPersistentStore(): " +
                         HEAPCACHE_PATHNAME + " is not set");
@@ -353,9 +354,9 @@ class HeapCache implements DerivativeCache {
         Info info = null;
         Item item = get(itemKey(identifier));
         if (item != null) {
-            LOGGER.info("getImageInfo(): hit for {}", identifier);
+            LOGGER.debug("getImageInfo(): hit for {}", identifier);
 
-            info = Info.fromJSON(new String(item.getData(), "UTF-8"));
+            info = Info.fromJSON(new String(item.getData(), StandardCharsets.UTF_8));
         }
         return info;
     }
@@ -474,7 +475,7 @@ class HeapCache implements DerivativeCache {
             final Path path = getPath();
 
             if (path != null && Files.exists(path)) {
-                LOGGER.info("loadFromPersistentStore(): reading {}...", path);
+                LOGGER.debug("loadFromPersistentStore(): reading {}...", path);
 
                 try (InputStream is = Files.newInputStream(path)) {
                     final HeapCacheProtos.Cache protoCache =
@@ -497,7 +498,7 @@ class HeapCache implements DerivativeCache {
                         cache.put(key, item);
                     }
 
-                    LOGGER.info("Loaded {} items ({} bytes)",
+                    LOGGER.debug("Loaded {} items ({} bytes)",
                             size(), getByteSize());
                 } catch (NoSuchFileException e) {
                     LOGGER.error("loadFromPersistentStore(): file not found: {}",

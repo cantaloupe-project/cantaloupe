@@ -158,7 +158,7 @@ class AzureStorageCache implements DerivativeCache {
                 if (isValid(blob)) {
                     try (InputStream is = blob.openInputStream()) {
                         Info info = Info.fromJSON(is);
-                        LOGGER.info("getImageInfo(): read {} from container {} in {}",
+                        LOGGER.debug("getImageInfo(): read {} from container {} in {}",
                                 objectKey, containerName, watch);
                         return info;
                     }
@@ -186,7 +186,7 @@ class AzureStorageCache implements DerivativeCache {
                     client.getContainerReference(containerName);
             final String objectKey = getObjectKey(opList);
 
-            LOGGER.info("newDerivativeImageInputStream(): bucket: {}; key: {}",
+            LOGGER.debug("newDerivativeImageInputStream(): bucket: {}; key: {}",
                     containerName, objectKey);
             final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
             if (blob.exists()) {
@@ -295,7 +295,7 @@ class AzureStorageCache implements DerivativeCache {
                     }
                 }
             }
-            LOGGER.info("purge(): deleted {} items", count);
+            LOGGER.debug("purge(): deleted {} items", count);
         } catch (URISyntaxException | StorageException e) {
             throw new IOException(e.getMessage(), e);
         }
@@ -350,7 +350,7 @@ class AzureStorageCache implements DerivativeCache {
                     }
                 }
             }
-            LOGGER.info("purgeInvalid(): deleted {} of {} items",
+            LOGGER.debug("purgeInvalid(): deleted {} of {} items",
                     deletedCount, count);
         } catch (URISyntaxException | StorageException e) {
             throw new IOException(e.getMessage(), e);

@@ -327,11 +327,11 @@ class JdbcCache implements DerivativeCache {
                 if (resultSet.next()) {
                     accessInfoAsync(identifier);
 
-                    LOGGER.info("Hit for info: {}", identifier);
+                    LOGGER.debug("Hit for info: {}", identifier);
                     String json = resultSet.getString(1);
                     return Info.fromJSON(json);
                 } else {
-                    LOGGER.info("Miss for info: {}", identifier);
+                    LOGGER.debug("Miss for info: {}", identifier);
                     purgeInfoAsync(identifier);
                 }
             }
@@ -361,11 +361,11 @@ class JdbcCache implements DerivativeCache {
             LOGGER.debug(sql);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    LOGGER.info("Hit for image: {}", opList);
+                    LOGGER.debug("Hit for image: {}", opList);
                     inputStream = resultSet.getBinaryStream(1);
                     accessDerivativeImageAsync(opList);
                 } else {
-                    LOGGER.info("Miss for image: {}", opList);
+                    LOGGER.debug("Miss for image: {}", opList);
                     purgeDerivativeImageAsync(opList);
                 }
             }
@@ -379,7 +379,7 @@ class JdbcCache implements DerivativeCache {
     public OutputStream newDerivativeImageOutputStream(OperationList ops)
             throws IOException {
         // TODO: return a no-op stream when a write of an equal op list is in progress in another thread
-        LOGGER.info("Miss; caching {}", ops);
+        LOGGER.debug("Miss; caching {}", ops);
         try {
             return new ImageBlobOutputStream(getConnection(), ops);
         } catch (SQLException e) {
@@ -401,7 +401,7 @@ class JdbcCache implements DerivativeCache {
                     purgeDerivativeImages(connection);
             final int numDeletedInfos = purgeInfos(connection);
             connection.commit();
-            LOGGER.info("Purged {} derivative images and {} infos",
+            LOGGER.debug("Purged {} derivative images and {} infos",
                     numDeletedDerivativeImages, numDeletedInfos);
         } catch (SQLException e) {
             throw new IOException(e.getMessage(), e);
@@ -414,7 +414,7 @@ class JdbcCache implements DerivativeCache {
             connection.setAutoCommit(false);
             final int numDeletedImages = purgeDerivativeImage(ops, connection);
             connection.commit();
-            LOGGER.info("Purged {} derivative images", numDeletedImages);
+            LOGGER.debug("Purged {} derivative images", numDeletedImages);
         } catch (SQLException e) {
             throw new IOException(e.getMessage(), e);
         }
@@ -428,7 +428,7 @@ class JdbcCache implements DerivativeCache {
                     purgeExpiredDerivativeImages(connection);
             final int numDeletedInfos = purgeExpiredInfos(connection);
             connection.commit();
-            LOGGER.info("purgeInvalid(): purged {} derivative images and {} info(s)",
+            LOGGER.debug("purgeInvalid(): purged {} derivative images and {} info(s)",
                     numDeletedDerivativeImages, numDeletedInfos);
         } catch (SQLException e) {
             throw new IOException(e.getMessage(), e);
@@ -538,7 +538,7 @@ class JdbcCache implements DerivativeCache {
                     connection);
             final int numDeletedInfos = purgeInfo(identifier, connection);
             connection.commit();
-            LOGGER.info("Deleted {} cached image(s) and {} cached info(s)",
+            LOGGER.debug("Deleted {} cached image(s) and {} cached info(s)",
                     numDeletedImages, numDeletedInfos);
         } catch (SQLException e) {
             throw new IOException(e.getMessage(), e);
@@ -588,7 +588,7 @@ class JdbcCache implements DerivativeCache {
 
     @Override
     public void put(Identifier identifier, Info info) throws IOException {
-        LOGGER.info("put(): {}", identifier);
+        LOGGER.debug("put(): {}", identifier);
 
         final String sql = String.format(
                 "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
