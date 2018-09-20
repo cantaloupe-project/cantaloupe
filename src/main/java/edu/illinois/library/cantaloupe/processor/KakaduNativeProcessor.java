@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -766,7 +767,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
         }
 
         new ImageWriterFactory()
-                .newImageWriter(opList.getOutputFormat())
+                .newImageWriter((Encode) opList.getFirst(Encode.class))
                 .write(image, outputStream);
     }
 

@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.operation.Encode;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -19,20 +20,29 @@ public final class ImageWriterFactory {
         return SUPPORTED_FORMATS;
     }
 
-    public ImageWriter newImageWriter(Format format) {
-        switch (format) {
+    public ImageWriter newImageWriter(Encode encode) {
+        ImageWriter writer;
+
+        switch (encode.getFormat()) {
             case GIF:
-                return new GIFImageWriter();
+                writer = new GIFImageWriter();
+                break;
             case JPG:
-                return new JPEGImageWriter();
+                writer = new JPEGImageWriter();
+                break;
             case PNG:
-                return new PNGImageWriter();
+                writer = new PNGImageWriter();
+                break;
             case TIF:
-                return new TIFFImageWriter();
+                writer = new TIFFImageWriter();
+                break;
             default:
                 throw new IllegalArgumentException(
-                        "Unsupported output format: " + format);
+                        "Unsupported output format: " + encode.getFormat());
         }
+
+        writer.setEncode(encode);
+        return writer;
     }
 
 }

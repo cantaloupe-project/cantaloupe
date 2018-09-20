@@ -245,8 +245,7 @@ class JaiProcessor extends AbstractImageIOProcessor
                 }
             }
             final ImageWriter writer = new ImageWriterFactory()
-                    .newImageWriter(outputFormat);
-            writer.setEncode((Encode) opList.getFirst(Encode.class));
+                    .newImageWriter((Encode) opList.getFirst(Encode.class));
             if (opList.getFirst(MetadataCopy.class) != null) {
                 writer.setMetadata(getReader().getMetadata(0));
             }
