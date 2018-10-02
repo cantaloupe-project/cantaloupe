@@ -889,15 +889,15 @@ public final class Java2DUtil {
             targetSize = scale.getResultingSize(sourceSize);
         }
 
-        // ResampleFilter requires both target dimensions to be at least 3
-        // pixels. (OpenSeadragon has been known to request smaller.)
-        // If one or both are less than that, then given that the picture is
-        // virtually guaranteed to end up unrecognizable anyway, we will skip
-        // the scaling step and return a fake image with the target dimensions.
-        // Alternatives would be to use a different resampler, set a 3x3 floor,
-        // or error out.
+        // ResampleFilter requires both source and target dimensions to be at
+        // least 3 pixels. If any are less than that, then given that the
+        // picture is virtually assured to end up unrecognizable anyway, we
+        // will skip the scaling step and return a fake image with the target
+        // dimensions. Alternatives would be to use a different resampler, set
+        // a 3x3 floor, or error out.
         BufferedImage scaledImage = inImage;
-        if (targetSize.width >= 3 && targetSize.height >= 3) {
+        if (sourceSize.width >= 3 && sourceSize.height >= 3 &&
+                targetSize.width >= 3 && targetSize.height >= 3) {
             if (scale.hasEffect() && (targetSize.width != sourceSize.width ||
                     targetSize.height != sourceSize.height)) {
                 final Stopwatch watch = new Stopwatch();

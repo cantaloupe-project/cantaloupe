@@ -686,6 +686,16 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
+    public void testScaleWithSub3PixelSourceDimension() {
+        BufferedImage inImage = newColorImage(2, 1, 8, false);
+
+        Scale scale = new Scale(200, 1000, Scale.Mode.ASPECT_FIT_INSIDE);
+        BufferedImage outImage = Java2DUtil.scale(inImage, scale);
+        assertEquals(200, outImage.getWidth());
+        assertEquals(100, outImage.getHeight());
+    }
+
+    @Test
     public void testScaleWithSub3PixelTargetDimension() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 

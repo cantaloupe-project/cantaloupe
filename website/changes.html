@@ -12,6 +12,7 @@ title: Change Log
   <li>KakaduNativeProcessor supports JPEG2000-compatible JPX source images.</li>
   <li>Fixed an error from KakaduDemoProcessor in Windows when using a system locale that uses characters other than periods as decimal separators.</li>
   <li>Fixed incorrect redaction positioning when scaling.</li>
+  <li>Fixed an error from processors that use a Java 2D processing pipeline when attempting to scale a source image that is natively less than three pixels in either dimension, or has been cropped to that size.</li>
   <li>Fixed an empty response when image overlays are enabled but the overlay pathname or URL is invalid. Instead, images are served without the overlay, and warnings logged.</li>
 </ul>
 
