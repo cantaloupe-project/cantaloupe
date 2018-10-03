@@ -892,7 +892,8 @@ public final class Java2DUtil {
         // The only alternatives would be to use a different resampler, set a
         // 3x3 floor, or error out.
         BufferedImage scaledImage = inImage;
-        if (targetSize.intWidth() >= 3 && targetSize.intHeight() >= 3) {
+        if (sourceSize.intWidth() >= 3 && sourceSize.intHeight() >= 3 &&
+                targetSize.intWidth() >= 3 && targetSize.intHeight() >= 3) {
             if (!targetSize.equals(sourceSize)) {
                 final Stopwatch watch = new Stopwatch();
 
