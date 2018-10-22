@@ -14,7 +14,8 @@ title: Change Log
   <li>Fixed incorrect redaction positioning when scaling.</li>
   <li>Fixed an error from processors that use a Java 2D processing pipeline when attempting to scale a source image that is natively less than three pixels in either dimension, or has been cropped to that size.</li>
   <li>Fixed an empty response when image overlays are enabled but the overlay pathname or URL is invalid. Instead, images are served without the overlay, and warnings logged.</li>
-  <li>Miscellaneous dependency updates.</li>
+  <li>Updated Jetty to version 9.4.12, which fixes a potential connection leak in long-running servers when using HttpSource. (Thanks to @giancarlobi)
+  <li>Miscellaneous other dependency updates.</li>
 </ul>
 
 <h2>4.0.1</h2>
