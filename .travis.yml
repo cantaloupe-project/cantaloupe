@@ -1,14 +1,11 @@
 language: java
 sudo: required
-# trusty is required for oraclejdk9
 dist: trusty
 
 jdk:
+  # LTS releases only
   - oraclejdk8
-  # JDK 9 disabled because of an incompatibility with JAI Image I/O that causes
-  # the test log to exceed 4MB and Travis to kill the process; see
-  # https://github.com/medusa-project/cantaloupe/issues/176
-  - openjdk10
+  - openjdk11
 
 before_install:
   # install optional dependencies
