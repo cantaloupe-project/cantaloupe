@@ -29,6 +29,19 @@ public class JPEG2000ImageReaderTest extends AbstractImageReaderTest {
     }
 
     @Test
+    public void testGetMetadata() throws Exception {
+        JPEG2000ImageReader reader = new JPEG2000ImageReader();
+        reader.setSource(TestUtil.getImage("jp2-xmp.jp2"));
+
+        Metadata metadata = reader.getMetadata(0);
+        assertNull(metadata.getAsTree());
+        assertNull(metadata.getEXIF());
+        assertNull(metadata.getIPTC());
+        assertNull(metadata.getOrientation());
+        assertNotNull(metadata.getXMP());
+    }
+
+    @Test
     @Override
     public void testGetNumResolutions() throws Exception {
         assertEquals(6, instance.getNumResolutions());

@@ -7,16 +7,23 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
+import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Set;
 
 final class JPEG2000ImageReader implements ImageReader {
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(JPEG2000ImageReader.class);
 
     private JPEG2000MetadataReader wrappedReader;
     private ImageInputStream inputStream;
@@ -39,7 +46,37 @@ final class JPEG2000ImageReader implements ImageReader {
 
     @Override
     public Metadata getMetadata(int imageIndex) {
-        return new NullMetadata();
+        return new Metadata() {
+            @Override
+            public IIOMetadataNode getAsTree() {
+                return null;
+            }
+
+            @Override
+            public Object getEXIF() {
+                return null;
+            }
+
+            @Override
+            public Object getIPTC() {
+                return null;
+            }
+
+            @Override
+            public Orientation getOrientation() {
+                return null;
+            }
+
+            @Override
+            public byte[] getXMP() {
+                try {
+                    return wrappedReader.getXMP().getBytes(StandardCharsets.UTF_8);
+                } catch (IOException e) {
+                    LOGGER.warn("getXMP(): {}", e.getMessage());
+                }
+                return null;
+            }
+        };
     }
 
     @Override

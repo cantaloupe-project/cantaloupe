@@ -1,111 +1,109 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
+import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.stream.ImageInputStream;
 import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
- * <p>Reads various metadata from a JPEG2000 image.</p>
+ * <p>Reads various information from a JPEG2000 box structure. Only used for
+ * reading some relevant info that can't be obtained via Image I/O, as we would
+ * rather not depend on the JPEG2000 plugin contained within the aging and
+ * unsupported JAI Image I/O Tools.</p>
  *
- * <p>This class is very incomplete and only exists to get some basic metadata
- * that can't be obtained easily via ImageIO. It is also naive in that it reads
- * only the main header.</p>
+ * <p>JPEG2000 files are structured into a series of boxes (which may be
+ * nested, although this reader doesn't need to read any of those). First, the
+ * JPEG2000 signature box is read to check validity. Then, the box structure is
+ * scanned for a UUID box containing XMP data, or a Contiguous Codestream box.
+ * Unrecognized boxes are skipped.</p>
  *
  * @author Alex Dolski UIUC
  */
 final class JPEG2000MetadataReader {
 
-    private enum Marker {
+    /**
+     * JP2 box (only the ones this reader cares about).
+     *
+     * See: ISO/IEC 15444-1-2004 sec. 1.2: File organization (p. 133)
+     */
+    private enum Box {
+
+        JP2_SIGNATURE(new byte[] { 0x6a, 0x50, 0x20, 0x20 }),
+
+        CONTIGUOUS_CODESTREAM(new byte[] { 0x6a, 0x70, 0x32, 0x63 }),
+
+        UUID(new byte[] { 0x75, 0x75, 0x69, 0x64 }),
+
+        /**
+         * Some other box, which may be perfectly legitimate but is not
+         * understood by this reader.
+         */
+        UNKNOWN(new byte[] { 0x00, 0x00, 0x00, 0x00 });
+
+        private static Box forBytes(byte[] fourBytes) {
+            return Arrays.stream(values())
+                    .filter(v -> Arrays.equals(v.bytes, fourBytes))
+                    .findFirst()
+                    .orElse(UNKNOWN);
+        }
+
+        private byte[] bytes;
+
+        Box(byte[] bytes) {
+            this.bytes = bytes;
+        }
+    }
+
+    /**
+     * Codestream segment marker (only the ones this reader cares about).
+     *
+     * See: ISO/IEC 15444-1-2004 sec. A.1: Markers, marker segments, and
+     * headers (p. 12)
+     */
+    private enum SegmentMarker {
 
         /**
          * Start of codestream.
          */
-        SOC(0xFF, 0x4F),
+        SOC(new byte[] { (byte) 0xff, 0x4f }),
 
         /**
          * Image and tile size.
          */
-        SIZ(0xFF, 0x51),
+        SIZ(new byte[] { (byte) 0xff, 0x51 }),
 
         /**
          * Coding style default.
          */
-        COD(0xFF, 0x52),
+        COD(new byte[] { (byte) 0xff, 0x52 }),
 
         /**
          * Coding style component.
          */
-        COC(0xFF, 0x53),
-
-        /**
-         * Region-of-interest.
-         */
-        RGN(0xFF, 0x5E),
-
-        /**
-         * Quantization default.
-         */
-        QCD(0xFF, 0x5C),
-
-        /**
-         * Quantization component.
-         */
-        QCC(0xFF, 0x5D),
-
-        /**
-         * Progression order change.
-         */
-        POC(0xFF, 0x5F),
-
-        /**
-         * Pointer marker segments.
-         */
-        TLM(0xFF, 0x55),
-
-        /**
-         * Tile-part lengths.
-         */
-        PLM(0xFF, 0x57),
-
-        /**
-         * Packet length, tile-part header.
-         */
-        PPM(0xFF, 0x60),
-
-        /**
-         * Component registration.
-         */
-        CRG(0xFF, 0x63),
-
-        /**
-         * Comment.
-         */
-        COM(0xFF, 0x64),
+        COC(new byte[] { (byte) 0xff, 0x53 }),
 
         /**
          * Some other marker, which may be perfectly legitimate but is not
          * understood by this reader.
          */
-        UNKNOWN(0x00, 0x00);
+        UNKNOWN(new byte[] { 0x00, 0x00 });
 
-        private static Marker forBytes(int byte1, int byte2) {
-            for (Marker marker : values()) {
-                if (marker.byte1 == byte1 && marker.byte2 == byte2) {
-                    return marker;
-                }
-            }
-            return UNKNOWN;
+        private static SegmentMarker forBytes(byte[] twoBytes) {
+            return Arrays.stream(values())
+                    .filter(v -> Arrays.equals(v.bytes, twoBytes))
+                    .findFirst()
+                    .orElse(UNKNOWN);
         }
 
-        private int byte1, byte2;
+        private byte[] bytes;
 
-        Marker(int byte1, int byte2) {
-            this.byte1 = byte1;
-            this.byte2 = byte2;
+        SegmentMarker(byte[] bytes) {
+            this.bytes = bytes;
         }
 
     }
@@ -113,8 +111,13 @@ final class JPEG2000MetadataReader {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(JPEG2000MetadataReader.class);
 
-    private static final byte[] JP2_SIGNATURE = new byte[] { 0x00, 0x00, 0x00,
-            0x0c, 0x6a, 0x50, 0x20, 0x20, 0x0d, 0x0a, (byte) 0x87, 0x0a };
+    private static final byte[] JP2_SIGNATURE = new byte[] {
+            0x0d, 0x0a, (byte) 0x87, 0x0a };
+
+    private static final byte[] XMP_UUID = new byte[] {
+            (byte) 0xbe, 0x7a, (byte) 0xcf, (byte) 0xcb, (byte) 0x97,
+            (byte) 0xa9, 0x42, (byte) 0xe8, (byte) 0x9c, 0x71, (byte) 0x99,
+            (byte) 0x94, (byte) 0x91, (byte) 0xe3, (byte) 0xaf, (byte) 0xac };
 
     /**
      * Set to {@literal true} once reading begins.
@@ -123,11 +126,17 @@ final class JPEG2000MetadataReader {
 
     /**
      * Stream from which to read the image data.
+     *
+     * We use an {@link ImageInputStream} rather than an {@link
+     * java.io.InputStream} for its {@link ImageInputStream#skipBytes} methods,
+     * which, for some implementations, may be very efficient.
      */
     private ImageInputStream inputStream;
 
     private int width, height, tileWidth, tileHeight,
             componentSize, numComponents, numDecompositionLevels;
+
+    private String xmp;
 
     /**
      * @param inputStream Fresh stream from which to read the image.
@@ -140,7 +149,7 @@ final class JPEG2000MetadataReader {
      * @return Component/sample size.
      */
     int getComponentSize() throws IOException {
-        readImage();
+        readData();
         return componentSize;
     }
 
@@ -148,7 +157,7 @@ final class JPEG2000MetadataReader {
      * @return Height of the image grid.
      */
     int getHeight() throws IOException {
-        readImage();
+        readData();
         return height;
     }
 
@@ -156,19 +165,20 @@ final class JPEG2000MetadataReader {
      * @return Number of components/bands.
      */
     int getNumComponents() throws IOException {
-        readImage();
+        readData();
         return numComponents;
     }
 
     /**
-     * @return Number of available decomposition levels, which will be
+     * @return Number of available decomposition (DWT) levels, which will be
      *         one less than the number of available resolutions. Note that
-     *         contrary to the spec, only the main header {@link Marker#COD}
-     *         and {@link Marker#COC} segments are consulted, and not any tile-
-     *         part segments.
+     *         contrary to the spec, only the codestream's main {@link
+     *         SegmentMarker#COD} and {@link SegmentMarker#COC} segments are
+     *         consulted, and not any tile-part segments, but these are rare in
+     *         the wild.
      */
     int getNumDecompositionLevels() throws IOException {
-        readImage();
+        readData();
         return numDecompositionLevels;
     }
 
@@ -177,7 +187,7 @@ final class JPEG2000MetadataReader {
      *         image is not tiled.
      */
     int getTileHeight() throws IOException {
-        readImage();
+        readData();
         return tileHeight;
     }
 
@@ -186,7 +196,7 @@ final class JPEG2000MetadataReader {
      *         is not tiled.
      */
     int getTileWidth() throws IOException {
-        readImage();
+        readData();
         return tileWidth;
     }
 
@@ -194,75 +204,114 @@ final class JPEG2000MetadataReader {
      * @return Width of the image grid.
      */
     int getWidth() throws IOException {
-        readImage();
+        readData();
         return width;
+    }
+
+    /**
+     * @return XMP string from a UUID box.
+     */
+    String getXMP() throws IOException {
+        readData();
+        return xmp;
     }
 
     @Override
     public String toString() {
-        return String.format("size: %dx%d; tileSize: %dx%d; %d components; " +
-                        "%d bpc; %d DWT levels",
+        return String.format("[size: %dx%d] [tileSize: %dx%d] [%d components] " +
+                        "[%d bits/component] [%d DWT levels] [XMP? %b]",
                 width, height, tileWidth, tileHeight, numComponents,
-                componentSize, numDecompositionLevels);
+                componentSize, numDecompositionLevels, (xmp != null));
     }
 
     /**
      * <p>Main reading method. Reads image info into instance variables. May
      * call other private reading methods that will all expect {@link
-     * #inputStream} to be pre-positioned for reading.</p>
-     *
-     * <p>JPEG2000 files are based on a box structure, and several of the boxes
-     * contain various metadata that we are interested in. But, we ignore all
-     * of them except the codestream box, because we need to read the DWT level
-     * count, which is only present in the codestream.</p>
+     * #inputStream} to be pre-positioned.</p>
      *
      * <p>It's safe to call this method multiple times.</p>
      */
-    private void readImage() throws IOException {
+    private void readData() throws IOException {
         if (isReadAttempted) {
             return;
         } else if (inputStream == null) {
             throw new IllegalStateException("Source not set");
         }
 
-        checkSignature();
+        final Stopwatch watch = new Stopwatch();
 
-        isReadAttempted = true;
-
-        // Scan for the Contiguous Codestream box. This isn't very efficient,
-        // but it's easier than parsing a potentially complicated box structure.
-        int b, b1 = 0, b2 = 0, b3 = 0;
-        while ((b = inputStream.read()) != -1) {
-            if (b3 == 0x6a && b2 == 0x70 && b1 == 0x32 && b == 0x63) {
-                break;
-            }
-            b3 = b2; b2 = b1; b1 = b;
+        while (readBox() != -1) {
+            // Read boxes.
+            isReadAttempted = true;
         }
 
-        // Find the codestream SOC marker and position the stream immediately
-        // after it.
-        b1 = 0;
-        while ((b = inputStream.read()) != -1) {
-            if (Marker.SOC.equals(Marker.forBytes(b1, b))) {
-                break;
-            }
-            b1 = b;
-        }
-
-        while (readSegment() != -1) {
-            // keep reading
-        }
-
-        LOGGER.debug("{}", this);
+        LOGGER.debug("Read in {}: {}", watch, this);
     }
 
-    private void checkSignature() throws IOException {
-        byte[] bytes = read(JP2_SIGNATURE.length);
+    private int readBox() throws IOException {
+        long dataLength = readInt(); // Read the integer box length (LBox).
+        byte[] tbox = read(4);       // Read the box type (TBox).
 
+        // If LBox == 1, then the length is actually contained in XLBox, which
+        // is an 8-byte long immediately following TBox.
+        if (dataLength == 1) {
+            dataLength = readLong() - 16;
+        } else {
+            dataLength -= 8;
+        }
+
+        switch (Box.forBytes(tbox)) {
+            case JP2_SIGNATURE:
+                readJP2SignatureBox();
+                return 0;
+            case UUID:
+                readUUIDBox(dataLength);
+                return 0;
+            case CONTIGUOUS_CODESTREAM:
+                readContiguousCodestreamBox(dataLength);
+                return -1;
+            default:
+                skipBox(dataLength);
+                return 0;
+        }
+    }
+
+    private void skipBox(long dataLength) throws IOException {
+        inputStream.skipBytes(dataLength);
+    }
+
+    /**
+     * @throws IOException if reading fails or if the signature is invalid.
+     */
+    private void readJP2SignatureBox() throws IOException {
+        byte[] bytes = read(4);
         if (!Arrays.equals(JP2_SIGNATURE, bytes)) {
             String hexStr = DatatypeConverter.printHexBinary(bytes);
             throw new IOException("Invalid signature: " + hexStr +
                     " (is this a JP2?)");
+        }
+    }
+
+    private void readUUIDBox(long dataLength) throws IOException {
+        byte[] uuid = read(16);
+
+        // A UUID box can contain any kind of data, signified by the UUID.
+        // This reader only supports XMP.
+        // See: http://wwwimages.adobe.com/www.adobe.com/content/dam/acom/en/devnet/xmp/pdfs/XMP%20SDK%20Release%20cc-2016-08/XMPSpecificationPart3.pdf
+        // sec. 1.1.4 (p. 16)
+        if (Arrays.equals(uuid, XMP_UUID)) {
+            byte[] data = read((int) dataLength - 16);
+            xmp = new String(data, StandardCharsets.UTF_8);
+            xmp = xmp.substring(xmp.indexOf("<rdf:RDF "),
+                    xmp.indexOf("</rdf:RDF>") + 10);
+        } else {
+            inputStream.skipBytes(dataLength - 16);
+        }
+    }
+
+    private void readContiguousCodestreamBox(long dataLength) throws IOException {
+        while (readSegment() != -1) {
+            // keep reading, segment-by-segment
         }
     }
 
@@ -271,27 +320,27 @@ final class JPEG2000MetadataReader {
      *         some other value otherwise.
      */
     private int readSegment() throws IOException {
-        // The SIZ segment must come first, but the rest can appear in any
-        // order.
-        int status = 0;
-        switch (Marker.forBytes(inputStream.read(), inputStream.read())) {
+        // The SOC marker comes first, then the SIZ segment. The rest can
+        // appear in any order.
+        byte[] bytes = read(2);
+        switch (SegmentMarker.forBytes(bytes)) {
+            case SOC:
+                return 0;
             case SIZ:
                 readSIZSegment();
-                break;
+                return 0;
             case COD:
                 readCODSegment();
-                break;
+                return 0;
             case COC:
                 readCOCSegment();
-                break;
+                return 0;
             case UNKNOWN:
-                status = -1;
-                break;
+                return -1;
             default:
                 skipSegment();
-                break;
+                return 0;
         }
-        return status;
     }
 
     private int readSegmentLength() throws IOException {
@@ -366,6 +415,26 @@ final class JPEG2000MetadataReader {
             offset += n;
         }
         return data;
+    }
+
+    private int readInt() throws IOException {
+        byte[] bytes = read(4);
+        return ((bytes[0] & 0xff) << 24) |
+                ((bytes[1] & 0xff) << 16) |
+                ((bytes[2] & 0xff) << 8) |
+                (bytes[3] & 0xff);
+    }
+
+    private long readLong() throws IOException {
+        byte[] bytes = read(8);
+        return ((bytes[0] & 0xffL) << 56) |
+                ((bytes[1] & 0xffL) << 48) |
+                ((bytes[2] & 0xffL) << 40) |
+                ((bytes[3] & 0xffL) << 32) |
+                ((bytes[4] & 0xffL) << 24) |
+                ((bytes[5] & 0xffL) << 16) |
+                ((bytes[6] & 0xffL) << 8) |
+                (bytes[7] & 0xffL);
     }
 
 }
