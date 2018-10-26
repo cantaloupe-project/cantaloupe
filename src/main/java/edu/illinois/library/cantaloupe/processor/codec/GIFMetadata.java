@@ -116,7 +116,7 @@ public class GIFMetadata extends AbstractMetadata implements Metadata {
                     if ("NETSCAPE".equals(appIdAttr.getNodeValue())) {
                         byte[] b = (byte[]) appExtension.getUserObject();
                         if (b.length > 2) {
-                            loopCount = b[2] & 0xFF | (b[1] & 0xFF) << 8;
+                            loopCount = (b[2] & 0xFF << 8) | (b[1] & 0xFF);
                             break;
                         }
                     }

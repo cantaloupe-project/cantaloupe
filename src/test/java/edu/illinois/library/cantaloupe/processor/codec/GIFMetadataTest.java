@@ -55,7 +55,7 @@ public class GIFMetadataTest extends BaseTest {
 
     @Test
     public void testGetLoopCountWithAnimatedLoopingImage() throws Exception {
-        assertEquals(0, newInstance("gif-animated-looping.gif").getLoopCount());
+        assertEquals(2, newInstance("gif-animated-looping.gif").getLoopCount());
     }
 
     @Test
