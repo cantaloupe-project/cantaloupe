@@ -24,7 +24,7 @@ abstract class AbstractMetadata {
         return formatName;
     }
 
-    public IIOMetadata getIIOMetadata() {
+    IIOMetadata getIIOMetadata() {
         return iioMetadata;
     }
 

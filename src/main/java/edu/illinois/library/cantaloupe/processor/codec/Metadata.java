@@ -21,12 +21,6 @@ public interface Metadata {
     Object getEXIF();
 
     /**
-     * @return ImageIO metadata instance backing the instance, or {@literal
-     *         null} if not applicable.
-     */
-    IIOMetadata getIIOMetadata();
-
-    /**
      * @return IPTC IIM data, or {@literal null} if none is present. The data
      *         may be in a byte array or a {@link
      *         it.geosolutions.imageio.plugins.tiff.TIFFDirectory}.
