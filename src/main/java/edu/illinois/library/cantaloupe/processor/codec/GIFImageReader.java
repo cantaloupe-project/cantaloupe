@@ -10,7 +10,6 @@ import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatExceptio
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.metadata.IIOMetadata;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -47,9 +46,19 @@ final class GIFImageReader extends AbstractIIOImageReader
 
     @Override
     public Metadata getMetadata(int imageIndex) throws IOException {
-        final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
-        final String metadataFormat = metadata.getNativeMetadataFormatName();
-        return new GIFMetadata(metadata, metadataFormat);
+        // The GIFMetadata is going to read from the GIFMetadataReader which is
+        // going to read from inputStream. But, this reader isn't done reading
+        // from inputStream. So, call reset() to get a fresh stream...
+        reset();
+        GIFMetadataReader reader = new GIFMetadataReader();
+        reader.setSource(inputStream);
+        // Call one of GIFMetadataReader's reader methods to read from it...
+        reader.getXMP();
+        // and then call reset() again so we can use it again.
+        reset();
+        // This is horrible of course, but it'll work for now.
+
+        return new GIFMetadata(reader);
     }
 
     @Override

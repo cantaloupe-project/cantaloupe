@@ -3,87 +3,85 @@ package edu.illinois.library.cantaloupe.processor.codec;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.riot.RIOT;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageInputStream;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.nio.file.Path;
-import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
 public class GIFMetadataTest extends BaseTest {
 
-    private GIFMetadata newInstance(String fixtureName)
+    private ImageInputStream newImageInputStream(String fixtureName)
             throws IOException {
         final Path srcFile = TestUtil.getImage(fixtureName);
-        final Iterator<ImageReader> it = ImageIO.getImageReadersByFormatName("GIF");
-        final ImageReader reader = it.next();
-        try (ImageInputStream is = ImageIO.createImageInputStream(srcFile.toFile())) {
-            reader.setInput(is);
-            final IIOMetadata metadata = reader.getImageMetadata(0);
-            return new GIFMetadata(metadata,
-                    metadata.getNativeMetadataFormatName());
-        } finally {
-            reader.dispose();
+        return ImageIO.createImageInputStream(srcFile.toFile());
+    }
+
+    @Test
+    public void testGetDelayTimeOfStaticImage() throws Exception {
+        try (GIFMetadataReader reader = new GIFMetadataReader()) {
+            reader.setSource(newImageInputStream("gif"));
+            GIFMetadata metadata = new GIFMetadata(reader);
+            assertEquals(0, metadata.getDelayTime());
         }
     }
 
     @Test
-    public void testGetFrameIntervalOfStaticImage() throws Exception {
-        assertEquals(0, newInstance("gif").getFrameInterval());
-    }
-
-    @Test
-    public void testGetFrameIntervalOfAnimatedImage() throws Exception {
-        assertEquals(150, newInstance("gif-animated-looping.gif").getFrameInterval());
+    public void testGetDelayTimeOfAnimatedImage() throws Exception {
+        try (GIFMetadataReader reader = new GIFMetadataReader()) {
+            reader.setSource(newImageInputStream("gif-animated-looping.gif"));
+            GIFMetadata metadata = new GIFMetadata(reader);
+            assertEquals(15, metadata.getDelayTime());
+        }
     }
 
     @Test
     public void testGetLoopCountWithStaticImage() throws Exception {
-        assertEquals(1, newInstance("gif").getLoopCount());
+        try (GIFMetadataReader reader = new GIFMetadataReader()) {
+            reader.setSource(newImageInputStream("gif"));
+            GIFMetadata metadata = new GIFMetadata(reader);
+            assertEquals(0, metadata.getLoopCount());
+        }
     }
 
     @Test
     public void testGetLoopCountWithAnimatedLoopingImage() throws Exception {
-        assertEquals(2, newInstance("gif-animated-looping.gif").getLoopCount());
+        try (GIFMetadataReader reader = new GIFMetadataReader()) {
+            reader.setSource(newImageInputStream("gif-animated-looping.gif"));
+            GIFMetadata metadata = new GIFMetadata(reader);
+            assertEquals(2, metadata.getLoopCount());
+        }
     }
 
     @Test
     public void testGetLoopCountWithAnimatedNonLoopingImage() throws Exception {
-        assertEquals(1, newInstance("gif-animated-non-looping.gif").getLoopCount());
+        try (GIFMetadataReader reader = new GIFMetadataReader()) {
+            reader.setSource(newImageInputStream("gif-animated-non-looping.gif"));
+            GIFMetadata metadata = new GIFMetadata(reader);
+            assertEquals(0, metadata.getLoopCount());
+        }
     }
 
     @Test
-    @Ignore // Disabled because GIFMetadata.getXMP() and getXMPRDF() are disabled.
     public void testGetOrientation() throws Exception {
-        assertEquals(Orientation.ROTATE_90,
-                newInstance("gif-rotated.gif").getOrientation());
+        try (GIFMetadataReader reader = new GIFMetadataReader()) {
+            reader.setSource(newImageInputStream("gif-rotated.gif"));
+            GIFMetadata metadata = new GIFMetadata(reader);
+            assertEquals(Orientation.ROTATE_90, metadata.getOrientation());
+        }
     }
 
     @Test
-    @Ignore // Disabled because GIFMetadata.getXMP() and getXMPRDF() are disabled.
     public void testGetXMP() throws Exception {
-        assertNotNull(newInstance("gif-xmp.gif").getXMP());
-    }
-
-    @Test
-    @Ignore // Disabled because GIFMetadata.getXMP() and getXMPRDF() are disabled.
-    public void testGetXMPRDF() throws Exception {
-        RIOT.init();
-        final String rdf = newInstance("gif-xmp.gif").getXMPRDF();
-        System.out.println(rdf);
-        final Model model = ModelFactory.createDefaultModel();
-        model.read(new StringReader(rdf), null, "RDF/XML");
+        try (GIFMetadataReader reader = new GIFMetadataReader()) {
+            reader.setSource(newImageInputStream("gif-xmp.gif"));
+            GIFMetadata metadata = new GIFMetadata(reader);
+            assertNotNull(metadata.getXMP());
+        }
     }
 
 }

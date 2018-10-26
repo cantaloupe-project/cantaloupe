@@ -104,9 +104,9 @@ final class GIFImageWriter extends AbstractIIOImageWriter
                 appExtensions.appendChild(appExtensionNode);
             }
 
-            // Copy frame interval.
-            final int frameInterval = srcMetadata.getFrameInterval();
-            if (frameInterval != 0) {
+            // Copy delay time.
+            final int delayTime = srcMetadata.getDelayTime();
+            if (delayTime != 0) {
                 // Get the /GraphicControlExtension node, creating it if it
                 // does not exist.
                 final NodeList gcExtensionsList =
@@ -124,7 +124,7 @@ final class GIFImageWriter extends AbstractIIOImageWriter
                 gcExtension.setAttribute("userInputFlag", "FALSE");
                 gcExtension.setAttribute("transparentColorFlag", "FALSE");
                 gcExtension.setAttribute("delayTime",
-                        Integer.toString(Math.round(frameInterval / 10f)));
+                        Integer.toString(delayTime));
                 gcExtension.setAttribute("transparentColorIndex", "0");
             }
         }
