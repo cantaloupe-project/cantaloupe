@@ -134,7 +134,7 @@ public class GIFMetadata extends AbstractMetadata implements Metadata {
         if (orientation == null) {
             String xmp = getXMPRDF();
             if (xmp != null) {
-                orientation = readOrientation(xmp);
+                orientation = Util.readOrientation(xmp);
             }
             if (orientation == null) {
                 orientation = Orientation.ROTATE_0;

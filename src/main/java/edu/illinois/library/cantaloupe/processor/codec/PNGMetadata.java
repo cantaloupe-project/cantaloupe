@@ -122,7 +122,7 @@ class PNGMetadata extends AbstractMetadata implements Metadata {
         if (orientation == null) {
             final String xmp = getXMPRDF();
             if (xmp != null) {
-                final Orientation readOrientation = readOrientation(xmp);
+                final Orientation readOrientation = Util.readOrientation(xmp);
                 if (readOrientation != null) {
                     orientation = readOrientation;
                 }

@@ -71,7 +71,7 @@ class JPEGMetadata extends AbstractMetadata implements Metadata {
      * @return Orientation from the non-XMP EXIF metadata. May be null.
      */
     Orientation getExifOrientation() {
-        return readOrientation(getEXIF());
+        return Util.readOrientation(getEXIF());
     }
 
     /**
@@ -154,7 +154,7 @@ class JPEGMetadata extends AbstractMetadata implements Metadata {
         Orientation orientation = null;
         final String xmp = getXMPRDF();
         if (xmp != null) {
-            orientation = readOrientation(xmp);
+            orientation = Util.readOrientation(xmp);
         }
         return orientation;
     }

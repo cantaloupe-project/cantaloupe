@@ -130,7 +130,7 @@ class TIFFMetadata extends AbstractMetadata implements Metadata {
         if (orientation == null) {
             final TIFFField orientationField = ifd.getTIFFField(274);
             if (orientationField != null) {
-                orientation = orientationForExifValue(orientationField.getAsInt(0));
+                orientation = Util.orientationForExifValue(orientationField.getAsInt(0));
             }
             if (orientation == null) {
                 orientation = Orientation.ROTATE_0;
