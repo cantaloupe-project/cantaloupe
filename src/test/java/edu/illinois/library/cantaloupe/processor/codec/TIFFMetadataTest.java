@@ -54,7 +54,7 @@ public class TIFFMetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetExif() throws IOException {
+    public void testGetEXIF() throws IOException {
         final Path srcFile = TestUtil.getImage("tif-exif.tif");
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile.toFile())) {
             assertNotNull(newInstance(is).getEXIF());
@@ -62,7 +62,7 @@ public class TIFFMetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetIptc() throws IOException {
+    public void testGetIPTC() throws IOException {
         final Path srcFile = TestUtil.getImage("tif-iptc.tif");
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile.toFile())) {
             assertNotNull(newInstance(is).getIPTC());
@@ -79,20 +79,12 @@ public class TIFFMetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetXmp() throws IOException {
-        final Path srcFile = TestUtil.getImage("tif-xmp.tif");
-        try (ImageInputStream is = ImageIO.createImageInputStream(srcFile.toFile())) {
-            assertNotNull(newInstance(is).getXMP());
-        }
-    }
-
-    @Test
-    public void testGetXmpRdf() throws IOException {
+    public void testGetXMP() throws IOException {
         RIOT.init();
 
         final Path srcFile = TestUtil.getImage("tif-xmp.tif");
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile.toFile())) {
-            final String rdf = newInstance(is).getXMPRDF();
+            final String rdf = newInstance(is).getXMP();
             final Model model = ModelFactory.createDefaultModel();
             model.read(new StringReader(rdf), null, "RDF/XML");
         }

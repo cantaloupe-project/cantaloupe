@@ -35,8 +35,11 @@ public interface Metadata {
     Orientation getOrientation();
 
     /**
-     * @return XMP data packet, or {@literal null} if none is available.
+     * Returns an RDF/XML string in UTF-8 encoding. The root element is
+     * {@literal rdf:RDF}, and there is no packet wrapper.
+     *
+     * @return XMP data packet, or {@literal null} if no XMP data is available.
      */
-    byte[] getXMP();
+    String getXMP();
 
 }

@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.imageio.metadata.IIOMetadataNode;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 public class GIFMetadata implements Metadata {
 
@@ -19,6 +18,9 @@ public class GIFMetadata implements Metadata {
      * Cached by {@link #getOrientation()}.
      */
     private Orientation orientation;
+
+    private boolean checkedForXMP;
+    private String xmp;
 
     GIFMetadata(GIFMetadataReader reader) {
         this.reader = reader;
@@ -73,20 +75,28 @@ public class GIFMetadata implements Metadata {
     @Override
     public Orientation getOrientation() {
         if (orientation == null) {
-            final String xmp = new String(getXMP(), StandardCharsets.UTF_8);
-            orientation = Util.readOrientation(xmp);
+            final String xmp = getXMP();
+            if (xmp != null) {
+                orientation = Util.readOrientation(xmp);
+            }
         }
         return orientation;
     }
 
     @Override
-    public byte[] getXMP() {
-        try {
-            return reader.getXMP().getBytes(StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            LOGGER.warn("getXMP(): {}", e.getMessage());
+    public String getXMP() {
+        if (!checkedForXMP) {
+            checkedForXMP = true;
+            try {
+                xmp = reader.getXMP();
+                if (xmp != null) {
+                    xmp = Util.trimXMP(xmp);
+                }
+            } catch (IOException e) {
+                LOGGER.warn("getXMP(): {}", e.getMessage());
+            }
         }
-        return null;
+        return xmp;
     }
 
 }

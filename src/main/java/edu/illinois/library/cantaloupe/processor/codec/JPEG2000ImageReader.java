@@ -16,7 +16,6 @@ import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Set;
 
@@ -68,9 +67,9 @@ final class JPEG2000ImageReader implements ImageReader {
             }
 
             @Override
-            public byte[] getXMP() {
+            public String getXMP() {
                 try {
-                    return wrappedReader.getXMP().getBytes(StandardCharsets.UTF_8);
+                    return wrappedReader.getXMP();
                 } catch (IOException e) {
                     LOGGER.warn("getXMP(): {}", e.getMessage());
                 }

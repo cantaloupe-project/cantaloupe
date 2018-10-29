@@ -46,7 +46,7 @@ public class JPEGMetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetExif() throws IOException {
+    public void testGetEXIF() throws IOException {
         assertNotNull(getInstance("jpg-exif.jpg").getEXIF());
     }
 
@@ -75,20 +75,15 @@ public class JPEGMetadataTest extends BaseTest {
 
     @Test
     public void testGetXMP() throws IOException {
-        assertNotNull(getInstance("jpg-xmp.jpg").getXMP());
+        RIOT.init();
+        final String rdf = getInstance("jpg-xmp.jpg").getXMP();
+        final Model model = ModelFactory.createDefaultModel();
+        model.read(new StringReader(rdf), null, "RDF/XML");
     }
 
     @Test
     public void testGetXmpOrientation() throws IOException {
         assertNull(getInstance("jpg-rotated.jpg").getXmpOrientation());
-    }
-
-    @Test
-    public void testGetXMPRDF() throws IOException {
-        RIOT.init();
-        final String rdf = getInstance("jpg-xmp.jpg").getXMPRDF();
-        final Model model = ModelFactory.createDefaultModel();
-        model.read(new StringReader(rdf), null, "RDF/XML");
     }
 
 }

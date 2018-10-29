@@ -7,6 +7,7 @@ import org.w3c.dom.NodeList;
 
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @see <a href="http://docs.oracle.com/javase/7/docs/api/javax/imageio/metadata/doc-files/jpeg_metadata.html">
@@ -31,7 +32,7 @@ class JPEGMetadata extends AbstractMetadata implements Metadata {
     private Orientation orientation;
 
     /** Cached by getXMP() */
-    private byte[] xmp;
+    private String xmp;
 
     /**
      * @param metadata
@@ -112,8 +113,7 @@ class JPEGMetadata extends AbstractMetadata implements Metadata {
             orientation = getExifOrientation();
             if (orientation == null) {
                 // Check XMP.
-                final String xmp = getXMPRDF();
-                if (xmp != null) {
+                if (getXMP() != null) {
                     orientation = getXmpOrientation();
                 }
             }
@@ -125,7 +125,7 @@ class JPEGMetadata extends AbstractMetadata implements Metadata {
     }
 
     @Override
-    public byte[] getXMP() {
+    public String getXMP() {
         if (!checkedForXmp) {
             checkedForXmp = true;
             // EXIF and XMP metadata both appear in the IIOMetadataNode tree as
@@ -139,7 +139,10 @@ class JPEGMetadata extends AbstractMetadata implements Metadata {
                     byte[] data = (byte[]) marker.getUserObject();
                     // Check the first byte to see whether it's EXIF or XMP.
                     if (data[0] == 104) {
-                        xmp = data;
+                        xmp = new String(data, StandardCharsets.UTF_8);
+                        if (xmp != null) {
+                            xmp = Util.trimXMP(xmp);
+                        }
                     }
                 }
             }
@@ -152,7 +155,7 @@ class JPEGMetadata extends AbstractMetadata implements Metadata {
      */
     Orientation getXmpOrientation() {
         Orientation orientation = null;
-        final String xmp = getXMPRDF();
+        final String xmp = getXMP();
         if (xmp != null) {
             orientation = Util.readOrientation(xmp);
         }

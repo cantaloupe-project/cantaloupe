@@ -62,30 +62,26 @@ final class PNGImageWriter extends AbstractIIOImageWriter
             }
 
             // Add XMP metadata.
-            final byte[] xmp = sourceMetadata.getXMP();
+            final String xmp = sourceMetadata.getXMP();
             if (xmp != null) {
-                try {
-                    // Get the /iTXt node, creating it if it does not already exist.
-                    final NodeList itxtNodes = baseTree.getElementsByTagName("iTXt");
-                    IIOMetadataNode itxtNode;
-                    if (itxtNodes.getLength() > 0) {
-                        itxtNode = (IIOMetadataNode) itxtNodes.item(0);
-                    } else {
-                        itxtNode = new IIOMetadataNode("iTXt");
-                        baseTree.appendChild(itxtNode);
-                    }
-                    // Append the XMP.
-                    final IIOMetadataNode xmpNode = new IIOMetadataNode("iTXtEntry");
-                    xmpNode.setAttribute("keyword", "XML:com.adobe.xmp");
-                    xmpNode.setAttribute("compressionFlag", "FALSE");
-                    xmpNode.setAttribute("compressionMethod", "0");
-                    xmpNode.setAttribute("languageTag", "");
-                    xmpNode.setAttribute("translatedKeyword", "");
-                    xmpNode.setAttribute("text", new String(xmp, "UTF-8"));
-                    itxtNode.appendChild(xmpNode);
-                } catch (UnsupportedEncodingException e) {
-                    LOGGER.error("addMetadata(): {}", e.getMessage());
+                // Get the /iTXt node, creating it if it does not already exist.
+                final NodeList itxtNodes = baseTree.getElementsByTagName("iTXt");
+                IIOMetadataNode itxtNode;
+                if (itxtNodes.getLength() > 0) {
+                    itxtNode = (IIOMetadataNode) itxtNodes.item(0);
+                } else {
+                    itxtNode = new IIOMetadataNode("iTXt");
+                    baseTree.appendChild(itxtNode);
                 }
+                // Append the XMP.
+                final IIOMetadataNode xmpNode = new IIOMetadataNode("iTXtEntry");
+                xmpNode.setAttribute("keyword", "XML:com.adobe.xmp");
+                xmpNode.setAttribute("compressionFlag", "FALSE");
+                xmpNode.setAttribute("compressionMethod", "0");
+                xmpNode.setAttribute("languageTag", "");
+                xmpNode.setAttribute("translatedKeyword", "");
+                xmpNode.setAttribute("text", xmp);
+                itxtNode.appendChild(xmpNode);
             }
         }
     }

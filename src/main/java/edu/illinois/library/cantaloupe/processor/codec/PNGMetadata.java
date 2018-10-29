@@ -8,6 +8,7 @@ import org.w3c.dom.NodeList;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +41,7 @@ class PNGMetadata extends AbstractMetadata implements Metadata {
     /**
      * Cached by {@link #getXMP()}.
      */
-    private byte[] xmp;
+    private String xmp;
 
     static {
         // These were generally taken from
@@ -120,7 +121,7 @@ class PNGMetadata extends AbstractMetadata implements Metadata {
     @Override
     public Orientation getOrientation() {
         if (orientation == null) {
-            final String xmp = getXMPRDF();
+            final String xmp = getXMP();
             if (xmp != null) {
                 final Orientation readOrientation = Util.readOrientation(xmp);
                 if (readOrientation != null) {
@@ -135,7 +136,7 @@ class PNGMetadata extends AbstractMetadata implements Metadata {
     }
 
     @Override
-    public byte[] getXMP() {
+    public String getXMP() {
         if (!checkedForXmp) {
             checkedForXmp = true;
             final NodeList itxtNodes = getAsTree().getElementsByTagName("iTXt");
@@ -146,9 +147,11 @@ class PNGMetadata extends AbstractMetadata implements Metadata {
                     final String keyword = ((IIOMetadataNode) entries.item(j)).
                             getAttribute("keyword");
                     if ("XML:com.adobe.xmp".equals(keyword)) {
-                        xmp = ((IIOMetadataNode) entries.item(j))
+                        byte[] xmpBytes = ((IIOMetadataNode) entries.item(j))
                                 .getAttribute("text")
                                 .getBytes(Charset.forName("UTF-8"));
+                        xmp = new String(xmpBytes, StandardCharsets.UTF_8);
+                        xmp = Util.trimXMP(xmp);
                     }
                 }
             }

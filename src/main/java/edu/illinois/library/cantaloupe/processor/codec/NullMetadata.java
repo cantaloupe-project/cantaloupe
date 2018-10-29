@@ -56,15 +56,7 @@ class NullMetadata extends AbstractMetadata implements Metadata {
      * @return Null.
      */
     @Override
-    public byte[] getXMP() {
-        return null;
-    }
-
-    /**
-     * @return Null.
-     */
-    @Override
-    public String getXMPRDF() {
+    public String getXMP() {
         return null;
     }
 

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.imageio.metadata.IIOInvalidTreeException;
 import javax.imageio.metadata.IIOMetadata;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -24,6 +25,9 @@ class TIFFMetadata extends AbstractMetadata implements Metadata {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(TIFFMetadata.class);
+
+    private static final int IPTC_TAG_NUMBER = 33723;
+    private static final int XMP_TAG_NUMBER  = 700;
 
     /**
      * Native TIFF tags to preserve from the baseline IFD by
@@ -53,7 +57,7 @@ class TIFFMetadata extends AbstractMetadata implements Metadata {
      */
     private TIFFDirectory ifd;
 
-    private List<TIFFField> nativeMetadata = new ArrayList<>();
+    private final List<TIFFField> nativeMetadata = new ArrayList<>();
 
     /**
      * Cached by {@link #getOrientation()}.
@@ -63,7 +67,7 @@ class TIFFMetadata extends AbstractMetadata implements Metadata {
     /**
      * Cached by {@link #getXMP()}.
      */
-    private byte[] xmp;
+    private String xmp;
 
     /**
      * @param metadata
@@ -96,7 +100,7 @@ class TIFFMetadata extends AbstractMetadata implements Metadata {
 
     @Override
     public TIFFField getIPTC() {
-        return ifd.getTIFFField(33723);
+        return ifd.getTIFFField(IPTC_TAG_NUMBER);
     }
 
     @Override
@@ -140,19 +144,22 @@ class TIFFMetadata extends AbstractMetadata implements Metadata {
     }
 
     @Override
-    public byte[] getXMP() {
+    public String getXMP() {
         if (!checkedForXMP) {
             checkedForXMP = true;
             final TIFFField xmpField = getXMPField();
             if (xmpField != null) {
-                xmp = (byte[]) xmpField.getData();
+                xmp = new String(
+                        (byte[]) xmpField.getData(),
+                        StandardCharsets.UTF_8);
+                xmp = Util.trimXMP(xmp);
             }
         }
         return xmp;
     }
 
     TIFFField getXMPField() {
-        return ifd.getTIFFField(700);
+        return ifd.getTIFFField(XMP_TAG_NUMBER);
     }
 
 }

@@ -23,6 +23,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * JPEG image writer using ImageIO, capable of writing both Java 2D
@@ -67,12 +68,12 @@ final class JPEGImageWriter extends AbstractIIOImageWriter
                 markerSequence.insertBefore(node, markerSequence.getFirstChild());
             }
 
-            final byte[] xmp = sourceMetadata.getXMP();
+            final String xmp = sourceMetadata.getXMP();
             if (xmp != null) {
                 // Create the XMP node.
                 final IIOMetadataNode node = new IIOMetadataNode("unknown");
                 node.setAttribute("MarkerTag", "225");
-                node.setUserObject(xmp);
+                node.setUserObject(xmp.getBytes(StandardCharsets.UTF_8));
                 // Append it to /markerSequence/unknown[@MarkerTag=225]
                 final Node markerSequence =
                         baseTree.getElementsByTagName("markerSequence").item(0);

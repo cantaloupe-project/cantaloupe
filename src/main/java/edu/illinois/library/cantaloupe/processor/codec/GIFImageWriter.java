@@ -18,6 +18,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * GIF image writer using ImageIO, capable of writing both Java 2D
@@ -42,7 +43,7 @@ final class GIFImageWriter extends AbstractIIOImageWriter
             // GIF doesn't support EXIF or IPTC metadata -- only XMP.
             // The XMP node will be located at /ApplicationExtensions/
             // ApplicationExtension[@applicationID="XMP Data" @authenticationCode="XMP"]
-            final byte[] xmp = sourceMetadata.getXMP();
+            final String xmp = sourceMetadata.getXMP();
             if (xmp != null) {
                 // Get the /ApplicationExtensions node, creating it if it does
                 // not exist.
@@ -61,7 +62,7 @@ final class GIFImageWriter extends AbstractIIOImageWriter
                         new IIOMetadataNode("ApplicationExtension");
                 appExtensionNode.setAttribute("applicationID", "XMP Data");
                 appExtensionNode.setAttribute("authenticationCode", "XMP");
-                appExtensionNode.setUserObject(xmp);
+                appExtensionNode.setUserObject(xmp.getBytes(StandardCharsets.UTF_8));
                 appExtensions.appendChild(appExtensionNode);
             }
         }
