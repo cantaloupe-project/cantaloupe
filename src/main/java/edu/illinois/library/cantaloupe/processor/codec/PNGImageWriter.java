@@ -15,13 +15,11 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 /**
- * PNG image writer using ImageIO, capable of taking both Java 2D
- * {@link BufferedImage}s and JAI {@link PlanarImage}s and writing them as
- * PNGs.
+ * PNG image writer using Image I/O, capable of writing both Java 2D
+ * {@link BufferedImage}s and JAI {@link PlanarImage}s as PNGs.
  *
  * @see <a href="http://libpng.org/pub/png/spec/1.2/PNG-Contents.html">
  *     PNG Specification, Version 1.2</a>
@@ -35,17 +33,13 @@ final class PNGImageWriter extends AbstractIIOImageWriter
     static final String IMAGEIO_PLUGIN_CONFIG_KEY =
             "processor.imageio.png.writer";
 
-    /**
-     * PNG doesn't (formally) support EXIF or IPTC, though it does support
-     * EXIF tags in XMP.
-     */
     @Override
     protected void addMetadata(final IIOMetadataNode baseTree) {
         if (sourceMetadata instanceof PNGMetadata) {
             // Add native metadata.
             final List<IIOMetadataNode> nativeMetadata =
                     ((PNGMetadata) sourceMetadata).getNativeMetadata();
-            if (nativeMetadata.size() > 0) {
+            if (!nativeMetadata.isEmpty()) {
                 // Get the /tEXt node, creating it if it does not already exist.
                 final NodeList textNodes = baseTree.getElementsByTagName("tEXt");
                 IIOMetadataNode textNode;
@@ -60,29 +54,29 @@ final class PNGImageWriter extends AbstractIIOImageWriter
                     textNode.appendChild(node);
                 }
             }
+        }
 
-            // Add XMP metadata.
-            final String xmp = sourceMetadata.getXMP();
-            if (xmp != null) {
-                // Get the /iTXt node, creating it if it does not already exist.
-                final NodeList itxtNodes = baseTree.getElementsByTagName("iTXt");
-                IIOMetadataNode itxtNode;
-                if (itxtNodes.getLength() > 0) {
-                    itxtNode = (IIOMetadataNode) itxtNodes.item(0);
-                } else {
-                    itxtNode = new IIOMetadataNode("iTXt");
-                    baseTree.appendChild(itxtNode);
-                }
-                // Append the XMP.
-                final IIOMetadataNode xmpNode = new IIOMetadataNode("iTXtEntry");
-                xmpNode.setAttribute("keyword", "XML:com.adobe.xmp");
-                xmpNode.setAttribute("compressionFlag", "FALSE");
-                xmpNode.setAttribute("compressionMethod", "0");
-                xmpNode.setAttribute("languageTag", "");
-                xmpNode.setAttribute("translatedKeyword", "");
-                xmpNode.setAttribute("text", xmp);
-                itxtNode.appendChild(xmpNode);
+        // Add XMP metadata.
+        final String xmp = sourceMetadata.getXMP();
+        if (xmp != null) {
+            // Get the /iTXt node, creating it if it does not already exist.
+            final NodeList itxtNodes = baseTree.getElementsByTagName("iTXt");
+            IIOMetadataNode itxtNode;
+            if (itxtNodes.getLength() > 0) {
+                itxtNode = (IIOMetadataNode) itxtNodes.item(0);
+            } else {
+                itxtNode = new IIOMetadataNode("iTXt");
+                baseTree.appendChild(itxtNode);
             }
+            // Append the XMP.
+            final IIOMetadataNode xmpNode = new IIOMetadataNode("iTXtEntry");
+            xmpNode.setAttribute("keyword", "XML:com.adobe.xmp");
+            xmpNode.setAttribute("compressionFlag", "FALSE");
+            xmpNode.setAttribute("compressionMethod", "0");
+            xmpNode.setAttribute("languageTag", "");
+            xmpNode.setAttribute("translatedKeyword", "");
+            xmpNode.setAttribute("text", xmp);
+            itxtNode.appendChild(xmpNode);
         }
     }
 

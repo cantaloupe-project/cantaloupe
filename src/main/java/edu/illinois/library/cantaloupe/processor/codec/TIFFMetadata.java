@@ -26,8 +26,8 @@ class TIFFMetadata extends AbstractMetadata implements Metadata {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(TIFFMetadata.class);
 
-    private static final int IPTC_TAG_NUMBER = 33723;
-    private static final int XMP_TAG_NUMBER  = 700;
+    static final int IPTC_TAG_NUMBER = 33723;
+    static final int XMP_TAG_NUMBER  = 700;
 
     /**
      * Native TIFF tags to preserve from the baseline IFD by

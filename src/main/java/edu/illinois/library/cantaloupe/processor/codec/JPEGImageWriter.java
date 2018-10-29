@@ -67,18 +67,18 @@ final class JPEGImageWriter extends AbstractIIOImageWriter
                         baseTree.getElementsByTagName("markerSequence").item(0);
                 markerSequence.insertBefore(node, markerSequence.getFirstChild());
             }
+        }
 
-            final String xmp = sourceMetadata.getXMP();
-            if (xmp != null) {
-                // Create the XMP node.
-                final IIOMetadataNode node = new IIOMetadataNode("unknown");
-                node.setAttribute("MarkerTag", "225");
-                node.setUserObject(xmp.getBytes(StandardCharsets.UTF_8));
-                // Append it to /markerSequence/unknown[@MarkerTag=225]
-                final Node markerSequence =
-                        baseTree.getElementsByTagName("markerSequence").item(0);
-                markerSequence.insertBefore(node, markerSequence.getFirstChild());
-            }
+        final String xmp = sourceMetadata.getXMP();
+        if (xmp != null) {
+            // Create the XMP node.
+            final IIOMetadataNode node = new IIOMetadataNode("unknown");
+            node.setAttribute("MarkerTag", "225");
+            node.setUserObject(xmp.getBytes(StandardCharsets.UTF_8));
+            // Append it to /markerSequence/unknown[@MarkerTag=225]
+            final Node markerSequence =
+                    baseTree.getElementsByTagName("markerSequence").item(0);
+            markerSequence.insertBefore(node, markerSequence.getFirstChild());
         }
     }
 

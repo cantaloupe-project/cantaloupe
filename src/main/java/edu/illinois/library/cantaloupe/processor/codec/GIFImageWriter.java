@@ -39,32 +39,27 @@ final class GIFImageWriter extends AbstractIIOImageWriter
 
     @Override
     protected void addMetadata(final IIOMetadataNode baseTree) {
-        if (sourceMetadata instanceof GIFMetadata) {
-            // GIF doesn't support EXIF or IPTC metadata -- only XMP.
-            // The XMP node will be located at /ApplicationExtensions/
-            // ApplicationExtension[@applicationID="XMP Data" @authenticationCode="XMP"]
-            final String xmp = sourceMetadata.getXMP();
-            if (xmp != null) {
-                // Get the /ApplicationExtensions node, creating it if it does
-                // not exist.
-                final NodeList appExtensionsList =
-                        baseTree.getElementsByTagName("ApplicationExtensions");
-                IIOMetadataNode appExtensions;
-                if (appExtensionsList.getLength() > 0) {
-                    appExtensions = (IIOMetadataNode) appExtensionsList.item(0);
-                } else {
-                    appExtensions = new IIOMetadataNode("ApplicationExtensions");
-                    baseTree.appendChild(appExtensions);
-                }
-
-                // Create /ApplicationExtensions/ApplicationExtension
-                final IIOMetadataNode appExtensionNode =
-                        new IIOMetadataNode("ApplicationExtension");
-                appExtensionNode.setAttribute("applicationID", "XMP Data");
-                appExtensionNode.setAttribute("authenticationCode", "XMP");
-                appExtensionNode.setUserObject(xmp.getBytes(StandardCharsets.UTF_8));
-                appExtensions.appendChild(appExtensionNode);
+        // GIF doesn't support EXIF or IPTC metadata -- only XMP.
+        final String xmp = sourceMetadata.getXMP();
+        if (xmp != null) {
+            // Get the /ApplicationExtensions node, creating it if necessary.
+            final NodeList appExtensionsList =
+                    baseTree.getElementsByTagName("ApplicationExtensions");
+            IIOMetadataNode appExtensions;
+            if (appExtensionsList.getLength() > 0) {
+                appExtensions = (IIOMetadataNode) appExtensionsList.item(0);
+            } else {
+                appExtensions = new IIOMetadataNode("ApplicationExtensions");
+                baseTree.appendChild(appExtensions);
             }
+
+            // Create /ApplicationExtensions/ApplicationExtension
+            final IIOMetadataNode appExtensionNode =
+                    new IIOMetadataNode("ApplicationExtension");
+            appExtensionNode.setAttribute("applicationID", "XMP Data");
+            appExtensionNode.setAttribute("authenticationCode", "XMP");
+            appExtensionNode.setUserObject(xmp.getBytes(StandardCharsets.UTF_8));
+            appExtensions.appendChild(appExtensionNode);
         }
     }
 

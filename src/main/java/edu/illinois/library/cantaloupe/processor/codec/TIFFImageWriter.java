@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFField;
+import it.geosolutions.imageio.plugins.tiff.TIFFTag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +21,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * TIFF image writer using ImageIO, capable of taking both Java 2D
@@ -54,31 +56,53 @@ final class TIFFImageWriter extends AbstractIIOImageWriter
     private IIOMetadata addMetadata(final Metadata sourceMetadata,
                                     IIOMetadata derivativeMetadata)
             throws IOException {
+        // If sourceMetadata is native TIFF metadata, copy over its relevant
+        // fields. Otherwise, if it contains at least an XMP packet, copy that
+        // into a new field.
         if (sourceMetadata instanceof TIFFMetadata) {
             final TIFFDirectory destDir =
                     TIFFDirectory.createFromMetadata(derivativeMetadata);
 
+            // Copy native fields.
             for (TIFFField field : ((TIFFMetadata) sourceMetadata).getNativeMetadata()) {
                 destDir.addTIFFField(field);
             }
 
+            // Copy the EXIF field.
+            final TIFFField exifField = (TIFFField) sourceMetadata.getEXIF();
+            if (exifField != null) {
+                destDir.addTIFFField(exifField);
+            }
+
+            // Copy the IPTC field.
             final TIFFField iptcField = (TIFFField) sourceMetadata.getIPTC();
             if (iptcField != null) {
                 destDir.addTIFFField(iptcField);
             }
 
+            // Copy the XMP field.
             final TIFFField xmpField =
                     ((TIFFMetadata) sourceMetadata).getXMPField();
             if (xmpField != null) {
                 destDir.addTIFFField(xmpField);
             }
 
-            final TIFFField exifField = (TIFFField) sourceMetadata.getEXIF();
-            if (exifField != null) {
-                destDir.addTIFFField(exifField);
-            }
-
             derivativeMetadata = destDir.getAsMetadata();
+        } else {
+            final String xmp = sourceMetadata.getXMP();
+            if (xmp != null) {
+                final TIFFDirectory destDir =
+                        TIFFDirectory.createFromMetadata(derivativeMetadata);
+
+                byte[] xmpBytes = xmp.getBytes(StandardCharsets.UTF_8);
+                final TIFFTag xmpTag = new TIFFTag(
+                        "unknown", TIFFMetadata.XMP_TAG_NUMBER, 0);
+                final TIFFField xmpField = new TIFFField(
+                        xmpTag, TIFFTag.TIFF_BYTE, xmpBytes.length, xmpBytes);
+                destDir.addTIFFField(xmpField);
+
+                derivativeMetadata = destDir.getAsMetadata();
+            }
         }
         return derivativeMetadata;
     }
