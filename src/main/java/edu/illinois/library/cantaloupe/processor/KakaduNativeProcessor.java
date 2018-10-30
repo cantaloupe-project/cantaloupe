@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Encode;
+import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -17,12 +18,17 @@ import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
+import edu.illinois.library.cantaloupe.processor.codec.BeanMetadata;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
+import edu.illinois.library.cantaloupe.processor.codec.Metadata;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import kdu_jni.Jp2_threadsafe_family_src;
 import kdu_jni.Jpx_codestream_source;
 import kdu_jni.Jpx_input_box;
+import kdu_jni.Jpx_meta_manager;
+import kdu_jni.Jpx_metanode;
 import kdu_jni.Jpx_source;
 import kdu_jni.KduException;
 import kdu_jni.Kdu_channel_mapping;
@@ -365,15 +371,20 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                         final OutputStream outputStream) throws ProcessorException {
         try {
             final ReductionFactor reductionFactor = new ReductionFactor();
+            BeanMetadata metadata = null;
+            if (opList.getFirst(MetadataCopy.class) != null) {
+                metadata = new BeanMetadata();
+            }
             final double[] diffScales = new double[] { 1.0, 1.0 };
             final BufferedImage image = readRegion(
                     opList,
                     info.getSize(),
                     info.getNumResolutions() - 1,
                     reductionFactor,
-                    diffScales);
+                    diffScales,
+                    metadata);
             postProcess(image, opList, diffScales, info, reductionFactor,
-                    outputStream);
+                    metadata, outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }
@@ -391,12 +402,15 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
      *                        used.
      * @param diffScales      Will be populated with the X and Y axis
      *                        differential scales used during reading.
+     * @param metadata        Will be populated with source image metadata.
+     *                        May be {@literal null}.
      */
     private BufferedImage readRegion(final OperationList opList,
                                      final Dimension fullSize,
                                      final int numLevels,
                                      final ReductionFactor reductionFactor,
-                                     final double[] diffScales) throws IOException {
+                                     final double[] diffScales,
+                                     final BeanMetadata metadata) throws IOException {
         final Rectangle roi = getRegion(opList, fullSize);
         final Scale scaleOp = (Scale) opList.getFirst(Scale.class);
 
@@ -423,26 +437,24 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
         try {
             // Initialize error handling. (Is it just me or is Kakadu's error
             // handling system not thread-safe?)
-            KduDebugMessage sysout = new KduDebugMessage();
-            KduErrorMessage syserr = new KduErrorMessage();
-            Kdu_message_formatter prettySysout =
-                    new Kdu_message_formatter(sysout);
-            Kdu_message_formatter prettySyserr =
-                    new Kdu_message_formatter(syserr);
+            KduDebugMessage sysout             = new KduDebugMessage();
+            KduErrorMessage syserr             = new KduErrorMessage();
+            Kdu_message_formatter prettySysout = new Kdu_message_formatter(sysout);
+            Kdu_message_formatter prettySyserr = new Kdu_message_formatter(syserr);
             Kdu_global.Kdu_customize_warnings(prettySysout);
             Kdu_global.Kdu_customize_errors(prettySyserr);
 
             // N.B.: see the end notes in the KduRender.java file in the Kakadu
             // SDK for explanation of how these need to be destroyed.
             // N.B. 2: see KduRender2.java for use of the Kdu_thread_env.
-            final Jpx_source jpxSrc = new Jpx_source();
-            final Jp2_threadsafe_family_src familySrc = new Jp2_threadsafe_family_src();
-            Kdu_compressed_source compSrc = null;
-            final Kdu_codestream codestream = new Kdu_codestream();
-            final Kdu_channel_mapping channels = new Kdu_channel_mapping();
+            final Jpx_source jpxSrc                    = new Jpx_source();
+            final Jp2_threadsafe_family_src familySrc  = new Jp2_threadsafe_family_src();
+            Kdu_compressed_source compSrc              = null;
+            final Kdu_codestream codestream            = new Kdu_codestream();
+            final Kdu_channel_mapping channels         = new Kdu_channel_mapping();
             final Kdu_region_decompressor decompressor = new Kdu_region_decompressor();
-            ImageInputStream inputStream = null;
-            final Kdu_thread_env threadEnv = new Kdu_thread_env();
+            ImageInputStream inputStream               = null;
+            final Kdu_thread_env threadEnv             = new Kdu_thread_env();
 
             try {
                 if (sourceFile != null) {
@@ -453,6 +465,31 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                     familySrc.Open(compSrc);
                 }
                 jpxSrc.Open(familySrc, false);
+
+                if (metadata != null) {
+                    // Access the Jpx_source's metadata manager, which provides
+                    // access to all of the various metadata boxes. The one
+                    // we're interested in is a UUID box containing XMP data.
+                    final Jpx_meta_manager manager = jpxSrc.Access_meta_manager();
+                    manager.Set_box_filter(1, new long[]{Kdu_global.jp2_uuid_4cc});
+
+                    Jpx_metanode lastNode = new Jpx_metanode();
+                    do {
+                        manager.Load_matches(-1, new int[]{}, -1, new int[]{});
+                        lastNode = manager.Enumerate_matches(
+                                lastNode, -1, -1, false, new Kdu_dims(), 0);
+                        if (lastNode.Is_xmp_uuid()) {
+                            final Jpx_input_box xmpBox = new Jpx_input_box();
+                            lastNode.Open_existing(xmpBox);
+
+                            final int bufferSize = (int) Math.pow(2, 20); // 1 MB
+                            byte[] buffer = new byte[bufferSize];
+                            xmpBox.Read(buffer, bufferSize);
+                            metadata.setXMP(buffer);
+                            break;
+                        }
+                    } while (lastNode.Exists());
+                }
 
                 Jpx_codestream_source codestreamSrc = jpxSrc.Access_codestream(0);
                 Jpx_input_box inputBox = codestreamSrc.Open_stream();
@@ -717,6 +754,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
      *                        been applied to {@literal image}.
      * @param imageInfo       Information about the source image.
      * @param reductionFactor May be {@literal null}.
+     * @param metadata        Source image metadata. May be {@literal null}.
      * @param outputStream    Output stream to write the resulting image to.
      */
     private void postProcess(BufferedImage image,
@@ -724,6 +762,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                              final double[] diffScales,
                              final Info imageInfo,
                              ReductionFactor reductionFactor,
+                             final Metadata metadata,
                              final OutputStream outputStream) throws IOException {
         if (reductionFactor == null) {
             reductionFactor = new ReductionFactor();
@@ -766,9 +805,10 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             }
         }
 
-        new ImageWriterFactory()
-                .newImageWriter((Encode) opList.getFirst(Encode.class))
-                .write(image, outputStream);
+        ImageWriter writer = new ImageWriterFactory()
+                .newImageWriter((Encode) opList.getFirst(Encode.class));
+        writer.setMetadata(metadata);
+        writer.write(image, outputStream);
     }
 
     @Override
@@ -776,23 +816,21 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
         try {
             // Initialize error handling. (Is it just me or is Kakadu's error
             // handling system not thread-safe?)
-            KduDebugMessage sysout = new KduDebugMessage();
-            KduErrorMessage syserr = new KduErrorMessage();
-            Kdu_message_formatter prettySysout =
-                    new Kdu_message_formatter(sysout);
-            Kdu_message_formatter prettySyserr =
-                    new Kdu_message_formatter(syserr);
+            KduDebugMessage sysout             = new KduDebugMessage();
+            KduErrorMessage syserr             = new KduErrorMessage();
+            Kdu_message_formatter prettySysout = new Kdu_message_formatter(sysout);
+            Kdu_message_formatter prettySyserr = new Kdu_message_formatter(syserr);
             Kdu_global.Kdu_customize_warnings(prettySysout);
             Kdu_global.Kdu_customize_errors(prettySyserr);
 
             // N.B.: see the end notes in the KduRender.java file in the Kakadu
             // SDK for explanation of how these need to be destroyed.
-            ImageInputStream inputStream = null;
-            final Jpx_source jpxSrc = new Jpx_source();
-            Kdu_compressed_source compSrc = null;
+            ImageInputStream inputStream              = null;
+            final Jpx_source jpxSrc                   = new Jpx_source();
+            Kdu_compressed_source compSrc             = null;
             final Jp2_threadsafe_family_src familySrc = new Jp2_threadsafe_family_src();
-            final Kdu_codestream codestream = new Kdu_codestream();
-            final Kdu_channel_mapping channels = new Kdu_channel_mapping();
+            final Kdu_codestream codestream           = new Kdu_codestream();
+            final Kdu_channel_mapping channels        = new Kdu_channel_mapping();
 
             try {
                 if (sourceFile != null) {
@@ -826,11 +864,12 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                 codestream.Get_tile_dims(tileIndex, -1, tileDims, false);
                 int tileWidth = tileDims.Access_size().Get_x();
                 int tileHeight = tileDims.Access_size().Get_y();
-                // Swap dimensions to harmonize with the main image dimensions, if
-                // necessary.
+                // Swap dimensions to harmonize with the main image dimensions,
+                // if necessary.
                 if (width > height && tileWidth < tileHeight ||
                         width < height && tileWidth > tileHeight) {
                     int tmp = tileWidth;
+                    //noinspection SuspiciousNameCombination
                     tileWidth = tileHeight;
                     tileHeight = tmp;
                 }

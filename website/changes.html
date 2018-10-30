@@ -34,7 +34,8 @@ title: Change Log
   <li>Added configurable processor selection strategies, one of which uses the existing <code>processor.*</code> configuration keys, and the other of which uses an automatic strategy which attempts to choose a &quot;best&quot; processor on a per-request basis.</li>
   <li>KakaduNativeProcessor supports <code>sizeByDistortedWidthHeight</code>.</li>
   <li>Added the <code>repeat</code> position for image overlays.</li>
-  <li>Java2dProcessor can preserve XMP metadata across most formats.</li>
+  <li>Java2dProcessor can preserve XMP metadata across most source and output formats.</li>
+  <li>KakaduNativeProcessor respects the <code>processor.metadata.preserve</code> configuration key for XMP metadata.</li>
   <li>Removed normalization.</li>
 </ul>
 

@@ -1,18 +1,17 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Encode;
+import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.Scale;
-import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -45,6 +44,40 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
     @Test
     public void testGetInitializationExceptionWithNoException() {
         assertNull(instance.getInitializationException());
+    }
+
+    @Test
+    public void testProcessWithMetadataCopy() throws Exception {
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            instance.setSourceFormat(Format.JP2);
+            instance.setSourceFile(TestUtil.getImage("jp2-xmp.jp2"));
+
+            OperationList opList = new OperationList(
+                    new MetadataCopy(),
+                    new Encode(Format.JPG));
+            Info info = instance.readImageInfo();
+
+            instance.process(opList, info, os);
+
+            String str = new String(os.toByteArray(), StandardCharsets.UTF_8);
+            assertTrue(str.contains("<rdf:RDF"));
+        }
+    }
+
+    @Test
+    public void testProcessWithoutMetadataCopy() throws Exception {
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            instance.setSourceFormat(Format.JP2);
+            instance.setSourceFile(TestUtil.getImage("jp2-xmp.jp2"));
+
+            OperationList opList = new OperationList(new Encode(Format.JPG));
+            Info info = instance.readImageInfo();
+
+            instance.process(opList, info, os);
+
+            String str = new String(os.toByteArray(), StandardCharsets.UTF_8);
+            assertFalse(str.contains("<rdf:RDF"));
+        }
     }
 
     @Test
