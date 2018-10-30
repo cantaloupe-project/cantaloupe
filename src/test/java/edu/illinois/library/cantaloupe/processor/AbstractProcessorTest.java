@@ -555,16 +555,14 @@ abstract class AbstractProcessorTest extends BaseTest {
      */
     @Test
     public void testReadImageInfoOnAllFixtures() throws Exception {
-        final Processor proc = newInstance();
-
         for (Format format : Format.values()) {
-            try {
-                // The processor will throw an exception if it doesn't support
-                // this format, which is fine. No processor supports all
-                // formats.
-                proc.setSourceFormat(format);
+            for (Path fixture : TestUtil.getImageFixtures(format)) {
+                try (final Processor proc = newInstance()) {
+                    // The processor will throw an exception if it doesn't support
+                    // this format, which is fine. No processor supports all
+                    // formats.
+                    proc.setSourceFormat(format);
 
-                for (Path fixture : TestUtil.getImageFixtures(format)) {
                     // TODO: address these
                     if (proc instanceof GraphicsMagickProcessor) {
                         if (fixture.getFileName().toString().equals("jpg-rgb-594x522x8-baseline.jpg")) {
@@ -586,38 +584,36 @@ abstract class AbstractProcessorTest extends BaseTest {
                         fproc.setSourceFile(fixture);
                     }
 
-                    try {
-                        // We don't know the dimensions of the source image and
-                        // we can't get them because that would require using
-                        // the method we are now testing, so the best we can do
-                        // is to assert that they are nonzero.
-                        final Info actualInfo = proc.readImageInfo();
-                        assertEquals(format, actualInfo.getSourceFormat());
-                        assertTrue(actualInfo.getSize().width() > DELTA);
-                        assertTrue(actualInfo.getSize().height() > DELTA);
+                    // We don't know the dimensions of the source image and
+                    // we can't get them because that would require using
+                    // the method we are now testing, so the best we can do
+                    // is to assert that they are nonzero.
+                    final Info actualInfo = proc.readImageInfo();
+                    assertEquals(format, actualInfo.getSourceFormat());
+                    assertTrue(actualInfo.getSize().width() > DELTA);
+                    assertTrue(actualInfo.getSize().height() > DELTA);
 
-                        // Parse the resolution count from the filename, or
-                        // else assert 1.
-                        int expectedNumResolutions = 1;
-                        if (fixture.getFileName().toString().equals("jp2")) {
-                            expectedNumResolutions = 6;
-                        } else {
-                            Pattern pattern = Pattern.compile("\\dres");
-                            Matcher matcher = pattern.matcher(fixture.getFileName().toString());
-                            if (matcher.find()) {
-                                expectedNumResolutions =
-                                        Integer.parseInt(matcher.group(0).substring(0, 1));
-                            }
+                    // Parse the resolution count from the filename, or
+                    // else assert 1.
+                    int expectedNumResolutions = 1;
+                    if (fixture.getFileName().toString().equals("jp2")) {
+                        expectedNumResolutions = 6;
+                    } else {
+                        Pattern pattern = Pattern.compile("\\dres");
+                        Matcher matcher = pattern.matcher(fixture.getFileName().toString());
+                        if (matcher.find()) {
+                            expectedNumResolutions =
+                                    Integer.parseInt(matcher.group(0).substring(0, 1));
                         }
-                        assertEquals(expectedNumResolutions,
-                                actualInfo.getNumResolutions());
-                    } catch (Exception e) {
-                        System.err.println(format + " : " + fixture);
-                        throw e;
                     }
+                    assertEquals(expectedNumResolutions,
+                            actualInfo.getNumResolutions());
+                } catch (UnsupportedSourceFormatException ignore) {
+                    // OK, continue
+                } catch (Exception e) {
+                    System.err.println(format + " : " + fixture);
+                    throw e;
                 }
-            } catch (UnsupportedSourceFormatException e) {
-                // OK, continue
             }
         }
     }
