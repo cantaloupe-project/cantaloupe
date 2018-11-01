@@ -43,6 +43,8 @@ abstract class AbstractMagickProcessor extends AbstractProcessor {
 
     protected StreamFactory streamFactory;
 
+    public void close() {}
+
     public StreamFactory getStreamFactory() {
         return streamFactory;
     }

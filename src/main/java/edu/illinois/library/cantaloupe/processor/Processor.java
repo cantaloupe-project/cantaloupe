@@ -18,13 +18,13 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * <p>Abstract image processor interface.</p>
+ * <p>Encapsulates an image codec (encoder + decoder) and processing engine.</p>
  *
- * <p>Either or both of {@link FileProcessor} and/or {@link StreamProcessor}
- * must be implemented. Implementations can assume that their source will be
- * set (via {@link FileProcessor#setSourceFile} or
- * {@link StreamProcessor#setStreamFactory}) before any methods that would
- * access the source are called.</p>
+ * <p>This is an abstract interface. Either or both of {@link FileProcessor}
+ * and/or {@link StreamProcessor} must be implemented. Implementations can
+ * depend on their source being set (via {@link FileProcessor#setSourceFile} or
+ * {@link StreamProcessor#setStreamFactory}) before any methods that would need
+ * to access it are called.</p>
  */
 public interface Processor extends AutoCloseable {
 
@@ -32,11 +32,11 @@ public interface Processor extends AutoCloseable {
      * Releases all resources used by the instance.
      */
     @Override
-    default void close() {}
+    void close();
 
     /**
      * @return Output formats available for the {@link #setSourceFormat(Format)
-     * set source format}, or an empty set if none.
+     *         set source format}, or an empty set if none.
      */
     Set<Format> getAvailableOutputFormats();
 
@@ -123,25 +123,25 @@ public interface Processor extends AutoCloseable {
      *     sake, implementations should check whether each one is a no-op using
      *     {@link edu.illinois.library.cantaloupe.operation.Operation#hasEffect(Dimension, OperationList)}
      *     before performing it.</li>
-     *     <li>The {@link OperationList} will be in a frozen (immutable) state.
+     *     <li>The {@link OperationList} will be in an immutable state.
      *     Implementations are discouraged from performing their own operations
      *     separate from the ones in the list, as this could cause problems
      *     with caching.</li>
      *     <li>In addition to operations, the operation list may contain a
      *     number of {@link OperationList#getOptions() options}, which
-     *     implementations should respect, where applicable. These may come
-     *     from the configuration, so implementations should not try to read
-     *     the configuration themselves, as this could cause problems with
-     *     caching.</li>
+     *     implementations should respect, where applicable. Option values may
+     *     originate from the configuration, so implementations should not try
+     *     to read the configuration themselves, as this could also cause
+     *     problems with caching.</li>
      * </ul>
      *
      * @param opList       Operation list to process. As it will be equal to
      *                     the one passed to {@link #validate}, there is no
      *                     need to validate it again.
-     * @param sourceInfo   Information about the source image. This will be
-     *                     equal to the return value of {@link #readImageInfo},
-     *                     but it might not be the same instance, as it may
-     *                     have come from a cache.
+     * @param sourceInfo   Information about the source image. This will
+     *                     probably be equal to the return value of {@link
+     *                     #readImageInfo}, but it might not be the same
+     *                     instance, as it may have come from a cache.
      * @param outputStream Stream to write the image to, which should not be
      *                     closed.
      * @throws UnsupportedOutputFormatException Implementations can extend
@@ -167,8 +167,7 @@ public interface Processor extends AutoCloseable {
     Info readImageInfo() throws IOException;
 
     /**
-     * @param format Format of the source image. Will never be
-     *               {@link Format#UNKNOWN}.
+     * @param format Format of the source image. Never {@link Format#UNKNOWN}.
      * @throws UnsupportedSourceFormatException if the given format is not
      *                                          supported.
      */

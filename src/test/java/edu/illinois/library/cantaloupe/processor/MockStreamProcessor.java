@@ -21,6 +21,10 @@ public class MockStreamProcessor implements StreamProcessor {
     private StreamFactory streamFactory;
 
     @Override
+    public void close() {
+    }
+
+    @Override
     public Set<Format> getAvailableOutputFormats() {
         return new HashSet<>();
     }

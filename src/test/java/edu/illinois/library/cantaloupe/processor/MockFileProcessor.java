@@ -17,6 +17,10 @@ public class MockFileProcessor implements FileProcessor {
     private Path file;
 
     @Override
+    public void close() {
+    }
+
+    @Override
     public Set<Format> getAvailableOutputFormats() {
         return new HashSet<>();
     }
