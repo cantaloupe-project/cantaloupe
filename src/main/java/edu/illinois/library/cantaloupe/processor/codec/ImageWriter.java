@@ -6,6 +6,12 @@ import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 
+/**
+ * <p>Wraps a {@link javax.imageio.ImageWriter}.</p>
+ *
+ * <p>N.B.: Clients should remember to call {@link #dispose()} when done with
+ * an instance.</p>
+ */
 public interface ImageWriter {
 
     /**

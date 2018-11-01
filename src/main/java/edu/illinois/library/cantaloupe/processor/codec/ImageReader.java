@@ -15,6 +15,8 @@ import java.nio.file.Path;
 import java.util.Set;
 
 /**
+ * <p>Wraps an {@link javax.imageio.ImageReader}.</p>
+ *
  * <p>N.B.: Clients should remember to call {@link #dispose()} when done with
  * an instance.</p>
  */
@@ -114,10 +116,20 @@ public interface ImageReader {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Sets the source to a file.
+     */
     void setSource(Path imageFile) throws IOException;
 
+    /**
+     * Sets the source to a stream, which is not reusable. {@link
+     * #setSource(StreamFactory)} should be used instead, if possible.
+     */
     void setSource(ImageInputStream inputStream) throws IOException;
 
+    /**
+     * Sets the source to a {@link StreamFactory}.
+     */
     void setSource(StreamFactory streamFactory) throws IOException ;
 
 }
