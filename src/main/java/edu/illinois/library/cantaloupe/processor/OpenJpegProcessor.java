@@ -7,7 +7,6 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.Normalize;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -38,6 +37,8 @@ import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -138,6 +139,16 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
      *     OpenJpegProcessor operating on low bit-depth images</a>
      */
     private final static Format intermediateFormat = Format.BMP;
+
+    /**
+     * {@literal opj_decompress} has problems with some files that are missing
+     * a JP2 filename extension. When {@link #sourceFile} does not contain one,
+     * this will be set by {@link #setSourceFile(Path)} and used instead of
+     * {@link #sourceFile}.
+     *
+     * N.B.: the symlink must be cleaned up when processing is complete.
+     */
+    private Path sourceSymlink;
 
     private static String getPath() {
         String searchPath = Configuration.getInstance().
@@ -289,6 +300,19 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         }
     }
 
+    @Override
+    public void close() {
+        super.close();
+
+        if (sourceSymlink != null) {
+            TaskQueue.getInstance().submit(() -> {
+                LOGGER.trace("Deleting {}", sourceSymlink);
+                Files.deleteIfExists(sourceSymlink);
+                return null;
+            });
+        }
+    }
+
     /**
      * <p>Creates a symlink to {@literal /dev/stdout} in a temporary directory.
      * The symlink is for the exclusive use of the instance and should be
@@ -340,6 +364,14 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
             initialize();
         }
         return initializationException;
+    }
+
+    @Override
+    public Path getSourceFile() {
+        if (sourceSymlink != null) {
+            return sourceSymlink;
+        }
+        return sourceFile;
     }
 
     /**
@@ -544,7 +576,7 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         }
 
         command.add("-i");
-        command.add(sourceFile.toString());
+        command.add(getSourceFile().toString());
 
         for (Operation op : opList) {
             if (op instanceof Crop && !ignoreCrop) {
@@ -585,6 +617,51 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         command.add(outputFile.toString());
 
         return new ProcessBuilder(command);
+    }
+
+    @Override
+    public void setSourceFile(Path sourceFile) {
+        super.setSourceFile(sourceFile);
+
+        // N.B.: As of version 2.3.0, opj_decompress fails to open certain
+        // files without a .jp2 extension. This is most notably an issue when
+        // reading from the source cache, as those files don't have extensions.
+        //
+        // Our workaround, when we are reading a file without a recognized
+        // extension, is to create a symlink to the file to read that has the
+        // extension opj_decompress needs, remembering to delete it in close().
+        //
+        // We still must "touch" the source file, so that FilesystemCache knows
+        // it's been accessed.
+        final String filename = sourceFile.toString().toLowerCase();
+        if (!filename.endsWith(".jp2") && !filename.endsWith(".jpx") &&
+                !filename.endsWith(".j2k")) {
+            // Touch the file (in the background since we don't care about
+            // the result).
+            TaskQueue.getInstance().submit(() -> {
+                try {
+                    Files.setLastModifiedTime(sourceFile,
+                            FileTime.from(Instant.now()));
+                } catch (IOException e) {
+                    LOGGER.error("setSourceFile(): failed to touch file: {}",
+                            e.getMessage());
+                }
+            });
+
+            // Create the symlink.
+            try {
+                final String name = OpenJpegProcessor.class.getSimpleName() +
+                        "-" + UUID.randomUUID() + ".jp2";
+                sourceSymlink = Application.getTempPath().resolve(name);
+
+                LOGGER.trace("Creating link from {} to {}",
+                        sourceSymlink, sourceFile);
+                Files.createSymbolicLink(sourceSymlink, sourceFile);
+            } catch (IOException e) {
+                LOGGER.error("setSourceFile(): {}", e.getMessage());
+                sourceSymlink = null;
+            }
+        }
     }
 
 }
