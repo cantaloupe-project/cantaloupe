@@ -89,8 +89,6 @@ public final class ImageReaderFactory {
                 return new BMPImageReader();
             case GIF:
                 return new GIFImageReader();
-            case JP2:
-                return new JPEG2000ImageReader();
             case JPG:
                 return new JPEGImageReader();
             case PNG:

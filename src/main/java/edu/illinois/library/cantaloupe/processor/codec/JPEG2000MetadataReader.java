@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.util.Stopwatch;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +25,7 @@ import java.util.Arrays;
  *
  * @author Alex Dolski UIUC
  */
-final class JPEG2000MetadataReader {
+public final class JPEG2000MetadataReader implements AutoCloseable {
 
     /**
      * JP2 box (only the ones this reader cares about).
@@ -138,17 +139,22 @@ final class JPEG2000MetadataReader {
 
     private String xmp;
 
+    @Override
+    public void close() {
+        IOUtils.closeQuietly(inputStream);
+    }
+
     /**
      * @param inputStream Fresh stream from which to read the image.
      */
-    void setSource(ImageInputStream inputStream) {
+    public void setSource(ImageInputStream inputStream) {
         this.inputStream = inputStream;
     }
 
     /**
      * @return Component/sample size.
      */
-    int getComponentSize() throws IOException {
+    public int getComponentSize() throws IOException {
         readData();
         return componentSize;
     }
@@ -156,7 +162,7 @@ final class JPEG2000MetadataReader {
     /**
      * @return Height of the image grid.
      */
-    int getHeight() throws IOException {
+    public int getHeight() throws IOException {
         readData();
         return height;
     }
@@ -164,7 +170,7 @@ final class JPEG2000MetadataReader {
     /**
      * @return Number of components/bands.
      */
-    int getNumComponents() throws IOException {
+    public int getNumComponents() throws IOException {
         readData();
         return numComponents;
     }
@@ -177,7 +183,7 @@ final class JPEG2000MetadataReader {
      *         consulted, and not any tile-part segments, but these are rare in
      *         the wild.
      */
-    int getNumDecompositionLevels() throws IOException {
+    public int getNumDecompositionLevels() throws IOException {
         readData();
         return numDecompositionLevels;
     }
@@ -186,7 +192,7 @@ final class JPEG2000MetadataReader {
      * @return Height of a reference tile, or the full image height if the
      *         image is not tiled.
      */
-    int getTileHeight() throws IOException {
+    public int getTileHeight() throws IOException {
         readData();
         return tileHeight;
     }
@@ -195,7 +201,7 @@ final class JPEG2000MetadataReader {
      * @return Width of a reference tile, or the full image width if the image
      *         is not tiled.
      */
-    int getTileWidth() throws IOException {
+    public int getTileWidth() throws IOException {
         readData();
         return tileWidth;
     }
@@ -203,7 +209,7 @@ final class JPEG2000MetadataReader {
     /**
      * @return Width of the image grid.
      */
-    int getWidth() throws IOException {
+    public int getWidth() throws IOException {
         readData();
         return width;
     }
@@ -211,7 +217,7 @@ final class JPEG2000MetadataReader {
     /**
      * @return XMP string from a UUID box.
      */
-    String getXMP() throws IOException {
+    public String getXMP() throws IOException {
         readData();
         return xmp;
     }

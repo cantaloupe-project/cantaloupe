@@ -8,15 +8,18 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.processor.codec.BufferedImageInputStream;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
+import edu.illinois.library.cantaloupe.processor.codec.JPEG2000MetadataReader;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import edu.illinois.library.cantaloupe.util.CommandLocator;
 import org.apache.commons.io.IOUtils;
@@ -25,6 +28,8 @@ import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -319,19 +324,38 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         return initializationException;
     }
 
-    /**
-     * Override that disposes the reader since it won't be needed for anything
-     * else.
-     */
     @Override
     public Info readImageInfo() throws IOException {
-        Info info;
-        try {
-            info = super.readImageInfo();
-        } finally {
-            getReader().dispose();
+        final Info info = new Info();
+        info.setSourceFormat(getSourceFormat());
+
+        try (final JPEG2000MetadataReader reader = new JPEG2000MetadataReader()) {
+            ImageInputStream inputStream;
+            if (streamFactory != null) {
+                inputStream = streamFactory.newImageInputStream();
+            } else {
+                inputStream = new FileImageInputStream(sourceFile.toFile());
+            }
+            reader.setSource(new BufferedImageInputStream(inputStream));
+
+            final Orientation orientation = getEffectiveOrientation();
+            info.setNumResolutions(reader.getNumDecompositionLevels() + 1);
+
+            Info.Image image = info.getImages().get(0);
+            image.setOrientation(orientation);
+            image.setSize(new Dimension(reader.getWidth(), reader.getHeight()));
+            image.setTileSize(new Dimension(reader.getTileWidth(), reader.getTileHeight()));
+            // JP2 tile dimensions are inverted, so swap them
+            if ((image.width > image.height && image.tileWidth < image.tileHeight) ||
+                    (image.width < image.height && image.tileWidth > image.tileHeight)) {
+                int tmp = image.tileWidth;
+                image.tileWidth = image.tileHeight;
+                image.tileHeight = tmp;
+            }
+
+            LOGGER.trace("readImageInfo(): {}", info.toJSON());
+            return info;
         }
-        return info;
     }
 
     @Override

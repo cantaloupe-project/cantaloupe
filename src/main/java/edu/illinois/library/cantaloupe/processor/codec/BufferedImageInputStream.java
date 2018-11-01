@@ -16,7 +16,7 @@ import java.nio.ByteBuffer;
  * @author last modified by $Author: haraldk$
  * @version $Id: BufferedFileImageInputStream.java,v 1.0 May 15, 2008 4:36:49 PM haraldk Exp$
  */
-class BufferedImageInputStream extends ImageInputStreamImpl
+public class BufferedImageInputStream extends ImageInputStreamImpl
         implements ImageInputStream {
 
     private static final int DEFAULT_BUFFER_SIZE = 8192;
@@ -24,12 +24,12 @@ class BufferedImageInputStream extends ImageInputStreamImpl
     private ByteBuffer buffer;
     private ImageInputStream stream;
 
-    BufferedImageInputStream(ImageInputStream pStream) throws IOException {
+    public BufferedImageInputStream(ImageInputStream pStream) throws IOException {
         this(pStream, DEFAULT_BUFFER_SIZE);
     }
 
-    BufferedImageInputStream(ImageInputStream pStream,
-                             int pBufferSize) throws IOException {
+    public BufferedImageInputStream(ImageInputStream pStream,
+                                    int pBufferSize) throws IOException {
         stream = pStream;
         streamPos = pStream.getStreamPosition();
         buffer = ByteBuffer.allocate(pBufferSize);
