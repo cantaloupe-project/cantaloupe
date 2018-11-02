@@ -56,9 +56,11 @@ import java.util.stream.Collectors;
  * <ul>
  *     <li>It doesn't need to invoke a process.</li>
  *     <li>It doesn't have to do intermediary conversions to and from TIFF.</li>
- *     <li>It doesn't have to do differential scaling in Java, and instead uses
- *     the high-quality, hardware-accelerated scaler built into
- *     {@link kdu_jni.Kdu_region_decompressor}.</li>
+ *     <li>It doesn't do differential scaling in Java, and instead uses the
+ *     high-quality optimized scaler built into {@link
+ *     kdu_jni.Kdu_region_decompressor}.</li>
+ *     <li>It doesn't have to open the same source image twice.</li>
+ *     <li>Thanks to all of the above, it's significantly faster.</li>
  *     <li>It can read from both {@link FileProcessor files} and {@link
  *     StreamProcessor streams}.</li>
  *     <li>It can copy source XMP metadata into derivatives.</li>
@@ -66,11 +68,6 @@ import java.util.stream.Collectors;
  *     <li>It doesn't have to resort to silly tricks involving symlinks and
  *     {@literal /dev/stdout}.</li>
  * </ul>
- *
- * <p>The only real drawback is that the {@link kdu_jni.Kdu_region_decompressor}
- * used by {@link JPEG2000KakaduImageReader} is high-level API that doesn't
- * benefit from the expert tuning of {@literal kdu_expand}, and isn't able to
- * achieve the same effective performance.</p>
  *
  * <h1>Usage</h1>
  *

@@ -712,10 +712,10 @@ title: Processors
 <h3 id="KakaduDemoProcessor">KakaduDemoProcessor</h3>
 
 <p class="text-info">
-  <i class="fa fa-info-circle"></i> This processor was named KakaduProcessor in versions prior to 4.0. It was renamed in order to distinguish it from <a href="#KakaduNativeProcessor">KakaduNativeProcessor</a>, which is new in 4.0.
+  <i class="fa fa-info-circle"></i> This processor was named KakaduProcessor in versions prior to 4.0, and it was the only option for using Kakadu in Cantaloupe. It was renamed in order to distinguish it from <a href="#KakaduNativeProcessor">KakaduNativeProcessor</a>, which debuted in 4.0. Now that that processor is available, there is little reason to use this one anymore.
 </p>
 
-<p><a href="http://kakadusoftware.com">Kakadu</a> is widely considered the fastest available general-purpose JPEG2000 codec. This processor uses Kakadu's <span class="filename">kdu_expand</span> demo application to decode JPEG2000 source images. All other operations are performed using Java 2D.</p>
+<p><a href="http://kakadusoftware.com">Kakadu</a> is widely considered the fastest available general-purpose JPEG2000 codec. This processor uses Kakadu's <span class="filename">kdu_expand</span> demo application to decode JPEG2000 source images. All subsequent operations are performed using Java 2D.</p>
 
 <p>The Kakadu demo binaries must be installed in order for this processor to work. It's recommended to obtain these from the <a href="http://kakadusoftware.com/downloads/">Kakadu website</a> and install them per Kakadu's instructions.</p>
 
@@ -732,20 +732,21 @@ title: Processors
 
 <h3 id="KakaduNativeProcessor">KakaduNativeProcessor</h3>
 
-<p><a href="http://kakadusoftware.com">Kakadu</a> is a commercial JPEG2000 codec that is widely considered the fastest available general-purpose JP2 codec. In contrast to <a href="#KakaduDemoProcessor">KakaduDemoProcessor</a>, this processor calls directly into the Kakadu native library to decode JPEG2000 source images, which offers a number of benefits:</p>
+<p><a href="http://kakadusoftware.com">Kakadu</a> is a commercial JPEG2000 codec that is widely considered the fastest available general-purpose JP2 codec. In contrast to <a href="#KakaduDemoProcessor">KakaduDemoProcessor</a>, this processor calls directly into the Kakadu library to decode JPEG2000 source images, and because of that:</p>
 
 <ul>
   <li>It doesn't need to invoke a process.</li>
   <li>It doesn't have to do intermediary format conversions.</li>
-  <li>It uses the fast, high-quality interpolation offered by the Kakadu library for differential scaling.</li>
+  <li>It can use the fast, high-quality interpolation offered by the Kakadu library for differential scaling.</li>
   <li>It can read from both FileSources and StreamSources.</li>
   <li>It respects <code>processor.metadata.preserve</code>.</li>
   <li>It works equally efficiently in Windows.</li>
+  <li>It's significantly faster overall.</li>
 </ul>
 
 <h4>Configuration</h4>
 
-<p>To get this processor to work, it must be able to locate the Kakadu JNI binding and shared library. The extracted release archive contains a folder named <span class="filename">deps</span>, which contains compiled binaries for several platforms. Copy the files from the platform-specific <span class="filename">lib</span> folder into one of the locations on the Java library path. These are logged at application startup in a message that looks like:</p>
+<p>This processor must be able to locate the Kakadu JNI binding and shared library. The extracted release archive contains a folder named <span class="filename">deps</span>, which contains compiled binaries for several platforms. Copy the files from the platform-specific <span class="filename">lib</span> folder into one of the locations on the Java library path, which are logged at application startup in a message that looks like:</p>
 
 <pre>
   [main] INFO  e.i.l.c.ApplicationContextListener - Java library path: .....

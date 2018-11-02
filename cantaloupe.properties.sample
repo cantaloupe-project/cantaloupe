@@ -258,7 +258,7 @@ processor.selection_strategy = AutomaticSelectionStrategy
 # `OpenJpegProcessor`, `JaiProcessor`, `PdfBoxProcessor`, and
 # `FfmpegProcessor`.
 
-# These extension-specific definitions are optional.
+# These format-specific definitions are optional.
 processor.ManualSelectionStrategy.avi = FfmpegProcessor
 processor.ManualSelectionStrategy.bmp =
 processor.ManualSelectionStrategy.dcm = ImageMagickProcessor
