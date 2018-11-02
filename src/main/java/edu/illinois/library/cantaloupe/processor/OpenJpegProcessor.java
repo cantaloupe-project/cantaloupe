@@ -8,19 +8,26 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rectangle;
+import edu.illinois.library.cantaloupe.operation.ColorTransform;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
+import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.Sharpen;
+import edu.illinois.library.cantaloupe.operation.Transpose;
+import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
+import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.processor.codec.BufferedImageInputStream;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.JPEG2000MetadataReader;
-import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
+import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.util.CommandLocator;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +36,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -52,6 +58,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * <p>Processor using the OpenJPEG {@literal opj_decompress} command-line
@@ -94,8 +101,7 @@ import java.util.regex.Pattern;
  * Earlier versions echo log messages to stdout, which can cause problems with
  * some images.</p>
  */
-class OpenJpegProcessor extends AbstractJava2DProcessor
-        implements FileProcessor {
+class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(OpenJpegProcessor.class);
@@ -110,6 +116,34 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
     private static final short FALLBACK_NUM_DWT_LEVELS = 5;
 
     private static final String OPJ_DECOMPRESS_NAME = "opj_decompress";
+
+    private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
+            Collections.unmodifiableSet(EnumSet.of(
+                    ProcessorFeature.MIRRORING,
+                    ProcessorFeature.REGION_BY_PERCENT,
+                    ProcessorFeature.REGION_BY_PIXELS,
+                    ProcessorFeature.REGION_SQUARE,
+                    ProcessorFeature.ROTATION_ARBITRARY,
+                    ProcessorFeature.ROTATION_BY_90S,
+                    ProcessorFeature.SIZE_ABOVE_FULL,
+                    ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
+                    ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
+                    ProcessorFeature.SIZE_BY_HEIGHT,
+                    ProcessorFeature.SIZE_BY_PERCENT,
+                    ProcessorFeature.SIZE_BY_WIDTH,
+                    ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
+    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
+            SUPPORTED_IIIF_1_1_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
+            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
+            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
+            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
+            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
+    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
+            SUPPORTED_IIIF_2_0_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
+            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
+            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
+            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
+            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
 
     /**
      * Used only in Windows.
@@ -143,6 +177,8 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
      *     OpenJpegProcessor operating on low bit-depth images</a>
      */
     private final static Format intermediateFormat = Format.BMP;
+
+    private Path sourceFile;
 
     /**
      * {@literal opj_decompress} has problems with some files that are missing
@@ -301,8 +337,6 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
     @Override
     public void close() {
-        super.close();
-
         if (sourceSymlink != null) {
             TaskQueue.getInstance().submit(() -> {
                 LOGGER.trace("Deleting {}", sourceSymlink);
@@ -351,10 +385,89 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
 
     @Override
     public Path getSourceFile() {
-        if (sourceSymlink != null) {
-            return sourceSymlink;
-        }
         return sourceFile;
+    }
+
+    @Override
+    public Set<ProcessorFeature> getSupportedFeatures() {
+        Set<ProcessorFeature> features;
+        if (!getAvailableOutputFormats().isEmpty()) {
+            features = SUPPORTED_FEATURES;
+        } else {
+            features = Collections.unmodifiableSet(Collections.emptySet());
+        }
+        return features;
+    }
+
+    @Override
+    public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
+    getSupportedIIIF1Qualities() {
+        Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
+                qualities;
+        if (!getAvailableOutputFormats().isEmpty()) {
+            qualities = SUPPORTED_IIIF_1_1_QUALITIES;
+        } else {
+            qualities = Collections.unmodifiableSet(Collections.emptySet());
+        }
+        return qualities;
+    }
+
+    @Override
+    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
+    getSupportedIIIF2Qualities() {
+        Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
+                qualities;
+        if (!getAvailableOutputFormats().isEmpty()) {
+            qualities = SUPPORTED_IIIF_2_0_QUALITIES;
+        } else {
+            qualities = Collections.unmodifiableSet(Collections.emptySet());
+        }
+        return qualities;
+    }
+
+    @Override
+    public void setSourceFile(Path sourceFile) {
+        this.sourceFile = sourceFile;
+
+        // N.B.: As of version 2.3.0, opj_decompress fails to open certain
+        // files without a .jp2 extension. This is most notably an issue when
+        // reading from the source cache, as those files don't have extensions.
+        //
+        // Our workaround, when we are reading a file without a recognized
+        // extension, is to create a symlink to the file to read that has the
+        // extension opj_decompress needs, remembering to delete it in close().
+        //
+        // We still must "touch" the source file, so that FilesystemCache knows
+        // it's been accessed.
+        final String filename = sourceFile.toString().toLowerCase();
+        if (!filename.endsWith(".jp2") && !filename.endsWith(".jpx") &&
+                !filename.endsWith(".j2k")) {
+            // Touch the file (in the background since we don't care about
+            // the result).
+            TaskQueue.getInstance().submit(() -> {
+                try {
+                    Files.setLastModifiedTime(sourceFile,
+                            FileTime.from(Instant.now()));
+                } catch (IOException e) {
+                    LOGGER.error("setSourceFile(): failed to touch file: {}",
+                            e.getMessage());
+                }
+            });
+
+            // Create the symlink.
+            try {
+                final String name = OpenJpegProcessor.class.getSimpleName() +
+                        "-" + UUID.randomUUID() + ".jp2";
+                sourceSymlink = Application.getTempPath().resolve(name);
+
+                LOGGER.trace("Creating link from {} to {}",
+                        sourceSymlink, sourceFile);
+                Files.createSymbolicLink(sourceSymlink, sourceFile);
+            } catch (IOException e) {
+                LOGGER.error("setSourceFile(): {}", e.getMessage());
+                sourceSymlink = null;
+            }
+        }
     }
 
     @Override
@@ -363,21 +476,17 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
         info.setSourceFormat(getSourceFormat());
 
         try (final JPEG2000MetadataReader reader = new JPEG2000MetadataReader()) {
-            ImageInputStream inputStream;
-            if (streamFactory != null) {
-                inputStream = streamFactory.newImageInputStream();
-            } else {
-                inputStream = new FileImageInputStream(sourceFile.toFile());
-            }
-            reader.setSource(new BufferedImageInputStream(inputStream));
+            reader.setSource(new BufferedImageInputStream(
+                    new FileImageInputStream(getSourceFile().toFile())));
 
-            final Orientation orientation = getEffectiveOrientation();
             info.setNumResolutions(reader.getNumDecompositionLevels() + 1);
 
             Info.Image image = info.getImages().get(0);
-            image.setOrientation(orientation);
-            image.setSize(new Dimension(reader.getWidth(), reader.getHeight()));
-            image.setTileSize(new Dimension(reader.getTileWidth(), reader.getTileHeight()));
+            image.setSize(new Dimension(
+                    reader.getWidth(), reader.getHeight()));
+            image.setTileSize(new Dimension(
+                    reader.getTileWidth(), reader.getTileHeight()));
+            // TODO: set orientation
             // JP2 tile dimensions are inverted, so swap them
             if ((image.width > image.height && image.tileWidth < image.tileHeight) ||
                     (image.width < image.height && image.tileWidth > image.tileHeight)) {
@@ -473,10 +582,8 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                     new ImageReaderFactory().newImageReader(is, Format.BMP);
             try {
                 final BufferedImage image = reader.read();
-                Set<ReaderHint> hints = EnumSet.of(ReaderHint.ALREADY_CROPPED);
 
-                postProcess(image, hints, opList, info,
-                        reductionFactor, outputStream);
+                postProcess(image, opList, info, reductionFactor, outputStream);
             } finally {
                 reader.dispose();
             }
@@ -513,11 +620,8 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                     processInputStream, Format.BMP);
             try {
                 final BufferedImage image = reader.read();
-                final Set<ReaderHint> hints =
-                        EnumSet.of(ReaderHint.ALREADY_CROPPED);
 
-                postProcess(image, hints, opList, info,
-                        reductionFactor, outputStream);
+                postProcess(image, opList, info, reductionFactor, outputStream);
 
                 final int code = process.waitFor();
                 if (code != 0) {
@@ -539,6 +643,65 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
                 return null;
             });
         }
+    }
+
+    /**
+     * @param image           Image to process.
+     * @param opList          Operations to apply to the image.
+     * @param imageInfo       Information about the source image.
+     * @param reductionFactor
+     * @param outputStream    Output stream to write the resulting image to.
+     */
+    private void postProcess(BufferedImage image,
+                             final OperationList opList,
+                             final Info imageInfo,
+                             final ReductionFactor reductionFactor,
+                             final OutputStream outputStream) throws IOException {
+        final Dimension fullSize = imageInfo.getSize();
+
+        image = Java2DUtil.reduceTo8Bits(image);
+
+        // Retain a reference to the Crop operation for subsequent operations
+        // to refer to.
+        Crop crop = (Crop) opList.getFirst(Crop.class);
+        if (crop == null) {
+            crop = new Crop(0, 0, image.getWidth(), image.getHeight(),
+                    imageInfo.getOrientation(), imageInfo.getSize());
+        }
+
+        // Redactions happen immediately after cropping.
+        final Set<Redaction> redactions = opList.stream()
+                .filter(op -> op instanceof Redaction)
+                .filter(op -> op.hasEffect(fullSize, opList))
+                .map(op -> (Redaction) op)
+                .collect(Collectors.toSet());
+        Java2DUtil.applyRedactions(image, fullSize, crop,
+                new double[] { 1.0, 1.0 }, reductionFactor,
+                opList.getScaleConstraint(), redactions);
+
+        // Apply remaining operations.
+        for (Operation op : opList) {
+            if (op.hasEffect(fullSize, opList)) {
+                if (op instanceof Scale) {
+                    image = Java2DUtil.scale(image, (Scale) op,
+                            opList.getScaleConstraint(), reductionFactor);
+                } else if (op instanceof Transpose) {
+                    image = Java2DUtil.transpose(image, (Transpose) op);
+                } else if (op instanceof Rotate) {
+                    image = Java2DUtil.rotate(image, (Rotate) op);
+                } else if (op instanceof ColorTransform) {
+                    image = Java2DUtil.transformColor(image, (ColorTransform) op);
+                } else if (op instanceof Sharpen) {
+                    image = Java2DUtil.sharpen(image, (Sharpen) op);
+                } else if (op instanceof Overlay) {
+                    Java2DUtil.applyOverlay(image, (Overlay) op);
+                }
+            }
+        }
+
+        ImageWriter writer = new ImageWriterFactory()
+                .newImageWriter((Encode) opList.getFirst(Encode.class));
+        writer.write(image, outputStream);
     }
 
     /**
@@ -627,51 +790,6 @@ class OpenJpegProcessor extends AbstractJava2DProcessor
             }
         }
         return size;
-    }
-
-    @Override
-    public void setSourceFile(Path sourceFile) {
-        super.setSourceFile(sourceFile);
-
-        // N.B.: As of version 2.3.0, opj_decompress fails to open certain
-        // files without a .jp2 extension. This is most notably an issue when
-        // reading from the source cache, as those files don't have extensions.
-        //
-        // Our workaround, when we are reading a file without a recognized
-        // extension, is to create a symlink to the file to read that has the
-        // extension opj_decompress needs, remembering to delete it in close().
-        //
-        // We still must "touch" the source file, so that FilesystemCache knows
-        // it's been accessed.
-        final String filename = sourceFile.toString().toLowerCase();
-        if (!filename.endsWith(".jp2") && !filename.endsWith(".jpx") &&
-                !filename.endsWith(".j2k")) {
-            // Touch the file (in the background since we don't care about
-            // the result).
-            TaskQueue.getInstance().submit(() -> {
-                try {
-                    Files.setLastModifiedTime(sourceFile,
-                            FileTime.from(Instant.now()));
-                } catch (IOException e) {
-                    LOGGER.error("setSourceFile(): failed to touch file: {}",
-                            e.getMessage());
-                }
-            });
-
-            // Create the symlink.
-            try {
-                final String name = OpenJpegProcessor.class.getSimpleName() +
-                        "-" + UUID.randomUUID() + ".jp2";
-                sourceSymlink = Application.getTempPath().resolve(name);
-
-                LOGGER.trace("Creating link from {} to {}",
-                        sourceSymlink, sourceFile);
-                Files.createSymbolicLink(sourceSymlink, sourceFile);
-            } catch (IOException e) {
-                LOGGER.error("setSourceFile(): {}", e.getMessage());
-                sourceSymlink = null;
-            }
-        }
     }
 
 }
