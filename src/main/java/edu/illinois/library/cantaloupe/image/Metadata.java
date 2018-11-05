@@ -1,6 +1,4 @@
-package edu.illinois.library.cantaloupe.processor.codec;
-
-import edu.illinois.library.cantaloupe.image.Orientation;
+package edu.illinois.library.cantaloupe.image;
 
 /**
  * Normalized image metadata.

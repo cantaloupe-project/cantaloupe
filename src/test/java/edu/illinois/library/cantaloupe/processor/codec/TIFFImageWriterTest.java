@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.processor.codec;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;

@@ -30,7 +30,7 @@
  * <h1>Metadata</h1>
  *
  * <p>Metadata may be encoded in different ways in different image formats.
- * {@link edu.illinois.library.cantaloupe.processor.codec.Metadata} is an
+ * {@link edu.illinois.library.cantaloupe.image.Metadata} is an
  * interface for normalized metadata that can either be returned from a reader,
  * or assembled pretty easily, and then passed to a writer which codes it
  * differently depending on the format being written.</p>

@@ -4,11 +4,10 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.codec.BeanMetadata;
-import edu.illinois.library.cantaloupe.processor.codec.Metadata;
+import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.resource.iiif.v1.Quality;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.HashSet;
