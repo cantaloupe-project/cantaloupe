@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.image;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 /**
  * Normalized image metadata.
@@ -13,9 +14,22 @@ public class Metadata {
     private String xmp;
     private Orientation orientation;
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        } else if (obj instanceof Metadata) {
+            Metadata other = (Metadata) obj;
+            return Objects.equals(other.exif, exif) &&
+                    Objects.equals(other.iptc, iptc) &&
+                    Objects.equals(other.xmp, xmp);
+        }
+        return super.equals(obj);
+    }
+
     /**
      * @return EXIF data, or {@literal null} if none is present. The data may
-     *         be in a byte array or a {@link
+     *         be a raw byte array or a {@link
      *         it.geosolutions.imageio.plugins.tiff.TIFFDirectory}.
      */
     public Object getEXIF() {
@@ -24,7 +38,7 @@ public class Metadata {
 
     /**
      * @return IPTC IIM data, or {@literal null} if none is present. The data
-     *         may be in a byte array or a {@link
+     *         may be a raw byte array or a {@link
      *         it.geosolutions.imageio.plugins.tiff.TIFFDirectory}.
      */
     public Object getIPTC() {
@@ -48,6 +62,22 @@ public class Metadata {
      */
     public String getXMP() {
         return xmp;
+    }
+
+    @Override
+    public int hashCode() {
+        // TODO: this is a bad implementation
+        int code = 0;
+        if (exif != null) {
+            code += exif.hashCode();
+        }
+        if (iptc != null) {
+            code += iptc.hashCode();
+        }
+        if (xmp != null) {
+            code += xmp.hashCode();
+        }
+        return Integer.hashCode(code);
     }
 
     public void setEXIF(Object exif) {
