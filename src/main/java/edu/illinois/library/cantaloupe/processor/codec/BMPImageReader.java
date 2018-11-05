@@ -6,9 +6,6 @@ import edu.illinois.library.cantaloupe.image.Format;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.metadata.IIOMetadata;
-import java.io.IOException;
-
 final class BMPImageReader extends AbstractIIOImageReader
         implements ImageReader {
 
@@ -39,10 +36,8 @@ final class BMPImageReader extends AbstractIIOImageReader
     }
 
     @Override
-    public Metadata getMetadata(int imageIndex) throws IOException {
-        final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
-        final String metadataFormat = metadata.getNativeMetadataFormatName();
-        return new NullMetadata(metadata, metadataFormat);
+    public Metadata getMetadata(int imageIndex) {
+        return new BeanMetadata();
     }
 
     @Override
