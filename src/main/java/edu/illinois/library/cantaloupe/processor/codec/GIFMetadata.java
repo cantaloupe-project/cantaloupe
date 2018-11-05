@@ -2,12 +2,13 @@ package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class GIFMetadata implements Metadata {
+public class GIFMetadata extends Metadata {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(GIFMetadata.class);
@@ -85,7 +86,7 @@ public class GIFMetadata implements Metadata {
             try {
                 xmp = reader.getXMP();
                 if (xmp != null) {
-                    xmp = Util.trimXMP(xmp);
+                    xmp = StringUtils.trimXMP(xmp);
                 }
             } catch (IOException e) {
                 LOGGER.warn("getXMP(): {}", e.getMessage());

@@ -146,6 +146,19 @@ public final class StringUtils {
         return str;
     }
 
+    /**
+     * Strips any enclosing tags or other content around the {@literal rdf:RDF}
+     * element within an RDF/XML XMP string.
+     */
+    public static String trimXMP(String xmp) {
+        final int start = xmp.indexOf("<rdf:RDF");
+        final int end = xmp.indexOf("</rdf:RDF");
+        if (start > -1 && end > -1) {
+            xmp = xmp.substring(start, end + 10);
+        }
+        return xmp;
+    }
+
     private StringUtils() {}
 
 }

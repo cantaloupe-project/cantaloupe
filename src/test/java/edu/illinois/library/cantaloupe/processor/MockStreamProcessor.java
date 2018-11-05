@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.processor.codec.BeanMetadata;
 import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
@@ -66,11 +65,6 @@ public class MockStreamProcessor implements StreamProcessor {
     @Override
     public Info readImageInfo(){
         return new Info();
-    }
-
-    @Override
-    public Metadata readMetadata() {
-        return new BeanMetadata();
     }
 
     @Override

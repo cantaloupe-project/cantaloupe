@@ -1,12 +1,11 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
-import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
 
-import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import java.nio.charset.StandardCharsets;
 
@@ -14,14 +13,12 @@ import java.nio.charset.StandardCharsets;
  * @see <a href="http://docs.oracle.com/javase/7/docs/api/javax/imageio/metadata/doc-files/jpeg_metadata.html">
  *      JPEG Metadata Format Specification and Usage Notes</a>
  */
-class JPEGMetadata extends AbstractMetadata implements Metadata {
+class JPEGMetadata extends IIOMetadata {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(JPEGMetadata.class);
 
-    private boolean checkedForExif = false;
-    private boolean checkedForIptc = false;
-    private boolean checkedForXmp = false;
+    private boolean checkedForExif, checkedForIptc, checkedForXmp;
 
     /** Cached by getEXIF() */
     private byte[] exif;
@@ -35,11 +32,7 @@ class JPEGMetadata extends AbstractMetadata implements Metadata {
     /** Cached by getXMP() */
     private String xmp;
 
-    /**
-     * @param metadata
-     * @param formatName
-     */
-    JPEGMetadata(IIOMetadata metadata, String formatName) {
+    JPEGMetadata(javax.imageio.metadata.IIOMetadata metadata, String formatName) {
         super(metadata, formatName);
     }
 
@@ -141,9 +134,7 @@ class JPEGMetadata extends AbstractMetadata implements Metadata {
                     // Check the first byte to see whether it's EXIF or XMP.
                     if (data[0] == 104) {
                         xmp = new String(data, StandardCharsets.UTF_8);
-                        if (xmp != null) {
-                            xmp = Util.trimXMP(xmp);
-                        }
+                        xmp = StringUtils.trimXMP(xmp);
                     }
                 }
             }

@@ -1,16 +1,16 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
+import edu.illinois.library.cantaloupe.image.Metadata;
 import org.slf4j.Logger;
 
-import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 
-abstract class AbstractMetadata {
+abstract class IIOMetadata extends Metadata {
 
     private String formatName;
-    private IIOMetadata iioMetadata;
+    private javax.imageio.metadata.IIOMetadata iioMetadata;
 
-    AbstractMetadata(IIOMetadata metadata, String format) {
+    IIOMetadata(javax.imageio.metadata.IIOMetadata metadata, String format) {
         iioMetadata = metadata;
         formatName = format;
     }
@@ -23,12 +23,10 @@ abstract class AbstractMetadata {
         return formatName;
     }
 
-    IIOMetadata getIIOMetadata() {
+    javax.imageio.metadata.IIOMetadata getIIOMetadata() {
         return iioMetadata;
     }
 
     abstract Logger getLogger();
-
-    abstract String getXMP();
 
 }

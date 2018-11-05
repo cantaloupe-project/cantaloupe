@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 import kdu_jni.Jp2_threadsafe_family_src;
 import kdu_jni.Jpx_codestream_source;
 import kdu_jni.Jpx_input_box;
@@ -314,7 +315,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                             byte[] buffer = new byte[bufferSize];
                             xmpBox.Read(buffer, bufferSize);
                             xmp = new String(buffer, StandardCharsets.UTF_8);
-                            xmp = Util.trimXMP(xmp);
+                            xmp = StringUtils.trimXMP(xmp);
                         } finally {
                             xmpBox.Close();
                         }

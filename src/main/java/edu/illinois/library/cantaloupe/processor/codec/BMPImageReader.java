@@ -38,7 +38,7 @@ final class BMPImageReader extends AbstractIIOImageReader
 
     @Override
     public Metadata getMetadata(int imageIndex) {
-        return new BeanMetadata();
+        return new Metadata();
     }
 
     @Override

@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
@@ -18,7 +19,6 @@ import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
-import edu.illinois.library.cantaloupe.processor.codec.BeanMetadata;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.JPEG2000KakaduImageReader;
@@ -340,7 +340,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
         if (opList.getFirst(MetadataCopy.class) != null) {
             String xmp = reader.getXMP();
             if (xmp != null) {
-                BeanMetadata metadata = new BeanMetadata();
+                Metadata metadata = new Metadata();
                 metadata.setXMP(xmp);
                 writer.setMetadata(metadata);
             }

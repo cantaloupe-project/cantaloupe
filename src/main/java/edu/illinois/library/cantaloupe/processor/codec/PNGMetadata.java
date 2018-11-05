@@ -1,12 +1,11 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
-import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
 
-import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -19,7 +18,7 @@ import java.util.Map;
  * @see <a href="http://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/PNG.html">
  *      PNG Tags</a>
  */
-class PNGMetadata extends AbstractMetadata implements Metadata {
+class PNGMetadata extends IIOMetadata {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(PNGMetadata.class);
@@ -68,11 +67,8 @@ class PNGMetadata extends AbstractMetadata implements Metadata {
         RECOGNIZED_TAGS.put("Warning", "Warning");
     }
 
-    /**
-     * @param metadata
-     * @param formatName
-     */
-    PNGMetadata(IIOMetadata metadata, String formatName) {
+    PNGMetadata(javax.imageio.metadata.IIOMetadata metadata,
+                String formatName) {
         super(metadata, formatName);
     }
 
@@ -152,7 +148,7 @@ class PNGMetadata extends AbstractMetadata implements Metadata {
                                 .getAttribute("text")
                                 .getBytes(Charset.forName("UTF-8"));
                         xmp = new String(xmpBytes, StandardCharsets.UTF_8);
-                        xmp = Util.trimXMP(xmp);
+                        xmp = StringUtils.trimXMP(xmp);
                     }
                 }
             }

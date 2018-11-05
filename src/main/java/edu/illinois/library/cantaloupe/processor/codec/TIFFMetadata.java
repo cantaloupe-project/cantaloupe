@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
-import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.EXIFParentTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.metadata.IIOInvalidTreeException;
-import javax.imageio.metadata.IIOMetadata;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,7 +21,7 @@ import java.util.Set;
  * @see <a href="http://www.digitalpreservation.gov/formats/content/tiff_tags.shtml">
  *      Tags for TIFF, DNG, and Related Specifications</a>
  */
-class TIFFMetadata extends AbstractMetadata implements Metadata {
+class TIFFMetadata extends IIOMetadata {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(TIFFMetadata.class);
@@ -70,11 +69,8 @@ class TIFFMetadata extends AbstractMetadata implements Metadata {
      */
     private String xmp;
 
-    /**
-     * @param metadata
-     * @param formatName
-     */
-    TIFFMetadata(IIOMetadata metadata, String formatName) {
+    TIFFMetadata(javax.imageio.metadata.IIOMetadata metadata,
+                 String formatName) {
         super(metadata, formatName);
         try {
             ifd = TIFFDirectory.createFromMetadata(getIIOMetadata());
@@ -153,7 +149,7 @@ class TIFFMetadata extends AbstractMetadata implements Metadata {
                 xmp = new String(
                         (byte[]) xmpField.getData(),
                         StandardCharsets.UTF_8);
-                xmp = Util.trimXMP(xmp);
+                xmp = StringUtils.trimXMP(xmp);
             }
         }
         return xmp;
