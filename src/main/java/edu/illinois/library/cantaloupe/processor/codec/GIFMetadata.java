@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.image.Orientation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.metadata.IIOMetadataNode;
 import java.io.IOException;
 
 public class GIFMetadata implements Metadata {
@@ -24,11 +23,6 @@ public class GIFMetadata implements Metadata {
 
     GIFMetadata(GIFMetadataReader reader) {
         this.reader = reader;
-    }
-
-    @Override
-    public IIOMetadataNode getAsTree() {
-        return null;
     }
 
     int getDelayTime() {

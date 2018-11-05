@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.Orientation;
 
-import javax.imageio.metadata.IIOMetadataNode;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -10,15 +9,9 @@ import java.nio.charset.StandardCharsets;
  */
 public class BeanMetadata implements Metadata {
 
-    private IIOMetadataNode tree;
     private Object exif, iptc;
     private String xmp;
     private Orientation orientation;
-
-    @Override
-    public IIOMetadataNode getAsTree() {
-        return tree;
-    }
 
     @Override
     public Object getEXIF() {
@@ -50,10 +43,6 @@ public class BeanMetadata implements Metadata {
 
     public void setOrientation(Orientation orientation) {
         this.orientation = orientation;
-    }
-
-    public void setTree(IIOMetadataNode tree) {
-        this.tree = tree;
     }
 
     public void setXMP(byte[] xmp) {

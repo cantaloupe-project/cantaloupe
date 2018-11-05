@@ -54,9 +54,12 @@ final class TIFFImageReader extends AbstractIIOImageReader
 
     @Override
     public Compression getCompression(int imageIndex) throws IOException {
-        String compStr = "";
-        final IIOMetadataNode node = getMetadata(0).getAsTree();
+        final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
+        final IIOMetadataNode node =
+                (IIOMetadataNode) metadata.getAsTree(metadata.getNativeMetadataFormatName());
         final NodeList fields = node.getElementsByTagName("TIFFField");
+
+        String compStr = "";
         for (int i = 0; i < fields.getLength(); i++) {
             if ("259".equals(fields.item(i).getAttributes().getNamedItem("number").getNodeValue())) {
                 compStr = fields.item(i).getChildNodes().item(0).

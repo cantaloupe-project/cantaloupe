@@ -2,19 +2,10 @@ package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.Orientation;
 
-import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.metadata.IIOMetadataNode;
-
 /**
  * Normalized image metadata.
  */
 public interface Metadata {
-
-    /**
-     * @return Metadata as an Image I/O DOM tree, or {@literal null} if the
-     *         instance is not backed by an {@link IIOMetadata}.
-     */
-    IIOMetadataNode getAsTree();
 
     /**
      * @return EXIF data, or {@literal null} if none is present. The data may
