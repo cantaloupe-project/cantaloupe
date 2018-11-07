@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -27,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -50,6 +52,7 @@ class PdfBoxProcessor extends AbstractProcessor
     private static final int DEFAULT_DPI = 150;
 
     private PDDocument doc;
+    private Metadata metadata;
     private Path sourceFile;
     private StreamFactory streamFactory;
 
@@ -68,6 +71,7 @@ class PdfBoxProcessor extends AbstractProcessor
     public void close() {
         IOUtils.closeQuietly(doc);
         doc = null;
+        metadata = null;
     }
 
     @Override
@@ -129,8 +133,8 @@ class PdfBoxProcessor extends AbstractProcessor
             BufferedImage image = readImage(
                     page - 1, reductionFactor, scaleConstraint);
             Java2DPostProcessor.postProcess(
-                    image, hints, opList, imageInfo, reductionFactor, null,
-                    outputStream);
+                    image, hints, opList, imageInfo, reductionFactor,
+                    metadata, outputStream);
         } catch (IOException | IndexOutOfBoundsException e) {
             throw new ProcessorException(e.getMessage(), e);
         } finally {
@@ -178,6 +182,15 @@ class PdfBoxProcessor extends AbstractProcessor
                     // no-op
                 }
             });
+
+            // Read the document's XMP metadata.
+            try (InputStream is = doc.getDocumentCatalog().getMetadata().exportXMPMetadata()) {
+                ByteArrayOutputStream os = new ByteArrayOutputStream();
+                IOUtils.copy(is, os);
+
+                metadata = new Metadata();
+                metadata.setXMP(os.toByteArray());
+            }
 
             LOGGER.debug("Loaded document in {}", watch);
         }
