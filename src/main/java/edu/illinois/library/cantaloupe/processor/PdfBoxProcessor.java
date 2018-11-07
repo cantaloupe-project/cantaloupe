@@ -96,7 +96,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
             scale = new Scale();
         }
         ReductionFactor reductionFactor = new ReductionFactor();
-        Double pct = scale.getResultingScale(imageInfo.getSize());
+        Double pct = scale.getPercent();
         if (pct != null) {
             reductionFactor = ReductionFactor.forScale(pct);
         }
@@ -105,8 +105,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
         int page = getPageNumber(opList.getOptions());
 
         try {
-            BufferedImage image = readImage(
-                    page - 1, scale, imageInfo.getSize());
+            BufferedImage image = readImage(page - 1, reductionFactor);
             postProcess(image, hints, opList, imageInfo, reductionFactor,
                     outputStream);
         } catch (IOException | IndexOutOfBoundsException e) {
@@ -165,9 +164,8 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
      * @return Rasterized page of the PDF.
      */
     private BufferedImage readImage(int pageIndex,
-                                    Scale scale,
-                                    Dimension fullSize) throws IOException {
-        double dpi = new RasterizationHelper().getDPI(scale, fullSize);
+                                    ReductionFactor rf) throws IOException {
+        double dpi = new RasterizationHelper().getDPI(rf.factor);
         return readImage(pageIndex, dpi);
     }
 
