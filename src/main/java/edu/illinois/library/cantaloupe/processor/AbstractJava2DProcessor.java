@@ -18,6 +18,7 @@ import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.processor.codec.BufferedImageSequence;
+import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
@@ -136,7 +137,10 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
         ImageWriter writer = new ImageWriterFactory()
                 .newImageWriter((Encode) opList.getFirst(Encode.class));
         if (opList.getFirst(MetadataCopy.class) != null) {
-            writer.setMetadata(getReader().getMetadata(0));
+            ImageReader reader = getReader();
+            if (reader != null) { // this check is only needed because of the stupid coupling of this class w/ AbstractImageIOProcessor
+                writer.setMetadata(reader.getMetadata(0));
+            }
         }
         writer.write(image, outputStream);
     }

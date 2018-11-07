@@ -29,6 +29,26 @@ class RasterizationHelper {
         return baseDPI;
     }
 
+    /**
+     * @return DPI appropriate for the given reduction factor.
+     */
+    double getDPI(int reductionFactor,
+                  final ScaleConstraint scaleConstraint) {
+        double rfDPI = baseDPI;
+        // Decrease the DPI if the reduction factor is positive.
+        for (int i = 0; i < reductionFactor; i++) {
+            rfDPI /= 2.0;
+        }
+        // Increase the DPI if the reduction factor is negative.
+        for (int i = 0; i > reductionFactor; i--) {
+            rfDPI *= 2.0;
+        }
+
+        double scDPI = baseDPI * scaleConstraint.getScale();
+
+        return Math.min(rfDPI, scDPI);
+    }
+
     double getDPI(final Scale scale,
                   final Dimension fullSize,
                   final ScaleConstraint scaleConstraint) {

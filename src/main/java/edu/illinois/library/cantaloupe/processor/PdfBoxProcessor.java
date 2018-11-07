@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
@@ -94,7 +93,6 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
         try {
             super.process(opList, imageInfo, outputStream);
 
-            final Dimension fullSize = imageInfo.getSize();
             final ScaleConstraint scaleConstraint = opList.getScaleConstraint();
 
             final Set<ReaderHint> hints = EnumSet.noneOf(ReaderHint.class);
@@ -103,15 +101,17 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
                 scale = new Scale();
             }
 
-            double[] scales = scale.getResultingScales(fullSize, scaleConstraint);
-            double minScale = Arrays.stream(scales).min().orElse(1);
-            ReductionFactor reductionFactor = ReductionFactor.forScale(minScale);
+            Double pct = scale.getPercent();
+            ReductionFactor reductionFactor = new ReductionFactor();
+            if (pct != null) {
+                reductionFactor = ReductionFactor.forScale(pct);
+            }
 
             // This processor supports a "page" URI query argument.
             int page = getPageNumber(opList.getOptions());
 
             BufferedImage image = readImage(
-                    page - 1, scale, fullSize, scaleConstraint);
+                    page - 1, reductionFactor, scaleConstraint);
             postProcess(image, hints, opList, imageInfo, reductionFactor,
                     outputStream);
         } catch (IOException | IndexOutOfBoundsException e) {
@@ -127,7 +127,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
      *         found.
      */
     private int getPageNumber(Map<String,Object> options) {
-        Integer page = 1;
+        int page = 1;
         String pageStr = (String) options.get("page");
         if (pageStr != null) {
             try {
@@ -170,11 +170,10 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
      * @return Rasterized page of the PDF.
      */
     private BufferedImage readImage(int pageIndex,
-                                    Scale scale,
-                                    Dimension fullSize,
+                                    ReductionFactor rf,
                                     ScaleConstraint scaleConstraint) throws IOException {
         double dpi = new RasterizationHelper().getDPI(
-                scale, fullSize, scaleConstraint);
+                rf.factor, scaleConstraint);
         return readImage(pageIndex, dpi);
     }
 
