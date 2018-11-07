@@ -2,8 +2,6 @@ package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
 
 import javax.imageio.metadata.IIOMetadataNode;
@@ -14,9 +12,6 @@ import java.nio.charset.StandardCharsets;
  *      JPEG Metadata Format Specification and Usage Notes</a>
  */
 class JPEGMetadata extends IIOMetadata {
-
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(JPEGMetadata.class);
 
     private boolean checkedForExif, checkedForIptc, checkedForXmp;
 
@@ -89,11 +84,6 @@ class JPEGMetadata extends IIOMetadata {
             }
         }
         return iptc;
-    }
-
-    @Override
-    Logger getLogger() {
-        return LOGGER;
     }
 
     /**

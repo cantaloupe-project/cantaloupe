@@ -88,11 +88,6 @@ class PNGMetadata extends IIOMetadata {
         return null;
     }
 
-    @Override
-    Logger getLogger() {
-        return LOGGER;
-    }
-
     /**
      * @return Native PNG metadata.
      */

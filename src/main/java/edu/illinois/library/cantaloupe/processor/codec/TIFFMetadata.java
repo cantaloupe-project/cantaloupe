@@ -100,11 +100,6 @@ class TIFFMetadata extends IIOMetadata {
         return ifd.getTIFFField(IPTC_TAG_NUMBER);
     }
 
-    @Override
-    Logger getLogger() {
-        return LOGGER;
-    }
-
     /**
      * @return Native TIFF metadata.
      */
