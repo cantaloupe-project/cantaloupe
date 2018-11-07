@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.codec.BufferedImageSequence;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
+import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -17,8 +18,23 @@ import java.util.Set;
 /**
  * <p>Processor using the Java 2D and ImageIO libraries.</p>
  */
-class Java2dProcessor extends AbstractJava2DProcessor
+class Java2dProcessor extends AbstractImageIOProcessor
         implements StreamProcessor, FileProcessor {
+
+    @Override
+    public Set<ProcessorFeature> getSupportedFeatures() {
+        return Java2DPostProcessor.SUPPORTED_FEATURES;
+    }
+
+    @Override
+    public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality> getSupportedIIIF1Qualities() {
+        return Java2DPostProcessor.SUPPORTED_IIIF_1_QUALITIES;
+    }
+
+    @Override
+    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality> getSupportedIIIF2Qualities() {
+        return Java2DPostProcessor.SUPPORTED_IIIF_2_QUALITIES;
+    }
 
     @Override
     public void process(final OperationList ops,
@@ -30,9 +46,8 @@ class Java2dProcessor extends AbstractJava2DProcessor
         ImageReader reader = null;
         try {
             reader = getReader();
-            final ReductionFactor rf = new ReductionFactor();
-            final Set<ReaderHint> hints =
-                    EnumSet.noneOf(ReaderHint.class);
+            final ReductionFactor rf    = new ReductionFactor();
+            final Set<ReaderHint> hints = EnumSet.noneOf(ReaderHint.class);
 
             // If the source and output formats are both GIF, the source may
             // contain multiple frames, in which case the post-processing steps
@@ -41,11 +56,15 @@ class Java2dProcessor extends AbstractJava2DProcessor
             if (Format.GIF.equals(imageInfo.getSourceFormat()) &&
                     Format.GIF.equals(ops.getOutputFormat())) {
                 BufferedImageSequence seq = reader.readSequence();
-                postProcess(seq, ops, imageInfo, outputStream);
+                Java2DPostProcessor.postProcess(
+                        seq, ops, imageInfo, reader.getMetadata(0),
+                        outputStream);
             } else {
                 BufferedImage image =
                         reader.read(ops, imageInfo.getOrientation(), rf, hints);
-                postProcess(image, hints, ops, imageInfo, rf, outputStream);
+                Java2DPostProcessor.postProcess(
+                        image, hints, ops, imageInfo, rf, reader.getMetadata(0),
+                        outputStream);
             }
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);

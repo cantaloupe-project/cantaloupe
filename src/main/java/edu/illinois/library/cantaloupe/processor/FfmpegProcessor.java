@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
+import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.util.CommandLocator;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -24,6 +25,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,19 +40,21 @@ import java.util.regex.Pattern;
  * frames, and the {@literal ffprobe} tool to get video information. Works with
  * ffmpeg 2.8 (other versions untested).
  */
-class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
+class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
 
     private static final Logger LOGGER = LoggerFactory.
             getLogger(FfmpegProcessor.class);
 
-    private static final String FFMPEG_NAME = "ffmpeg";
-    private static final String FFPROBE_NAME = "ffprobe";
+    private static final String FFMPEG_NAME   = "ffmpeg";
+    private static final String FFPROBE_NAME  = "ffprobe";
     private static final Pattern TIME_PATTERN =
             Pattern.compile("[0-9][0-9]:[0-5][0-9]:[0-5][0-9]");
 
-    private static final AtomicBoolean initializationAttempted =
+    private static final AtomicBoolean IS_INITIALIZATION_ATTEMPTED =
             new AtomicBoolean(false);
     private static InitializationException initializationException;
+
+    private Path sourceFile;
 
     private double durationSec = 0;
     private Info imageInfo;
@@ -65,7 +69,7 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
     }
 
     private static synchronized void initialize() {
-        initializationAttempted.set(true);
+        IS_INITIALIZATION_ATTEMPTED.set(true);
         try {
             // Check for the presence of ffprobe and ffmpeg.
             invoke(FFPROBE_NAME);
@@ -89,14 +93,18 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
      * For testing only!
      */
     static synchronized void resetInitialization() {
-        initializationAttempted.set(false);
+        IS_INITIALIZATION_ATTEMPTED.set(false);
         initializationException = null;
     }
 
     FfmpegProcessor() {
-        if (!initializationAttempted.get()) {
+        if (!IS_INITIALIZATION_ATTEMPTED.get()) {
             initialize();
         }
+    }
+
+    @Override
+    public void close() {
     }
 
     @Override
@@ -112,56 +120,30 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
     @Override
     public InitializationException getInitializationException() {
-        if (!initializationAttempted.get()) {
+        if (!IS_INITIALIZATION_ATTEMPTED.get()) {
             initialize();
         }
         return initializationException;
     }
 
-    /**
-     * Gets information about the video by invoking ffprobe and parsing its
-     * output. The result is cached.
-     */
     @Override
-    public Info readImageInfo() throws IOException {
-        if (imageInfo == null) {
-            final List<String> command = new ArrayList<>();
-            command.add(getPath(FFPROBE_NAME));
-            command.add("-v");
-            command.add("quiet");
-            command.add("-select_streams");
-            command.add("v:0");
-            command.add("-show_entries");
-            command.add("stream=width,height,duration");
-            command.add("-of");
-            command.add("default=noprint_wrappers=1:nokey=1");
-            command.add(sourceFile.toString());
+    public Path getSourceFile() {
+        return sourceFile;
+    }
 
-            ProcessBuilder pb = new ProcessBuilder(command);
-            pb.redirectErrorStream(true);
+    @Override
+    public Set<ProcessorFeature> getSupportedFeatures() {
+        return Java2DPostProcessor.SUPPORTED_FEATURES;
+    }
 
-            LOGGER.info("Invoking {}", StringUtils.join(pb.command(), " "));
-            Process process = pb.start();
+    @Override
+    public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality> getSupportedIIIF1Qualities() {
+        return Java2DPostProcessor.SUPPORTED_IIIF_1_QUALITIES;
+    }
 
-            try (InputStream processInputStream = process.getInputStream();
-                 BufferedReader reader = new BufferedReader(
-                         new InputStreamReader(processInputStream, "UTF-8"))) {
-                int width = Integer.parseInt(reader.readLine());
-                int height = Integer.parseInt(reader.readLine());
-                try {
-                    durationSec = Double.parseDouble(reader.readLine());
-                } catch (NumberFormatException e) {
-                    LOGGER.debug("readImageInfo(): {}", e.getMessage());
-                }
-                imageInfo = Info.builder()
-                        .withSize(width, height)
-                        .withTileSize(width, height)
-                        .withFormat(getSourceFormat())
-                        .build();
-                imageInfo.setNumResolutions(1);
-            }
-        }
-        return imageInfo;
+    @Override
+    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality> getSupportedIIIF2Qualities() {
+        return Java2DPostProcessor.SUPPORTED_IIIF_2_QUALITIES;
     }
 
     @Override
@@ -186,8 +168,8 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
                         processInputStream, Format.BMP);
                 try {
                     BufferedImage image = reader.read();
-                    postProcess(image, null, opList, imageInfo, null,
-                            outputStream);
+                    Java2DPostProcessor.postProcess(image, null, opList,
+                            imageInfo, null, null, outputStream);
                     final int code = process.waitFor();
                     if (code != 0) {
                         LOGGER.error("{} returned with code {}",
@@ -252,6 +234,53 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
         return new ProcessBuilder(command);
     }
 
+    /**
+     * Gets information about the video by invoking ffprobe and parsing its
+     * output. The result is cached.
+     */
+    @Override
+    public Info readImageInfo() throws IOException {
+        if (imageInfo == null) {
+            final List<String> command = new ArrayList<>();
+            command.add(getPath(FFPROBE_NAME));
+            command.add("-v");
+            command.add("quiet");
+            command.add("-select_streams");
+            command.add("v:0");
+            command.add("-show_entries");
+            command.add("stream=width,height,duration");
+            command.add("-of");
+            command.add("default=noprint_wrappers=1:nokey=1");
+            command.add(sourceFile.toString());
+
+            ProcessBuilder pb = new ProcessBuilder(command);
+            pb.redirectErrorStream(true);
+
+            LOGGER.info("Invoking {}", StringUtils.join(pb.command(), " "));
+            Process process = pb.start();
+
+            try (InputStream processInputStream = process.getInputStream();
+                 BufferedReader reader = new BufferedReader(
+                         new InputStreamReader(
+                                 processInputStream, StandardCharsets.UTF_8))) {
+                int width = Integer.parseInt(reader.readLine());
+                int height = Integer.parseInt(reader.readLine());
+                try {
+                    durationSec = Double.parseDouble(reader.readLine());
+                } catch (NumberFormatException e) {
+                    LOGGER.debug("readImageInfo(): {}", e.getMessage());
+                }
+                imageInfo = Info.builder()
+                        .withSize(width, height)
+                        .withTileSize(width, height)
+                        .withFormat(getSourceFormat())
+                        .build();
+                imageInfo.setNumResolutions(1);
+            }
+        }
+        return imageInfo;
+    }
+
     private void reset() {
         durationSec = 0;
         imageInfo = null;
@@ -259,8 +288,8 @@ class FfmpegProcessor extends AbstractJava2DProcessor implements FileProcessor {
 
     @Override
     public void setSourceFile(Path sourceFile) {
-        super.setSourceFile(sourceFile);
         reset();
+        this.sourceFile = sourceFile;
     }
 
     @Override

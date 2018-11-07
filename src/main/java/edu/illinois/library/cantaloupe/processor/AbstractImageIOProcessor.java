@@ -88,6 +88,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
             if ((image.width > image.height && image.tileWidth < image.tileHeight) ||
                     (image.width < image.height && image.tileWidth > image.tileHeight)) {
                 int tmp = image.tileWidth;
+                //noinspection SuspiciousNameCombination
                 image.tileWidth = image.tileHeight;
                 image.tileHeight = tmp;
             }
@@ -120,19 +121,10 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
     protected ImageReader getReader() throws IOException {
         if (reader == null) {
             ImageReaderFactory rf = new ImageReaderFactory();
-            try {
-                if (streamFactory != null) {
-                    reader = rf.newImageReader(streamFactory, getSourceFormat());
-                } else {
-                    reader = rf.newImageReader(sourceFile, getSourceFormat());
-                }
-            } catch (IllegalArgumentException ignore) {
-                // This will be thrown if the format provided to
-                // newImageReader() is unsupported, which will be the case in
-                // e.g. PdfBoxProcessor, whose source format is PDF.
-                // PdfBoxProcessor, AbstractJava2dProcessor, and
-                // AbstractImageIOProcessor really need to be decoupled.
-                // TODO: address the above
+            if (streamFactory != null) {
+                reader = rf.newImageReader(streamFactory, getSourceFormat());
+            } else {
+                reader = rf.newImageReader(sourceFile, getSourceFormat());
             }
         }
         return reader;

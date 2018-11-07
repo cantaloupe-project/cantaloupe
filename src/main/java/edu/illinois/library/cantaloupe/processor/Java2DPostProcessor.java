@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
@@ -15,10 +16,9 @@ import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
-import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
+import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.processor.codec.BufferedImageSequence;
-import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
@@ -41,16 +41,23 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
- * Abstract base class for processors that use a Java 2D processing pipeline.
+ * <p>Provides generic functionality for applying transformations to {@link
+ * BufferedImage}s and {@link BufferedImageSequence}s using Java 2D.</p>
+ *
+ * <p>This class could be thought of as a higher-level interface than the
+ * various {@link Java2DUtil} methods.</p>
+ *
+ * @since 4.1
  */
-abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
+final class Java2DPostProcessor {
 
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(AbstractJava2DProcessor.class);
+            LoggerFactory.getLogger(Java2DPostProcessor.class);
 
-    private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
+    static final Set<ProcessorFeature> SUPPORTED_FEATURES =
             Collections.unmodifiableSet(EnumSet.of(
                     ProcessorFeature.MIRRORING,
                     ProcessorFeature.REGION_BY_PERCENT,
@@ -65,57 +72,24 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
                     ProcessorFeature.SIZE_BY_PERCENT,
                     ProcessorFeature.SIZE_BY_WIDTH,
                     ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
-    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-            SUPPORTED_IIIF_1_1_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
-                    edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
-                    edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
-                    edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
-                    edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
-    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-            SUPPORTED_IIIF_2_0_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
-                    edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
-                    edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
-                    edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
-                    edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
-
-    public Set<ProcessorFeature> getSupportedFeatures() {
-        Set<ProcessorFeature> features;
-        if (!getAvailableOutputFormats().isEmpty()) {
-            features = SUPPORTED_FEATURES;
-        } else {
-            features = Collections.unmodifiableSet(Collections.emptySet());
-        }
-        return features;
-    }
-
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-    getSupportedIIIF1Qualities() {
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-                qualities;
-        if (!getAvailableOutputFormats().isEmpty()) {
-            qualities = SUPPORTED_IIIF_1_1_QUALITIES;
-        } else {
-            qualities = Collections.unmodifiableSet(Collections.emptySet());
-        }
-        return qualities;
-    }
-
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIIIF2Qualities() {
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-                qualities;
-        if (!getAvailableOutputFormats().isEmpty()) {
-            qualities = SUPPORTED_IIIF_2_0_QUALITIES;
-        } else {
-            qualities = Collections.unmodifiableSet(Collections.emptySet());
-        }
-        return qualities;
-    }
+    static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
+            SUPPORTED_IIIF_1_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
+            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
+            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
+            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
+            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
+    static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
+            SUPPORTED_IIIF_2_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
+            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
+            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
+            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
+            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
 
     /**
      * Convenience method. Can be used for all images but not {@link
      * BufferedImageSequence image sequences}; for those, use {@link
-     * #postProcess(BufferedImageSequence, OperationList, Info, OutputStream)}.
+     * #postProcess(BufferedImageSequence, OperationList, Info, Metadata,
+     * OutputStream)}.
      *
      * @param image           Image to process.
      * @param readerHints     Hints from the image reader. May be
@@ -123,44 +97,44 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
      * @param opList          Operations to apply to the image.
      * @param imageInfo       Information about the source image.
      * @param reductionFactor May be {@literal null}.
+     * @param metadata        Metadata to embed in the resulting image.
      * @param outputStream    Output stream to write the resulting image to.
      */
-    void postProcess(BufferedImage image,
-                     final Set<ReaderHint> readerHints,
-                     final OperationList opList,
-                     final Info imageInfo,
-                     final ReductionFactor reductionFactor,
-                     final OutputStream outputStream) throws IOException {
+    static void postProcess(BufferedImage image,
+                            final Set<ReaderHint> readerHints,
+                            final OperationList opList,
+                            final Info imageInfo,
+                            final ReductionFactor reductionFactor,
+                            final Metadata metadata,
+                            final OutputStream outputStream) throws IOException {
         image = doPostProcess(image, readerHints, opList, imageInfo,
                 reductionFactor);
 
         ImageWriter writer = new ImageWriterFactory()
                 .newImageWriter((Encode) opList.getFirst(Encode.class));
         if (opList.getFirst(MetadataCopy.class) != null) {
-            ImageReader reader = getReader();
-            if (reader != null) { // this check is only needed because of the stupid coupling of this class w/ AbstractImageIOProcessor
-                writer.setMetadata(reader.getMetadata(0));
-            }
+            writer.setMetadata(metadata);
         }
         writer.write(image, outputStream);
     }
 
     /**
-     * Variation of {@link #postProcess(BufferedImage, Set, OperationList,
-     * Info, ReductionFactor, OutputStream)} for processing {@link
-     * BufferedImageSequence image sequences}, such as to support animated GIFs.
+     * Variant for processing {@link BufferedImageSequence image sequences},
+     * such as to support animated GIFs.
      *
      * @param sequence     Sequence containing one or more images, which will
      *                     be replaced with the post-processed versions.
      * @param opList       Operations to apply to each image in the sequence.
      * @param info         Information about the source image.
+     * @param metadata     Metadata to embed in the resulting image.
      * @param outputStream Stream to write the resulting image to.
      * @throws IllegalArgumentException if the sequence is empty.
      */
-    void postProcess(final BufferedImageSequence sequence,
-                     final OperationList opList,
-                     final Info info,
-                     final OutputStream outputStream) throws IOException {
+    static void postProcess(final BufferedImageSequence sequence,
+                            final OperationList opList,
+                            final Info info,
+                            final Metadata metadata,
+                            final OutputStream outputStream) throws IOException {
         final int numFrames = sequence.length();
 
         // 1. If the sequence contains no frames, throw an exception.
@@ -234,22 +208,22 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
         ImageWriter writer = new ImageWriterFactory()
                 .newImageWriter((Encode) opList.getFirst(Encode.class));
         if (opList.getFirst(MetadataCopy.class) != null) {
-            writer.setMetadata(getReader().getMetadata(0));
+            writer.setMetadata(metadata);
         }
         writer.write(sequence, outputStream);
     }
 
-    private BufferedImage processFrame(BufferedImage image,
-                                       OperationList opList,
-                                       Info imageInfo) {
+    private static BufferedImage processFrame(BufferedImage image,
+                                              OperationList opList,
+                                              Info imageInfo) {
         return doPostProcess(image, null, opList, imageInfo, null);
     }
 
-    private BufferedImage doPostProcess(BufferedImage image,
-                                        Set<ReaderHint> readerHints,
-                                        final OperationList opList,
-                                        final Info imageInfo,
-                                        ReductionFactor reductionFactor) {
+    private static BufferedImage doPostProcess(BufferedImage image,
+                                               Set<ReaderHint> readerHints,
+                                               final OperationList opList,
+                                               final Info imageInfo,
+                                               ReductionFactor reductionFactor) {
         if (reductionFactor == null) {
             reductionFactor = new ReductionFactor();
         }
@@ -261,10 +235,10 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
 
         final Dimension fullSize = imageInfo.getSize();
 
-        // N.B.: Orientation handling is somewhat hairy. Any Crop or Rotate
-        // operations present in the operation list have already been corrected
-        // for this orientation, but we also need to account for operation
-        // lists that don't include one or both of those.
+        // N.B.: Any Crop or Rotate operations present in the operation list
+        // have already been corrected for this orientation, but we also need
+        // to account for operation lists that don't include one or both of
+        // those.
         final Orientation orientation = imageInfo.getOrientation();
 
         if (!Orientation.ROTATE_0.equals(orientation) &&
@@ -288,12 +262,11 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
         }
 
         // Redactions happen immediately after cropping.
-        final Set<Redaction> redactions = new HashSet<>();
-        for (Operation op : opList) {
-            if (op instanceof Redaction && op.hasEffect(fullSize, opList)) {
-                redactions.add((Redaction) op);
-            }
-        }
+        final Set<Redaction> redactions = opList.stream()
+                .filter(op -> op instanceof Redaction)
+                .filter(op -> op.hasEffect(fullSize, opList))
+                .map(op -> (Redaction) op)
+                .collect(Collectors.toSet());
         Java2DUtil.applyRedactions(image, fullSize, crop,
                 new double[] { 1.0, 1.0 }, reductionFactor,
                 opList.getScaleConstraint(), redactions);
@@ -326,5 +299,7 @@ abstract class AbstractJava2DProcessor extends AbstractImageIOProcessor {
 
         return image;
     }
+
+    private Java2DPostProcessor() {}
 
 }

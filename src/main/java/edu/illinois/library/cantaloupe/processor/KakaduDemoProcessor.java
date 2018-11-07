@@ -9,24 +9,17 @@ import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Rectangle;
-import edu.illinois.library.cantaloupe.operation.ColorTransform;
-import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
-import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Crop;
-import edu.illinois.library.cantaloupe.operation.Sharpen;
-import edu.illinois.library.cantaloupe.operation.Transpose;
-import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
-import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.processor.codec.BufferedImageInputStream;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
-import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.JPEG2000MetadataReader;
+import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.util.CommandLocator;
 import org.apache.commons.lang3.StringUtils;
@@ -57,7 +50,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 /**
  * <p>Processor using the Kakadu {@literal kdu_expand} command-line tool.
@@ -117,34 +109,6 @@ class KakaduDemoProcessor extends AbstractProcessor implements FileProcessor {
     private static final short FALLBACK_NUM_DWT_LEVELS = 5;
 
     private static final String KDU_EXPAND_NAME = "kdu_expand";
-
-    private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
-            Collections.unmodifiableSet(EnumSet.of(
-                    ProcessorFeature.MIRRORING,
-                    ProcessorFeature.REGION_BY_PERCENT,
-                    ProcessorFeature.REGION_BY_PIXELS,
-                    ProcessorFeature.REGION_SQUARE,
-                    ProcessorFeature.ROTATION_ARBITRARY,
-                    ProcessorFeature.ROTATION_BY_90S,
-                    ProcessorFeature.SIZE_ABOVE_FULL,
-                    ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
-                    ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
-                    ProcessorFeature.SIZE_BY_HEIGHT,
-                    ProcessorFeature.SIZE_BY_PERCENT,
-                    ProcessorFeature.SIZE_BY_WIDTH,
-                    ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
-    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-            SUPPORTED_IIIF_1_1_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
-            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
-            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
-            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
-            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
-    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-            SUPPORTED_IIIF_2_0_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
-            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
-            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
-            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
-            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
 
     /**
      * Used only in Windows.
@@ -318,39 +282,17 @@ class KakaduDemoProcessor extends AbstractProcessor implements FileProcessor {
 
     @Override
     public Set<ProcessorFeature> getSupportedFeatures() {
-        Set<ProcessorFeature> features;
-        if (!getAvailableOutputFormats().isEmpty()) {
-            features = SUPPORTED_FEATURES;
-        } else {
-            features = Collections.unmodifiableSet(Collections.emptySet());
-        }
-        return features;
+        return Java2DPostProcessor.SUPPORTED_FEATURES;
     }
 
     @Override
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-    getSupportedIIIF1Qualities() {
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-                qualities;
-        if (!getAvailableOutputFormats().isEmpty()) {
-            qualities = SUPPORTED_IIIF_1_1_QUALITIES;
-        } else {
-            qualities = Collections.unmodifiableSet(Collections.emptySet());
-        }
-        return qualities;
+    public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality> getSupportedIIIF1Qualities() {
+        return Java2DPostProcessor.SUPPORTED_IIIF_1_QUALITIES;
     }
 
     @Override
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIIIF2Qualities() {
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-                qualities;
-        if (!getAvailableOutputFormats().isEmpty()) {
-            qualities = SUPPORTED_IIIF_2_0_QUALITIES;
-        } else {
-            qualities = Collections.unmodifiableSet(Collections.emptySet());
-        }
-        return qualities;
+    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality> getSupportedIIIF2Qualities() {
+        return Java2DPostProcessor.SUPPORTED_IIIF_2_QUALITIES;
     }
 
     @Override
@@ -371,6 +313,7 @@ class KakaduDemoProcessor extends AbstractProcessor implements FileProcessor {
             if ((image.width > image.height && image.tileWidth < image.tileHeight) ||
                     (image.width < image.height && image.tileWidth > image.tileHeight)) {
                 int tmp = image.tileWidth;
+                //noinspection SuspiciousNameCombination
                 image.tileWidth = image.tileHeight;
                 image.tileHeight = tmp;
             }
@@ -451,9 +394,13 @@ class KakaduDemoProcessor extends AbstractProcessor implements FileProcessor {
             final ImageReader reader =
                     new ImageReaderFactory().newImageReader(is, Format.TIF);
             try {
+                final Set<ReaderHint> hints =
+                        EnumSet.of(ReaderHint.ALREADY_CROPPED);
                 final BufferedImage image = reader.read();
 
-                postProcess(image, opList, info, reductionFactor, outputStream);
+                Java2DPostProcessor.postProcess(
+                        image, hints, opList, info, reductionFactor,
+                        reader.getMetadata(0), outputStream);
             } finally {
                 reader.dispose();
             }
@@ -489,8 +436,11 @@ class KakaduDemoProcessor extends AbstractProcessor implements FileProcessor {
                     processInputStream, Format.TIF);
             try {
                 final BufferedImage image = reader.read();
+                final Set<ReaderHint> hints =
+                        EnumSet.of(ReaderHint.ALREADY_CROPPED);
 
-                postProcess(image, opList, info, reductionFactor, outputStream);
+                Java2DPostProcessor.postProcess(image, hints, opList, info,
+                        reductionFactor, reader.getMetadata(0), outputStream);
 
                 final int code = process.waitFor();
                 if (code != 0) {
@@ -506,65 +456,6 @@ class KakaduDemoProcessor extends AbstractProcessor implements FileProcessor {
         } finally {
             process.destroy();
         }
-    }
-
-    /**
-     * @param image           Image to process.
-     * @param opList          Operations to apply to the image.
-     * @param imageInfo       Information about the source image.
-     * @param reductionFactor
-     * @param outputStream    Output stream to write the resulting image to.
-     */
-    private void postProcess(BufferedImage image,
-                             final OperationList opList,
-                             final Info imageInfo,
-                             final ReductionFactor reductionFactor,
-                             final OutputStream outputStream) throws IOException {
-        final Dimension fullSize = imageInfo.getSize();
-
-        image = Java2DUtil.reduceTo8Bits(image);
-
-        // Retain a reference to the Crop operation for subsequent operations
-        // to refer to.
-        Crop crop = (Crop) opList.getFirst(Crop.class);
-        if (crop == null) {
-            crop = new Crop(0, 0, image.getWidth(), image.getHeight(),
-                    imageInfo.getOrientation(), imageInfo.getSize());
-        }
-
-        // Redactions happen immediately after cropping.
-        final Set<Redaction> redactions = opList.stream()
-                .filter(op -> op instanceof Redaction)
-                .filter(op -> op.hasEffect(fullSize, opList))
-                .map(op -> (Redaction) op)
-                .collect(Collectors.toSet());
-        Java2DUtil.applyRedactions(image, fullSize, crop,
-                new double[] { 1.0, 1.0 }, reductionFactor,
-                opList.getScaleConstraint(), redactions);
-
-        // Apply remaining operations.
-        for (Operation op : opList) {
-            if (op.hasEffect(fullSize, opList)) {
-                if (op instanceof Scale) {
-                    image = Java2DUtil.scale(image, (Scale) op,
-                            opList.getScaleConstraint(), reductionFactor);
-                } else if (op instanceof Transpose) {
-                    image = Java2DUtil.transpose(image, (Transpose) op);
-                } else if (op instanceof Rotate) {
-                    image = Java2DUtil.rotate(image, (Rotate) op);
-                } else if (op instanceof ColorTransform) {
-                    image = Java2DUtil.transformColor(image, (ColorTransform) op);
-                } else if (op instanceof Sharpen) {
-                    image = Java2DUtil.sharpen(image, (Sharpen) op);
-                } else if (op instanceof Overlay) {
-                    Java2DUtil.applyOverlay(image, (Overlay) op);
-                }
-            }
-        }
-
-        ImageWriter writer = new ImageWriterFactory()
-                .newImageWriter((Encode) opList.getFirst(Encode.class));
-        writer.write(image, outputStream);
     }
 
     /**

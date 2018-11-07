@@ -12,6 +12,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
+import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.io.IOUtils;
@@ -40,13 +41,13 @@ import java.util.Set;
  * library to render source PDFs, and Java 2D to perform post-rasterization
  * processing steps.
  */
-class PdfBoxProcessor extends AbstractJava2DProcessor
+class PdfBoxProcessor extends AbstractProcessor
         implements FileProcessor, StreamProcessor {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(PdfBoxProcessor.class);
 
-    private static final int FALLBACK_DPI = 150;
+    private static final int DEFAULT_DPI = 150;
 
     private PDDocument doc;
     private Path sourceFile;
@@ -87,6 +88,21 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
     }
 
     @Override
+    public Set<ProcessorFeature> getSupportedFeatures() {
+        return Java2DPostProcessor.SUPPORTED_FEATURES;
+    }
+
+    @Override
+    public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality> getSupportedIIIF1Qualities() {
+        return Java2DPostProcessor.SUPPORTED_IIIF_1_QUALITIES;
+    }
+
+    @Override
+    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality> getSupportedIIIF2Qualities() {
+        return Java2DPostProcessor.SUPPORTED_IIIF_2_QUALITIES;
+    }
+
+    @Override
     public void process(OperationList opList,
                         Info imageInfo,
                         OutputStream outputStream) throws ProcessorException {
@@ -112,7 +128,8 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
 
             BufferedImage image = readImage(
                     page - 1, reductionFactor, scaleConstraint);
-            postProcess(image, hints, opList, imageInfo, reductionFactor,
+            Java2DPostProcessor.postProcess(
+                    image, hints, opList, imageInfo, reductionFactor, null,
                     outputStream);
         } catch (IOException | IndexOutOfBoundsException e) {
             throw new ProcessorException(e.getMessage(), e);
@@ -196,7 +213,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
         readDocument();
 
         final Configuration config = Configuration.getInstance();
-        final int dpi = config.getInt(Key.PROCESSOR_DPI, FALLBACK_DPI);
+        final int dpi = config.getInt(Key.PROCESSOR_DPI, DEFAULT_DPI);
         final float scale = dpi / 72f;
         final Info info = Info.builder()
                 .withFormat(getSourceFormat())
@@ -217,6 +234,7 @@ class PdfBoxProcessor extends AbstractJava2DProcessor
             int heightPx = Math.round(heightPt * scale);
             if (rotationAngle == 90 || rotationAngle == 270) {
                 int tmp = widthPx;
+                //noinspection SuspiciousNameCombination
                 widthPx = heightPx;
                 heightPx = tmp;
             }
