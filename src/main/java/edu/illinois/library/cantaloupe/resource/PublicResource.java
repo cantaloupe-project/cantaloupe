@@ -169,7 +169,8 @@ public abstract class PublicResource extends AbstractResource {
             Reference newRef = null;
             // ...and the numerator and denominator are equal, redirect to the
             // non-suffixed identifier.
-            if (scaleConstraint.getNumerator() == scaleConstraint.getDenominator()) {
+            if (scaleConstraint.getRational().getNumerator() ==
+                    scaleConstraint.getRational().getDenominator()) {
                 newRef = getPublicReference(scaleConstraint);
             } else {
                 ScaleConstraint reducedConstraint = scaleConstraint.getReduced();

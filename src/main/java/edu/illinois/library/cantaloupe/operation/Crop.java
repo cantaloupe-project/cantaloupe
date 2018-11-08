@@ -187,7 +187,7 @@ public class Crop implements Operation {
                                   ReductionFactor reductionFactor,
                                   ScaleConstraint scaleConstraint) {
         final double rfScale = reductionFactor.getScale();
-        final double scScale = scaleConstraint.getScale();
+        final double scScale = scaleConstraint.getRational().doubleValue();
 
         final double scale = rfScale / scScale;
         final double regionX = getX() * scale;

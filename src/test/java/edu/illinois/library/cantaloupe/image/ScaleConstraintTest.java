@@ -77,7 +77,7 @@ public class ScaleConstraintTest extends BaseTest {
 
     @Test
     public void testGetReduced() {
-        assertSame(instance, instance.getReduced());
+        assertEquals(instance, instance.getReduced());
         assertEquals(new ScaleConstraint(23, 27),
                 new ScaleConstraint(92, 108).getReduced());
     }
@@ -87,12 +87,6 @@ public class ScaleConstraintTest extends BaseTest {
         Dimension fullSize = new Dimension(1500, 1200);
         Dimension actual = instance.getResultingSize(fullSize);
         assertEquals(new Dimension(1000, 800), actual);
-    }
-
-    @Test
-    public void testGetScale() {
-        final double delta = 0.00000001;
-        assertTrue(Math.abs((2 / 3.0) - instance.getScale()) < delta);
     }
 
     @Test

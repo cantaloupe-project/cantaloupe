@@ -134,8 +134,8 @@ public final class RequestContext {
         if (scaleConstraint != null) {
             backingMap.put(SCALE_CONSTRAINT_KEY,
                     Collections.unmodifiableList(Arrays.asList(
-                            scaleConstraint.getNumerator(),
-                            scaleConstraint.getDenominator())));
+                            scaleConstraint.getRational().getNumerator(),
+                            scaleConstraint.getRational().getDenominator())));
         } else {
             backingMap.remove(SCALE_CONSTRAINT_KEY);
         }

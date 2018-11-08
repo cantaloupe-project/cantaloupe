@@ -261,7 +261,8 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                         }
                     }
 
-                    final double scScale = ops.getScaleConstraint().getScale();
+                    final double scScale =
+                            ops.getScaleConstraint().getRational().doubleValue();
                     args.add("-resize");
                     if (scale.getPercent() != null) {
                         args.add(scale.getPercent() * scScale * 100 + "%");

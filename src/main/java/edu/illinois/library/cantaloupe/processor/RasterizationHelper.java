@@ -44,7 +44,7 @@ class RasterizationHelper {
             rfDPI *= 2.0;
         }
 
-        double scDPI = baseDPI * scaleConstraint.getScale();
+        double scDPI = baseDPI * scaleConstraint.getRational().doubleValue();
 
         return Math.min(rfDPI, scDPI);
     }

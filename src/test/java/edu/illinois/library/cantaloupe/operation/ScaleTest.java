@@ -246,8 +246,9 @@ public class ScaleTest extends BaseTest {
         final Dimension fullSize = new Dimension(300, 200);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 3);
         instance.setMode(Scale.Mode.FULL);
+        double scScale = scaleConstraint.getRational().doubleValue();
         assertArrayEquals(
-                new double[] { scaleConstraint.getScale(), scaleConstraint.getScale() },
+                new double[] { scScale, scScale },
                 instance.getResultingScales(fullSize, scaleConstraint), DELTA);
     }
 

@@ -565,7 +565,8 @@ public abstract class AbstractResource {
             // And it's either not equal to the one we want, or evaluates to 1,
             // remove it.
             if (!currentConstraint.equals(newConstraint) ||
-                    (currentConstraint.getNumerator() == currentConstraint.getDenominator())) {
+                    (currentConstraint.getRational().getNumerator() ==
+                            currentConstraint.getRational().getDenominator())) {
                 identifierComponent = identifierComponent.substring(0,
                         identifierComponent.length() -
                                 currentConstraint.toIdentifierSuffix().length());
@@ -574,7 +575,8 @@ public abstract class AbstractResource {
 
         // Append the new suffix if necessary.
         String newIdentifier = identifierComponent;
-        if (newConstraint.getNumerator() != newConstraint.getDenominator()) {
+        if (newConstraint.getRational().getNumerator() !=
+                newConstraint.getRational().getDenominator()) {
             newIdentifier += newConstraint.toIdentifierSuffix();
         }
 

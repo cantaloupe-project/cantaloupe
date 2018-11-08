@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
 import edu.illinois.library.cantaloupe.http.Reference;
+import edu.illinois.library.cantaloupe.util.Rational;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,7 +32,7 @@ public final class ScaleConstraint {
     public static final Pattern IDENTIFIER_SUFFIX_PATTERN =
             Pattern.compile("-(\\d+):(\\d+)\\b");
 
-    private long numerator, denominator;
+    private Rational rational;
 
     /**
      * An identifier URI path component may contain a {@link
@@ -71,14 +72,11 @@ public final class ScaleConstraint {
             throw new IllegalArgumentException(
                     "Numerator and denominator must both be positive");
         }
-        this.numerator = numerator;
-        this.denominator = denominator;
+        this.rational = new Rational(numerator, denominator);
     }
 
     /**
      * @param obj Object to compare.
-     * @return    Whether the {@link #getNumerator() numerator} and {@link
-     *            #getDenominator() denominator} are the same.
      */
     @Override
     public boolean equals(Object obj) {
@@ -86,8 +84,7 @@ public final class ScaleConstraint {
             return true;
         } else if (obj instanceof ScaleConstraint) {
             ScaleConstraint other = (ScaleConstraint) obj;
-            return other.getNumerator() == getNumerator() &&
-                    other.getDenominator() == getDenominator();
+            return other.getRational().equals(getRational());
         }
         return super.equals(obj);
     }
@@ -98,59 +95,37 @@ public final class ScaleConstraint {
      *                 described by the instance.
      */
     public Dimension getConstrainedSize(Dimension fullSize) {
-        final double factor = getScale();
+        final double factor = rational.doubleValue();
         return new Dimension(
                 fullSize.width() * factor,
                 fullSize.height() * factor);
     }
 
-    public long getDenominator() {
-        return denominator;
-    }
-
-    public long getNumerator() {
-        return numerator;
+    public Rational getRational() {
+        return rational;
     }
 
     /**
-     * @return New instance reduced to lowest terms, or the same instance if
-     *         it is already reduced to lowest terms.
+     * @return Instance reduced to lowest terms.
      */
     public ScaleConstraint getReduced() {
-        long n = numerator;
-        long d = denominator;
-
-        while (d != 0) {
-            long t = d;
-            d = n % d;
-            n = t;
-        }
-
-        long newNumerator = numerator / n;
-        long newDenominator = denominator / n;
-
-        if (newNumerator != numerator) {
-            return new ScaleConstraint(newNumerator, newDenominator);
-        }
-        return this;
+        final Rational reduced = getRational().getReduced();
+        return new ScaleConstraint(reduced.getNumerator(),
+                reduced.getDenominator());
     }
 
     public Dimension getResultingSize(Dimension fullSize) {
         Dimension size = new Dimension(fullSize);
-        size.scale(getScale());
+        size.scale(getRational().doubleValue());
         return size;
     }
 
-    public double getScale() {
-        return numerator / (double) denominator;
-    }
-
     /**
-     * @return Whether the instance's {@link #getNumerator()} and {@link
-     *         #getDenominator()} are unequal.
+     * @return Whether the instance's {@link Rational#getNumerator()} and
+     *         {@link Rational#getDenominator()} are unequal.
      */
     public boolean hasEffect() {
-        return (getNumerator() != getDenominator());
+        return (rational.getNumerator() != rational.getDenominator());
     }
 
     @Override
@@ -162,7 +137,7 @@ public final class ScaleConstraint {
      * N.B.: This must be kept in sync with {@link #IDENTIFIER_SUFFIX_PATTERN}.
      */
     public String toIdentifierSuffix() {
-        return "-" + getNumerator() + ":" + getDenominator();
+        return "-" + rational.getNumerator() + ":" + rational.getDenominator();
     }
 
     /**
@@ -170,14 +145,14 @@ public final class ScaleConstraint {
      */
     public Map<String,Long> toMap() {
         final Map<String,Long> map = new HashMap<>();
-        map.put("numerator", getNumerator());
-        map.put("denominator", getDenominator());
+        map.put("numerator", rational.getNumerator());
+        map.put("denominator", rational.getDenominator());
         return Collections.unmodifiableMap(map);
     }
 
     @Override
     public String toString() {
-        return numerator + ":" + denominator;
+        return rational.getNumerator() + ":" + rational.getDenominator();
     }
 
 }

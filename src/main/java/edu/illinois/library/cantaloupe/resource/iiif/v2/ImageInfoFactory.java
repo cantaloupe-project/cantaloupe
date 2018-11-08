@@ -93,7 +93,7 @@ final class ImageInfoFactory {
         // We want to use the orientation-aware full size, which takes the
         // embedded orientation into account.
         final Dimension virtualSize = info.getOrientationSize(infoImageIndex);
-        virtualSize.scale(scaleConstraint.getScale());
+        virtualSize.scale(scaleConstraint.getRational().doubleValue());
 
         // Create a Map instance, which will eventually be serialized to JSON
         // and returned in the response body.
@@ -179,8 +179,8 @@ final class ImageInfoFactory {
             // If the info is being used for a virtual scale-constrained
             // version, sizeAboveFull should not be available.
             if (ProcessorFeature.SIZE_ABOVE_FULL.equals(feature) &&
-                    (scaleConstraint.getNumerator() != 1 ||
-                            scaleConstraint.getDenominator() != 1)) {
+                    (scaleConstraint.getRational().getNumerator() != 1 ||
+                            scaleConstraint.getRational().getDenominator() != 1)) {
                 continue;
             }
             featureStrings.add(feature.getName());

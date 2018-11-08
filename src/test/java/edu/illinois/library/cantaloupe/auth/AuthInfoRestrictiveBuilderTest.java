@@ -63,8 +63,8 @@ public class AuthInfoRestrictiveBuilderTest extends BaseTest {
                 .withRedirectScaleConstraint(1L, 2L)
                 .build();
         assertEquals(302, info.getResponseStatus());
-        assertEquals(1, info.getScaleConstraint().getNumerator());
-        assertEquals(2, info.getScaleConstraint().getDenominator());
+        assertEquals(1, info.getScaleConstraint().getRational().getNumerator());
+        assertEquals(2, info.getScaleConstraint().getRational().getDenominator());
     }
 
     @Test(expected = IllegalStateException.class)

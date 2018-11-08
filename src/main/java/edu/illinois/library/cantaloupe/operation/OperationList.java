@@ -696,7 +696,7 @@ public final class OperationList implements Comparable<OperationList>,
 
             double[] scales = scale.getResultingScales(fullSize, scaleConstraint);
             if (Arrays.stream(scales)
-                    .filter(s -> s > scaleConstraint.getScale())
+                    .filter(s -> s > scaleConstraint.getRational().doubleValue())
                     .findAny()
                     .isPresent()) {
                 throw new IllegalScaleException();

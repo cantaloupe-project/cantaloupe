@@ -284,7 +284,7 @@ public class Scale implements Operation {
     public ReductionFactor getReductionFactor(final Dimension reducedSize,
                                               final ScaleConstraint scaleConstraint,
                                               final int maxFactor) {
-        final double scScale = scaleConstraint.getScale();
+        final double scScale = scaleConstraint.getRational().doubleValue();
         ReductionFactor rf = new ReductionFactor();
 
         if (getPercent() != null) {
@@ -329,11 +329,12 @@ public class Scale implements Operation {
         final double[] result = new double[2];
 
         if (getPercent() != null) {
-            result[0] = result[1] = getPercent() * scaleConstraint.getScale();
+            result[0] = result[1] = getPercent() *
+                    scaleConstraint.getRational().doubleValue();
         } else {
             switch (getMode()) {
                 case FULL:
-                    result[0] = result[1] = scaleConstraint.getScale();
+                    result[0] = result[1] = scaleConstraint.getRational().doubleValue();
                     break;
                 case ASPECT_FIT_HEIGHT:
                     result[0] = result[1] = getHeight() / fullSize.height();
@@ -382,7 +383,7 @@ public class Scale implements Operation {
                                       ScaleConstraint scaleConstraint) {
         final Dimension size = new Dimension(imageSize);
         final double rfScale = reductionFactor.getScale();
-        final double scScale = scaleConstraint.getScale();
+        final double scScale = scaleConstraint.getRational().doubleValue();
 
         if (getPercent() != null) {
             final double scalePct = getPercent() * (scScale / rfScale);

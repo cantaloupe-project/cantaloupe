@@ -639,7 +639,7 @@ abstract class AbstractIIOImageReader {
                          final Scale scale,
                          final ScaleConstraint scaleConstraint,
                          final double reducedScale) {
-        final double scScale = scaleConstraint.getScale();
+        final double scScale = scaleConstraint.getRational().doubleValue();
 
         if (scale.getPercent() != null) {
             double cappedScale = (scale.getPercent() > 1) ?
@@ -648,7 +648,7 @@ abstract class AbstractIIOImageReader {
         } else {
             switch (scale.getMode()) {
                 case FULL:
-                    return (scaleConstraint.getScale() <= reducedScale);
+                    return (scScale <= reducedScale);
                 case ASPECT_FIT_WIDTH:
                     double cappedWidth = (scale.getWidth() > regionSize.width()) ?
                         regionSize.width() : scale.getWidth();

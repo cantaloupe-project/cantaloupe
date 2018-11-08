@@ -618,12 +618,12 @@ public class OperationListTest extends BaseTest {
     @Test
     public void setScaleConstraint() {
         instance.setScaleConstraint(new ScaleConstraint(1, 3));
-        assertEquals(1, instance.getScaleConstraint().getNumerator());
-        assertEquals(3, instance.getScaleConstraint().getDenominator());
+        assertEquals(1, instance.getScaleConstraint().getRational().getNumerator());
+        assertEquals(3, instance.getScaleConstraint().getRational().getDenominator());
 
         instance.setScaleConstraint(null);
-        assertEquals(1, instance.getScaleConstraint().getNumerator());
-        assertEquals(1, instance.getScaleConstraint().getDenominator());
+        assertEquals(1, instance.getScaleConstraint().getRational().getNumerator());
+        assertEquals(1, instance.getScaleConstraint().getRational().getDenominator());
     }
 
     @Test(expected = IllegalStateException.class)
