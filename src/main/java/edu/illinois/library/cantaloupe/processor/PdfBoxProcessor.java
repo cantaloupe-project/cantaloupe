@@ -20,7 +20,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.pdmodel.DefaultResourceCache;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.rendering.PDFRenderer;
@@ -184,12 +186,14 @@ class PdfBoxProcessor extends AbstractProcessor
             });
 
             // Read the document's XMP metadata.
-            try (InputStream is = doc.getDocumentCatalog().getMetadata().exportXMPMetadata()) {
-                ByteArrayOutputStream os = new ByteArrayOutputStream();
-                IOUtils.copy(is, os);
-
-                metadata = new Metadata();
-                metadata.setXMP(os.toByteArray());
+            final PDMetadata pdfMetadata = doc.getDocumentCatalog().getMetadata();
+            if (pdfMetadata != null) {
+                try (InputStream is = pdfMetadata.exportXMPMetadata()) {
+                    ByteArrayOutputStream os = new ByteArrayOutputStream();
+                    IOUtils.copy(is, os);
+                    metadata = new Metadata();
+                    metadata.setXMP(os.toByteArray());
+                }
             }
 
             LOGGER.debug("Loaded document in {}", watch);
