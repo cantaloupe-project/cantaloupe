@@ -51,7 +51,7 @@ enum ComplianceLevel {
         LEVEL_2_QUALITIES.addAll(LEVEL_1_QUALITIES);
         LEVEL_2_QUALITIES.add(Quality.BITONAL);
         LEVEL_2_QUALITIES.add(Quality.COLOR);
-        LEVEL_2_QUALITIES.add(Quality.GRAY);
+        LEVEL_2_QUALITIES.add(Quality.GREY);
         LEVEL_2_OUTPUT_FORMATS.addAll(LEVEL_1_OUTPUT_FORMATS);
         LEVEL_2_OUTPUT_FORMATS.add(Format.PNG);
     }

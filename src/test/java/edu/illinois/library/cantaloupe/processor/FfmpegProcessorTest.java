@@ -119,7 +119,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
                 EnumSet.of(
                         edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
                         edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
-                        edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
+                        edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GREY,
                         edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE);
         assertEquals(expectedQualities, instance.getSupportedIIIF1Qualities());
     }
