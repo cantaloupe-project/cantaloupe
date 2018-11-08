@@ -387,8 +387,8 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * pixel."
      */
     @Test
-    public void testGrayQuality() {
-        assertStatus(200, getHTTPURI("/" + IMAGE + "/full/full/0/gray.jpg"));
+    public void testGreyQuality() {
+        assertStatus(200, getHTTPURI("/" + IMAGE + "/full/full/0/grey.jpg"));
     }
 
     /**

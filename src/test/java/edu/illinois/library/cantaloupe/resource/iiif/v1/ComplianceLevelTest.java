@@ -39,7 +39,7 @@ public class ComplianceLevelTest extends BaseTest {
         processorFeatures.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
         qualities.add(Quality.BITONAL);
         qualities.add(Quality.COLOR);
-        qualities.add(Quality.GRAY);
+        qualities.add(Quality.GREY);
         outputFormats.add(Format.PNG);
         assertEquals(ComplianceLevel.LEVEL_2,
                 ComplianceLevel.getLevel(processorFeatures, qualities,

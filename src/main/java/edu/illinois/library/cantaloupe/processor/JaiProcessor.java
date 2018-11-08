@@ -73,7 +73,7 @@ class JaiProcessor extends AbstractImageIOProcessor
             SUPPORTED_IIIF_1_1_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
                     edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
                     edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
-                    edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GRAY,
+                    edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GREY,
                     edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
 
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>

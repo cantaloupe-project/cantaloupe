@@ -12,7 +12,7 @@ public class QualityTest extends BaseTest {
     public void testValues() {
         assertNotNull(Quality.valueOf("BITONAL"));
         assertNotNull(Quality.valueOf("COLOR"));
-        assertNotNull(Quality.valueOf("GRAY"));
+        assertNotNull(Quality.valueOf("GREY"));
         assertNotNull(Quality.valueOf("NATIVE"));
         assertEquals(4, Quality.values().length);
     }
@@ -21,7 +21,7 @@ public class QualityTest extends BaseTest {
     public void testToColorTransform() {
         assertEquals(ColorTransform.BITONAL, Quality.BITONAL.toColorTransform());
         assertNull(Quality.COLOR.toColorTransform());
-        assertEquals(ColorTransform.GRAY, Quality.GRAY.toColorTransform());
+        assertEquals(ColorTransform.GRAY, Quality.GREY.toColorTransform());
         assertNull(Quality.NATIVE.toColorTransform());
     }
 

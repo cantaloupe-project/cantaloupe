@@ -4,13 +4,13 @@ import edu.illinois.library.cantaloupe.operation.ColorTransform;
 
 public enum Quality {
 
-    BITONAL, COLOR, GRAY, NATIVE;
+    BITONAL, COLOR, GREY, NATIVE;
 
     public ColorTransform toColorTransform() {
         switch (this) {
             case BITONAL:
                 return ColorTransform.BITONAL;
-            case GRAY:
+            case GREY:
                 return ColorTransform.GRAY;
             default:
                 return null;
