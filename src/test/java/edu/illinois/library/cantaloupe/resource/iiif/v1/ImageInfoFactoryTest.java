@@ -33,7 +33,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
 
-        Info info = processor.readImageInfo();
+        Info info = processor.readInfo();
         Info.Image infoImage = info.getImages().get(0);
         imageInfo = new ImageInfoFactory().newImageInfo(
                 imageUri,
@@ -61,7 +61,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rotated.jpg"));
 
-        Info info = processor.readImageInfo();
+        Info info = processor.readInfo();
         Info.Image infoImage = info.getImages().get(0);
         imageInfo = new ImageInfoFactory().newImageInfo(
                 imageUri,
@@ -77,7 +77,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
 
-        Info info = processor.readImageInfo();
+        Info info = processor.readInfo();
         Info.Image infoImage = info.getImages().get(0);
         imageInfo = new ImageInfoFactory().newImageInfo(
                 imageUri,
@@ -173,7 +173,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         processor.setSourceFormat(Format.TIF);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-uncompressed.tif"));
-        Info info = processor.readImageInfo();
+        Info info = processor.readInfo();
         Info.Image infoImage = info.getImages().get(0);
         imageInfo = new ImageInfoFactory().newImageInfo(
                 imageUri,
@@ -208,7 +208,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         processor.setSourceFormat(Format.TIF);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-uncompressed.tif"));
-        Info info = processor.readImageInfo();
+        Info info = processor.readInfo();
         Info.Image infoImage = info.getImages().get(0);
         imageInfo = new ImageInfoFactory().newImageInfo(
                 imageUri,

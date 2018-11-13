@@ -26,7 +26,7 @@ import java.util.Objects;
  * supported by the application.</p>
  *
  * <p>Instances are format- and processor-agnostic. An instance describing a
- * particular image {@link Processor#readImageInfo() returned from one
+ * particular image {@link Processor#readInfo() returned from one
  * processor} should be {@link #equals(Object) equal} to an instance describing
  * the same image returned from a different processor. This preserves the
  * freedom to change processor assignments without invalidating any
@@ -34,14 +34,14 @@ import java.util.Objects;
  *
  * <p>All sizes are raw pixel data sizes, disregarding orientation.</p>
  *
- * <p>Instances ultimately originate from {@link Processor#readImageInfo()},
- * but subsequently they can be {@link DerivativeCache#put(Identifier, Info)
+ * <p>Instances ultimately originate from {@link Processor#readInfo()}, but
+ * subsequently they can be {@link DerivativeCache#put(Identifier, Info)
  * cached}, perhaps for a very long time. For efficiency's sake, when an
  * instance is needed, it will be preferentially acquired from a cache, and a
  * processor will be consulted only as a last resort. As a result, changes to
  * the class definition need to be implemented carefully so that older
- * serializations remain d{@link Processor#readImageInfo() readable}.
- * Otherwise, users would have to purge their cache whenever the class design
+ * serializations remain d{@link Processor#readInfo() readable}. Otherwise,
+ * users would have to purge their cache whenever the class design
  * changes.)</p>
  *
  * @see <a href="https://github.com/FasterXML/jackson-databind">jackson-databind

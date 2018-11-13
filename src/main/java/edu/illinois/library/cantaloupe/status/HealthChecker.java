@@ -155,7 +155,7 @@ public final class HealthChecker {
                     // processing is performed.
                     OperationList opList = new OperationList(
                             new Encode(pair.processor.getSourceFormat()));
-                    Info info = pair.processor.readImageInfo();
+                    Info info = pair.processor.readInfo();
                     pair.processor.process(opList, info, os);
                 } catch (Throwable t) {
                     health.setMinColor(Health.Color.RED);

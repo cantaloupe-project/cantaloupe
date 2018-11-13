@@ -70,7 +70,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
      * Info#setNumResolutions(int) set the number of resolutions} to a value
      * other than {@literal 1}.
      */
-    public Info readImageInfo() throws IOException {
+    public Info readInfo() throws IOException {
         final Info info = new Info();
         info.getImages().clear();
         info.setSourceFormat(getSourceFormat());
@@ -94,7 +94,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
             }
             info.getImages().add(image);
         }
-        LOGGER.trace("readImageInfo(): {}", info.toJSON());
+        LOGGER.trace("readInfo(): {}", info.toJSON());
         return info;
     }
 

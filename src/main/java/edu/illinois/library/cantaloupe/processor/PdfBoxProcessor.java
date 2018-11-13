@@ -226,7 +226,7 @@ class PdfBoxProcessor extends AbstractProcessor
     }
 
     @Override
-    public Info readImageInfo() throws IOException {
+    public Info readInfo() throws IOException {
         readDocument();
 
         final Configuration config = Configuration.getInstance();

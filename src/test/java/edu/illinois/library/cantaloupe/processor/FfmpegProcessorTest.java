@@ -139,7 +139,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
 
     @Test
     public void testProcessWithTimeOption() throws Exception {
-        final Info imageInfo = instance.readImageInfo();
+        final Info imageInfo = instance.readInfo();
 
         // time option missing
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -159,7 +159,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
     @Test(expected = ProcessorException.class)
     public void testProcessWithInvalidFrameOptionThrowsException()
             throws Exception {
-        final Info imageInfo = instance.readImageInfo();
+        final Info imageInfo = instance.readInfo();
 
         OperationList ops = new OperationList(new Encode(Format.JPG));
         ops.getOptions().put("time", "cats");

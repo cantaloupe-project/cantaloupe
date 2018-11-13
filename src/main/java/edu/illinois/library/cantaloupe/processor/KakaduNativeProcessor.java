@@ -349,7 +349,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
     }
 
     @Override
-    public Info readImageInfo() throws IOException {
+    public Info readInfo() throws IOException {
         return Info.builder()
                 .withFormat(Format.JP2)
                 .withSize(reader.getWidth(), reader.getHeight())

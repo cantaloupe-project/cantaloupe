@@ -267,7 +267,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
 
         // page option missing
         instance.setStreamFactory(new PathStreamFactory(fixture));
-        imageInfo = instance.readImageInfo();
+        imageInfo = instance.readInfo();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         OperationList ops = new OperationList();
@@ -293,7 +293,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
         // TODO: The parent fails on a lot of fixtures.
     }
 
-    /* readImageInfo() */
+    /* readInfo() */
 
     @Test
     public void testReadImageInfoOnAllFixtures() throws Exception {
@@ -322,7 +322,7 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
                         // we can't get them because that would require using
                         // the method we are now testing, so the best we can do
                         // is to assert that they are nonzero.
-                        final Info actualInfo = proc.readImageInfo();
+                        final Info actualInfo = proc.readInfo();
                         assertEquals(format, actualInfo.getSourceFormat());
                         assertTrue(actualInfo.getSize().width() > DELTA);
                         assertTrue(actualInfo.getSize().height() > DELTA);

@@ -450,7 +450,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     }
 
     @Override
-    public Info readImageInfo() throws IOException {
+    public Info readInfo() throws IOException {
         try (InputStream inputStream = streamFactory.newInputStream()) {
             final List<String> args = new ArrayList<>();
             args.add(getPath());
@@ -469,7 +469,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             cmd.setInputProvider(new Pipe(inputStream, null));
             cmd.setOutputConsumer(consumer);
             final String cmdString = String.join(" ", args).replace("\n", "");
-            LOGGER.info("readImageInfo(): invoking {}", cmdString);
+            LOGGER.info("readInfo(): invoking {}", cmdString);
             cmd.run(args);
 
             final List<String> output = consumer.getOutput();
@@ -496,7 +496,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                 }
                 return info;
             }
-            throw new IOException("readImageInfo(): nothing received on " +
+            throw new IOException("readInfo(): nothing received on " +
                     "stdout from command: " + cmdString);
         } catch (IOException e) {
             throw e;

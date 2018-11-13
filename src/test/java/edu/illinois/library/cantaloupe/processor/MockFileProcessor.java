@@ -59,7 +59,7 @@ public class MockFileProcessor implements FileProcessor {
     }
 
     @Override
-    public Info readImageInfo() {
+    public Info readInfo() {
         return new Info();
     }
 

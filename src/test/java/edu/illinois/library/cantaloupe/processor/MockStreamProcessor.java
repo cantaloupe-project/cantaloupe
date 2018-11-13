@@ -63,7 +63,7 @@ public class MockStreamProcessor implements StreamProcessor {
     }
 
     @Override
-    public Info readImageInfo(){
+    public Info readInfo(){
         return new Info();
     }
 

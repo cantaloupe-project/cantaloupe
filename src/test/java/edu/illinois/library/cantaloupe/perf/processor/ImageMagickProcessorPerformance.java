@@ -104,38 +104,38 @@ public class ImageMagickProcessorPerformance {
     }
 
     @Benchmark
-    public void readImageInfoWithBMP() throws Exception {
+    public void readInfoWithBMP() throws Exception {
         processor.setSourceFormat(Format.BMP);
         processor.setStreamFactory(new PathStreamFactory(TestUtil.getImage("bmp-rgb-64x56x8.bmp")));
-        processor.readImageInfo();
+        processor.readInfo();
     }
 
     @Benchmark
-    public void readImageInfoWithGIF() throws Exception {
+    public void readInfoWithGIF() throws Exception {
         processor.setSourceFormat(Format.GIF);
         processor.setStreamFactory(new PathStreamFactory(TestUtil.getImage("gif-rgb-64x56x8.gif")));
-        processor.readImageInfo();
+        processor.readInfo();
     }
 
     @Benchmark
-    public void readImageInfoWithJPG() throws Exception {
+    public void readInfoWithJPG() throws Exception {
         processor.setSourceFormat(Format.JPG);
         processor.setStreamFactory(new PathStreamFactory(TestUtil.getImage("jpg-rgb-64x56x8-line.jpg")));
-        processor.readImageInfo();
+        processor.readInfo();
     }
 
     @Benchmark
-    public void readImageInfoWithPNG() throws Exception {
+    public void readInfoWithPNG() throws Exception {
         processor.setSourceFormat(Format.PNG);
         processor.setStreamFactory(new PathStreamFactory(TestUtil.getImage("png-rgb-64x56x8.png")));
-        processor.readImageInfo();
+        processor.readInfo();
     }
 
     @Benchmark
-    public void readImageInfoWithTIF() throws Exception {
+    public void readInfoWithTIF() throws Exception {
         processor.setSourceFormat(Format.TIF);
         processor.setStreamFactory(new PathStreamFactory(TestUtil.getImage("tif-rgb-1res-64x56x8-striped-lzw.tif")));
-        processor.readImageInfo();
+        processor.readInfo();
     }
 
 

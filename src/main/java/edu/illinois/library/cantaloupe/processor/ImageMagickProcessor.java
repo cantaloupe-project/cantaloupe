@@ -684,7 +684,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     }
 
     @Override
-    public Info readImageInfo() throws IOException {
+    public Info readInfo() throws IOException {
         try (InputStream inputStream = streamFactory.newInputStream()) {
             final List<String> args = new ArrayList<>();
             if (IMVersion.VERSION_7.equals(getIMVersion())) {
@@ -713,7 +713,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             cmd.setInputProvider(new Pipe(inputStream, null));
             cmd.setOutputConsumer(consumer);
             final String cmdString = String.join(" ", args).replace("\n", ",");
-            LOGGER.debug("readImageInfo(): invoking {}", cmdString);
+            LOGGER.debug("readInfo(): invoking {}", cmdString);
             cmd.run(args);
 
             final List<String> output = consumer.getOutput();
@@ -735,12 +735,12 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                                 Orientation.forEXIFOrientation(exifOrientation);
                         info.getImages().get(0).setOrientation(orientation);
                     } catch (IllegalArgumentException e) {
-                        LOGGER.warn("readImageInfo(): {}", e.getMessage());
+                        LOGGER.warn("readInfo(): {}", e.getMessage());
                     }
                 }
                 return info;
             }
-            throw new IOException("readImageInfo(): nothing received on " +
+            throw new IOException("readInfo(): nothing received on " +
                     "stdout from command: " + cmdString);
         } catch (IOException e) {
             throw e;

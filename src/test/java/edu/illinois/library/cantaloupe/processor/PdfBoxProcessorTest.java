@@ -70,7 +70,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     @Test
     public void testProcessWithPageOption() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
-        final Info imageInfo = instance.readImageInfo();
+        final Info imageInfo = instance.readInfo();
 
         // page option missing
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -91,7 +91,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     public void testProcessWithIllegalPageOptionThrowsException()
             throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
-        final Info imageInfo = instance.readImageInfo();
+        final Info imageInfo = instance.readInfo();
 
         // page "35"
         OperationList ops = new OperationList(new Encode(Format.JPG));
@@ -105,7 +105,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     public void testReadImageInfoWithMultiPagePDF() throws Exception {
         instance.close();
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
-        final Info info = instance.readImageInfo();
+        final Info info = instance.readInfo();
         assertEquals(2, info.getImages().size());
         assertEquals(new Dimension(100, 88), info.getImages().get(0).getSize());
         assertEquals(new Dimension(88, 100), info.getImages().get(1).getSize());

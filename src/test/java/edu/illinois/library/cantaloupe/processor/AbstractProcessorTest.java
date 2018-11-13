@@ -547,7 +547,7 @@ abstract class AbstractProcessorTest extends BaseTest {
         }
     }
 
-    /* readImageInfo() */
+    /* readInfo() */
 
     /**
      * This implementation is tile-unaware. Tile-aware processors will need to
@@ -588,7 +588,7 @@ abstract class AbstractProcessorTest extends BaseTest {
                     // we can't get them because that would require using
                     // the method we are now testing, so the best we can do
                     // is to assert that they are nonzero.
-                    final Info actualInfo = proc.readImageInfo();
+                    final Info actualInfo = proc.readInfo();
                     assertEquals(format, actualInfo.getSourceFormat());
                     assertTrue(actualInfo.getSize().width() > DELTA);
                     assertTrue(actualInfo.getSize().height() > DELTA);
@@ -729,7 +729,7 @@ abstract class AbstractProcessorTest extends BaseTest {
         final Processor proc = newInstance(fixture, sourceFormat);
         try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            proc.process(opList, proc.readImageInfo(), os);
+            proc.process(opList, proc.readInfo(), os);
 
             ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray());
             BufferedImage image = ImageIO.read(is);
@@ -755,7 +755,7 @@ abstract class AbstractProcessorTest extends BaseTest {
                                final OutputStream os) throws Exception {
         final Processor proc = newInstance(fixture, sourceFormat);
         try {
-            proc.process(opList, proc.readImageInfo(), os);
+            proc.process(opList, proc.readInfo(), os);
         } catch (Exception | AssertionError e) {
             System.err.println("Errored fixture: " + fixture);
             System.err.println("Errored op list: " + opList);

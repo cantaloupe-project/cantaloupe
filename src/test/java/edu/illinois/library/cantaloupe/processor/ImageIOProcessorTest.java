@@ -49,13 +49,13 @@ abstract class ImageIOProcessorTest extends AbstractProcessorTest {
         StreamFactory streamFactory = new PathStreamFactory(fixture);
         sproc.setStreamFactory(streamFactory);
         sproc.setSourceFormat(Format.TIF);
-        assertEquals(expectedInfo, sproc.readImageInfo());
+        assertEquals(expectedInfo, sproc.readInfo());
 
         // test as a FileProcessor
         FileProcessor fproc = (FileProcessor) newInstance();
         fproc.setSourceFile(fixture);
         fproc.setSourceFormat(Format.TIF);
-        assertEquals(expectedInfo, fproc.readImageInfo());
+        assertEquals(expectedInfo, fproc.readInfo());
 
         try {
             fproc.setSourceFile(TestUtil.getImage("mpg"));
@@ -64,7 +64,7 @@ abstract class ImageIOProcessorTest extends AbstractProcessorTest {
                     .withSize(640, 360)
                     .withFormat(Format.MPG)
                     .build();
-            assertEquals(expectedInfo, fproc.readImageInfo());
+            assertEquals(expectedInfo, fproc.readInfo());
         } catch (UnsupportedSourceFormatException e) {
             // pass
         }
@@ -81,7 +81,7 @@ abstract class ImageIOProcessorTest extends AbstractProcessorTest {
         fproc.setSourceFile(fixture);
         fproc.setSourceFormat(Format.JPG);
 
-        final Info info = fproc.readImageInfo();
+        final Info info = fproc.readInfo();
         assertEquals(Orientation.ROTATE_90, info.getOrientation());
     }
 

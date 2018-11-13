@@ -239,7 +239,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
      * output. The result is cached.
      */
     @Override
-    public Info readImageInfo() throws IOException {
+    public Info readInfo() throws IOException {
         if (imageInfo == null) {
             final List<String> command = new ArrayList<>();
             command.add(getPath(FFPROBE_NAME));
@@ -268,7 +268,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
                 try {
                     durationSec = Double.parseDouble(reader.readLine());
                 } catch (NumberFormatException e) {
-                    LOGGER.debug("readImageInfo(): {}", e.getMessage());
+                    LOGGER.debug("readInfo(): {}", e.getMessage());
                 }
                 imageInfo = Info.builder()
                         .withSize(width, height)
@@ -306,7 +306,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
 
         if (durationSec < 1) {
             try {
-                readImageInfo();
+                readInfo();
             } catch (IOException e) {
                 throw new ProcessorException(e.getMessage(), e);
             }

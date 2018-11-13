@@ -93,31 +93,31 @@ public class JaiProcessorPerformance {
     }
 
     @Benchmark
-    public void readImageInfoWithBMP() throws Exception {
+    public void readInfoWithBMP() throws Exception {
         processor.setSourceFormat(Format.BMP);
         processor.setSourceFile(TestUtil.getImage("bmp-rgb-64x56x8.bmp"));
-        processor.readImageInfo();
+        processor.readInfo();
     }
 
     @Benchmark
-    public void readImageInfoWithJPG() throws Exception {
+    public void readInfoWithJPG() throws Exception {
         processor.setSourceFormat(Format.JPG);
         processor.setSourceFile(TestUtil.getImage("jpg-rgb-64x56x8-line.jpg"));
-        processor.readImageInfo();
+        processor.readInfo();
     }
 
     @Benchmark
-    public void readImageInfoWithPNG() throws Exception {
+    public void readInfoWithPNG() throws Exception {
         processor.setSourceFormat(Format.PNG);
         processor.setSourceFile(TestUtil.getImage("png-rgb-64x56x8.png"));
-        processor.readImageInfo();
+        processor.readInfo();
     }
 
     @Benchmark
-    public void readImageInfoWithTIF() throws Exception {
+    public void readInfoWithTIF() throws Exception {
         processor.setSourceFormat(Format.TIF);
         processor.setSourceFile(TestUtil.getImage("tif-rgb-1res-64x56x8-striped-lzw.tif"));
-        processor.readImageInfo();
+        processor.readInfo();
     }
 
 }

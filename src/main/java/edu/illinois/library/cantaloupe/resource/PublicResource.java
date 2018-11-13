@@ -109,7 +109,7 @@ public abstract class PublicResource extends AbstractResource {
             info.setIdentifier(identifier);
         } else {
             LOGGER.debug("getOrReadInfo(): bypassing the cache, as requested");
-            info = proc.readImageInfo();
+            info = proc.readInfo();
             info.setIdentifier(identifier);
         }
         return info;

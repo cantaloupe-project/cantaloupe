@@ -63,10 +63,10 @@ public class KakaduNativeProcessorPerformance {
     }
 
     @Benchmark
-    public void readImageInfo() throws Exception {
+    public void readInfo() throws Exception {
         processor.setSourceFormat(Format.JP2);
         processor.setSourceFile(TestUtil.getImage("jp2-5res-rgb-64x56x8-monotiled-lossy.jp2"));
-        processor.readImageInfo();
+        processor.readInfo();
     }
 
 }

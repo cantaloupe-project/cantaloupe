@@ -55,7 +55,7 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
             OperationList opList = new OperationList(
                     new MetadataCopy(),
                     new Encode(Format.JPG));
-            Info info = instance.readImageInfo();
+            Info info = instance.readInfo();
 
             instance.process(opList, info, os);
 
@@ -71,7 +71,7 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
             instance.setSourceFile(TestUtil.getImage("jp2-xmp.jp2"));
 
             OperationList opList = new OperationList(new Encode(Format.JPG));
-            Info info = instance.readImageInfo();
+            Info info = instance.readInfo();
 
             instance.process(opList, info, os);
 
@@ -89,7 +89,7 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
                 .withFormat(Format.JP2)
                 .withNumResolutions(5)
                 .build();
-        assertEquals(expectedInfo, instance.readImageInfo());
+        assertEquals(expectedInfo, instance.readInfo());
     }
 
     @Test
@@ -101,7 +101,7 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
                 .withFormat(Format.JP2)
                 .withNumResolutions(6)
                 .build();
-        assertEquals(expectedInfo, instance.readImageInfo());
+        assertEquals(expectedInfo, instance.readInfo());
     }
 
     @Test

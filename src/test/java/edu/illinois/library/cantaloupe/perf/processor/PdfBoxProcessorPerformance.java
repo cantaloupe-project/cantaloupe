@@ -63,10 +63,10 @@ public class PdfBoxProcessorPerformance {
     }
 
     @Benchmark
-    public void readImageInfo() throws Exception {
+    public void readInfo() throws Exception {
         processor.setSourceFormat(Format.PDF);
         processor.setSourceFile(TestUtil.getImage("pdf"));
-        processor.readImageInfo();
+        processor.readInfo();
     }
 
 }

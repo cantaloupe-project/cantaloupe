@@ -413,7 +413,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
     }
 
     @Override
-    public Info readImageInfo() throws IOException {
+    public Info readInfo() throws IOException {
         final Info info = new Info();
         info.setSourceFormat(getSourceFormat());
 
@@ -438,7 +438,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                 image.tileHeight = tmp;
             }
 
-            LOGGER.trace("readImageInfo(): {}", info.toJSON());
+            LOGGER.trace("readInfo(): {}", info.toJSON());
             return info;
         }
     }

@@ -113,7 +113,7 @@ public class KakaduDemoProcessorTest extends AbstractProcessorTest {
                 .withFormat(Format.JP2)
                 .withNumResolutions(5)
                 .build();
-        assertEquals(expectedInfo, instance.readImageInfo());
+        assertEquals(expectedInfo, instance.readInfo());
 
         // tiled image
         instance.setSourceFile(TestUtil.getImage("jp2-6res-rgb-64x56x8-multitiled-lossy.jp2"));
@@ -123,7 +123,7 @@ public class KakaduDemoProcessorTest extends AbstractProcessorTest {
                 .withFormat(Format.JP2)
                 .withNumResolutions(6)
                 .build();
-        assertEquals(expectedInfo, instance.readImageInfo());
+        assertEquals(expectedInfo, instance.readInfo());
     }
 
     @Test

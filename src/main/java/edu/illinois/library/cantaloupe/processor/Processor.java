@@ -140,7 +140,7 @@ public interface Processor extends AutoCloseable {
      *                     need to validate it again.
      * @param sourceInfo   Information about the source image. This will
      *                     probably be equal to the return value of {@link
-     *                     #readImageInfo}, but it might not be the same
+     *                     #readInfo}, but it might not be the same
      *                     instance, as it may have come from a cache.
      * @param outputStream Stream to write the image to, which should not be
      *                     closed.
@@ -164,7 +164,7 @@ public interface Processor extends AutoCloseable {
      * @return Information about the source image.
      * @throws IOException if anything goes wrong.
      */
-    Info readImageInfo() throws IOException;
+    Info readInfo() throws IOException;
 
     /**
      * @param format Format of the source image. Never {@link Format#UNKNOWN}.

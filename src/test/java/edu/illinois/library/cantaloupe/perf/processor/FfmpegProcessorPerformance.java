@@ -111,45 +111,45 @@ public class FfmpegProcessorPerformance {
     }
 
     @Benchmark
-    public void readImageInfoWithAVI() throws Exception {
+    public void readInfoWithAVI() throws Exception {
         processor.setSourceFormat(Format.AVI);
         processor.setSourceFile(TestUtil.getImage("avi"));
-        processor.readImageInfo();
+        processor.readInfo();
     }
 
     @Benchmark
-    public void readImageInfoWithFLV() throws Exception {
+    public void readInfoWithFLV() throws Exception {
         processor.setSourceFormat(Format.FLV);
         processor.setSourceFile(TestUtil.getImage("flv"));
-        processor.readImageInfo();
+        processor.readInfo();
     }
 
     @Benchmark
-    public void readImageInfoWithMOV() throws Exception {
+    public void readInfoWithMOV() throws Exception {
         processor.setSourceFormat(Format.MOV);
         processor.setSourceFile(TestUtil.getImage("mov"));
-        processor.readImageInfo();
+        processor.readInfo();
     }
 
     @Benchmark
-    public void readImageInfoWithMP4() throws Exception {
+    public void readInfoWithMP4() throws Exception {
         processor.setSourceFormat(Format.MP4);
         processor.setSourceFile(TestUtil.getImage("mp4"));
-        processor.readImageInfo();
+        processor.readInfo();
     }
 
     @Benchmark
-    public void readImageInfoWithMPG() throws Exception {
+    public void readInfoWithMPG() throws Exception {
         processor.setSourceFormat(Format.MPG);
         processor.setSourceFile(TestUtil.getImage("mpg"));
-        processor.readImageInfo();
+        processor.readInfo();
     }
 
     @Benchmark
-    public void readImageInfoWithWebM() throws Exception {
+    public void readInfoWithWebM() throws Exception {
         processor.setSourceFormat(Format.WEBM);
         processor.setSourceFile(TestUtil.getImage("webm"));
-        processor.readImageInfo();
+        processor.readInfo();
     }
 
 }

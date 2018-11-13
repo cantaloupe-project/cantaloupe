@@ -195,7 +195,7 @@ public final class InfoService {
     private Info readInfo(final Identifier identifier,
                           final Processor proc) throws IOException {
         final Stopwatch watch = new Stopwatch();
-        final Info info = proc.readImageInfo();
+        final Info info = proc.readInfo();
 
         LOGGER.debug("readInfo(): read {} from {} in {}",
                 identifier,
