@@ -110,14 +110,15 @@ public abstract class AbstractResource {
         }
 
         // Log request info.
-        String headersStr = request.getHeaders().stream()
+        LOGGER.info("doInit(): handling {} {}",
+                request.getMethod(),
+                request.getReference().getPath());
+        LOGGER.debug("doInit(): request headers: {}",
+                request.getHeaders()
+                .stream()
                 .map(h -> h.getName() + ": " +
                         ("Authorization".equals(h.getName()) ? "******" : h.getValue()))
-                .collect(Collectors.joining("; "));
-        LOGGER.info("doInit(): handling {} {} [{}]",
-                request.getMethod(),
-                request.getReference().getPath(),
-                headersStr);
+                .collect(Collectors.joining("; ")));
     }
 
     /**
