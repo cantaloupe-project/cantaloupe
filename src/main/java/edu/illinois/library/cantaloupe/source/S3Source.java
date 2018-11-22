@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -24,6 +25,7 @@ import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * <p>Maps an identifier to an <a href="https://aws.amazon.com/s3/">Amazon
@@ -98,7 +100,64 @@ class S3Source extends AbstractSource implements StreamSource {
         @Override
         public InputStream newInputStream() throws IOException {
             S3Object object = fetchObject(objectInfo);
-            return object.getObjectContent();
+            final InputStream responseStream = object.getObjectContent();
+            final AtomicBoolean isClosed     = new AtomicBoolean();
+
+            // Ideally we would just return responseStream. However, if
+            // responseStream is close()d before all of its data has been read,
+            // its underlying TCP connection will also be closed, thus negating
+            // the advantage of the connection pool, and triggering a warning
+            // log message from the S3 client.
+            //
+            // This wrapper stream's close() method will drain the stream
+            // before closing it. Because draining the stream may be expensive,
+            // it will happen in another thread.
+            return new InputStream() {
+                @Override
+                public void close() {
+                    if (!isClosed.get()) {
+                        isClosed.set(true);
+
+                        ThreadPool.getInstance().submit(() -> {
+                            try {
+                                try {
+                                    while (responseStream.read() != -1) {
+                                        // drain the stream
+                                    }
+                                } finally {
+                                    try {
+                                        responseStream.close();
+                                    } finally {
+                                        super.close();
+                                    }
+                                }
+                            } catch (IOException e) {
+                                LOGGER.warn(e.getMessage(), e);
+                            }
+                        });
+                    }
+                }
+
+                @Override
+                public int read() throws IOException {
+                    return responseStream.read();
+                }
+
+                @Override
+                public int read(byte[] b) throws IOException {
+                    return responseStream.read(b);
+                }
+
+                @Override
+                public int read(byte[] b, int off, int len) throws IOException {
+                    return responseStream.read(b, off, len);
+                }
+
+                @Override
+                public long skip(long n) throws IOException {
+                    return responseStream.skip(n);
+                }
+            };
         }
 
     }

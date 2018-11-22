@@ -109,7 +109,8 @@ public class Crop implements Operation {
             case ROTATE_270:
                 double originalY = getY();
                 setY(getX());
-                setX(fullSize.width() - originalY - getHeight());
+                double newX = fullSize.width() - originalY - getHeight();
+                setX(newX >= 0 ? newX : 0);
                 // Swap width and height
                 originalW = getWidth();
                 setWidth(getHeight());
