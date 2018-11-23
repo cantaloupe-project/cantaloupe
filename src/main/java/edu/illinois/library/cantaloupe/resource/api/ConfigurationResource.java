@@ -21,6 +21,11 @@ public class ConfigurationResource extends AbstractAPIResource {
             new Method[] { Method.GET, Method.OPTIONS, Method.PUT };
 
     @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
+
+    @Override
     public Method[] getSupportedMethods() {
         return SUPPORTED_METHODS;
     }

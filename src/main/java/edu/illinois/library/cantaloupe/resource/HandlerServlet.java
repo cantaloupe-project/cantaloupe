@@ -119,8 +119,9 @@ public class HandlerServlet extends HttpServlet {
             if (resource != null) {
                 resource.destroy();
             }
-            LOGGER.debug("{} total for {} {}",
-                    requestClock, request.getMethod(), request.getPathInfo());
+            LOGGER.debug("Responded to {} {} with HTTP {} in {}",
+                    request.getMethod(), request.getPathInfo(),
+                    response.getStatus(), requestClock);
         }
     }
 

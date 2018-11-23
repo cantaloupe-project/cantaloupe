@@ -40,6 +40,11 @@ class ErrorResource extends AbstractResource {
     }
 
     @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
+
+    @Override
     public Method[] getSupportedMethods() {
         return Method.values();
     }

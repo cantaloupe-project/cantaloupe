@@ -9,6 +9,8 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -23,7 +25,12 @@ public class AbstractResourceTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        instance = new AbstractResource() {};
+        instance = new AbstractResource() {
+            @Override
+            protected Logger getLogger() {
+                return LoggerFactory.getLogger(AbstractResourceTest.class);
+            }
+        };
 
         Request mockRequest = new Request(new MockHttpServletRequest());
         instance.setRequest(mockRequest);

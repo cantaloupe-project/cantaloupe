@@ -3,6 +3,8 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.http.Status;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Permanently redirects (via HTTP 301) {@literal /some/path/} to {@literal
@@ -10,6 +12,14 @@ import edu.illinois.library.cantaloupe.http.Status;
  * X-Forwarded-Path} header, and other factors.
  */
 public class TrailingSlashRemovingResource extends AbstractResource {
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(TrailingSlashRemovingResource.class);
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
 
     @Override
     public Method[] getSupportedMethods() {

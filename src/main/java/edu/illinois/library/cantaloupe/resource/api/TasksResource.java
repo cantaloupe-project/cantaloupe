@@ -8,6 +8,8 @@ import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.Route;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Callable;
 
@@ -17,8 +19,16 @@ import java.util.concurrent.Callable;
  */
 public class TasksResource extends AbstractAPIResource {
 
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(TasksResource.class);
+
     private static final Method[] SUPPORTED_METHODS =
             new Method[] { Method.OPTIONS, Method.POST };
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
 
     @Override
     public Method[] getSupportedMethods() {

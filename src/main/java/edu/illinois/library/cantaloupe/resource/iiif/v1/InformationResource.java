@@ -39,6 +39,11 @@ public class InformationResource extends IIIF1Resource {
             new Method[] { Method.GET, Method.OPTIONS };
 
     @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
+
+    @Override
     public Method[] getSupportedMethods() {
         return SUPPORTED_METHODS;
     }

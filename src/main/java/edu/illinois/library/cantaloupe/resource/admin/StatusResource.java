@@ -5,6 +5,8 @@ import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
 import edu.illinois.library.cantaloupe.resource.api.TaskMonitor;
 import edu.illinois.library.cantaloupe.util.TimeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -15,10 +17,18 @@ import java.util.Map;
  */
 public class StatusResource extends AbstractAdminResource {
 
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(StatusResource.class);
+
     private static final long MEGABYTE = 1024 * 1024;
 
     private static final Method[] SUPPORTED_METHODS =
             new Method[] { Method.GET, Method.OPTIONS };
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
 
     @Override
     public Method[] getSupportedMethods() {

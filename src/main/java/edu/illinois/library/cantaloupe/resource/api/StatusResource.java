@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import edu.illinois.library.cantaloupe.status.ApplicationStatus;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -14,8 +16,16 @@ import java.util.Map;
  */
 public class StatusResource extends AbstractAPIResource {
 
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(StatusResource.class);
+
     private static final Method[] SUPPORTED_METHODS =
             new Method[] { Method.GET, Method.OPTIONS };
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
 
     @Override
     public Method[] getSupportedMethods() {

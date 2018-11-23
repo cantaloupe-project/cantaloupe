@@ -18,7 +18,6 @@ import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.script.DisabledException;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -46,9 +45,6 @@ import java.util.stream.Collectors;
  * used once and will not be shared across threads.</p>
  */
 public abstract class AbstractResource {
-
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(AbstractResource.class);
 
     /**
      * Replaces {@link #PUBLIC_IDENTIFIER_HEADER_DEPRECATED}.
@@ -110,10 +106,10 @@ public abstract class AbstractResource {
         }
 
         // Log request info.
-        LOGGER.info("doInit(): handling {} {}",
+        getLogger().info("Handling {} {}",
                 request.getMethod(),
                 request.getReference().getPath());
-        LOGGER.debug("doInit(): request headers: {}",
+        getLogger().debug("Request headers: {}",
                 request.getHeaders()
                 .stream()
                 .map(h -> h.getName() + ": " +
@@ -314,7 +310,7 @@ public abstract class AbstractResource {
             try {
                 delegateProxy = service.newDelegateProxy(getRequestContext());
             } catch (DisabledException e) {
-                LOGGER.debug("newDelegateProxy(): {}", e.getMessage());
+                getLogger().debug("newDelegateProxy(): {}", e.getMessage());
             }
         }
         return delegateProxy;
@@ -355,6 +351,8 @@ public abstract class AbstractResource {
         List<String> args = getPathArguments();
         return (!args.isEmpty()) ? args.get(0) : null;
     }
+
+    abstract protected Logger getLogger();
 
     /**
      * Returns the segments of the URI path that are considered arguments.
@@ -477,7 +475,7 @@ public abstract class AbstractResource {
             }
             newRef.setPath(pathStr);
 
-            LOGGER.debug("Base URI from assembled from {} key: {}",
+            getLogger().debug("Base URI from assembled from {} key: {}",
                     Key.BASE_URI, newRef);
         } else {
             // Try to use X-Forwarded-* headers.
@@ -534,7 +532,7 @@ public abstract class AbstractResource {
                 newRef.setPath(StringUtils.stripEnd(pathStr, "/"));
             }
 
-            LOGGER.debug("Base URI assembled from X-Forwarded headers: {}",
+            getLogger().debug("Base URI assembled from X-Forwarded headers: {}",
                     newRef);
         }
         return newRef;

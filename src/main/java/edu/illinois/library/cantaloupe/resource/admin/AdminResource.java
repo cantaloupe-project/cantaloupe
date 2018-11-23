@@ -16,6 +16,8 @@ import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.VelocityRepresentation;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.GraphicsEnvironment;
 import java.lang.management.ManagementFactory;
@@ -92,8 +94,16 @@ public class AdminResource extends AbstractAdminResource {
         }
     }
 
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(AdminResource.class);
+
     private static final Method[] SUPPORTED_METHODS =
             new Method[] { Method.GET, Method.OPTIONS };
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
 
     @Override
     public Method[] getSupportedMethods() {

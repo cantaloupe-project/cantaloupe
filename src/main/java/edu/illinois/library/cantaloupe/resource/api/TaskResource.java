@@ -2,6 +2,8 @@ package edu.illinois.library.cantaloupe.resource.api;
 
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.NoSuchFileException;
 import java.util.UUID;
@@ -11,8 +13,16 @@ import java.util.UUID;
  */
 public class TaskResource extends AbstractAPIResource {
 
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(TaskResource.class);
+
     private static final Method[] SUPPORTED_METHODS =
             new Method[] { Method.GET, Method.OPTIONS };
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
 
     @Override
     public Method[] getSupportedMethods() {
