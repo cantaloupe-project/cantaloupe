@@ -10,7 +10,6 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.MediaType;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -174,7 +173,7 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
         return cachedBlob;
     }
 
-    private String getObjectKey() throws IOException {
+    public String getObjectKey() throws IOException {
         if (objectKey == null) {
             final LookupStrategy strategy =
                     LookupStrategy.from(Key.AZURESTORAGESOURCE_LOOKUP_STRATEGY);
@@ -186,8 +185,10 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
                         LOGGER.error(e.getMessage(), e);
                         throw new IOException(e);
                     }
+                    break;
                 default:
                     objectKey = identifier.toString();
+                    break;
             }
         }
         return objectKey;
