@@ -174,7 +174,7 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
         return cachedBlob;
     }
 
-    private String getObjectKey() throws IOException {
+    public String getObjectKey() throws IOException {
         if (objectKey == null) {
             final LookupStrategy strategy =
                     LookupStrategy.from(Key.AZURESTORAGESOURCE_LOOKUP_STRATEGY);
@@ -186,8 +186,10 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
                         LOGGER.error(e.getMessage(), e);
                         throw new IOException(e);
                     }
+                    break;
                 default:
                     objectKey = identifier.toString();
+                    break;
             }
         }
         return objectKey;
