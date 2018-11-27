@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.source;
 
+import com.amazonaws.SdkBaseException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GetObjectRequest;
@@ -59,8 +60,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * identifiers directly to S3 object keys. ScriptLookupStrategy invokes a
  * delegate method to retrieve object keys dynamically.</p>
  *
- * @see <a href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/welcome.html">
- *     AWS SDK for Java</a>
+ * @see <a href="https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/">
+ *     AWS SDK for Java API Reference</a>
  */
 class S3Source extends AbstractSource implements StreamSource {
 
@@ -236,6 +237,8 @@ class S3Source extends AbstractSource implements StreamSource {
             } else {
                 throw new IOException(e);
             }
+        } catch (SdkBaseException e) {
+            throw new IOException(e);
         }
     }
 
@@ -251,6 +254,8 @@ class S3Source extends AbstractSource implements StreamSource {
             } else {
                 throw new IOException(e);
             }
+        } catch (SdkBaseException e) {
+            throw new IOException(e);
         }
     }
 

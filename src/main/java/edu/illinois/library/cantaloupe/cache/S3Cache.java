@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import com.amazonaws.SdkBaseException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GetObjectRequest;
@@ -48,8 +49,8 @@ import java.util.Date;
  *     <dd><code>{@link Key#S3CACHE_OBJECT_KEY_PREFIX}/info/{identifier}.json</code></dd>
  * </dl>
  *
- * @see <a href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/welcome.html">
- *     AWS SDK for Java</a>
+ * @see <a href="https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/">
+ *     AWS SDK for Java API Reference</a>
  * @since 3.0
  */
 class S3Cache implements DerivativeCache {
@@ -285,8 +286,10 @@ class S3Cache implements DerivativeCache {
             }
         } catch (AmazonS3Exception e) {
             if (e.getStatusCode() != 404) {
-                throw new IOException(e.getMessage(), e);
+                throw new IOException(e);
             }
+        } catch (SdkBaseException e) {
+            throw new IOException(e);
         }
         return null;
     }
@@ -313,8 +316,10 @@ class S3Cache implements DerivativeCache {
             }
         } catch (AmazonS3Exception e) {
             if (e.getStatusCode() != 404) {
-                throw new IOException(e.getMessage(), e);
+                throw new IOException(e);
             }
+        } catch (SdkBaseException e) {
+            throw new IOException(e);
         }
         return null;
     }
@@ -374,7 +379,7 @@ class S3Cache implements DerivativeCache {
                 try {
                     s3.deleteObject(getBucketName(), summary.getKey());
                     count++;
-                } catch (AmazonS3Exception e) {
+                } catch (SdkBaseException e) {
                     LOGGER.warn("purge(): {}", e.getMessage());
                 }
             }
